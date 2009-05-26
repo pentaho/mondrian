@@ -29,63 +29,72 @@ import junit.framework.TestSuite;
  * expected result.
  *
  * <p>Here is a typical XML file:
- * <blockquote><pre>&lt;mdbTest&gt;
- *     &lt;mdxQuery&gt;
- *         WITH MEMBER [Customers].[Hierarchy Name]
- *             AS '[Customers].[All Customers].[USA].[CA].hierarchy.Name'
- *         SELECT {[Customers].[Hierarchy Name]} on columns
- *         From [Sales]
- *     &lt;/mdxQuery&gt;
- *     &lt;dataResult&gt;
- *         &lt;slicer&gt;
- *             &lt;dimensions&gt;
- *                 &lt;dim&gt;[Measures]&lt;/dim&gt;
- *                 &lt;dim&gt;[Time]&lt;/dim&gt;
- *                 &lt;dim&gt;[Product]&lt;/dim&gt;
- *                 &lt;dim&gt;[Store]&lt;/dim&gt;
- *                 &lt;dim&gt;[Store Size in SQFT]&lt;/dim&gt;
- *                 &lt;dim&gt;[Store Type]&lt;/dim&gt;
- *                 &lt;dim&gt;[Promotions]&lt;/dim&gt;
- *                 &lt;dim&gt;[Education Level]&lt;/dim&gt;
- *                 &lt;dim&gt;[Marital Status]&lt;/dim&gt;
- *                 &lt;dim&gt;[Yearly Income]&lt;/dim&gt;
- *                 &lt;dim&gt;[Promotion Media]&lt;/dim&gt;
- *                 &lt;dim&gt;[Gender]&lt;/dim&gt;
- *             &lt;/dimensions&gt;
- *             &lt;tuples&gt;
- *                 &lt;tuple&gt;
- *                     &lt;member&gt;[Measures].[Unit Sales]&lt;/member&gt;
- *                     &lt;member&gt;[Time].[1997]&lt;/member&gt;
- *                     &lt;member&gt;[Product].[All Products]&lt;/member&gt;
- *                     &lt;member&gt;[Store].[All Stores]&lt;/member&gt;
- *                     &lt;member&gt;[Store Size in SQFT].[All Store Size in SQFTs]&lt;/member&gt;
- *                     &lt;member&gt;[Store Type].[All Store Types]&lt;/member&gt;
- *                     &lt;member&gt;[Promotions].[All Promotions]&lt;/member&gt;
- *                     &lt;member&gt;[Education Level].[All Education Levels]&lt;/member&gt;
- *                     &lt;member&gt;[Marital Status].[All Marital Status]&lt;/member&gt;
- *                     &lt;member&gt;[Yearly Income].[All Yearly Incomes]&lt;/member&gt;
- *                     &lt;member&gt;[Promotion Media].[All Media]&lt;/member&gt;
- *                     &lt;member&gt;[Gender].[All Gender]&lt;/member&gt;
- *                 &lt;/tuple&gt;
- *             &lt;/tuples&gt;
- *         &lt;/slicer&gt;
- *         &lt;columns&gt;
- *             &lt;dimensions&gt;
- *                 &lt;dim&gt;[Customers]&lt;/dim&gt;
- *             &lt;/dimensions&gt;
- *             &lt;tuples&gt;
- *                 &lt;tuple&gt;
- *                     &lt;member&gt;[Customers].[Hierarchy Name]&lt;/member&gt;
- *                 &lt;/tuple&gt;
- *             &lt;/tuples&gt;
- *         &lt;/columns&gt;
- *         &lt;data&gt;
- *             &lt;drow&gt;
- *                 &lt;cell&gt;Customers&lt;/cell&gt;
- *             &lt;/drow&gt;
- *         &lt;/data&gt;
- *     &lt;/dataResult&gt;
- * &lt;/mdbTest&gt;</pre>
+ * <blockquote>&lt;mdbTest&gt;<br/>
+ *     &lt;mdxQuery&gt;<br/>
+ *         WITH MEMBER [Customers].[Hierarchy Name]<br/>
+ *             AS '[Customers].[All Customers].[USA].[CA].hierarchy.Name'<br/>
+ *         SELECT {[Customers].[Hierarchy Name]} on columns<br/>
+ *         From [Sales]<br/>
+ *     &lt;/mdxQuery&gt;<br/>
+ *     &lt;dataResult&gt;<br/>
+ *         &lt;slicer&gt;<br/>
+ *             &lt;dimensions&gt;<br/>
+ *                 &lt;dim&gt;[Measures]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Time]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Product]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Store]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Store Size in SQFT]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Store Type]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Promotions]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Education Level]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Marital Status]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Yearly Income]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Promotion Media]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Gender]&lt;/dim&gt;<br/>
+ *             &lt;/dimensions&gt;<br/>
+ *             &lt;tuples&gt;<br/>
+ *                 &lt;tuple&gt;<br/>
+ *                     &lt;member&gt;[Measures].[Unit Sales]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Time].[1997]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Product].[All
+ * Products]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Store].[All Stores]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Store Size in SQFT].[All Store Size in
+ * SQFTs]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Store Type].[All Store
+ * Types]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Promotions].[All
+ * Promotions]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Education Level].[All Education
+ * Levels]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Marital Status].[All Marital
+ * Status]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Yearly Income].[All Yearly
+ * Incomes]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Promotion Media].[All
+ * Media]&lt;/member&gt;<br/>
+ *                     &lt;member&gt;[Gender].[All Gender]&lt;/member&gt;<br/>
+ *                 &lt;/tuple&gt;<br/>
+ *             &lt;/tuples&gt;<br/>
+ *         &lt;/slicer&gt;<br/>
+ *         &lt;columns&gt;<br/>
+ *             &lt;dimensions&gt;<br/>
+ *                 &lt;dim&gt;[Customers]&lt;/dim&gt;<br/>
+ *             &lt;/dimensions&gt;<br/>
+ *             &lt;tuples&gt;<br/>
+ *                 &lt;tuple&gt;<br/>
+ *                     &lt;member&gt;[Customers].[Hierarchy
+ * Name]&lt;/member&gt;<br/>
+ *                 &lt;/tuple&gt;<br/>
+ *             &lt;/tuples&gt;<br/>
+ *         &lt;/columns&gt;<br/>
+ *         &lt;data&gt;<br/>
+ *             &lt;drow&gt;<br/>
+ *                 &lt;cell&gt;Customers&lt;/cell&gt;<br/>
+ *             &lt;/drow&gt;<br/>
+ *         &lt;/data&gt;<br/>
+ *     &lt;/dataResult&gt;<br/>
+ * &lt;/mdbTest&gt;
  * </blockquote>
  */
 public class ResultComparatorTest extends FoodMartTestCase {
@@ -125,8 +134,8 @@ public class ResultComparatorTest extends FoodMartTestCase {
         try {
             Query query = cxn.parseQuery(queryString);
             Result result = cxn.execute(query);
-
-            ResultComparator comp = new ResultComparator(expectedResult, result);
+            ResultComparator comp =
+                new ResultComparator(expectedResult, result);
 
             comp.compareResults();
         } finally {

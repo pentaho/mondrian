@@ -138,20 +138,22 @@ public class ParameterFunDef extends FunDefBase {
      * Resolves calls to the <code>Parameter</code> MDX function.
      */
     public static class ParameterResolver extends MultiResolver {
-        private static final String[] SIGNATURES =
-                new String[]{
-                    // Parameter(string const, symbol, string[, string const]): string
-                    "fS#yS#", "fS#yS",
-                    // Parameter(string const, symbol, numeric[, string const]): numeric
-                    "fn#yn#", "fn#yn",
-                    // Parameter(string const, hierarchy constant, member[, string const]): member
-                    "fm#hm#", "fm#hm",
-                };
+        private static final String[] SIGNATURES = {
+            // Parameter(string const, symbol, string[, string const]): string
+            "fS#yS#", "fS#yS",
+            // Parameter(string const, symbol, numeric[, string const]): numeric
+            "fn#yn#", "fn#yn",
+            // Parameter(string const, hierarchy constant, member[, string
+            // const]): member
+            "fm#hm#", "fm#hm",
+        };
 
         public ParameterResolver() {
-            super("Parameter",
-                    "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
-                    "Returns default value of parameter.", SIGNATURES);
+            super(
+                "Parameter",
+                "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
+                "Returns default value of parameter.",
+                SIGNATURES);
         }
 
         public String[] getReservedWords() {

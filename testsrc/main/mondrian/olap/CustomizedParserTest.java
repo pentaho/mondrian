@@ -198,19 +198,28 @@ public class CustomizedParserTest extends FoodMartTestCase {
             properties.IgnoreInvalidMembers.set(true);
             properties.IgnoreInvalidMembersDuringQuery.set(true);
             Query q =
-                getParsedQueryForExpr(cftab, "'[Measures].[Store Cost] + [Measures].[Unit Salese]'", strictValidation);
+                getParsedQueryForExpr(
+                    cftab,
+                    "'[Measures].[Store Cost] + [Measures].[Unit Salese]'",
+                    strictValidation);
             q.resolve(q.createValidator(cftab));
             // Shouldn't reach here if strictValidation
-            fail("Expected error does not occur when strictValidation is set:" + strictValidation);
+            fail(
+                "Expected error does not occur when strictValidation is set:"
+                + strictValidation);
         } catch (Throwable e) {
             properties.IgnoreInvalidMembers.set(oldIgnoreInvalidMembers);
-            properties.IgnoreInvalidMembersDuringQuery.set(oldIgnoreInvalidMembersDuringQuery);
+            properties.IgnoreInvalidMembersDuringQuery.set(
+                oldIgnoreInvalidMembersDuringQuery);
             if (strictValidation) {
-                checkErrorMsg(e,
-                "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");
+                checkErrorMsg(
+                    e,
+                    "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");
             } else {
-                checkErrorMsg(e,
-                "Expected error does not occur when strictValidation is set:" + strictValidation);
+                checkErrorMsg(
+                    e,
+                    "Expected error does not occur when strictValidation is set:"
+                    + strictValidation);
             }
         }
     }
@@ -319,13 +328,15 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
-            "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
+            checkErrorMsg(
+                e,
+                "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
         }
     }
 
     /**
-     * Mondrian is not strict about referencing a dimension member in calculated measures.
+     * Mondrian is not strict about referencing a dimension member in calculated
+     * measures.
      *
      * The following expression passes parsing and validation.
      * Its computation is strange: the result is as if the measure is defined as

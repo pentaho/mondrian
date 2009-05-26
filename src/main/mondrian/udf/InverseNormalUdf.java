@@ -42,10 +42,13 @@ import mondrian.spi.UserDefinedFunction;
  * </pre></code></blockquote>
  */
 public class InverseNormalUdf implements UserDefinedFunction {
-    private static final Logger LOGGER = Logger.getLogger(InverseNormalUdf.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(InverseNormalUdf.class);
 
-    private static DistributionFactory distributionFactory = DistributionFactory.newInstance();
-    private static NormalDistribution nd = distributionFactory.createNormalDistribution();
+    private static DistributionFactory distributionFactory =
+        DistributionFactory.newInstance();
+    private static NormalDistribution nd =
+        distributionFactory.createNormalDistribution();
 
     public String getName() {
         return "InverseNormal";

@@ -56,7 +56,7 @@ public abstract class AbstractCalc implements Calc {
         final Calc[] calcs = getCalcs();
         final List<Object> argumentList = getArguments();
         if (calcs.length > 0 || !argumentList.isEmpty()) {
-           pw.print("(");
+            pw.print("(");
             int k = 0;
             for (Calc calc : calcs) {
                 if (k++ > 0) {
@@ -131,7 +131,8 @@ public abstract class AbstractCalc implements Calc {
      * dimensions of {Set}.
      */
     public static boolean anyDependsButFirst(
-            Calc[] calcs, Dimension dimension) {
+            Calc[] calcs, Dimension dimension)
+    {
         if (calcs.length == 0) {
             return false;
         }
@@ -156,7 +157,8 @@ public abstract class AbstractCalc implements Calc {
      * else true.
      */
     public static boolean butDepends(
-            Calc[] calcs, Dimension dimension) {
+            Calc[] calcs, Dimension dimension)
+    {
         boolean result = true;
         for (Calc calc : calcs) {
             if (calc != null) {

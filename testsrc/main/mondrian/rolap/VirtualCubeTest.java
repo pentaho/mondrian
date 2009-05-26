@@ -822,7 +822,8 @@ public class VirtualCubeTest extends BatchTestCase {
 
     /**
      * Checks that native set caching considers base cubes in the cache key.
-     * Native sets referencing different base cubes do not share the cached result.
+     * Native sets referencing different base cubes do not share the cached
+     * result.
      */
     public void testNativeSetCaching() {
         // Only need to run this against one db to verify caching
@@ -917,15 +918,15 @@ public class VirtualCubeTest extends BatchTestCase {
                 + "order by 1 ASC";
         }
 
-        SqlPattern[] patterns1 =
-            new SqlPattern[] {
-                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql1, derbyNecjSql1)
-            };
+        SqlPattern[] patterns1 = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, derbyNecjSql1, derbyNecjSql1)
+        };
 
-        SqlPattern[] patterns2 =
-            new SqlPattern[] {
-                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql2, derbyNecjSql2)
-            };
+        SqlPattern[] patterns2 = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, derbyNecjSql2, derbyNecjSql2)
+        };
 
         // Run query 1 with cleared cache;
         // Make sure NECJ 1 is evaluated natively.
@@ -955,15 +956,18 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null,
             null);
+
         /*
-         * This test case does not actually reject the dimension constraint from an
-         * unrelated base cube. The reason is that the constraint contains an AllLevel
-         * member. Even though semantically constraining Cells using an non-existent
-         * dimension perhaps does not make sense; however, in the case where the constraint
-         * contains AllLevel member, the constraint can be considered "always true".
+         * This test case does not actually reject the dimension constraint from
+         * an unrelated base cube. The reason is that the constraint contains an
+         * AllLevel member. Even though semantically constraining Cells using an
+         * non-existent dimension perhaps does not make sense; however, in the
+         * case where the constraint contains AllLevel member, the constraint
+         * can be considered "always true".
          *
-         * See the next test case for a constraint that does not contain AllLevel member
-         * and hence cannot be satisfied. The cell should be empty.
+         * See the next test case for a constraint that does not contain
+         * AllLevel member and hence cannot be satisfied. The cell should be
+         * empty.
          */
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
@@ -1041,7 +1045,8 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test that RolapCubeLevel is used correctly in the context of virtual cube.
+     * Test that R
+     olapCubeLevel is used correctly in the context of virtual cube.
      */
     public void testRolapCubeLevelInVirtualCube() {
         String query1 =
@@ -1099,9 +1104,9 @@ public class VirtualCubeTest extends BatchTestCase {
         assertQueryReturns(query2, result);
     }
 
-    /*
-     * Test that the logic to apply non empty context constraint in virtual cube is correct.
-     * The joins shound't be cartesian product.
+    /**
+     * Tests that the logic to apply non empty context constraint in virtual
+     * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyCJConstraintOnVirtualCube() {
         String query =
@@ -1213,9 +1218,9 @@ public class VirtualCubeTest extends BatchTestCase {
         assertQueryReturns(query, result);
     }
 
-    /*
-     * Test that the logic to apply non empty context constraint in virtual cube is correct.
-     * The joins shound't be cartesian product.
+    /**
+     * Tests that the logic to apply non empty context constraint in virtual
+     * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
         String query =
@@ -1271,8 +1276,10 @@ public class VirtualCubeTest extends BatchTestCase {
 
         SqlPattern[] mysqlPattern =
             new SqlPattern[] {
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
-                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
             };
 
         assertQuerySql(query, mysqlPattern, true);

@@ -34,11 +34,13 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         MondrianProperties.instance().EnableRolapCubeMemberCache.get();
 
     // TODO: add multi-thread tests.
-    // TODO: test moveMember (execute source.children and target.children before and after)
+    // TODO: test moveMember (execute source.children and target.children before
+    //       and after)
     // TODO: test moveMember negaitve case previous parent not in correct level
     // TODO: test set properties negative: refer to invalid property
     // TODO: test set properties negative: set prop to invalid value
-    // TODO: edit a different member not known to be in cache -- will it be fetched?
+    // TODO: edit a different member not known to be in cache -- will it be
+    //       fetched?
 
     public MemberCacheControlTest() {
     }

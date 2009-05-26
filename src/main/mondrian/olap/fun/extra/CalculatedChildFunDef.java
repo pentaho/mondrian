@@ -51,7 +51,7 @@ public class CalculatedChildFunDef extends FunDefBase {
                 String name = stringCalc.evaluateString(evaluator);
                 return getCalculatedChild(member, name, evaluator);
             }
-         };
+        };
     }
 
     private Member getCalculatedChild(
@@ -71,8 +71,9 @@ public class CalculatedChildFunDef extends FunDefBase {
         for (Member child : calcMemberList) {
             // the parent check is required in case there are parallel children
             // with the same names
-            if (child.getParentMember().equals(parent) &&
-                child.getName().equals(childName)) {
+            if (child.getParentMember().equals(parent)
+                && child.getName().equals(childName))
+            {
                 return child;
             }
         }

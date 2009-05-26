@@ -9,20 +9,17 @@
 */
 package mondrian.gui;
 
-import java.util.Enumeration;
-import java.util.Vector;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.MutableTreeNode;
 import mondrian.gui.JdbcMetaData.DbColumn;
+
 import org.apache.log4j.Logger;
 
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.*;
+import java.util.*;
+
 /**
- *
- * @author  sean
+ * @author sean
  * @version $Id$
  */
 public class JdbcExplorer
@@ -56,14 +53,16 @@ public class JdbcExplorer
             for (String schemaName : jdbcMetaData.getAllSchemas()) {
                 Node cat = new Node(schemaName, NodeType.CATALOG, null);
 
-                DefaultMutableTreeNode catTreeNode = new DefaultMutableTreeNode(cat);
+                DefaultMutableTreeNode catTreeNode =
+                    new DefaultMutableTreeNode(cat);
                 cat.treeNode = catTreeNode;
                 root.add(catTreeNode);
 
-                Vector<String> tables = jdbcMetaData.getAllTables(schemaName);
+                List<String> tables = jdbcMetaData.getAllTables(schemaName);
                 for (String tableName : tables) {
                     Node table = new Node(tableName, NodeType.TABLE, null);
-                    DefaultMutableTreeNode tableTreeNode = new DefaultMutableTreeNode(table);
+                    DefaultMutableTreeNode tableTreeNode =
+                        new DefaultMutableTreeNode(table);
                     table.treeNode = tableTreeNode;
                     catTreeNode.add(tableTreeNode);
                 }
@@ -90,14 +89,16 @@ public class JdbcExplorer
         return updater;
     }
 
-    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+    public void treeWillExpand(TreeExpansionEvent event)
+        throws ExpandVetoException
+    {
         // The children are lazy loaded
-        LOGGER.debug("path = " + event.getPath()
-                + ", last object is a "
-                + event.getPath().getLastPathComponent().getClass().getName());
+        LOGGER.debug(
+            "path = " + event.getPath() + ", last object is a "
+            + event.getPath().getLastPathComponent().getClass().getName());
 
         DefaultMutableTreeNode theTreeNode =
-                (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
+            (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
         Node theNode = (Node) theTreeNode.getUserObject();
         theNode.setChildren();
 
@@ -109,25 +110,35 @@ public class JdbcExplorer
             return;
         }
 
-        DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) theTreeNode.getParent();
+        DefaultMutableTreeNode parentNode =
+            (DefaultMutableTreeNode) theTreeNode.getParent();
 
         Node theNode = (Node) theTreeNode.getUserObject();
-        Node theParentNode = parentNode == null ? null : (Node) parentNode.getUserObject();
+        Node theParentNode =
+            parentNode == null
+                ? null
+                : (Node) parentNode.getUserObject();
 
-        Enumeration children = theTreeNode.children();
+        @SuppressWarnings({"unchecked"})
+        Enumeration<DefaultMutableTreeNode> children = theTreeNode.children();
 
-        LOGGER.debug(message + ": " + theNode + ", " + theNode.type
-                + ", parent " + theParentNode +
-                (theParentNode == null ? "" : ", " + theParentNode.type));
+        LOGGER.debug(
+            message + ": " + theNode + ", " + theNode.type
+            + ", parent " + theParentNode
+            + (theParentNode == null
+                ? ""
+                : ", " + theParentNode.type));
         while (children.hasMoreElements()) {
-            Object o = children.nextElement();
-            Node child = (Node) ((DefaultMutableTreeNode) o).getUserObject();
+            DefaultMutableTreeNode treeNode = children.nextElement();
+            Node child = (Node) treeNode.getUserObject();
             LOGGER.debug("\t" + child.toString() + ", " + child.type);
         }
     }
 
     public void treeWillCollapse(TreeExpansionEvent arg0)
-            throws ExpandVetoException {}
+        throws ExpandVetoException
+    {
+    }
 
     enum NodeType {
         CATALOG,
@@ -137,63 +148,58 @@ public class JdbcExplorer
     }
 
     class Node {
-        String name;
-        NodeType type;
+        final String name;
+        final NodeType type;
         boolean gotChildren = false;
         DefaultMutableTreeNode treeNode;
-        JdbcMetaData.DbColumn columnInfo;
+        final JdbcMetaData.DbColumn columnInfo;
 
-        public Node(String n,
-                NodeType t,
-                DefaultMutableTreeNode tn) {
-            name = n;
-            type = t;
-            treeNode = tn;
+        public Node(
+            String name,
+            NodeType type,
+            DefaultMutableTreeNode treeNode)
+        {
+            this(name, type, treeNode, null);
         }
 
-        public Node(String n,
-                NodeType t,
-                DefaultMutableTreeNode tn,
-                JdbcMetaData.DbColumn ci) {
-            name = n;
-            type = t;
-            treeNode = tn;
-            columnInfo = ci;
+        public Node(
+            String name,
+            NodeType type,
+            DefaultMutableTreeNode treeNode,
+            JdbcMetaData.DbColumn columnInfo)
+        {
+            this.name = name;
+            this.type = type;
+            this.treeNode = treeNode;
+            this.columnInfo = columnInfo;
         }
 
         public String toString() {
             if (type == NodeType.ROOT) {
                 return workbench.getResourceConverter().getFormattedString(
-                        "jdbcExplorer.root.name", "All Schemas",  null);
+                    "jdbcExplorer.root.name",
+                    "All Schemas");
             }
 
-            StringBuffer sb = new StringBuffer();
-
+            StringBuilder sb = new StringBuilder();
             if (name == null || name.trim().length() == 0) {
                 switch (type) {
                 case CATALOG:
-                    sb.append(workbench
-                            .getResourceConverter()
-                            .getFormattedString(
-                                "jdbcExplorer.default.name.catalog",
-                                "Default Schema",
-                                null));
+                    sb.append(
+                        workbench.getResourceConverter().getFormattedString(
+                            "jdbcExplorer.default.name.catalog",
+                            "Default Schema"));
                     break;
                 case TABLE:
-                    sb.append(workbench
-                            .getResourceConverter()
-                            .getFormattedString(
-                                "jdbcExplorer.default.name.table",
-                                "Table",
-                                null));
+                    sb.append(
+                        workbench.getResourceConverter().getFormattedString(
+                            "jdbcExplorer.default.name.table", "Table"));
                     break;
                 case COLUMN:
-                    sb.append(workbench
-                            .getResourceConverter()
-                            .getFormattedString(
-                                "jdbcExplorer.default.name.column",
-                                "Column",
-                                null));
+                    sb.append(
+                        workbench.getResourceConverter().getFormattedString(
+                            "jdbcExplorer.default.name.column",
+                            "Column"));
                     break;
                 }
             } else {
@@ -206,8 +212,7 @@ public class JdbcExplorer
 
             // now for columns
 
-            sb.append(" - ")
-                .append(columnInfo.displayType());
+            sb.append(" - ").append(columnInfo.displayType());
 
             return sb.toString();
         }
@@ -215,16 +220,22 @@ public class JdbcExplorer
         public void setChildren() {
             if (!gotChildren) {
                 if (type == NodeType.TABLE) {
-                    DefaultMutableTreeNode theParentTreeNode = (DefaultMutableTreeNode) treeNode.getParent();
+                    DefaultMutableTreeNode theParentTreeNode =
+                        (DefaultMutableTreeNode) treeNode.getParent();
 
-                    Node theParentNode = (Node) theParentTreeNode.getUserObject();
+                    Node theParentNode =
+                        (Node) theParentTreeNode.getUserObject();
 
                     // This is a table, parent is a schema
 
-                    Vector<DbColumn> columns = jdbcMetaData.getAllDbColumns(theParentNode.name, name);
+                    List<DbColumn> columns =
+                        jdbcMetaData.getAllDbColumns(
+                            theParentNode.name, name);
                     for (DbColumn column : columns) {
-                        Node columnNode = new Node(column.name, NodeType.COLUMN, treeNode, column);
-                        MutableTreeNode columnTreeNode = new DefaultMutableTreeNode(columnNode, false);
+                        Node columnNode = new Node(
+                            column.name, NodeType.COLUMN, treeNode, column);
+                        MutableTreeNode columnTreeNode =
+                            new DefaultMutableTreeNode(columnNode, false);
                         treeNode.add(columnTreeNode);
                     }
                 }
@@ -233,7 +244,8 @@ public class JdbcExplorer
         }
     }
 
-    /** This method is called from within the constructor to
+    /**
+     * This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.

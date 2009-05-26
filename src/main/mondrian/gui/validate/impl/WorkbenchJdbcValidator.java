@@ -9,10 +9,10 @@
 */
 package mondrian.gui.validate.impl;
 
-import java.util.List;
-
 import mondrian.gui.JdbcMetaData;
 import mondrian.gui.validate.JdbcValidator;
+
+import java.util.List;
 
 /**
  * Implementation of <code>JdbcValidator</code> for Workbench.
@@ -28,13 +28,15 @@ public class WorkbenchJdbcValidator implements JdbcValidator {
         this.jdbcMetadata = jdbcMetadata;
     }
 
-    public int getColumnDataType(String schemaName, String tableName,
-                    String colName) {
+    public int getColumnDataType(
+        String schemaName, String tableName, String colName)
+    {
         return jdbcMetadata.getColumnDataType(schemaName, tableName, colName);
     }
 
-    public boolean isColExists(String schemaName, String tableName,
-                    String colName) {
+    public boolean isColExists(
+        String schemaName, String tableName, String colName)
+    {
         return jdbcMetadata.isColExists(schemaName, tableName, colName);
     }
 

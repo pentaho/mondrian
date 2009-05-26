@@ -210,10 +210,10 @@ public interface ExpCompiler {
         static {
             factory = new Factory();
             CLASS_ARRAY = new Class[] {
-                    Evaluator.class,
-                    Validator.class,
-                    ResultStyle[].class
-                };
+                Evaluator.class,
+                Validator.class,
+                ResultStyle[].class,
+            };
         }
 
         /**
@@ -228,7 +228,8 @@ public interface ExpCompiler {
         public static ExpCompiler getExpCompiler(
             final Evaluator evaluator,
             final Validator validator)
-                throws CreationException {
+            throws CreationException
+        {
             return getExpCompiler(evaluator, validator, ResultStyle.ANY_LIST);
         }
 

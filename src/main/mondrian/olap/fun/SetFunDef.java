@@ -60,7 +60,8 @@ public class SetFunDef extends FunDefBase {
                     type0 = type;
                 } else {
                     if (!TypeUtil.isUnionCompatible(type0, type)) {
-                        throw MondrianResource.instance().ArgsMustHaveSameHierarchy.ex(getName());
+                        throw MondrianResource.instance()
+                            .ArgsMustHaveSameHierarchy.ex(getName());
                     }
                 }
             }
@@ -325,7 +326,9 @@ public class SetFunDef extends FunDefBase {
                 case ITERABLE:
                     final MemberIterCalc iterCalc = (MemberIterCalc) calc;
                     return new AbstractMemberIterCalc(arg, new Calc[] {calc}) {
-                        public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                        public Iterable<Member> evaluateMemberIterable(
+                            Evaluator evaluator)
+                        {
                             return iterCalc.evaluateMemberIterable(evaluator);
                         }
 
@@ -415,7 +418,9 @@ public class SetFunDef extends FunDefBase {
             final MemberCalc memberCalc = compiler.compileMember(arg);
             final ResolvedFunCall call = wrapAsSet(arg);
             return new AbstractMemberIterCalc(call, new Calc[] {memberCalc}) {
-                public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                public Iterable<Member> evaluateMemberIterable(
+                    Evaluator evaluator)
+                {
                     final Member member =
                         memberCalc.evaluateMember(evaluator);
                     return new Iterable<Member>() {
@@ -447,7 +452,9 @@ public class SetFunDef extends FunDefBase {
             final TupleCalc tupleCalc = compiler.compileTuple(arg);
             final ResolvedFunCall call = wrapAsSet(arg);
             return new AbstractTupleIterCalc(call, new Calc[] {tupleCalc}) {
-                public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+                public Iterable<Member[]> evaluateTupleIterable(
+                    Evaluator evaluator)
+                {
                     final Member[] members = tupleCalc.evaluateTuple(evaluator);
                     return new Iterable<Member[]>() {
                         public Iterator<Member[]> iterator() {
@@ -517,7 +524,8 @@ public class SetFunDef extends FunDefBase {
             List<ResultStyle> resultStyles)
         {
             super(exp, null);
-            final List<Calc> calcList = compileSelf(args, compiler, resultStyles);
+            final List<Calc> calcList =
+                compileSelf(args, compiler, resultStyles);
             iterCalcs = calcList.toArray(new MemberIterCalc[calcList.size()]);
         }
 
@@ -526,7 +534,9 @@ public class SetFunDef extends FunDefBase {
             return iterCalcs;
         }
 
-        public Iterable<Member> evaluateMemberIterable(final Evaluator evaluator) {
+        public Iterable<Member> evaluateMemberIterable(
+            final Evaluator evaluator)
+        {
             return new Iterable<Member>() {
                 public Iterator<Member> iterator() {
                     return new Iterator<Member>() {
@@ -553,9 +563,11 @@ public class SetFunDef extends FunDefBase {
                                     if (index >= iterCalcs.length) {
                                         return false;
                                     }
-                                    MemberIterCalc iterCalc = iterCalcs[index++];
+                                    MemberIterCalc iterCalc =
+                                        iterCalcs[index++];
                                     Iterable<Member> iter =
-                                        iterCalc.evaluateMemberIterable(evaluator);
+                                        iterCalc.evaluateMemberIterable(
+                                            evaluator);
                                     currentIterator = iter.iterator();
                                     b = currentIterator.hasNext();
                                 }

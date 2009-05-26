@@ -435,7 +435,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternsWithoutGsets);
     }
 
-    public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
+    public void
+        testGroupingSetForMultipleColumnConstraintAndCompoundConstraint()
+    {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
@@ -472,19 +474,22 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsGSDisabled = {
             new SqlPattern(ORACLE_TERADATA, sqlWithoutGS, sqlWithoutGS)
         };
-        // as of change 12310 GS has been removed from distinct count queries, since there is
-        // little or no performance benefit and there is a bug related to it (2207515)
+        // as of change 12310 GS has been removed from distinct count queries,
+        // since there is little or no performance benefit and there is a bug
+        // related to it (2207515)
         SqlPattern[] patternsGSEnabled = patternsGSDisabled;
 
         prop.EnableGroupingSets.set(true);
 
         assertRequestSql(
-            new CellRequest[] {request3, request1, request2}, patternsGSEnabled);
+            new CellRequest[] {request3, request1, request2},
+            patternsGSEnabled);
 
         prop.EnableGroupingSets.set(false);
 
         assertRequestSql(
-            new CellRequest[]{request3, request1, request2}, patternsGSDisabled);
+            new CellRequest[]{request3, request1, request2},
+            patternsGSDisabled);
     }
 
     /**

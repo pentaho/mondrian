@@ -86,12 +86,15 @@ public class RoleImpl implements Role {
      * @param access An {@link Access access code}
      *
      * @pre schema != null
-     * @pre access == Access.ALL || access == Access.NONE || access == Access.ALL_DIMENSIONS
+     * @pre access == Access.ALL || access == Access.NONE
+     * || access == Access.ALL_DIMENSIONS
      * @pre isMutable()
      */
     public void grant(Schema schema, Access access) {
         assert schema != null;
-        assert access == Access.ALL || access == Access.NONE || access == Access.ALL_DIMENSIONS;
+        assert access == Access.ALL
+            || access == Access.NONE
+            || access == Access.ALL_DIMENSIONS;
         assert isMutable();
         schemaGrants.put(schema, access);
     }
@@ -222,7 +225,8 @@ public class RoleImpl implements Role {
      * @param rollupPolicy
      * @pre hierarchy != null
      * @pre Access.instance().isValid(access)
-     * @pre (access == Access.CUSTOM) || (topLevel == null && bottomLevel == null)
+     * @pre (access == Access.CUSTOM)
+     *      || (topLevel == null &amp;&amp; bottomLevel == null)
      * @pre topLevel == null || topLevel.getHierarchy() == hierarchy
      * @pre bottomLevel == null || bottomLevel.getHierarchy() == hierarchy
      * @pre isMutable()
@@ -300,7 +304,8 @@ public class RoleImpl implements Role {
         Util.assertPrecondition(member != null, "member != null");
         assert isMutable();
         assert getAccess(member.getHierarchy()) == Access.CUSTOM;
-        HierarchyAccessImpl hierarchyAccess = hierarchyGrants.get(member.getHierarchy());
+        HierarchyAccessImpl hierarchyAccess =
+            hierarchyGrants.get(member.getHierarchy());
         assert hierarchyAccess != null;
         assert hierarchyAccess.access == Access.CUSTOM;
         hierarchyAccess.grant(member, access);
@@ -510,13 +515,18 @@ public class RoleImpl implements Role {
                 // If there is no inherited access, check for implicit access.
                 // A member is implicitly visible if one of its descendants is
                 // visible.
-                for (Map.Entry<Member, Access> entry : memberGrants.entrySet()) {
+                for (Map.Entry<Member, Access> entry :
+                         memberGrants.entrySet())
+                {
                     final Member grantedMember = entry.getKey();
                     switch (entry.getValue()) {
                     case NONE:
                         continue;
                     }
-                    for (Member m = grantedMember; m != null; m = m.getParentMember()) {
+                    for (Member m = grantedMember;
+                        m != null;
+                        m = m.getParentMember())
+                    {
                         if (m == member) {
                             return Access.CUSTOM;
                         }

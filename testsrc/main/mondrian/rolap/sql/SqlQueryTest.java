@@ -138,10 +138,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year` = 1997 "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns =
-            new SqlPattern[]{
-                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
@@ -181,10 +181,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns =
-            new SqlPattern[]{
-                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
     }
@@ -222,10 +222,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year` = 1997 "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns =
-            new SqlPattern[]{
-                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
@@ -435,7 +435,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "group by cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double)";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)
+            new SqlPattern(
+                Dialect.DatabaseProduct.LUCIDDB,
+                loadSqlLucidDB,
+                loadSqlLucidDB)
         };
 
         TestContext testContext =

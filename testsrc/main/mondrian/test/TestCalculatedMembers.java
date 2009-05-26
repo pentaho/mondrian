@@ -1011,7 +1011,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL)
         };
 
-        assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
+        assertQuerySqlOrNot(
+            this.getTestContext(), query, patterns, true, true, true);
     }
 
     /**
@@ -1043,9 +1044,9 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * Test that if a filter is associated with input to a cal member with lower solve order;
-     * the filter computation uses the context that contains the other cal members(those with
-     * higher solve order).
+     * Tests that if a filter is associated with input to a cal member with
+     * lower solve order; the filter computation uses the context that contains
+     * the other cal members(those with higher solve order).
      */
     public void testNegativeSolveOrderForCalMemberWithFilter() {
         assertQueryReturns(
@@ -1085,8 +1086,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * Test that if a filter is associated with input to a cal member with higher solve order;
-     * the filter computation ignores the other cal members.
+     * Tests that if a filter is associated with input to a cal member with
+     * higher solve order; the filter computation ignores the other cal members.
      */
     public void testNegativeSolveOrderForCalMemberWithFilters2() {
         assertQueryReturns(

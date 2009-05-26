@@ -47,7 +47,8 @@ class UnionFunDef extends FunDefBase {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         String allString = getLiteralArg(call, 2, "DISTINCT", ReservedWords);
         final boolean all = allString.equalsIgnoreCase("ALL");
-        checkCompatible(call.getArg(0), call.getArg(1), null); // todo: do at validate time
+        // todo: do at validate time
+        checkCompatible(call.getArg(0), call.getArg(1), null);
         final ListCalc listCalc0 =
                 compiler.compileList(call.getArg(0));
         final ListCalc listCalc1 =

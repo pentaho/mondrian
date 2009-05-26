@@ -27,7 +27,8 @@ public class StandAlone {
     private static String cellProp;
     private static boolean printMemberProps = false;
 
-    private static BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+    private static BufferedReader stdin =
+        new BufferedReader(new InputStreamReader(System.in));
 
     public static final String ConnectionString =
         "Provider=mondrian;"
@@ -41,12 +42,14 @@ public class StandAlone {
 
         cxn = DriverManager.getConnection(ConnectionString, null);
 
-        System.out.println("Connected in " + (System.currentTimeMillis() - now) + " usec");
+        System.out.println(
+            "Connected in " + (System.currentTimeMillis() - now) + " usec");
         processCommands();
     }
 
     private static void processCommands() {
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader in =
+            new BufferedReader(new InputStreamReader(System.in));
         long startTime = System.currentTimeMillis();
 
         inputLoop:
@@ -278,7 +281,8 @@ public class StandAlone {
             PrintWriter out = java.sql.DriverManager.getLogWriter();
 
             if (out == null) {
-                java.sql.DriverManager.setLogWriter(new PrintWriter(System.err));
+                java.sql.DriverManager.setLogWriter(
+                    new PrintWriter(System.err));
                 System.out.println("SQL driver logging enabled");
             } else {
                 java.sql.DriverManager.setLogWriter(null);
@@ -315,7 +319,9 @@ public class StandAlone {
                     Integer.parseInt(seconds),
                     Boolean.valueOf(useRandom));
             } catch (NumberFormatException nfe) {
-                System.out.println("Please enter a valid integer for the number of threads and the execution time");
+                System.out.println(
+                    "Please enter a valid integer for the number of threads "
+                    + "and the execution time");
             }
         } else {
             System.out.println("Commands:");
@@ -325,11 +331,16 @@ public class StandAlone {
         }
     }
 
-    private static void runTest(int numThreads, int seconds, boolean randomQueries) {
+    private static void runTest(
+        int numThreads, int seconds, boolean randomQueries)
+    {
         QueryRunner[] runners = new QueryRunner[numThreads];
 
-        System.out.println("Running multi-threading test with " + numThreads + " threads for " + seconds + " seconds.");
-        System.out.println("Queries will " + (randomQueries ? "" : "not ") + "be random.");
+        System.out.println(
+            "Running multi-threading test with " + numThreads
+            + " threads for " + seconds + " seconds.");
+        System.out.println(
+            "Queries will " + (randomQueries ? "" : "not ") + "be random.");
 
         for (int idx = 0; idx < runners.length; idx++) {
             runners[idx] = new QueryRunner(idx, seconds, randomQueries);
@@ -356,7 +367,10 @@ public class StandAlone {
         Cube[] cubes = schema.getCubes();
         Hierarchy[] hierarchies = schema.getSharedHierarchies();
 
-        System.out.println("Schema: " + schema.getName() + " " + cubes.length + " cubes and " + hierarchies.length + " shared hierarchies");
+        System.out.println(
+            "Schema: " + schema.getName() + " "
+            + cubes.length + " cubes and "
+            + hierarchies.length + " shared hierarchies");
 
         System.out.println("---Cubes ");
         for (int idx = 0; idx < cubes.length; idx++) {
@@ -398,8 +412,11 @@ public class StandAlone {
         String indentString = indents[indent];
 
         System.out.println(indentString + " Hierarchy " + hierarchy.getName());
-        System.out.println(indentString + "    Description: " + hierarchy.getDescription());
-        System.out.println(indentString + "    Default member: " + hierarchy.getDefaultMember().getUniqueName());
+        System.out.println(
+            indentString + "    Description: " + hierarchy.getDescription());
+        System.out.println(
+            indentString + "    Default member: "
+            + hierarchy.getDefaultMember().getUniqueName());
 
         Level[] levels = hierarchy.getLevels();
 

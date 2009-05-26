@@ -35,7 +35,9 @@ public interface Role {
      * Returns the access this role has to a given schema.
      *
      * @pre schema != null
-     * @post return == Access.ALL || return == Access.NONE || return == Access.ALL_DIMENSIONS
+     * @post return == Access.ALL
+     * || return == Access.NONE
+     * || return == Access.ALL_DIMENSIONS
      */
     Access getAccess(Schema schema);
 
@@ -117,7 +119,9 @@ public interface Role {
      * Returns the access this role has to a given hierarchy.
      *
      * @pre hierarchy != null
-     * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
+     * @post return == Access.NONE
+     *   || return == Access.ALL
+     *   || return == Access.CUSTOM
      */
     Access getAccess(Hierarchy hierarchy);
 
@@ -142,7 +146,9 @@ public interface Role {
      *
      * @pre member != null
      * @pre isMutable()
-     * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
+     * @post return == Access.NONE
+     *    || return == Access.ALL
+     *    || return == Access.CUSTOM
      */
     Access getAccess(Member member);
 

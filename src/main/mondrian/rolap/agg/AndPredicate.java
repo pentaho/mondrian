@@ -76,33 +76,35 @@ public class AndPredicate extends ListPredicate {
 
         // If the child predicates contains null values, those predicates cannot
         // be translated as IN list; however, the rest of the child predicates
-        // might still be translated to IN.
-        // For example, neither of the two AND conditions below(part of an OR list)
-        // can be translated using IN list, covering all the levels
+        // might still be translated to IN.  For example, neither of the two AND
+        // conditions below(part of an OR list) can be translated using IN list,
+        // covering all the levels
         //
         //  (null, null, San Francisco)
         //  (null, null, New York)
         //
         // However, after extracting the null part, they can be translated to:
         //
-        // (country is null AND state is null AND city IN ("San Fancisco", "New York"))
+        // (country is null AND state is null AND city IN ("San Fancisco", "New
+        // York"))
         //
         // which is still more compact than the default AND/OR translation:
         //
         // (country is null AND state is null AND city = "San Francisco") OR
         // (country is null AND state is null AND city = "New York")
         //
-        // This method will mark all the columns that can be translated as part of IN
-        // list, so that similar predicates can be grouped together to form partial
-        // IN list sql. By default, all columns constrained by this predicates can be
-        // part of an IN list.
+        // This method will mark all the columns that can be translated as part
+        // of IN list, so that similar predicates can be grouped together to
+        // form partial IN list sql. By default, all columns constrained by this
+        // predicates can be part of an IN list.
         //
-        // This is very similar to the logic in SqlConstraintUtil.generateMultiValueInExpr().
-        // The only difference being that the predicates here are all "flattened" so the
-        // hierarchy information is no longer available to guide the grouping of predicates
-        // with common parents. So some optimization possible in generateMultiValueInExpr()
-        // is not tried here, as they require implementing "longest common prefix" algorithm
-        // which is an overkill.
+        // This is very similar to the logic in
+        // SqlConstraintUtil.generateMultiValueInExpr().  The only difference
+        // being that the predicates here are all "flattened" so the hierarchy
+        // information is no longer available to guide the grouping of
+        // predicates with common parents. So some optimization possible in
+        // generateMultiValueInExpr() is not tried here, as they require
+        // implementing "longest common prefix" algorithm which is an overkill.
         BitKey inListRHSBitKey = inListLHSBitKey.copy();
 
         if (!columnBitKey.equals(inListLHSBitKey) ||
@@ -111,17 +113,18 @@ public class AndPredicate extends ListPredicate {
             inListRHSBitKey.clear();
         } else {
             for (StarPredicate predicate : children) {
-                // If any predicate requires comparison to null value, cannot use
-                // IN list for this predicate.
+                // If any predicate requires comparison to null value, cannot
+                // use IN list for this predicate.
                 if (predicate instanceof ValueColumnPredicate) {
-                    ValueColumnPredicate columnPred = ((ValueColumnPredicate) predicate);
+                    ValueColumnPredicate columnPred =
+                        ((ValueColumnPredicate) predicate);
                     if (columnPred.getValue() == RolapUtil.sqlNullValue) {
                         // This column predicate cannot be translated to IN
                         inListRHSBitKey.clear(
                             columnPred.getConstrainedColumn().getBitPosition());
                     }
-                    // else
-                    // do nothing because this column predicate can be translated to IN
+                    // else do nothing because this column predicate can be
+                    // translated to IN
                 } else {
                     inListRHSBitKey.clear();
                     break;
@@ -139,7 +142,11 @@ public class AndPredicate extends ListPredicate {
      * same order, based on the bit position from the columnBitKey.
      *
      */
-    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf, BitKey inListRHSBitKey) {
+    public void toInListSql(
+        SqlQuery sqlQuery,
+        StringBuilder buf,
+        BitKey inListRHSBitKey)
+    {
         boolean firstValue = true;
         buf.append("(");
         /*
@@ -154,7 +161,9 @@ public class AndPredicate extends ListPredicate {
             // ValueColumnPredicate
             assert predicate instanceof ValueColumnPredicate;
             if (inListRHSBitKey.get(
-                ((ValueColumnPredicate)predicate).getConstrainedColumn().getBitPosition())) {
+                ((ValueColumnPredicate) predicate).getConstrainedColumn()
+                .getBitPosition()))
+            {
                 sortedPredicates.add((ValueColumnPredicate)predicate);
             }
         }

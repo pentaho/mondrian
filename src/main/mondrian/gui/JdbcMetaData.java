@@ -13,22 +13,25 @@
  */
 package mondrian.gui;
 
-import java.util.*;
-import java.sql.*;
-
 import org.apache.log4j.Logger;
 
+import java.sql.*;
+import java.util.*;
+
 /**
- *
  * @version $Id$
  */
 public class JdbcMetaData {
 
     private static final Logger LOGGER = Logger.getLogger(JdbcMetaData.class);
 
-    String jdbcDriverClassName = null; //"org.postgresql.Driver"
-    String jdbcConnectionUrl = null; // "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
+    // E.g. "org.postgresql.Driver"
+    String jdbcDriverClassName = null;
+
+    // E.g. "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
     String jdbcUsername = null;
+
+    String jdbcConnectionUrl = null;
     String jdbcPassword = null;
     String jdbcSchema = null;
     boolean requireSchema = false;
@@ -44,9 +47,13 @@ public class JdbcMetaData {
     private Database db = new Database();
 
     public JdbcMetaData(
-        Workbench wb, String jdbcDriverClassName,
-        String jdbcConnectionUrl, String jdbcUsername,
-        String jdbcPassword, String jdbcSchema, boolean requireSchema)
+        Workbench wb,
+        String jdbcDriverClassName,
+        String jdbcConnectionUrl,
+        String jdbcUsername,
+        String jdbcPassword,
+        String jdbcSchema,
+        boolean requireSchema)
     {
         this.workbench = wb;
         this.jdbcConnectionUrl = jdbcConnectionUrl;
@@ -74,7 +81,8 @@ public class JdbcMetaData {
     }
 
     /**
-     * tests database connection. Called from Preferences dialog button test connection
+     * Tests database connection. Called from Preferences dialog button test
+     * connection.
      */
     public JdbcMetaData(
         String jdbcDriverClassName,
@@ -97,20 +105,24 @@ public class JdbcMetaData {
         LOGGER.debug("JdbcMetaData: initConnection");
 
         try {
-            if (jdbcDriverClassName == null || jdbcDriverClassName.trim().length() == 0 ||
-                jdbcConnectionUrl == null || jdbcConnectionUrl.trim().length() == 0)
+            if (jdbcDriverClassName == null
+                || jdbcDriverClassName.trim().length() == 0
+                || jdbcConnectionUrl == null
+                || jdbcConnectionUrl.trim().length() == 0)
             {
                 errMsg = getResourceConverter().getFormattedString(
                     "jdbcMetaData.blank.exception",
                     "Driver={0}\nConnection URL={1}\nUse Preferences to set Database Connection parameters first and then open a Schema",
-                    new String[] { jdbcDriverClassName, jdbcConnectionUrl });
+                    jdbcDriverClassName,
+                    jdbcConnectionUrl);
                 return errMsg;
             }
 
             Class.forName(jdbcDriverClassName);
 
             if (jdbcUsername != null && jdbcUsername.length() > 0) {
-                conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+                conn = DriverManager.getConnection(
+                    jdbcConnectionUrl, jdbcUsername, jdbcPassword);
             } else {
                 conn = DriverManager.getConnection(jdbcConnectionUrl);
             }
@@ -118,32 +130,18 @@ public class JdbcMetaData {
             LOGGER.debug("JDBC connection OPEN");
             md = conn.getMetaData();
 
-            db.productName      = md.getDatabaseProductName();
-            db.productVersion   = md.getDatabaseProductVersion();
-            db.catalogName      = conn.getCatalog();
+            db.productName = md.getDatabaseProductName();
+            db.productVersion = md.getDatabaseProductVersion();
+            db.catalogName = conn.getCatalog();
 
             LOGGER.debug("Catalog name = " + db.catalogName);
-            /*
-            ResultSet rsd = md.getSchemas();
-            while (rsd.next())
-            {    System.out.println("   Schema ="+rsd.getString("TABLE_SCHEM"));
-                 System.out.println("   Schema ="+rsd.getString("TABLE_CATALOG"));
-            }
-            rsd = md.getCatalogs();
-            while (rsd.next())
-                System.out.println("   Catalog ="+rsd.getString("TABLE_CAT"));
-             */
             LOGGER.debug("Database Product Name: " + db.productName);
             LOGGER.debug("Database Product Version: " + db.productVersion);
-
-            /*
-            Class.forName("org.postgresql.Driver");
-            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/demo","admin","admin");
-             */
             LOGGER.debug("JdbcMetaData: initConnection - no error");
             return null;
         } catch (Exception e) {
-            errMsg = e.getClass().getSimpleName() + " : " + e.getLocalizedMessage();
+            errMsg =
+                e.getClass().getSimpleName() + " : " + e.getLocalizedMessage();
             LOGGER.error("Database connection exception : " + errMsg, e);
             return errMsg;
             //e.printStackTrace();
@@ -169,7 +167,6 @@ public class JdbcMetaData {
      * Check to see if the schemaName is in the list of allowed jdbc schemas
      *
      * @param schemaName the name of the schmea
-     *
      * @return true if found, or if jdbcSchema is null
      */
     private boolean inJdbcSchemas(String schemaName) {
@@ -197,7 +194,6 @@ public class JdbcMetaData {
 
         List<String> schemaNames = new ArrayList<String>();
         ResultSet rs = null;
-
         try {
             rs = md.getSchemas();
 
@@ -206,7 +202,9 @@ public class JdbcMetaData {
                 schemaNames.add(schemaName);
             }
         } catch (Exception e) {
-            LOGGER.debug("Exception : Database does not support schemas." + e.getMessage());
+            LOGGER.debug(
+                "Exception : Database does not support schemas." + e
+                    .getMessage());
             return null;
         } finally {
             try {
@@ -227,14 +225,8 @@ public class JdbcMetaData {
 
         ResultSet rs = null;
         boolean gotSchema = false;
-
         try {
             rs = md.getSchemas();
-            /*
-            if (true)
-            throw new Exception("Schema concept not found in database");
-             */
-
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
                 if (inJdbcSchemas(schemaName)) {
@@ -247,7 +239,9 @@ public class JdbcMetaData {
                 }
             }
         } catch (Exception e) {
-            LOGGER.debug("Exception : Database does not support schemas." + e.getMessage());
+            LOGGER.debug(
+                "Exception : Database does not support schemas." + e
+                    .getMessage());
         } finally {
             try {
                 rs.close();
@@ -257,7 +251,8 @@ public class JdbcMetaData {
         }
 
         if (!gotSchema) {
-            LOGGER.debug("JdbcMetaData: setAllSchemas - tables with no schema name");
+            LOGGER.debug(
+                "JdbcMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();
             dbs.name = null;    //tables with no schema name
             setAllTables(dbs);
@@ -272,7 +267,8 @@ public class JdbcMetaData {
         try {
             // Tables and views can be used
             try {
-                rs = md.getTables(null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+                rs = md.getTables(
+                    null, dbs.name, null, new String[]{"TABLE", "VIEW"});
             } catch (Exception e) {
                 // this is a workaround for databases that throw an exception
                 // when views are requested.
@@ -288,8 +284,9 @@ public class JdbcMetaData {
 
                 DbTable dbt;
 
-                /* Note  : Imported keys are foreign keys which are primary keys of in some other tables
-                 *       : Exported keys are primary keys which are referenced as foreign keys in other tables.
+                /* Note: Imported keys are foreign keys which are primary keys
+                 * of in some other tables; Exported keys are primary keys which
+                 * are referenced as foreign keys in other tables.
                  */
                 ResultSet rs_fks = md.getImportedKeys(null, dbs.name, tbname);
                 try {
@@ -329,21 +326,20 @@ public class JdbcMetaData {
         }
     }
 
-    /* get the Primary key name for a given table name
+    /**
+     * Gets the Primary key name for a given table name.
      * This key may be a  composite key made of multiple columns.
      */
     private void setPKey(DbTable dbt) {
         ResultSet rs = null;
         try {
             rs = md.getPrimaryKeys(null, dbt.schemaName, dbt.name);
-            /*
-            while(rs.next()) {
-                primKeys.add(rs.getString("COLUMN_NAME"));
-            }
-             **/
             if (rs.next()) {
-                //===dbt.pk = rs.getString("PK_NAME");  // a column may have been given a primary key name
-                dbt.pk = rs.getString("column_name");   // we need the column name which is primary key for the given table.
+                //   // a column may have been given a primary key name
+                //===dbt.pk = rs.getString("PK_NAME");
+                // We need the column name which is primary key for the given
+                // table.
+                dbt.pk = rs.getString("column_name");
             }
         } catch (Exception e) {
             LOGGER.error("setPKey", e);
@@ -357,31 +353,49 @@ public class JdbcMetaData {
     }
 
     private void setColumns(String schemaName, String tableName) {
-        LOGGER.debug("setColumns: <" + tableName + "> in schema <" + schemaName + ">");
+        LOGGER.debug(
+            "setColumns: <" + tableName + "> in schema <" + schemaName + ">");
+
+        if (initConnection() != null) {
+            return;
+        }
+
+        if (schemaName == null) {
+            schemaName = jdbcSchema;
+        }
 
         DbSchema dbs = db.getSchema(schemaName);
 
         if (dbs == null) {
-            throw new RuntimeException("No schema with name: <" + schemaName + ">");
+            throw new RuntimeException(
+                "No schema with name: <" + schemaName + ">");
         }
 
         DbTable dbt = dbs.getTable(tableName);
 
         if (dbt == null) {
-            throw new RuntimeException("No table with name: <" + tableName + "> in schema <" + schemaName + ">");
+            throw new RuntimeException(
+                "No table with name: <"
+                + tableName
+                + "> in schema <"
+                + schemaName
+                + ">");
         }
 
         setColumns(dbt);
 
         LOGGER.debug("got " + dbt.colsDataType.size() + " columns");
+
+        closeConnection();
     }
 
-    /* get all columns for a given table name */
+    /**
+     * Gets all columns for a given table name.
+     *
+     * Assumes that the caller has acquired a connection using
+     * {@link #initConnection()}.
+     */
     private void setColumns(DbTable dbt) {
-        if (initConnection() != null) {
-            return;
-        }
-
         ResultSet rs = null;
         try {
             rs = md.getColumns(null, dbt.schemaName, dbt.name, null);
@@ -405,32 +419,35 @@ public class JdbcMetaData {
                 // ignore
             }
         }
-        closeConnection();
     }
 
-/* ===================================================================================================
- *  The following functions provide an interface to JdbcMetaData class to retrieve the meta data details
- * =================================================================================================== */
+    ////////////////////////////////////////////////////////////////////////////
+    // The following functions provide an interface to JdbcMetaData class to
+    // retrieve the meta data details
 
-    public Vector<String> getAllSchemas() {
+    public List<String> getAllSchemas() {
         return db.getAllSchemas();
     }
 
-
-    /* get all tables in a given schema */
-    public Vector<String> getAllTables(String schemaName) {
+    /**
+     * Returns all tables in a given schema.
+     */
+    public List<String> getAllTables(String schemaName) {
         return db.getAllTables(schemaName);
     }
 
-    /* get all tables in given schema minus the given table name */
-    public Vector<String> getAllTables(String schemaName, String minusTable) {
+    /**
+     * Returns all tables in given schema minus the given table name.
+     */
+    public List<String> getAllTables(String schemaName, String minusTable) {
         if (minusTable == null) {
             return getAllTables(schemaName);
         } else {
-            Vector<String> allTablesMinusOne = new Vector<String>();
+            List<String> allTablesMinusOne = new ArrayList<String>();
             for (String s : getAllTables(schemaName)) {
-                if (s
-                    .endsWith(minusTable)) {   // startsWith and endsWith cannot be compared with null argument, throws exception
+                if (s.endsWith(minusTable)) {
+                    // startsWith and endsWith cannot be compared with
+                    // null argument, throws exception
                     if ((schemaName == null) || s.startsWith(schemaName)) {
                         continue;
                     }
@@ -442,14 +459,19 @@ public class JdbcMetaData {
     }
 
     /* get all possible cases of fact tables in a schema */
-    public Vector<String> getFactTables(String schemaName) {
+    public List<String> getFactTables(String schemaName) {
         return db.getFactTables(schemaName);
     }
 
-    /* get all possible cases of dimension tables which are linked to given fact table by foreign keys */
-    public Vector<String> getDimensionTables(String schemaName, String factTable) {
-        Vector<String> dimeTables = new Vector<String>();
-
+    /**
+     * Gets all possible cases of dimension tables which are linked to given
+     * fact table by foreign keys.
+     */
+    public List<String> getDimensionTables(
+        String schemaName,
+        String factTable)
+    {
+        List<String> dimeTables = new ArrayList<String>();
         if (factTable == null) {
             return dimeTables;
         } else {
@@ -465,7 +487,9 @@ public class JdbcMetaData {
         }
     }
 
-    public boolean isColExists(String schemaName, String tableName, String colName) {
+    public boolean isColExists(
+        String schemaName, String tableName, String colName)
+    {
         if (tableName == null || colName == null) {
             return true;
         } else {
@@ -478,9 +502,8 @@ public class JdbcMetaData {
     }
 
     /* get all foreign keys in given fact table */
-    public Vector<String> getFactTableFKs(String schemaName, String factTable) {
-        Vector<String> fks = new Vector<String>();
-
+    public List<String> getFactTableFKs(String schemaName, String factTable) {
+        List<String> fks = new ArrayList<String>();
         if (factTable == null) {
             return fks;
         } else {
@@ -496,29 +519,30 @@ public class JdbcMetaData {
         }
     }
 
-    /* get all columns of given table in schema
-     * column string is formatted
+    /**
+     * Gets all columns of given table in schema.
+     * column string is formatted.
      */
-    public Vector<String> getAllColumns(String schemaName, String tableName) {
-        Vector<String> allcols = new Vector<String>();
+    public List<String> getAllColumns(String schemaName, String tableName) {
+        List<String> allcols = new ArrayList<String>();
 
         if (tableName == null) {
-                Vector<String> allTables = getAllTables(schemaName);
+            List<String> allTables = getAllTables(schemaName);
 
-                for (int i = 0; i < allTables.size(); i++) {
-                    String tab = allTables.get(i);
-                    Vector<String> cols;
-                    if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
-                        cols = getAllColumns(schemaName, tab);
-                    } else {
-                        String [] names = tab.split(LEVEL_SEPARATOR);
-                        cols = getAllColumns(names[0], names[1]);
-                    }
-                    for (int j = 0; j < cols.size(); j++) {
-                        String col = cols.get(j);
-                        allcols.add(tab + LEVEL_SEPARATOR + col);
-                    }
+            for (int i = 0; i < allTables.size(); i++) {
+                String tab = allTables.get(i);
+                List<String> cols;
+                if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
+                    cols = getAllColumns(schemaName, tab);
+                } else {
+                    String[] names = tab.split(LEVEL_SEPARATOR);
+                    cols = getAllColumns(names[0], names[1]);
                 }
+                for (int j = 0; j < cols.size(); j++) {
+                    String col = cols.get(j);
+                    allcols.add(tab + LEVEL_SEPARATOR + col);
+                }
+            }
             return allcols;
         } else {
             if (!db.hasColumns(schemaName, tableName)) {
@@ -528,26 +552,27 @@ public class JdbcMetaData {
         }
     }
 
-    /* get all columns of given table in schema
-     * column string is formatted
+    /**
+     * Returns all columns of given table in schema.
+     * Column string is formatted.
      */
-    public Vector<DbColumn> getAllDbColumns(String schemaName, String tableName) {
-        Vector<DbColumn> allcols = new Vector<DbColumn>();
+    public List<DbColumn> getAllDbColumns(String schemaName, String tableName) {
+        List<DbColumn> allcols = new ArrayList<DbColumn>();
 
         if (tableName == null) {
-                Vector<String> allTables = getAllTables(schemaName);
+            List<String> allTables = getAllTables(schemaName);
 
-                for (int i = 0; i < allTables.size(); i++) {
-                    String tab = allTables.get(i);
-                    Vector<DbColumn> cols;
-                    if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
-                        cols = getAllDbColumns(schemaName, tab);
-                    } else {
-                        String [] names = tab.split(LEVEL_SEPARATOR);
-                        cols = getAllDbColumns(names[0], names[1]);
-                    }
-                    allcols.addAll(cols);
+            for (int i = 0; i < allTables.size(); i++) {
+                String tab = allTables.get(i);
+                List<DbColumn> cols;
+                if (tab.indexOf(LEVEL_SEPARATOR) == -1) {
+                    cols = getAllDbColumns(schemaName, tab);
+                } else {
+                    String[] names = tab.split(LEVEL_SEPARATOR);
+                    cols = getAllDbColumns(names[0], names[1]);
                 }
+                allcols.addAll(cols);
+            }
             return allcols;
         } else {
             if (!db.hasColumns(schemaName, tableName)) {
@@ -558,7 +583,9 @@ public class JdbcMetaData {
     }
 
     // get column data type of given table and its col
-    public int getColumnDataType(String schemaName, String tableName, String colName) {
+    public int getColumnDataType(
+        String schemaName, String tableName, String colName)
+    {
         if (tableName == null || colName == null) {
             return -1;
         } else {
@@ -569,8 +596,17 @@ public class JdbcMetaData {
         }
     }
 
-    // get column definition of given table and its col
-    public DbColumn getColumnDefinition(String schemaName, String tableName, String colName) {
+    /**
+     * Gets column definition of given table and its col.
+     *
+     * @param schemaName Schema name
+     * @param tableName Table name
+     * @param colName Column name
+     * @return Column definition
+     */
+    public DbColumn getColumnDefinition(
+        String schemaName, String tableName, String colName)
+    {
         if (tableName == null || colName == null) {
             return null;
         } else {
@@ -599,7 +635,8 @@ public class JdbcMetaData {
 
     public static void main(String[] args) {
         if (args.length < 2) {
-            throw new RuntimeException("need at least 2 args: driver class and jdbcUrl");
+            throw new RuntimeException(
+                "need at least 2 args: driver class and jdbcUrl");
         }
 
         String driverClass = args[0];
@@ -610,27 +647,29 @@ public class JdbcMetaData {
 
         if (args.length > 2) {
             if (args.length != 4) {
-                throw new RuntimeException("need 4 args: including user name and password");
+                throw new RuntimeException(
+                    "need 4 args: including user name and password");
             }
             username = args[2];
             password = args[3];
         }
 
-        JdbcMetaData
-            sb = new JdbcMetaData(null, driverClass, jdbcUrl, username, password, "", false);
+        JdbcMetaData sb = new JdbcMetaData(
+            null, driverClass, jdbcUrl, username, password, "", false);
 
-        Vector<String> foundSchemas = sb.getAllSchemas();
+        List<String> foundSchemas = sb.getAllSchemas();
         System.out.println("allSchemas = " + foundSchemas);
 
         for (String schemaName : foundSchemas) {
-            Vector<String> foundTables = sb.getAllTables(schemaName);
+            List<String> foundTables = sb.getAllTables(schemaName);
 
             if (foundTables != null && foundTables.size() > 0) {
                 System.out.println("schema = " + schemaName);
                 for (String tableName : foundTables) {
                     System.out.println("\t" + tableName);
 
-                    Vector<String> foundColumns = sb.getAllColumns(schemaName, tableName);
+                    List<String> foundColumns = sb.getAllColumns(
+                        schemaName, tableName);
 
                     for (String columnName : foundColumns) {
                         System.out.println("\t\t" + columnName);
@@ -638,29 +677,29 @@ public class JdbcMetaData {
                 }
             }
         }
-        //System.out.println("allTablesCols="+sb.allTablesCols);
-        //System.out.println("allTablesPKs="+sb.allTablesPKs);
-        //System.out.println("allFactTableDimensions="+sb.allFactTableDimensions);
-        //System.out.println("getAllTables(null, part)="+sb.getAllTables(null, "part"));
-        //System.out.println("sb.getColumnDataType(null, part,part_nbr)="+sb.getColumnDataType(null, "part","part_nbr"));
     }
 
-/* ===================================================================================================
- *  class structure for storing database metadata
- * =================================================================================================== */
+    /**
+     * Database metadata.
+     */
     class Database {
         String catalogName = ""; // database name.
         String productName = "Unknown";
-        String productVersion =    "";
+        String productVersion = "";
 
         // list of all schemas in database
-        Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>(); //ordered collection, allows duplicates and null
-        Map<String, TableTracker> tables  = new TreeMap<String, TableTracker>(); // list of all tables in all schemas in database
+        Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>();
+            //ordered collection, allows duplicates and null
+        Map<String, TableTracker> tables = new TreeMap<String, TableTracker>();
+            // list of all tables in all schemas in database
 
-        Vector<String> allSchemas ;
+        List<String> allSchemas;
 
         private void addDbSchema(DbSchema dbs) {
-            schemas.put(dbs.name != null ? dbs.name : "", dbs);
+            schemas.put(
+                dbs.name != null
+                    ? dbs.name
+                    : "", dbs);
         }
 
         class TableTracker {
@@ -690,12 +729,15 @@ public class JdbcMetaData {
         }
 
         private DbSchema getSchema(String schemaName) {
-            return schemas.get(schemaName != null ? schemaName : "");
+            return schemas.get(
+                schemaName != null
+                    ? schemaName
+                    : "");
         }
 
-        private Vector<String> getAllSchemas() {
+        private List<String> getAllSchemas() {
             if (allSchemas == null) {
-                allSchemas = new Vector<String>();
+                allSchemas = new ArrayList<String>();
 
                 allSchemas.addAll(schemas.keySet());
             }
@@ -738,7 +780,9 @@ public class JdbcMetaData {
             return false;
         }
 
-        private boolean colExists(String sname, String tableName, String colName) {
+        private boolean colExists(
+            String sname, String tableName, String colName)
+        {
             DbTable t = getTable(sname, tableName);
 
             if (t == null) {
@@ -748,19 +792,19 @@ public class JdbcMetaData {
             return t.getColumn(colName) != null;
         }
 
-        private Vector<String> getAllTables(String sname) {
+        private List<String> getAllTables(String sname) {
             return getAllTables(sname, false);
         }
 
-        private Vector<String> getFactTables(String sname) {
+        private List<String> getFactTables(String sname) {
             return getAllTables(sname, true);
         }
 
-        private Vector<String> getAllTables(String sname, boolean factOnly) {
-            Vector<String> v = new Vector<String>();
+        private List<String> getAllTables(String sname, boolean factOnly) {
+            List<String> v = new ArrayList<String>();
 
             if (sname == null || sname.equals("")) {
-                // return a vector of "schemaname -> table name" string objects
+                // return a list of "schemaname -> table name" string objects
                 for (TableTracker tt : tables.values()) {
                     for (DbTable t : tt.namedTable) {
                         if (!factOnly || (factOnly && t instanceof FactTable)) {
@@ -773,8 +817,7 @@ public class JdbcMetaData {
                     }
                 }
             } else {
-                // return a vector of "tablename" string objects
-
+                // return a list of "tablename" string objects
                 DbSchema s = getSchema(sname);
 
                 if (s != null) {
@@ -789,8 +832,8 @@ public class JdbcMetaData {
         }
 
         /* get all foreign keys in given fact table */
-        private Vector<String> getFactTableFKs(String sname, String factTable) {
-            Vector<String> f = new Vector<String>();
+        private List<String> getFactTableFKs(String sname, String factTable) {
+            List<String> f = new ArrayList<String>();
 
             if (sname == null || sname.equals("")) {
                 TableTracker tracker = tables.get(factTable);
@@ -799,7 +842,7 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
+                // return a list of "schemaname -> table name -> fk col" string objects if schema is not given
                 boolean duplicate = tracker.count() > 1;
 
                 for (DbTable t : tracker.namedTable) {
@@ -811,10 +854,10 @@ public class JdbcMetaData {
                                 } else {
                                     f.add(
                                         t.schemaName
-                                            + LEVEL_SEPARATOR
-                                            + t.name
-                                            + LEVEL_SEPARATOR
-                                            + fk);
+                                        + LEVEL_SEPARATOR
+                                        + t.name
+                                        + LEVEL_SEPARATOR
+                                        + fk);
                                 }
                             }
                         } else {
@@ -835,16 +878,18 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a vector of "fk col name" string objects if schema is given
-                if (t instanceof FactTable &&
-                        t.name.equals(factTable)) {
+                // return a list of "fk col name" string objects if schema is given
+                if (t instanceof FactTable && t.name.equals(factTable)) {
                     f.addAll(((FactTable) t).fks.keySet());
                 }
             }
             return f;
         }
-        private Vector<String> getDimensionTables(String sname, String factTable) {
-            Vector<String> f = new Vector<String>();
+
+        private List<String> getDimensionTables(
+            String sname, String factTable)
+        {
+            List<String> f = new ArrayList<String>();
 
             if (sname == null || sname.equals("")) {
                 TableTracker tracker = tables.get(factTable);
@@ -853,7 +898,7 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a vector of "schemaname -> table name -> fk col" string objects if schema is not given
+                // return a list of "schemaname -> table name -> fk col" string objects if schema is not given
                 boolean duplicate = tracker.count() > 1;
 
                 for (DbTable t : tracker.namedTable) {
@@ -864,13 +909,11 @@ public class JdbcMetaData {
                                     f.add(t.name + LEVEL_SEPARATOR + fkt);
                                 } else {
                                     f.add(
-                                        t
-                                            .schemaName
-                                            + LEVEL_SEPARATOR
-                                            + t
-                                            .name
-                                            + LEVEL_SEPARATOR
-                                            + fkt);
+                                        t.schemaName
+                                        + LEVEL_SEPARATOR
+                                        + t.name
+                                        + LEVEL_SEPARATOR
+                                        + fkt);
                                 }
                             }
                         } else {
@@ -891,9 +934,8 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a vector of "fk col name" string objects if schema is given
-                if (t instanceof FactTable &&
-                        t.name.equals(factTable)) {
+                // return a list of "fk col name" string objects if schema is given
+                if (t instanceof FactTable && t.name.equals(factTable)) {
                     f.addAll(((FactTable) t).fks.values());
                 }
             }
@@ -908,7 +950,7 @@ public class JdbcMetaData {
                     return null;
                 }
 
-                // return a vector of "schemaname -> table name ->
+                // return a list of "schemaname -> table name ->
                 // dimension table name" string objects if schema is not given
                 return tracker.namedTable.get(0).pk;
             } else {
@@ -922,8 +964,8 @@ public class JdbcMetaData {
             }
         }
 
-        private Vector<String> getAllColumns(String sname, String tableName) {
-            Vector<String> f = new Vector<String>();
+        private List<String> getAllColumns(String sname, String tableName) {
+            List<String> f = new ArrayList<String>();
 
             if (sname == null || sname.equals("")) {
                 TableTracker tracker = tables.get(tableName);
@@ -932,23 +974,22 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a vector of "schemaname -> table name -> cols"
+                // return a list of "schemaname -> table name -> cols"
                 // string objects if schema is not given
                 boolean duplicate = tracker.count() > 1;
 
                 for (DbTable t : tracker.namedTable) {
-                    for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                    for (Map.Entry<String, DbColumn> c : t.colsDataType
+                        .entrySet())
+                    {
                         StringBuffer sb = new StringBuffer();
 
                         if (t.schemaName != null && !duplicate) {
-                            sb.append(t.schemaName)
-                                    .append(LEVEL_SEPARATOR);
+                            sb.append(t.schemaName).append(LEVEL_SEPARATOR);
                         }
-                        sb.append(t.name)
-                              .append(LEVEL_SEPARATOR)
-                              .append(c.getKey())
-                              .append(" - ")
-                              .append(c.getValue().displayType());
+                        sb.append(t.name).append(LEVEL_SEPARATOR)
+                            .append(c.getKey()).append(" - ").append(
+                            c.getValue().displayType());
 
                         f.add(sb.toString());
                     }
@@ -959,14 +1000,14 @@ public class JdbcMetaData {
                 if (t == null) {
                     return f;
                 }
-                // return a vector of "col name" string objects if schema is given
+                // return a list of "col name" string objects if schema is given
                 f.addAll(t.colsDataType.keySet());
             }
             return f;
         }
 
-        private Vector<DbColumn> getAllDbColumns(String sname, String tableName) {
-            Vector<DbColumn> f = new Vector<DbColumn>();
+        private List<DbColumn> getAllDbColumns(String sname, String tableName) {
+            List<DbColumn> f = new ArrayList<DbColumn>();
 
             if (sname == null || sname.equals("")) {
                 TableTracker tracker = tables.get(tableName);
@@ -976,7 +1017,9 @@ public class JdbcMetaData {
                 }
 
                 for (DbTable t : tracker.namedTable) {
-                    for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                    for (Map.Entry<String, DbColumn> c : t.colsDataType
+                        .entrySet())
+                    {
                         f.add(c.getValue());
                     }
                 }
@@ -987,14 +1030,18 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                for (Map.Entry<String, DbColumn> c : t.colsDataType.entrySet()) {
+                for (Map.Entry<String, DbColumn> c : t.colsDataType
+                    .entrySet())
+                {
                     f.add(c.getValue());
                 }
             }
             return f;
         }
 
-        private int getColumnDataType(String sname, String tableName, String colName) {
+        private int getColumnDataType(
+            String sname, String tableName, String colName)
+        {
             DbColumn result = getColumnDefinition(sname, tableName, colName);
 
             if (result == null) {
@@ -1004,7 +1051,9 @@ public class JdbcMetaData {
             return result.dataType;
         }
 
-        private DbColumn getColumnDefinition(String sname, String tableName, String colName) {
+        private DbColumn getColumnDefinition(
+            String sname, String tableName, String colName)
+        {
             DbTable t = getTable(sname, tableName);
 
             if (t == null) {
@@ -1016,7 +1065,9 @@ public class JdbcMetaData {
 
     class DbSchema {
         String name;
-        /** ordered collection, allows duplicates and null */
+        /**
+         * ordered collection, allows duplicates and null
+         */
         final Map<String, DbTable> tables = new TreeMap<String, DbTable>();
 
         private DbTable getTable(String tableName) {
@@ -1164,8 +1215,11 @@ public class JdbcMetaData {
         String schemaName;
         String name;
         String pk;
-        /** sorted map key=column, value=data type of column */
-        final Map<String, DbColumn> colsDataType = new TreeMap<String, DbColumn>();
+        /**
+         * sorted map key=column, value=data type of column
+         */
+        final Map<String, DbColumn> colsDataType =
+            new TreeMap<String, DbColumn>();
 
         private void addColsDataType(DbColumn columnDefinition) {
             colsDataType.put(columnDefinition.name, columnDefinition);
@@ -1181,7 +1235,10 @@ public class JdbcMetaData {
     }
 
     class FactTable extends DbTable {
-        /** sorted map key = foreign key col, value=primary key table associated with this fk */
+        /**
+         * Sorted map key = foreign key col, value=primary key table associated
+         * with this fk.
+         */
         final Map<String, String> fks = new TreeMap<String, String>();
 
         private void addFks(String fk, String pkt) {

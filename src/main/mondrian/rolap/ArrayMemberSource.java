@@ -54,14 +54,24 @@ abstract class ArrayMemberSource implements MemberSource {
         return Collections.emptyList();
     }
 
-    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children)
+    {
         // there are no children
     }
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
+
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
         // there are no children
     }
-    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
-                                    boolean failIfNotFound) {
+
+    public RolapMember lookupMember(
+        List<Id.Segment> uniqueNameParts,
+        boolean failIfNotFound)
+    {
         String uniqueName = Util.implode(uniqueNameParts);
         for (RolapMember member : members) {
             if (member.getUniqueName().equals(uniqueName)) {

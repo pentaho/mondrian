@@ -50,8 +50,9 @@ public class MemberValueCalc extends GenericCalc {
         for (int i = 0; i < memberCalcs.length; i++) {
             MemberCalc memberCalc = memberCalcs[i];
             final Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null ||
-                    member.isNull()) {
+            if (member == null
+                || member.isNull())
+            {
                 // This method needs to leave the evaluator in the same state
                 // it found it.
                 for (int j = 0; j < i; j++) {

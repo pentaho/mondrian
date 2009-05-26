@@ -60,7 +60,8 @@ class SetItemFunDef extends FunDefBase {
             final SetType setType = (SetType) setExp.getType();
             int arity;
             if (setType.getElementType() instanceof TupleType) {
-                arity = ((TupleType) setType.getElementType()).elementTypes.length;
+                arity =
+                    ((TupleType) setType.getElementType()).elementTypes.length;
             } else {
                 arity = 1;
             }
@@ -91,10 +92,12 @@ class SetItemFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
-        final Type elementType = ((SetType) listCalc.getType()).getElementType();
-        final boolean isString = call.getArgCount() < 2 ||
-                        call.getArg(1).getType() instanceof StringType;
+            compiler.compileList(call.getArg(0));
+        final Type elementType =
+            ((SetType) listCalc.getType()).getElementType();
+        final boolean isString =
+            call.getArgCount() < 2
+            || call.getArg(1).getType() instanceof StringType;
         final IntegerCalc indexCalc;
         final StringCalc[] stringCalcs;
         List<Calc> calcList = new ArrayList<Calc>();
@@ -118,7 +121,8 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member[]> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
@@ -145,7 +149,8 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member[]> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
@@ -163,7 +168,8 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List<Member> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final String result =
                                 stringCalcs[0].evaluateString(evaluator);
@@ -178,7 +184,8 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator.push(false));
+                        final List list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();

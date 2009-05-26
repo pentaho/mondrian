@@ -11,7 +11,6 @@ package mondrian.calc.impl;
 
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
-import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.calc.DummyExp;
 import mondrian.calc.Calc;
 

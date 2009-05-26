@@ -227,7 +227,8 @@ public class AbstractExpCompiler implements ExpCompiler {
         final Calc calc = compileScalar(exp, false);
         final Type type = calc.getType();
         if (type instanceof DecimalType
-            && ((DecimalType) type).getScale() == 0) {
+            && ((DecimalType) type).getScale() == 0)
+        {
             return (IntegerCalc) calc;
         } else if (type instanceof NumericType) {
             if (calc instanceof ConstantCalc) {
@@ -376,7 +377,8 @@ public class AbstractExpCompiler implements ExpCompiler {
     public DoubleCalc compileDouble(Exp exp) {
         final DoubleCalc calc = (DoubleCalc) compileScalar(exp, false);
         if (calc instanceof ConstantCalc
-            && !(calc.evaluate(null) instanceof Double)) {
+            && !(calc.evaluate(null) instanceof Double))
+        {
             return ConstantCalc.constantDouble(
                 calc.evaluateDouble(null));
         }
@@ -586,7 +588,7 @@ public class AbstractExpCompiler implements ExpCompiler {
                 MondrianResource.instance()
                     .CannotImplicitlyConvertDimensionToHierarchy
                     .ex(
-                    dimension.getName()));
+                        dimension.getName()));
         }
     }
 
@@ -615,7 +617,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         }
 
         public boolean dependsOn(Dimension dimension) {
-            return dimensionCalc.getType().usesDimension(dimension, true) ;
+            return dimensionCalc.getType().usesDimension(dimension, true);
         }
     }
 }

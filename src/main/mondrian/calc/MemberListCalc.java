@@ -14,8 +14,6 @@ import java.util.List;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 
-// End ListCalc.java
-
 /**
  * Expression which evaluates a set of members or tuples to a list.
  *

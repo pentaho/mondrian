@@ -23,10 +23,12 @@ import java.util.*;
  *
  * <p>Syntax:
  *
- * <blockquote><pre>
- * DrilldownLevelTop(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])
- * DrilldownLevelBottom(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])
- * </pre></blockquote>
+ * <blockquote>
+ * DrilldownLevelTop(Set_Expression, Count [, [Level_Expression][,
+ * Numeric_Expression]])<br/>
+ * DrilldownLevelBottom(Set_Expression, Count [, [Level_Expression][,
+ * Numeric_Expression]])
+ * </blockquote>
  *
  * @author jhyde
  * @version $Id$
@@ -55,7 +57,10 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
         }
     };
 
-    public DrilldownLevelTopBottomFunDef(FunDef dummyFunDef, final boolean top) {
+    public DrilldownLevelTopBottomFunDef(
+        FunDef dummyFunDef,
+        final boolean top)
+    {
         super(dummyFunDef);
         this.top = top;
     }
@@ -78,7 +83,10 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                 new ValueCalc(
                     new DummyExp(
                         new ScalarType()));
-        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
+        return new AbstractListCalc(
+            call,
+            new Calc[] {listCalc, integerCalc, orderCalc})
+        {
             public List evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
                 // TODO: Figure this out at compile time.

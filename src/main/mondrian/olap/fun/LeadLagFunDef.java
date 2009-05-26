@@ -27,14 +27,16 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class LeadLagFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver LagResolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver LagResolver =
+        new ReflectiveMultiResolver(
             "Lag",
             "<Member>.Lag(<Numeric Expression>)",
             "Returns a member further along the specified member's dimension.",
             new String[]{"mmmn"},
             LeadLagFunDef.class);
 
-    static final ReflectiveMultiResolver LeadResolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver LeadResolver =
+        new ReflectiveMultiResolver(
             "Lead",
             "<Member>.Lead(<Numeric Expression>)",
             "Returns a member further along the specified member's dimension.",
@@ -51,15 +53,19 @@ class LeadLagFunDef extends FunDefBase {
         final IntegerCalc integerCalc =
                 compiler.compileInteger(call.getArg(1));
         final boolean lag = call.getFunName().equals("Lag");
-        return new AbstractMemberCalc(call, new Calc[] {memberCalc, integerCalc}) {
+        return new AbstractMemberCalc(
+            call,
+            new Calc[] {memberCalc, integerCalc})
+        {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (lag) {
                     if (n == Integer.MIN_VALUE) {
-                        // bump up lagValue by one
-                        // otherwise -n(used in the getLeadMember call below)is out of range
-                        // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
+                        // Bump up lagValue by one, otherwise -n (used
+                        // in the getLeadMember call below) is out of
+                        // range because Integer.MAX_VALUE ==
+                        // -(Integer.MIN_VALUE + 1).
                         n += 1;
                     }
 

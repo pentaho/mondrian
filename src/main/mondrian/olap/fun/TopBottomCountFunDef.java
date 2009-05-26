@@ -121,23 +121,34 @@ class TopBottomCountFunDef extends FunDefBase {
                     Iterator listIter = list.iterator();
                     while (listIter.hasNext()) {
                         List chunk = new ArrayList();
-                        for (int count = 0; count < chunkSize && listIter.hasNext(); count++) {
+                        for (int count = 0;
+                             count < chunkSize
+                                 && listIter.hasNext();
+                             count++)
+                        {
                             chunk.add(listIter.next());
                         }
-                        List chunkResult = partiallySortList(evaluator, chunk, false, n, arity);
+                        List chunkResult =
+                            partiallySortList(
+                                evaluator, chunk, false, n, arity);
                         allChunkResults.addAll(chunkResult);
                     }
                     // one last sort, to merge and cull
-                    return partiallySortList(evaluator, allChunkResults, false, n, arity);
+                    return partiallySortList(
+                        evaluator, allChunkResults, false, n, arity);
                 }
 
                 // normal case: no need for chunks
                 if (arity == 1) {
                     return partiallySortMembers(
-                        evaluator.push(), (List<Member>) list, orderCalc, n, top);
+                        evaluator.push(),
+                        (List<Member>) list,
+                        orderCalc, n, top);
                 } else {
                     return partiallySortTuples(
-                        evaluator.push(), (List<Member[]>) list, orderCalc, n, top, arity);
+                        evaluator.push(),
+                        (List<Member[]>) list,
+                        orderCalc, n, top, arity);
                 }
             }
 
@@ -153,7 +164,8 @@ class TopBottomCountFunDef extends FunDefBase {
                     return m.getHierarchy().getDimension().isHighCardinality();
                 } else {
                     for (Member m : (Member[]) trial) {
-                        if (m.getHierarchy().getDimension().isHighCardinality()) {
+                        if (m.getHierarchy().getDimension().isHighCardinality())
+                        {
                             return true;
                         }
                     }

@@ -51,17 +51,20 @@ interface MemberReader extends MemberSource {
      *
      * @return {@link List} of {@link RolapMember}
      */
-    List<RolapMember> getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal);
+    List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal);
 
     /**
      * Writes all members between <code>startMember</code> and
      * <code>endMember</code> into <code>list</code>.
      */
     void getMemberRange(
-            RolapLevel level,
-            RolapMember startMember,
-            RolapMember endMember,
-            List<RolapMember> list);
+        RolapLevel level,
+        RolapMember startMember,
+        RolapMember endMember,
+        List<RolapMember> list);
 
     /**
      * Compares two members according to their order in a prefix ordered

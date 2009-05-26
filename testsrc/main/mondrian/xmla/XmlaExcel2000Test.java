@@ -91,8 +91,9 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
             Map<String, Object> context) throws Exception
         {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
-            if ((expect != null) &&
-                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE))
+            if ((expect != null)
+                && expect.equalsIgnoreCase(
+                    XmlaRequestCallback.EXPECT_100_CONTINUE))
             {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
@@ -237,7 +238,9 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         MockHttpServletRequest req = new MockHttpServletRequest();
         req.setMethod("POST");
         req.setContentType("text/xml");
-        req.setHeader(XmlaRequestCallback.EXPECT, XmlaRequestCallback.EXPECT_100_CONTINUE);
+        req.setHeader(
+            XmlaRequestCallback.EXPECT,
+            XmlaRequestCallback.EXPECT_100_CONTINUE);
 
         Properties props = new Properties();
         doTest(req, nos, props);
@@ -318,8 +321,10 @@ if (DEBUG) {
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
-        String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
+        String gotStr =
+            XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String expectedStr =
+            XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 if (DEBUG) {
 System.out.println("GOT:\n" + gotStr);
 System.out.println("EXPECTED:\n" + expectedStr);

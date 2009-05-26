@@ -39,13 +39,17 @@ abstract class Rowset implements XmlaConstants {
     private final RowsetDefinition.Column[] restrictedColumns;
 
     /**
-     * The exceptions thrown in this constructor are not produced during
-     * the execution of an XMLA request and so can be ordinary exceptions and
-     * not XmlaException (which are  specifically for generating SOAP Fault
-     * xml).
+     * Creates a Rowset.
      *
+     * <p>The exceptions thrown in this constructor are not produced during the
+     * execution of an XMLA request and so can be ordinary exceptions and not
+     * XmlaException (which are specifically for generating SOAP Fault xml).
      */
-    Rowset(RowsetDefinition definition, XmlaRequest request, XmlaHandler handler) {
+    Rowset(
+        RowsetDefinition definition,
+        XmlaRequest request,
+        XmlaHandler handler)
+    {
         this.rowsetDefinition = definition;
         this.restrictions = request.getRestrictions();
         this.properties = request.getProperties();
@@ -162,7 +166,10 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Gathers the set of rows which match a given set of the criteria.
      */
-    public abstract void populate(XmlaResponse response, List<Row> rows) throws XmlaException;
+    public abstract void populate(
+        XmlaResponse response,
+        List<Row> rows)
+        throws XmlaException;
 
     /**
      * Adds a {@link Row} to a result, provided that it meets the necessary
@@ -171,7 +178,11 @@ abstract class Rowset implements XmlaConstants {
      * @param row Row
      * @param rows List of result rows
      */
-    protected final boolean addRow(Row row, List<Row> rows) throws XmlaException {
+    protected final boolean addRow(
+        Row row,
+        List<Row> rows)
+        throws XmlaException
+    {
         return rows.add(row);
     }
 
@@ -186,7 +197,9 @@ abstract class Rowset implements XmlaConstants {
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
-        for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
+        for (RowsetDefinition.Column column :
+                 rowsetDefinition.columnDefinitions)
+        {
             Object value = row.get(column.name);
             if (value == null) {
                 if (!column.nullable) {
@@ -268,7 +281,9 @@ abstract class Rowset implements XmlaConstants {
             });
         for (E anEnum : enumsSortedByName) {
             Row row = new Row();
-            for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
+            for (RowsetDefinition.Column column :
+                     rowsetDefinition.columnDefinitions)
+            {
                 row.names.add(column.name);
                 row.values.add(column.get(anEnum));
             }
@@ -426,7 +441,12 @@ abstract class Rowset implements XmlaConstants {
             this(tag, attributes, null, children);
         }
 
-        private XmlElement(String tag, String[] attributes, String text, XmlElement[] children) {
+        private XmlElement(
+            String tag,
+            String[] attributes,
+            String text,
+            XmlElement[] children)
+        {
             this.tag = tag;
             this.attributes = attributes;
             this.text = text;

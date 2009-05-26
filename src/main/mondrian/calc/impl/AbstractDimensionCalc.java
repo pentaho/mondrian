@@ -12,7 +12,6 @@ package mondrian.calc.impl;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.type.DimensionType;
-import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.DimensionCalc;
 import mondrian.calc.Calc;
 

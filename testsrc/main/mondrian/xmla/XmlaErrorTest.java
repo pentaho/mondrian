@@ -116,7 +116,8 @@ System.out.println("userPass=" + userPass);
                         new Exception("Authorization: badly formed userPass in encoding: " + encoded));
                 }
                 String userid = userPass.substring(0, index);
-                String password = userPass.substring(index + 1, userPass.length());
+                String password =
+                    userPass.substring(index + 1, userPass.length());
 if (DEBUG) {
 System.out.println("userid=" + userid);
 System.out.println("password=" + password);
@@ -557,7 +558,8 @@ System.out.println("password=" + password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
         req.setHeader(XmlaRequestCallback.AUTHORIZATION, "FOOBAR");
 
         try {
@@ -582,7 +584,8 @@ System.out.println("password=" + password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -595,7 +598,9 @@ System.out.println("password=" + password);
 
         try {
             doTest(req, expectedFault);
-            req.setHeader(XmlaRequestCallback.EXPECT, XmlaRequestCallback.EXPECT_100_CONTINUE);
+            req.setHeader(
+                XmlaRequestCallback.EXPECT,
+                XmlaRequestCallback.EXPECT_100_CONTINUE);
 if (DEBUG) {
 System.out.println("DO IT AGAIN");
 }
@@ -628,7 +633,8 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -669,7 +675,8 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";

@@ -56,7 +56,8 @@ import org.xml.sax.SAXException;
  */
 public class DefaultXmlaServlet extends XmlaServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultXmlaServlet.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(DefaultXmlaServlet.class);
     protected static final String nl = Util.nl;
 
     private DocumentBuilderFactory domFactory = null;
@@ -265,27 +266,32 @@ public class DefaultXmlaServlet extends XmlaServlet {
                                     CONTEXT_XMLA_SESSION_STATE_BEGIN);
 
                     } else if (localName.equals(XMLA_SESSION)) {
-                        // extract the SessionId attrs value and put into context
+                        // extract the SessionId attrs value and put into
+                        // context
                         sessionIdStr = getSessionId(e, context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE,
-                                    CONTEXT_XMLA_SESSION_STATE_WITHIN);
+                        context.put(
+                            CONTEXT_XMLA_SESSION_STATE,
+                            CONTEXT_XMLA_SESSION_STATE_WITHIN);
 
                     } else if (localName.equals(XMLA_END_SESSION)) {
-                        // extract the SessionId attrs value and put into context
+                        // extract the SessionId attrs value and put into
+                        // context
                         sessionIdStr = getSessionId(e, context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE,
-                                    CONTEXT_XMLA_SESSION_STATE_END);
+                        context.put(
+                            CONTEXT_XMLA_SESSION_STATE,
+                            CONTEXT_XMLA_SESSION_STATE_END);
 
                     } else {
                         // error
-                        String msg = "Invalid XML/A message: " +
-                            " Unknown \"mustUnderstand\" XMLA Header element \"" +
-                            localName +
-                            "\"";
+                        String msg =
+                            "Invalid XML/A message: Unknown "
+                            + "\"mustUnderstand\" XMLA Header element \""
+                            + localName
+                            + "\"";
                         throw new XmlaException(
                             MUST_UNDERSTAND_FAULT_FC,
                             HSH_MUST_UNDERSTAND_CODE,
@@ -332,7 +338,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
     }
 
     protected String getSessionId(Element e, Map<String, Object> context)
-            throws Exception {
+        throws Exception
+    {
         // extract the SessionId attrs value and put into context
         Attr attr = e.getAttributeNode(XMLA_SESSION_ID);
         if (attr == null) {
@@ -366,8 +373,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
             String encoding = response.getCharacterEncoding();
             Element hdrElem = requestSoapParts[0];
             Element bodyElem = requestSoapParts[1];
-            Element[] dreqs = XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Discover");
-            Element[] ereqs = XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Execute");
+            Element[] dreqs =
+                XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Discover");
+            Element[] ereqs =
+                XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Execute");
             if (dreqs.length + ereqs.length != 1) {
                 String msg = "Invalid XML/A message: " +
                     " Body has " +
@@ -448,7 +457,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
              * The setCharacterEncoding, setContentType, or setLocale method
              * must be called BEFORE getWriter or getOutputStream and before
              * committing the response for the character encoding to be used.
-             * http://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/ServletResponse.html
+             *
+             * @see javax.servlet.ServletResponse
              */
             OutputStream outputStream = response.getOutputStream();
 
@@ -512,7 +522,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
                 byteChunks[4] = buf.toString().getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
-                LOGGER.warn("This should be handled at begin of processing request", uee);
+                LOGGER.warn(
+                    "This should be handled at begin of processing request",
+                    uee);
             }
 
             if (LOGGER.isDebugEnabled()) {
@@ -526,7 +538,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
                         }
                     }
                 } catch (UnsupportedEncodingException uee) {
-                    LOGGER.warn("This should be handled at begin of processing request", uee);
+                    LOGGER.warn(
+                        "This should be handled at begin of processing request",
+                        uee);
                 }
                 LOGGER.debug(buf.toString());
             }
@@ -544,8 +558,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     if (byteChunk == null || ((byte[]) byteChunk).length == 0) {
                         continue;
                     }
-                    rch = Channels
-                        .newChannel(new ByteArrayInputStream((byte[]) byteChunk));
+                    rch = Channels.newChannel(
+                        new ByteArrayInputStream((byte[]) byteChunk));
 
                     int readSize;
                     do {
@@ -562,7 +576,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 }
                 outputStream.flush();
             } catch (IOException ioe) {
-                LOGGER.error("Damn exception when transferring bytes over sockets", ioe);
+                LOGGER.error(
+                    "Damn exception when transferring bytes over sockets",
+                    ioe);
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -681,9 +697,12 @@ public class DefaultXmlaServlet extends XmlaServlet {
             writer.endElement();   // </Fault>
             writer.endDocument();
         } catch (UnsupportedEncodingException uee) {
-            LOGGER.warn("This should be handled at begin of processing request", uee);
+            LOGGER.warn(
+                "This should be handled at begin of processing request",
+                uee);
         } catch (Exception e) {
-            LOGGER.error("Unexcepted runimt exception when handing SOAP fault :(");
+            LOGGER.error(
+                "Unexcepted runimt exception when handing SOAP fault :(");
         }
 
         responseSoapParts[1] = osBuf.toByteArray();

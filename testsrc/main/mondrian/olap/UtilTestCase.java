@@ -424,25 +424,25 @@ public class UtilTestCase extends TestCase {
         final List<String> emptyList = Collections.emptyList();
 
         String total = "";
-        for (String s : Util.union(xyList, abcList)) {
+        for (String s : UnionIterator.over(xyList, abcList)) {
             total += s + ";";
         }
         assertEquals("x;y;a;b;c;", total);
 
         total = "";
-        for (String s : Util.union(xyList, emptyList)) {
+        for (String s : UnionIterator.over(xyList, emptyList)) {
             total += s + ";";
         }
         assertEquals("x;y;", total);
 
         total = "";
-        for (String s : Util.union(emptyList, xyList, emptyList)) {
+        for (String s : UnionIterator.over(emptyList, xyList, emptyList)) {
             total += s + ";";
         }
         assertEquals("x;y;", total);
 
         total = "";
-        for (String s : Util.<String>union()) {
+        for (String s : UnionIterator.<String>over()) {
             total += s + ";";
         }
         assertEquals("", total);
@@ -462,7 +462,8 @@ public class UtilTestCase extends TestCase {
         }
 
         total = "";
-        for (String s : Util.union((Iterable<String>) xyList, abcList)) {
+        for (String s : UnionIterator.over((Iterable<String>) xyList, abcList))
+        {
             total += s + ";";
         }
         assertEquals("x;y;a;b;c;", total);

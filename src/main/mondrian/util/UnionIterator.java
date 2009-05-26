@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Iterator over union of several {@link Iterable} collections.
  *
- * @see mondrian.olap.Util#union(Iterable[])
+ * @see UnionIterator#union(Iterable
  *
  * @author jhyde
  * @version $Id$
@@ -48,6 +48,11 @@ public class UnionIterator<T> implements Iterator<T> {
         moveToNext();
     }
 
+    /**
+     * Creates a UnionIterator over a list of collections.
+     *
+     * @param iterables Array of collections
+     */
     public UnionIterator(Collection<? extends T>... iterables) {
         List<Iterable<? extends T>> list =
             new ArrayList<Iterable<? extends T>>(iterables.length);
@@ -88,6 +93,54 @@ public class UnionIterator<T> implements Iterator<T> {
 
     public void remove() {
         iterator.remove();
+    }
+
+    /**
+     * Returns the union of a list of iterables.
+     *
+     * <p>You can use it like this:
+     * <blockquote><pre>
+     * Iterable&lt;String&gt; iter1;
+     * Iterable&lt;String&gt; iter2;
+     * for (String s : union(iter1, iter2)) {
+     *   print(s);
+     * }</pre></blockquote>
+     *
+     * @param iterables Array of one or more iterables
+     * @return iterable over the union of the iterables
+     */
+    public static <T> Iterable<T> over(
+        final Iterable<? extends T>... iterables)
+    {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(iterables);
+            }
+        };
+    }
+
+    /**
+     * Returns the union of a list of collections.
+     *
+     * <p>This method exists for code that will be retrowoven to run on JDK 1.4.
+     * Retroweaver has its own version of the {@link Iterable} interface, which
+     * is problematic since the {@link java.util.Collection} classes don't
+     * implement it. This method solves some of these problems by working in
+     * terms of collections; retroweaver deals with these correctly.
+     *
+     * @see #over(Iterable[])
+     *
+     * @param collections Array of one or more collections
+     * @return iterable over the union of the collections
+     */
+    public static <T> Iterable<T> over(
+        final Collection<? extends T>... collections)
+    {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(collections);
+            }
+        };
     }
 
     private static class MyIterable<T> implements Iterable {

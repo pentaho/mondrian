@@ -74,9 +74,9 @@ public abstract class AbstractListCalc
     }
 
     public ResultStyle getResultStyle() {
-        return mutable ?
-            ResultStyle.MUTABLE_LIST :
-            ResultStyle.LIST;
+        return mutable
+            ? ResultStyle.MUTABLE_LIST
+            : ResultStyle.LIST;
     }
 
     @SuppressWarnings({"unchecked"})

@@ -98,7 +98,12 @@ class TopBottomPercentSumFunDef extends FunDefBase {
         private final DoubleCalc doubleCalc;
         private final Calc calc;
 
-        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, DoubleCalc doubleCalc, Calc calc) {
+        public CalcImpl(
+            ResolvedFunCall call,
+            ListCalc listCalc,
+            DoubleCalc doubleCalc,
+            Calc calc)
+        {
             super(call, new Calc[]{listCalc, doubleCalc, calc});
             this.listCalc = listCalc;
             this.doubleCalc = doubleCalc;
@@ -166,13 +171,13 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 }
             }
 
-            // MSAS exhibits the following behavior. If the value of all members is
-            // null, then the first (or last) member of the set is returned for percent
-            // operations.
+            // MSAS exhibits the following behavior. If the value of all members
+            // is null, then the first (or last) member of the set is returned
+            // for percent operations.
             if (memberCount > 0 && percent && nullCount == memberCount) {
-                return top ?
-                        list.subList(0, 1) :
-                        list.subList(memberCount - 1, memberCount);
+                return top
+                    ? list.subList(0, 1)
+                    : list.subList(memberCount - 1, memberCount);
             }
             return list;
         }

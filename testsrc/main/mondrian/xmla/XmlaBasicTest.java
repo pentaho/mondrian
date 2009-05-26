@@ -440,7 +440,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testApproxRowCountOverridesCountCallsToDatabase() throws Exception {
+    public void testApproxRowCountOverridesCountCallsToDatabase()
+        throws Exception
+    {
         String requestType = "MDSCHEMA_LEVELS";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -455,7 +457,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase() throws Exception {
+    public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase()
+        throws Exception
+    {
         String requestType = "MDSCHEMA_HIERARCHIES";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -754,7 +758,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                             return RollupPolicy.FULL;
                         }
 
-                        public boolean hasInaccessibleDescendants(Member member) {
+                        public boolean hasInaccessibleDescendants(
+                            Member member)
+                        {
                             return false;
                         }
                     };
@@ -789,7 +795,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
 
-    public void doTestRT(String requestType, TestContext testContext) throws Exception {
+    public void doTestRT(String requestType, TestContext testContext)
+        throws Exception
+    {
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);

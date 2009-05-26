@@ -474,7 +474,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
             return -1;
         }
         try {
-            Date dateValue = new SimpleDateFormat(DATE_FORMAT_HEADER, Locale.US).parse(header);
+            Date dateValue =
+                new SimpleDateFormat(
+                    DATE_FORMAT_HEADER, Locale.US).parse(header);
             return dateValue.getTime();
         } catch (ParseException exc) {
             throw new IllegalArgumentException(exc.getMessage());
@@ -805,7 +807,10 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return Collections.unmodifiableMap(requestDispatchers);
     }
 
-    public void setRequestDispatcher(String path, RequestDispatcher dispatcher) {
+    public void setRequestDispatcher(
+        String path,
+        RequestDispatcher dispatcher)
+    {
         if (dispatcher instanceof MockRequestDispatcher) {
             ((MockRequestDispatcher)dispatcher).setPath(path);
         }
@@ -835,16 +840,21 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public void setRequestURL(String requestUrl) {
         this.requestUrl = new StringBuffer(requestUrl);
     }
+
     public void setUserPrincipal(Principal principal) {
         this.principal = principal;
     }
+
     public void addCookie(Cookie cookie) {
         cookies.add(cookie);
     }
 
-    public void setRequestedSessionIdFromCookie(boolean requestedSessionIdIsFromCookie) {
+    public void setRequestedSessionIdFromCookie(
+        boolean requestedSessionIdIsFromCookie)
+    {
         this.requestedSessionIdIsFromCookie = requestedSessionIdIsFromCookie;
     }
+
     public void setUserInRole(String role, boolean isInRole) {
         roles.put(role, isInRole);
     }

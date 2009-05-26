@@ -56,20 +56,19 @@ class DrilldownMemberFunDef extends FunDefBase {
             /**
              * Drills down an element.
              *
-             * Algorithm: If object is present in a_hsSet1 then adds to result children
-             * of the object. If flag a_bRecursive is set then this method is called
-             * recursively for the children.
+             * <p>Algorithm: If object is present in a_hsSet1 then adds to
+             * result children of the object. If flag {@code recursive} is set
+             * then this method is called recursively for the children.
              *
              * @param element Element of a set, can be either {@link Member} or
              *   {@link Member}[]
-             *
-             *
              */
             protected void drillDownObj(
-                    Evaluator evaluator,
-                    Object element,
-                    Set memberSet,
-                    List<Object> resultList) {
+                Evaluator evaluator,
+                Object element,
+                Set memberSet,
+                List<Object> resultList)
+            {
                 if (null == element) {
                     return;
                 }
@@ -100,7 +99,8 @@ class DrilldownMemberFunDef extends FunDefBase {
                     }
                 }
 
-                List<Member> children = evaluator.getSchemaReader().getMemberChildren(m);
+                List<Member> children =
+                    evaluator.getSchemaReader().getMemberChildren(m);
                 for (Member member : children) {
                     Object objNew;
                     if (tuple == null) {
@@ -118,11 +118,16 @@ class DrilldownMemberFunDef extends FunDefBase {
                 }
             }
 
-            private List drilldownMember(List<?> v0, List<Member> v1, Evaluator evaluator) {
-                if (null == v0 ||
-                    v0.isEmpty() ||
-                    null == v1 ||
-                    v1.isEmpty()) {
+            private List drilldownMember(
+                List<?> v0,
+                List<Member> v1,
+                Evaluator evaluator)
+            {
+                if (null == v0
+                    || v0.isEmpty()
+                    || null == v1
+                    || v1.isEmpty())
+                {
                     return v0;
                 }
 

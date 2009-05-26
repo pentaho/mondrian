@@ -31,7 +31,10 @@ public class PropertiesTest extends FoodMartTestCase {
     public void testMandatoryMemberProperties() {
         Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
         SchemaReader scr = salesCube.getSchemaReader(null);
-        Member member = scr.getMemberByUniqueName(Id.Segment.toList("Customers", "All Customers", "USA", "CA"), true);
+        Member member =
+            scr.getMemberByUniqueName(
+                Id.Segment.toList("Customers", "All Customers", "USA", "CA"),
+                true);
         final boolean caseSensitive =
             MondrianProperties.instance().CaseSensitive.get();
 
@@ -52,30 +55,38 @@ public class PropertiesTest extends FoodMartTestCase {
 //        stringPropValue = (String)member.getPropertyValue("CUBE_NAME");
 //        assertEquals(salesCube.getName(), stringPropValue);
 
-        stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME");
+        stringPropValue =
+            (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME");
         assertEquals(member.getDimension().getUniqueName(), stringPropValue);
 
         // Case sensitivity.
-        stringPropValue = (String)member.getPropertyValue("dimension_unique_name", caseSensitive);
+        stringPropValue = (String)member.getPropertyValue(
+                "dimension_unique_name", caseSensitive);
         if (caseSensitive) {
             assertNull(stringPropValue);
         } else {
-            assertEquals(member.getDimension().getUniqueName(), stringPropValue);
+            assertEquals(
+                member.getDimension().getUniqueName(),
+                stringPropValue);
         }
 
         // Non-existent property.
-        stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME_XXXX");
+        stringPropValue =
+            (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME_XXXX");
         assertNull(stringPropValue);
 
         // Leading spaces.
-        stringPropValue = (String)member.getPropertyValue(" DIMENSION_UNIQUE_NAME");
+        stringPropValue =
+            (String)member.getPropertyValue(" DIMENSION_UNIQUE_NAME");
         assertNull(stringPropValue);
 
         // Trailing spaces.
-        stringPropValue = (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME  ");
+        stringPropValue =
+            (String)member.getPropertyValue("DIMENSION_UNIQUE_NAME  ");
         assertNull(stringPropValue);
 
-        stringPropValue = (String)member.getPropertyValue("HIERARCHY_UNIQUE_NAME");
+        stringPropValue =
+            (String)member.getPropertyValue("HIERARCHY_UNIQUE_NAME");
         assertEquals(member.getHierarchy().getUniqueName(), stringPropValue);
 
         // This property works in Mondrian 1.1.5 (due to XMLA support)
@@ -84,7 +95,9 @@ public class PropertiesTest extends FoodMartTestCase {
 
         // This property works in Mondrian 1.1.5 (due to XMLA support)
         intPropValue = (Integer)member.getPropertyValue("LEVEL_NUMBER");
-        assertEquals(Integer.valueOf(member.getLevel().getDepth()), intPropValue);
+        assertEquals(
+            Integer.valueOf(member.getLevel().getDepth()),
+            intPropValue);
 
         // This property works in Mondrian 1.1.5 (due to XMLA support)
         stringPropValue = (String)member.getPropertyValue("MEMBER_UNIQUE_NAME");
@@ -94,7 +107,9 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(member.getName(), stringPropValue);
 
         intPropValue = (Integer)member.getPropertyValue("MEMBER_TYPE");
-        assertEquals(Integer.valueOf(member.getMemberType().ordinal()), intPropValue);
+        assertEquals(
+            Integer.valueOf(member.getMemberType().ordinal()),
+            intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("MEMBER_GUID");
         assertNull(stringPropValue);
@@ -108,7 +123,8 @@ public class PropertiesTest extends FoodMartTestCase {
 
         // It's worth checking case-sensitivity for CAPTION because it is a
         // synonym, not a true property.
-        stringPropValue = (String)member.getPropertyValue("caption", caseSensitive);
+        stringPropValue = (String) member.getPropertyValue(
+            "caption", caseSensitive);
         if (caseSensitive) {
             assertNull(stringPropValue);
         } else {
@@ -118,11 +134,18 @@ public class PropertiesTest extends FoodMartTestCase {
         intPropValue = (Integer)member.getPropertyValue("MEMBER_ORDINAL");
         assertEquals(Integer.valueOf(member.getOrdinal()), intPropValue);
 
-//        intPropValue = (Integer)member.getPropertyValue("CHILDREN_CARDINALITY");
-//        assertEquals(Integer.valueOf(scr.getMemberChildren(member).length), intPropValue);
+        if (false) {
+            intPropValue =
+                (Integer)member.getPropertyValue("CHILDREN_CARDINALITY");
+            assertEquals(
+                Integer.valueOf(scr.getMemberChildren(member).size()),
+                intPropValue);
+        }
 
         intPropValue = (Integer)member.getPropertyValue("PARENT_LEVEL");
-        assertEquals(Integer.valueOf(member.getParentMember().getLevel().getDepth()), intPropValue);
+        assertEquals(
+            Integer.valueOf(member.getParentMember().getLevel().getDepth()),
+            intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("PARENT_UNIQUE_NAME");
         assertEquals(member.getParentUniqueName(), stringPropValue);
@@ -134,7 +157,8 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(member.getDescription(), stringPropValue);
 
         // Case sensitivity.
-        stringPropValue = (String)member.getPropertyValue("desCription", caseSensitive);
+        stringPropValue =
+            (String)member.getPropertyValue("desCription", caseSensitive);
         if (caseSensitive) {
             assertNull(stringPropValue);
         } else {
@@ -222,7 +246,10 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
         assertNull(cell.getPropertyValue("NON_EMPTY_BEHAVIOR"));
         assertEquals(0, cell.getPropertyValue("SOLVE_ORDER"));
-        assertEquals(135215.0, ((Number) cell.getPropertyValue("VALUE")).doubleValue(), 0.1);
+        assertEquals(
+            135215.0,
+            ((Number) cell.getPropertyValue("VALUE")).doubleValue(),
+            0.1);
 
         // Case sensitivity.
         if (MondrianProperties.instance().CaseSensitive.get()) {
@@ -240,7 +267,10 @@ public class PropertiesTest extends FoodMartTestCase {
             assertEquals("Standard", cell.getPropertyValue("format"));
             assertEquals("135,215", cell.getPropertyValue("formatted_value"));
             assertEquals(0, cell.getPropertyValue("solve_order"));
-            assertEquals(135215.0, ((Number) cell.getPropertyValue("value")).doubleValue(), 0.1);
+            assertEquals(
+                135215.0,
+                ((Number) cell.getPropertyValue("value")).doubleValue(),
+                0.1);
         }
     }
 }

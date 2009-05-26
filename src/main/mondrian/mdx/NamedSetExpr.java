@@ -85,14 +85,15 @@ public class NamedSetExpr extends ExpBase implements Exp {
         final List<ResultStyle> styleList =
             compiler.getAcceptableResultStyles();
         if (!styleList.contains(ResultStyle.ITERABLE)
-            && !styleList.contains(ResultStyle.ANY)) {
+            && !styleList.contains(ResultStyle.ANY))
+        {
             return null;
         }
 
         if (((SetType) getType()).getArity() != 1) {
             return new AbstractTupleIterCalc(
                 this,
-                new Calc[]{ /* todo: compile namedSet.getExp() */})
+                new Calc[]{/* todo: compile namedSet.getExp() */})
             {
                 public Iterable<Member[]> evaluateTupleIterable(
                     Evaluator evaluator)
@@ -110,13 +111,14 @@ public class NamedSetExpr extends ExpBase implements Exp {
             };
         } else {
             return new AbstractMemberIterCalc(
-                this,
-                new Calc[]{ /* todo: compile namedSet.getExp() */})
+                 this,
+                new Calc[]{/* todo: compile namedSet.getExp() */})
             {
                 public Iterable<Member> evaluateMemberIterable(
                     Evaluator evaluator)
                 {
-                    final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
+                     final Evaluator.NamedSetEvaluator eval =
+                         getEval(evaluator);
                     return eval.evaluateMemberIterable();
                 }
 

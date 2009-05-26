@@ -114,7 +114,8 @@ public class Formula extends QueryPart {
         final Type type = exp.getType();
         if (isMember) {
             if (!TypeUtil.canEvaluate(type)) {
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exp.toString());
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(
+                    exp.toString());
             }
         } else {
             if (!TypeUtil.isSet(type)) {
@@ -165,9 +166,10 @@ public class Formula extends QueryPart {
                 Id.Segment segment = id.getSegments().get(i);
                 OlapElement parent = mdxElement;
                 mdxElement = null;
-                // BCHOW: The last segment of the id is the name of the calculated member
-                // so no need to look for a pre-existing child.  This avoids
-                // unnecessarily executing SQL and loading children into cache.
+                // The last segment of the id is the name of the calculated
+                // member so no need to look for a pre-existing child.  This
+                // avoids unnecessarily executing SQL and loading children into
+                // cache.
                 if (i != id.getSegments().size() - 1) {
                     mdxElement = schemaReader.getElementChild(parent, segment);
                 }
@@ -516,8 +518,10 @@ public class Formula extends QueryPart {
                 expList.add(memberExpr);
                 Member member = memberExpr.getMember();
                 if (member instanceof RolapCalculatedMember) {
-                    RolapCalculatedMember calculatedMember = (RolapCalculatedMember) member;
-                    Exp exp1 = calculatedMember.getExpression().accept(validator);
+                    RolapCalculatedMember calculatedMember =
+                        (RolapCalculatedMember) member;
+                    Exp exp1 =
+                        calculatedMember.getExpression().accept(validator);
                     return hasCyclicReference(exp1,expList);
                 }
             }
@@ -525,7 +529,9 @@ public class Formula extends QueryPart {
                 FunCall funCall = (FunCall) expr;
                 Exp[] exps = funCall.getArgs();
                 for (int i = 0; i < exps.length; i++) {
-                    if (hasCyclicReference(exps[i], cloneForEachBranch(expList))) {
+                    if (hasCyclicReference(
+                        exps[i], cloneForEachBranch(expList)))
+                    {
                         return true;
                     }
                 }

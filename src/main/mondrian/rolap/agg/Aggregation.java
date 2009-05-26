@@ -70,10 +70,10 @@ public class Aggregation {
     private int maxConstraints;
 
     /**
-     * List of soft references to segments.
-     * This List implementation should be Thread safe on all mutative operations
-     * (add, set, and so on). Access to this list is not synchronized in the code.
-     * This is the only mutable field in the class.
+     * List of soft references to segments.  This List implementation should be
+     * Thread safe on all mutative operations (add, set, and so on). Access to
+     * this list is not synchronized in the code.  This is the only mutable
+     * field in the class.
      */
     private final List<SoftReference<Segment>> segmentRefs;
 
@@ -106,7 +106,9 @@ public class Aggregation {
         this.aggregationKey = aggregationKey;
     }
 
-    private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {
+    private CopyOnWriteArrayList<SoftReference<Segment>>
+        getThreadSafeListImplementation()
+    {
         return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
 
@@ -222,7 +224,8 @@ public class Aggregation {
         }
 
         for (int i = 0; i < newPredicates.length; i++) {
-            // A set of constraints with only one entry will not be optimized away
+            // A set of constraints with only one entry will not be optimized
+            // away
             if (!(newPredicates[i] instanceof ListColumnPredicate)) {
                 bloats[i] = 0.0;
                 continue;
@@ -538,7 +541,9 @@ public class Aggregation {
                 // segment, in case new axis values have appeared.
                 RolapStar.Column column = columns[i];
                 final int bitPosition = column.getBitPosition();
-                if (!cacheRegion.getConstrainedColumnsBitKey().get(bitPosition)) {
+                if (!cacheRegion.getConstrainedColumnsBitKey().get(
+                    bitPosition))
+                    {
                     continue;
                 }
 
@@ -593,10 +598,10 @@ public class Aggregation {
                 cellCount *= .5;
             }
             Segment.Region region =
-                    new Segment.Region(
-                            regionPredicates,
-                            new ArrayList<StarPredicate>(cacheRegion.getPredicates()),
-                            cellCount);
+                new Segment.Region(
+                    regionPredicates,
+                    new ArrayList<StarPredicate>(cacheRegion.getPredicates()),
+                    cellCount);
 
             // How many cells left after we exclude this region? If there are
             // none left, throw away the segment. It doesn't matter if we
@@ -690,9 +695,11 @@ public class Aggregation {
             } else {
                 // avoid to call wouldContain - its slow
                 if (pinSet != null
-                        && !((AggregationManager.PinSetImpl) pinSet).contains(segment)
-                        && segment.wouldContain(keys)) {
-                    segment.waitUntilLoaded(); //Waiting on Segment state
+                    && !((AggregationManager.PinSetImpl) pinSet).contains(
+                        segment)
+                    && segment.wouldContain(keys))
+                {
+                    segment.waitUntilLoaded(); // waiting on Segment state
                     if (segment.isReady()) {
                         ((AggregationManager.PinSetImpl) pinSet).add(segment);
                         return segment.getCellValue(keys);
@@ -754,8 +761,9 @@ public class Aggregation {
          * Creates an empty Axis.
          *
          * @param predicate Predicate defining which keys should appear on
-         *                  axis. (If a key passes the predicate but is not in the list, every
-         *                  cell with that key is assumed to have a null value.)
+         *                  axis. (If a key passes the predicate but
+         *                  is not in the list, every cell with that
+         *                  key is assumed to have a null value.)
          */
         Axis(StarColumnPredicate predicate) {
             this.predicate = predicate;
@@ -766,8 +774,9 @@ public class Aggregation {
          * Creates an axis populated with a set of keys.
          *
          * @param predicate Predicate defining which keys should appear on
-         *                  axis. (If a key passes the predicate but is not in the list, every
-         *                  cell with that key is assumed to have a null value.)
+         *                  axis. (If a key passes the predicate but
+         *                  is not in the list, every cell with that
+         *                  key is assumed to have a null value.)
          * @param keys      Keys
          */
         Axis(StarColumnPredicate predicate, Comparable<?>[] keys) {
@@ -944,14 +953,17 @@ public class Aggregation {
          *
          * @param flushPredicate Multi-column predicate to test
          * @param segmentAxes    Axes of the segment. (The columns that the
-         *                       predicate may not be present, or may be in a different order.)
-         * @param data           Segment dataset, which allows pruner to determine whether
-         *                       a particular cell is currently empty
+         *                       predicate may not be present, or may
+         *                       be in a different order.)
+         * @param data           Segment dataset, which allows pruner
+         *                       to determine whether a particular
+         *                       cell is currently empty
          */
         ValuePruner(
-                StarPredicate flushPredicate,
-                Axis[] segmentAxes,
-                SegmentDataset data) {
+            StarPredicate flushPredicate,
+            Axis[] segmentAxes,
+            SegmentDataset data)
+        {
             this.flushPredicate = flushPredicate;
             this.arity = flushPredicate.getConstrainedColumnList().size();
             this.axes = new Axis[arity];
@@ -1052,13 +1064,16 @@ public class Aggregation {
                 if (axis == null) {
                     evaluatePredicate(axisOrdinal + 1);
                 } else {
-                    for (int keyOrdinal = 0; keyOrdinal < axis.keys.length; keyOrdinal++) {
+                    for (int keyOrdinal = 0;
+                         keyOrdinal < axis.keys.length;
+                         keyOrdinal++)
+                    {
                         Object key = axis.keys[keyOrdinal];
                         values[axisOrdinal] = key;
                         ordinals[axisOrdinal] = keyOrdinal;
                         cellKey.setAxis(
-                                axisInverseOrdinals[axisOrdinal],
-                                keyOrdinal);
+                            axisInverseOrdinals[axisOrdinal],
+                            keyOrdinal);
                         evaluatePredicate(axisOrdinal + 1);
                     }
                 }

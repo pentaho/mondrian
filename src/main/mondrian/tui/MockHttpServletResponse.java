@@ -334,7 +334,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
      */
     public void addDateHeader(String name, long date) {
         Date dateValue = new Date(date);
-        String dateString = new SimpleDateFormat(DATE_FORMAT_HEADER, Locale.US).format(dateValue);
+        String dateString =
+            new SimpleDateFormat(
+                DATE_FORMAT_HEADER, Locale.US).format(dateValue);
         addHeader(name, dateString);
     }
 

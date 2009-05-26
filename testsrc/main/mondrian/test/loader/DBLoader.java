@@ -1438,13 +1438,18 @@ e.printStackTrace();
                     throw e;
                 }
                 int updates = 0;
-                for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
+                for (int i = 0;
+                    i < updateCounts.length;
+                    updates += updateCounts[i], i++)
+                {
                     if (updateCounts[i] == 0) {
                         LOGGER.error("Error in SQL: " + batch[i]);
                     }
                 }
                 if (updates < batchSize) {
-                    throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
+                    throw new RuntimeException(
+                        "Failed to execute batch: " + batchSize
+                        + " versus " + updates);
                 }
             }
             connection.commit();

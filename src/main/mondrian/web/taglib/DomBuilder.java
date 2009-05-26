@@ -48,7 +48,9 @@ public class DomBuilder {
         this.result = result;
     }
 
-    public static Document build(Result result) throws ParserConfigurationException {
+    public static Document build(Result result)
+        throws ParserConfigurationException
+    {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
         dbf.setExpandEntityReferences(true);
@@ -84,7 +86,8 @@ public class DomBuilder {
             buildRows2Dim(body, result.getAxes()[1]);
             break;
         default:
-            throw new IllegalArgumentException("DomBuilder requires 0, 1 or 2 dimensional result");
+            throw new IllegalArgumentException(
+                "DomBuilder requires 0, 1 or 2 dimensional result");
         }
         Element slicers = elem("slicers", mdxtable);
         buildSlicer(slicers);
@@ -130,12 +133,17 @@ public class DomBuilder {
             return positions.size();
         }
 
-        private void build(Element row, List<Member> currentMembers, boolean even) {
+        private void build(
+            Element row,
+            List<Member> currentMembers,
+            boolean even)
+        {
             for (int i = 0; i < levels; i++) {
                 Member currentMember = currentMembers.get(i);
                 Member prevMember    = prevMembers[i];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
-                    Element currentElem = createMemberElem("row-heading", row, currentMember);
+                    Element currentElem =
+                        createMemberElem("row-heading", row, currentMember);
                     if (even) {
                         currentElem.setAttribute("style", "even");
                     } else {
@@ -151,7 +159,8 @@ public class DomBuilder {
                     Element prevElem = prevElems[i];
                     prevElem.setAttribute("style", "span");
                     prevSpan[i] += 1;
-                    prevElem.setAttribute("rowspan", Integer.toString(prevSpan[i]));
+                    prevElem.setAttribute(
+                        "rowspan", Integer.toString(prevSpan[i]));
                 }
             }
         }
@@ -186,7 +195,9 @@ public class DomBuilder {
 
                 for (int j = 0; j < rowIndex - 1; j++) {
                     Member currentMember = position.get(j);
-                    if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
+                    if (prevMembers[j] == null
+                        || !prevMembers[j].equals(currentMember))
+                    {
                         prevMembers[j] = currentMember;
                         for (int k = j + 1; k < levels; k++) {
                             prevMembers[j] = null;
@@ -197,7 +208,8 @@ public class DomBuilder {
                 Member currentMember = position.get(rowIndex);
                 Member prevMember    = prevMembers[rowIndex];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
-                    Element currentElem = createMemberElem("column-heading", row, currentMember);
+                    Element currentElem =
+                        createMemberElem("column-heading", row, currentMember);
                     prevMembers[rowIndex] = currentMember;
                     prevElems[rowIndex] = currentElem;
                     prevSpan[rowIndex] = 1;
@@ -208,15 +220,22 @@ public class DomBuilder {
                     Element prevElem = prevElems[rowIndex];
                     prevElem.setAttribute("style", "span");
                     prevSpan[rowIndex] += 1;
-                    prevElem.setAttribute("colspan", Integer.toString(prevSpan[rowIndex]));
+                    prevElem.setAttribute(
+                        "colspan", Integer.toString(prevSpan[rowIndex]));
                 }
             }
         }
 
         void buildCornerElement(Element row) {
             Element corner = elem("corner", row);
-            corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].getPositions().get(0).size()));
-            corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].getPositions().get(0).size()));
+            corner.setAttribute(
+                "rowspan",
+                Integer.toString(
+                    result.getAxes()[0].getPositions().get(0).size()));
+            corner.setAttribute(
+                "colspan",
+                Integer.toString(
+                    result.getAxes()[1].getPositions().get(0).size()));
         }
     }
 
@@ -328,24 +347,26 @@ public class DomBuilder {
         return section;
     }
 
-    private static final String PRETTY_PRINTER = ""
-    + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
-    + "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
-    + "<xsl:template match=\"*|@*\">\n"
-    + "  <xsl:copy>\n"
-    + "    <xsl:apply-templates select=\"*|@*\"/>\n"
-    + "  </xsl:copy>\n"
-    + "</xsl:template>\n"
-    + "</xsl:stylesheet>\n";
+    private static final String PRETTY_PRINTER =
+        ""
+        + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
+        + "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
+        + "<xsl:template match=\"*|@*\">\n"
+        + "  <xsl:copy>\n"
+        + "    <xsl:apply-templates select=\"*|@*\"/>\n"
+        + "  </xsl:copy>\n"
+        + "</xsl:template>\n"
+        + "</xsl:stylesheet>\n";
 
     public static void debug(Document doc) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             StringReader input = new StringReader(PRETTY_PRINTER);
-            //File input = new File(System.getProperty("test.dir") + "/" + "pretty.xsl");
             Templates templates = tf.newTemplates(new StreamSource(input));
             OutputStream result = new ByteArrayOutputStream();
-            templates.newTransformer().transform(new DOMSource(doc), new StreamResult(result));
+            templates.newTransformer().transform(
+                new DOMSource(doc),
+                new StreamResult(result));
             LOGGER.debug(result.toString());
         } catch (Exception e) {
             e.printStackTrace();

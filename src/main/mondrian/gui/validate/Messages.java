@@ -8,21 +8,27 @@ package mondrian.gui.validate;
 public interface Messages {
     /**
      * Returns the string with given key.
-     * @param stringID key
+     *
+     * @param stringId key
      * @param defaultValue default if key does not exist
      * @return message
      */
-    String getString(String stringID, String defaultValue);
+    String getString(
+        String stringId,
+        String defaultValue);
 
     /**
      * Returns the string with given key with substitutions.
-     * @param stringID key
+     *
+     * @param stringId Key
      * @param defaultValue default if key does not exist
      * @param args arguments to substitute
      * @return message
      */
-    String getFormattedString(String stringID, String defaultValue,
-                    Object[] args);
+    String getFormattedString(
+        String stringId,
+        String defaultValue,
+        Object... args);
 }
 
 // End Messages.java

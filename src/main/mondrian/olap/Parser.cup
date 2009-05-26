@@ -67,7 +67,8 @@ parser code {:
             return (Query) parse_tree.value;
         } catch (Exception e) {
             // "Error while parsing MDX statement '%1'"
-            throw MondrianResource.instance().WhileParsingMdx.ex(queryString, e);
+            throw MondrianResource.instance().WhileParsingMdx.ex(
+                queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -103,7 +104,8 @@ parser code {:
             return (Exp) parse_tree.value;
         } catch (Exception e) {
             // "Syntax error while parsing MDX expression '%1'"
-            throw MondrianResource.instance().WhileParsingMdxExpression.ex(queryString, e);
+            throw MondrianResource.instance().WhileParsingMdxExpression.ex(
+                queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -159,7 +161,8 @@ parser code {:
                     false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
-            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load, strictValidation);
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load,
+            strictValidation);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,
@@ -205,7 +208,8 @@ parser code {:
         throws java.lang.Exception
     {
         // "Couldn't repair and continue parse"
-        String sFatalSyntaxError = MondrianResource.instance().MdxFatalSyntaxError.str();
+        String sFatalSyntaxError =
+            MondrianResource.instance().MdxFatalSyntaxError.str();
         report_fatal_error(sFatalSyntaxError, cur_token);
     }
 
@@ -220,55 +224,56 @@ parser code {:
         return funTable.isProperty(s);
     }
 
-    static Id[] toIdArray(List idList) {
+    static Id[] toIdArray(List<Id> idList) {
         if (idList == null || idList.size() == 0) {
             return EmptyIdArray;
         } else {
-            return (Id []) idList.toArray(new Id[idList.size()]);
+            return idList.toArray(new Id[idList.size()]);
         }
     }
 
-    static Exp[] toExpArray(List expList) {
+    static Exp[] toExpArray(List<Exp> expList) {
         if (expList == null || expList.size() == 0) {
             return EmptyExpArray;
         } else {
-            return (Exp []) expList.toArray(new Exp[expList.size()]);
+            return expList.toArray(new Exp[expList.size()]);
         }
     }
 
-    static Formula[] toFormulaArray(List formulaList) {
+    static Formula[] toFormulaArray(List<Formula> formulaList) {
         if (formulaList == null || formulaList.size() == 0) {
             return EmptyFormulaArray;
         } else {
-            return (Formula []) formulaList.toArray(new Formula[formulaList.size()]);
+            return formulaList.toArray(new Formula[formulaList.size()]);
         }
     }
 
-    static MemberProperty[] toMemberPropertyArray(List mpList) {
+    static MemberProperty[] toMemberPropertyArray(List<MemberProperty> mpList) {
         if (mpList == null || mpList.size() == 0) {
             return EmptyMemberPropertyArray;
         } else {
-            return (MemberProperty []) mpList.toArray(new MemberProperty[mpList.size()]);
+            return mpList.toArray(new MemberProperty[mpList.size()]);
         }
     }
 
-    static QueryPart[] toQueryPartArray(List qpList) {
+    static QueryPart[] toQueryPartArray(List<QueryPart> qpList) {
         if (qpList == null || qpList.size() == 0) {
             return EmptyQueryPartArray;
         } else {
-            return (QueryPart []) qpList.toArray(new QueryPart[qpList.size()]);
+            return qpList.toArray(new QueryPart[qpList.size()]);
         }
     }
 
-    static QueryAxis[] toQueryAxisArray(List qpList) {
+    static QueryAxis[] toQueryAxisArray(List<QueryAxis> qpList) {
         if (qpList == null || qpList.size() == 0) {
             return EmptyQueryAxisArray;
         } else {
-            return (QueryAxis []) qpList.toArray(new QueryAxis[qpList.size()]);
+            return qpList.toArray(new QueryAxis[qpList.size()]);
         }
     }
 
-    private static final MemberProperty[] EmptyMemberPropertyArray = new MemberProperty[0];
+    private static final MemberProperty[] EmptyMemberPropertyArray =
+        new MemberProperty[0];
     private static final Exp[] EmptyExpArray = new Exp[0];
     private static final Formula[] EmptyFormulaArray = new Formula[0];
     private static final Id[] EmptyIdArray = new Id[0];
@@ -522,7 +527,9 @@ cube_name ::= compound_id ;
 //
 // <dim_hier> ::= [<cube_name>.]<dimension_name>
 //             | [[<cube_name>.]< dimension_name>.]<hierarchy_name>
-// jhyde: Need more lookahead for this to work... just use id in place of dim_hier.
+//
+// jhyde: Need more lookahead for this to work... just use id in place of
+// dim_hier.
 //   dim_hier ::= id;
 //
 // <dimension_name> ::= <identifier>
@@ -828,7 +835,9 @@ value_expression_primary ::=
             if (i instanceof Id && !parser.isFunCall(j.name)) {
                 RESULT = ((Id) i).append(j);
             } else {
-                RESULT = new UnresolvedFunCall(j.name, Syntax.Property, new Exp[] {i});
+                RESULT =
+                    new UnresolvedFunCall(
+                        j.name, Syntax.Property, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT quoted_identifier:j {:
@@ -847,7 +856,8 @@ value_expression_primary ::=
                     j.name, Syntax.AmpersandQuotedProperty, new Exp[] {i});
             }
         :}
-    |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
+    |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis
+        RPAREN {:
             lis.add(0, i);
             RESULT = new UnresolvedFunCall(
                 j.name, Syntax.Method, Parser.toExpArray(lis));

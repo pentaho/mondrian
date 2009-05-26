@@ -88,7 +88,8 @@ public class RolapConnectionTest extends TestCase {
         properties.put("jdbc.charSet", "UTF-16");
 
         final StringBuilder buf = new StringBuilder();
-        DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
+        DataSource dataSource =
+            RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc.startsWith("Jdbc="));
 
@@ -136,7 +137,8 @@ public class RolapConnectionTest extends TestCase {
         properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
 
         final StringBuilder buf = new StringBuilder();
-        DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
+        DataSource dataSource =
+            RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc.startsWith("Jdbc="));
 
@@ -173,7 +175,8 @@ public class RolapConnectionTest extends TestCase {
             properties.remove("jdbc.charSet");
 
             final StringBuilder buf = new StringBuilder();
-            DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
+            DataSource dataSource =
+                RolapConnection.createDataSource(null, properties, buf);
             final String desc = buf.toString();
             assertTrue(desc.startsWith("Jdbc="));
 
@@ -395,7 +398,8 @@ public class RolapConnectionTest extends TestCase {
             // Important to test with & without pooling. Connection pools
             // typically do not let you change user, so it's important that
             // mondrian handles these right.
-            properties2.put(RolapConnectionProperties.PoolNeeded.name(), poolNeeded);
+            properties2.put(
+                RolapConnectionProperties.PoolNeeded.name(), poolNeeded);
             try {
                 connection = DriverManager.getConnection(properties2, null);
                 fail("Expected exception");
