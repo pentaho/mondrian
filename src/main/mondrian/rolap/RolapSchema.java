@@ -730,8 +730,7 @@ public class RolapSchema implements Schema {
      * A collection of schemas, identified by their connection properties
      * (catalog name, JDBC URL, and so forth).
      *
-     * <p>To lookup a schema, call <code>Pool.instance().
-     * {@link #get(String, DataSource, Util.PropertyList)}</code>.
+     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
      */
     static class Pool {
         private final MessageDigest md;
@@ -1299,66 +1298,21 @@ public class RolapSchema implements Schema {
      *   (otherwise it is a user-error).
      */
     private void defineFunction(
-            Map<String, UserDefinedFunction> mapNameToUdf,
-            String name,
-            String className) {
+        Map<String, UserDefinedFunction> mapNameToUdf,
+        String name,
+        String className)
+    {
         // Lookup class.
-        final Class<?> klass;
+        final Class<UserDefinedFunction> klass;
         try {
-            klass = Class.forName(className);
+            klass = (Class<UserDefinedFunction>) Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().UdfClassNotFound.ex(name,
-                    className);
+            throw MondrianResource.instance().UdfClassNotFound.ex(
+                name,
+                className);
         }
-        // Find a constructor.
-        Constructor<?> constructor;
-        Object[] args = {};
-        // 1. Look for a constructor "public Udf(String name)".
-        try {
-            constructor = klass.getConstructor(String.class);
-            if (Modifier.isPublic(constructor.getModifiers())) {
-                args = new Object[] {name};
-            } else {
-                constructor = null;
-            }
-        } catch (NoSuchMethodException e) {
-            constructor = null;
-        }
-        // 2. Otherwise, look for a constructor "public Udf()".
-        if (constructor == null) {
-            try {
-                constructor = klass.getConstructor();
-                if (Modifier.isPublic(constructor.getModifiers())) {
-                    args = new Object[] {};
-                } else {
-                    constructor = null;
-                }
-            } catch (NoSuchMethodException e) {
-                constructor = null;
-            }
-        }
-        // 3. Else, no constructor suitable.
-        if (constructor == null) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
-                    className, UserDefinedFunction.class.getName());
-        }
-        // Instantiate class.
-        final UserDefinedFunction udf;
-        try {
-            udf = (UserDefinedFunction) constructor.newInstance(args);
-        } catch (InstantiationException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
-                    className, UserDefinedFunction.class.getName());
-        } catch (IllegalAccessException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
-                    className, UserDefinedFunction.class.getName());
-        } catch (ClassCastException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
-                    className, UserDefinedFunction.class.getName());
-        } catch (InvocationTargetException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
-                    className, UserDefinedFunction.class.getName());
-        }
+        // Instantiate UDF by calling correct constructor.
+        final UserDefinedFunction udf = Util.createUdf(klass, name);
         // Validate function.
         validateFunction(udf);
         // Check for duplicate.
