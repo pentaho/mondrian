@@ -208,6 +208,23 @@ public class UdfTest extends FoodMartTestCase {
         }
     }
 
+    public void testGenericFun() {
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name=\"GenericPlusOne\" className=\""
+            + PlusOrMinusOneUdf.class.getName()
+            + "\"/>\n"
+            + "<UserDefinedFunction name=\"GenericMinusOne\" className=\""
+            + PlusOrMinusOneUdf.class.getName()
+            + "\"/>\n",
+            null);
+        tc.assertExprReturns("GenericPlusOne(3)", "4");
+        tc.assertExprReturns("GenericMinusOne(3)", "2");
+    }
+
     public void testComplexFun() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Grocery Sqft] / [Measures].[Store Sqft])', FORMAT_STRING = \"0.000\"\n"
@@ -739,6 +756,62 @@ public class UdfTest extends FoodMartTestCase {
         public Type getReturnType(Type[] parameterTypes) {
             // Will cause error.
             return null;
+        }
+    }
+
+    /**
+     * A user-defined function which, depending on its given name, either adds
+     * one to, or subtracts one from, its argument.
+     */
+    public static class PlusOrMinusOneUdf implements UserDefinedFunction {
+        private final String name;
+
+        public PlusOrMinusOneUdf(String name) {
+            if (!(name.equals("GenericPlusOne")
+                  || name.equals("GenericMinusOne")))
+            {
+                throw new IllegalArgumentException();
+            }
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return
+                "A user-defined function which, depending on its given name, "
+                + "either addsone to, or subtracts one from, its argument";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {new NumericType()};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            final Object argValue = arguments[0].evaluateScalar(evaluator);
+            if (argValue instanceof Number) {
+                return ((Number) argValue).doubleValue()
+                   + (name.equals("GenericPlusOne") ? 1.0 : -1.0);
+            } else {
+                // Argument might be a RuntimeException indicating that
+                // the cache does not yet have the required cell value. The
+                // function will be called again when the cache is loaded.
+                return null;
+            }
         }
     }
 

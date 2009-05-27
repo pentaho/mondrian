@@ -3377,6 +3377,67 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-412">
+     * MONDRIAN-412, "NON EMPTY and Filter() breaking aggregate
+     * calculations"</a>.
+     */
+    public void testBugMondrian412() throws Exception {
+        TestContext ctx = TestContext.instance();
+        ctx.assertQueryReturns(
+            "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' " +
+            "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, " +
+            "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS " +
+            "from [Sales]",
+
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[AvgRevenue]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "Row #0: 45,750.24\n"
+            + "Row #0: 43,479.86\n"
+            + "Row #1: 54,545.28\n"
+            + "Row #1: 43,479.86\n"
+            + "Row #2: 54,431.14\n"
+            + "Row #2: 43,479.86\n"
+            + "Row #3: 55,058.79\n"
+            + "Row #3: 43,479.86\n"
+            + "Row #4: 87,218.28\n"
+            + "Row #4: 43,479.86\n"
+            + "Row #5: 52,896.30\n"
+            + "Row #5: 43,479.86\n"
+            + "Row #6: 52,644.07\n"
+            + "Row #6: 43,479.86\n"
+            + "Row #7: 49,634.46\n"
+            + "Row #7: 43,479.86\n"
+            + "Row #8: 74,843.96\n"
+            + "Row #8: 43,479.86\n");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-321">
+     * MONDRIAN-321, "CrossJoin has no nulls when
+     * EnableNativeNonEmpty=true"</a>.
+     */
+    public void testBugMondrian321() {
+        assertQueryReturns(
+            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, {[Product].[All Products]})' \n"
+            + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
+            + "Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
+            "x");
+    }
+
+    /**
      * Make sure the mdx runs correctly and not in native mode.
      *
      * @param rowCount number of rows returned

@@ -141,7 +141,11 @@ public class UdfResolver implements Resolver {
                 expCalcs[i] = new CalcExp(calc, scalarCalc);
             }
 
-            return new CalcImpl(call, calcs, udf, expCalcs);
+            // Clone the UDF, because some UDFs use member variables as state.
+            UserDefinedFunction udf2 =
+                Util.createUdf(
+                    udf.getClass(), udf.getName());
+            return new CalcImpl(call, calcs, udf2, expCalcs);
         }
     }
 
@@ -154,13 +158,14 @@ public class UdfResolver implements Resolver {
         private final UserDefinedFunction.Argument[] args;
 
         public CalcImpl(
-                ResolvedFunCall call,
-                Calc[] calcs,
-                UserDefinedFunction udf,
-                UserDefinedFunction.Argument[] args) {
+            ResolvedFunCall call,
+            Calc[] calcs,
+            UserDefinedFunction udf,
+            UserDefinedFunction.Argument[] args)
+        {
             super(call);
             this.calcs = calcs;
-            this.udf = Util.createUdf(udf.getClass());
+            this.udf = udf;
             this.args = args;
         }
 
