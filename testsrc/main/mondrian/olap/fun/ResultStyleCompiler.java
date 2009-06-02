@@ -155,8 +155,13 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
         int lineNumber;
 
         int cnt;
-        MultiCalc(Calc calcIter, Calc calcList, Calc calcMList,
-                            boolean onlyMutableList) {
+
+        MultiCalc(
+            Calc calcIter,
+            Calc calcList,
+            Calc calcMList,
+            boolean onlyMutableList)
+        {
             this.calcIter = calcIter;
             this.calcList = calcList;
             this.calcMList = calcMList;

@@ -25,11 +25,15 @@ public class XmlaException extends MondrianException {
         return formatFaultCode(xex.getFaultCode(), xex.getCode());
     }
     public static String formatFaultCode(String faultCode, String code) {
-        return formatFaultCode(XmlaConstants.SOAP_PREFIX,
-                faultCode, code);
+        return formatFaultCode(
+            XmlaConstants.SOAP_PREFIX,
+            faultCode, code);
     }
-    public static String formatFaultCode(String nsPrefix,
-                String faultCode, String code) {
+
+    public static String formatFaultCode(
+        String nsPrefix,
+        String faultCode, String code)
+    {
         return nsPrefix +
             ':' +
             faultCode +

@@ -107,17 +107,23 @@ public class CsvLoader {
     private String[] columns;
 
     public CsvLoader(InputStream in, String charset)
-            throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException
+    {
         this(new InputStreamReader(in, charset));
     }
-    public CsvLoader(InputStream in, char separator,
-                boolean includesHeader, String charset)
-            throws UnsupportedEncodingException {
+
+    public CsvLoader(
+        InputStream in, char separator,
+        boolean includesHeader, String charset)
+        throws UnsupportedEncodingException
+    {
         this(new InputStreamReader(in, charset), separator, includesHeader);
     }
+
     public CsvLoader(InputStream in) {
         this(new InputStreamReader(in));
     }
+
     public CsvLoader(InputStream in, char separator, boolean includesHeader) {
         this(new InputStreamReader(in), separator, includesHeader);
     }
@@ -125,22 +131,27 @@ public class CsvLoader {
     public CsvLoader(String filename) throws FileNotFoundException {
         this(new FileReader(filename));
     }
+
     public CsvLoader(String filename, char separator, boolean includesHeader)
-                throws FileNotFoundException {
+        throws FileNotFoundException
+    {
         this(new FileReader(filename), separator, includesHeader);
     }
 
     public CsvLoader(File file) throws FileNotFoundException {
         this(new FileReader(file));
     }
+
     public CsvLoader(File file, char separator, boolean includesHeader)
-                throws FileNotFoundException {
+        throws FileNotFoundException
+    {
         this(new FileReader(file), separator, includesHeader);
     }
 
     public CsvLoader(Reader reader) {
         this(reader, DEFAULT_SEPARATOR, false);
     }
+
     public CsvLoader(Reader reader, char separator, boolean includesHeader) {
         this.bufReader = (reader instanceof BufferedReader)
             ? (BufferedReader) reader
@@ -149,6 +160,7 @@ public class CsvLoader {
         this.separator = separator;
         this.includesHeader = includesHeader;
     }
+
     protected void initialize() throws IOException {
         if (this.columnNames == null) {
             if (this.columns == null) {

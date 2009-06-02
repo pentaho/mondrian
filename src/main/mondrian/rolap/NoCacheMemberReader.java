@@ -85,8 +85,10 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return getMember(key, true);
     }
 
-    public RolapMember getMember(final Object key,
-            final boolean mustCheckCacheStatus) {
+    public RolapMember getMember(
+        final Object key,
+        final boolean mustCheckCacheStatus)
+    {
         LOGGER.debug("Returning null member: no cache");
         return null;
     }
@@ -266,8 +268,11 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return source.getMemberCount();
     }
 
-    public int compare(final RolapMember m1, final RolapMember m2,
-                       final boolean siblingsAreEqual) {
+    public int compare(
+        final RolapMember m1,
+        final RolapMember m2,
+        final boolean siblingsAreEqual)
+    {
         if (m1 == m2) {
             return 0;
         }

@@ -208,8 +208,9 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
 
     private void executeMDX() throws Exception {
         String requestType = "EXECUTE";
-        doTest(requestType, getDefaultRequestProperties(requestType),
-                TestContext.instance());
+        doTest(
+            requestType, getDefaultRequestProperties(requestType),
+            TestContext.instance());
     }
 
     protected DiffRepository getDiffRepos() {

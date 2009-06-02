@@ -70,10 +70,11 @@ class PropertiesFunDef extends FunDefBase {
      */
     private static class ResolverImpl extends ResolverBase {
         private ResolverImpl() {
-            super("Properties",
-                  "<Member>.Properties(<String Expression>)",
-                  "Returns the value of a member property.",
-                  Syntax.Method);
+            super(
+                "Properties",
+                "<Member>.Properties(<String Expression>)",
+                "Returns the value of a member property.",
+                Syntax.Method);
         }
 
         public FunDef resolve(
@@ -111,7 +112,8 @@ class PropertiesFunDef extends FunDefBase {
             if (!(propertyNameExp instanceof Literal)) {
                 return Category.Value;
             }
-            String propertyName = (String) ((Literal) propertyNameExp).getValue();
+            String propertyName =
+                (String) ((Literal) propertyNameExp).getValue();
             Hierarchy hierarchy = memberExp.getType().getHierarchy();
             if (hierarchy == null) {
                 return Category.Value;

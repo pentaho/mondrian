@@ -49,9 +49,11 @@ public interface TupleReader {
          * Creates a new member (together with its properties).
          * @see SqlMemberSource#makeMember(RolapMember, RolapLevel, Object, Object, boolean, ResultSet, Object, int)
          */
-        RolapMember makeMember(RolapMember parentMember, RolapLevel childLevel,
-                Object value, Object captionValue, boolean parentChild,
-                ResultSet resultSet, Object key, int column) throws SQLException;
+        RolapMember makeMember(
+            RolapMember parentMember, RolapLevel childLevel,
+            Object value, Object captionValue, boolean parentChild,
+            ResultSet resultSet, Object key, int column)
+            throws SQLException;
     }
 
     /**

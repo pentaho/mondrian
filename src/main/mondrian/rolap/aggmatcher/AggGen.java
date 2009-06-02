@@ -355,8 +355,11 @@ public class AggGen {
         // If we got to here, then everything is ok.
         isReady = true;
     }
-    private boolean addSpecialCollapsedColumn(final JdbcSchema db,
-                                              final RolapStar.Column rColumn) {
+
+    private boolean addSpecialCollapsedColumn(
+        final JdbcSchema db,
+        final RolapStar.Column rColumn)
+    {
         String rname = getRolapStarColumnName(rColumn);
         if (rname == null) {
             StringBuilder buf = new StringBuilder(64);
@@ -450,8 +453,10 @@ public class AggGen {
         return true;
     }
 
-    private boolean addCollapsedColumn(final JdbcSchema db,
-                                       final RolapStar.Column rColumn) {
+    private boolean addCollapsedColumn(
+        final JdbcSchema db,
+        final RolapStar.Column rColumn)
+    {
         // TODO: if column is "id" column, then there is no collapse
         String rname = getRolapStarColumnName(rColumn);
         if (rname == null) {
@@ -638,8 +643,10 @@ public class AggGen {
             JdbcSchema.Table.Column c = usage.getColumn();
 
             pw.print(prefix);
-            pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName,
-                c.getName()));
+            pw.print(
+                sqlQuery.getDialect().quoteIdentifier(
+                    factTableName,
+                    c.getName()));
             pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
@@ -680,8 +687,10 @@ public class AggGen {
             JdbcSchema.Table.Column c = usage.getColumn();
 
             pw.print(prefix);
-            pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName,
-                c.getName()));
+            pw.print(
+                sqlQuery.getDialect().quoteIdentifier(
+                    factTableName,
+                    c.getName()));
         }
 
         pw.println(';');
@@ -777,8 +786,10 @@ public class AggGen {
                 JdbcSchema.Table t = c.getTable();
 
                 pw.print(prefix);
-                pw.print(sqlQuery.getDialect().quoteIdentifier(t.getName(),
-                    c.getName()));
+                pw.print(
+                    sqlQuery.getDialect().quoteIdentifier(
+                        t.getName(),
+                        c.getName()));
                 pw.print(" AS ");
                 String n = (usage.usagePrefix == null)
                     ? c.getName() : usage.usagePrefix + c.getName();
@@ -908,9 +919,11 @@ public class AggGen {
         return name;
     }
 
-    private void addColumnCreate(final PrintWriter pw,
-                                 final String prefix,
-                                 final JdbcSchema.Table.Column.Usage usage) {
+    private void addColumnCreate(
+        final PrintWriter pw,
+        final String prefix,
+        final JdbcSchema.Table.Column.Usage usage)
+    {
         JdbcSchema.Table.Column c = usage.getColumn();
         String name = getUsageName(usage);
 

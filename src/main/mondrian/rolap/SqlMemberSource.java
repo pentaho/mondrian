@@ -346,7 +346,8 @@ RME is this right
 
                     Property[] properties = level.getProperties();
                     for (Property property : properties) {
-                        member.setProperty(property.getName(),
+                        member.setProperty(
+                            property.getName(),
                             resultSet.getObject(column + 1));
                         column++;
                     }

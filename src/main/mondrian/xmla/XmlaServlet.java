@@ -195,19 +195,23 @@ public abstract class XmlaServlet extends HttpServlet
                     }
                 }
             } catch (XmlaException xex) {
-                LOGGER.error("Errors when invoking callbacks validateHttpHeader", xex);
+                LOGGER.error(
+                    "Errors when invoking callbacks validateHttpHeader", xex);
                 handleFault(response, responseSoapParts, phase, xex);
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             } catch (Exception ex) {
-                LOGGER.error("Errors when invoking callbacks validateHttpHeader", ex);
-                handleFault(response, responseSoapParts,
-                        phase, new XmlaException(
-                                SERVER_FAULT_FC,
-                                CHH_CODE,
-                                CHH_FAULT_FS,
-                                ex));
+                LOGGER.error(
+                    "Errors when invoking callbacks validateHttpHeader", ex);
+                handleFault(
+                    response, responseSoapParts,
+                    phase,
+                    new XmlaException(
+                        SERVER_FAULT_FC,
+                        CHH_CODE,
+                        CHH_FAULT_FS,
+                        ex));
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
@@ -247,10 +251,11 @@ public abstract class XmlaServlet extends HttpServlet
                 }
 
                 // process application specified SOAP header here
-                handleSoapHeader(response,
-                                 requestSoapParts,
-                                 responseSoapParts,
-                                 context);
+                handleSoapHeader(
+                    response,
+                    requestSoapParts,
+                    responseSoapParts,
+                    context);
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
@@ -278,12 +283,14 @@ public abstract class XmlaServlet extends HttpServlet
                 return;
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks preaction", ex);
-                handleFault(response, responseSoapParts,
-                        phase, new XmlaException(
-                                SERVER_FAULT_FC,
-                                CPREA_CODE,
-                                CPREA_FAULT_FS,
-                                ex));
+                handleFault(
+                    response, responseSoapParts,
+                    phase,
+                    new XmlaException(
+                        SERVER_FAULT_FC,
+                        CPREA_CODE,
+                        CPREA_FAULT_FS,
+                        ex));
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
@@ -436,14 +443,16 @@ public abstract class XmlaServlet extends HttpServlet
         // if false, then do not throw exception if the file/url
         // can not be found
         boolean optional =
-            getBooleanInitParameter(servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
+            getBooleanInitParameter(
+                servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
 
         URL dataSourcesConfigUrl = null;
         try {
             if (paramValue == null) {
                 // fallback to default
                 String defaultDS = "WEB-INF/" + DEFAULT_DATASOURCE_FILE;
-                ServletContext servletContext = servletConfig.getServletContext();
+                ServletContext servletContext =
+                    servletConfig.getServletContext();
                 File realPath = new File(servletContext.getRealPath(defaultDS));
                 if (realPath.exists()) {
                     // only if it exists
@@ -622,17 +631,21 @@ public abstract class XmlaServlet extends HttpServlet
                             XmlaRequestCallback.class + "'");
                     }
                 } catch (ClassNotFoundException cnfe) {
-                    LOGGER.warn("Callback class '" + className + "' not found",
+                    LOGGER.warn(
+                        "Callback class '" + className + "' not found",
                         cnfe);
                 } catch (InstantiationException ie) {
-                    LOGGER.warn("Can't instantiate class '" + className + "'",
+                    LOGGER.warn(
+                        "Can't instantiate class '" + className + "'",
                         ie);
                 } catch (IllegalAccessException iae) {
-                    LOGGER.warn("Can't instantiate class '" + className + "'",
+                    LOGGER.warn(
+                        "Can't instantiate class '" + className + "'",
                         iae);
                 }
             }
-            LOGGER.debug("Registered " + count + " callback" + (count > 1 ? "s" : ""));
+            LOGGER.debug(
+                "Registered " + count + " callback" + (count > 1 ? "s" : ""));
         }
     }
 

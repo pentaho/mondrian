@@ -624,7 +624,8 @@ public abstract class RolapSchemaReader
         private final Property propertyDefinition;
 
         public SystemPropertyParameter(String name, boolean system) {
-            super(name,
+            super(
+                name,
                 Literal.nullValue,
                 "System property '" + name + "'",
                 new StringType());

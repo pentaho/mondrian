@@ -940,24 +940,28 @@ public class MondrianFoodMartLoader {
         // INSERT INTO "schema"."table"
         // Case has to match!
 
-        StringBuilder insertSb = insertSchema(buf, INSERT_INTO_CLAUSE,
-                                                true, true);
+        StringBuilder insertSb = insertSchema(
+            buf, INSERT_INTO_CLAUSE, true, true);
 
         // Prepend schema to all known table names.
         // These will be in the FROM clause
         // Case has to match!
 
         for (String tableName : tableMetadataToLoad.keySet()) {
-            insertSb = insertSchema(insertSb, quoteId(tableName),
-                                                false, false);
+            insertSb = insertSchema(
+                insertSb, quoteId(tableName), false, false);
         }
 
         LOGGER.debug(insertSb.toString());
         return insertSb;
     }
 
-    private StringBuilder insertSchema(StringBuilder sb,
-            String toFind, boolean mandatory, boolean insertBefore) {
+    private StringBuilder insertSchema(
+        StringBuilder sb,
+        String toFind,
+        boolean mandatory,
+        boolean insertBefore)
+    {
         int pos = sb.indexOf(toFind);
 
         if (pos < 0) {

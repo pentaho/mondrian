@@ -31,13 +31,17 @@ class ListRenderer implements ListCellRenderer {
 
     // Override of getListCellRendererComponent.
     // This is called by the AWT event thread to paint components.
-    public Component getListCellRendererComponent(JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
+    public Component getListCellRendererComponent(
+        JList list,
+        Object value,
+        int index,
+        boolean isSelected,
+        boolean cellHasFocus)
+    {
         // Ask the standard renderer for what it thinks is right
-        Component c = std.getListCellRendererComponent(list,
+        Component c =
+            std.getListCellRendererComponent(
+                list,
                 value,
                 index,
                 isSelected,

@@ -33,15 +33,17 @@ public class DimensionCurrentMemberFunDef extends FunDefBase {
             new DimensionCurrentMemberFunDef();
 
     private DimensionCurrentMemberFunDef() {
-        super("CurrentMember",
-                "Returns the current member along a dimension during an iteration.",
-                "pmd");
+        super(
+            "CurrentMember",
+            "Returns the current member along a dimension during an iteration.",
+            "pmd");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final DimensionCalc dimensionCalc =
                 compiler.compileDimension(call.getArg(0));
-        return new AbstractExpCompiler.DimensionCurrentMemberCalc(call, dimensionCalc);
+        return new AbstractExpCompiler.DimensionCurrentMemberCalc(
+            call, dimensionCalc);
     }
 }
 

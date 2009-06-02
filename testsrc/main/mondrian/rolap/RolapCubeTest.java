@@ -155,19 +155,23 @@ public class RolapCubeTest extends FoodMartTestCase {
             // Product.~Missing accessible
             List<Member> calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName("Product",
+                    getDimensionWithName(
+                        "Product",
                         salesCube.getDimensions()).getHierarchy());
 
-            assertEquals(expectedCalculatedMembersFromProduct.length,
+            assertEquals(
+                expectedCalculatedMembersFromProduct.length,
                 calculatedMembers.size());
 
-            assertCalculatedMemberExists(expectedCalculatedMembersFromProduct,
+            assertCalculatedMemberExists(
+                expectedCalculatedMembersFromProduct,
                 calculatedMembers);
 
             // Gender.~Missing not accessible
             calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName("Gender",
+                    getDimensionWithName(
+                        "Gender",
                         salesCube.getDimensions()).getHierarchy());
             assertEquals(0, calculatedMembers.size());
         } finally {

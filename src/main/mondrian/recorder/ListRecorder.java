@@ -49,9 +49,11 @@ public class ListRecorder extends AbstractRecorder {
         return infoList.iterator();
     }
 
-    protected void recordMessage(final String msg,
-                                 final Object info,
-                                 final MsgType msgType) {
+    protected void recordMessage(
+        final String msg,
+        final Object info,
+        final MsgType msgType)
+    {
         String context = getContext();
 
         Entry e = new Entry(context, msg, msgType, info);
@@ -118,24 +120,30 @@ public class ListRecorder extends AbstractRecorder {
         private final MsgType msgType;
         private final Object info;
 
-        private Entry(final String context,
-                      final String msg,
-                      final MsgType msgType,
-                      final Object info) {
+        private Entry(
+            final String context,
+            final String msg,
+            final MsgType msgType,
+            final Object info)
+        {
             this.context = context;
             this.msg = msg;
             this.msgType = msgType;
             this.info = info;
         }
+
         public String getContext() {
             return context;
         }
+
         public String getMessage() {
             return msg;
         }
+
         public MsgType getMsgType() {
             return msgType;
         }
+
         public Object getInfo() {
             return info;
         }

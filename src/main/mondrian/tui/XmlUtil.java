@@ -409,7 +409,8 @@ public class XmlUtil {
         parser.setFeature(VALIDATION_FEATURE_ID, doingValidation);
 
         if (schemaLocationPropertyValue != null) {
-            parser.setProperty(SCHEMA_LOCATION,
+            parser.setProperty(
+                SCHEMA_LOCATION,
                 schemaLocationPropertyValue.replace('\\', '/'));
         }
 
@@ -421,7 +422,10 @@ public class XmlUtil {
      * if so, throw a RuntimeException exception containing the errors.
      *
      */
-    private static void checkForParseError(final DOMParser parser, Throwable t) {
+    private static void checkForParseError(
+        final DOMParser parser,
+        Throwable t)
+    {
         final ErrorHandler errorHandler = parser.getErrorHandler();
 
         if (errorHandler instanceof SaxErrorHandler) {
@@ -836,9 +840,11 @@ public class XmlUtil {
         public Resolver(InputSource source) {
             this.source = source;
         }
-        public InputSource resolveEntity(String publicId,
-                                         String systemId)
-                throws SAXException, IOException {
+        public InputSource resolveEntity(
+            String publicId,
+            String systemId)
+            throws SAXException, IOException
+        {
             return source;
         }
     }
@@ -1000,7 +1006,8 @@ public class XmlUtil {
      * Transform a Document and return the transformed Node.
      *
      */
-    public static Node transform(Document inDoc,
+    public static Node transform(
+        Document inDoc,
         String xslFileName,
         String[][] namevalueParameters)
         throws ParserConfigurationException,
@@ -1032,13 +1039,14 @@ public class XmlUtil {
 
         return domResult.getNode();
     }
-    public static Node transform(Document inDoc,
+    public static Node transform(
+        Document inDoc,
         String xslFileName)
-            throws ParserConfigurationException,
-                SAXException,
-                IOException,
-                TransformerConfigurationException,
-                TransformerException {
+        throws ParserConfigurationException,
+               SAXException,
+               IOException,
+               TransformerConfigurationException,
+               TransformerException {
         return transform(inDoc, xslFileName, null);
     }
 
@@ -1046,7 +1054,8 @@ public class XmlUtil {
      * Transform a Document and return the transformed Node.
      *
      */
-    public static Node transform(Document inDoc,
+    public static Node transform(
+        Document inDoc,
         Reader xslReader,
         String[][] namevalueParameters)
         throws ParserConfigurationException,
@@ -1078,13 +1087,16 @@ public class XmlUtil {
 
         return domResult.getNode();
     }
-    public static Node transform(Document inDoc,
+
+    public static Node transform(
+        Document inDoc,
         Reader xslReader)
-            throws ParserConfigurationException,
-                SAXException,
-                IOException,
-                TransformerConfigurationException,
-                TransformerException {
+        throws ParserConfigurationException,
+               SAXException,
+               IOException,
+               TransformerConfigurationException,
+               TransformerException
+    {
         return transform(inDoc, xslReader, null);
     }
 

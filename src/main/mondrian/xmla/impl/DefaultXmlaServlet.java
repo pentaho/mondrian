@@ -262,8 +262,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
                         sessionIdStr = generateSessionId(context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE,
-                                    CONTEXT_XMLA_SESSION_STATE_BEGIN);
+                        context.put(
+                            CONTEXT_XMLA_SESSION_STATE,
+                            CONTEXT_XMLA_SESSION_STATE_BEGIN);
 
                     } else if (localName.equals(XMLA_SESSION)) {
                         // extract the SessionId attrs value and put into

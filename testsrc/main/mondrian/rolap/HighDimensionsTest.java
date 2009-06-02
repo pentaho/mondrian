@@ -170,12 +170,16 @@ public class HighDimensionsTest extends FoodMartTestCase {
      * Executes query test trying to [Promotions].[Promotion Name] elements
      * into an axis from the results.
      */
-    private void execHighCardTest(final String queryString, final int axisIndex,
-            final String highDimensionName, final String results,
-            final String results2, final boolean shouldForget)
-            throws Exception {
-        final int old = MondrianProperties.instance()
-                    .ResultLimit.get();
+    private void execHighCardTest(
+        final String queryString,
+        final int axisIndex,
+        final String highDimensionName,
+        final String results,
+        final String results2,
+        final boolean shouldForget)
+        throws Exception
+    {
+        final int old = MondrianProperties.instance().ResultLimit.get();
         try {
             MondrianProperties.instance().ResultLimit.set(40);
             final TestContext testContext = TestContext.createSubstitutingCube(

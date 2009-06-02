@@ -33,8 +33,10 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
 
     private final Map<Integer, T> cached;
 
-    public FilteredIterableList(final List<? extends T> list,
-            final Filter filter) {
+    public FilteredIterableList(
+        final List<? extends T> list,
+        final Filter filter)
+    {
         super();
         this.plainList = null;
         this.filter = filter;

@@ -64,8 +64,8 @@ public class PreferencesSchemasDialog extends JDialog {
         add(jScrollPane1, gridBagConstraints);
 
         cancelButton.setText(
-                getResourceConverter()
-                .getString("preferences.cancelButton.title",
+            getResourceConverter().getString(
+                "preferences.cancelButton.title",
                 "Cancel"));
         cancelButton.addActionListener(
             new ActionListener() {
@@ -83,8 +83,8 @@ public class PreferencesSchemasDialog extends JDialog {
         add(cancelButton, gridBagConstraints);
 
         cancelButton.setText(
-                getResourceConverter()
-                .getString("preferences.okButton.title",
+            getResourceConverter().getString(
+                "preferences.okButton.title",
                 "OK"));
         okButton.addActionListener(
             new ActionListener() {

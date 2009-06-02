@@ -213,7 +213,8 @@ public class Formula extends QueryPart {
     public Object[] getChildren() {
         Object[] children = new Object[1 + memberProperties.length];
         children[0] = exp;
-        System.arraycopy(memberProperties, 0,
+        System.arraycopy(
+            memberProperties, 0,
             children, 1, memberProperties.length);
         return children;
     }

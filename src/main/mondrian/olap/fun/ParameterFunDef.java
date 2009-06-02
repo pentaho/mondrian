@@ -32,20 +32,23 @@ public class ParameterFunDef extends FunDefBase {
     public final String parameterDescription;
 
     ParameterFunDef(
-            FunDef funDef,
-            String parameterName,
-            Type type,
-            int returnCategory,
-            Exp exp,
-            String description) {
-        super(funDef.getName(),
-                funDef.getSignature(),
-                funDef.getDescription(),
-                funDef.getSyntax(),
-                returnCategory,
-                funDef.getParameterCategories());
-        assertPrecondition(getName().equals("Parameter") ||
-                getName().equals("ParamRef"));
+        FunDef funDef,
+        String parameterName,
+        Type type,
+        int returnCategory,
+        Exp exp,
+        String description)
+    {
+        super(
+            funDef.getName(),
+            funDef.getSignature(),
+            funDef.getDescription(),
+            funDef.getSyntax(),
+            returnCategory,
+            funDef.getParameterCategories());
+        assertPrecondition(
+            getName().equals("Parameter")
+            || getName().equals("ParamRef"));
         this.parameterName = parameterName;
         this.type = type;
         this.exp = exp;

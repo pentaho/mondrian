@@ -816,17 +816,19 @@ public class RolapHierarchy extends HierarchyBase {
         MondrianDef.Expression keyExp =
             new MondrianDef.Column(clos.table.name, clos.parentColumn);
 
-        RolapLevel level = new RolapLevel(peerHier, index++,
-            "Closure",
-            keyExp, null, null, null,
-            null, null,  // no longer a parent-child hierarchy
-            null,
-            RolapProperty.emptyArray,
-            flags,
-            src.getDatatype(),
-            src.getHideMemberCondition(),
-            src.getLevelType(),
-            "");
+        RolapLevel level =
+            new RolapLevel(
+                peerHier, index++,
+                "Closure",
+                keyExp, null, null, null,
+                null, null,  // no longer a parent-child hierarchy
+                null,
+                RolapProperty.emptyArray,
+                flags,
+                src.getDatatype(),
+                src.getHideMemberCondition(),
+                src.getLevelType(),
+                "");
         peerHier.levels = RolapUtil.addElement(peerHier.levels, level);
 
         // Create lower level.

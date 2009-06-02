@@ -29,10 +29,12 @@ abstract class ResolverBase extends FunUtil implements Resolver {
     private final String description;
     private final Syntax syntax;
 
-    ResolverBase(String name,
-                 String signature,
-                 String description,
-                 Syntax syntax) {
+    ResolverBase(
+        String name,
+        String signature,
+        String description,
+        Syntax syntax)
+    {
         this.name = name;
         this.signature = signature;
         this.description = description;

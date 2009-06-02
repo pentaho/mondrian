@@ -215,12 +215,14 @@ System.out.println("password=" + password);
         String errorCode;
         String errorDesc;
 
-        Fault(String faultCode,
-              String faultString,
-              String faultActor,
-              String errorNS,
-              String errorCode,
-              String errorDesc) {
+        Fault(
+            String faultCode,
+            String faultString,
+            String faultActor,
+            String errorNS,
+            String errorCode,
+            String errorDesc)
+        {
             this.faultCode = faultCode;
             this.faultString = faultString;
             this.faultActor = faultActor;

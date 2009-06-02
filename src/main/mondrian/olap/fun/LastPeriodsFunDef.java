@@ -88,7 +88,9 @@ class LastPeriodsFunDef extends FunDefBase {
         final IntegerCalc indexValueCalc =
                 compiler.compileInteger(args[0]);
 
-        return new AbstractListCalc(call, new Calc[] {memberCalc, indexValueCalc}) {
+        return new AbstractListCalc(
+            call, new Calc[] {memberCalc, indexValueCalc})
+        {
             public List evaluateList(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 int indexValue = indexValueCalc.evaluateInteger(evaluator);
@@ -151,10 +153,11 @@ class LastPeriodsFunDef extends FunDefBase {
         }
 
         evaluator.getSchemaReader().
-            getMemberRange(member.getLevel(),
-               startMember,
-               endMember,
-               list);
+            getMemberRange(
+                member.getLevel(),
+                startMember,
+                endMember,
+                list);
         return list;
     }
 }

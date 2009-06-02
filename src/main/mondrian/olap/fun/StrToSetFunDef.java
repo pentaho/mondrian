@@ -34,9 +34,11 @@ class StrToSetFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     private StrToSetFunDef(int[] parameterTypes) {
-        super("StrToSet", "<Set> StrToSet(<String>[, <Dimension>...])",
-                "Constructs a set from a string expression.",
-                Syntax.Function, Category.Set, parameterTypes);
+        super(
+            "StrToSet",
+            "<Set> StrToSet(<String>[, <Dimension>...])",
+            "Constructs a set from a string expression.",
+            Syntax.Function, Category.Set, parameterTypes);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -304,8 +306,14 @@ class StrToSetFunDef extends FunDefBase {
         return i;
     }
 
-    private static RuntimeException fail(String string, int i, String expecting) {
-        throw Util.newInternal("expected '" + expecting + "' at position " + i + " in '" + string + "'");
+    private static RuntimeException fail(
+        String string,
+        int i,
+        String expecting)
+    {
+        throw Util.newInternal(
+            "expected '" + expecting + "' at position " + i + " in '"
+            + string + "'");
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
@@ -363,7 +371,8 @@ class StrToSetFunDef extends FunDefBase {
                 final Type argType = arg.getType();
                 list.add(TypeUtil.toMemberType(argType));
             }
-            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            final MemberType[] types =
+                list.toArray(new MemberType[list.size()]);
             TupleType.checkDimensions(types);
             return new SetType(new TupleType(types));
         }

@@ -71,7 +71,8 @@ class AddCalculatedMembersFunDef extends FunDefBase {
             if (dim == null) {
                 dim = member.getDimension();
             } else if (dim != member.getDimension()) {
-                throw newEvalException(this,
+                throw newEvalException(
+                    this,
                     "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
                         + dim.toString() + " vs " +
                         member.getDimension().toString());

@@ -32,9 +32,14 @@ public class RolapCubeDimension extends RolapDimension {
     int cubeOrdinal;
     MondrianDef.CubeDimension xmlDimension;
 
-    public RolapCubeDimension(RolapCube parent, RolapDimension rolapDim,
-            MondrianDef.CubeDimension cubeDim, String name, int cubeOrdinal,
-            final boolean highCardinality) {
+    public RolapCubeDimension(
+        RolapCube parent,
+        RolapDimension rolapDim,
+        MondrianDef.CubeDimension cubeDim,
+        String name,
+        int cubeOrdinal,
+        final boolean highCardinality)
+    {
         super(null, name, null, highCardinality);
         this.xmlDimension = cubeDim;
         this.rolapDimension = rolapDim;
@@ -46,9 +51,11 @@ public class RolapCubeDimension extends RolapDimension {
         hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
 
         for (int i = 0; i < rolapDim.getHierarchies().length; i++) {
-            hierarchies[i] = new RolapCubeHierarchy(this, cubeDim,
-                    (RolapHierarchy)rolapDim.getHierarchies()[i],
-                    ((HierarchyBase)rolapDim.getHierarchies()[i]).getSubName());
+            hierarchies[i] = new RolapCubeHierarchy(
+                this,
+                cubeDim,
+                (RolapHierarchy) rolapDim.getHierarchies()[i],
+                ((HierarchyBase) rolapDim.getHierarchies()[i]).getSubName());
         }
     }
 

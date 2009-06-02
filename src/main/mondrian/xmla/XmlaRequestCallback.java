@@ -109,10 +109,11 @@ public interface XmlaRequestCallback {
      * occurred.
      *
      */
-    void postAction(HttpServletRequest request,
-                HttpServletResponse response,
-                byte[][] responseSoapParts,
-                Map<String, Object> context) throws Exception;
+    void postAction(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        byte[][] responseSoapParts,
+        Map<String, Object> context) throws Exception;
 }
 
 // End XmlaRequestCallback.java

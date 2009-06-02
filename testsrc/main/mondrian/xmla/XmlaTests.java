@@ -93,50 +93,50 @@ public class XmlaTests extends FoodMartTestCase {
         String valueType = XmlaHandler.XSD_INT;
         Object value = inputValue;
         boolean isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new Long((long)XmlaHandler.XSD_INT_MAX_INCLUSIVE + 1);
         valueType = XmlaHandler.XSD_LONG;
         value = inputValue;
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new Long((long)XmlaHandler.XSD_INT_MIN_INCLUSIVE - 1);
         valueType = XmlaHandler.XSD_LONG;
         value = inputValue;
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new BigInteger("9223372036854775807");
         valueType = XmlaHandler.XSD_LONG;
         value = new Long(XmlaHandler.XSD_LONG_MAX_INCLUSIVE);
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new BigInteger("-9223372036854775808");
         valueType = XmlaHandler.XSD_LONG;
         value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         // one more than XSD_LONG_MAX_INCLUSIVE
         dataType = "Integer";
@@ -144,10 +144,10 @@ public class XmlaTests extends FoodMartTestCase {
         valueType = XmlaHandler.XSD_INTEGER;
         value = inputValue;
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         // one less than XSD_LONG_MIN_INCLUSIVE
         dataType = "Integer";
@@ -155,39 +155,39 @@ public class XmlaTests extends FoodMartTestCase {
         valueType = XmlaHandler.XSD_INTEGER;
         value = inputValue;
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new BigDecimal("9223372036854775807.0");
         valueType = XmlaHandler.XSD_LONG;
         value = new Long(XmlaHandler.XSD_LONG_MAX_INCLUSIVE);
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
         valueType = XmlaHandler.XSD_DECIMAL;
         value = inputValue;
         isDecimal = true;
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Integer";
         inputValue = new BigDecimal("-9223372036854775808.0");
         valueType = XmlaHandler.XSD_LONG;
         value = new Long(XmlaHandler.XSD_LONG_MIN_INCLUSIVE);
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
         valueType = (Util.Retrowoven)
             ? XmlaHandler.XSD_DOUBLE : XmlaHandler.XSD_DECIMAL;
         value = (Util.Retrowoven)
             ? Double.valueOf("-9.223372036854776E18")
             : inputValue;
         isDecimal = true;
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         // Numeric or null
         dataType = "Numeric";
@@ -195,26 +195,26 @@ public class XmlaTests extends FoodMartTestCase {
         valueType = XmlaHandler.XSD_DOUBLE;
         value = inputValue;
         isDecimal = true;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
-        doXmlaHandlerValueInfo(null, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            null, inputValue, valueType, value, isDecimal);
 
         dataType = "Numeric";
         inputValue = new Integer(4);
         valueType = XmlaHandler.XSD_DOUBLE;
         value = new Double(4.0);
         isDecimal = true;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
 
         dataType = "Numeric";
         inputValue = new Long(4);
         valueType = XmlaHandler.XSD_DOUBLE;
         value = new Double(4.0);
         isDecimal = true;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
 
         // MAX_VALUE = 1.7976931348623157e+308
         // one less decimal point than max value
@@ -224,8 +224,8 @@ public class XmlaTests extends FoodMartTestCase {
             valueType = XmlaHandler.XSD_DOUBLE;
             value = Double.valueOf("1.797693134862315e+308");
             isDecimal = true;
-            doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+            doXmlaHandlerValueInfo(
+                dataType, inputValue, valueType, value, isDecimal);
         }
 
 /*
@@ -250,8 +250,8 @@ System.out.println("    value=" +value);
         valueType = XmlaHandler.XSD_DECIMAL;
         value = inputValue;
         isDecimal = true;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
 
 
         dataType = "Numeric";
@@ -259,19 +259,25 @@ System.out.println("    value=" +value);
         valueType = XmlaHandler.XSD_INT;
         value = new Integer(4);
         isDecimal = false;
-        doXmlaHandlerValueInfo(dataType, inputValue,
-                                valueType, value, isDecimal);
+        doXmlaHandlerValueInfo(
+            dataType, inputValue, valueType, value, isDecimal);
     }
 
     // Helper methods
-    protected void doXmlaUtilNormalizeNumericString(final String vin,
-            final String expected) throws Exception {
+    protected void doXmlaUtilNormalizeNumericString(
+        final String vin,
+        final String expected)
+        throws Exception
+    {
         String actual = XmlaUtil.normalizeNumericString(vin);
         Assert.assertEquals(expected, actual);
     }
 
-    protected void doXmlaHandlerGetValueTypeHint(final String dataType,
-            final String expected) throws Exception {
+    protected void doXmlaHandlerGetValueTypeHint(
+        final String dataType,
+        final String expected)
+        throws Exception
+    {
         String actual = XmlaHandler.ValueInfo.getValueTypeHint(dataType);
         Assert.assertEquals(expected, actual);
     }

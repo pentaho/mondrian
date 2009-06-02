@@ -53,11 +53,13 @@ public class Target {
     private int levelDepth;
     private List<RolapMember> list;
 
-    public Target(final RolapLevel level,
-            final TupleReader.MemberBuilder memberBuilder,
-            final List<RolapMember> srcMembers,
-            final TupleConstraint constraint,
-            final HighCardSqlTupleReader sqlTupleReader) {
+    public Target(
+        final RolapLevel level,
+        final TupleReader.MemberBuilder memberBuilder,
+        final List<RolapMember> srcMembers,
+        final TupleConstraint constraint,
+        final HighCardSqlTupleReader sqlTupleReader)
+    {
         this.sqlTupleReader = sqlTupleReader;
         this.level = level;
         this.constraint = constraint;
@@ -325,8 +327,10 @@ public class Target {
      * Adds <code>member</code> just before the first element in
      * <code>list</code> which has the same parent.
      */
-    private void addAsOldestSibling(final List<RolapMember> list,
-            final RolapMember member) {
+    private void addAsOldestSibling(
+        final List<RolapMember> list,
+        final RolapMember member)
+    {
         int i = list.size();
         while (--i >= 0) {
             RolapMember sibling = list.get(i);

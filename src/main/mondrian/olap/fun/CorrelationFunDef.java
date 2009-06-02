@@ -48,11 +48,13 @@ class CorrelationFunDef extends AbstractAggregateFunDef {
         final Calc calc2 = call.getArgCount() > 2 ?
                 compiler.compileScalar(call.getArg(2), true) :
                 new ValueCalc(call);
-        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2}) {
+        return new AbstractDoubleCalc(
+            call, new Calc[] {listCalc, calc1, calc2})
+        {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return correlation(evaluator.push(false),
-                        memberList, calc1, calc2);
+                return correlation(
+                    evaluator.push(false), memberList, calc1, calc2);
             }
 
             public boolean dependsOn(Dimension dimension) {

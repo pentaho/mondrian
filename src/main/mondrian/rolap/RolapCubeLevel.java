@@ -33,13 +33,23 @@ public class RolapCubeLevel extends RolapLevel {
     protected LevelReader levelReader;
 
     public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy hierarchy) {
-        super(hierarchy, level.getDepth(), level.getName(), level.getKeyExp(),
-                level.getNameExp(), level.getCaptionExp(),
-                level.getOrdinalExp(), level.getParentExp(),
-                level.getNullParentValue(), null, level.getProperties(),
-                level.getFlags(), level.getDatatype(),
-                level.getHideMemberCondition(),
-                level.getLevelType(), "" + level.getApproxRowCount());
+        super(
+            hierarchy,
+            level.getDepth(),
+            level.getName(),
+            level.getKeyExp(),
+            level.getNameExp(),
+            level.getCaptionExp(),
+            level.getOrdinalExp(),
+            level.getParentExp(),
+            level.getNullParentValue(),
+            null,
+            level.getProperties(),
+            level.getFlags(),
+            level.getDatatype(),
+            level.getHideMemberCondition(),
+            level.getLevelType(),
+            "" + level.getApproxRowCount());
 
         this.rolapLevel = level;
         MondrianDef.RelationOrJoin hierarchyRel = hierarchy.getRelation();

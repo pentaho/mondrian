@@ -7508,11 +7508,13 @@ public class FunctionTest extends FoodMartTestCase {
 
     private void checkTopBottomCountPercentDepends(String fun) {
         String s1 = TestContext.allDimsExcept("[Measures]", "[Promotion Media]");
-        getTestContext().assertSetExprDependsOn(fun + "({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
+        getTestContext().assertSetExprDependsOn(
+            fun + "({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
             s1);
 
         if (fun.endsWith("Count")) {
-            getTestContext().assertSetExprDependsOn(fun + "({[Promotion Media].[Media Type].members}, 2)",
+            getTestContext().assertSetExprDependsOn(
+                fun + "({[Promotion Media].[Media Type].members}, 2)",
                 "{}");
         }
     }

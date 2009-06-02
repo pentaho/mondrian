@@ -733,8 +733,11 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return an {@link CrossJoinArg} instance describing the enumeration,
      *    or null if <code>fun</code> represents something else.
      */
-    protected CrossJoinArg checkEnumeration(RolapEvaluator evaluator,
-        FunDef fun, Exp[] args) {
+    protected CrossJoinArg checkEnumeration(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args)
+    {
         // Return null if not the expected funciton name or input size.
         if (!"{}".equalsIgnoreCase(fun.getName()) ||
             !isArgSizeSupported(evaluator, args.length)) {
@@ -801,8 +804,10 @@ public abstract class RolapNativeSet extends RolapNative {
         return ret;
     }
 
-    private CrossJoinArg[] expandNonNative(RolapEvaluator evaluator,
-        Exp exp) {
+    private CrossJoinArg[] expandNonNative(
+        RolapEvaluator evaluator,
+        Exp exp)
+    {
         ExpCompiler compiler = evaluator.getQuery().createCompiler();
         CrossJoinArg[] arg0 = null;
         if (MondrianProperties.instance().ExpandNonNative.get()) {

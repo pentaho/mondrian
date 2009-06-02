@@ -1643,7 +1643,8 @@ enum RowsetDefinition {
                 .getDataSourceEntries().values()) {
                 Row row = new Row();
                 row.set(DataSourceName.name, ds.getDataSourceName());
-                row.set(DataSourceDescription.name,
+                row.set(
+                    DataSourceDescription.name,
                     ds.getDataSourceDescription());
                 row.set(URL.name, ds.getURL());
                 row.set(DataSourceInfo.name, ds.getDataSourceName());
@@ -1748,14 +1749,15 @@ enum RowsetDefinition {
             for (Column column : columns) {
                 if (column.restriction) {
                     restrictionList.add(
-                        new XmlElement(Restrictions.name,
+                        new XmlElement(
+                            Restrictions.name,
                             null,
                             new XmlElement[]{
                                 new XmlElement("Name", null, column.name),
-                                new XmlElement("Type",
+                                new XmlElement(
+                                    "Type",
                                     null,
-                                    column.getColumnType())
-                            }));
+                                    column.getColumnType())}));
                 }
             }
             return restrictionList;
@@ -2532,7 +2534,8 @@ enum RowsetDefinition {
             Row row = new Row();
             row.set(TableCatalog.name, schemaName);
             row.set(TableName.name, cubeName);
-            row.set(ColumnName.name,
+            row.set(
+                ColumnName.name,
                 hierarchyName + ':' + levelName + "!NAME");
             row.set(OrdinalPosition.name, ordinalPosition++);
             row.set(ColumnHasDefault.name, false);
@@ -2547,7 +2550,8 @@ enum RowsetDefinition {
             row = new Row();
             row.set(TableCatalog.name, schemaName);
             row.set(TableName.name, cubeName);
-            row.set(ColumnName.name,
+            row.set(
+                ColumnName.name,
                 hierarchyName + ':' + levelName + "!UNIQUE_NAME");
             row.set(OrdinalPosition.name, ordinalPosition++);
             row.set(ColumnHasDefault.name, false);
@@ -2583,7 +2587,8 @@ TODO: see above
                 row = new Row();
                 row.set(TableCatalog.name, schemaName);
                 row.set(TableName.name, cubeName);
-                row.set(ColumnName.name,
+                row.set(
+                    ColumnName.name,
                     hierarchyName + ':' + levelName + '!' + propName);
                 row.set(OrdinalPosition.name, ordinalPosition++);
                 row.set(ColumnHasDefault.name, false);
@@ -3145,7 +3150,8 @@ TODO: see above
                             for (Hierarchy hierarchy1 : hierarchies) {
                                 HierarchyBase hierarchy =
                                     (HierarchyBase) hierarchy1;
-                                populateHierarchy(schemaReader, cube,
+                                populateHierarchy(
+                                    schemaReader, cube,
                                     hierarchy, rows);
                             }
                         }
@@ -3690,7 +3696,8 @@ TODO: see above
                     row.set(CatalogName.name, catalogName);
                     row.set(SchemaName.name, schema.getName());
                     row.set(CubeName.name, cube.getName());
-                    row.set(CubeType.name,
+                    row.set(
+                        CubeType.name,
                         ((RolapCube) cube).isVirtual()
                             ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
                     //row.set(CubeGuid.name, "");
@@ -3859,7 +3866,8 @@ TODO: see above
                 Column.OPTIONAL,
                 "Always FALSE.");
         private static final Column IsReadWrite =
-            new Column("IS_READWRITE",
+            new Column(
+                "IS_READWRITE",
                 Type.Boolean,
                 null,
                 Column.NOT_RESTRICTION,
@@ -3958,7 +3966,8 @@ TODO: see above
                 String unique = dimension.getUniqueName();
                 if (dimensionNameRT.passes(name) &&
                     dimensionUniqueNameRT.passes(unique)) {
-                    populateDimension(schemaReader, catalogName,
+                    populateDimension(
+                        schemaReader, catalogName,
                         cube, dimension, rows);
                 }
             }
@@ -4239,7 +4248,8 @@ TODO: see above
                     // Convert Windows newlines in 'description' to UNIX format.
                     String description = fi.getDescription();
                     if (description != null) {
-                        description = Util.replace(fi.getDescription(),
+                        description = Util.replace(
+                            fi.getDescription(),
                             "\r",
                             "");
                     }
@@ -4603,7 +4613,8 @@ TODO: see above
                     String unique = hierarchy.getUniqueName();
                     if (hierarchyNameRT.passes(hierarchy.getName()) &&
                         hierarchyUniqueNameRT.passes(unique)) {
-                        populateHierarchy(schemaReader, catalogName,
+                        populateHierarchy(
+                            schemaReader, catalogName,
                             cube, dimension, (HierarchyBase) hierarchy,
                             ordinal++, rows);
                     } else {
@@ -4662,7 +4673,8 @@ TODO: see above
 
             row.set(DefaultMember.name, hierarchy.getDefaultMember());
             if (hierarchy.hasAll()) {
-                row.set(AllMember.name,
+                row.set(
+                    AllMember.name,
                     Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
             }
             row.set(Description.name, desc);
@@ -4937,7 +4949,8 @@ TODO: see above
             for (Dimension dimension : cube.getDimensions()) {
                 String uniqueName = dimension.getUniqueName();
                 if (dimensionUniqueNameRT.passes(uniqueName)) {
-                    populateDimension(schemaReader, catalogName,
+                    populateDimension(
+                        schemaReader, catalogName,
                         cube, dimension, rows);
                 }
             }
@@ -4955,7 +4968,8 @@ TODO: see above
             for (Hierarchy hierarchy : hierarchies) {
                 String uniqueName = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(uniqueName)) {
-                    populateHierarchy(schemaReader, catalogName,
+                    populateHierarchy(
+                        schemaReader, catalogName,
                         cube, hierarchy, rows);
                 }
             }
@@ -4974,7 +4988,8 @@ TODO: see above
                 String name = level.getName();
                 if (levelUniqueNameRT.passes(uniqueName) &&
                     levelNameRT.passes(name)) {
-                    outputLevel(schemaReader,
+                    outputLevel(
+                        schemaReader,
                         catalogName, cube, hierarchy, level, rows);
                 }
             }
@@ -5026,7 +5041,8 @@ TODO: see above
             row.set(CatalogName.name, catalogName);
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
-            row.set(DimensionUniqueName.name,
+            row.set(
+                DimensionUniqueName.name,
                 hierarchy.getDimension().getUniqueName());
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
             row.set(LevelName.name, level.getName());
@@ -5330,7 +5346,8 @@ TODO: see above
                         String unique = member.getUniqueName();
                         if (measureNameRT.passes(name) &&
                             measureUniqueNameRT.passes(unique)) {
-                            populateMember(schemaReader, catalogName,
+                            populateMember(
+                                schemaReader, catalogName,
                                 member, cube, levelListStr, rows);
                         }
                     }
@@ -5341,7 +5358,8 @@ TODO: see above
                         String unique = member.getUniqueName();
                         if (measureNameRT.passes(name) &&
                             measureUniqueNameRT.passes(unique)) {
-                            populateMember(schemaReader, catalogName,
+                            populateMember(
+                                schemaReader, catalogName,
                                 member, cube, null, rows);
                         }
                     }
@@ -6012,7 +6030,8 @@ TODO: see above
             row.set(MemberType.name, member.getMemberType().ordinal());
             //row.set(MemberGuid.name, "");
             row.set(MemberCaption.name, member.getCaption());
-            row.set(ChildrenCardinality.name,
+            row.set(
+                ChildrenCardinality.name,
                 member.getPropertyValue(Property.CHILDREN_CARDINALITY.name));
             row.set(ChildrenCardinality.name, 100);
 
@@ -6109,7 +6128,8 @@ TODO: see above
                 false,
                 null);
         private static final Column Description =
-            new Column("DESCRIPTION",
+            new Column(
+                "DESCRIPTION",
                 Type.String,
                 null,
                 false,
@@ -6391,7 +6411,8 @@ TODO: see above
                 }
                 for (Level level : schemaReader.getHierarchyLevels(hier)) {
                     if (level.getUniqueName().equals(levelUniqueName)) {
-                        populateLevel(schemaReader, catalogName,
+                        populateLevel(
+                            schemaReader, catalogName,
                             cube, level, rows);
                         break;
                     }
@@ -6401,7 +6422,8 @@ TODO: see above
                 for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
                     if (dimensionUniqueNameRT.passes(uniqueName)) {
-                        populateDimension(schemaReader, catalogName,
+                        populateDimension(
+                            schemaReader, catalogName,
                             cube, dimension, rows);
                     }
                 }
@@ -6419,7 +6441,8 @@ TODO: see above
             for (Hierarchy hierarchy : hierarchies) {
                 String unique = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(unique)) {
-                    populateHierarchy(schemaReader, catalogName,
+                    populateHierarchy(
+                        schemaReader, catalogName,
                         cube, hierarchy, rows);
                 }
             }
@@ -6433,7 +6456,8 @@ TODO: see above
             List<Row> rows)
         {
             for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
-                populateLevel(schemaReader, catalogName,
+                populateLevel(
+                    schemaReader, catalogName,
                     cube, level, rows);
             }
         }
@@ -6448,7 +6472,8 @@ TODO: see above
             Property[] properties = level.getProperties();
             for (Property property : properties) {
                 if (propertyNameRT.passes(property.getName())) {
-                    outputProperty(schemaReader, property,
+                    outputProperty(
+                        schemaReader, property,
                         catalogName, cube, level, rows);
                 }
             }

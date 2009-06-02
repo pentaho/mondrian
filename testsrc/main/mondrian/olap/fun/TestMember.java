@@ -205,8 +205,10 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
-        public OlapElement lookupChild(SchemaReader schemaReader,
-                Id.Segment s, MatchType matchType) {
+        public OlapElement lookupChild(
+            SchemaReader schemaReader,
+            Id.Segment s, MatchType matchType)
+        {
             throw new UnsupportedOperationException();
         }
 

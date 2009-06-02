@@ -79,8 +79,10 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
          * @param notification
          * @param unused
          */
-        public void handleNotification(final Notification notification,
-                                       final Object unused) {
+        public void handleNotification(
+            final Notification notification,
+            final Object unused)
+        {
             final String type = notification.getType();
 
             if (type.equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {

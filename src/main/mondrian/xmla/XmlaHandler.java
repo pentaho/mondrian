@@ -1800,8 +1800,9 @@ public class XmlaHandler implements XmlaConstants {
             for (Dimension dimension : unseenDimensionList) {
                 hierarchies.add(dimension.getHierarchy());
             }
-            writer.startElement("AxisInfo",
-                    new String[] { "name", "SlicerAxis"});
+            writer.startElement(
+                "AxisInfo",
+                new String[] { "name", "SlicerAxis"});
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
             writeHierarchyInfo(writer, hierarchies, getProps(slicerAxis));
             writer.endElement(); // AxisInfo
@@ -2063,9 +2064,10 @@ public class XmlaHandler implements XmlaConstants {
                 if (propLong.equals(Property.DISPLAY_INFO.name)) {
                     Integer childrenCard = (Integer) member
                       .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                    value = calculateDisplayInfo(prevPosition,
-                                nextPosition,
-                                member, k, childrenCard);
+                    value = calculateDisplayInfo(
+                        prevPosition,
+                        nextPosition,
+                        member, k, childrenCard);
                 } else if (propLong.equals(Property.DEPTH.name)) {
                     value = member.getDepth();
                 } else {
@@ -2156,8 +2158,11 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.endElement(); // CellData
         }
-        private void recurse(SaxWriter writer, int[] pos,
-                int axisOrdinal, Evaluator evaluator, int[] cellOrdinal) {
+
+        private void recurse(
+            SaxWriter writer, int[] pos,
+            int axisOrdinal, Evaluator evaluator, int[] cellOrdinal)
+        {
             if (axisOrdinal < 0) {
                 emitCell(writer, pos, evaluator, cellOrdinal[0]++);
 
@@ -2174,8 +2179,11 @@ public class XmlaHandler implements XmlaConstants {
                 }
             }
         }
-        private void emitCell(SaxWriter writer, int[] pos,
-                            Evaluator evaluator, int ordinal) {
+
+        private void emitCell(
+            SaxWriter writer, int[] pos,
+            Evaluator evaluator, int ordinal)
+        {
             Cell cell = result.getCell(pos);
             if (cell.isNull() && ordinal != 0) {
                 // Ignore null cell like MS AS, except for Oth ordinal
@@ -2232,8 +2240,9 @@ public class XmlaHandler implements XmlaConstants {
                     value = vi.value;
                     isDecimal = vi.isDecimal;
 
-                    writer.startElement(cellProps[i],
-                            new String[] {"xsi:type", valueType});
+                    writer.startElement(
+                        cellProps[i],
+                        new String[] {"xsi:type", valueType});
                 } else {
                     writer.startElement(cellProps[i]);
                 }

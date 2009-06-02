@@ -99,9 +99,10 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                     }
                 }
                 String sql = makeLevelMembersSql(dataSource);
-                stmt = RolapUtil.executeQuery(dataSource, sql, maxRows,
-                        "HighCardSqlTupleReader.readTuples " + partialTargets,
-                        message, -1, -1);
+                stmt = RolapUtil.executeQuery(
+                    dataSource, sql, maxRows,
+                    "HighCardSqlTupleReader.readTuples " + partialTargets,
+                    message, -1, -1);
                 resultSet = stmt.getResultSet();
             } else {
                 resultSet = null;
@@ -128,7 +129,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 this.moreRows = currPartialResultIdx < partialResult.size();
             }
 
-            this.resultLoader = new ResultLoader(enumTargetCount,
+            this.resultLoader =
+                new ResultLoader(
+                    enumTargetCount,
                     targets, stmt, resultSet, execQuery, partialResult,
                     newPartialResult);
 

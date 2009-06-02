@@ -229,18 +229,23 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 rolapParent = ((RolapCubeMember)parent).getRolapMember();
             }
             RolapMember member = new RolapMember(rolapParent, rolapLevel, name);
-            return new RolapCubeMember((RolapCubeMember)parent, member,
-                    (RolapCubeLevel)level, parentDimension.getCube());
+            return new RolapCubeMember(
+                (RolapCubeMember) parent, member,
+                (RolapCubeLevel) level, parentDimension.getCube());
         } else if (level.getDimension().isMeasures()) {
-            RolapCalculatedMeasure member = new RolapCalculatedMeasure(
-                (RolapMember) parent, rolapLevel, name, formula);
-            return new RolapCubeMember((RolapCubeMember)parent, member,
-                    (RolapCubeLevel)level, parentDimension.getCube());
+            RolapCalculatedMeasure member =
+                new RolapCalculatedMeasure(
+                    (RolapMember) parent, rolapLevel, name, formula);
+            return new RolapCubeMember(
+                (RolapCubeMember) parent, member,
+                (RolapCubeLevel) level, parentDimension.getCube());
         } else {
-            RolapCalculatedMember member = new RolapCalculatedMember(
-                (RolapMember) parent, rolapLevel, name, formula);
-            return new RolapCubeMember((RolapCubeMember)parent, member,
-                    (RolapCubeLevel)level, parentDimension.getCube());
+            RolapCalculatedMember member =
+                new RolapCalculatedMember(
+                    (RolapMember) parent, rolapLevel, name, formula);
+            return new RolapCubeMember(
+                (RolapCubeMember) parent, member,
+                (RolapCubeLevel) level, parentDimension.getCube());
         }
     }
 
@@ -415,7 +420,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 new MemberCacheHelper(RolapCubeHierarchy.this);
 
             cubeSource =
-                new RolapCubeSqlMemberSource(this,
+                new RolapCubeSqlMemberSource(
+                    this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
                     cacheHelper);
@@ -782,7 +788,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 new MemberNoCacheHelper();
 
             cubeSource =
-                new RolapCubeSqlMemberSource(this,
+                new RolapCubeSqlMemberSource(
+                    this,
                     RolapCubeHierarchy.this,
                     rolapCubeCacheHelper,
                     new MemberNoCacheHelper());

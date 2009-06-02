@@ -121,8 +121,9 @@ class XtdFunDef extends FunDefBase {
                     compiler.compileMember(call.getArg(0));
             return new AbstractListCalc(call, new Calc[] {memberCalc}) {
                 public List evaluateList(Evaluator evaluator) {
-                    return periodsToDate(evaluator, level,
-                            memberCalc.evaluateMember(evaluator));
+                    return periodsToDate(
+                        evaluator, level,
+                        memberCalc.evaluateMember(evaluator));
                 }
             };
         }

@@ -91,12 +91,16 @@ public class ObjectPool<T> {
     public ObjectPool() {
         this(DEFAULT_CAPACITY);
     }
+
     public ObjectPool(int initialCapacity) {
         this(initialCapacity, DEFAULT_MIN_LOAD_FACTOR, DEFAULT_MAX_LOAD_FACTOR);
     }
-    public ObjectPool(int initialCapacity,
-                      double minLoadFactor,
-                      double maxLoadFactor) {
+
+    public ObjectPool(
+        int initialCapacity,
+        double minLoadFactor,
+        double maxLoadFactor)
+    {
         setUp(initialCapacity,minLoadFactor,maxLoadFactor);
     }
 
@@ -157,9 +161,10 @@ public class ObjectPool<T> {
         }
 
         if (this.distinct > this.highWaterMark) {
-            int newCapacity = chooseGrowCapacity(this.distinct + 1,
-                                                 this.minLoadFactor,
-                                                 this.maxLoadFactor);
+            int newCapacity = chooseGrowCapacity(
+                this.distinct + 1,
+                this.minLoadFactor,
+                this.maxLoadFactor);
             rehash(newCapacity);
             return add(key);
         }
@@ -174,9 +179,10 @@ public class ObjectPool<T> {
 
         if (this.freeEntries < 1) {
             //delta
-            int newCapacity = chooseGrowCapacity(this.distinct + 1,
-                                                 this.minLoadFactor,
-                                                 this.maxLoadFactor);
+            int newCapacity = chooseGrowCapacity(
+                this.distinct + 1,
+                this.minLoadFactor,
+                this.maxLoadFactor);
              rehash(newCapacity);
         }
 
@@ -207,25 +213,37 @@ public class ObjectPool<T> {
         return new Itr();
     }
 
-
-
     protected int chooseGrowCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size + 1,
-            (int) ((4 * size / (3 * minLoad + maxLoad)))));
+        return nextPrime(
+            Math.max(
+                size + 1,
+                (int) ((4 * size / (3 * minLoad + maxLoad)))));
     }
+
     protected final int chooseHighWaterMark(int capacity, double maxLoad) {
         //makes sure there is always at least one FREE slot
         return Math.min(capacity - 2, (int) (capacity * maxLoad));
     }
+
     protected final int chooseLowWaterMark(int capacity, double minLoad) {
         return (int) (capacity * minLoad);
     }
+
 /*
     protected int chooseMeanCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size + 1, (int) ((2*size/(minLoad+maxLoad)))));
+        return nextPrime(
+            Math.max(
+                size + 1,
+                (int) ((2 * size/(minLoad + maxLoad)))));
     }
-    protected int chooseShrinkCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size + 1, (int) ((4*size/(minLoad+3*maxLoad)))));
+
+    protected int chooseShrinkCapacity(
+        int size, double minLoad, double maxLoad)
+    {
+        return nextPrime(
+            Math.max(
+                size + 1,
+                (int) ((4 * size / (minLoad + 3 * maxLoad)))));
     }
 */
 
@@ -233,9 +251,11 @@ public class ObjectPool<T> {
         return PrimeFinder.nextPrime(desiredCapacity);
     }
 
-    protected void setUp(int initialCapacity,
-                         double minLoadFactor,
-                         double maxLoadFactor) {
+    protected void setUp(
+        int initialCapacity,
+        double minLoadFactor,
+        double maxLoadFactor)
+    {
         int capacity = initialCapacity;
 
         if (initialCapacity < 0) {
@@ -330,7 +350,8 @@ public class ObjectPool<T> {
 
         T[] newValues = (T[]) new Object[newCapacity];
 
-        this.highWaterMark = chooseHighWaterMark(newCapacity,this.maxLoadFactor);
+        this.highWaterMark = chooseHighWaterMark(
+            newCapacity, this.maxLoadFactor);
 
         this.values = newValues;
         this.freeEntries = newCapacity - this.distinct; // delta

@@ -787,7 +787,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         Role role = new RR();
 
         Properties props = getDefaultRequestProperties(requestType);
-        doTestInline(requestType, request, "${response}",
+        doTestInline(
+            requestType, request, "${response}",
             props, TestContext.instance(), role);
     }
 

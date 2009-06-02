@@ -146,7 +146,8 @@ public class DefaultRules {
 
                             String msg =
                                 mres.FailedCreateNewDefaultAggregateRules.str(
-                                        property.getPath(), value);
+                                    property.getPath(),
+                                    value);
                             throw new Trigger.VetoRT(msg);
 
                         } else {
@@ -182,7 +183,7 @@ public class DefaultRules {
     }
 
     protected static DefaultDef.AggRules makeAggRules(
-            final InputStream inStream) {
+        final InputStream inStream) {
         DOMWrapper def = makeDOMWrapper(inStream);
         try {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
@@ -193,8 +194,8 @@ public class DefaultRules {
     }
 
     protected static DefaultDef.AggRules makeAggRules(
-            final String text,
-            final String name) {
+        final String text,
+        final String name) {
         DOMWrapper def = makeDOMWrapper(text, name);
         try {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
@@ -233,8 +234,8 @@ public class DefaultRules {
     }
 
     protected static DOMWrapper makeDOMWrapper(
-            final String text,
-            final String name) {
+        final String text,
+        final String name) {
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             DOMWrapper def = xmlParser.parse(text);
@@ -257,7 +258,7 @@ public class DefaultRules {
         this.factToPattern = new HashMap<String, Recognizer.Matcher>();
         this.foreignKeyMatcherMap = new HashMap<String, Recognizer.Matcher>();
         this.tag = MondrianProperties.instance().AggregateRuleTag.
-                getDefaultValue();
+            getDefaultValue();
     }
 
     public void validate(MessageRecorder msgRecorder) {
@@ -387,8 +388,8 @@ public class DefaultRules {
      * @param name candidate aggregate table name
      */
     public boolean matchesTableName(
-            final String factTableName,
-            final String name) {
+        final String factTableName,
+        final String name) {
         Recognizer.Matcher matcher = getTableMatcher(factTableName);
         return matcher.matches(name);
     }
@@ -399,14 +400,15 @@ public class DefaultRules {
      * (sum, count, etc.).
      */
     public Recognizer.Matcher getMeasureMatcher(
-            final String measureName,
-            final String measureColumnName,
-            final String aggregateName) {
+        final String measureName,
+        final String measureColumnName,
+        final String aggregateName) {
         DefaultDef.AggRule rule = getAggRule();
         Recognizer.Matcher matcher =
-            rule.getMeasureMap().getMatcher(measureName,
-                                            measureColumnName,
-                                            aggregateName);
+            rule.getMeasureMap().getMatcher(
+                measureName,
+                measureColumnName,
+                aggregateName);
         return matcher;
     }
 
@@ -415,16 +417,17 @@ public class DefaultRules {
      * level's hierarchy's name, level name and column name.
      */
     public Recognizer.Matcher getLevelMatcher(
-            final String usagePrefix,
-            final String hierarchyName,
-            final String levelName,
-            final String levelColumnName) {
+        final String usagePrefix,
+        final String hierarchyName,
+        final String levelName,
+        final String levelColumnName) {
         DefaultDef.AggRule rule = getAggRule();
         Recognizer.Matcher matcher =
-            rule.getLevelMap().getMatcher(usagePrefix,
-                                          hierarchyName,
-                                          levelName,
-                                          levelColumnName);
+            rule.getLevelMap().getMatcher(
+                usagePrefix,
+                hierarchyName,
+                levelName,
+                levelColumnName);
         return matcher;
     }
 
@@ -434,16 +437,16 @@ public class DefaultRules {
      * present) making the column usages as a result.
      */
     public boolean columnsOK(
-            final RolapStar star,
-            final JdbcSchema.Table dbFactTable,
-            final JdbcSchema.Table aggTable,
-            final MessageRecorder msgRecorder) {
+        final RolapStar star,
+        final JdbcSchema.Table dbFactTable,
+        final JdbcSchema.Table aggTable,
+        final MessageRecorder msgRecorder) {
         Recognizer cb = new DefaultRecognizer(
-                this,
-                star,
-                dbFactTable,
-                aggTable,
-                msgRecorder);
+            this,
+            star,
+            dbFactTable,
+            aggTable,
+            msgRecorder);
         return cb.check();
     }
 }

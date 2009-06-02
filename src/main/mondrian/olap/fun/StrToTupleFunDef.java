@@ -35,7 +35,8 @@ class StrToTupleFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     private StrToTupleFunDef(int[] parameterTypes) {
-        super("StrToTuple",
+        super(
+            "StrToTuple",
             null,
             "Constructs a tuple from a string.",
             Syntax.Function, Category.Tuple, parameterTypes);
@@ -147,7 +148,8 @@ class StrToTupleFunDef extends FunDefBase {
                 final Type type = arg.getType();
                 list.add(TypeUtil.toMemberType(type));
             }
-            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            final MemberType[] types =
+                list.toArray(new MemberType[list.size()]);
             TupleType.checkDimensions(types);
             return new TupleType(types);
         }
@@ -156,10 +158,11 @@ class StrToTupleFunDef extends FunDefBase {
 
     private static class ResolverImpl extends ResolverBase {
         ResolverImpl() {
-            super("StrToTuple",
-                    "StrToTuple(<String Expression>)",
-                    "Constructs a tuple from a string.",
-                    Syntax.Function);
+            super(
+                "StrToTuple",
+                "StrToTuple(<String Expression>)",
+                "Constructs a tuple from a string.",
+                Syntax.Function);
         }
 
         public FunDef resolve(

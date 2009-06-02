@@ -38,9 +38,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
         boolean ascending;
         Integer count;
 
-        public TopCountConstraint(int count,
+        public TopCountConstraint(
+            int count,
             CrossJoinArg[] args, RolapEvaluator evaluator,
-            Exp orderByExpr, boolean ascending) {
+            Exp orderByExpr, boolean ascending)
+        {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;

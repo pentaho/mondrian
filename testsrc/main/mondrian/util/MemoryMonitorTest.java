@@ -30,8 +30,11 @@ import java.util.List;
  */
 public class MemoryMonitorTest extends FoodMartTestCase {
     final static int PERCENT_100 = 100;
-    protected static int convertThresholdToPercentage(final long threshold,
-            final long maxMemory) {
+
+    protected static int convertThresholdToPercentage(
+        final long threshold,
+        final long maxMemory)
+    {
         return (int) ((PERCENT_100 * threshold) / maxMemory);
     }
 
@@ -141,7 +144,8 @@ Does not work without the notify on add feature.
         // force a notification.
         long maxMemory = mm.getMaxMemory();
         long usedMemory = mm.getUsedMemory();
-        int currentPercentage = convertThresholdToPercentage(usedMemory, maxMemory);
+        int currentPercentage =
+            convertThresholdToPercentage(usedMemory, maxMemory);
         int delta = (int) (maxMemory - usedMemory) / 10;
         int percentage = convertThresholdToPercentage(delta, maxMemory);
         try {
@@ -181,7 +185,8 @@ Does not work without the notify on add feature.
         // update percentage to below new usage level.
         long maxMemory = mm.getMaxMemory();
         long usedMemory = mm.getUsedMemory();
-        int currentPercentage = convertThresholdToPercentage(usedMemory, maxMemory);
+        int currentPercentage =
+            convertThresholdToPercentage(usedMemory, maxMemory);
         int delta = (int) (maxMemory - usedMemory)/10;
         int percentage = convertThresholdToPercentage(delta, maxMemory);
         try {
@@ -260,7 +265,8 @@ Does not work without the notify on add feature.
         List<Result> list = new ArrayList<Result>();
         MemoryMonitor mm = null;
         try {
-            MemoryMonitorFactory.setThreadLocalClassName(TestMM.class.getName());
+            MemoryMonitorFactory.setThreadLocalClassName(
+                TestMM.class.getName());
             mm = MemoryMonitorFactory.getMemoryMonitor();
             boolean b = causeGC(mm);
 //System.out.println("causeGC="+b);

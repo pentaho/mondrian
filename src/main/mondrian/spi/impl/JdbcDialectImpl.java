@@ -124,7 +124,8 @@ public class JdbcDialectImpl implements Dialect {
         try {
             return databaseMetaData.getMaxColumnNameLength();
         } catch (SQLException e) {
-            throw Util.newInternal(e,
+            throw Util.newInternal(
+                e,
                 "while detecting maxColumnNameLength");
         }
     }
@@ -133,7 +134,8 @@ public class JdbcDialectImpl implements Dialect {
         try {
             return databaseMetaData.isReadOnly();
         } catch (SQLException e) {
-            throw Util.newInternal(e,
+            throw Util.newInternal(
+                e,
                 "while detecting isReadOnly");
         }
     }
@@ -202,7 +204,8 @@ public class JdbcDialectImpl implements Dialect {
                 }
             }
         } catch (SQLException e11) {
-            throw Util.newInternal(e11,
+            throw Util.newInternal(
+                e11,
                 "while detecting result set concurrency");
         }
         return supports;

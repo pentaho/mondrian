@@ -42,7 +42,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         schemaReader = getTestContext().getConnection().getSchemaReader();
-        salesCube = (RolapCube) cubeByName(getTestContext().getConnection(),
+        salesCube = (RolapCube) cubeByName(
+            getTestContext().getConnection(),
             cubeNameSales);
         salesCubeSchemaReader = salesCube.
             getSchemaReader(getTestContext().getConnection().getRole());
@@ -1156,14 +1157,19 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 memberList,
                 storeMembersCAAndOR(salesCubeSchemaReader));
         List tuples = optimizeChildren(memberList);
-        assertFalse(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Store","All Stores","USA","OR","Portland"),
-                salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Store","All Stores","USA","OR"),
-                salesCubeSchemaReader)));
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Store", "All Stores", "USA", "OR", "Portland"),
+                    salesCubeSchemaReader)));
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList("Store", "All Stores", "USA", "OR"),
+                    salesCubeSchemaReader)));
         assertEquals(16, tuples.size());
     }
 
@@ -1176,20 +1182,31 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         List tuples = optimizeChildren(memberList);
         assertEquals(4, tuples.size());
 
-        assertFalse(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pots and Pans","Cormorant"),
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans",
+                        "Cormorant"),
                 salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pots and Pans"),
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans"),
                 salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pot Scrubbers","Cormorant"),
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pot Scrubbers",
+                        "Cormorant"),
                 salesCubeSchemaReader)));
     }
 
@@ -1207,10 +1224,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     public void testShouldNotRemoveDuplicateTuples() {
         Member maleChildMember = member(
-            Id.Segment.toList("Gender","All Gender","M"),
+            Id.Segment.toList("Gender", "All Gender", "M"),
             salesCubeSchemaReader);
         Member femaleChildMember = member(
-            Id.Segment.toList("Gender","All Gender","F"),
+            Id.Segment.toList("Gender", "All Gender", "F"),
             salesCubeSchemaReader);
 
         List<Member> memberList = new ArrayList<Member>();
@@ -1244,15 +1261,15 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     public void testMemberCountIsNotSameForAllMembersInTuple() {
         Member maleChild =
             member(
-                Id.Segment.toList("Gender","All Gender","M"),
+                Id.Segment.toList("Gender", "All Gender", "M"),
                 salesCubeSchemaReader);
         Member femaleChild =
             member(
-                Id.Segment.toList("Gender","All Gender","F"),
+                Id.Segment.toList("Gender", "All Gender", "F"),
                 salesCubeSchemaReader);
         Member mexicoMember =
             member(
-                Id.Segment.toList("Store","All Stores","Mexico"),
+                Id.Segment.toList("Store", "All Stores", "Mexico"),
                 salesCubeSchemaReader);
 
         List<Member[]> memberList = new ArrayList<Member[]>();

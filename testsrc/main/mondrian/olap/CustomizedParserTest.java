@@ -169,8 +169,9 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
-            "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");
+            checkErrorMsg(
+                e,
+                "Mondrian Error:MDX object '[Measures].[Unit Salese]' not found in cube 'Sales'");
         }
     }
 
@@ -239,8 +240,9 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
-            "Mondrian Error:No function matches signature '<Member> * <Member>'");
+            checkErrorMsg(
+                e,
+                "Mondrian Error:No function matches signature '<Member> * <Member>'");
         }
     }
 
@@ -259,7 +261,8 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
+            checkErrorMsg(
+                e,
                 "Mondrian Error:No function matches signature '<Member> + <Level>'");
         }
     }
@@ -282,8 +285,9 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
-            "Mondrian Error:No function matches signature 'CrossJoin(<Member>, <Member>)'");
+            checkErrorMsg(
+                e,
+                "Mondrian Error:No function matches signature 'CrossJoin(<Member>, <Member>)'");
         }
     }
 
@@ -305,8 +309,9 @@ public class CustomizedParserTest extends FoodMartTestCase {
             // Shouldn't reach here
             fail("Expected error did not occur.");
         } catch (Throwable e) {
-            checkErrorMsg(e,
-            "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
+            checkErrorMsg(
+                e,
+                "Mondrian Error:No function matches signature '(<Member>, <Member>)'");
         }
     }
 

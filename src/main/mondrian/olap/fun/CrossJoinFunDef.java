@@ -1058,8 +1058,10 @@ public class CrossJoinFunDef extends FunDefBase {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ListCalc compileCallImmutableList(final ResolvedFunCall call,
-            ExpCompiler compiler) {
+    protected ListCalc compileCallImmutableList(
+        final ResolvedFunCall call,
+        ExpCompiler compiler)
+    {
         final ListCalc listCalc1 = toList(compiler, call.getArg(0));
         final ListCalc listCalc2 = toList(compiler, call.getArg(1));
         Calc[] calcs = new Calc[] {listCalc1, listCalc2};
@@ -1503,8 +1505,10 @@ public class CrossJoinFunDef extends FunDefBase {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ListCalc compileCallMutableList(final ResolvedFunCall call,
-            ExpCompiler compiler) {
+    protected ListCalc compileCallMutableList(
+        final ResolvedFunCall call,
+        ExpCompiler compiler)
+    {
         final ListCalc listCalc1 = toList(compiler, call.getArg(0));
         final ListCalc listCalc2 = toList(compiler, call.getArg(1));
 
@@ -2500,16 +2504,20 @@ public class CrossJoinFunDef extends FunDefBase {
         if (list.get(0) instanceof Member[]) {
             for (Member[] ms : ((List<Member[]>) list)) {
                 evaluator.setContext(ms);
-                if (checkData(nonAllMembers, nonAllMembers.length - 1,
-                            measureSet, evaluator)) {
+                if (checkData(
+                    nonAllMembers, nonAllMembers.length - 1,
+                    measureSet, evaluator))
+                {
                     result.add((T) ms);
                 }
             }
         } else {
             for (Member m : ((List<Member>) list)) {
                 evaluator.setContext(m);
-                if (checkData(nonAllMembers, nonAllMembers.length - 1,
-                            measureSet, evaluator)) {
+                if (checkData(
+                    nonAllMembers, nonAllMembers.length - 1,
+                    measureSet, evaluator))
+                {
                     result.add((T) m);
                 }
             }

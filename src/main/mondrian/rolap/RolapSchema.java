@@ -1458,8 +1458,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             } catch (InvocationTargetException e) {
                 e2 = e;
             }
-            throw Util.newInternal(e2,
-                    "while instantiating member reader '" + memberReaderClass);
+            throw Util.newInternal(
+                e2,
+                "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
             if (hierarchy.getDimension().isHighCardinality()) {

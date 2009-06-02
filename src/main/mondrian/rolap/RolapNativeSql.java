@@ -217,10 +217,7 @@ public class RolapNativeSql {
     }
 
     /**
-     * contains utility methods to compile FunCall expressions into SQL.
-     *
-     * @author av
-     * @since Nov 23, 2005
+     * Contains utility methods to compile FunCall expressions into SQL.
      */
     abstract class FunCallSqlCompilerBase implements SqlCompiler {
         int category;
@@ -277,16 +274,16 @@ public class RolapNativeSql {
     }
 
     /**
-     * compiles a funcall, e.g. foo(a, b, c)
-     * @author av
-     * @since Nov 23, 2005
+     * Compiles a funcall, e.g. foo(a, b, c).
      */
     class FunCallSqlCompiler extends FunCallSqlCompilerBase {
         SqlCompiler compiler;
         String sql;
 
-        protected FunCallSqlCompiler(int category, String mdx, String sql,
-                int argCount, SqlCompiler argumentCompiler) {
+        protected FunCallSqlCompiler(
+            int category, String mdx, String sql,
+            int argCount, SqlCompiler argumentCompiler)
+        {
             super(category, mdx, argCount);
             this.sql = sql;
             this.compiler = argumentCompiler;
@@ -316,9 +313,7 @@ public class RolapNativeSql {
     }
 
     /**
-     * shortcut for an unary operator like NOT(a)
-     * @author av
-     * @since Nov 23, 2005
+     * Shortcut for an unary operator like NOT(a).
      */
     class UnaryOpSqlCompiler extends FunCallSqlCompiler {
         protected UnaryOpSqlCompiler(
@@ -386,8 +381,10 @@ public class RolapNativeSql {
     class IsEmptySqlCompiler extends FunCallSqlCompilerBase {
         private final SqlCompiler compiler;
 
-        protected IsEmptySqlCompiler(int category, String mdx,
-                SqlCompiler argumentCompiler) {
+        protected IsEmptySqlCompiler(
+            int category, String mdx,
+            SqlCompiler argumentCompiler)
+        {
             super(category, mdx, 1);
             this.compiler = argumentCompiler;
         }

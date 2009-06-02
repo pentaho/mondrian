@@ -56,8 +56,9 @@ public class ExplicitRules {
      * otherwise if not null, then the ExplicitRules.TableDef is used.
      */
     public static ExplicitRules.TableDef getIncludeByTableDef(
-            final String tableName,
-            final List<Group> aggGroups) {
+        final String tableName,
+        final List<Group> aggGroups)
+    {
         for (Group group : aggGroups) {
             TableDef tableDef = group.getIncludeByTableDef(tableName);
             if (tableDef != null) {
@@ -79,8 +80,8 @@ public class ExplicitRules {
          * MondrianDef.Cube associated with that cube.
          */
         public static ExplicitRules.Group make(
-                final RolapCube cube,
-                final MondrianDef.Cube xmlCube) {
+            final RolapCube cube,
+            final MondrianDef.Cube xmlCube) {
             Group group = new Group(cube);
 
             MondrianDef.Relation relation = xmlCube.fact;
@@ -105,8 +106,8 @@ public class ExplicitRules {
                 }
             } else {
                 String msg = mres.CubeRelationNotTable.str(
-                        cube.getName(),
-                        relation.getClass().getName());
+                    cube.getName(),
+                    relation.getClass().getName());
                 LOGGER.warn(msg);
             }
 
@@ -151,8 +152,9 @@ public class ExplicitRules {
          * Are there any rules associated with this Group.
          */
         public boolean hasRules() {
-            return (excludes != Collections.EMPTY_LIST) ||
-                (tableDefs != Collections.EMPTY_LIST);
+            return
+                (excludes != Collections.EMPTY_LIST)
+                || (tableDefs != Collections.EMPTY_LIST);
         }
 
         /**
@@ -196,7 +198,7 @@ public class ExplicitRules {
          * Is the given tableName included either by exact name or by pattern.
          */
         public ExplicitRules.TableDef getIncludeByTableDef(
-                final String tableName) {
+            final String tableName) {
             // An exact match on a NameTableDef takes precedences over a
             // fuzzy match on a PatternTableDef, so
             // first look throught NameTableDef then PatternTableDef
@@ -296,12 +298,12 @@ public class ExplicitRules {
 
     private static Exclude make(final MondrianDef.AggExclude aggExclude) {
         return (aggExclude.getNameAttribute() != null) ?
-                new ExcludeName(
-                        aggExclude.getNameAttribute(),
-                        aggExclude.isIgnoreCase()) :
-                (Exclude) new ExcludePattern(
-                        aggExclude.getPattern(),
-                        aggExclude.isIgnoreCase());
+            new ExcludeName(
+                aggExclude.getNameAttribute(),
+                aggExclude.isIgnoreCase()) :
+            (Exclude) new ExcludePattern(
+                aggExclude.getPattern(),
+                aggExclude.isIgnoreCase());
     }
 
     /**
@@ -430,11 +432,11 @@ RME TODO
         private final Pattern pattern;
 
         private ExcludePattern(
-                final String pattern,
-                final boolean ignoreCase) {
+            final String pattern,
+            final boolean ignoreCase) {
             this.pattern = (ignoreCase) ?
-                    Pattern.compile(pattern, Pattern.CASE_INSENSITIVE) :
-                    Pattern.compile(pattern);
+                Pattern.compile(pattern, Pattern.CASE_INSENSITIVE) :
+                Pattern.compile(pattern);
         }
 
         public boolean isExcluded(final String tableName) {
@@ -445,9 +447,9 @@ RME TODO
             msgRecorder.pushContextName("ExcludePattern");
             try {
                 checkAttributeString(
-                        msgRecorder,
-                        pattern.pattern(),
-                        "pattern");
+                    msgRecorder,
+                    pattern.pattern(),
+                    "pattern");
                 //String context = msgRecorder.getContext();
                 // Is there any way to determine if the exclude pattern
                 // is never a sub-set of the table pattern.
@@ -485,14 +487,15 @@ RME TODO
          * which is either a NameTableDef or PatternTableDef.
          */
         static ExplicitRules.TableDef make(
-                final MondrianDef.AggTable aggTable,
-                final ExplicitRules.Group group) {
+            final MondrianDef.AggTable aggTable,
+            final ExplicitRules.Group group)
+        {
             return (aggTable instanceof MondrianDef.AggName) ?
-                    ExplicitRules.NameTableDef.make(
-                            (MondrianDef.AggName) aggTable, group) :
-                    (ExplicitRules.TableDef)
+                ExplicitRules.NameTableDef.make(
+                    (MondrianDef.AggName) aggTable, group) :
+                (ExplicitRules.TableDef)
                     ExplicitRules.PatternTableDef.make(
-                            (MondrianDef.AggPattern) aggTable, group);
+                        (MondrianDef.AggPattern) aggTable, group);
         }
 
         /**
@@ -514,7 +517,7 @@ RME TODO
             }
 
             MondrianDef.AggIgnoreColumn[] ignores =
-                    aggTable.getAggIgnoreColumns();
+                aggTable.getAggIgnoreColumns();
 
             if (ignores != null) {
                 for (MondrianDef.AggIgnoreColumn ignore : ignores) {
@@ -542,34 +545,41 @@ RME TODO
                 }
             }
         }
+
         private static void addTo(
-                final ExplicitRules.TableDef tableDef,
-                final MondrianDef.AggLevel aggLevel) {
-            addLevelTo(tableDef,
-                       aggLevel.getNameAttribute(),
-                       aggLevel.getColumnName());
+            final ExplicitRules.TableDef tableDef,
+            final MondrianDef.AggLevel aggLevel)
+        {
+            addLevelTo(
+                tableDef,
+                aggLevel.getNameAttribute(),
+                aggLevel.getColumnName());
         }
 
         private static void addTo(
-                final ExplicitRules.TableDef tableDef,
-                final MondrianDef.AggMeasure aggMeasure) {
-            addMeasureTo(tableDef,
-                         aggMeasure.getNameAttribute(),
-                         aggMeasure.getColumn());
+            final ExplicitRules.TableDef tableDef,
+            final MondrianDef.AggMeasure aggMeasure)
+        {
+            addMeasureTo(
+                tableDef,
+                aggMeasure.getNameAttribute(),
+                aggMeasure.getColumn());
         }
 
         public static void addLevelTo(
-                final ExplicitRules.TableDef tableDef,
-                final String name,
-                final String columnName) {
+            final ExplicitRules.TableDef tableDef,
+            final String name,
+            final String columnName)
+        {
             Level level = tableDef.new Level(name, columnName);
             tableDef.add(level);
         }
 
         public static void addMeasureTo(
-                final ExplicitRules.TableDef tableDef,
-                final String name,
-                final String column) {
+            final ExplicitRules.TableDef tableDef,
+            final String name,
+            final String column)
+        {
             Measure measure = tableDef.new Measure(name, column);
             tableDef.add(measure);
         }
@@ -694,7 +704,7 @@ RME TODO
 
         /**
          * This class is used to map from a measure's symbolic name,
-         * [Measures]&#46;[Unit Sales] to the aggregate table's column
+         * [Measures]&amp;#46;[Unit Sales] to the aggregate table's column
          * name, UNIT_SALES_SUM.
          */
         class Measure {
@@ -758,16 +768,16 @@ RME TODO
                     if (names.size() != 2) {
                         msgRecorder.reportError(
                             mres.BadMeasureNameFormat.str(
-                                   msgRecorder.getContext(),
-                                   name));
+                                msgRecorder.getContext(),
+                                name));
                     } else {
                         RolapCube cube = ExplicitRules.TableDef.this.getCube();
                         SchemaReader schemaReader = cube.getSchemaReader();
                         Member member = (Member) schemaReader.lookupCompound(
-                                    cube,
-                                    names,
-                                    false,
-                                    Category.Member);
+                            cube,
+                            names,
+                            false,
+                            Category.Member);
                         if (member == null) {
                             if (! names.get(0).name.equals("Measures")) {
                                 msgRecorder.reportError(
@@ -777,8 +787,8 @@ RME TODO
                             } else {
                                 msgRecorder.reportError(
                                     mres.UnknownMeasureName.str(
-                                            msgRecorder.getContext(),
-                                            names.get(1).name));
+                                        msgRecorder.getContext(),
+                                        names.get(1).name));
                             }
                         }
                         RolapStar star = cube.getStar();
@@ -837,8 +847,8 @@ RME TODO
         private List<Measure> measures;
 
         protected TableDef(
-                final boolean ignoreCase,
-                final ExplicitRules.Group aggGroup) {
+            final boolean ignoreCase,
+            final ExplicitRules.Group aggGroup) {
             this.id = nextId();
             this.ignoreCase = ignoreCase;
             this.aggGroup = aggGroup;
@@ -920,8 +930,8 @@ RME TODO
             return new Recognizer.Matcher() {
                 public boolean matches(final String name) {
                     for (Iterator<String> it =
-                            ExplicitRules.TableDef.this.getIgnoreColumnNames();
-                            it.hasNext();) {
+                        ExplicitRules.TableDef.this.getIgnoreColumnNames();
+                        it.hasNext();) {
                         String ignoreName = it.next();
                         if (ignoreName.equals(name)) {
                             return true;
@@ -941,7 +951,7 @@ RME TODO
                     // Match is case insensitive
                     final String factCountName = TableDef.this.factCountName;
                     return factCountName != null &&
-                        factCountName.equalsIgnoreCase(name);
+                           factCountName.equalsIgnoreCase(name);
                 }
             };
         }
@@ -989,8 +999,9 @@ RME TODO
             if (this.foreignKeyMap == Collections.EMPTY_MAP) {
                 this.foreignKeyMap = new HashMap<String, String>();
             }
-            this.foreignKeyMap.put(fk.getFactFKColumnName(),
-                                   fk.getAggregateFKColumnName());
+            this.foreignKeyMap.put(
+                fk.getFactFKColumnName(),
+                fk.getAggregateFKColumnName());
         }
 
         /**
@@ -1215,9 +1226,9 @@ RME TODO
 
         private final String name;
         public NameTableDef(
-                final String name,
-                final boolean ignoreCase,
-                final ExplicitRules.Group group) {
+            final String name,
+            final boolean ignoreCase,
+            final ExplicitRules.Group group) {
             super(ignoreCase, group);
             this.name = name;
         }
@@ -1228,8 +1239,8 @@ RME TODO
          */
         public boolean matches(final String tableName) {
             return (this.ignoreCase) ?
-                    this.name.equalsIgnoreCase(tableName) :
-                    this.name.equals(tableName);
+                this.name.equalsIgnoreCase(tableName) :
+                this.name.equals(tableName);
         }
 
         /**
@@ -1296,9 +1307,9 @@ RME TODO
         private List<Exclude> excludes;
 
         public PatternTableDef(
-                final String pattern,
-                final boolean ignoreCase,
-                final ExplicitRules.Group group) {
+            final String pattern,
+            final boolean ignoreCase,
+            final ExplicitRules.Group group) {
             super(ignoreCase, group);
             this.pattern = (this.ignoreCase)
                 ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
@@ -1401,17 +1412,17 @@ RME TODO
      * @param attrName
      */
     private static void checkAttributeString(
-            final MessageRecorder msgRecorder,
-            final String attrValue,
-            final String attrName) {
+        final MessageRecorder msgRecorder,
+        final String attrValue,
+        final String attrName) {
         if (attrValue == null) {
             msgRecorder.reportError(mres.NullAttributeString.str(
-                    msgRecorder.getContext(),
-                    attrName));
+                msgRecorder.getContext(),
+                attrName));
         } else if (attrValue.length() == 0) {
             msgRecorder.reportError(mres.EmptyAttributeString.str(
-                    msgRecorder.getContext(),
-                    attrName));
+                msgRecorder.getContext(),
+                attrName));
         }
     }
 

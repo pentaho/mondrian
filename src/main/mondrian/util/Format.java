@@ -1515,9 +1515,10 @@ public class Format {
         if (currencyFormat.getMaximumFractionDigits() > 0) {
             buf.append('.');
             appendTimes(buf, '0', currencyFormat.getMinimumFractionDigits());
-            appendTimes(buf, '#',
-                    currencyFormat.getMaximumFractionDigits() -
-                    currencyFormat.getMinimumFractionDigits());
+            appendTimes(
+                buf, '#',
+                currencyFormat.getMaximumFractionDigits()
+                - currencyFormat.getMinimumFractionDigits());
         }
         buf.append(currencyRight);
         String currencyFormatString = buf.toString();

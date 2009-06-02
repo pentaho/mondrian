@@ -244,7 +244,8 @@ public class AggTableManager {
                     if (tableDef != null) {
                         // load columns
                         dbTable.load();
-                        makeAggStar = tableDef.columnsOK(star,
+                        makeAggStar = tableDef.columnsOK(
+                            star,
                             dbFactTable,
                             dbTable,
                             msgRecorder);
@@ -254,7 +255,8 @@ public class AggTableManager {
                         if (rules.matchesTableName(factTableName, name)) {
                             // load columns
                             dbTable.load();
-                            makeAggStar = rules.columnsOK(star,
+                            makeAggStar = rules.columnsOK(
+                                star,
                                 dbFactTable,
                                 dbTable,
                                 msgRecorder);
@@ -266,10 +268,12 @@ public class AggTableManager {
                         dbTable.setTableUsageType(
                             JdbcSchema.TableUsageType.AGG);
                         String alias = null;
-                        dbTable.table = new MondrianDef.Table(schema,
+                        dbTable.table = new MondrianDef.Table(
+                            schema,
                             name,
                             alias);
-                        AggStar aggStar = AggStar.makeAggStar(star,
+                        AggStar aggStar = AggStar.makeAggStar(
+                            star,
                             dbTable,
                             msgRecorder);
                         if (aggStar.getSize() > 0) {

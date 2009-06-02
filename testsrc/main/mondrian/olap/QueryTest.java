@@ -32,9 +32,13 @@ public class QueryTest extends FoodMartTestCase {
         TestContext testContext = getTestContext();
         Connection connection = testContext.getConnection();
 
-        queryWithCellProps = new Query(connection, formulas, axes, "Sales",
+        queryWithCellProps =
+            new Query(
+                connection, formulas, axes, "Sales",
                 null, cellProps, false, false);
-        queryWithoutCellProps = new Query(connection, formulas, axes, "Sales",
+        queryWithoutCellProps =
+            new Query(
+                connection, formulas, axes, "Sales",
                 null, new QueryPart[0], false, false);
     }
 

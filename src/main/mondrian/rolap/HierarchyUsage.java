@@ -360,17 +360,23 @@ public class HierarchyUsage {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
             //    also specify the "primaryKeyTable" attribute if the hierarchy
             //    is a join (hence has more than one table).
-            this.joinTable = findJoinTable(hierarchy,
-                hierarchy.getXmlHierarchy().primaryKeyTable);
-            this.joinExp = new MondrianDef.Column(this.joinTable.getAlias(),
+            this.joinTable =
+                findJoinTable(
+                    hierarchy,
+                    hierarchy.getXmlHierarchy().primaryKeyTable);
+            this.joinExp =
+                new MondrianDef.Column(
+                    this.joinTable.getAlias(),
                     hierarchy.getXmlHierarchy().primaryKey);
         } else {
             // 3. If neither of the above, the join is assumed to be to key of
             //    the last level.
             final Level[] levels = hierarchy.getLevels();
             RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
-            this.joinTable = findJoinTable(hierarchy,
-                joinLevel.getKeyExp().getTableAlias());
+            this.joinTable =
+                findJoinTable(
+                    hierarchy,
+                    joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
         }
 

@@ -39,9 +39,11 @@ class RangeFunDef extends FunDefBase {
     static final RangeFunDef instance = new RangeFunDef();
 
     private RangeFunDef() {
-        super(":", "<Member> : <Member>",
-                "Infix colon operator returns the set of members between a given pair of members.",
-                "ixmm");
+        super(
+            ":",
+            "<Member> : <Member>",
+            "Infix colon operator returns the set of members between a given pair of members.",
+            "ixmm");
     }
 
 

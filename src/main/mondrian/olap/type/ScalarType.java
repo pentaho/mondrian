@@ -86,10 +86,12 @@ public class ScalarType implements Type {
         } else if (type instanceof ScalarType) {
             return new ScalarType();
         } else if (type instanceof MemberType) {
-            return computeCommonType(((MemberType) type).getValueType(),
+            return computeCommonType(
+                ((MemberType) type).getValueType(),
                 conversionCount);
         } else if (type instanceof TupleType) {
-            return computeCommonType(((TupleType) type).getValueType(),
+            return computeCommonType(
+                ((TupleType) type).getValueType(),
                 conversionCount);
         } else {
             return null;

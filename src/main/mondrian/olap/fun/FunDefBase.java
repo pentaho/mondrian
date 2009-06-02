@@ -94,8 +94,8 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *                       "&lt;Dimension&gt;.Members".
      * @param description    Description of the function, for example
      *                       "Returns the set of all members in a dimension."
-     * @param syntax         Syntactic type of the operator (for example, function,
-     *                       method, infix operator)
+     * @param syntax         Syntactic type of the operator (for
+     *                       example, function, method, infix operator)
      * @param returnCategory The {@link Category} of the value returned by this
      *                       operator.
      * @param parameterCategories An array of {@link Category} codes, one for
@@ -125,11 +125,13 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      * @param name        Name of the function, for example "Members".
      * @param description Description of the function, for example
      *                    "Returns the set of all members in a dimension."
-     * @param flags       Encoding of the syntactic type, return type, and parameter
-     *                    types of this operator. The "Members" operator has a syntactic
-     *                    type "pxd" which means "an operator with
-     *                    {@link Syntax#Property property} syntax (p) which returns a set
-     *                    (x) and takes a dimension (d) as its argument".
+     * @param flags       Encoding of the syntactic type, return type,
+     *                    and parameter types of this operator. The
+     *                    "Members" operator has a syntactic type
+     *                    "pxd" which means "an operator with
+     *                    {@link Syntax#Property property} syntax (p) which
+     *                    returns a set (x) and takes a dimension (d) as its
+     *                    argument".
      *                    See {@link FunUtil#decodeSyntacticType(String)},
      *                    {@link FunUtil#decodeReturnCategory(String)},
      *                    {@link FunUtil#decodeParameterCategories(String)}.
@@ -161,12 +163,13 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *                    "&lt;Dimension&gt;.Members".
      * @param description Description of the function, for example
      *                    "Returns the set of all members in a dimension."
-     * @param flags       Encoding of the syntactic type, return type, and parameter
-     *                    types of this operator. The "Members" operator has a syntactic
-     *                    type "pxd" which means "an operator with
-     *                    {@link Syntax#Property property} syntax (p) which returns a set
-     *                    (x) and takes a dimension (d) as its argument".
-     *                    See {@link FunUtil#decodeSyntacticType(String)},
+     * @param flags       Encoding of the syntactic type, return type, and
+     *                    parameter types of this operator. The "Members"
+     *                    operator has a syntactic type "pxd" which means "an
+     *                    operator with {@link Syntax#Property property} syntax
+     *                    (p) which returns a set (x) and takes a dimension (d)
+     *                    as its argument".  See
+     *                    {@link FunUtil#decodeSyntacticType(String)},
      *                    {@link FunUtil#decodeReturnCategory(String)},
      *                    {@link FunUtil#decodeParameterCategories(String)}.
      */
@@ -390,8 +393,10 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
     }
 
     public String getSignature() {
-        return getSyntax().getSignature(getName(), getReturnCategory(),
-                getParameterCategories());
+        return getSyntax().getSignature(
+            getName(),
+            getReturnCategory(),
+            getParameterCategories());
     }
 
     public void unparse(Exp[] args, PrintWriter pw) {

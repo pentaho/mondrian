@@ -127,8 +127,9 @@ public class FunUtil extends Util {
             String[] allowedValues) {
         if (i >= call.getArgCount()) {
             if (defaultValue == null) {
-                throw newEvalException(call.getFunDef(),
-                        "Required argument is missing");
+                throw newEvalException(
+                    call.getFunDef(),
+                    "Required argument is missing");
             } else {
                 return defaultValue;
             }
@@ -136,8 +137,9 @@ public class FunUtil extends Util {
         Exp arg = call.getArg(i);
         if (!(arg instanceof Literal) ||
                 arg.getCategory() != Category.Symbol) {
-            throw newEvalException(call.getFunDef(),
-                    "Expected a symbol, found '" + arg + "'");
+            throw newEvalException(
+                call.getFunDef(),
+                "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
         StringBuilder sb = new StringBuilder(64);
@@ -151,8 +153,9 @@ public class FunUtil extends Util {
             }
             sb.append(allowedValue);
         }
-        throw newEvalException(call.getFunDef(),
-                "Allowed values are: {" + sb + "}");
+        throw newEvalException(
+            call.getFunDef(),
+            "Allowed values are: {" + sb + "}");
     }
 
     /**
@@ -166,8 +169,9 @@ public class FunUtil extends Util {
             Class<E> allowedValues) {
         if (i >= call.getArgCount()) {
             if (defaultValue == null) {
-                throw newEvalException(call.getFunDef(),
-                        "Required argument is missing");
+                throw newEvalException(
+                    call.getFunDef(),
+                    "Required argument is missing");
             } else {
                 return defaultValue;
             }
@@ -175,8 +179,9 @@ public class FunUtil extends Util {
         Exp arg = call.getArg(i);
         if (!(arg instanceof Literal) ||
                 arg.getCategory() != Category.Symbol) {
-            throw newEvalException(call.getFunDef(),
-                    "Expected a symbol, found '" + arg + "'");
+            throw newEvalException(
+                call.getFunDef(),
+                "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
         for (E e : allowedValues.getEnumConstants()) {
@@ -192,8 +197,9 @@ public class FunUtil extends Util {
             }
             buf.append(e.name());
         }
-        throw newEvalException(call.getFunDef(),
-                "Allowed values are: {" + buf + "}");
+        throw newEvalException(
+            call.getFunDef(),
+            "Allowed values are: {" + buf + "}");
     }
 
     /**

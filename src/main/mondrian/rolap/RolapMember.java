@@ -63,7 +63,8 @@ public class RolapMember extends MemberBase {
             List<List<Member>> list = new ArrayList<List<Member>>();
             Level[] levels = hierarchy.getLevels();
             for (Level level : levels) {
-                List<Member> members = schemaReader.getLevelMembers(level, true);
+                List<Member> members =
+                    schemaReader.getLevelMembers(level, true);
                 if (members != null) {
                     list.add(members);
                 }
@@ -138,7 +139,8 @@ public class RolapMember extends MemberBase {
             int ordinal = hierarchy.hasAll() ? 1 : 0;
             List<List<Member>> levelMembers =
                 getAllMembers(schemaReader, hierarchy);
-            List<Member> leafMembers = levelMembers.get(levelMembers.size() - 1);
+            List<Member> leafMembers =
+                levelMembers.get(levelMembers.size() - 1);
             levelMembers = levelMembers.subList(0, levelMembers.size() - 1);
 
             // Set all ordinals
@@ -591,10 +593,12 @@ public class RolapMember extends MemberBase {
                 Integer cardinality;
 
                 if (isAll() && childLevelHasApproxRowCount()) {
-                    cardinality = getLevel().getChildLevel().getApproxRowCount();
+                    cardinality =
+                        getLevel().getChildLevel().getApproxRowCount();
                 } else {
                     list = new ArrayList<RolapMember>();
-                    getHierarchy().getMemberReader().getMemberChildren(this, list);
+                    getHierarchy().getMemberReader().getMemberChildren(
+                        this, list);
                     cardinality = list.size();
                 }
                 return cardinality;
@@ -620,7 +624,9 @@ public class RolapMember extends MemberBase {
                 break;
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
-                return this == this.getHierarchy().getAllMember() ? 0 : getKey();
+                return this == this.getHierarchy().getAllMember()
+                    ? 0
+                    : getKey();
 
             default:
                 break;
@@ -637,7 +643,10 @@ public class RolapMember extends MemberBase {
      * @param matchCase Whether to match name case-sensitive
      * @return Property value
      */
-    protected Object getPropertyFromMap(String propertyName, boolean matchCase) {
+    protected Object getPropertyFromMap(
+        String propertyName,
+        boolean matchCase)
+    {
         synchronized (this) {
             if (matchCase) {
                 return mapPropertyNameToValue.get(propertyName);
@@ -653,7 +662,8 @@ public class RolapMember extends MemberBase {
     }
 
     protected boolean childLevelHasApproxRowCount() {
-        return getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE;
+        return getLevel().getChildLevel().getApproxRowCount()
+            > Integer.MIN_VALUE;
     }
 
     protected boolean isAllMember() {
@@ -789,7 +799,8 @@ public class RolapMember extends MemberBase {
         }
         PropertyFormatter pf;
         if (prop != null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(this, propertyName,
+            return pf.formatProperty(
+                this, propertyName,
                 getPropertyValue(propertyName));
         }
 

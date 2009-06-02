@@ -153,7 +153,8 @@ public abstract class AbstractMemoryMonitor
             }
 /*
             if (notifyNow) {
-                listener.memoryUsageNotification(getUsedMemory(), getMaxMemory());
+                listener.memoryUsageNotification(
+                    getUsedMemory(), getMaxMemory());
             }
 */
             return true;
@@ -210,7 +211,8 @@ public abstract class AbstractMemoryMonitor
 
 /*
             if (notifyNow) {
-                listener.memoryUsageNotification(getUsedMemory(), getMaxMemory());
+                listener.memoryUsageNotification(
+                    getUsedMemory(), getMaxMemory());
             }
 */
         } finally {
@@ -280,13 +282,16 @@ public abstract class AbstractMemoryMonitor
      * @param usedMemory the current memory used.
      * @param maxMemory the maximum memory.
      */
-    protected void notifyListeners(final long usedMemory,
-                                   final long maxMemory) {
+    protected void notifyListeners(
+        final long usedMemory,
+        final long maxMemory)
+    {
         synchronized (listeners) {
             for (Entry e : listeners) {
                 if (usedMemory >= e.threshold) {
-                    e.listener.memoryUsageNotification(usedMemory,
-                                                       maxMemory);
+                    e.listener.memoryUsageNotification(
+                        usedMemory,
+                        maxMemory);
                 }
             }
         }

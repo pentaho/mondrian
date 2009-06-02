@@ -44,13 +44,15 @@ public class LevelType implements Type {
         this.level = level;
         if (level != null) {
             Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-            Util.assertPrecondition(level.getHierarchy() == hierarchy,
-                    "level.getHierarchy() == hierarchy");
+            Util.assertPrecondition(
+                level.getHierarchy() == hierarchy,
+                "level.getHierarchy() == hierarchy");
         }
         if (hierarchy != null) {
             Util.assertPrecondition(dimension != null, "dimension != null");
-            Util.assertPrecondition(hierarchy.getDimension() == dimension,
-                    "hierarchy.getDimension() == dimension");
+            Util.assertPrecondition(
+                hierarchy.getDimension() == dimension,
+                "hierarchy.getDimension() == dimension");
         }
         StringBuilder buf = new StringBuilder("LevelType<");
         if (level != null) {

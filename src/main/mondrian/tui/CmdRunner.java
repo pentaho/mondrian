@@ -1031,10 +1031,11 @@ public class CmdRunner {
                         break;
                     } else {
                         // handle delimited comment block
-                        i = readBlock(reader, line, offset,
-                                commentDelim[commentType][0],
-                                commentDelim[commentType][1],
-                                false, false, buf, i);
+                        i = readBlock(
+                            reader, line, offset,
+                            commentDelim[commentType][0],
+                            commentDelim[commentType][1],
+                            false, false, buf, i);
                         offset = 0;
                     }
                 }

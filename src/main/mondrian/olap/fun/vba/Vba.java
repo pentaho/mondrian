@@ -343,30 +343,38 @@ public class Vba {
     @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
     public static long dateDiff(String interval, Date date1, Date date2) {
-        return _dateDiff(interval, date1, date2, Calendar.SUNDAY,
-                FirstWeekOfYear.vbFirstJan1);
+        return _dateDiff(
+            interval, date1, date2, Calendar.SUNDAY,
+            FirstWeekOfYear.vbFirstJan1);
     }
 
     @FunctionName("DateDiff")
     @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
-    public static long dateDiff(String interval, Date date1, Date date2,
-            int firstDayOfWeek) {
-        return _dateDiff(interval, date1, date2, firstDayOfWeek,
-                FirstWeekOfYear.vbFirstJan1);
+    public static long dateDiff(
+        String interval, Date date1, Date date2, int firstDayOfWeek)
+    {
+        return _dateDiff(
+            interval, date1, date2, firstDayOfWeek,
+            FirstWeekOfYear.vbFirstJan1);
     }
 
     @FunctionName("DateDiff")
     @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
-    public static long dateDiff(String interval, Date date1, Date date2,
-            int firstDayOfWeek, int firstWeekOfYear) {
-        return _dateDiff(interval, date1, date2, firstDayOfWeek,
-                FirstWeekOfYear.values()[firstWeekOfYear]);
+    public static long dateDiff(
+        String interval, Date date1, Date date2,
+        int firstDayOfWeek, int firstWeekOfYear)
+    {
+        return _dateDiff(
+            interval, date1, date2, firstDayOfWeek,
+            FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 
-    private static long _dateDiff(String intervalName, Date date1, Date date2,
-            int firstDayOfWeek, FirstWeekOfYear firstWeekOfYear) {
+    private static long _dateDiff(
+        String intervalName, Date date1, Date date2,
+        int firstDayOfWeek, FirstWeekOfYear firstWeekOfYear)
+    {
         Interval interval = Interval.valueOf(intervalName);
         Calendar calendar1 = Calendar.getInstance();
         firstWeekOfYear.apply(calendar1);
@@ -381,29 +389,38 @@ public class Vba {
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Integer) containing the specified part of a given date.")
     public static int datePart(String interval, Date date) {
-        return _datePart(interval, date, Calendar.SUNDAY,
-                FirstWeekOfYear.vbFirstJan1);
+        return _datePart(
+            interval, date, Calendar.SUNDAY,
+            FirstWeekOfYear.vbFirstJan1);
     }
 
     @FunctionName("DatePart")
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Integer) containing the specified part of a given date.")
     public static int datePart(String interval, Date date, int firstDayOfWeek) {
-        return _datePart(interval, date, firstDayOfWeek,
-                FirstWeekOfYear.vbFirstJan1);
+        return _datePart(
+            interval, date, firstDayOfWeek,
+            FirstWeekOfYear.vbFirstJan1);
     }
 
     @FunctionName("DatePart")
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
     @Description("Returns a Variant (Integer) containing the specified part of a given date.")
-    public static int datePart(String interval, Date date, int firstDayOfWeek,
-            int firstWeekOfYear) {
-        return _datePart(interval, date, firstDayOfWeek, FirstWeekOfYear
-                .values()[firstWeekOfYear]);
+    public static int datePart(
+        String interval, Date date, int firstDayOfWeek,
+        int firstWeekOfYear)
+    {
+        return _datePart(
+            interval, date, firstDayOfWeek,
+            FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 
-    private static int _datePart(String intervalName, Date date,
-            int firstDayOfWeek, FirstWeekOfYear firstWeekOfYear) {
+    private static int _datePart(
+        String intervalName,
+        Date date,
+        int firstDayOfWeek,
+        FirstWeekOfYear firstWeekOfYear)
+    {
         Interval interval = Interval.valueOf(intervalName);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -618,16 +635,25 @@ public class Vba {
     @FunctionName("DDB")
     @Signature("DDB(cost, salvage, life, period[, factor])")
     @Description("Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.")
-    public static double dDB(double cost, double salvage, double life,
-            double period) {
+    public static double dDB(
+        double cost,
+        double salvage,
+        double life,
+        double period)
+    {
         return dDB(cost, salvage, life, period, 2.0);
     }
 
     @FunctionName("DDB")
     @Signature("DDB(cost, salvage, life, period[, factor])")
     @Description("Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.")
-    public static double dDB(double cost, double salvage, double life,
-            double period, double factor) {
+    public static double dDB(
+        double cost,
+        double salvage,
+        double life,
+        double period,
+        double factor)
+    {
         return (((cost - salvage) * factor) / life) * period;
     }
 
@@ -648,8 +674,13 @@ public class Vba {
     @FunctionName("FV")
     @Signature("FV(rate, nper, pmt[, pv[, type]])")
     @Description("Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double fV(double rate, double nPer, double pmt, double pv,
-            boolean type) {
+    public static double fV(
+        double rate,
+        double nPer,
+        double pmt,
+        double pv,
+        boolean type)
+    {
         if (rate == 0) {
             return -(pv + (nPer * pmt));
         } else {
@@ -670,8 +701,13 @@ public class Vba {
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double iPmt(double rate, double per, double nPer, double PV,
-            double fv) {
+    public static double iPmt(
+        double rate,
+        double per,
+        double nPer,
+        double PV,
+        double fv)
+    {
         return iPmt(rate, per, nPer, PV, fv, false);
     }
 
@@ -679,8 +715,14 @@ public class Vba {
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double iPmt(double rate, double per, double nPer, double PV,
-            double fv, boolean due) {
+    public static double iPmt(
+        double rate,
+        double per,
+        double nPer,
+        double PV,
+        double fv,
+        boolean due)
+    {
         double pmtVal = pmt(rate, nPer, PV, fv, due);
         double pValm1 = PV - pV(rate, per - 1, pmtVal, fv, due);
         return - pValm1 * rate;
@@ -731,9 +773,13 @@ public class Vba {
     @FunctionName("MIRR")
     @Signature("MIRR(values(), finance_rate, reinvest_rate)")
     @Description("Returns a Double specifying the modified internal rate of return for a series of periodic cash flows (payments and receipts).")
-    public static double MIRR(double valueArray[], double financeRate,
-            double reinvestRate) {
-        // based on http://en.wikipedia.org/wiki/Modified_Internal_Rate_of_Return
+    public static double MIRR(
+        double valueArray[],
+        double financeRate,
+        double reinvestRate)
+    {
+        // based on
+        // http://en.wikipedia.org/wiki/Modified_Internal_Rate_of_Return
         double reNPV = 0.0;
         double fiNPV = 0.0;
         for (int j = 0; j < valueArray.length; j++) {
@@ -744,8 +790,9 @@ public class Vba {
             }
         }
 
-        double ratio = (- reNPV * Math.pow(1 + reinvestRate, valueArray.length)) /
-        (fiNPV * (1 + financeRate));
+        double ratio =
+            (- reNPV * Math.pow(1 + reinvestRate, valueArray.length))
+            / (fiNPV * (1 + financeRate));
 
         return Math.pow(ratio, 1.0 / (valueArray.length - 1)) - 1.0;
     }
@@ -753,8 +800,13 @@ public class Vba {
     @FunctionName("NPer")
     @Signature("NPer(rate, pmt, pv[, fv[, type]])")
     @Description("Returns a Double specifying the number of periods for an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double nPer(double rate, double pmt, double pv, double fv,
-            boolean due) {
+    public static double nPer(
+        double rate,
+        double pmt,
+        double pv,
+        double fv,
+        boolean due)
+    {
         if (rate == 0) {
             return -(fv + pv) / pmt;
         } else {
@@ -793,38 +845,61 @@ public class Vba {
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double pPmt(double rate, double per, double nPer, double PV,
-            double fv) {
+    public static double pPmt(
+        double rate,
+        double per,
+        double nPer,
+        double PV,
+        double fv)
+    {
         return pPmt(rate, per, nPer, PV, fv, false);
     }
 
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double pPmt(double rate, double per, double nPer, double PV,
-            double fv, boolean due) {
-        return pmt(rate, nPer, PV, fv, due) - iPmt(rate, per, nPer, PV, fv, due);
+    public static double pPmt(
+        double rate,
+        double per,
+        double nPer,
+        double PV,
+        double fv,
+        boolean due)
+    {
+        return pmt(rate, nPer, PV, fv, due)
+            - iPmt(rate, per, nPer, PV, fv, due);
     }
 
     @FunctionName("Pmt")
     @Signature("Pmt(rate, nper, pv[, fv[, type]])")
     @Description("Returns a Double specifying the payment for an annuity based on periodic, fixed payments and a fixed interest rate.")
-    public static double pmt(double rate, double nPer, double pv, double fv,
-            boolean due) {
+    public static double pmt(
+        double rate,
+        double nPer,
+        double pv,
+        double fv,
+        boolean due)
+    {
         if (rate == 0) {
             return -(fv + pv) / nPer;
         } else {
             double r1 = rate + 1;
-            return (fv + pv * Math.pow(r1, nPer)) * rate
-                    / ((due ? r1 : 1) * (1 - Math.pow(r1, nPer)));
+            return (fv + pv * Math.pow(r1, nPer)) * rate / ((due
+                ? r1
+                : 1) * (1 - Math.pow(r1, nPer)));
         }
     }
 
     @FunctionName("PV")
     @Signature("PV(rate, nper, pmt[, fv[, type]])")
     @Description("Returns a Double specifying the present value of an annuity based on periodic, fixed payments to be paid in the future and a fixed interest rate.")
-    public static double pV(double rate, double nper, double pmt, double fv,
-            boolean due) {
+    public static double pV(
+        double rate,
+        double nper,
+        double pmt,
+        double fv,
+        boolean due)
+    {
         if (rate == 0) {
             return -((nper * pmt) + fv);
         } else {
@@ -838,37 +913,53 @@ public class Vba {
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
     @Description("Returns a Double specifying the interest rate per period for an annuity.")
-    public static double rate(double nPer, double pmt, double PV) {
+    public static double rate(
+        double nPer,
+        double pmt,
+        double PV)
+    {
         return rate(nPer, pmt, PV, 0);
     }
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
     @Description("Returns a Double specifying the interest rate per period for an annuity.")
-    public static double rate(double nPer, double pmt, double PV, double fv) {
+    public static double rate(
+        double nPer,
+        double pmt,
+        double PV,
+        double fv)
+    {
         return rate(nPer, pmt, PV, fv, false);
     }
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
     @Description("Returns a Double specifying the interest rate per period for an annuity.")
-    public static double rate(double nPer, double pmt, double PV, double fv,
-            boolean type) {
+    public static double rate(
+        double nPer,
+        double pmt,
+        double PV,
+        double fv,
+        boolean type)
+    {
         return rate(nPer, pmt, PV, fv, type, 0.1);
     }
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
     @Description("Returns a Double specifying the interest rate per period for an annuity.")
-    public static double rate(double nPer, // specifies the number of payment
-                                            // periods
-            double pmt, // payment per period of annuity
-            double PV, // the present value of the annuity (0 if a loan)
-            double fv, // the future value of the annuity ($ if savings)
-            boolean due, double guess) {
+    public static double rate(
+        double nPer, // specifies the number of payment periods
+        double pmt, // payment per period of annuity
+        double PV, // the present value of the annuity (0 if a loan)
+        double fv, // the future value of the annuity ($ if savings)
+        boolean due,
+        double guess)
+    {
         if (nPer <= 0) {
             throw new InvalidArgumentException(
-                    "number of payment periods must be larger than 0");
+                "number of payment periods must be larger than 0");
         }
         double minGuess = 0.0;
         double maxGuess = 1.0;
@@ -911,8 +1002,12 @@ public class Vba {
     @FunctionName("SYD")
     @Signature("SYD(cost, salvage, life, period)")
     @Description("Returns a Double specifying the sum-of-years' digits depreciation of an asset for a specified period.")
-    public static double sYD(double cost, double salvage, double life,
-            double period) {
+    public static double sYD(
+        double cost,
+        double salvage,
+        double life,
+        double period)
+    {
         return (cost - salvage) * (life / (period * (period + 1) / 2));
     }
 
@@ -1213,38 +1308,55 @@ public class Vba {
     @FunctionName("FormatCurrency")
     @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
-    public static String formatCurrency(Object expression,
-            int numDigitsAfterDecimal) {
+    public static String formatCurrency(
+        Object expression,
+        int numDigitsAfterDecimal)
+    {
         return formatCurrency(expression, numDigitsAfterDecimal, -2, -2, -2);
     }
 
     @FunctionName("FormatCurrency")
     @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
-    public static String formatCurrency(Object expression,
-            int numDigitsAfterDecimal, int includeLeadingDigit) {
-        return formatCurrency(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, -2, -2);
+    public static String formatCurrency(
+        Object expression,
+        int numDigitsAfterDecimal,
+        int includeLeadingDigit)
+    {
+        return formatCurrency(
+            expression, numDigitsAfterDecimal,
+            includeLeadingDigit, -2, -2);
     }
 
     @FunctionName("FormatCurrency")
     @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
-    public static String formatCurrency(Object expression,
-            int numDigitsAfterDecimal, int includeLeadingDigit,
-            int useParensForNegativeNumbers) {
-        return formatCurrency(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, useParensForNegativeNumbers, -2);
+    public static String formatCurrency(
+        Object expression,
+        int numDigitsAfterDecimal,
+        int includeLeadingDigit,
+        int useParensForNegativeNumbers)
+    {
+        return formatCurrency(
+            expression,
+            numDigitsAfterDecimal,
+            includeLeadingDigit,
+            useParensForNegativeNumbers,
+            -2);
     }
 
     @FunctionName("FormatCurrency")
     @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
-    public static String formatCurrency(Object expression,
-            int numDigitsAfterDecimal, int includeLeadingDigit,
-            int useParensForNegativeNumbers, int groupDigits) {
-        DecimalFormat format = (DecimalFormat) NumberFormat
-                .getCurrencyInstance();
+    public static String formatCurrency(
+        Object expression,
+        int numDigitsAfterDecimal,
+        int includeLeadingDigit,
+        int useParensForNegativeNumbers,
+        int groupDigits)
+    {
+        DecimalFormat format =
+            (DecimalFormat) NumberFormat.getCurrencyInstance();
         if (numDigitsAfterDecimal != -1) {
             format.setMaximumFractionDigits(numDigitsAfterDecimal);
             format.setMinimumFractionDigits(numDigitsAfterDecimal);
@@ -1312,10 +1424,11 @@ public class Vba {
             return DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
 
             // vbGeneralDate, 0
-            // Display a date and/or time. If there is a date part, display it as a
-            // short date. If there is a time part, display it as a long time. If
-            // present, both parts are displayed.
-
+            // Display a date and/or time. If there is a date part,
+            // display it as a short date. If there is a time part,
+            // display it as a long time. If present, both parts are
+            // displayed.
+            //
             // todo: how do we determine if there is a "time part" in java?
         case 0:
         default:
@@ -1342,8 +1455,10 @@ public class Vba {
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
-    public static String formatNumber(Object expression,
-            int numDigitsAfterDecimal) {
+    public static String formatNumber(
+        Object expression,
+        int numDigitsAfterDecimal)
+    {
         return formatNumber(expression, numDigitsAfterDecimal, -1);
     }
 
@@ -1351,25 +1466,31 @@ public class Vba {
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression,
-            int numDigitsAfterDecimal,
-            int includeLeadingDigit)
+        Object expression,
+        int numDigitsAfterDecimal,
+        int includeLeadingDigit)
     {
-        return formatNumber(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, -1);
+        return formatNumber(
+            expression,
+            numDigitsAfterDecimal,
+            includeLeadingDigit,
+            -1);
     }
 
     @FunctionName("FormatNumber")
     @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression,
-            int numDigitsAfterDecimal,
-            int includeLeadingDigit,
-            int useParensForNegativeNumbers)
+        Object expression,
+        int numDigitsAfterDecimal,
+        int includeLeadingDigit,
+        int useParensForNegativeNumbers)
     {
-        return formatNumber(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, useParensForNegativeNumbers, -1);
+        return formatNumber(
+            expression,
+            numDigitsAfterDecimal,
+            includeLeadingDigit,
+            useParensForNegativeNumbers, -1);
     }
 
     @FunctionName("FormatNumber")
@@ -1453,12 +1574,15 @@ public class Vba {
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
     public static String formatPercent(
-            // todo: impl & test
-            Object expression, int numDigitsAfterDecimal /* default -1 */,
-            int includeLeadingDigit /* default UseDefault */,
-            int useParensForNegativeNumbers /* default UseDefault */) {
-        return formatPercent(expression, numDigitsAfterDecimal,
-                includeLeadingDigit, useParensForNegativeNumbers, -1);
+        // todo: impl & test
+        Object expression,
+        int numDigitsAfterDecimal /* default -1 */,
+        int includeLeadingDigit /* default UseDefault */,
+        int useParensForNegativeNumbers /* default UseDefault */)
+    {
+        return formatPercent(
+            expression, numDigitsAfterDecimal,
+            includeLeadingDigit, useParensForNegativeNumbers, -1);
     }
 
     @FunctionName("FormatPercent")
@@ -1730,8 +1854,14 @@ public class Vba {
     @FunctionName("Replace")
     @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
     @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
-    public static String replace(String expression, String find,
-            String replace, int start, int count, int compare) {
+    public static String replace(
+        String expression,
+        String find,
+        String replace,
+        int start,
+        int count,
+        int compare)
+    {
         // compare is currently ignored
         Util.discard(compare);
         return _replace(expression, find, replace, start, count);
@@ -1740,23 +1870,36 @@ public class Vba {
     @FunctionName("Replace")
     @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
     @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
-    public static String replace(String expression, String find,
-            String replace, int start, int count) {
+    public static String replace(
+        String expression,
+        String find,
+        String replace,
+        int start,
+        int count)
+    {
         return _replace(expression, find, replace, start, count);
     }
 
     @FunctionName("Replace")
     @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
     @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
-    public static String replace(String expression, String find,
-            String replace, int start) {
+    public static String replace(
+        String expression,
+        String find,
+        String replace,
+        int start)
+    {
         return _replace(expression, find, replace, start, -1);
     }
 
     @FunctionName("Replace")
     @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
     @Description("")
-    public static String replace(String expression, String find, String replace) {
+    public static String replace(
+        String expression,
+        String find,
+        String replace)
+    {
         // compare is currently ignored
         return _replace(expression, find, replace, 1, -1);
     }
@@ -1822,10 +1965,11 @@ public class Vba {
     @FunctionName("StrComp")
     @Signature("StrComp(string1, string2[, compare])")
     @Description("Returns a Variant (Integer) indicating the result of a string comparison.")
-    public static int strComp(String string1, String string2, int compare/*
-                                                                     * default
-                                                                     * BinaryCompare
-                                                                     */) {
+    public static int strComp(
+        String string1,
+        String string2,
+        int compare /* default BinaryCompare */)
+    {
         // Note: compare is currently ignored
         // Wrapper already checked whether args are null
         assert string1 != null;
@@ -1889,8 +2033,11 @@ public class Vba {
     @FunctionName("WeekdayName")
     @Signature("WeekdayName(weekday, abbreviate, firstdayofweek)")
     @Description("Returns a string indicating the specified day of the week.")
-    public static String weekdayName(int weekday, boolean abbreviate,
-            int firstDayOfWeek) {
+    public static String weekdayName(
+        int weekday,
+        boolean abbreviate,
+        int firstDayOfWeek)
+    {
         // Java and VB agree: SUNDAY = 1, ... SATURDAY = 7
         final Calendar calendar = Calendar.getInstance();
         if (firstDayOfWeek == 0) {
@@ -1904,8 +2051,11 @@ public class Vba {
             // negative numbers give negative modulo
             weekday += 7;
         }
-        return (abbreviate ? getDateFormatSymbols().getShortWeekdays()
-                : getDateFormatSymbols().getWeekdays())[weekday];
+        return
+            (abbreviate
+             ? getDateFormatSymbols().getShortWeekdays()
+             : getDateFormatSymbols().getWeekdays())
+            [weekday];
     }
 
     // Misc
@@ -2042,11 +2192,20 @@ public class Vba {
     }
 
     private enum FirstWeekOfYear {
-        vbUseSystem(0, "Use the NLS API setting."), vbFirstJan1(1,
-                "Start with week in which January 1 occurs (default)."), vbFirstFourDays(
-                2,
-                "Start with the first week that has at least four days in the new year."), vbFirstFullWeek(
-                3, "Start with first full week of the year.");
+        vbUseSystem(
+            0, "Use the NLS API setting."),
+
+        vbFirstJan1(
+            1,
+            "Start with week in which January 1 occurs (default)."),
+
+        vbFirstFourDays(
+            2,
+            "Start with the first week that has at least four days in the new year."),
+
+        vbFirstFullWeek(
+            3,
+            "Start with first full week of the year.");
 
         FirstWeekOfYear(int code, String desc) {
             assert code == ordinal();

@@ -1475,7 +1475,9 @@ axis_specification ::=
 
             AxisOrdinal axis =
                 AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(index);
-            RESULT = new QueryAxis(b.booleanValue(), s, axis,
+            RESULT =
+                new QueryAxis(
+                    b.booleanValue(), s, axis,
                     QueryAxis.SubtotalVisibility.Undefined,
                     Parser.toIdArray(dp));
         :}

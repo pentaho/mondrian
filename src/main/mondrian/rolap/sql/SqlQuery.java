@@ -230,7 +230,7 @@ public class SqlQuery {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
-                        "query already contains alias '" + alias + "'");
+                    "query already contains alias '" + alias + "'");
             } else {
                 return false;
             }
@@ -259,9 +259,10 @@ public class SqlQuery {
         return true;
     }
 
-    public void addFrom(final SqlQuery sqlQuery,
-                        final String alias,
-                        final boolean failIfExists)
+    public void addFrom(
+        final SqlQuery sqlQuery,
+        final String alias,
+        final boolean failIfExists)
     {
         addFromQuery(sqlQuery.toString(), alias, failIfExists);
     }
@@ -284,9 +285,10 @@ public class SqlQuery {
     {
         if (relation instanceof MondrianDef.View) {
             final MondrianDef.View view = (MondrianDef.View) relation;
-            final String viewAlias = (alias == null)
-                    ? view.getAlias()
-                    : alias;
+            final String viewAlias =
+                (alias == null)
+                ? view.getAlias()
+                : alias;
             final String sqlString = view.getCodeSet().chooseQuery(dialect);
             return addFromQuery(sqlString, viewAlias, false);
 
@@ -298,9 +300,10 @@ public class SqlQuery {
 
         } else if (relation instanceof MondrianDef.Table) {
             final MondrianDef.Table table = (MondrianDef.Table) relation;
-            final String tableAlias = (alias == null)
-                    ? table.getAlias()
-                    : alias;
+            final String tableAlias =
+                (alias == null)
+                ? table.getAlias()
+                : alias;
             return addFromTable(
                 table.schema, table.name, tableAlias,
                 table.getFilter(), failIfExists);
@@ -458,7 +461,8 @@ public class SqlQuery {
         } else {
             buf.setLength(0);
 
-            select.toBuffer(buf,
+            select.toBuffer(
+                buf,
                 distinct ? "select distinct " : "select ", ", ");
             buf.append(getGroupingFunction(""));
             from.toBuffer(buf, " from ", ", ");
@@ -587,9 +591,11 @@ public class SqlQuery {
             return false;
         }
 
-        void toBuffer(final StringBuilder buf,
-                      final String first,
-                      final String sep) {
+        void toBuffer(
+            final StringBuilder buf,
+            final String first,
+            final String sep)
+        {
             boolean firstTime = true;
             for (String s : this) {
                 if (firstTime) {

@@ -33,7 +33,8 @@ public class CalculatedChildFunDef extends FunDefBase {
         new CalculatedChildFunDef();
 
     CalculatedChildFunDef() {
-        super("CalculatedChild",
+        super(
+            "CalculatedChild",
             "Returns an existing calculated child member with name <String> from the specified <Member>.",
             "mmmS");
     }

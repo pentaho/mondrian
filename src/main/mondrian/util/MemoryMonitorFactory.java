@@ -159,9 +159,11 @@ public final class MemoryMonitorFactory
      * @throws CreationException if the <code>MemoryMonitor</code> can not be
      * created.
      */
-    protected MemoryMonitor getDefault(Class[] parameterTypes,
-                                       Object[] parameterValues)
-            throws CreationException {
+    protected MemoryMonitor getDefault(
+        Class[] parameterTypes,
+        Object[] parameterValues)
+        throws CreationException
+    {
         return (! enabled() || Util.PreJdk15)
                     // not enabled or Java4 or below
                 ? new FauxMemoryMonitor()

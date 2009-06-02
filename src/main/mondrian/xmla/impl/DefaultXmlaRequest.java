@@ -73,10 +73,13 @@ public class DefaultXmlaRequest
             throws XmlaException {
         this(xmlaRoot, null, role);
     }
-    protected DefaultXmlaRequest(final Element xmlaRoot,
-                                 final String roleName,
-                                 final Role role)
-            throws XmlaException {
+
+    protected DefaultXmlaRequest(
+        final Element xmlaRoot,
+        final String roleName,
+        final Role role)
+        throws XmlaException
+    {
         init(xmlaRoot);
         this.roleName = roleName;
         this.role = role;

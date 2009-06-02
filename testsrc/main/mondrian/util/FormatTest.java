@@ -287,9 +287,9 @@ public class FormatTest extends TestCase {
         checkDate("dd-mmm-yy",     "29-Apr-69",  "29-Avr-69",  "29-Apr-69");
         checkDate("h:mm:ss AM/PM", "8:09:06 PM", "8#09#06 PM", "8:09:06 PM");
         checkDate("hh:mm",         "20:09",      "20#09",      "20:09");
-        checkDate("Long Date",     "Tuesday, April 29, 1969",
-                                   "Mardi, Avril 29, 1969",
-                                   "Dienstag, April 29, 1969");
+        checkDate(
+            "Long Date",     "Tuesday, April 29, 1969",
+            "Mardi, Avril 29, 1969", "Dienstag, April 29, 1969");
         checkDate("Medium Date",   "29-Apr-69",  "29-Avr-69",  "29-Apr-69");
         checkDate("Short Date",    "4/29/69",    "4-29-69",    "4.29.69");
         checkDate("Long Time",     "8:09:06 PM", "8#09#06 PM", "8:09:06 PM");

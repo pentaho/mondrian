@@ -35,7 +35,8 @@ class DistinctFunDef extends FunDefBase {
     public static final DistinctFunDef instance = new DistinctFunDef();
 
     private DistinctFunDef() {
-        super("Distinct",
+        super(
+            "Distinct",
             "Eliminates duplicate tuples from a set.",
             "fxx");
     }

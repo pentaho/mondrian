@@ -117,7 +117,8 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
 
         // Make sure the member and the level come from the same dimension.
         if (levelCalc != null) {
-            final Dimension memberDimension = memberCalc.getType().getDimension();
+            final Dimension memberDimension =
+                memberCalc.getType().getDimension();
             final Dimension levelDimension = levelCalc.getType().getDimension();
             if (!memberDimension.equals(levelDimension)) {
                 throw MondrianResource.instance().
@@ -127,7 +128,9 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                     memberDimension.getUniqueName());
             }
         }
-        return new AbstractMemberCalc(call, new Calc[] {levelCalc, memberCalc}) {
+        return new AbstractMemberCalc(
+            call, new Calc[] {levelCalc, memberCalc})
+        {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
 
@@ -156,15 +159,18 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                     return member;
                 }
 
-                return getDescendant(evaluator.getSchemaReader(), member,
-                        level, opening);
+                return getDescendant(
+                    evaluator.getSchemaReader(), member,
+                    level, opening);
             }
         };
     }
 
     /**
      * Returns the first or last descendant of the member at the target level.
-     * This method is the implementation of both OpeningPeriod and ClosingPeriod.
+     * This method is the implementation of both OpeningPeriod and
+     * ClosingPeriod.
+     *
      * @param schemaReader The schema reader to use to evaluate the function.
      * @param member The member from which the descendant is to be found.
      * @param targetLevel The level to stop at.

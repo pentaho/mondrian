@@ -107,7 +107,8 @@ public class RolapLevel extends LevelBase {
     {
         super(hierarchy, name, depth, levelType);
         Util.assertPrecondition(properties != null, "properties != null");
-        Util.assertPrecondition(hideMemberCondition != null,
+        Util.assertPrecondition(
+            hideMemberCondition != null,
             "hideMemberCondition != null");
         Util.assertPrecondition(levelType != null, "levelType != null");
 

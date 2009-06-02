@@ -315,7 +315,9 @@ public class XmlaSupport {
         buf.append(nl);
         buf.append("       <Catalogs>");
         buf.append(nl);
-        for (Map.Entry<String,String> catalogNameUrl : catalogNameUrls.entrySet()) {
+        for (Map.Entry<String,String> catalogNameUrl :
+                 catalogNameUrls.entrySet())
+        {
             String name = catalogNameUrl.getKey();
             String url = catalogNameUrl.getValue();
             buf.append("           <Catalog name='");
@@ -639,13 +641,16 @@ public class XmlaSupport {
 
             // process
             MockServletContext servletContext = new MockServletContext();
-            MockServletConfig servletConfig = new MockServletConfig(servletContext);
+            MockServletConfig servletConfig =
+                new MockServletConfig(servletContext);
 
-            servletConfig.addInitParameter(XmlaServlet.PARAM_CALLBACKS, cbClassName);
+            servletConfig.addInitParameter(
+                XmlaServlet.PARAM_CALLBACKS, cbClassName);
             servletConfig.addInitParameter(
                 XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
             servletConfig.addInitParameter(
-                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsFile.toURL().toString());
+                XmlaServlet.PARAM_DATASOURCES_CONFIG,
+                dsFile.toURL().toString());
 
             Servlet servlet = new DefaultXmlaServlet();
             servlet.init(servletConfig);
@@ -685,7 +690,8 @@ public class XmlaSupport {
         // process
         MockServletContext servletContext = new MockServletContext();
         MockServletConfig servletConfig = new MockServletConfig(servletContext);
-        servletConfig.addInitParameter(XmlaServlet.PARAM_CALLBACKS, cbClassName);
+        servletConfig.addInitParameter(
+            XmlaServlet.PARAM_CALLBACKS, cbClassName);
         servletConfig.addInitParameter(
             XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
         servletConfig.addInitParameter(
@@ -1013,7 +1019,8 @@ public class XmlaSupport {
             return false;
         }
 
-        Node dataDoc = XmlUtil.transform(doc,
+        Node dataDoc = XmlUtil.transform(
+            doc,
             new BufferedReader(new StringReader(dataTransform)));
         if (dataDoc == null) {
             LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc is null");
@@ -1033,7 +1040,8 @@ public class XmlaSupport {
         }
 
 
-        Node schemaDoc = XmlUtil.transform(doc,
+        Node schemaDoc = XmlUtil.transform(
+            doc,
             new BufferedReader(new StringReader(schemaTransform)));
         if (schemaDoc == null) {
             LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc is null");

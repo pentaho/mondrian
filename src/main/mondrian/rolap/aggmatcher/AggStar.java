@@ -781,8 +781,9 @@ public class AggStar {
 
             MondrianDef.Column left = null;
             if (rightJoinConditionColumnName != null) {
-                left = new MondrianDef.Column(getName(),
-                                              rightJoinConditionColumnName);
+                left = new MondrianDef.Column(
+                    getName(),
+                    rightJoinConditionColumnName);
             } else {
                 if (rleft instanceof MondrianDef.Column) {
                     MondrianDef.Column lcolumn = (MondrianDef.Column) rleft;
@@ -862,9 +863,11 @@ public class AggStar {
          * @param failIfExists
          * @param joinToParent
          */
-        public void addToFrom(final SqlQuery query,
-                              final boolean failIfExists,
-                              final boolean joinToParent) {
+        public void addToFrom(
+            final SqlQuery query,
+            final boolean failIfExists,
+            final boolean joinToParent)
+        {
             query.addFrom(relation, name, failIfExists);
             if (joinToParent) {
                 if (hasParent()) {
@@ -1003,29 +1006,37 @@ public class AggStar {
         private int numberOfRows;
 
         FactTable(final JdbcSchema.Table aggTable) {
-            this(aggTable.getName(),
-                 aggTable.table,
-                 aggTable.getTotalColumnSize(),
-                 aggTable.getNumberOfRows());
+            this(
+                aggTable.getName(),
+                aggTable.table,
+                aggTable.getTotalColumnSize(),
+                aggTable.getNumberOfRows());
         }
-        FactTable(final String name,
-                  final MondrianDef.Relation relation,
-                  final int totalColumnSize,
-                  final int numberOfRows) {
+
+        FactTable(
+            final String name,
+            final MondrianDef.Relation relation,
+            final int totalColumnSize,
+            final int numberOfRows)
+        {
             super(name, relation);
             this.totalColumnSize = totalColumnSize;
             this.measures = new ArrayList<Measure>();
             this.numberOfRows = numberOfRows;
         }
+
         public Table getParent() {
             return null;
         }
+
         public boolean hasParent() {
             return false;
         }
+
         public boolean hasJoinCondition() {
             return false;
         }
+
         public Table.JoinCondition getJoinCondition() {
             return null;
         }
@@ -1306,23 +1317,29 @@ public class AggStar {
         private final Table parent;
         private final JoinCondition joinCondition;
 
-        DimTable(final Table parent,
-                final String name,
-                final MondrianDef.Relation relation,
-                final JoinCondition joinCondition) {
+        DimTable(
+            final Table parent,
+            final String name,
+            final MondrianDef.Relation relation,
+            final JoinCondition joinCondition)
+        {
             super(name, relation);
             this.parent = parent;
             this.joinCondition = joinCondition;
         }
+
         public Table getParent() {
             return parent;
         }
+
         public boolean hasParent() {
             return true;
         }
+
         public boolean hasJoinCondition() {
             return true;
         }
+
         public Table.JoinCondition getJoinCondition() {
             return joinCondition;
         }

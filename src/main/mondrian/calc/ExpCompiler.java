@@ -428,8 +428,9 @@ public interface ExpCompiler {
                         this.threadLocalClassName);
                 }
                 if (this.systemPropertyClassName != null) {
-                    System.setProperty(ExpCompiler.class.getName(),
-                            this.systemPropertyClassName);
+                    System.setProperty(
+                        ExpCompiler.class.getName(),
+                        this.systemPropertyClassName);
                 }
             }
         }
