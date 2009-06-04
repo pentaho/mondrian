@@ -647,6 +647,36 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for the problem where a string expression gave a
+     * ClassCastException because it was evaluating to a member, whereas the
+     * member should have been evaluated to a scalar.
+     */
+    public void testUdfToString() {
+        TestContext tc = TestContext.create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name=\"StringMult\" className=\""
+            + StringMultUdf.class.getName()
+            + "\"/>\n",
+            null);
+        tc.assertQueryReturns(
+            "with member [Measures].[ABC] as StringMult(1, 'A')\n"
+            + "member [Measures].[Unit Sales Formatted] as\n"
+            + "  [Measures].[Unit Sales],\n"
+            + "  FORMAT_STRING = '#,###|color=' ||\n"
+            + "      Iif([Measures].[ABC] = 'A', 'red', 'green')\n"
+            + "select [Measures].[Unit Sales Formatted] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales Formatted]}\n"
+            + "Row #0: 266,773|color=red\n");
+    }
+
+    /**
      * Tests a UDF whose return type is not the same as its first
      * parameter. The return type needs to have full dimensional information;
      * in this case, HierarchyType(dimension=Time, hierarchy=unknown).
