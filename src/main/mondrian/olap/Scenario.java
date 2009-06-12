@@ -21,6 +21,12 @@ package mondrian.olap;
  * <p>Multiple scenarios may be open at the same time, by different users of
  * the OLAP engine.
  *
+ * @see Connection#createScenario()
+ * @see Connection#setScenario(Scenario)
+ * @see Connection#getScenario()
+ * @see Cell#setValue(Object, mondrian.olap.Cell.AllocationPolicy, Object[])
+ * @see mondrian.olap.Cell.AllocationPolicy
+ *
  * <p>TODO: move to olap4j
  *
  * @author jhyde
