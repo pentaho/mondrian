@@ -15,7 +15,17 @@ import java.util.*;
 /**
  * Iterator over union of several {@link Iterable} collections.
  *
- * @see UnionIterator#union(Iterable
+ * <p>Try, for instance, using the {@link #over} helper method:</p>
+ *
+ * <blockquote>
+ * <code>
+ * List&lt;String&gt; names;<br/>
+ * List&lt;String&gt; addresses;<br/>
+ * for (Sstring s : UnionIterator.over(names, addresses)) {
+ * &nbsp;&nbsp;print(s);<br/>
+ * }
+ * </code>
+ * </blockquote>
  *
  * @author jhyde
  * @version $Id$
