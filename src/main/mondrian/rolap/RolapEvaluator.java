@@ -826,7 +826,7 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case AGG_SCOPE:
-                if (maxSolveMember.containsAggregateFunction()) {
+                if (member.containsAggregateFunction()) {
                     if (expandsBefore(member, maxSolveMember)) {
                         maxSolveMember = member;
                     }
@@ -840,7 +840,7 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case CUBE_SCOPE:
-                if (maxSolveMember.containsAggregateFunction()) {
+                if (member.containsAggregateFunction()) {
                     continue;
                 }
 
@@ -853,7 +853,7 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case QUERY_SCOPE:
-                if (maxSolveMember.containsAggregateFunction()) {
+                if (member.containsAggregateFunction()) {
                     continue;
                 }
 

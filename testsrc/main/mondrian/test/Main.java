@@ -217,6 +217,7 @@ public class Main extends TestSuite {
             addTest(suite, AccessControlTest.class);
             addTest(suite, ParserTest.class);
             addTest(suite, CustomizedParserTest.class);
+            addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);
