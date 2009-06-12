@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class RolapLevel extends LevelBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+    private static final Logger LOGGER = Logger.getLogger(RolapLevel.class);
 
     /**
      * The column or expression which yields the level's key.

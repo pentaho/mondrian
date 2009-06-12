@@ -13,12 +13,13 @@
 
 package mondrian.rolap;
 
-import mondrian.mdx.MdxVisitorImpl;
-import mondrian.mdx.MemberExpr;
+import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
+import mondrian.calc.*;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -49,7 +50,7 @@ public class RolapCube extends CubeBase {
     /**
      * List of calculated members.
      */
-    private Formula[] calculatedMembers;
+    private final List<Formula> calculatedMemberList = new ArrayList<Formula>();
 
     /**
      * Role-based cache of calculated members
@@ -61,7 +62,7 @@ public class RolapCube extends CubeBase {
     /**
      * List of named sets.
      */
-    private Formula[] namedSets;
+    private final List<Formula> namedSetList = new ArrayList<Formula>();
 
     /** Contains {@link HierarchyUsage}s for this cube */
     private final List<HierarchyUsage> hierarchyUsages;
@@ -81,6 +82,8 @@ public class RolapCube extends CubeBase {
      * Refers {@link RolapCubeUsages} if this is a virtual cube
      */
     private RolapCubeUsages cubeUsages;
+
+    RolapBaseCubeMeasure factCountMeasure;
 
     /**
      * Private constructor used by both normal cubes and virtual cubes.
@@ -106,8 +109,6 @@ public class RolapCube extends CubeBase {
         this.caption = caption;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList<HierarchyUsage>();
-        this.calculatedMembers = new Formula[0];
-        this.namedSets = new Formula[0];
         this.load = load;
 
         if (! isVirtual()) {
@@ -151,8 +152,8 @@ public class RolapCube extends CubeBase {
                 getOrCreateDimension(
                     xmlCubeDimension, schema, xmlSchema, i + 1);
             if (getLogger().isDebugEnabled()) {
-                getLogger().debug("RolapCube<init>: dimension="
-                    + dimension.getName());
+                getLogger().debug(
+                    "RolapCube<init>: dimension=" + dimension.getName());
             }
             this.dimensions[i + 1] = dimension;
 
@@ -184,14 +185,13 @@ public class RolapCube extends CubeBase {
 
         if (fact == null) {
             throw Util.newError(
-                "Must specify fact table of cube '" +
-                    getName() + "'");
+                "Must specify fact table of cube '" + getName() + "'");
         }
 
         if (fact.getAlias() == null) {
             throw Util.newError(
-                "Must specify alias for fact table of cube '" +
-                    getName() + "'");
+                "Must specify alias for fact table of cube '" + getName()
+                + "'");
         }
 
         // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
@@ -203,91 +203,41 @@ public class RolapCube extends CubeBase {
             new ArrayList<RolapMember>(xmlCube.measures.length);
         Member defaultMeasure = null;
         for (int i = 0; i < xmlCube.measures.length; i++) {
-            MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
-            MondrianDef.Expression measureExp;
-            if (xmlMeasure.column != null) {
-                if (xmlMeasure.measureExp != null) {
-                    throw MondrianResource.instance().
-                    BadMeasureSource.ex(
-                        xmlCube.name, xmlMeasure.name);
-                }
-                measureExp = new MondrianDef.Column(
-                    fact.getAlias(), xmlMeasure.column);
-            } else if (xmlMeasure.measureExp != null) {
-                measureExp = xmlMeasure.measureExp;
-            } else {
-                throw MondrianResource.instance().
-                BadMeasureSource.ex(
-                        xmlCube.name, xmlMeasure.name);
-            }
-
-            // Validate aggregator name. Substitute deprecated "distinct count"
-            // with modern "distinct-count".
-            String aggregator = xmlMeasure.aggregator;
-            if (aggregator.equals("distinct count")) {
-                aggregator = RolapAggregator.DistinctCount.getName();
-            }
-            final RolapBaseCubeMeasure measure = new RolapBaseCubeMeasure(
-                    this, null, measuresLevel, xmlMeasure.name,
-                    xmlMeasure.formatString, measureExp,
-                aggregator, xmlMeasure.datatype);
+            RolapBaseCubeMeasure measure =
+                createMeasure(xmlCube, measuresLevel, i, xmlCube.measures[i]);
             measureList.add(measure);
-            if (Util.equalName(measure.getName(),xmlCube.defaultMeasure)) {
+
+            // Is this the default measure?
+            if (Util.equalName(measure.getName(), xmlCube.defaultMeasure)) {
                 defaultMeasure = measure;
             }
 
-            try {
-                CellFormatter cellFormatter =
-                    getCellFormatter(xmlMeasure.formatter);
-                if (cellFormatter != null) {
-                    measure.setFormatter(cellFormatter);
-                }
-            } catch (Exception e) {
-                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                    xmlMeasure.formatter, measure.getUniqueName(), e);
+            if (measure.getAggregator() == RolapAggregator.Count) {
+                factCountMeasure = measure;
             }
+        }
 
-            // Set member's caption, if present.
-            if (!Util.isEmpty(xmlMeasure.caption)) {
-                // there is a special caption string
-                measure.setProperty(
-                        Property.CAPTION.name,
-                        xmlMeasure.caption);
+        boolean writebackEnabled = false;
+        for (Dimension dimension : dimensions) {
+            if (ScenarioImpl.isScenario(dimension)) {
+                writebackEnabled = true;
             }
+        }
 
-            // Set member's visibility, default true.
-            Boolean visible = xmlMeasure.visible;
-            if (visible == null) {
-                visible = Boolean.TRUE;
+        // If writeback is enabled, ensure that cube has an atomic cell count
+        // measure even if the schema does not contain one.
+        if (writebackEnabled) {
+            if (factCountMeasure == null) {
+                final MondrianDef.Measure xmlMeasure =
+                    new MondrianDef.Measure();
+                xmlMeasure.aggregator = "count";
+                xmlMeasure.name = "Fact Count";
+                xmlMeasure.visible = false;
+                factCountMeasure =
+                    createMeasure(
+                        xmlCube, measuresLevel, measureList.size(), xmlMeasure);
+                measureList.add(factCountMeasure);
             }
-            measure.setProperty(Property.VISIBLE.name, visible);
-
-            List<String> propNames = new ArrayList<String>();
-            List<String> propExprs = new ArrayList<String>();
-            validateMemberProps(
-                xmlMeasure.memberProperties, propNames, propExprs,
-                xmlMeasure.name);
-            int ordinal = i;
-            for (int j = 0; j < propNames.size(); j++) {
-                String propName = propNames.get(j);
-                final Object propExpr = propExprs.get(j);
-                measure.setProperty(propName, propExpr);
-                if (propName.equals(Property.MEMBER_ORDINAL.name)
-                    && propExpr instanceof String) {
-                    final String expr = (String) propExpr;
-                    if (expr.startsWith("\"")
-                        && expr.endsWith("\"")) {
-                        try {
-                            ordinal =
-                                Integer.valueOf(
-                                    expr.substring(1, expr.length() - 1));
-                        } catch (NumberFormatException e) {
-                            Util.discard(e);
-                        }
-                    }
-                }
-            }
-            measure.setOrdinal(ordinal);
         }
 
         setMeasuresHierarchyMemberReader(
@@ -307,8 +257,108 @@ public class RolapCube extends CubeBase {
     }
 
     /**
-     * this method makes sure that the schemaReader cache is invalidated.
-     * problems can occur if the measure hierarchy member reader is out
+     * Creates a measure.
+     *
+     * @param xmlCube XML cube
+     * @param measuresLevel Member that all measures belong to
+     * @param ordinal Ordinal of measure
+     * @param xmlMeasure XML measure
+     * @return Measure
+     */
+    private RolapBaseCubeMeasure createMeasure(
+        MondrianDef.Cube xmlCube,
+        RolapLevel measuresLevel,
+        int ordinal,
+        final MondrianDef.Measure xmlMeasure)
+    {
+        MondrianDef.Expression measureExp;
+        if (xmlMeasure.column != null) {
+            if (xmlMeasure.measureExp != null) {
+                throw MondrianResource.instance().BadMeasureSource.ex(
+                    xmlCube.name, xmlMeasure.name);
+            }
+            measureExp = new MondrianDef.Column(
+                fact.getAlias(), xmlMeasure.column);
+        } else if (xmlMeasure.measureExp != null) {
+            measureExp = xmlMeasure.measureExp;
+        } else if (xmlMeasure.aggregator.equals("count")) {
+            // it's ok if count has no expression; it means 'count(*)'
+            measureExp = null;
+        } else {
+            throw MondrianResource.instance().BadMeasureSource.ex(
+                xmlCube.name, xmlMeasure.name);
+        }
+
+        // Validate aggregator name. Substitute deprecated "distinct count"
+        // with modern "distinct-count".
+        String aggregator = xmlMeasure.aggregator;
+        if (aggregator.equals("distinct count")) {
+            aggregator = RolapAggregator.DistinctCount.getName();
+        }
+        final RolapBaseCubeMeasure measure =
+            new RolapBaseCubeMeasure(
+                this, null, measuresLevel, xmlMeasure.name,
+                xmlMeasure.formatString, measureExp,
+                aggregator, xmlMeasure.datatype);
+
+        try {
+            CellFormatter cellFormatter =
+                getCellFormatter(xmlMeasure.formatter);
+            if (cellFormatter != null) {
+                measure.setFormatter(cellFormatter);
+            }
+        } catch (Exception e) {
+            throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                xmlMeasure.formatter, measure.getUniqueName(), e);
+        }
+
+        // Set member's caption, if present.
+        if (!Util.isEmpty(xmlMeasure.caption)) {
+            // there is a special caption string
+            measure.setProperty(
+                Property.CAPTION.name,
+                xmlMeasure.caption);
+        }
+
+        // Set member's visibility, default true.
+        Boolean visible = xmlMeasure.visible;
+        if (visible == null) {
+            visible = Boolean.TRUE;
+        }
+        measure.setProperty(Property.VISIBLE.name, visible);
+
+        List<String> propNames = new ArrayList<String>();
+        List<String> propExprs = new ArrayList<String>();
+        validateMemberProps(
+            xmlMeasure.memberProperties, propNames, propExprs, xmlMeasure.name);
+        for (int j = 0; j < propNames.size(); j++) {
+            String propName = propNames.get(j);
+            final Object propExpr = propExprs.get(j);
+            measure.setProperty(propName, propExpr);
+            if (propName.equals(Property.MEMBER_ORDINAL.name)
+                && propExpr instanceof String)
+            {
+                final String expr = (String) propExpr;
+                if (expr.startsWith("\"")
+                    && expr.endsWith("\""))
+                {
+                    try {
+                        ordinal =
+                            Integer.valueOf(
+                                expr.substring(1, expr.length() - 1));
+                    } catch (NumberFormatException e) {
+                        Util.discard(e);
+                    }
+                }
+            }
+        }
+        measure.setOrdinal(ordinal);
+        return measure;
+    }
+
+    /**
+     * Makes sure that the schemaReader cache is invalidated.
+     * Problems can occur if the measure hierarchy member reader is out
      * of sync with the cache.
      *
      * @param memberReader new member reader for measures hierarchy
@@ -351,9 +401,9 @@ public class RolapCube extends CubeBase {
         MondrianDef.VirtualCube xmlVirtualCube,
         boolean load)
     {
-        this(schema, xmlSchema, xmlVirtualCube.name, xmlVirtualCube.caption,
+        this(
+            schema, xmlSchema, xmlVirtualCube.name, xmlVirtualCube.caption,
             true, null, xmlVirtualCube.dimensions, load);
-
 
         // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot
         // be treated as the same, measure creation cannot be done in a common
@@ -430,10 +480,12 @@ public class RolapCube extends CubeBase {
                         if (visible == null) {
                             visible = Boolean.TRUE;
                         }
-                        virtualCubeMeasure.setProperty(Property.VISIBLE.name,
+                        virtualCubeMeasure.setProperty(
+                            Property.VISIBLE.name,
                             visible);
                         // Inherit caption from the "real" measure
-                        virtualCubeMeasure.setProperty(Property.CAPTION.name,
+                        virtualCubeMeasure.setProperty(
+                            Property.CAPTION.name,
                             cubeMeasure.getCaption());
                         origMeasureList.add(virtualCubeMeasure);
                     }
@@ -458,11 +510,11 @@ public class RolapCube extends CubeBase {
             new ArrayList<RolapVirtualCubeMeasure>(origMeasureList);
         for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
-            List<MondrianDef.CalculatedMember> calculatedMemberList =
+            List<MondrianDef.CalculatedMember> xmlCalculatedMemberList =
                 calculatedMembersMap.get(baseCube);
             Query queryExp =
                 resolveCalcMembers(
-                    calculatedMemberList,
+                    xmlCalculatedMemberList,
                     Collections.<MondrianDef.NamedSet>emptyList(),
                     baseCube,
                     false);
@@ -474,14 +526,14 @@ public class RolapCube extends CubeBase {
 
         // Add the original calculated members from the base cubes to our
         // list of calculated members
-        List<MondrianDef.CalculatedMember> calculatedMemberList =
+        List<MondrianDef.CalculatedMember> xmlCalculatedMemberList =
             new ArrayList<MondrianDef.CalculatedMember>();
         for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
-            calculatedMemberList.addAll(
+            xmlCalculatedMemberList.addAll(
                 calculatedMembersMap.get(baseCube));
         }
-        calculatedMemberList.addAll(
+        xmlCalculatedMemberList.addAll(
             Arrays.asList(xmlVirtualCube.calculatedMembers));
 
 
@@ -495,7 +547,7 @@ public class RolapCube extends CubeBase {
                     Util.<RolapMember>cast(modifiedMeasureList))));
 
         createCalcMembersAndNamedSets(
-            calculatedMemberList,
+            xmlCalculatedMemberList,
             Arrays.asList(xmlVirtualCube.namedSets),
             new ArrayList<RolapMember>(),
             new ArrayList<Formula>(),
@@ -513,26 +565,26 @@ public class RolapCube extends CubeBase {
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
 
 
-        // remove from the calculated members array those members that weren't
-        // originally defined on this virtual cube
-        List<Formula> finalCalcMemberList = new ArrayList<Formula>();
-        for (Formula calculatedMember : calculatedMembers) {
+        // Remove from the calculated members array those members that weren't
+        // originally defined on this virtual cube.
+        List<Formula> calculatedMemberListCopy =
+            new ArrayList<Formula>(calculatedMemberList);
+        calculatedMemberList.clear();
+        for (Formula calculatedMember : calculatedMemberListCopy) {
             if (findOriginalMembers(
                 calculatedMember,
                 origCalcMeasureList,
-                finalCalcMemberList)) {
+                calculatedMemberList))
+            {
                 continue;
             }
             findOriginalMembers(
                 calculatedMember,
                 Arrays.asList(xmlVirtualCube.calculatedMembers),
-                finalCalcMemberList);
+                calculatedMemberList);
         }
-        calculatedMembers =
-            finalCalcMemberList.toArray(
-                new Formula[finalCalcMemberList.size()]);
 
-        for (Formula calcMember : finalCalcMemberList) {
+        for (Formula calcMember : calculatedMemberList) {
             if (calcMember.getName().equalsIgnoreCase(
                 xmlVirtualCube.defaultMeasure))
             {
@@ -547,19 +599,20 @@ public class RolapCube extends CubeBase {
 
     private boolean findOriginalMembers(
         Formula formula,
-        List<MondrianDef.CalculatedMember> calcMemberList,
-        List<Formula> finalCalcMemberList)
+        List<MondrianDef.CalculatedMember> xmlCalcMemberList,
+        List<Formula> calcMemberList)
     {
-        for (MondrianDef.CalculatedMember xmlCalcMember : calcMemberList) {
+        for (MondrianDef.CalculatedMember xmlCalcMember : xmlCalcMemberList) {
             Dimension dimension =
                 lookupDimension(
                     new Id.Segment(
                         xmlCalcMember.dimension,
                         Id.Quoting.UNQUOTED));
-            if (formula.getName().equals(xmlCalcMember.name) &&
-                formula.getMdxMember().getDimension().getName().equals(
-                    dimension.getName())) {
-                finalCalcMemberList.add(formula);
+            if (formula.getName().equals(xmlCalcMember.name)
+                && formula.getMdxMember().getDimension().getName().equals(
+                    dimension.getName()))
+            {
+                calcMemberList.add(formula);
                 return true;
             }
         }
@@ -571,11 +624,13 @@ public class RolapCube extends CubeBase {
     }
 
     public boolean hasAggGroup() {
-        return (aggGroup != null);
+        return aggGroup != null;
     }
+
     public ExplicitRules.Group getAggGroup() {
         return aggGroup;
     }
+
     void loadAggGroup(MondrianDef.Cube xmlCube) {
         aggGroup = ExplicitRules.Group.make(this, xmlCube);
     }
@@ -737,7 +792,7 @@ public class RolapCube extends CubeBase {
 
         // Check the named sets individually (for uniqueness) and generate SQL.
         Set<String> nameSet = new HashSet<String>();
-        for (Formula namedSet : namedSets) {
+        for (Formula namedSet : namedSetList) {
             nameSet.add(namedSet.getName());
         }
         for (MondrianDef.NamedSet xmlNamedSet : xmlNamedSets) {
@@ -761,30 +816,33 @@ public class RolapCube extends CubeBase {
     }
 
     private void postNamedSet(
-            List<MondrianDef.NamedSet> xmlNamedSets,
-            final int offset, int i,
-            final Query queryExp,
-            List<Formula> formulaList) {
+        List<MondrianDef.NamedSet> xmlNamedSets,
+        final int offset,
+        int i,
+        final Query queryExp,
+        List<Formula> formulaList)
+    {
         MondrianDef.NamedSet xmlNamedSet = xmlNamedSets.get(i);
         Util.discard(xmlNamedSet);
         Formula formula = queryExp.formulas[offset + i];
-        namedSets = RolapUtil.addElement(namedSets, formula);
+        namedSetList.add(formula);
         formulaList.add(formula);
     }
 
     private void preNamedSet(
-            MondrianDef.NamedSet xmlNamedSet,
-            Set<String> nameSet,
-            StringBuilder buf) {
+        MondrianDef.NamedSet xmlNamedSet,
+        Set<String> nameSet,
+        StringBuilder buf)
+    {
         if (!nameSet.add(xmlNamedSet.name)) {
             throw MondrianResource.instance().NamedSetNotUnique.ex(
                 xmlNamedSet.name, getName());
         }
 
         buf.append("SET ")
-                .append(Util.makeFqName(xmlNamedSet.name))
-                .append(Util.nl)
-                .append(" AS ");
+            .append(Util.makeFqName(xmlNamedSet.name))
+            .append(Util.nl)
+            .append(" AS ");
         Util.singleQuoteString(xmlNamedSet.getFormula(), buf);
         buf.append(Util.nl);
     }
@@ -798,7 +856,7 @@ public class RolapCube extends CubeBase {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(i);
         final Formula formula = queryExp.formulas[i];
 
-        calculatedMembers = RolapUtil.addElement(calculatedMembers, formula);
+        calculatedMemberList.add(formula);
 
         Member member = formula.getMdxMember();
 
@@ -808,11 +866,11 @@ public class RolapCube extends CubeBase {
         }
         member.setProperty(Property.VISIBLE.name, visible);
 
-        if ((xmlCalcMember.caption != null) &&
-                xmlCalcMember.caption.length() > 0) {
+        if ((xmlCalcMember.caption != null)
+            && xmlCalcMember.caption.length() > 0)
+        {
             member.setProperty(
-                    Property.CAPTION.name,
-                    xmlCalcMember.caption);
+                Property.CAPTION.name, xmlCalcMember.caption);
         }
 
         memberList.add((RolapMember) formula.getMdxMember());
@@ -843,30 +901,30 @@ public class RolapCube extends CubeBase {
         // referenced in another measure; in that case, remove it from the
         // list, since we'll add it back in later; otherwise, in the
         // non-virtual cube case, throw an exception
-        List<Formula> newCalcMemberList = new ArrayList<Formula>();
-        for (Formula formula : calculatedMembers) {
-            if (formula.getName().equals(xmlCalcMember.name) &&
-                formula.getMdxMember().getDimension().getName().equals(
-                    dimension.getName())) {
+        for (int i = 0; i < calculatedMemberList.size(); i++) {
+            Formula formula = calculatedMemberList.get(i);
+            if (formula.getName().equals(xmlCalcMember.name)
+                && formula.getMdxMember().getDimension().getName().equals(
+                dimension.getName()))
+            {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(
                         Util.makeFqName(dimension, xmlCalcMember.name),
                         getName());
+                } else {
+                    calculatedMemberList.remove(i);
+                    --i;
                 }
-                continue;
-            } else {
-                newCalcMemberList.add(formula);
             }
         }
-        calculatedMembers =
-            newCalcMemberList.toArray(new Formula[newCalcMemberList.size()]);
 
         // Check this calc member doesn't clash with one earlier in this
         // batch.
         for (int k = 0; k < j; k++) {
             MondrianDef.CalculatedMember xmlCalcMember2 = xmlCalcMembers.get(k);
-            if (xmlCalcMember2.name.equals(xmlCalcMember.name) &&
-                    xmlCalcMember2.dimension.equals(xmlCalcMember.dimension)) {
+            if (xmlCalcMember2.name.equals(xmlCalcMember.name)
+                && xmlCalcMember2.dimension.equals(xmlCalcMember.dimension))
+            {
                 throw MondrianResource.instance().CalcMemberNotUnique.ex(
                     Util.makeFqName(dimension, xmlCalcMember.name),
                     getName());
@@ -883,7 +941,7 @@ public class RolapCube extends CubeBase {
             xmlProperties, propNames, propExprs, xmlCalcMember.name);
 
         final int measureCount =
-                cube.measuresHierarchy.getMemberReader().getMemberCount();
+            cube.measuresHierarchy.getMemberReader().getMemberCount();
 
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
@@ -961,27 +1019,19 @@ public class RolapCube extends CubeBase {
         List<String> propExprs,
         String memberName)
     {
-        MemberProperty[] properties = new MemberProperty[xmlProperties.length];
-        for (int i = 0; i < properties.length; i++) {
-            final MondrianDef.CalculatedMemberProperty xmlProperty =
-                    xmlProperties[i];
-            if (xmlProperty.expression == null &&
-                xmlProperty.value == null)
-            {
+        if (xmlProperties == null) {
+            return;
+        }
+        for (MondrianDef.CalculatedMemberProperty xmlProperty : xmlProperties) {
+            if (xmlProperty.expression == null && xmlProperty.value == null) {
                 throw MondrianResource.instance()
                     .NeitherExprNorValueForCalcMemberProperty.ex(
-                        xmlProperty.name,
-                        memberName,
-                        getName());
+                        xmlProperty.name, memberName, getName());
             }
-            if (xmlProperty.expression != null &&
-                xmlProperty.value != null)
-            {
-                throw MondrianResource.instance()
-                    .ExprAndValueForMemberProperty.ex(
-                        xmlProperty.name,
-                        memberName,
-                        getName());
+            if (xmlProperty.expression != null && xmlProperty.value != null) {
+                throw MondrianResource.instance().ExprAndValueForMemberProperty
+                    .ex(
+                        xmlProperty.name, memberName, getName());
             }
             propNames.add(xmlProperty.name);
             if (xmlProperty.expression != null) {
@@ -1000,9 +1050,9 @@ public class RolapCube extends CubeBase {
      * Returns the named sets of this cube.
      */
     public NamedSet[] getNamedSets() {
-        NamedSet[] namedSetsArray = new NamedSet[namedSets.length];
-        for (int i = 0; i < namedSets.length; i++) {
-            namedSetsArray[i] = namedSets[i].getNamedSet();
+        NamedSet[] namedSetsArray = new NamedSet[namedSetList.size()];
+        for (int i = 0; i < namedSetList.size(); i++) {
+            namedSetsArray[i] = namedSetList.get(i).getNamedSet();
         }
         return namedSetsArray;
     }
@@ -1165,8 +1215,10 @@ public class RolapCube extends CubeBase {
         return star;
     }
 
-    private void createUsages(RolapCubeDimension dimension,
-            MondrianDef.CubeDimension xmlCubeDimension) {
+    private void createUsages(
+        RolapCubeDimension dimension,
+        MondrianDef.CubeDimension xmlCubeDimension)
+    {
         // RME level may not be in all hierarchies
         // If one uses the DimensionUsage attribute "level", which level
         // in a hierarchy to join on, and there is more than one hierarchy,
@@ -1514,29 +1566,32 @@ public class RolapCube extends CubeBase {
                     if (hierarchyUsage.getForeignKey() == null) {
                         throw MondrianResource.instance()
                             .HierarchyMustHaveForeignKey.ex(
-                            hierarchy.getName(), getName());
+                                hierarchy.getName(), getName());
                     }
                     // jhyde: check is disabled until we handle <View> correctly
-                    if (false &&
-                        !star.getFactTable()
-                            .containsColumn(hierarchyUsage.getForeignKey())) {
+                    if (false
+                        && !star.getFactTable().containsColumn(
+                            hierarchyUsage.getForeignKey()))
+                    {
                         throw MondrianResource.instance()
                             .HierarchyInvalidForeignKey.ex(
-                            hierarchyUsage.getForeignKey(),
-                            hierarchy.getName(),
-                            getName());
+                                hierarchyUsage.getForeignKey(),
+                                hierarchy.getName(),
+                                getName());
                     }
                     // parameters:
                     //   fact table,
                     //   fact table foreign key,
                     MondrianDef.Column column =
-                        new MondrianDef.Column(table.getAlias(),
+                        new MondrianDef.Column(
+                            table.getAlias(),
                             hierarchyUsage.getForeignKey());
                     // parameters:
                     //   left column
                     //   right column
                     RolapStar.Condition joinCondition =
-                        new RolapStar.Condition(column,
+                        new RolapStar.Condition(
+                            column,
                             hierarchyUsage.getJoinExp());
 
                     // (rchen) potential bug?:
@@ -1545,9 +1600,13 @@ public class RolapCube extends CubeBase {
                     // the primary key for this hierarchy can be on a table
                     // which is not the leftmost.
                     // e.g.
+                    //
                     // <Dimension name="Product">
-                    // <Hierarchy hasAll="true" primaryKey="product_id" primaryKeyTable="product">
-                    //  <Join leftKey="product_class_id" rightKey="product_class_id">
+                    // <Hierarchy hasAll="true" primaryKey="product_id"
+                    //    primaryKeyTable="product">
+                    //  <Join
+                    //      leftKey="product_class_id"
+                    //      rightKey="product_class_id">
                     //    <Table name="product_class"/>
                     //    <Table name="product"/>
                     //  </Join>
@@ -1575,8 +1634,8 @@ public class RolapCube extends CubeBase {
                 if (levelName != null) {
                     for (RolapCubeLevel level : levels) {
                         if (level.getKeyExp() != null) {
-                            parentColumn = makeColumns(table,
-                                level, parentColumn, usagePrefix);
+                            parentColumn = makeColumns(
+                                table, level, parentColumn, usagePrefix);
                         }
                         if (levelName.equals(level.getName())) {
                             break;
@@ -1587,8 +1646,8 @@ public class RolapCube extends CubeBase {
                     // all columns.
                     for (RolapCubeLevel level : levels) {
                         if (level.getKeyExp() != null) {
-                            parentColumn = makeColumns(table,
-                                level, parentColumn, usagePrefix);
+                            parentColumn = makeColumns(
+                                table, level, parentColumn, usagePrefix);
                         }
                     }
                 }
@@ -1612,6 +1671,7 @@ public class RolapCube extends CubeBase {
         // to that table. On the other hand, find the ancestor of the table
         // parameter and if found, then associate the new column with
         // that table.
+        //
         // Lastly, if the ancestor can not be found, i.e., there is no table
         // with the level's table name, what to do.  Here we simply punt and
         // associated the new column with the table parameter which might
@@ -1619,16 +1679,16 @@ public class RolapCube extends CubeBase {
         String tableName = level.getTableName();
         if (tableName != null) {
             if (table.getAlias().equals(tableName)) {
-                parentColumn = table.makeColumns(this, level,
-                                            parentColumn, usagePrefix);
+                parentColumn = table.makeColumns(
+                    this, level, parentColumn, usagePrefix);
             } else if (table.equalsTableName(tableName)) {
-                parentColumn = table.makeColumns(this, level,
-                                            parentColumn, usagePrefix);
+                parentColumn = table.makeColumns(
+                    this, level, parentColumn, usagePrefix);
             } else {
                 RolapStar.Table t = table.findAncestor(tableName);
                 if (t != null) {
-                    parentColumn = t.makeColumns(this, level,
-                                            parentColumn, usagePrefix);
+                    parentColumn = t.makeColumns(
+                        this, level, parentColumn, usagePrefix);
                 } else {
                     // Issue warning and keep going.
                     StringBuilder buf = new StringBuilder(64);
@@ -1642,29 +1702,26 @@ public class RolapCube extends CubeBase {
                     buf.append(" have a table with that name.");
                     getLogger().warn(buf.toString());
 
-                    parentColumn = table.makeColumns(this, level,
-                                            parentColumn, usagePrefix);
+                    parentColumn = table.makeColumns(
+                        this, level, parentColumn, usagePrefix);
                 }
             }
         } else {
             // level's expr is not a MondrianDef.Column (this is used by tests)
             // or there is no table name defined
-            parentColumn = table.makeColumns(this, level,
-                                            parentColumn, usagePrefix);
+            parentColumn = table.makeColumns(
+                this, level, parentColumn, usagePrefix);
         }
 
         return parentColumn;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    //
     // The following code deals with handling the DimensionUsage level attribute
     // and snowflake dimensions only.
-    //
 
     /**
-     * Formats a {@link mondrian.olap.MondrianDef.RelationOrJoin}, indenting joins for
-     * readability.
+     * Formats a {@link mondrian.olap.MondrianDef.RelationOrJoin}, indenting
+     * joins for readability.
      *
      * @param relation
      */
@@ -1675,8 +1732,10 @@ public class RolapCube extends CubeBase {
     }
 
     private static void format(
-            MondrianDef.RelationOrJoin relation,
-            StringBuilder buf, String indent) {
+        MondrianDef.RelationOrJoin relation,
+        StringBuilder buf,
+        String indent)
+    {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
 
@@ -1722,11 +1781,10 @@ public class RolapCube extends CubeBase {
     }
 
     /**
-     * This class is used to associate a MondrianDef.Table with its associated
+     * Association between a MondrianDef.Table with its associated
      * level's depth. This is used to rank tables in a snowflake so that
      * the table with the lowest rank, level depth, is furthest from
      * the base fact table in the RolapStar.
-     *
      */
     private static class RelNode {
 
@@ -1754,6 +1812,7 @@ public class RolapCube extends CubeBase {
         private int depth;
         private String alias;
         private MondrianDef.Relation table;
+
         RelNode(String alias, int depth) {
             this.alias = alias;
             this.depth = depth;
@@ -1871,8 +1930,9 @@ public class RolapCube extends CubeBase {
      * @param levels
      */
     private static MondrianDef.RelationOrJoin reorder(
-            MondrianDef.RelationOrJoin relation,
-            RolapLevel[] levels) {
+        MondrianDef.RelationOrJoin relation,
+        RolapLevel[] levels)
+    {
         // Need at least two levels, with only one level theres nothing to do.
         if (levels.length < 2) {
             return relation;
@@ -2010,7 +2070,8 @@ public class RolapCube extends CubeBase {
             while (join.left instanceof MondrianDef.Join) {
                 MondrianDef.Join jleft = (MondrianDef.Join) join.left;
 
-                join.right = new MondrianDef.Join(
+                join.right =
+                    new MondrianDef.Join(
                         join.leftAlias,
                         join.leftKey,
                         jleft.right,
@@ -2050,8 +2111,9 @@ public class RolapCube extends CubeBase {
             MondrianDef.RelationOrJoin left = copy(join.left);
             MondrianDef.RelationOrJoin right = copy(join.right);
 
-            return new MondrianDef.Join(join.leftAlias, join.leftKey, left,
-                        join.rightAlias, join.rightKey, right);
+            return new MondrianDef.Join(
+                join.leftAlias, join.leftKey, left,
+                join.rightAlias, join.rightKey, right);
 
         } else {
             throw Util.newInternal("bad relation type " + relation);
@@ -2067,8 +2129,9 @@ public class RolapCube extends CubeBase {
      * @param tableName
      */
     private static MondrianDef.RelationOrJoin snip(
-            MondrianDef.RelationOrJoin relation,
-            String tableName) {
+        MondrianDef.RelationOrJoin relation,
+        String tableName)
+    {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
             // Return null if the table's name or alias matches tableName
@@ -2109,10 +2172,6 @@ public class RolapCube extends CubeBase {
             throw Util.newInternal("bad relation type " + relation);
         }
     }
-    //
-    ///////////////////////////////////////////////////////////////////////////
-
-
 
     public Member[] getMembersForQuery(String query, List<Member> calcMembers) {
         throw new UnsupportedOperationException();
@@ -2177,9 +2236,29 @@ public class RolapCube extends CubeBase {
      * do not have fact tables.
      */
     public boolean isVirtual() {
-        return (fact == null);
+        return fact == null;
     }
 
+    /**
+     * Returns the system measure that counts the number of fact table rows in
+     * a given cell.
+     */
+    RolapMeasure getFactCountMeasure() {
+        return factCountMeasure;
+    }
+
+    /**
+     * Returns the system measure that counts the number of atomic cells in
+     * a given cell.
+     *
+     * <p>A cell is atomic if all dimensions are at their lowest level.
+     * If the fact table has a primary key, this measure is equivalent to the
+     * {@link #getFactCountMeasure() fact count measure}.
+     */
+    RolapMeasure getAtomicCellCountMeasure() {
+        // TODO: separate measure
+        return factCountMeasure;
+    }
 
     /**
      * Locates the base cube hierarchy for a particular virtual hierarchy.
@@ -2337,7 +2416,9 @@ public class RolapCube extends CubeBase {
                 if (hierUsage == null) {
                     status = "hierUsage == null";
                 } else {
-                    status = "hierUsage == " + (hierUsage.isShared() ? "shared" : "not shared");
+                    status =
+                        "hierUsage == "
+                        + (hierUsage.isShared() ? "shared" : "not shared");
                 }
             }
             StringBuilder buf = new StringBuilder(64);
@@ -2368,7 +2449,6 @@ public class RolapCube extends CubeBase {
         return measuresHierarchy;
     }
 
-    // RME
     public List<RolapMember> getMeasuresMembers() {
         return measuresHierarchy.getMemberReader().getMembers();
     }
@@ -2386,7 +2466,8 @@ public class RolapCube extends CubeBase {
                     "> when expecting <CalculatedMember>");
             }
         } catch (XOMException e) {
-            throw Util.newError(e,
+            throw Util.newError(
+                e,
                 "Error while creating calculated member from XML [" +
                 xml + "]");
         }
@@ -2401,6 +2482,43 @@ public class RolapCube extends CubeBase {
             true);
         assert memberList.size() == 1;
         return memberList.get(0);
+    }
+
+    /**
+     * Creates a calculated member.
+     *
+     * <p>The member will be called [{dimension name}].[{name}].
+     *
+     * <p>Not for public use.
+     *
+     * @param dimension Dimension the calculated member belongs to
+     * @param name Name of member
+     * @param calc Compiled expression
+     */
+    void createCalculatedMember(
+        RolapDimension dimension,
+        String name,
+        Calc calc)
+    {
+        final Formula formula = new Formula(
+            new Id(
+                Id.Segment.toList(
+                    dimension.getName(), name)),
+            createDummyExp(calc),
+            new MemberProperty[0]);
+        final Query query =
+            new Query(
+                schema.getInternalConnection(),
+                this,
+                new Formula[] {formula},
+                new QueryAxis[0],
+                null,
+                new QueryPart[0],
+                new Parameter[0],
+                false,
+                false);
+        query.createValidator().validate(formula);
+        calculatedMemberList.add(formula);
     }
 
     /**
@@ -2427,7 +2545,7 @@ public class RolapCube extends CubeBase {
 
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
-            for (Formula formula : calculatedMembers) {
+            for (Formula formula : calculatedMemberList) {
                 final String formulaUniqueName =
                     formula.getMdxMember().getUniqueName();
                 if (formulaUniqueName.equals(uniqueName) &&
@@ -2442,7 +2560,7 @@ public class RolapCube extends CubeBase {
         public NamedSet getNamedSet(List<Id.Segment> segments) {
             if (segments.size() == 1) {
                 Id.Segment segment = segments.get(0);
-                for (Formula namedSet : namedSets) {
+                for (Formula namedSet : namedSetList) {
                     if (segment.matches(namedSet.getName())) {
                         return namedSet.getNamedSet();
                     }
@@ -2486,7 +2604,7 @@ public class RolapCube extends CubeBase {
                 roleToAccessibleCalculatedMembers.get(getRole());
             if (list == null) {
                 list = new ArrayList<Member>();
-                for (Formula formula : calculatedMembers) {
+                for (Formula formula : calculatedMemberList) {
                     Member member = formula.getMdxMember();
                     if (getRole().canAccess(member)) {
                         list.add(member);
@@ -2639,6 +2757,29 @@ public class RolapCube extends CubeBase {
         {
             return c1.getName().compareTo(c2.getName());
         }
+    }
+
+    /**
+     * Creates an expression that compiles to a given compiled expression.
+     *
+     * <p>Use this for synthetic expressions that do not correspond to anything
+     * in an MDX parse tree, and just need to compile to a particular compiled
+     * expression. The expression has minimal amounts of metadata, for example
+     * type information, but the function has no name or description.
+     *
+     * @see mondrian.calc.DummyExp
+     */
+    static Exp createDummyExp(final Calc calc) {
+        return new ResolvedFunCall(
+            new FunDefBase("dummy", null, "fn") {
+                public Calc compileCall(
+                    ResolvedFunCall call, ExpCompiler compiler)
+                {
+                    return calc;
+                }
+            },
+            new Exp[0],
+            calc.getType());
     }
 }
 

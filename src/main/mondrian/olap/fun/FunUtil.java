@@ -1856,17 +1856,19 @@ public class FunUtil extends Util {
     /**
      * Validates the arguments to a function and resolves the function.
      *
-     * @param validator validator used to validate function arguments and
-     * resolve the function
-     * @param args arguments to the function
-     * @param newArgs returns the resolved arguments to the function
-     * @param name function name
-     * @param syntax syntax style used to invoke function
-     *
+     * @param validator Validator used to validate function arguments and
+     *           resolve the function
+     * @param funDef Function definition, or null to deduce definition from
+     *           name, syntax and argument types
+     * @param args    Arguments to the function
+     * @param newArgs Output parameter for the resolved arguments
+     * @param name    Function name
+     * @param syntax Syntax style used to invoke function
      * @return resolved function definition
      */
     public static FunDef resolveFunArgs(
         Validator validator,
+        FunDef funDef,
         Exp[] args,
         Exp[] newArgs,
         String name,
@@ -1880,8 +1882,9 @@ public class FunUtil extends Util {
         for (int i = 0; i < args.length; i++) {
             newArgs[i] = validator.validate(args[i], false);
         }
-        FunDef funDef = validator.getDef(newArgs, name, syntax);
-
+        if (funDef == null || validator.alwaysResolveFunDef()) {
+            funDef = validator.getDef(newArgs, name, syntax);
+        }
         // If the first argument to a function is either:
         // 1) the measures dimension or
         // 2) a measures member where the function returns another member or
@@ -1897,9 +1900,9 @@ public class FunUtil extends Util {
         // However, we do allow functions like isEmpty, rank, and topPercent.
         // Also, the set function is ok since it just enumerates its
         // arguments.
-        if (!(funDef instanceof SetFunDef) &&
-            query != null &&
-            query.nativeCrossJoinVirtualCube())
+        if (!(funDef instanceof SetFunDef)
+            && query != null
+            && query.nativeCrossJoinVirtualCube())
         {
             int[] paramCategories = funDef.getParameterCategories();
             if (paramCategories.length > 0) {
@@ -1908,18 +1911,20 @@ public class FunUtil extends Util {
                 switch (cat0) {
                 case Category.Dimension:
                 case Category.Hierarchy:
-                    if (arg0 instanceof DimensionExpr &&
-                        ((DimensionExpr) arg0).getDimension().
-                            getOrdinal(cube) == 0) {
+                    if (arg0 instanceof DimensionExpr
+                        && ((DimensionExpr) arg0).getDimension()
+                        .getOrdinal(cube) == 0)
+                    {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
                     break;
                 case Category.Member:
-                    if (arg0 instanceof MemberExpr &&
-                        ((MemberExpr) arg0).getMember().getDimension().
-                            getOrdinal(cube) == 0 &&
-                        (funDef.getReturnCategory() == Category.Member ||
-                            funDef.getReturnCategory() == Category.Set)) {
+                    if (arg0 instanceof MemberExpr
+                        && ((MemberExpr) arg0).getMember().getDimension()
+                        .getOrdinal(cube) == 0
+                        && (funDef.getReturnCategory() == Category.Member
+                            || funDef.getReturnCategory() == Category.Set))
+                    {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
                     break;

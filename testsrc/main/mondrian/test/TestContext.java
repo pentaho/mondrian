@@ -332,7 +332,9 @@ public class TestContext {
 
         // Add cube definitions, if specified.
         if (cubeDefs != null) {
-            int i = s.indexOf("<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
+            int i =
+                s.indexOf(
+                    "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
             s = s.substring(0, i) +
                 cubeDefs +
                 s.substring(i);
@@ -1100,6 +1102,29 @@ public class TestContext {
     }
 
     /**
+     * Returns a test context whose {@link #getConnection()} methods always
+     * returns the same connection object, and which has an active
+     * {@link mondrian.olap.Scenario}, thus enabling writeback.
+     *
+     * @return Test context with active scenario
+     */
+    public TestContext withScenario() {
+        return new DelegatingTestContext(this)
+        {
+            Connection connection;
+
+            public Connection getConnection() {
+                if (connection == null) {
+                    connection = super.getConnection();
+                    connection.setScenario(
+                        connection.createScenario());
+                }
+                return connection;
+            }
+        };
+    }
+
+    /**
      * Converts a set of positions into a string. Useful if you want to check
      * that an axis has the results you expected.
      */
@@ -1713,7 +1738,8 @@ public class TestContext {
         }
         String connectString = getConnectString();
         if (connectString.startsWith("Provider=mondrian; ")) {
-            connectString = connectString.substring("Provider=mondrian; ".length());
+            connectString =
+                connectString.substring("Provider=mondrian; ".length());
         }
         final java.sql.Connection connection =
             java.sql.DriverManager.getConnection(

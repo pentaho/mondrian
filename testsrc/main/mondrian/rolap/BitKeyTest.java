@@ -622,7 +622,9 @@ public class BitKeyTest extends TestCase {
         bitSet.set(5);
         bitSet.set(11);
         BitKey bitKey = BitKey.Factory.makeBitKey(bitSet);
-        assertEquals("0x0000000000000000000000000000000000000000000000000000100000101100", bitKey.toString());
+        assertEquals(
+            "0x0000000000000000000000000000000000000000000000000000100000101100",
+            bitKey.toString());
 
         final BitSet emptyBitSet = new BitSet(77);
         bitKey = BitKey.Factory.makeBitKey(emptyBitSet);
@@ -746,6 +748,9 @@ public class BitKeyTest extends TestCase {
             567
         };
         doTestIterator(bitPositions);
+        bitPositions = new int[] {
+        };
+        doTestIterator(bitPositions);
     }
 
     private void printBitPositions(int i) {
@@ -769,6 +774,9 @@ public class BitKeyTest extends TestCase {
         for (Integer i : bitKey) {
             assertEquals(i, Integer.valueOf(bitPositions[index++]));
         }
+
+        // Check cardinality
+        assertEquals(bitKey.cardinality(), bitPositions.length);
     }
 
     private void doTestEquals(int size0, int size1, int[][] positionsArray) {

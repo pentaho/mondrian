@@ -9,8 +9,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.agg.SegmentLoader;
 import mondrian.rolap.agg.GroupingSet;
 import mondrian.rolap.agg.AggregationKey;
@@ -168,10 +167,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testGroupBatchesForNonGroupableBatchesWithSorting() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "gender", "F"));
         FastBatchingCellReader.Batch maritalStatusBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "marital_status", "M"));
         ArrayList<FastBatchingCellReader.Batch> batchList =
             new ArrayList<FastBatchingCellReader.Batch>();
@@ -193,10 +194,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             makeConstraintCountryState(compoundMembers);
 
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "gender", "F", constraint));
         FastBatchingCellReader.Batch maritalStatusBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "marital_status", "M", constraint));
         ArrayList<FastBatchingCellReader.Batch> batchList =
             new ArrayList<FastBatchingCellReader.Batch>();
@@ -212,19 +215,23 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testGroupBatchesForGroupableBatches() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch genderBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                "customer", "gender", "F")) {
-            boolean canBatch(FastBatchingCellReader.Batch other) {
-                return false;
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                "customer", "gender", "F"))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch other) {
+                    return false;
+                }
+            };
         FastBatchingCellReader.Batch superBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                new String[0], new String[0], new String[0])) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return true;
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                new String[0], new String[0], new String[0]))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return true;
+                }
+            };
         ArrayList<FastBatchingCellReader.Batch> batchList =
             new ArrayList<FastBatchingCellReader.Batch>();
         batchList.add(genderBatch);
@@ -240,41 +247,51 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testGroupBatchesForGroupableBatchesAndNonGroupableBatches() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         final FastBatchingCellReader.Batch group1Agg2 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                "customer", "gender", "F")) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return false;
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                "customer", "gender", "F"))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return false;
+                }
+            };
         final FastBatchingCellReader.Batch group1Agg1 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                "customer", "country", "F")) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return batch.equals(group1Agg2);
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                "customer", "country", "F"))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return batch.equals(group1Agg2);
+                }
+            };
         FastBatchingCellReader.Batch group1Detailed = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                new String[0], new String[0], new String[0])) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return batch.equals(group1Agg1);
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                new String[0], new String[0], new String[0]))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return batch.equals(group1Agg1);
+                }
+            };
 
         final FastBatchingCellReader.Batch group2Agg1 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                "customer", "education", "F")) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return false;
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                "customer", "education", "F"))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return false;
+                }
+            };
         FastBatchingCellReader.Batch group2Detailed = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
-                "customer", "yearly_income", "")) {
-            boolean canBatch(FastBatchingCellReader.Batch batch) {
-                return batch.equals(group2Agg1);
-            }
-        };
+            createRequest(
+                cubeNameSales, measureUnitSales,
+                "customer", "yearly_income", ""))
+            {
+                boolean canBatch(FastBatchingCellReader.Batch batch) {
+                    return batch.equals(group2Agg1);
+                }
+            };
         ArrayList<FastBatchingCellReader.Batch> batchList =
             new ArrayList<FastBatchingCellReader.Batch>();
         batchList.add(group1Agg1);
@@ -420,10 +437,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testAddToCompositeBatchForBothBatchesNotPartOfCompositeBatch() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch batch1 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
         FastBatchingCellReader.Batch batch2 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "gender", "F"));
         Map<AggregationKey, FastBatchingCellReader.CompositeBatch> batchGroups =
             new HashMap<
@@ -442,14 +461,18 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
         FastBatchingCellReader.Batch aggBatch1 = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "gender", "F"));
         FastBatchingCellReader.Batch aggBatchAlreadyInCompisite =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "gender", "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "gender", "F"));
         Map<AggregationKey, FastBatchingCellReader.CompositeBatch> batchGroups =
             new HashMap<
                 AggregationKey, FastBatchingCellReader.CompositeBatch>();
@@ -475,24 +498,31 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
         FastBatchingCellReader.Batch aggBatchToAddToDetailedBatch =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "gender", "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "gender", "F"));
         FastBatchingCellReader.Batch aggBatchAlreadyInComposite =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "city", "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "city", "F"));
         Map<AggregationKey, FastBatchingCellReader.CompositeBatch> batchGroups =
             new HashMap<
                 AggregationKey, FastBatchingCellReader.CompositeBatch>();
         FastBatchingCellReader.CompositeBatch existingCompositeBatch =
             fbcr.new CompositeBatch(aggBatchToAddToDetailedBatch);
         existingCompositeBatch.add(aggBatchAlreadyInComposite);
-        batchGroups.put(aggBatchToAddToDetailedBatch.batchKey,
+        batchGroups.put(
+            aggBatchToAddToDetailedBatch.batchKey,
             existingCompositeBatch);
 
-        fbcr.addToCompositeBatch(batchGroups, detailedBatch,
+        fbcr.addToCompositeBatch(
+            batchGroups, detailedBatch,
             aggBatchToAddToDetailedBatch);
 
         assertEquals(1, batchGroups.size());
@@ -511,18 +541,24 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
         FastBatchingCellReader.Batch detailedBatch = fbcr.new Batch(
-            createRequest(cubeNameSales, measureUnitSales,
+            createRequest(
+                cubeNameSales, measureUnitSales,
                 "customer", "country", "F"));
         FastBatchingCellReader.Batch aggBatchToAddToDetailedBatch =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "gender", "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "gender", "F"));
         FastBatchingCellReader.Batch aggBatchAlreadyInCompositeOfAgg =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "city", "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "city", "F"));
         FastBatchingCellReader.Batch aggBatchAlreadyInCompositeOfDetail =
-            fbcr.new Batch(createRequest(cubeNameSales,
-                measureUnitSales, "customer", "state_province",
-                "F"));
+            fbcr.new Batch(
+                createRequest(
+                    cubeNameSales,
+                    measureUnitSales, "customer", "state_province", "F"));
 
         Map<AggregationKey, FastBatchingCellReader.CompositeBatch> batchGroups =
             new HashMap<
@@ -530,7 +566,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         FastBatchingCellReader.CompositeBatch existingAggCompositeBatch =
             fbcr.new CompositeBatch(aggBatchToAddToDetailedBatch);
         existingAggCompositeBatch.add(aggBatchAlreadyInCompositeOfAgg);
-        batchGroups.put(aggBatchToAddToDetailedBatch.batchKey,
+        batchGroups.put(
+            aggBatchToAddToDetailedBatch.batchKey,
             existingAggCompositeBatch);
 
         FastBatchingCellReader.CompositeBatch existingCompositeBatch =
@@ -538,7 +575,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         existingCompositeBatch.add(aggBatchAlreadyInCompositeOfDetail);
         batchGroups.put(detailedBatch.batchKey, existingCompositeBatch);
 
-        fbcr.addToCompositeBatch(batchGroups, detailedBatch,
+        fbcr.addToCompositeBatch(
+            batchGroups, detailedBatch,
             aggBatchToAddToDetailedBatch);
 
         assertEquals(1, batchGroups.size());
@@ -1061,24 +1099,36 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);
 
         FastBatchingCellReader.Batch summaryBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass}, new String[]{fieldYear,
-                fieldProductFamily, fieldProductDepartment},
-                new String[][]{fieldValuesYear,
+            createBatch(
+                fbcr,
+                new String[]{tableTime, tableProductClass, tableProductClass},
+                new String[]{
+                    fieldYear, fieldProductFamily, fieldProductDepartment},
+                new String[][]{
+                    fieldValuesYear,
                     fieldValuesProductFamily,
-                    fieldValueProductDepartment}, cubeNameSales,
+                    fieldValueProductDepartment},
+                cubeNameSales,
                 measureUnitSales);
 
         FastBatchingCellReader.Batch detailedBatch =
-            createBatch(fbcr,
-                new String[]{tableTime, tableProductClass,
-                    tableProductClass, tableCustomer},
-                new String[]{fieldYear, fieldProductFamily,
-                    fieldProductDepartment, fieldGender},
-                new String[][]{fieldValuesYear,
+            createBatch(
+                fbcr,
+                new String[]{
+                    tableTime,
+                    tableProductClass,
+                    tableProductClass,
+                    tableCustomer},
+                new String[]{
+                    fieldYear,
+                    fieldProductFamily,
+                    fieldProductDepartment,
+                    fieldGender},
+                new String[][]{
+                    fieldValuesYear,
                     fieldValuesProductFamily,
-                    fieldValueProductDepartment, fieldValuesGender},
+                    fieldValueProductDepartment,
+                    fieldValuesGender},
                 cubeNameSales,
                 measureUnitSales);
 
@@ -1107,9 +1157,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         compositeBatch.loadAggregation();
 
         assertEquals(2, groupingSets.size());
-        assertEquals(detailedBatch.getConstrainedColumnsBitKey(),
+        assertEquals(
+            detailedBatch.getConstrainedColumnsBitKey(),
             groupingSets.get(0).getLevelBitKey());
-        assertEquals(summaryBatch.getConstrainedColumnsBitKey(),
+        assertEquals(
+            summaryBatch.getConstrainedColumnsBitKey(),
             groupingSets.get(1).getLevelBitKey());
     }
 

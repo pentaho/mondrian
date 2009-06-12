@@ -58,20 +58,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Aggregation {
 
-    /**
-     * The key that uniquely identify this Aggregation. It is also used
-     * to lookup Aggregation.
-     */
-    private AggregationKey aggregationKey;
+    private final List<StarPredicate> compoundPredicateList;
+    private final RolapStar star;
+    private final BitKey constrainedColumnsBitKey;
 
     /**
-     * Setting for optimizing sql predicates.
+     * Setting for optimizing SQL predicates.
      */
-    private int maxConstraints;
+    private final int maxConstraints;
 
     /**
      * List of soft references to segments.  This List implementation should be
-     * Thread safe on all mutative operations (add, set, and so on). Access to
+     * thread-safe on all mutative operations (add, set, and so on). Access to
      * this list is not synchronized in the code.  This is the only mutable
      * field in the class.
      */
@@ -99,11 +97,14 @@ public class Aggregation {
     public Aggregation(
         AggregationKey aggregationKey)
     {
+        this.compoundPredicateList = aggregationKey.getCompoundPredicateList();
+        this.star = aggregationKey.getStar();
+        this.constrainedColumnsBitKey =
+            aggregationKey.getConstrainedColumnsBitKey();
         this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
-                MondrianProperties.instance().MaxConstraints.get();
+            MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-        this.aggregationKey = aggregationKey;
     }
 
     private CopyOnWriteArrayList<SoftReference<Segment>>
@@ -163,8 +164,6 @@ public class Aggregation {
         GroupingSet groupingSet =
             new GroupingSet(
                 segments, levelBitKey, measureBitKey, axes, columns);
-        final List<StarPredicate> compoundPredicateList =
-            aggregationKey.getCompoundPredicateList();
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
             // Segments are loaded using group by grouping sets
@@ -719,10 +718,10 @@ public class Aggregation {
     }
 
     /**
-     * This is called during Sql generation.
+     * This is called during SQL generation.
      */
     public RolapStar getStar() {
-        return aggregationKey.getStar();
+        return star;
     }
 
     /**
@@ -730,7 +729,7 @@ public class Aggregation {
      * query.
      */
     public BitKey getConstrainedColumnsBitKey() {
-        return aggregationKey.getConstrainedColumnsBitKey();
+        return constrainedColumnsBitKey;
     }
 
     // -- classes -------------------------------------------------------------
@@ -749,13 +748,15 @@ public class Aggregation {
          * binary search.
          */
         private final Map<Comparable<?>, Integer> mapKeyToOffset =
-                new HashMap<Comparable<?>, Integer>();
+            new HashMap<Comparable<?>, Integer>();
 
         /**
          * Actual key values retrieved.
          */
         private Comparable<?>[] keys;
-        private boolean hasNull;
+
+        private static final Integer ZERO = Integer.valueOf(0);
+        private static final Integer ONE = Integer.valueOf(1);
 
         /**
          * Creates an empty Axis.
@@ -785,8 +786,8 @@ public class Aggregation {
             for (int i = 0; i < keys.length; i++) {
                 Comparable<?> key = keys[i];
                 mapKeyToOffset.put(key, i);
-                assert i == 0 ||
-                        ((Comparable) keys[i - 1]).compareTo(keys[i]) < 0;
+                assert i == 0
+                   || ((Comparable) keys[i - 1]).compareTo(keys[i]) < 0;
             }
         }
 
@@ -807,7 +808,6 @@ public class Aggregation {
          * @return Number of keys on axis
          */
         int loadKeys(SortedSet<Comparable<?>> valueSet, boolean hasNull) {
-            this.hasNull = hasNull;
             int size = valueSet.size();
 
             if (hasNull) {
@@ -827,9 +827,10 @@ public class Aggregation {
             return size;
         }
 
-        static final Comparable wrap(Object o) {
+        static Comparable wrap(Object o) {
+            // Before JDK 1.5, Boolean did not implement Comparable
             if (Util.PreJdk15 && o instanceof Boolean) {
-                return Integer.valueOf((Boolean) o ? 1 : 0);
+                return (Boolean) o ? ONE : ZERO;
             } else {
                 return (Comparable) o;
             }

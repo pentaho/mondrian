@@ -13,8 +13,7 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
@@ -36,7 +35,7 @@ public class AggregationManager extends RolapAggregationManager {
         MondrianProperties.instance();
 
     private static final Logger LOGGER =
-            Logger.getLogger(AggregationManager.class);
+        Logger.getLogger(AggregationManager.class);
 
     private static AggregationManager instance;
 
@@ -52,11 +51,19 @@ public class AggregationManager extends RolapAggregationManager {
         return instance;
     }
 
+    /**
+     * Creates the AggregationManager.
+     */
     AggregationManager() {
         super();
     }
 
-    public Logger getLogger() {
+    /**
+     * Returns the log4j logger.
+     *
+     * @return Logger
+     */
+    public final Logger getLogger() {
         return LOGGER;
     }
 
@@ -151,7 +158,9 @@ public class AggregationManager extends RolapAggregationManager {
             // Do not use Aggregate tables if compound predicates are present.
             hasCompoundPredicates = true;
         }
-        if (MondrianProperties.instance().UseAggregates.get() && !hasCompoundPredicates) {
+        if (MondrianProperties.instance().UseAggregates.get()
+             && !hasCompoundPredicates)
+        {
             RolapStar star = groupingSetsList.getStar();
 
             final boolean[] rollup = {false};
@@ -177,8 +186,9 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
                     buf.append(Util.nl);
-                    for (AggStar.Table.Column column : aggStar.getFactTable()
-                        .getColumns()) {
+                    for (AggStar.Table.Column column :
+                             aggStar.getFactTable().getColumns())
+                    {
                         buf.append("   ");
                         buf.append(column);
                         buf.append(Util.nl);
@@ -187,8 +197,8 @@ public class AggregationManager extends RolapAggregationManager {
                 }
 
                 AggQuerySpec aggQuerySpec =
-                    new AggQuerySpec(aggStar, rollup[0],
-                        groupingSetsList);
+                    new AggQuerySpec(
+                        aggStar, rollup[0], groupingSetsList);
                 String sql = aggQuerySpec.generateSqlQuery();
 
                 if (getLogger().isDebugEnabled()) {
@@ -255,10 +265,11 @@ public class AggregationManager extends RolapAggregationManager {
      * @return An aggregate, or null if none is suitable.
      */
     public AggStar findAgg(
-            RolapStar star,
-            final BitKey levelBitKey,
-            final BitKey measureBitKey,
-            boolean[] rollup) {
+        RolapStar star,
+        final BitKey levelBitKey,
+        final BitKey measureBitKey,
+        boolean[] rollup)
+    {
         // If there is no distinct count measure, isDistinct == false,
         // then all we want is an AggStar whose BitKey is a superset
         // of the combined measure BitKey and foreign-key/level BitKey.

@@ -24,27 +24,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import mondrian.olap.CacheControl;
-import mondrian.olap.Cell;
-import mondrian.olap.ConnectionBase;
-import mondrian.olap.Cube;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Position;
-import mondrian.olap.Query;
-import mondrian.olap.QueryAxis;
-import mondrian.olap.QueryCanceledException;
-import mondrian.olap.QueryTimeoutException;
-import mondrian.olap.ResourceLimitExceededException;
-import mondrian.olap.Result;
-import mondrian.olap.ResultBase;
-import mondrian.olap.ResultLimitExceededException;
-import mondrian.olap.Role;
-import mondrian.olap.RoleImpl;
-import mondrian.olap.Schema;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
-import mondrian.rolap.agg.AggregationManager;
+import mondrian.olap.*;
+import mondrian.rolap.agg.*;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
@@ -86,6 +67,7 @@ public class RolapConnection extends ConnectionBase {
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
+    private Scenario scenario;
 
     /**
      * Creates a connection.
@@ -197,7 +179,8 @@ public class RolapConnection extends ConnectionBase {
                 for (String roleName : roleNames) {
                     Role role1 = schema.lookupRole(roleName);
                     if (role1 == null) {
-                        throw Util.newError("Role '" + roleName + "' not found");
+                        throw Util.newError(
+                            "Role '" + roleName + "' not found");
                     }
                     roleList.add(role1);
                 }
@@ -234,15 +217,17 @@ public class RolapConnection extends ConnectionBase {
                     statement.executeQuery("select * from bogustable");
                 }
             } catch (SQLException e) {
-                if (e.getMessage().equals("Table/View 'BOGUSTABLE' does not exist.")) {
+                if (e.getMessage().equals(
+                    "Table/View 'BOGUSTABLE' does not exist."))
+                {
                     // Ignore. This exception comes from Derby when the
                     // connection is valid. If the connection were invalid, we
                     // would receive an error such as "Schema 'BOGUSUSER' does
                     // not exist"
                 } else {
-                    final String message =
-                        "Error while creating SQL connection: " + buf.toString();
-                    throw Util.newError(e, message);
+                    throw Util.newError(
+                        e,
+                        "Error while creating SQL connection: " + buf);
                 }
             } finally {
                 try {
@@ -278,7 +263,8 @@ public class RolapConnection extends ConnectionBase {
                 this.locale = new Locale(strings[0], strings[1], strings[2]);
                 break;
             default:
-                throw Util.newInternal("bad locale string '" + localeString + "'");
+                throw Util.newInternal(
+                    "bad locale string '" + localeString + "'");
             }
         }
 
@@ -392,7 +378,9 @@ public class RolapConnection extends ConnectionBase {
                 RolapConnectionProperties.DataSource.name(),
                 dataSourceName);
             appendKeyValue(
-                buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
+                buf,
+                RolapConnectionProperties.JdbcUser.name(),
+                jdbcUser);
             appendKeyValue(
                 buf,
                 RolapConnectionProperties.JdbcPassword.name(),
@@ -717,6 +705,20 @@ public class RolapConnection extends ConnectionBase {
         return dataSource;
     }
 
+    public Scenario createScenario() {
+        final ScenarioImpl scenario = new ScenarioImpl();
+        scenario.register(schema);
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
     /**
      * A <code>NonEmptyResult</code> filters a result by removing empty rows
      * on a particular axis.
@@ -907,7 +909,8 @@ public class RolapConnection extends ConnectionBase {
                 // via reflection.
                 try {
                     Method method =
-                        DataSource.class.getMethod("isWrapperFor", boolean.class);
+                        DataSource.class.getMethod(
+                            "isWrapperFor", boolean.class);
                     return (Boolean) method.invoke(dataSource, iface);
                 } catch (IllegalAccessException e) {
                     throw Util.newInternal(e, "While invoking isWrapperFor");
@@ -951,6 +954,7 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getConnection(jdbcUser, jdbcPassword);
         }
     }
+
 }
 
 // End RolapConnection.java

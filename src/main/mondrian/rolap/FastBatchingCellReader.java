@@ -43,18 +43,18 @@ public class FastBatchingCellReader implements CellReader {
      * This static variable controls the generation of aggregate table sql.
      */
     private static boolean generateAggregateSql =
-             MondrianProperties.instance().GenerateAggregateSql.get();
+        MondrianProperties.instance().GenerateAggregateSql.get();
 
     static {
         // Trigger is used to lookup and change the value of the
         // variable that controls generating aggregate table sql.
         // Using a trigger means we don't have to look up the property eveytime.
         MondrianProperties.instance().GenerateAggregateSql.addTrigger(
-                new TriggerBase(true) {
-                    public void execute(Property property, String value) {
-                        generateAggregateSql = property.booleanValue();
-                    }
-                });
+            new TriggerBase(true) {
+                public void execute(Property property, String value) {
+                    generateAggregateSql = property.booleanValue();
+                }
+            });
     }
 
     private final RolapCube cube;
@@ -399,10 +399,10 @@ public class FastBatchingCellReader implements CellReader {
             }
             final RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {
-                assert (measuresList.size() == 0) ||
-                        (measure.getStar() ==
-                        (measuresList.get(0)).getStar()):
-                        "Measure must belong to same star as other measures";
+                assert (measuresList.size() == 0)
+                       || (measure.getStar()
+                           == (measuresList.get(0)).getStar())
+                    : "Measure must belong to same star as other measures";
                 measuresList.add(measure);
             }
         }
@@ -451,10 +451,10 @@ public class FastBatchingCellReader implements CellReader {
 
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =
-                distinctMeasureCount > 0 &&
-                !dialect.allowsCountDistinct() ||
-                distinctMeasureCount > 1 &&
-                !dialect.allowsMultipleCountDistinct();
+                distinctMeasureCount > 0
+                && !dialect.allowsCountDistinct()
+                || distinctMeasureCount > 1
+                   && !dialect.allowsMultipleCountDistinct();
 
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(
@@ -478,10 +478,12 @@ public class FastBatchingCellReader implements CellReader {
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
                     RolapStar.Measure[] measures = {measure};
                     aggmgr.loadAggregation(
-                        measures, columns,
+                        measures,
+                        columns,
                         batchKey,
                         predicates,
-                        pinnedSegments, groupingSetsCollector);
+                        pinnedSegments,
+                        groupingSetsCollector);
                     measuresList.remove(measure);
                 }
             }
@@ -494,7 +496,8 @@ public class FastBatchingCellReader implements CellReader {
                         measures, columns,
                         batchKey,
                         predicates,
-                        pinnedSegments, groupingSetsCollector);
+                        pinnedSegments,
+                        groupingSetsCollector);
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
@@ -522,9 +525,10 @@ public class FastBatchingCellReader implements CellReader {
                     new ArrayList<RolapStar.Measure>();
                 for (int i = 0; i < measuresList.size();) {
                     final RolapStar.Measure measure = measuresList.get(i);
-                    if (measure.getAggregator().isDistinct() &&
-                        measure.getExpression().getGenericExpression().
-                            equals(expr)) {
+                    if (measure.getAggregator().isDistinct()
+                        && measure.getExpression().getGenericExpression()
+                        .equals(expr))
+                    {
                         measuresList.remove(i);
                         distinctMeasuresList.add(distinctMeasure);
                     } else {
@@ -538,16 +542,18 @@ public class FastBatchingCellReader implements CellReader {
                     distinctMeasuresList.toArray(
                         new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(
-                    measures, columns,
+                    measures,
+                    columns,
                     batchKey,
                     predicates,
-                    pinnedSegments, groupingSetsCollector);
+                    pinnedSegments,
+                    groupingSetsCollector);
             }
         }
 
         private StarColumnPredicate[] initPredicates() {
             StarColumnPredicate[] predicates =
-                    new StarColumnPredicate[columns.length];
+                new StarColumnPredicate[columns.length];
             for (int j = 0; j < columns.length; j++) {
                 Set<StarColumnPredicate> valueSet = valueSets[j];
 
@@ -578,9 +584,10 @@ public class FastBatchingCellReader implements CellReader {
             final RolapCube cube = FastBatchingCellReader.this.cube;
             if (cube == null || cube.isVirtual()) {
                 final StringBuilder buf = new StringBuilder(64);
-                buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
-                buf.append(cube.getName());
-                buf.append("\", operation not currently supported");
+                buf.append(
+                    "AggGen: Sorry, can not create SQL for virtual Cube \"")
+                    .append(cube.getName())
+                    .append("\", operation not currently supported");
                 BATCH_LOGGER.error(buf.toString());
 
             } else {
@@ -588,14 +595,16 @@ public class FastBatchingCellReader implements CellReader {
                     new AggGen(cube.getName(), cube.getStar(), columns);
                 if (aggGen.isReady()) {
                     // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
-                    System.out.println("createLost:" +
-                        Util.nl + aggGen.createLost());
-                    System.out.println("insertIntoLost:" +
-                        Util.nl + aggGen.insertIntoLost());
-                    System.out.println("createCollapsed:" +
-                        Util.nl + aggGen.createCollapsed());
-                    System.out.println("insertIntoCollapsed:" +
-                        Util.nl + aggGen.insertIntoCollapsed());
+                    System.out.println(
+                        "createLost:" + Util.nl + aggGen.createLost());
+                    System.out.println(
+                        "insertIntoLost:" + Util.nl + aggGen.insertIntoLost());
+                    System.out.println(
+                        "createCollapsed:" + Util.nl
+                        + aggGen.createCollapsed());
+                    System.out.println(
+                        "insertIntoCollapsed:" + Util.nl
+                        + aggGen.insertIntoCollapsed());
                 } else {
                     BATCH_LOGGER.error("AggGen failed");
                 }
@@ -744,8 +753,8 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         private boolean hasSameMeasureList(Batch other) {
-            return (this.measuresList.size() == other.measuresList.size() &&
-                this.measuresList.containsAll(other.measuresList));
+            return this.measuresList.size() == other.measuresList.size()
+                   && this.measuresList.containsAll(other.measuresList);
         }
 
         boolean hasOverlappingBitKeys(Batch other) {
@@ -817,8 +826,10 @@ public class FastBatchingCellReader implements CellReader {
             AggregationManager aggregationManager =
                 AggregationManager.instance();
             AggStar star =
-                aggregationManager.findAgg(getStar(),
-                    getConstrainedColumnsBitKey(), makeMeasureBitKey(),
+                aggregationManager.findAgg(
+                    getStar(),
+                    getConstrainedColumnsBitKey(),
+                    makeMeasureBitKey(),
                     rollup);
             return star;
         }
@@ -850,8 +861,9 @@ public class FastBatchingCellReader implements CellReader {
                         }
                     }
                 }
-                if (!isCommonColumn &&
-                    !hasAllValues(columns[j], valueSets[j])) {
+                if (!isCommonColumn
+                    && !hasAllValues(columns[j], valueSets[j]))
+                {
                     return false;
                 }
             }
@@ -953,8 +965,9 @@ public class FastBatchingCellReader implements CellReader {
         {
             Object v1 = o1.getValue();
             Object v2 = o2.getValue();
-            if (v1.getClass() == v2.getClass() &&
-                v1 instanceof Comparable) {
+            if (v1.getClass() == v2.getClass()
+                && v1 instanceof Comparable)
+            {
                 return ((Comparable) v1).compareTo(v2);
             } else {
                 return v1.toString().compareTo(v2.toString());

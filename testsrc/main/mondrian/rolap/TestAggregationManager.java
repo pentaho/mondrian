@@ -57,7 +57,9 @@ public class TestAggregationManager extends BatchTestCase {
 
     public void testFemaleCustomerCount() {
         CellRequest request =
-            createRequest("Sales", "[Measures].[Customer Count]", "customer", "gender", "F");
+            createRequest(
+                "Sales", "[Measures].[Customer Count]",
+                "customer", "gender", "F");
         final RolapAggregationManager aggMan = AggregationManager.instance();
         FastBatchingCellReader fbcr =
             new FastBatchingCellReader(getCube("Sales"));
@@ -130,12 +132,13 @@ public class TestAggregationManager extends BatchTestCase {
      * generates the correct SQL.
      */
     public void testFemaleUnitSalesSql() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+              && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
-        CellRequest request = createRequest("Sales",
-            "[Measures].[Unit Sales]", "customer", "gender", "F");
+        CellRequest request = createRequest(
+            "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -158,8 +161,8 @@ public class TestAggregationManager extends BatchTestCase {
      * TODO: Enable this test.
      */
     private void _testFemaleUnitSalesSql_withAggs() {
-        CellRequest request = createRequest("Sales",
-            "[Measures].[Unit Sales]", "customer", "gender", "F");
+        CellRequest request = createRequest(
+            "Sales","[Measures].[Unit Sales]", "customer", "gender", "F");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -190,18 +193,22 @@ public class TestAggregationManager extends BatchTestCase {
         }
 
         CellRequest[] requests = new CellRequest[] {
-            createRequest("Sales", "[Measures].[Unit Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"F", "CA"}),
-            createRequest("Sales", "[Measures].[Store Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"M", "CA"}),
-            createRequest("Sales", "[Measures].[Unit Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"F", "OR"})};
+            createRequest(
+                "Sales",
+                "[Measures].[Unit Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"F", "CA"}),
+            createRequest(
+                "Sales", "[Measures].[Store Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"M", "CA"}),
+            createRequest(
+                "Sales", "[Measures].[Unit Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"F", "OR"})};
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -232,18 +239,24 @@ public class TestAggregationManager extends BatchTestCase {
      */
     private void _testMultipleMeasures_withAgg() {
         CellRequest[] requests = new CellRequest[] {
-            createRequest("Sales", "[Measures].[Unit Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"F", "CA"}),
-            createRequest("Sales", "[Measures].[Store Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"M", "CA"}),
-            createRequest("Sales", "[Measures].[Unit Sales]",
-                    new String[] {"customer", "store"},
-                    new String[] {"gender", "store_state"},
-                    new String[] {"F", "OR"})};
+            createRequest(
+                "Sales",
+                "[Measures].[Unit Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"F", "CA"}),
+            createRequest(
+                "Sales",
+                "[Measures].[Store Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"M", "CA"}),
+            createRequest(
+                "Sales",
+                "[Measures].[Unit Sales]",
+                new String[] {"customer", "store"},
+                new String[] {"gender", "store_state"},
+                new String[] {"F", "OR"})};
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -281,7 +294,7 @@ public class TestAggregationManager extends BatchTestCase {
             salesCube.getSchemaReader(null).getMemberByUniqueName(
                 Util.parseIdentifier(measure), fail);
         RolapStar.Measure starMeasure =
-                RolapStar.getStarMeasure(storeSqftMeasure);
+            RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure, false, false);
         final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn =

@@ -23,6 +23,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
 
@@ -365,12 +366,24 @@ public class RolapHierarchy extends HierarchyBase {
     public Member getDefaultMember() {
         // use lazy initialization to get around bootstrap issues
         if (defaultMember == null) {
-            List rootMembers = memberReader.getRootMembers();
-            if (rootMembers.size() == 0) {
+            List<RolapMember> rootMembers = memberReader.getRootMembers();
+            final SchemaReader schemaReader =
+                getRolapSchema().getSchemaReader();
+            List<RolapMember> calcMemberList =
+                Util.cast(schemaReader.getCalculatedMembers(getLevels()[0]));
+            for (RolapMember rootMember :
+                UnionIterator.over(rootMembers, calcMemberList))
+            {
+                if (rootMember.isHidden()) {
+                    continue;
+                }
+                defaultMember = rootMember;
+                break;
+            }
+            if (defaultMember == null) {
                 throw MondrianResource.instance().InvalidHierarchyCondition.ex(
                     this.getUniqueName());
             }
-            defaultMember = (RolapMember) rootMembers.get(0);
         }
         return defaultMember;
     }

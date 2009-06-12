@@ -126,6 +126,104 @@ public interface Cell {
      * dimension (usually the 'all' member).</ul>
      */
     Member getContextMember(Dimension dimension);
+
+    /**
+     * Sets the value of a cell.
+     *
+     * <p>The connection must have an active scenario; see
+     * {@link Connection#setScenario(Scenario)}.
+     *
+     * @param value Cell value
+     * @param allocationPolicy Allocation policy
+     * @param allocationArgs Allocation policy arguments
+     */
+    void setValue(
+        Object value,
+        AllocationPolicy allocationPolicy,
+        Object... allocationArgs);
+
+    /**
+     * TODO: document; move to olap4j
+     */
+    enum AllocationPolicy {
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * assigned an equal value that is:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; =
+         * &lt;value&gt; / Count(atomic cells contained in &lt;tuple&gt;)
+         * </blockquote>
+         */
+        EQUAL_ALLOCATION,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * changed according to:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; = &lt;atomic cell value&gt; +
+         * (&lt;value&gt; - &lt;existing value&gt;)  /
+         * Count(atomic cells contained in &lt;tuple&gt;)
+         * </blockquote>
+         */
+        EQUAL_INCREMENT,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * assigned an equal value that is:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; =
+         * &lt;value&gt; * &lt;weight value expression&gt;
+         * </blockquote>
+         *
+         * <p>Takes an optional argument, {@code weight_value_expression}.
+         * If {@code weight_value_expression} is not provided, the following
+         * expression is assigned to it by default:
+         *
+         * <blockquote>
+         * &lt;weight value expression&gt; =
+         * &lt;atomic cell value&gt; / &lt;existing value&gt;
+         * <blockquote>
+         *
+         * <p>The value of {@code weight value expression} should be expressed
+         * as a value between 0 and 1. This value specifies the ratio of the
+         * allocated value you want to assign to the atomic cells that are
+         * affected by the allocation. It is the client application programmer's
+         * responsibilffity to create expressions whose rollup aggregate values
+         * will equal the allocated value of the expression.
+         */
+        WEIGHTED_ALLOCATION,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * changed according to:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; = &lt;atomic cell value&gt; +
+         * (&lt;value&gt; - &lt;existing value&gt;)  *
+         * &lt;weight value expression&gt;
+         * </blockquote>
+         *
+         * <p>Takes an optional argument, {@code weight_value_expression}.
+         * If {@code weight_value_expression} is not provided, the following
+         * expression is assigned to it by default:
+         *
+         * <blockquote>
+         * &lt;weight value expression&gt; =
+         * &lt;atomic cell value&gt; / &lt;existing value&gt;
+         * <blockquote>
+         *
+         * <p>The value of {@code weight value expression} should be expressed
+         * as a value between 0 and 1. This value specifies the ratio of the
+         * allocated value you want to assign to the atomic cells that are
+         * affected by the allocation. It is the client application programmer's
+         * responsibility to create expressions whose rollup aggregate values
+         * will equal the allocated value of the expression.
+         */
+        WEIGHTED_INCREMENT,
+    }
 }
 
 // End Cell.java

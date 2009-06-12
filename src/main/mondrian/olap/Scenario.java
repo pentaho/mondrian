@@ -28,6 +28,10 @@ package mondrian.olap;
  * @version $Id$
  */
 public interface Scenario {
+    /**
+     * Returns the unique identifier of the scenario.
+     */
+    int getId();
 }
 
 // End Scenario.java

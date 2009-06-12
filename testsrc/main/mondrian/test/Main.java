@@ -187,6 +187,7 @@ public class Main extends TestSuite {
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);
+            addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
@@ -267,7 +268,9 @@ public class Main extends TestSuite {
             addTest(suite, RolapCubeTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
-            addTest(suite, IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
+            addTest(
+                suite,
+                IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
             addTest(suite, SetFunDefTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
@@ -347,7 +350,9 @@ public class Main extends TestSuite {
             if (test instanceof TestCase) {
                 TestCase testCase = (TestCase) test;
                 final String testName = testCase.getName();
-                if (testPattern == null || testPattern.matcher(testName).matches()) {
+                if (testPattern == null
+                    || testPattern.matcher(testName).matches())
+                {
                     addTest(newSuite, test, suite.getName() + testName);
                 }
             } else if (test instanceof TestSuite) {

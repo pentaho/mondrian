@@ -232,6 +232,49 @@ class RolapCell implements Cell {
         return result.getMember(pos, dimension);
     }
 
+    public void setValue(
+        Object newValue,
+        AllocationPolicy allocationPolicy,
+        Object... allocationArgs)
+    {
+        if (allocationPolicy == null) {
+            // user error
+            throw Util.newError(
+                "Allocation policy must not be null");
+        }
+        Scenario scenario = result.getQuery().getConnection().getScenario();
+        final Member[] members = result.getCellMembers(pos);
+        for (int i = 0; i < members.length; i++) {
+            Member member = members[i];
+            if (ScenarioImpl.isScenario(member.getDimension())) {
+                scenario =
+                    (Scenario) member.getPropertyValue(Property.SCENARIO.name);
+                members[i] = member.getHierarchy().getAllMember();
+            } else if (member.isCalculated()) {
+                throw Util.newError(
+                    "Cannot write to cell: one of the coordinates ("
+                    + member.getUniqueName()
+                    + ") is a calculcated member");
+            }
+        }
+        if (scenario == null) {
+            throw Util.newError("No active scenario");
+        }
+        if (allocationArgs == null) {
+            allocationArgs = new Object[0];
+        }
+        final Object currentValue = getValue();
+        double doubleCurrentValue = ((Number) currentValue).doubleValue();
+        double doubleNewValue = ((Number) newValue).doubleValue();
+        ((ScenarioImpl) scenario).setCellValue(
+            result.getQuery().getConnection(),
+            Arrays.asList(members),
+            doubleNewValue,
+            doubleCurrentValue,
+            allocationPolicy,
+            allocationArgs);
+    }
+
     /**
      * Visitor that walks over a cell's expression and checks whether the
      * cell should allow drill-through. If not, throws the {@link #bomb}

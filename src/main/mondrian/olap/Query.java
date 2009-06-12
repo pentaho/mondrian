@@ -175,14 +175,15 @@ public class Query extends QueryPart {
      * Creates a Query.
      */
     public Query(
-            Connection connection,
-            Formula[] formulas,
-            QueryAxis[] axes,
-            String cube,
-            QueryAxis slicerAxis,
-            QueryPart[] cellProps,
-            boolean load,
-            boolean strictValidation) {
+        Connection connection,
+        Formula[] formulas,
+        QueryAxis[] axes,
+        String cube,
+        QueryAxis slicerAxis,
+        QueryPart[] cellProps,
+        boolean load,
+        boolean strictValidation)
+    {
         this(
             connection,
             Util.lookupCube(connection.getSchemaReader(), cube, true),
@@ -199,15 +200,16 @@ public class Query extends QueryPart {
      * Creates a Query.
      */
     public Query(
-            Connection connection,
-            Cube mdxCube,
-            Formula[] formulas,
-            QueryAxis[] axes,
-            QueryAxis slicerAxis,
-            QueryPart[] cellProps,
-            Parameter[] parameters,
-            boolean load,
-            boolean strictValidation) {
+        Connection connection,
+        Cube mdxCube,
+        Formula[] formulas,
+        QueryAxis[] axes,
+        QueryAxis slicerAxis,
+        QueryPart[] cellProps,
+        Parameter[] parameters,
+        boolean load,
+        boolean strictValidation)
+    {
         this.connection = connection;
         this.cube = mdxCube;
         this.formulas = formulas;
@@ -298,20 +300,30 @@ public class Query extends QueryPart {
      * @return Validator
      */
     public Validator createValidator() {
-        return new QueryValidator(connection.getSchema().getFunTable());
+        return new QueryValidator(connection.getSchema().getFunTable(), false);
     }
 
     /**
-     * Creates a validator for this query that uses a given function table.
+     * Creates a validator for this query that uses a given function table and
+     * function validation policy.
      *
      * @param functionTable Function table
+     * @param alwaysResolveFunDef Whether to always resolve function
+     *     definitions (see {@link Validator#alwaysResolveFunDef()})
      * @return Validator
      */
-    public Validator createValidator(FunTable functionTable) {
-        return new QueryValidator(functionTable);
+    public Validator createValidator(
+        FunTable functionTable,
+        boolean alwaysResolveFunDef)
+    {
+        return new QueryValidator(functionTable, alwaysResolveFunDef);
     }
 
-    public Object clone() {
+    @SuppressWarnings({
+        "CloneDoesntCallSuperClone",
+        "CloneDoesntDeclareCloneNotSupportedException"
+    })
+    public Query clone() {
         return new Query(
             connection,
             cube,
@@ -322,10 +334,6 @@ public class Query extends QueryPart {
             parameters.toArray(new Parameter[parameters.size()]),
             load,
             strictValidation);
-    }
-
-    public Query safeClone() {
-        return (Query) clone();
     }
 
     public Connection getConnection() {
@@ -1472,8 +1480,21 @@ public class Query extends QueryPart {
      * dependencies between Validator and Query are explicit.
      */
     private class QueryValidator extends ValidatorImpl {
-        public QueryValidator(FunTable functionTable) {
+        private final boolean alwaysResolveFunDef;
+
+        /**
+         * Creates a QueryValidator.
+         *
+         * @param functionTable Function table
+         * @param alwaysResolveFunDef Whether to always resolve function
+         *     definitions (see {@link #alwaysResolveFunDef()})
+         */
+        public QueryValidator(
+            FunTable functionTable,
+            boolean alwaysResolveFunDef)
+        {
             super(functionTable);
+            this.alwaysResolveFunDef = alwaysResolveFunDef;
         }
 
         protected void defineParameter(Parameter param) {
@@ -1484,6 +1505,10 @@ public class Query extends QueryPart {
 
         public Query getQuery() {
             return Query.this;
+        }
+
+        public boolean alwaysResolveFunDef() {
+            return alwaysResolveFunDef;
         }
     }
 }

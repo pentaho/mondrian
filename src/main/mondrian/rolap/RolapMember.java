@@ -628,6 +628,9 @@ public class RolapMember extends MemberBase {
                     ? 0
                     : getKey();
 
+            case Property.SCENARIO_ORDINAL:
+                return ScenarioImpl.forMember(this);
+
             default:
                 break;
                 // fall through

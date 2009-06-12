@@ -495,17 +495,13 @@ public class TestCalculatedMembers extends BatchTestCase {
         testContext.assertQueryThrows(
             "select {[Measures].[With a [bracket] inside it]} on columns,\n"
             + " {[Gender].Members} on rows\n"
-            + "from ["
-            + cubeName
-            + "]",
-                "Syntax error at line 1, column 38, token 'inside'");
+            + "from [" + cubeName + "]",
+            "Syntax error at line 1, column 38, token 'inside'");
 
         testContext.assertQueryReturns(
             "select {[Measures].[With a [bracket]] inside it]} on columns,\n"
             + " {[Gender].Members} on rows\n"
-            + "from ["
-            + cubeName
-            + "]",
+            + "from [" + cubeName + "]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

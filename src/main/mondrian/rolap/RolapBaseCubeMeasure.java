@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
@@ -55,15 +54,28 @@ public class RolapBaseCubeMeasure
 
     private CellFormatter formatter;
 
+    /**
+     * Creates a RolapBaseCubeMeasure.
+     *
+     * @param cube Cube
+     * @param parentMember Parent member
+     * @param level Level this member belongs to
+     * @param name Name of this member
+     * @param formatString Format string
+     * @param expression Expression
+     * @param aggregatorName Aggregator
+     * @param datatype Data type
+     */
     RolapBaseCubeMeasure(
-            RolapCube cube,
-            RolapMember parentMember,
-            RolapLevel level,
-            String name,
-            String formatString,
-            MondrianDef.Expression expression,
-            String aggregatorName,
-            String datatype) {
+        RolapCube cube,
+        RolapMember parentMember,
+        RolapLevel level,
+        String name,
+        String formatString,
+        MondrianDef.Expression expression,
+        String aggregatorName,
+        String datatype)
+    {
         super(parentMember, level, name, null, MemberType.MEASURE);
         this.cube = cube;
         this.expression = expression;
@@ -71,8 +83,8 @@ public class RolapBaseCubeMeasure
             formatString = "";
         }
         setProperty(
-                Property.FORMAT_EXP.name,
-                Literal.createString(formatString));
+            Property.FORMAT_EXP.name,
+            Literal.createString(formatString));
 
         // Validate aggregator.
         this.aggregator =

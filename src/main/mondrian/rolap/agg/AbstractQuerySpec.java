@@ -68,7 +68,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
 
-        String exprInner = measure.generateExprString(sqlQuery);
+        String exprInner =
+            measure.getExpression() == null
+                ? "*"
+                : measure.generateExprString(sqlQuery);
         String exprOuter = measure.getAggregator().getExpression(exprInner);
         sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
     }
@@ -282,7 +285,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             innerSqlQuery.addSelect(expr, alias);
 
             outerSqlQuery.addSelect(
-                measure.getAggregator().getNonDistinctAggregator().getExpression(
+                measure.getAggregator().getNonDistinctAggregator()
+                    .getExpression(
                     dialect.quoteIdentifier(alias)));
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);

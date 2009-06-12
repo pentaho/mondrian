@@ -110,8 +110,10 @@ public class MdxQueryServlet extends HttpServlet {
                 // if it has more than 1 dimension
                 if (j == 0 && result.getAxes().length > 1) {
                     // Print the top-left cell, and fill it with slicer members.
-                    html.append("<td nowrap class='slicer' rowspan='").append(
-                        columnWidth).append("' colspan='").append(rowWidth)
+                    html.append("<td nowrap class='slicer' rowspan='")
+                        .append(columnWidth)
+                        .append("' colspan='")
+                        .append(rowWidth)
                         .append("'>");
                     for (Position position : slicers) {
                         int k = 0;
@@ -122,15 +124,6 @@ public class MdxQueryServlet extends HttpServlet {
                             html.append(member.getUniqueName());
                             k++;
                         }
-/*
-                        for (int k = 0; k < position.size(); k++) {
-                            if (k > 0) {
-                                html.append("<br/>");
-                            }
-                            Member member = position.getMember(k);
-                            html.append(member.getUniqueName());
-                        }
-*/
                     }
                     html.append("&nbsp;</td>").append(Util.nl);
                 }
@@ -141,8 +134,9 @@ public class MdxQueryServlet extends HttpServlet {
                     //Member member = columns[i].getMember(j);
                     Member member = position.get(j);
                     int width = 1;
-                    while ((i + 1) < columns.size() &&
-                            columns.get(i + 1).get(j) == member) {
+                    while ((i + 1) < columns.size()
+                        && columns.get(i + 1).get(j) == member)
+                    {
                         i++;
                         width++;
                     }
@@ -158,8 +152,9 @@ public class MdxQueryServlet extends HttpServlet {
                     html.append("<tr>");
                     final Position row = rows.get(i);
                     for (Member member : row) {
-                        html.append("<td nowrap class='rowheading'>").append(
-                            member.getUniqueName()).append("</td>");
+                        html.append("<td nowrap class='rowheading'>")
+                            .append(member.getUniqueName())
+                            .append("</td>");
                     }
                     for (int j = 0; j < columns.size(); j++) {
                         showCell(html, result.getCell(new int[] {j, i}));
@@ -194,8 +189,9 @@ public class MdxQueryServlet extends HttpServlet {
     }
 
     private void showCell(StringBuilder out, Cell cell) {
-        out.append("<td class='cell'>").append(cell.getFormattedValue()).append(
-            "</td>");
+        out.append("<td class='cell'>")
+            .append(cell.getFormattedValue())
+            .append("</td>");
     }
 
     private void processTransform(
@@ -207,17 +203,17 @@ public class MdxQueryServlet extends HttpServlet {
             ResultCache.getInstance(
                 request.getSession(), getServletContext(), queryName);
         Query query = rc.getQuery();
-        query = query.safeClone();
+        query = query.clone();
         rc.setDirty();
         String operation = request.getParameter("operation");
         if (operation.equals("expand")) {
             String memberName = request.getParameter("member");
             boolean fail = true;
             Member member = query.getSchemaReader(true).getMemberByUniqueName(
-                    Util.parseIdentifier(memberName), fail);
+                Util.parseIdentifier(memberName), fail);
             if (true) {
                 throw new UnsupportedOperationException(
-                        "query.toggleDrillState(member) has been de-supported");
+                    "query.toggleDrillState(member) has been de-supported");
             }
         } else {
             throw Util.newInternal("unkown operation '" + operation + "'");
@@ -258,7 +254,8 @@ public class MdxQueryServlet extends HttpServlet {
         processRequest(request, response);
     }
 
-    /** Returns a short description of the servlet.
+    /**
+     * Returns a short description of the servlet.
      */
     public String getServletInfo() {
         return "Process an MDX query and return the result formatted as an "

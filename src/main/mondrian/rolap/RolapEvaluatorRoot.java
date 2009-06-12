@@ -27,10 +27,8 @@ import java.util.*;
  * @version $Id$
  */
 class RolapEvaluatorRoot {
-    final Map<Object, Object> expResultCache =
-        new HashMap<Object, Object>();
-    final Map<Object, Object> tmpExpResultCache =
-        new HashMap<Object, Object>();
+    final Map<Object, Object> expResultCache = new HashMap<Object, Object>();
+    final Map<Object, Object> tmpExpResultCache = new HashMap<Object, Object>();
     final RolapCube cube;
     final RolapConnection connection;
     final SchemaReader schemaReader;
@@ -107,7 +105,10 @@ class RolapEvaluatorRoot {
      * <p>The default implementation throws
      * {@link UnsupportedOperationException}.
      */
-    protected Evaluator.NamedSetEvaluator evaluateNamedSet(String name, Exp exp) {
+    protected Evaluator.NamedSetEvaluator evaluateNamedSet(
+        String name,
+        Exp exp)
+    {
         throw new UnsupportedOperationException();
     }
 

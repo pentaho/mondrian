@@ -173,6 +173,35 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests a measure based on 'count'.
+     */
+    public void testCountMeasure() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            null,
+            "<Measure name=\"Fact Count\" aggregator=\"count\"/>\n");
+        testContext.assertQueryReturns(
+            "select {[Measures].[Fact Count], [Measures].[Unit Sales]} on 0,\n"
+            + "[Gender].members on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Fact Count]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 86,837\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 42,831\n"
+            + "Row #1: 131,558\n"
+            + "Row #2: 44,006\n"
+            + "Row #2: 135,215\n");
+    }
+
+    /**
      * Tests that an error occurs if a hierarchy is based on a non-existent
      * table.
      */
@@ -1843,7 +1872,8 @@ public class SchemaTest extends FoodMartTestCase {
         // which occurs where the default member is calculated. For now, just
         // make sure that we get a reasonable error.
         testContext.assertQueryThrows(
-            "select {[Measures]} on columns from [OneCalcMeasure] where [Promotion Media].[TV]",
+            "select {[Measures]} on columns from [OneCalcMeasure]\n"
+            + "where [Promotion Media].[TV]",
             "Hierarchy '[Measures]' is invalid (has no members)");
     }
 

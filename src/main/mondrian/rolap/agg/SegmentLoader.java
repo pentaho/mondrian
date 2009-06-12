@@ -10,8 +10,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
-import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
+import mondrian.olap.*;
 
 import java.util.*;
 import java.sql.ResultSet;
@@ -33,6 +32,44 @@ import java.sql.SQLException;
  * @since 24 May 2007
  */
 public class SegmentLoader {
+
+    private static final Comparator<Object> BOOLEAN_COMPARATOR;
+
+    static {
+        if (Util.PreJdk15) {
+            // Work around the fact that Boolean is not Comparable until JDK
+            // 1.5.
+            assert !(Comparable.class.isAssignableFrom(Boolean.class));
+            BOOLEAN_COMPARATOR =
+                new Comparator<Object>() {
+                    public int compare(Object o1, Object o2) {
+                        if (o1 instanceof Boolean) {
+                            boolean b1 = (Boolean) o1;
+                            if (o2 instanceof Boolean) {
+                                boolean b2 = (Boolean) o2;
+                                return b1 == b2
+                                    ? 0
+                                    : (b1 ? 1 : -1);
+                            } else {
+                                return -1;
+                            }
+                        } else {
+                            return ((Comparable) o1).compareTo(o2);
+                        }
+                    }
+                };
+        } else {
+            assert Comparable.class.isAssignableFrom(Boolean.class);
+            BOOLEAN_COMPARATOR = null;
+        }
+    }
+
+    /**
+     * Creates a SegmentLoader.
+     */
+    public SegmentLoader() {
+    }
+
     /**
      * Loads data for all the segments of the GroupingSets. If the grouping sets
      * list contains more than one Grouping Set then data is loaded using the
@@ -83,28 +120,33 @@ public class SegmentLoader {
 
             List<Object[]> rows =
                 processData(
-                    stmt, axisContainsNull,
-                    axisValueSets, groupingSetsList);
+                    stmt,
+                    axisContainsNull,
+                    axisValueSets,
+                    groupingSetsList);
 
             boolean sparse =
-                setAxisDataAndDecideSparseUse(axisValueSets,
-                    axisContainsNull, groupingSetsList,
+                setAxisDataAndDecideSparseUse(
+                    axisValueSets,
+                    axisContainsNull,
+                    groupingSetsList,
                     rows);
 
-            SegmentDataset[] nonGroupingDataSets = null;
-
-            final Map<BitKey, SegmentDataset[]> groupingDataSetsMap =
-                new HashMap<BitKey, SegmentDataset[]>();
+            final SegmentDataset[] nonGroupingDataSets;
+            final Map<BitKey, SegmentDataset[]> groupingDataSetsMap;
 
             if (useGroupingSet) {
-                populateDataSetMapOnGroupingColumnsBitKeys(
-                    groupingSetsList,
-                    sparse, groupingDataSetsMap);
+                nonGroupingDataSets = null;
+                groupingDataSetsMap =
+                    createDataSetsForGroupingSets(
+                        groupingSetsList, sparse);
             } else {
-                nonGroupingDataSets = createDataSets(
-                    sparse,
-                    groupingSetsList.getDefaultSegments(),
-                    groupingSetsList.getDefaultAxes());
+                nonGroupingDataSets =
+                    createDataSets(
+                        sparse,
+                        groupingSetsList.getDefaultSegments(),
+                        groupingSetsList.getDefaultAxes());
+                groupingDataSetsMap = null;
             }
 
             loadDataToDataSets(
@@ -140,13 +182,17 @@ public class SegmentLoader {
      * nonGroupingDataSets.
      */
     private void loadDataToDataSets(
-        GroupingSetsList groupingSetsList, List<Object[]> rows,
+        GroupingSetsList groupingSetsList,
+        List<Object[]> rows,
         Map<BitKey, SegmentDataset[]> groupingDataSetMap,
-        SegmentDataset[] nonGroupingDataSets, boolean[] axisContainsNull,
+        SegmentDataset[] nonGroupingDataSets,
+        boolean[] axisContainsNull,
         boolean sparse)
     {
         int arity = groupingSetsList.getDefaultColumns().length;
         boolean useGroupingSet = groupingSetsList.useGroupingSets();
+        assert !useGroupingSet == (groupingDataSetMap == null);
+        assert useGroupingSet == (nonGroupingDataSets == null);
         Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
         int segmentLength = groupingSetsList.getDefaultSegments().length;
 
@@ -163,8 +209,10 @@ public class SegmentLoader {
             int k = 0;
             for (int j = 0; j < arity; j++) {
                 Object o = row[j];
-                if (useGroupingSet &&
-                        isRollupNull(groupingSetsList, row, groupingBitKeyIndex, j)) {
+                if (useGroupingSet
+                    && isRollupNull(
+                        groupingSetsList, row, groupingBitKeyIndex, j))
+                {
                     continue;
                 }
                 Aggregation.Axis axis = axes[j];
@@ -191,11 +239,14 @@ public class SegmentLoader {
     }
 
     private boolean isRollupNull(
-            GroupingSetsList groupingSetsList, Object[] row,
-            int groupingBitKeyIndex, int j) {
+        GroupingSetsList groupingSetsList,
+        Object[] row,
+        int groupingBitKeyIndex,
+        int j)
+    {
         BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
         boolean isGroupingBitSet =
-                groupingBitKey.get(groupingSetsList.findGroupingFunctionIndex(j));
+            groupingBitKey.get(groupingSetsList.findGroupingFunctionIndex(j));
         return row[j].equals(RolapUtil.sqlNullValue) && isGroupingBitSet;
     }
 
@@ -223,8 +274,11 @@ public class SegmentLoader {
             Aggregation.Axis axis = axes[i];
             SortedSet<Comparable<?>> valueSet = axisValueSets[i];
             int size = axis.loadKeys(valueSet, axisContainsNull[i]);
-            setAxisDataToGroupableList(groupingSetsList, valueSet,
-                axisContainsNull[i], allColumns[i]);
+            setAxisDataToGroupableList(
+                groupingSetsList,
+                valueSet,
+                axisContainsNull[i],
+                allColumns[i]);
             int previous = n;
             n *= size;
             if ((n < previous) || (n < size)) {
@@ -251,30 +305,37 @@ public class SegmentLoader {
         boolean useGroupingSet = groupingSetsList.useGroupingSets();
         for (int i = 0; i < groupingSets.size(); i++) {
             Segment[] groupedSegments = groupingSets.get(i).getSegments();
-            SegmentDataset[] dataSets = useGroupingSet ? datasetsMap
-                .get(groupingSetsList.getRollupColumnsBitKeyList().get(i)) :
-                detailedDataSet;
+            SegmentDataset[] dataSets =
+                useGroupingSet
+                    ? datasetsMap.get(
+                    groupingSetsList.getRollupColumnsBitKeyList().get(i))
+                    : detailedDataSet;
             for (int j = 0; j < groupedSegments.length; j++) {
                 Segment groupedSegment = groupedSegments[j];
-                groupedSegment
-                    .setData(dataSets[j], pinnedSegments);
+                groupedSegment.setData(dataSets[j], pinnedSegments);
             }
         }
     }
 
-    private void populateDataSetMapOnGroupingColumnsBitKeys(
-        GroupingSetsList groupingSetsList, boolean sparse,
-        Map<BitKey, SegmentDataset[]> datasetsMap)
+    private Map<BitKey, SegmentDataset[]> createDataSetsForGroupingSets(
+        GroupingSetsList groupingSetsList,
+        boolean sparse)
     {
+        Map<BitKey, SegmentDataset[]> datasetsMap =
+            new HashMap<BitKey, SegmentDataset[]>();
         List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
         List<BitKey> groupingColumnsBitKeyList =
             groupingSetsList.getRollupColumnsBitKeyList();
         for (int i = 0; i < groupingSets.size(); i++) {
             GroupingSet groupingSet = groupingSets.get(i);
-            SegmentDataset[] datasets = createDataSets(sparse,
-                groupingSet.getSegments(), groupingSet.getAxes());
+            SegmentDataset[] datasets =
+                createDataSets(
+                    sparse,
+                    groupingSet.getSegments(),
+                    groupingSet.getAxes());
             datasetsMap.put(groupingColumnsBitKeyList.get(i), datasets);
         }
+        return datasetsMap;
     }
 
     private int calcuateMaxDataSize(Aggregation.Axis[] axes) {
@@ -285,8 +346,10 @@ public class SegmentLoader {
         return n;
     }
 
-    private SegmentDataset[] createDataSets(boolean sparse,
-        Segment[] segments, Aggregation.Axis[] axes)
+    private SegmentDataset[] createDataSets(
+        boolean sparse,
+        Segment[] segments,
+        Aggregation.Axis[] axes)
     {
         int n = (sparse ? 0 : calcuateMaxDataSize(axes));
         SegmentDataset[] datasets;
@@ -298,8 +361,8 @@ public class SegmentLoader {
         } else {
             datasets = new DenseSegmentDataset[segments.length];
             for (int i = 0; i < segments.length; i++) {
-                datasets[i] = new DenseSegmentDataset(
-                    segments[i], new Object[n]);
+                datasets[i] =
+                    new DenseSegmentDataset(segments[i], new Object[n]);
             }
         }
         return datasets;
@@ -307,15 +370,18 @@ public class SegmentLoader {
 
     private void setAxisDataToGroupableList(
         GroupingSetsList groupingSetsList,
-        SortedSet<Comparable<?>> valueSet, boolean axisContainsNull,
+        SortedSet<Comparable<?>> valueSet,
+        boolean axisContainsNull,
         RolapStar.Column column)
     {
-        for (GroupingSet groupingSet : groupingSetsList.getRollupGroupingSets()) {
+        for (GroupingSet groupingSet :
+                 groupingSetsList.getRollupGroupingSets())
+        {
             RolapStar.Column[] columns = groupingSet.getColumns();
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i].equals(column)) {
-                    groupingSet.getAxes()[i]
-                        .loadKeys(valueSet, axisContainsNull);
+                    groupingSet.getAxes()[i].loadKeys(
+                        valueSet, axisContainsNull);
                 }
             }
         }
@@ -332,7 +398,8 @@ public class SegmentLoader {
      */
     SqlStatement createExecuteSql(
         GroupingSetsList groupingSetsList,
-        List<StarPredicate> compoundPredicateList) {
+        List<StarPredicate> compoundPredicateList)
+    {
         RolapStar star = groupingSetsList.getStar();
         String sql =
             AggregationManager.instance().generateSql(
@@ -356,11 +423,13 @@ public class SegmentLoader {
         int arity = axisValueSets.length;
         int groupingColumnStartIndex = arity + measureCount;
         for (Object[] row : rawData) {
-            Object[] processedRow =
-                groupingSetsList.useGroupingSets() ?
-                    new Object[row.length - (groupingSetsList
-                        .getRollupColumns().size()) + 1] :
-                    new Object[row.length];
+            int n =
+                groupingSetsList.useGroupingSets()
+                    ? row.length
+                      - (groupingSetsList.getRollupColumns().size())
+                      + 1
+                    : row.length;
+            Object[] processedRow = new Object[n];
             // get the columns
             int columnIndex = 0;
             for (int axisIndex = 0; axisIndex < arity;
@@ -368,9 +437,13 @@ public class SegmentLoader {
                 Object o = row[columnIndex];
                 if (o == null) {
                     o = RolapUtil.sqlNullValue;
-                    if (!groupingSetsList.useGroupingSets() ||
-                        !isAggregateNull(row, groupingColumnStartIndex,
-                            groupingSetsList, axisIndex)) {
+                    if (!groupingSetsList.useGroupingSets()
+                        || !isAggregateNull(
+                            row,
+                            groupingColumnStartIndex,
+                            groupingSetsList,
+                            axisIndex))
+                    {
                         axisContainsNull[axisIndex] = true;
                     }
                 } else {
@@ -454,12 +527,12 @@ public class SegmentLoader {
         ResultSet resultSet = stmt.getResultSet();
         while (resultSet.next()) {
             ++stmt.rowCount;
-            Object[] row =
-                groupingSetsList.useGroupingSets() ?
-                    new Object[arity + measureCount +
-                        groupingFunctionsCount] :
-                    new Object[arity + measureCount];
-            for (int i = 0; i < row.length; i++) {
+            int n =
+                groupingSetsList.useGroupingSets()
+                    ? arity + measureCount + groupingFunctionsCount
+                    : arity + measureCount;
+            Object[] row = new Object[n];
+            for (int i = 0; i < n; i++) {
                 row[i] = resultSet.getObject(i + 1);
             }
             rows.add(row);
@@ -488,34 +561,10 @@ public class SegmentLoader {
         // Workspace to build up lists of distinct values for each axis.
         SortedSet<Comparable<?>>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
-            if (Util.PreJdk15) {
-                // Work around the fact that Boolean is not Comparable until JDK
-                // 1.5.
-                assert !(Comparable.class.isAssignableFrom(Boolean.class));
-                final SortedSet set =
-                    new TreeSet<Comparable<Object>>(
-                        new Comparator<Object>() {
-                            public int compare(Object o1, Object o2) {
-                                if (o1 instanceof Boolean) {
-                                    boolean b1 = (Boolean) o1;
-                                    if (o2 instanceof Boolean) {
-                                        boolean b2 = (Boolean) o2;
-                                        return (b1 == b2 ? 0 :
-                                            (b1 ? 1 : -1));
-                                    } else {
-                                        return -1;
-                                    }
-                                } else {
-                                    return ((Comparable) o1).compareTo(o2);
-                                }
-                            }
-                        }
-                   );
-                axisValueSets[i] = set;
-            } else {
-                assert Comparable.class.isAssignableFrom(Boolean.class);
-                axisValueSets[i] = new TreeSet<Comparable<?>>();
-            }
+            axisValueSets[i] =
+                Util.PreJdk15
+                    ? new TreeSet<Comparable<?>>(BOOLEAN_COMPARATOR)
+                    : new TreeSet<Comparable<?>>();
         }
         return axisValueSets;
     }
@@ -523,14 +572,16 @@ public class SegmentLoader {
     /**
      * Decides whether to use a sparse representation for this segment, using
      * the formula described
-     * {@link mondrian.olap.MondrianProperties#SparseSegmentCountThreshold here}.
+     * {@link mondrian.olap.MondrianProperties#SparseSegmentCountThreshold
+     * here}.
      *
      * @param possibleCount Number of values in the space.
      * @param actualCount   Actual number of values.
      * @return Whether to use a sparse representation.
      */
     private static boolean useSparse(
-        final double possibleCount, final double actualCount)
+        final double possibleCount,
+        final double actualCount)
     {
         final MondrianProperties properties = MondrianProperties.instance();
         double densityThreshold =
@@ -550,19 +601,19 @@ public class SegmentLoader {
                 actualCount;
         if (possibleCount < countThreshold) {
             assert !sparse :
-                "Should never use sparse if count is less " +
-                    "than threshold, possibleCount=" + possibleCount +
-                    ", actualCount=" + actualCount +
-                    ", countThreshold=" + countThreshold +
-                    ", densityThreshold=" + densityThreshold;
+                "Should never use sparse if count is less "
+                + "than threshold, possibleCount=" + possibleCount
+                + ", actualCount=" + actualCount
+                + ", countThreshold=" + countThreshold
+                + ", densityThreshold=" + densityThreshold;
         }
         if (possibleCount == actualCount) {
             assert !sparse :
-                "Should never use sparse if result is 100% dense: " +
-                    "possibleCount=" + possibleCount +
-                    ", actualCount=" + actualCount +
-                    ", countThreshold=" + countThreshold +
-                    ", densityThreshold=" + densityThreshold;
+                "Should never use sparse if result is 100% dense: "
+                + "possibleCount=" + possibleCount
+                + ", actualCount=" + actualCount
+                + ", countThreshold=" + countThreshold
+                + ", densityThreshold=" + densityThreshold;
         }
         return sparse;
     }

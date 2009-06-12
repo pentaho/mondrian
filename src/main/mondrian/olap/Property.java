@@ -593,7 +593,7 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final int UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL = 47;
     /**
      * Definition of the internal property which
-     * describes the unique name of a member minus it's
+     * describes the unique name of a member minus its
      * hierarchy.
      */
     public static final Property UNIQUE_NAME_WITHOUT_HIERARCHY =
@@ -601,6 +601,15 @@ public class Property extends EnumeratedValues.BasicValue {
             "$unique_name_without_hierarchy", Datatype.TYPE_STRING,
             UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL, true, true, false, null);
 
+    public static final int SCENARIO_ORDINAL = 48;
+    /**
+     * Definition of the internal property which
+     * holds the scenario object underlying a member of the scenario hierarchy.
+     */
+    public static final Property SCENARIO =
+        new Property(
+            "$scenario", Datatype.TYPE_OTHER,
+            SCENARIO_ORDINAL, true, true, false, null);
 
     /**
      * The various property names which define a format string.
@@ -737,7 +746,8 @@ public class Property extends EnumeratedValues.BasicValue {
                 DATATYPE,
                 MEMBER_KEY,
                 KEY,
-                UNIQUE_NAME_WITHOUT_HIERARCHY
+                UNIQUE_NAME_WITHOUT_HIERARCHY,
+                SCENARIO,
             });
 
     static {

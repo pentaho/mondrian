@@ -33,6 +33,12 @@ class DenseSegmentDataset implements SegmentDataset {
     private final Segment segment;
     private final Object[] values; // length == m[0] * ... * m[axes.length-1]
 
+    /**
+     * Creates a DenseSegmentDataset.
+     *
+     * @param segment Segment
+     * @param values Array of values, one for each possible coordinate
+     */
     DenseSegmentDataset(Segment segment, Object[] values) {
         this.segment = segment;
         this.values = values;
@@ -54,19 +60,22 @@ class DenseSegmentDataset implements SegmentDataset {
     }
 
     public Iterator<Map.Entry<CellKey, Object>> iterator() {
-        return new Itr();
+        return new DenseSegmentDatasetIterator();
     }
 
-    boolean contains(Object[] keys) {
+    // not used
+    private boolean contains(Object[] keys) {
         return getOffset(keys) >= 0;
     }
 
-    Object get(Object[] keys) {
+    // not used
+    private Object get(Object[] keys) {
         int offset = getOffset(keys);
         return keys[offset];
     }
 
-    void put(Object[] keys, Object value) {
+    // not used
+    private void put(Object[] keys, Object value) {
         int offset = getOffset(keys);
         keys[offset] = value;
     }
@@ -101,6 +110,12 @@ outer:
         return offset;
     }
 
+    /**
+     * Sets the value a given ordinal.
+     *
+     * @param k Ordinal
+     * @param o Value
+     */
     void set(int k, Object o) {
         values[k] = o;
     }
@@ -113,7 +128,7 @@ outer:
      * The Entry must therefore be used immediately, before calling
      * {@link #next()} again.
      */
-    private class Itr implements
+    private class DenseSegmentDatasetIterator implements
         Iterator<Map.Entry<CellKey, Object>>,
         Map.Entry<CellKey, Object>
     {
@@ -121,7 +136,7 @@ outer:
         private final int[] ordinals;
         private final CellKey key;
 
-        Itr() {
+        DenseSegmentDatasetIterator() {
             ordinals = new int[segment.axes.length];
             ordinals[ordinals.length - 1] = -1;
             key = CellKey.Generator.newRefCellKey(ordinals);
@@ -163,7 +178,9 @@ outer:
 
         // implement Entry
         public Object setValue(Object value) {
-            throw new UnsupportedOperationException();
+            Object old = values[i];
+            values[i] = value;
+            return old;
         }
     }
 }

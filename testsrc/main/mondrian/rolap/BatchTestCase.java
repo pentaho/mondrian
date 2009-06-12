@@ -73,7 +73,8 @@ public class BatchTestCase extends FoodMartTestCase {
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()])));
 
-        addRequests(batch, cubeName, measure, tableNames, fieldNames,
+        addRequests(
+            batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0);
         return batch;
     }
@@ -92,7 +93,8 @@ public class BatchTestCase extends FoodMartTestCase {
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()]), constraint));
 
-        addRequests(batch, cubeName, measure, tableNames, fieldNames,
+        addRequests(
+            batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0, constraint);
         return batch;
     }
@@ -110,7 +112,8 @@ public class BatchTestCase extends FoodMartTestCase {
         if (currPos < fieldNames.length) {
             for (int j = 0; j < fieldValues[currPos].length; j++) {
                 selectedValues.add(fieldValues[currPos][j]);
-                addRequests(batch, cubeName, measure, tableNames,
+                addRequests(
+                    batch, cubeName, measure, tableNames,
                     fieldNames, fieldValues, selectedValues, currPos + 1);
                 selectedValues.remove(fieldValues[currPos][j]);
             }
@@ -136,7 +139,8 @@ public class BatchTestCase extends FoodMartTestCase {
         if (currPos < fieldNames.length) {
             for (int j = 0; j < fieldValues[currPos].length; j++) {
                 selectedValues.add(fieldValues[currPos][j]);
-                addRequests(batch, cubeName, measure, tableNames,
+                addRequests(
+                    batch, cubeName, measure, tableNames,
                     fieldNames, fieldValues, selectedValues, currPos + 1,
                     constraint);
                 selectedValues.remove(fieldValues[currPos][j]);
@@ -155,7 +159,8 @@ public class BatchTestCase extends FoodMartTestCase {
         String cubeName, String measure)
     {
         FastBatchingCellReader.Batch batch =
-            createBatch(new FastBatchingCellReader(getCube(cubeName)),
+            createBatch(
+                new FastBatchingCellReader(getCube(cubeName)),
                 tableNames, fieldNames,
                 fieldValues, cubeName,
                 measure);

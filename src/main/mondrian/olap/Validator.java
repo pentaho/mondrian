@@ -113,6 +113,16 @@ public interface Validator {
         Exp[] args,
         String name,
         Syntax syntax);
+
+    /**
+     * Whether to resolve function name and arguments to a function definition
+     * each time a node is validated, not just the first time.
+     *
+     * <p>Default implementation returns {@code false}.
+     *
+     * @return whether to resolve function each time
+     */
+    boolean alwaysResolveFunDef();
 }
 
 // End Validator.java

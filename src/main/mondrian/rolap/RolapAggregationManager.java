@@ -33,6 +33,9 @@ import java.io.PrintWriter;
  */
 public abstract class RolapAggregationManager {
 
+    /**
+     * Creates the RolapAggregationManager.
+     */
     protected RolapAggregationManager() {
     }
 
@@ -90,7 +93,8 @@ public abstract class RolapAggregationManager {
      * @return Cell request, or null if the requst is unsatisfiable
      */
     public static CellRequest makeRequest(
-        RolapEvaluator evaluator) {
+        RolapEvaluator evaluator)
+    {
         final Member[] currentMembers = evaluator.getMembers();
         final List<List<Member[]>> aggregationLists =
             evaluator.getAggregationLists();
@@ -273,13 +277,15 @@ public abstract class RolapAggregationManager {
         final RolapCubeHierarchy hierarchy = member.getHierarchy();
         final Level[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
-             j > depth; j--) {
-            final RolapCubeLevel level = (RolapCubeLevel)levels[j];
+             j > depth; j--)
+        {
+            final RolapCubeLevel level = (RolapCubeLevel) levels[j];
             RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
             if (column != null) {
                 request.addConstrainedColumn(column, null);
-                if (request.extendedContext &&
-                        level.getNameExp() != null) {
+                if (request.extendedContext
+                    && level.getNameExp() != null)
+                {
                     final RolapStar.Column nameColumn = column.getNameColumn();
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
@@ -345,8 +351,8 @@ public abstract class RolapAggregationManager {
         int unsatisfiableTupleCount = 0;
         for (RolapMember[] aggregation : aggregationList) {
             boolean isTuple;
-            if (aggregation.length > 0 &&
-                    aggregation[0] instanceof RolapCubeMember)
+            if (aggregation.length > 0
+                && aggregation[0] instanceof RolapCubeMember)
             {
                 isTuple = true;
             } else {
@@ -363,7 +369,6 @@ public abstract class RolapAggregationManager {
                 tuple[i] = (RolapCubeMember)member;
                 i++;
             }
-
 
             boolean tupleUnsatisfiable = false;
             for (RolapCubeMember member : tuple) {
@@ -429,38 +434,49 @@ public abstract class RolapAggregationManager {
     }
 
     /**
-     * Translate Map<BitKey, List<RolapMember>> of the same compound member into
-     * ListPredicate by traversing list of members or tuples.
+     * Translates a Map&lt;BitKey, List&lt;RolapMember&gt;&gt; of the same
+     * compound member into {@link ListPredicate} by traversing a list of
+     * members or tuples.
+     *
      * <p>1. The example below is for list of tuples
      *
      * <blockquote>
-     * <p>group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]
+     * group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]<br/>
      * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
      * </blockquote>
+     *
      * is translated into
+     *
      * <blockquote>
-     * <p>(Gender=M AND Store_State=CA AND Store_Country=USA)
-     * OR
+     * (Gender=M AND Store_State=CA AND Store_Country=USA)<br/>
+     * OR<br/>
      * (Gender=F AND Store_State=CA AND Store_Country=USA)
      * </blockquote>
+     *
      * <p>The caller of this method will translate this representation into
      * appropriate SQL form as
      * <blockquote>
-     *  <p>where (gender = 'M' and Store_State = 'CA' AND Store_Country = 'USA')
-     *     OR (Gender = 'F' and Store_State = 'CA' AND Store_Country = 'USA')
+     * where (gender = 'M'<br/>
+     *        and Store_State = 'CA'<br/>
+     *        AND Store_Country = 'USA')<br/>
+     *     OR (Gender = 'F'<br/>
+     *         and Store_State = 'CA'<br/>
+     *         AND Store_Country = 'USA')
      * </blockquote>
+     *
      * <p>2. The example below for a list of members
      * <blockquote>
-     * <p>group 1: [USA].[CA], [Canada].[BC]
+     * group 1: [USA].[CA], [Canada].[BC]<br/>
      * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
      * </blockquote>
+     *
      * is translated into:
+     *
      * <blockquote>
-     * <p>(Country=USA AND State=CA)
-     *     OR (Country=Canada AND State=BC)
-     * OR
-     * (Country=USA AND State=CA AND City=San Francisco)
-     *     OR (Country=USA AND State=OR AND City=Portland)
+     * (Country=USA AND State=CA)<br/>
+     * OR (Country=Canada AND State=BC)<br/>
+     * OR (Country=USA AND State=CA AND City=San Francisco)<br/>
+     * OR (Country=USA AND State=OR AND City=Portland)
      * </blockquote>
      *
      * <p>The caller of this method will translate this representation into
@@ -468,17 +484,19 @@ public abstract class RolapAggregationManager {
      * value IN-list, the second group will turn into this predicate:
      *
      * <blockquote>
-     * <p>    where (country, state, city) IN ((USA, CA, San Francisco),
+     * where (country, state, city) IN ((USA, CA, San Francisco),
      *                                      (USA, OR, Portland))
      * </blockquote>
+     *
      * or, if the DB does not support multi-value IN list:
+     *
      * <blockquote>
-     * <p>    where country=USA AND
+     * where country=USA AND
      *           ((state=CA AND city = San Francisco) OR
      *            (state=OR AND city=Portland))
      * </blockquote>
      *
-     * @param compoundGroupMap
+     * @param compoundGroupMap Map from dimensionality to groups
      * @param baseCube base cube if virtual
      * @return compound predicate for a tuple or a member
      */
@@ -503,7 +521,7 @@ public abstract class RolapAggregationManager {
                 StarPredicate tuplePredicate = null;
 
                 for (RolapCubeMember member : tuple) {
-                tuplePredicate = makeCompoundPredicateForMember(
+                    tuplePredicate = makeCompoundPredicateForMember(
                         member, baseCube, tuplePredicate);
                 }
                 if (tuplePredicate != null) {
@@ -752,8 +770,8 @@ public abstract class RolapAggregationManager {
     public abstract PinSet createPinSet();
 
     /**
-     * A set of segments which are pinned for a short duration as a result of a
-     * cache inquiry.
+     * A set of segments which are pinned (prevented from garbage collection)
+     * for a short duration as a result of a cache inquiry.
      */
     public interface PinSet {
     }

@@ -46,11 +46,11 @@ public class CellRequest {
     private Object[] singleValues;
 
     /**
-     * After all of the columns are loaded into the constrainedColumnList instance
-     * variable, this columnsCache is created the first time the getColumns
-     * method is called.
-     * <p>
-     * It is assumed that the call to all additional columns,
+     * After all of the columns are loaded into the {@link
+     * #constrainedColumnList} instance variable, this columnsCache is created
+     * the first time the getColumns method is called.
+     *
+     * <p>It is assumed that the call to all additional columns,
      * {@link #addConstrainedColumn}, will not be called after the first call to
      * the {@link #getConstrainedColumns()} method.
      */
@@ -88,9 +88,9 @@ public class CellRequest {
     private boolean unsatisfiable;
 
     /**
-     * The columnPredicateList and columnsCache must be set after all constraints
-     * have been added. This is used by access methods to determine if
-     * both columnPredicateList and columnsCache need to be generated.
+     * The columnPredicateList and columnsCache must be set after all
+     * constraints have been added. This is used by access methods to determine
+     * if both columnPredicateList and columnsCache need to be generated.
      */
     private boolean isDirty = true;
 
@@ -134,7 +134,8 @@ public class CellRequest {
             // unconstrained) the request will never return any results.
             int index = constrainedColumnList.indexOf(column);
             assert index >= 0;
-            final StarColumnPredicate prevValue = columnPredicateList.get(index);
+            final StarColumnPredicate prevValue =
+                columnPredicateList.get(index);
             if (prevValue == null) {
                 // Previous column was unconstrained. Constrain on new
                 // value.
@@ -142,8 +143,8 @@ public class CellRequest {
                 // Previous column was constrained. Nothing to do.
                 return;
             } else if (predicate.equalConstraint(prevValue)) {
-                        // Same constraint again. Nothing to do.
-                        return;
+                // Same constraint again. Nothing to do.
+                return;
             } else {
                 // Different constraint. Request is impossible to satisfy.
                 predicate = null;
@@ -162,8 +163,8 @@ public class CellRequest {
      * Add compound member (formed via aggregate function) constraint to the
      * Cell.
      *
-     * @param compoundBitKey
-     * @param compoundPredicate
+     * @param compoundBitKey Compound bit key
+     * @param compoundPredicate Compound predicate
      */
     public void addAggregateList(
         BitKey compoundBitKey,
@@ -172,14 +173,18 @@ public class CellRequest {
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
 
+    /**
+     * Returns the measure of this cell request.
+     *
+     * @return Measure
+     */
     public RolapStar.Measure getMeasure() {
         return measure;
     }
 
     public RolapStar.Column[] getConstrainedColumns() {
         if (this.columnsCache == null) {
-            // This is called more than once so caching the value makes
-            // sense.
+            // This is called more than once so caching the value makes sense.
             check();
         }
         return this.columnsCache;
@@ -195,7 +200,8 @@ public class CellRequest {
     }
 
     /**
-     * Get the map of compound predicates
+     * Returns the map of compound predicates.
+     *
      * @return predicate map
      */
     public Map<BitKey, StarPredicate> getCompoundPredicateMap() {

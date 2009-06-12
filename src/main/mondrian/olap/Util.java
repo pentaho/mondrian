@@ -225,6 +225,29 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns whether two arrays have equal contents. Elements may be null.
+     *
+     * @param a1 First array
+     * @param a2 Second array
+     * @param <T> Element type
+     * @return Whether arrays are equal
+     */
+    public static <T> boolean equalArray(
+        T[] a1,
+        T[] a2)
+    {
+        if (a1.length != a2.length) {
+            return false;
+        }
+        for (int i = 0; i < a1.length; ++i) {
+            if (!equals(a1[i], a2[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns true if two strings are equal, or are both null.
      *
      * <p>The result is not affected by
@@ -302,9 +325,9 @@ public class Util extends XOMUtil {
      * otherwise.
      */
     public static String normalizeName(String s) {
-        return MondrianProperties.instance().CaseSensitive.get() ?
-                s :
-                s.toUpperCase();
+        return MondrianProperties.instance().CaseSensitive.get()
+            ? s
+            : s.toUpperCase();
     }
 
     /**
@@ -368,9 +391,11 @@ public class Util extends XOMUtil {
      * @return The string buffer
      */
     public static StringBuilder replace(
-            StringBuilder buf,
-            int start,
-            String find, String replace) {
+        StringBuilder buf,
+        int start,
+        String find,
+        String replace)
+    {
         // Search and replace from the end towards the start, to avoid O(n ^ 2)
         // copying if the string occurs very commonly.
         int findLength = find.length();
@@ -643,7 +668,8 @@ public class Util extends XOMUtil {
             } else if (parent instanceof Hierarchy) {
                 return parent.getDimension();
             } else if (failIfNotFound) {
-                throw Util.newError("Can not find dimension '" + implode(names) + "'");
+                throw Util.newError(
+                    "Can not find dimension '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -653,7 +679,8 @@ public class Util extends XOMUtil {
             } else if (parent instanceof Dimension) {
                 return parent.getHierarchy();
             } else if (failIfNotFound) {
-                throw Util.newError("Can not find hierarchy '" + implode(names) + "'");
+                throw Util.newError(
+                    "Can not find hierarchy '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -661,7 +688,8 @@ public class Util extends XOMUtil {
             if (parent instanceof Level) {
                 return parent;
             } else if (failIfNotFound) {
-                throw Util.newError("Can not find level '" + implode(names) + "'");
+                throw Util.newError(
+                    "Can not find level '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -741,8 +769,7 @@ public class Util extends XOMUtil {
             }
         }
         if (olapElement == null) {
-            if (allowProp &&
-                    nameParts.size() > 1) {
+            if (allowProp && nameParts.size() > 1) {
                 List<Id.Segment> namePartsButOne =
                     nameParts.subList(0, nameParts.size() - 1);
                 final String propertyName =
@@ -849,8 +876,8 @@ public class Util extends XOMUtil {
     /**
      * Finds a root member of a hierarchy with a given name.
      *
-     * @param hierarchy
-     * @param memberName
+     * @param hierarchy Hierarchy
+     * @param memberName Name of root member
      * @return Member, or null if not found
      */
     public static Member lookupHierarchyRootMember(
@@ -869,8 +896,9 @@ public class Util extends XOMUtil {
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
         Member searchMember = null;
-        if (!matchType.isExact() && !hierarchy.hasAll() &&
-            ! rootMembers.isEmpty())
+        if (!matchType.isExact()
+            && !hierarchy.hasAll()
+            && !rootMembers.isEmpty())
         {
             searchMember =
                 hierarchy.createMember(
@@ -887,8 +915,7 @@ public class Util extends XOMUtil {
             int rc;
             // when searching on the ALL hierarchy, match must be exact
             if (matchType.isExact() || hierarchy.hasAll()) {
-                rc = rootMember.getName()
-                        .compareToIgnoreCase(memberName.name);
+                rc = rootMember.getName().compareToIgnoreCase(memberName.name);
             } else {
                 rc = FunUtil.compareSiblingMembers(
                     rootMember,
@@ -1059,7 +1086,9 @@ public class Util extends XOMUtil {
      * @return Whether property is valid
      */
     public static boolean isValidProperty(
-            Member member, String propertyName) {
+        Member member,
+        String propertyName)
+    {
         return lookupProperty(member.getLevel(), propertyName) != null;
     }
 
@@ -1306,7 +1335,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-         * Converts a list of a string.
+     * Converts a list of a string.
      *
      * For example,
      * <code>commaList("foo", Arrays.asList({"a", "b"}))</code>
@@ -1808,6 +1837,7 @@ public class Util extends XOMUtil {
                 }
             }
         }
+
         /**
          * Reads "value;" or "value<EOF>"
          */
@@ -1878,9 +1908,9 @@ public class Util extends XOMUtil {
                 }
             }
             throw new RuntimeException(
-                    "Connect string '" + s +
-                    "' contains unterminated quoted value '" +
-                    valueBuf.toString() + "'");
+                "Connect string '" + s
+                + "' contains unterminated quoted value '" + valueBuf.toString()
+                + "'");
         }
     }
 
@@ -1983,6 +2013,10 @@ public class Util extends XOMUtil {
                 return def;
             }
 
+            public boolean alwaysResolveFunDef() {
+                return false;
+            }
+
             public boolean canConvert(
                 Exp fromExp,
                 int to,
@@ -2012,8 +2046,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Read a Reader until EOF and return as String.
-     * Note: this ought to be in a Utility class.
+     * Reads a Reader until it returns EOF and return the contents as a String.
      *
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
@@ -2025,7 +2058,7 @@ public class Util extends XOMUtil {
     {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException(
-                    "Buffer size must be greater than 0");
+                "Buffer size must be greater than 0");
         }
 
         final char[] buffer = new char[bufferSize];
@@ -2051,7 +2084,8 @@ public class Util extends XOMUtil {
      * @throws IOException
      */
     public static String readURL(final String urlStr)
-            throws MalformedURLException, IOException {
+        throws IOException
+    {
         return readURL(urlStr, null);
     }
 
@@ -2066,8 +2100,9 @@ public class Util extends XOMUtil {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static String readURL(final String urlStr, Map map)
-            throws MalformedURLException, IOException {
+    public static String readURL(final String urlStr, Map<String, String> map)
+        throws IOException
+    {
         final URL url = new URL(urlStr);
         return readURL(url, map);
     }
@@ -2111,6 +2146,7 @@ public class Util extends XOMUtil {
             r.close();
         }
     }
+
     /**
      * Gets content via Apache VFS. File must exist and have content
      *
@@ -2119,7 +2155,8 @@ public class Util extends XOMUtil {
      * @throws FileSystemException
      */
     public static FileContent readVirtualFile(String url)
-            throws FileSystemException {
+        throws FileSystemException
+    {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
         // VFS handles all of the usual protocols (http:, file:)
         // and then some.
@@ -2150,10 +2187,11 @@ public class Util extends XOMUtil {
         // URL of the file retrieved matches the URL passed in.  A VFS cache bug
         // can cause it to treat URLs with different parameters as the same file
         // (e.g. http://blah.com?param=A, http://blah.com?param=B)
-        if (file instanceof HttpFileObject &&
-                !file.getName().getURI().equals(url)) {
-            fsManager.getFilesCache()
-                .removeFile(file.getFileSystem(),  file.getName());
+        if (file instanceof HttpFileObject
+            && !file.getName().getURI().equals(url))
+        {
+            fsManager.getFilesCache().removeFile(
+                file.getFileSystem(),  file.getName());
 
             file = fsManager.resolveFile(userDir, url);
         }
@@ -2165,15 +2203,22 @@ public class Util extends XOMUtil {
 
         FileContent fileContent = file.getContent();
         if (fileContent == null) {
-            throw newError("Cannot get virtual file content: " +
-                url);
+            throw newError(
+                "Cannot get virtual file content: " + url);
         }
 
         return fileContent;
     }
 
+    /**
+     * Converts a {@link Properties} object to a string-to-string {@link Map}.
+     *
+     * @param properties Properties
+     * @return String-to-string map
+     */
     public static Map<String, String> toMap(final Properties properties) {
         return new AbstractMap<String, String>() {
+            @SuppressWarnings({"unchecked"})
             public Set<Entry<String, String>> entrySet() {
                 return (Set) properties.entrySet();
             }
@@ -2475,7 +2520,7 @@ public class Util extends XOMUtil {
      * will come from the DB(and will be checked against the limit when
      * fetching from the JDBC result set, in SqlTupleReader.prepareTuples())
      *
-     * @param resultSize
+     * @param resultSize Result limit
      * @throws ResourceLimitExceededException
      */
     public static void checkCJResultLimit(long resultSize) {
@@ -2483,7 +2528,6 @@ public class Util extends XOMUtil {
 
         // Throw an exeption, if the size of the crossjoin exceeds the result
         // limit.
-        //
         if (resultLimit > 0 && resultLimit < resultSize) {
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
                 resultSize, resultLimit);

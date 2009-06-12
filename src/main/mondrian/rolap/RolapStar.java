@@ -91,7 +91,7 @@ public class RolapStar {
     private final Table factTable;
 
     /** Holds all global aggregations of this star. */
-    private final Map<AggregationKey,Aggregation> sharedAggregations;
+    private final Map<AggregationKey, Aggregation> sharedAggregations;
 
     /** Holds all thread-local aggregations of this star. */
     private final ThreadLocal<Map<AggregationKey, Aggregation>>
@@ -650,7 +650,7 @@ public class RolapStar {
                     // when another query finishes
                     if (!isAggregationRequested(aggregationKey)) {
                         pushAggregateModification(
-                            aggregationKey, aggregation,sharedAggregations);
+                            aggregationKey, aggregation, sharedAggregations);
                         it.remove();
                     }
                 }
@@ -664,13 +664,14 @@ public class RolapStar {
                     // this aggregation may be pushed into global cache
                     // otherwise put it in pending cache, that will be pushed
                     // when another query finishes
-                    if (!isAggregationRequested(aggregationKey)) {
-                        pushAggregateModification(
-                            aggregationKey, aggregation, sharedAggregations);
+                    Map<AggregationKey, Aggregation> targetMap;
+                    if (isAggregationRequested(aggregationKey)) {
+                        targetMap = pendingAggregations;
                     } else {
-                        pushAggregateModification(
-                            aggregationKey, aggregation, pendingAggregations);
+                        targetMap = sharedAggregations;
                     }
+                    pushAggregateModification(
+                        aggregationKey, aggregation, targetMap);
                 }
                 localAggregations.get().clear();
             }
@@ -875,8 +876,9 @@ public class RolapStar {
                 metaData.getColumns(null, null, tableName, columnName);
             return columns.next();
         } catch (SQLException e) {
-            throw Util.newInternal("Error while retrieving metadata for table '" +
-                            tableName + "', column '" + columnName + "'");
+            throw Util.newInternal(
+                "Error while retrieving metadata for table '" + tableName
+                + "', column '" + columnName + "'");
         } finally {
             try {
                 jdbcConnection.close();
@@ -991,7 +993,6 @@ public class RolapStar {
         }
     }
 
-
     /**
      * Returns the listener for changes to this star's underlying database.
      *
@@ -1100,10 +1101,11 @@ public class RolapStar {
             }
             RolapStar.Column other = (RolapStar.Column) obj;
             // Note: both columns have to be from the same table
-            return (other.table == this.table) &&
-                   other.expression.equals(this.expression) &&
-                   (other.datatype == this.datatype) &&
-                   other.name.equals(this.name);
+            return
+                other.table == this.table
+                && Util.equals(other.expression, this.expression)
+                && other.datatype == this.datatype
+                && other.name.equals(this.name);
         }
 
         public int hashCode() {
@@ -1427,7 +1429,11 @@ public class RolapStar {
             pw.print(" (");
             pw.print(getBitPosition());
             pw.print("): ");
-            pw.print(aggregator.getExpression(generateExprString(sqlQuery)));
+            pw.print(
+                aggregator.getExpression(
+                    getExpression() == null
+                        ? null
+                        : generateExprString(sqlQuery)));
         }
 
         public String getCubeName() {
@@ -1439,7 +1445,8 @@ public class RolapStar {
      * Definition of a table in a star schema.
      *
      * <p>A 'table' is defined by a
-     * {@link mondrian.olap.MondrianDef.RelationOrJoin} so may, in fact, be a view.
+     * {@link mondrian.olap.MondrianDef.RelationOrJoin} so may, in fact, be a
+     * view.
      *
      * <p>Every table in the star schema except the fact table has a parent
      * table, and a condition which specifies how it is joined to its parent.
@@ -2075,8 +2082,10 @@ public class RolapStar {
         // set in Table constructor
         Table table;
 
-        Condition(MondrianDef.Expression left,
-                  MondrianDef.Expression right) {
+        Condition(
+            MondrianDef.Expression left,
+            MondrianDef.Expression right)
+        {
             assert left != null;
             assert right != null;
 

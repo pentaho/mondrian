@@ -69,6 +69,7 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
         }
     }
 
+    @SuppressWarnings({"CloneDoesntCallSuperClone"})
     public UnresolvedFunCall clone() {
         return new UnresolvedFunCall(name, syntax, ExpBase.cloneArray(args));
     }
@@ -97,7 +98,8 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
     public Exp accept(Validator validator) {
         Exp[] newArgs = new Exp[args.length];
         FunDef funDef =
-            FunUtil.resolveFunArgs(validator, args, newArgs, name, syntax);
+            FunUtil.resolveFunArgs(
+                validator, null, args, newArgs, name, syntax);
         return funDef.createCall(validator, newArgs);
     }
 

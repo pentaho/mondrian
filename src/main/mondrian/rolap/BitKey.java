@@ -139,6 +139,13 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      */
     Iterator<Integer> iterator();
 
+    /**
+     * Returns the number of bits set.
+     *
+     * @return Number of bits set
+     */
+    int cardinality();
+
     public abstract class Factory {
 
         /**
@@ -157,17 +164,6 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             } else {
                 return new BitKey.Big(size);
             }
-/*
-            switch (AbstractBitKey.chunkCount(size)) {
-            case 0:
-            case 1:
-                return new BitKey.Small();
-            case 2:
-                return new BitKey.Mid128();
-            default:
-                return new BitKey.Big(size);
-            }
-*/
         }
 
         /**
@@ -175,7 +171,10 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
          */
         public static BitKey makeBitKey(BitSet bitSet) {
             BitKey bitKey = makeBitKey(bitSet.length());
-            for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
+            for (int i = bitSet.nextSetBit(0);
+                i >= 0;
+                i = bitSet.nextSetBit(i + 1))
+            {
                 bitKey.set(i);
             }
             return bitKey;
@@ -393,7 +392,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             if (pos < 64) {
                 bits |= bit(pos);
             } else {
-                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 64");
+                throw new IllegalArgumentException(
+                    "pos " + pos + " exceeds capacity 64");
             }
         }
 
@@ -407,6 +407,10 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
         public void clear() {
             bits = 0;
+        }
+
+        public int cardinality() {
+            return Long.bitCount(bits);
         }
 
         private void or(long bits) {
@@ -707,7 +711,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             } else if (pos < 128) {
                 bits1 |= bit(pos);
             } else {
-                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 128");
+                throw new IllegalArgumentException(
+                    "pos " + pos + " exceeds capacity 128");
             }
         }
 
@@ -735,6 +740,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         public void clear() {
             bits0 = 0;
             bits1 = 0;
+        }
+
+        public int cardinality() {
+            return Long.bitCount(bits0)
+               + Long.bitCount(bits1);
         }
 
         private void or(long bits0, long bits1) {
@@ -1107,6 +1117,14 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             for (int i = 0; i < bits.length; i++) {
                 bits[i] = 0;
             }
+        }
+
+        public int cardinality() {
+            int n = 0;
+            for (int i = 0; i < bits.length; i++) {
+                n += Long.bitCount(bits[i]);
+            }
+            return n;
         }
 
         private void or(long bits0) {

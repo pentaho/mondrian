@@ -65,8 +65,10 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         return Util.unparse(this);
     }
 
+    @SuppressWarnings({"CloneDoesntCallSuperClone"})
     public ResolvedFunCall clone() {
-        return new ResolvedFunCall(funDef, ExpBase.cloneArray(args), returnType);
+        return new ResolvedFunCall(
+            funDef, ExpBase.cloneArray(args), returnType);
     }
 
     /**
@@ -137,7 +139,7 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         // referenced
         Exp[] newArgs = new Exp[args.length];
         FunUtil.resolveFunArgs(
-            validator, args, newArgs, getFunName(), getSyntax());
+            validator, funDef, args, newArgs, getFunName(), getSyntax());
 
         return this;
     }

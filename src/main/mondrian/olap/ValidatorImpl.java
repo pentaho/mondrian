@@ -86,7 +86,8 @@ abstract class ValidatorImpl implements Validator {
             final Type type = resolved.getType();
             if (!TypeUtil.canEvaluate(type)) {
                 String exprString = Util.unparse(resolved);
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(
+                    exprString);
             }
         }
 
@@ -225,6 +226,10 @@ abstract class ValidatorImpl implements Validator {
         return matchDef;
     }
 
+    public boolean alwaysResolveFunDef() {
+        return false;
+    }
+
     private int sumConversionCost(
         List<Resolver.Conversion> conversionList)
     {
@@ -276,8 +281,9 @@ abstract class ValidatorImpl implements Validator {
             }
         } else if (parent instanceof UnresolvedFunCall) {
             final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-            if (funCall.getSyntax() == Syntax.Parentheses ||
-                funCall.getFunName() == "*") {
+            if (funCall.getSyntax() == Syntax.Parentheses
+                || funCall.getFunName().equals("*"))
+            {
                 return requiresExpression(n - 1);
             } else {
                 int k = whichArg(funCall, (Exp) stack.get(n));
