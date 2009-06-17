@@ -778,10 +778,10 @@ public class Util extends XOMUtil {
                     schemaReader.lookupCompound(
                         q.getCube(), namePartsButOne, false, Category.Member);
                 if (olapElement != null &&
-                        isValidProperty((Member) olapElement, propertyName)) {
+                    isValidProperty((Member) olapElement, propertyName)) {
                     return new UnresolvedFunCall(
-                            propertyName, Syntax.Property, new Exp[] {
-                                createExpr(olapElement)});
+                        propertyName, Syntax.Property, new Exp[] {
+                            createExpr(olapElement)});
                 }
             }
             // if we're in the middle of loading the schema, the property has
@@ -802,8 +802,8 @@ public class Util extends XOMUtil {
                 if (olapElement != null) {
                     olapElement = olapElement.getHierarchy().getNullMember();
                 } else {
-                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
-                        fullName, q.getCube().getQualifiedName());
+                    throw MondrianResource.instance().MdxChildObjectNotFound.
+                        ex(fullName, q.getCube().getQualifiedName());
                 }
             } else {
                 throw MondrianResource.instance().MdxChildObjectNotFound.ex(
@@ -1096,7 +1096,10 @@ public class Util extends XOMUtil {
      * Finds a member property called <code>propertyName</code> at, or above,
      * <code>level</code>.
      */
-    protected static Property lookupProperty(Level level, String propertyName) {
+    protected static Property lookupProperty(
+        Level level,
+        String propertyName)
+    {
         do {
             Property[] properties = level.getProperties();
             for (Property property : properties) {
@@ -1645,8 +1648,10 @@ public class Util extends XOMUtil {
      * <code>PropertyList</code> is an order-preserving list of key-value
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
-    public static class PropertyList implements Iterable<Pair<String, String>> {
-        List<Pair<String, String>> list = new ArrayList<Pair<String, String>>();
+    public static class PropertyList
+        implements Iterable<Pair<String, String>> {
+        List<Pair<String, String>> list =
+            new ArrayList<Pair<String, String>>();
 
         public String get(String key) {
             return get(key, null);
@@ -2008,7 +2013,8 @@ public class Util extends XOMUtil {
                 final Resolver resolver = resolvers.get(0);
                 final List<Resolver.Conversion> conversionList =
                     new ArrayList<Resolver.Conversion>();
-                final FunDef def = resolver.resolve(args, this, conversionList);
+                final FunDef def =
+                    resolver.resolve(args, this, conversionList);
                 assert conversionList.isEmpty();
                 return def;
             }
@@ -2177,17 +2183,17 @@ public class Util extends XOMUtil {
         FileObject file = fsManager.resolveFile(userDir, url);
         FileContent fileContent = null;
         try {
-            // Because of VFS caching, make sure we refresh to get the latest file
-            // content.
-            // This refresh may possibly solve the following workaround for defect
-            // MONDRIAN-508, but cannot be tested, so we will leave the work
-            // around for now
+            // Because of VFS caching, make sure we refresh to get the latest
+            // file content. This refresh may possibly solve the following
+            // workaround for defect MONDRIAN-508, but cannot be tested, so we
+            // will leave the work around for now.
             file.refresh();
 
-            // Workaround to defect MONDRIAN-508.  For HttpFileObjects, verifies the
-            // URL of the file retrieved matches the URL passed in.  A VFS cache bug
-            // can cause it to treat URLs with different parameters as the same file
-            // (e.g. http://blah.com?param=A, http://blah.com?param=B)
+            // Workaround to defect MONDRIAN-508. For HttpFileObjects, verifies
+            // the URL of the file retrieved matches the URL passed in.  A VFS
+            // cache bug can cause it to treat URLs with different parameters
+            // as the same file (e.g. http://blah.com?param=A,
+            // http://blah.com?param=B)
             if (file instanceof HttpFileObject
                 && !file.getName().getURI().equals(url))
             {
@@ -2322,12 +2328,12 @@ public class Util extends XOMUtil {
     /**
      * Casts a collection to iterable.
      *
-     * <p>Under JDK 1.4, {@link Collection} objects do not implement
+     * Under JDK 1.4, {@link Collection} objects do not implement
      * {@link Iterable}, so this method inserts a casting wrapper. (Since
-     * Iterable does not exist under JDK 1.4, they will have been compiled under
-     * JDK 1.5 or later, then retrowoven to 1.4 class format. References to
-     * Iterable will have been replaced with references to
-     * <code>com.rc.retroweaver.runtime.Retroweaver_</code>.</p>
+     * Iterable does not exist under JDK 1.4, they will have been compiled
+     * under JDK 1.5 or later, then retrowoven to 1.4 class format. References
+     * to Iterable will have been replaced with references to
+     * <code>com.rc.retroweaver.runtime.Retroweaver_</code>.
      *
      * <p>Under later JDKs this method is trivial. This method can be deleted
      * when we discontinue support for JDK 1.4.

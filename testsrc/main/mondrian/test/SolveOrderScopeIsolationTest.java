@@ -28,8 +28,8 @@ import static mondrian.olap.MondrianProperties.SolveOrderModeEnum.*;
  * Further details at: http://msdn2.microsoft.com/en-us/library/ms144787.aspx
  *
  * This initial set of tests are added to indicate the kind of behavior that is
- * expected to support this SSAS 2005 feature. All tests start with an underscore
- * so as to not to execute even if the test class is added to Main
+ * expected to support this SSAS 2005 feature. All tests start with an
+ * underscore so as to not to execute even if the test class is added to Main
  *
  * @author ajogleka
  * @version $Id$
@@ -115,7 +115,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         assertEquals(SCOPED, getSolveOrderMode());
     }
 
-    public void testOverrideOverCubeMemberDoesNotHappenAbsolute() {
+    public void testOverrideCubeMemberDoesNotHappenAbsolute() {
         final String mdx =
             "with\n"
             + "member gender.override as 'gender.maleMinusFemale', "
@@ -145,7 +145,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testOverrideOverCubeMemberDoesNotHappenScoped() {
+    public void testOverrideCubeMemberDoesNotHappenScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as 'gender.maleMinusFemale', "
@@ -179,7 +179,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
      * Test for future capability: SCOPE_ISOLATION=CUBE which is implemented in
      * Analysis Services but not yet in Mondrian.
      */
-    public void _future_testOverrideOverCubeMemberHappensWithScopeIsolation() {
+    public void _future_testOverrideCubeMemberHappensWithScopeIsolation() {
         setSolveOrderMode(SCOPED);
         assertQueryReturns(
             "with\n"
@@ -211,7 +211,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testCubeMemberIsEvaluatedBeforeQueryMemberAbsolute() {
+    public void testCubeMemberEvalBeforeQueryMemberAbsolute() {
         final String mdx =
             "WITH MEMBER [Customers].USAByWA AS\n"
             + "'[Customers].[Country].[USA] / [Customers].[State Province].[WA]', "
@@ -243,7 +243,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #2: $0.000518\n");
     }
 
-    public void testCubeMemberIsEvaluatedBeforeQueryMemberScoped() {
+    public void testCubeMemberEvalBeforeQueryMemberScoped() {
         final String mdx =
             "WITH MEMBER [Customers].USAByWA AS\n"
             + "'[Customers].[Country].[USA] / [Customers].[State Province].[WA]', "
@@ -265,7 +265,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #0: $2.143076\n");
     }
 
-    public void testOverrideOverCubeMemberInTupleDoesNotHappenAbsolute() {
+    public void testOverrideCubeMemberInTupleDoesNotHappenAbsolute() {
         final String mdx =
             "with\n"
             + "member gender.override as "
@@ -296,7 +296,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testOverrideOverCubeMemberInTupleDoesNotHappenScoped() {
+    public void testOverrideCubeMemberInTupleDoesNotHappenScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as "
@@ -327,7 +327,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testConditionalCubeMemberGetsEvaluatedBeforeOtherMembersAbsolute() {
+    public void testConditionalCubeMemberEvalBeforeOtherMembersAbsolute() {
         final String mdx =
             "with\n"
             + "member gender.override as 'iif(1=0,"
@@ -358,7 +358,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testConditionalCubeMemberGetsEvaluatedBeforeOtherMembersScoped() {
+    public void testConditionalCubeMemberEvalBeforeOtherMembersScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as 'iif(1=0,"
@@ -389,7 +389,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testOverrideOverCubeMemberUsingStrToMemberDoesNotHappenAbsolute() {
+    public void testOverrideCubeMemberUsingStrToMemberDoesNotHappenAbsolute() {
         final String mdx =
             "with\n"
             + "member gender.override as 'iif(1=0,[gender].[all gender].[m], "
@@ -420,7 +420,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #1: 1175\n");
     }
 
-    public void testOverrideOverCubeMemberUsingStrToMemberDoesNotHappenScoped() {
+    public void testOverrideCubeMemberUsingStrToMemberDoesNotHappenScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as 'iif(1=0,[gender].[all gender].[m], "
@@ -452,12 +452,13 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     }
 
     /**
-     * This test validates that behavior is consistent with Analysis Services 2000 when
-     * Solve order scope is ABSOLUTE.  AS2K will throw an error whenever attempting to
-     * aggregate over calculated members (i.e. when the solve order of the Aggregate
-     * member is higher than the calculations it intersects with).
+     * This test validates that behavior is consistent with Analysis Services
+     * 2000 when Solve order scope is ABSOLUTE.  AS2K will throw an error
+     * whenever attempting to aggregate over calculated members (i.e. when the
+     * solve order of the Aggregate member is higher than the calculations it
+     * intersects with).
      */
-    public void testAggregateMemberIsEvaluatedAfterOtherMembersAbsolute() {
+    public void testAggregateMemberEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
             + "member Time.Total1 as "
@@ -499,7 +500,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #3: 20,368\n");
     }
 
-    public void testAggregateMemberIsEvaluatedAfterOtherMembersScoped() {
+    public void testAggregateMemberEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
             + "member Time.Total1 as "
@@ -542,12 +543,13 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     }
 
     /**
-     * This test validates that behavior is consistent with Analysis Services 2000 when
-     * Solve order scope is ABSOLUTE.  AS2K will throw an error whenever attempting to
-     * aggregate over calculated members (i.e. when the solve order of the Aggregate
-     * member is higher than the calculations it intersects with).
+     * This test validates that behavior is consistent with Analysis Services
+     * 2000 when Solve order scope is ABSOLUTE.  AS2K will throw an error
+     * whenever attempting to aggregate over calculated members (i.e. when the
+     * solve order of the Aggregate member is higher than the calculations it
+     * intersects with).
      */
-    public void testConditionalAggregateMemberIsEvaluatedAfterOtherMembersAbsolute() {
+    public void testConditionalAggregateMemberEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
             + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
@@ -588,7 +590,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #3: 20,368\n");
     }
 
-    public void testConditionalAggregateMemberIsEvaluatedAfterOtherMembersScoped() {
+    public void testConditionalAggregateMemberEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
             + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
@@ -630,12 +632,13 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     }
 
     /**
-     * This test validates that behavior is consistent with Analysis Services 2000 when
-     * Solve order scope is ABSOLUTE.  AS2K will throw an error whenever attempting to
-     * aggregate over calculated members (i.e. when the solve order of the Aggregate
-     * member is higher than the calculations it intersects with).
+     * This test validates that behavior is consistent with Analysis Services
+     * 2000 when Solve order scope is ABSOLUTE.  AS2K will throw an error
+     * whenever attempting to aggregate over calculated members (i.e. when the
+     * solve order of the Aggregate member is higher than the calculations it
+     * intersects with).
      */
-    public void testStrToMemberReturningAggregateIsEvaluatedAfterOtherMembersAbsolute() {
+    public void testStrToMemberReturningAggEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
             + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
@@ -674,7 +677,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #2: 20,368\n");
     }
 
-    public void testStrToMemberReturningAggregateIsEvaluatedAfterOtherMembersScoped() {
+    public void testStrToMemberReturningAggEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
             + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
@@ -713,7 +716,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #2: 20,368\n");
     }
 
-    public void test2LevelOfOverrideOverCubeMemberDoesNotHappenAbsolute() {
+    public void test2LevelOfOverrideCubeMemberDoesNotHappenAbsolute() {
         final String mdx =
             "With member gender.override1 as 'gender.maleMinusFemale',\n"
             + "SOLVE_ORDER=20, FORMAT_STRING='#.##'\n"
@@ -754,7 +757,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Row #2: 1175\n");
     }
 
-    public void test2LevelOfOverrideOverCubeMemberDoesNotHappenScoped() {
+    public void test2LevelOfOverrideCubeMemberDoesNotHappenScoped() {
         final String mdx =
             "With member gender.override1 as 'gender.maleMinusFemale',\n"
             + "SOLVE_ORDER=20, FORMAT_STRING='#.##'\n"
