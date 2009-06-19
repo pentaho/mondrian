@@ -30,14 +30,20 @@ public class CellRequest {
     public final boolean extendedContext;
     public final boolean drillThrough;
     /**
-     * List of {@link mondrian.rolap.RolapStar.Column}s being which have values
-     * in this request.
+     * List of {@link mondrian.rolap.RolapStar.Column}s which have values
+     * in this request, stored according to their integer bit positions.
      */
-    private final List<RolapStar.Column> constrainedColumnList =
-        new ArrayList<RolapStar.Column>();
+    private final List<Integer> constrainedColumnList =
+        new ArrayList<Integer>();
 
     private final List<StarColumnPredicate> columnPredicateList =
         new ArrayList<StarColumnPredicate>();
+
+    /**
+     * Maps column integer bit positions to {@link mondrian.rolap.RolapStar.Column}s
+     */
+    private final Map<Integer, RolapStar.Column> bitToColumnMap =
+        new HashMap<Integer, RolapStar.Column>();
 
     /*
      * Array of column values;
@@ -132,7 +138,7 @@ public class CellRequest {
             // This column is already constrained. Unless the value is the same,
             // or this value or the previous value is null (meaning
             // unconstrained) the request will never return any results.
-            int index = constrainedColumnList.indexOf(column);
+            int index = constrainedColumnList.indexOf(bitPosition);
             assert index >= 0;
             final StarColumnPredicate prevValue =
                 columnPredicateList.get(index);
@@ -153,7 +159,8 @@ public class CellRequest {
             columnPredicateList.set(index, predicate);
 
         } else {
-            this.constrainedColumnList.add(column);
+            this.constrainedColumnList.add(bitPosition);
+            this.bitToColumnMap.put(bitPosition, column);
             this.constrainedColumnsBitKey.set(bitPosition);
             this.columnPredicateList.add(predicate);
         }
@@ -223,19 +230,12 @@ public class CellRequest {
             columnPredicateList.clear();
             int i = 0;
             for (int bitPos : constrainedColumnsBitKey) {
-                // NOTE: If the RolapStar.Column were stored in maybe a Map
-                // rather than the constrainedColumnList List, we would
-                // not have to for-loop over the list for each bit position.
-                for (int j = 0; j < size; j++) {
-                    RolapStar.Column rc = constrainedColumnList.get(j);
-                    if (rc.getBitPosition() == bitPos) {
-                        int index = constrainedColumnList.indexOf(rc);
-                        final StarColumnPredicate value =
+                int index = constrainedColumnList.indexOf(bitPos);
+                if (index >= 0) {
+                    final StarColumnPredicate value =
                             oldColumnPredicates[index];
-                        columnPredicateList.add(value);
-                        columnsCache[i++] = rc;
-                        break;
-                    }
+                    columnPredicateList.add(value);
+                    columnsCache[i++] = this.bitToColumnMap.get(bitPos);
                 }
             }
             isDirty = false;
