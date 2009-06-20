@@ -41,12 +41,14 @@ import org.eigenbase.xom.XOMUtil;
 public class XmlaTestContext {
 
     private static final Logger LOGGER =
-            Logger.getLogger(XmlaTestContext.class);
+        Logger.getLogger(XmlaTestContext.class);
 
     public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "MondrianFoodMart";
-    public static final String DATASOURCE_DESCRIPTION = "Mondrian FoodMart Test data source";
-    public static final String DATASOURCE_INFO = "Provider=Mondrian;DataSource=MondrianFoodMart;";
+    public static final String DATASOURCE_DESCRIPTION =
+        "Mondrian FoodMart Test data source";
+    public static final String DATASOURCE_INFO =
+        "Provider=Mondrian;DataSource=MondrianFoodMart;";
     public static final Map<String, String> ENV =
         new HashMap<String, String>() {
             {
@@ -55,7 +57,8 @@ public class XmlaTestContext {
             }
         };
     private static DataSourcesConfig.DataSources DATASOURCES;
-    public static final CatalogLocator CATALOG_LOCATOR = new CatalogLocatorImpl();
+    public static final CatalogLocator CATALOG_LOCATOR =
+        new CatalogLocatorImpl();
     private String connectString;
 
     public XmlaTestContext() {

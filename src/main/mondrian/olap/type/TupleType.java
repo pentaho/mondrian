@@ -135,7 +135,9 @@ public class TupleType implements Type {
             }
         }
         if (elementTypes.size() < that.elementTypes.length) {
-            for (int i = elementTypes.size(); i < that.elementTypes.length; i++) {
+            for (int i = elementTypes.size();
+                i < that.elementTypes.length; i++)
+            {
                 elementTypes.add(new ScalarType());
             }
         }

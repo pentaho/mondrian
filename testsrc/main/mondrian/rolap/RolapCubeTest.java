@@ -149,8 +149,7 @@ public class RolapCubeTest extends FoodMartTestCase {
         try {
             Cube salesCube = cubeByName(connection, "Sales");
             SchemaReader schemaReader =
-                salesCube.
-                    getSchemaReader(connection.getRole());
+                salesCube.getSchemaReader(connection.getRole());
 
             // Product.~Missing accessible
             List<Member> calculatedMembers =
@@ -270,9 +269,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             assertEquals(storeDim1, storeDim1);
 
             RolapCube salesCube2 = (RolapCube) cubeByName(connection2, "Sales");
-            SchemaReader readerSales2 =
-                salesCube2.
-                    getSchemaReader();
+            SchemaReader readerSales2 = salesCube2.getSchemaReader();
             List<Member> storeMembersSales2 = storeMembersCAAndOR(readerSales2);
             Dimension storeDim2 = storeMembersSales2.get(0).getDimension();
             assertEquals(storeDim1, storeDim2);
@@ -281,8 +278,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube warehouseAndSalesCube =
                 (RolapCube) cubeByName(connection1, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
-                warehouseAndSalesCube.
-                    getSchemaReader();
+                warehouseAndSalesCube.getSchemaReader();
             List<Member> storeMembersWarehouseAndSales =
                 storeMembersCAAndOR(readerWarehouseAndSales);
             Dimension storeDim3 =
@@ -311,8 +307,8 @@ public class RolapCubeTest extends FoodMartTestCase {
         TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             null,
-            nonAccessibleMember +
-            accessibleMember);
+            nonAccessibleMember
+            + accessibleMember);
         return testContext.withRole("California manager");
     }
 

@@ -42,9 +42,11 @@ public class XmlaUtil implements XmlaConstants {
      *
      * <p>XML element name:
      *
-     * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF]
+     *        | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
      * S ::= (#x20 | #x9 | #xD | #xA)+
-     * NameChar ::= Letter | Digit | '.' | '-' | '_' | ':' | CombiningChar | Extender
+     * NameChar ::= Letter | Digit | '.' | '-' | '_' | ':' | CombiningChar
+     *        | Extender
      * Name ::= (Letter | '_' | ':') (NameChar)*
      * Names ::= Name (#x20 Name)*
      * Nmtoken ::= (NameChar)+
@@ -52,7 +54,8 @@ public class XmlaUtil implements XmlaConstants {
      *
      */
     private static final String[] CHAR_TABLE = new String[256];
-    private static final Pattern LOWERCASE_PATTERN = Pattern.compile(".*[a-z].*");
+    private static final Pattern LOWERCASE_PATTERN =
+        Pattern.compile(".*[a-z].*");
 
     static {
         initCharTable(" \t\r\n(){}[]+/*%!,?");
@@ -104,7 +107,8 @@ public class XmlaUtil implements XmlaConstants {
         StringBuilder buf = new StringBuilder();
         char[] nameChars = name.toCharArray();
         for (char ch : nameChars) {
-            String encodedStr = (ch >= CHAR_TABLE.length ? null : CHAR_TABLE[ch]);
+            String encodedStr =
+                (ch >= CHAR_TABLE.length ? null : CHAR_TABLE[ch]);
             if (encodedStr == null) {
                 buf.append(ch);
             } else {
@@ -115,13 +119,15 @@ public class XmlaUtil implements XmlaConstants {
     }
 
 
-    public static String element2Text(Element elem)
-            throws XmlaException {
-        StringWriter writer = new StringWriter();
+    public static void element2Text(Element elem, final StringWriter writer)
+        throws XmlaException
+    {
         try {
             TransformerFactory factory = TransformerFactory.newInstance();
             Transformer transformer = factory.newTransformer();
-            transformer.transform(new DOMSource(elem), new StreamResult(writer));
+            transformer.transform(
+                new DOMSource(elem),
+                new StreamResult(writer));
         } catch (Exception e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -129,16 +135,17 @@ public class XmlaUtil implements XmlaConstants {
                 USM_DOM_PARSE_FAULT_FS,
                 e);
         }
-        return writer.getBuffer().toString();
     }
 
     public static Element text2Element(String text)
-            throws XmlaException {
+        throws XmlaException
+    {
         return _2Element(new InputSource(new StringReader(text)));
     }
 
     public static Element stream2Element(InputStream stream)
-            throws XmlaException {
+        throws XmlaException
+    {
         return _2Element(new InputSource(stream));
     }
 
@@ -146,7 +153,8 @@ public class XmlaUtil implements XmlaConstants {
         throws XmlaException
     {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance();
             factory.setIgnoringElementContentWhitespace(true);
             factory.setIgnoringComments(true);
             factory.setNamespaceAware(true);
@@ -177,14 +185,10 @@ public class XmlaUtil implements XmlaConstants {
         String lname)
     {
         if (LOGGER.isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(100);
-            buf.append("XmlaUtil.firstChildElement: ");
-            buf.append(" ns=\"");
-            buf.append(ns);
-            buf.append("\", lname=\"");
-            buf.append(lname);
-            buf.append("\"");
-            LOGGER.debug(buf.toString());
+            LOGGER.debug(
+                "XmlaUtil.firstChildElement: "
+                + " ns=\"" + ns
+                + "\", lname=\"" + lname + "\"");
         }
         NodeList nlst = parent.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -193,18 +197,18 @@ public class XmlaUtil implements XmlaConstants {
                 Element e = (Element) n;
 
                 if (LOGGER.isDebugEnabled()) {
-                    StringBuilder buf = new StringBuilder(100);
-                    buf.append("XmlaUtil.firstChildElement: ");
-                    buf.append(" e.getNamespaceURI()=\"");
-                    buf.append(e.getNamespaceURI());
-                    buf.append("\", e.getLocalName()=\"");
-                    buf.append(e.getLocalName());
-                    buf.append("\"");
-                    LOGGER.debug(buf.toString());
+                    LOGGER.debug(
+                        "XmlaUtil.firstChildElement: "
+                        + " e.getNamespaceURI()=\""
+                        + e.getNamespaceURI()
+                        + "\", e.getLocalName()=\""
+                        + e.getLocalName()
+                        + "\"");
                 }
 
-                if ((ns == null || ns.equals(e.getNamespaceURI())) &&
-                    (lname == null || lname.equals(e.getLocalName()))) {
+                if ((ns == null || ns.equals(e.getNamespaceURI()))
+                    && (lname == null || lname.equals(e.getLocalName())))
+                {
                     return e;
                 }
             }
@@ -237,22 +241,9 @@ way too noisy
             Node n = nlst.item(i);
             if (n instanceof Element) {
                 Element e = (Element) n;
-
-/*
-                if (LOGGER.isDebugEnabled()) {
-                    StringBuilder buf = new StringBuilder(100);
-                    buf.append("XmlaUtil.filterChildElements: ");
-                    buf.append(" e.getNamespaceURI()=\"");
-                    buf.append(e.getNamespaceURI());
-                    buf.append("\", e.getLocalName()=\"");
-                    buf.append(e.getLocalName());
-                    buf.append("\"");
-                    LOGGER.debug(buf.toString());
-                }
-*/
-
-                if ((ns == null || ns.equals(e.getNamespaceURI())) &&
-                    (lname == null || lname.equals(e.getLocalName()))) {
+                if ((ns == null || ns.equals(e.getNamespaceURI()))
+                    && (lname == null || lname.equals(e.getLocalName())))
+                {
                     elems.add(e);
                 }
             }
@@ -283,7 +274,9 @@ way too noisy
      */
     public static Throwable rootThrowable(Throwable throwable) {
         Throwable rootThrowable = throwable.getCause();
-        if (rootThrowable != null && rootThrowable instanceof MondrianException) {
+        if (rootThrowable != null
+            && rootThrowable instanceof MondrianException)
+        {
             return rootThrowable(rootThrowable);
         }
         return throwable;
@@ -351,7 +344,8 @@ way too noisy
         String methodName,
         final Map<String, Object> restrictionMap)
     {
-        RowsetDefinition rowsetDefinition = RowsetDefinition.valueOf(methodName);
+        RowsetDefinition rowsetDefinition =
+            RowsetDefinition.valueOf(methodName);
 
         final Map<String, String> propertyMap = new HashMap<String, String>();
         final String dataSourceName = "xxx";
@@ -420,7 +414,8 @@ way too noisy
                 new XmlaHandler(
                     dataSources,
                     null,
-                    "xmla") {
+                    "xmla")
+                {
                     protected Connection getConnection(
                         final DataSourcesConfig.Catalog catalog,
                         final Role role,
@@ -518,7 +513,8 @@ way too noisy
             pw.println(prefix);
             pw.println(prefix + "<p>" + o.name() + "</p>");
             pw.println(prefix + "<ol>");
-            for (RowsetDefinition.Column columnDefinition : o.columnDefinitions) {
+            for (RowsetDefinition.Column columnDefinition : o.columnDefinitions)
+            {
                 String columnName = columnDefinition.name;
                 if (LOWERCASE_PATTERN.matcher(columnName).matches()) {
                     columnName = Util.camelToUpper(columnName);

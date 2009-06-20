@@ -255,8 +255,8 @@ public final class ScenarioImpl implements Scenario {
         for (Member member : memberList) {
             if (member.isMeasure()) {
                 member = cube.factCountMeasure;
-                assert member != null :
-                    "fact count measure is required for writeback cubes";
+                assert member != null
+                    : "fact count measure is required for writeback cubes";
             }
             if (!member.equals(member.getHierarchy().getDefaultMember())) {
                 if (k++ > 0) {
@@ -473,8 +473,8 @@ public final class ScenarioImpl implements Scenario {
             // It is possible that the value is modified by several writebacks.
             // If so, order is important.
             int changeCount = 0;
-            for (ScenarioImpl.WritebackCell writebackCell :
-                scenario.writebackCells)
+            for (ScenarioImpl.WritebackCell writebackCell
+                : scenario.writebackCells)
             {
                 CellRelation relation =
                     writebackCell.getRelationTo(evaluator.getMembers());

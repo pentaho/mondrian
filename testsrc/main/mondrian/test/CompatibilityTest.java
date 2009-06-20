@@ -76,8 +76,10 @@ public class CompatibilityTest extends FoodMartTestCase {
      * See how we are at diagnosing reserved words.
      */
     public void testReservedWord() {
-        assertAxisThrows("with member [Measures].ordinal as '1'\n"
-                    + " select {[Measures].ordinal} on columns from Sales", "Syntax error");
+        assertAxisThrows(
+            "with member [Measures].ordinal as '1'\n"
+            + " select {[Measures].ordinal} on columns from Sales",
+            "Syntax error");
         assertQueryReturns(
             "with member [Measures].[ordinal] as '1'\n"
             + " select {[Measures].[ordinal]} on columns from Sales",
@@ -216,7 +218,8 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     /**
-     * Hierarchy names of the form [Dim].[Hier], [Dim.Hier], and Dim.Hier are accepted.
+     * Hierarchy names of the form [Dim].[Hier], [Dim.Hier], and
+     * Dim.Hier are accepted.
      */
     public void testHierarchyNames() {
         checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
@@ -227,7 +230,8 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     private void checkAxis(String result, String expression) {
-        Assert.assertEquals(result, executeSingletonAxis(expression).toString());
+        Assert.assertEquals(
+            result, executeSingletonAxis(expression).toString());
     }
 
 
@@ -493,24 +497,34 @@ public class CompatibilityTest extends FoodMartTestCase {
 
     private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
         props.NeedDimensionPrefix.set(prefixNeeded);
-        assertAxisReturns("[Gender].[M]","[Gender].[All Gender].[M]");
-        assertAxisReturns("[Gender].[All Gender].[M]","[Gender].[All Gender].[M]");
-        assertAxisReturns("[Store].[USA]","[Store].[All Stores].[USA]");
-        assertAxisReturns("[Store].[All Stores].[USA]","[Store].[All Stores].[USA]");
+        assertAxisReturns("[Gender].[M]", "[Gender].[All Gender].[M]");
+        assertAxisReturns(
+            "[Gender].[All Gender].[M]", "[Gender].[All Gender].[M]");
+        assertAxisReturns("[Store].[USA]", "[Store].[All Stores].[USA]");
+        assertAxisReturns(
+            "[Store].[All Stores].[USA]", "[Store].[All Stores].[USA]");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 
     public void testWithNoDimensionPrefix() {
         props.NeedDimensionPrefix.set(false);
-        assertAxisReturns("{[M]}","[Gender].[All Gender].[M]");
-        assertAxisReturns("{M}","[Gender].[All Gender].[M]");
-        assertAxisReturns("{[USA].[CA]}","[Store].[All Stores].[USA].[CA]");
-        assertAxisReturns("{USA.CA}","[Store].[All Stores].[USA].[CA]");
+        assertAxisReturns("{[M]}", "[Gender].[All Gender].[M]");
+        assertAxisReturns("{M}", "[Gender].[All Gender].[M]");
+        assertAxisReturns("{[USA].[CA]}", "[Store].[All Stores].[USA].[CA]");
+        assertAxisReturns("{USA.CA}", "[Store].[All Stores].[USA].[CA]");
         props.NeedDimensionPrefix.set(true);
-        assertAxisThrows("{[M]}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
-        assertAxisThrows("{M}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
-        assertAxisThrows("{[USA].[CA]}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
-        assertAxisThrows("{USA.CA}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        assertAxisThrows(
+            "{[M]}",
+            "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows(
+             "{M}",
+             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows(
+            "{[USA].[CA]}",
+            "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        assertAxisThrows(
+             "{USA.CA}",
+             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 }

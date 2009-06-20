@@ -65,8 +65,8 @@ abstract class ValidatorImpl implements Validator {
             // not occur for any query, valid or invalid.
             throw Util.newInternal(
                 e,
-                "Infinite recursion encountered while validating '" +
-                    Util.unparse(exp) + "'");
+                "Infinite recursion encountered while validating '"
+                + Util.unparse(exp) + "'");
         }
         if (resolved == null) {
             try {

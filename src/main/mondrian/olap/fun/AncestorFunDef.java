@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,23 +40,28 @@ class AncestorFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc =
-                compiler.compileMember(call.getArg(0));
+            compiler.compileMember(call.getArg(0));
         final Type type1 = call.getArg(1).getType();
         if (type1 instanceof LevelType) {
             final LevelCalc levelCalc =
-                    compiler.compileLevel(call.getArg(1));
-            return new AbstractMemberCalc(call, new Calc[] {memberCalc, levelCalc}) {
+                compiler.compileLevel(call.getArg(1));
+            return new AbstractMemberCalc(
+                call, new Calc[] {memberCalc, levelCalc})
+            {
                 public Member evaluateMember(Evaluator evaluator) {
                     Level level = levelCalc.evaluateLevel(evaluator);
                     Member member = memberCalc.evaluateMember(evaluator);
-                    int distance = member.getLevel().getDepth() - level.getDepth();
+                    int distance =
+                        member.getLevel().getDepth() - level.getDepth();
                     return ancestor(evaluator, member, distance, level);
                 }
             };
         } else {
             final IntegerCalc distanceCalc =
-                    compiler.compileInteger(call.getArg(1));
-            return new AbstractMemberCalc(call, new Calc[] {memberCalc, distanceCalc}) {
+                compiler.compileInteger(call.getArg(1));
+            return new AbstractMemberCalc(
+                call, new Calc[] {memberCalc, distanceCalc})
+            {
                 public Member evaluateMember(Evaluator evaluator) {
                     int distance = distanceCalc.evaluateInteger(evaluator);
                     Member member = memberCalc.evaluateMember(evaluator);

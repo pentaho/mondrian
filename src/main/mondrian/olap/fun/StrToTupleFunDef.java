@@ -89,7 +89,8 @@ class StrToTupleFunDef extends FunDefBase {
     }
 
     private Member parseMember(
-        Evaluator evaluator, String string, Hierarchy hierarchy) {
+        Evaluator evaluator, String string, Hierarchy hierarchy)
+    {
         Member[] members = {null};
         int i = StrToSetFunDef.parseMember(
             evaluator, string, 0, members, new Hierarchy[] {hierarchy}, 0);
@@ -180,7 +181,8 @@ class StrToTupleFunDef extends FunDefBase {
             for (int i = 1; i < args.length; i++) {
                 Exp exp = args[i];
                 if (!(exp instanceof DimensionExpr
-                    || exp instanceof HierarchyExpr)) {
+                    || exp instanceof HierarchyExpr))
+                {
                     return null;
                 }
             }

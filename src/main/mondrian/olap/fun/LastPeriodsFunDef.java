@@ -53,8 +53,8 @@ class LastPeriodsFunDef extends FunDefBase {
             Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return new SetType(MemberType.forHierarchy(hierarchy));
@@ -75,8 +75,8 @@ class LastPeriodsFunDef extends FunDefBase {
                     compiler.getEvaluator().getCube()
                     .getTimeDimension();
             if (timeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             memberCalc = new DimensionCurrentMemberCalc(
                     timeDimension);
@@ -100,21 +100,22 @@ class LastPeriodsFunDef extends FunDefBase {
         };
     }
 
-    /*
-        If Index is positive, returns the set of Index
-        members ending with Member and starting with the
-        member lagging Index - 1 from Member.
-
-        If Index is negative, returns the set of (- Index)
-        members starting with Member and ending with the
-        member leading (- Index - 1) from Member.
-
-        If Index is zero, the empty set is returned.
+    /**
+     * If Index is positive, returns the set of Index
+     * members ending with Member and starting with the
+     * member lagging Index - 1 from Member.
+     *
+     * <p>If Index is negative, returns the set of (- Index)
+     * members starting with Member and ending with the
+     * member leading (- Index - 1) from Member.
+     *
+     * <p>If Index is zero, the empty set is returned.
     */
     List<Member> lastPeriods(
-            Member member,
-            Evaluator evaluator,
-            int indexValue) {
+        Member member,
+        Evaluator evaluator,
+        int indexValue)
+    {
         // empty set
         if ((indexValue == 0) || member.isNull()) {
             return Collections.emptyList();
@@ -152,12 +153,11 @@ class LastPeriodsFunDef extends FunDefBase {
             }
         }
 
-        evaluator.getSchemaReader().
-            getMemberRange(
-                member.getLevel(),
-                startMember,
-                endMember,
-                list);
+        evaluator.getSchemaReader().getMemberRange(
+            member.getLevel(),
+            startMember,
+            endMember,
+            list);
         return list;
     }
 }

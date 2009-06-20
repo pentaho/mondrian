@@ -32,8 +32,8 @@ class MemberKey {
             return false;
         }
         MemberKey other = (MemberKey) o;
-        return (other.parent == this.parent) &&
-            other.value.equals(this.value);
+        return (other.parent == this.parent)
+            && other.value.equals(this.value);
     }
     // override Object
     public int hashCode() {

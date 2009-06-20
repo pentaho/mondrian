@@ -123,8 +123,8 @@ class RolapNamedSetEvaluator
             if (list == DUMMY_LIST) {
                 throw rrer.slicerEvaluator.newEvalException(
                     null,
-                    "Illegal attempt to reference value of named set '" +
-                        name + "' while evaluating itself");
+                    "Illegal attempt to reference value of named set '"
+                    + name + "' while evaluating itself");
             }
             return;
         }
@@ -156,10 +156,13 @@ class RolapNamedSetEvaluator
             }
         }
         if (RolapResult.LOGGER.isDebugEnabled()) {
-            final StringBuilder buf =
-                new StringBuilder(
-                    this + ": " +
-                    "Named set " + name + " evaluated to:" + Util.nl);
+            final StringBuilder buf = new StringBuilder();
+            buf.append(this);
+            buf.append(": ");
+            buf.append("Named set ");
+            buf.append(name);
+            buf.append(" evaluated to:");
+            buf.append(Util.nl);
             int arity = ((SetType) calc.getType()).getArity();
             int rowCount = 0;
             final int maxRowCount = 100;

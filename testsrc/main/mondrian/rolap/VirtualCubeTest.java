@@ -833,8 +833,9 @@ public class VirtualCubeTest extends BatchTestCase {
             return;
         }
 
-        if (!MondrianProperties.instance().EnableNativeCrossJoin.get() &&
-            !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()
+            && !MondrianProperties.instance().EnableNativeNonEmpty.get())
+        {
             // Only run the tests if either native CrossJoin or native NonEmpty
             // is enabled.
             return;

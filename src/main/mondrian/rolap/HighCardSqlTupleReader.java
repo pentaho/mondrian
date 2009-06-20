@@ -397,8 +397,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         for (Target target : targets) {
             RolapLevel level = target.getLevel();
             if (!level.isAll()) {
-                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level) &&
-                    levelContainsMultipleColumns(level)) {
+                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level)
+                    && levelContainsMultipleColumns(level))
+                {
                     return null;
                 }
             }

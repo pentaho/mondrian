@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -56,12 +56,13 @@ public interface Hierarchy extends OlapElement {
     Member getNullMember();
 
     boolean hasAll();
+
     /**
      * Creates a member of this hierarchy. If this is the measures hierarchy, a
      * calculated member is created, and <code>formula</code> must not be null.
      */
-    Member createMember(Member parent, Level level, String name, Formula formula);
+    Member createMember(
+        Member parent, Level level, String name, Formula formula);
 }
 
 // End Hierarchy.java
-

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,75 +23,86 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class RolapAggregator
-        extends EnumeratedValues.BasicValue
-        implements Aggregator {
-
+    extends EnumeratedValues.BasicValue
+    implements Aggregator
+{
     private static int index = 0;
 
     public static final RolapAggregator Sum =
-            new RolapAggregator("sum", index++, false) {
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return FunUtil.sum(evaluator, members, exp);
-                }
-            };
+        new RolapAggregator("sum", index++, false) {
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                return FunUtil.sum(evaluator, members, exp);
+            }
+        };
 
     public static final RolapAggregator Count =
-            new RolapAggregator("count", index++, false) {
-                public Aggregator getRollup() {
-                    return Sum;
-                }
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return FunUtil.count(evaluator, members, false);
-                }
-            };
+        new RolapAggregator("count", index++, false) {
+            public Aggregator getRollup() {
+                return Sum;
+            }
+
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                return FunUtil.count(evaluator, members, false);
+            }
+        };
 
     public static final RolapAggregator Min =
-            new RolapAggregator("min", index++, false) {
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return FunUtil.min(evaluator, members, exp);
-                }
-            };
+        new RolapAggregator("min", index++, false) {
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                return FunUtil.min(evaluator, members, exp);
+            }
+        };
 
     public static final RolapAggregator Max =
-            new RolapAggregator("max", index++, false) {
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return FunUtil.max(evaluator, members, exp);
-                }
-            };
+        new RolapAggregator("max", index++, false) {
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                return FunUtil.max(evaluator, members, exp);
+            }
+        };
 
     public static final RolapAggregator Avg =
-            new RolapAggregator("avg", index++, false) {
-                public Aggregator getRollup() {
-                    return null;
-                }
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return FunUtil.avg(evaluator, members, exp);
-                }
-            };
+        new RolapAggregator("avg", index++, false) {
+            public Aggregator getRollup() {
+                return null;
+            }
+
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                return FunUtil.avg(evaluator, members, exp);
+            }
+        };
 
     public static final RolapAggregator DistinctCount =
-            new RolapAggregator("distinct-count", index++, true) {
-                public Aggregator getRollup() {
-                    // Distinct counts cannot always be rolled up, when they can,
-                    // it's using Sum.
-                    return Sum;
-                }
-                public RolapAggregator getNonDistinctAggregator() {
-                    return Count;
-                }
-                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    throw new UnsupportedOperationException();
-                }
-                public String getExpression(String operand) {
-                    return "count(distinct " + operand + ")";
-                }
-            };
+        new RolapAggregator("distinct-count", index++, true) {
+            public Aggregator getRollup() {
+                // Distinct counts cannot always be rolled up, when they can,
+                // it's using Sum.
+                return Sum;
+            }
+
+            public RolapAggregator getNonDistinctAggregator() {
+                return Count;
+            }
+
+            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            public String getExpression(String operand) {
+                return "count(distinct " + operand + ")";
+            }
+        };
 
     /**
      * List of all valid aggregation operators.
      */
     public static final EnumeratedValues<RolapAggregator> enumeration =
-        new EnumeratedValues<RolapAggregator> (
+        new EnumeratedValues<RolapAggregator>(
             new RolapAggregator[] {Sum, Count, Min, Max, Avg, DistinctCount});
 
     /**

@@ -466,9 +466,9 @@ public class Query extends QueryPart {
     {
         MondrianProperties props = MondrianProperties.instance();
         return
-            !strictValidation &&
-            ((load && props.IgnoreInvalidMembers.get()) ||
-                (!load && props.IgnoreInvalidMembersDuringQuery.get()));
+            !strictValidation
+            && ((load && props.IgnoreInvalidMembers.get())
+                || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
     }
 
     /**
@@ -561,8 +561,8 @@ public class Query extends QueryPart {
                         String parameterName =
                             ParameterFunDef.getParameterName(call.getArgs());
                         if (parametersByName.get(parameterName) != null) {
-                            throw MondrianResource.instance().
-                                ParameterDefinedMoreThanOnce.ex(parameterName);
+                            throw MondrianResource.instance()
+                                .ParameterDefinedMoreThanOnce.ex(parameterName);
                         }
 
                         Type type =
@@ -856,10 +856,11 @@ public class Query extends QueryPart {
     public Member lookupMemberFromCache(String memberUniqueName) {
         // first look in defined members
         for (Member member : getDefinedMembers()) {
-            if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
-                Util.equalName(
-                        getUniqueNameWithoutAll(member),
-                        memberUniqueName)) {
+            if (Util.equalName(member.getUniqueName(), memberUniqueName)
+                || Util.equalName(
+                    getUniqueNameWithoutAll(member),
+                    memberUniqueName))
+            {
                 return member;
             }
         }
@@ -871,8 +872,8 @@ public class Query extends QueryPart {
         Member parentMember = member.getParentMember();
         if ((parentMember != null) && !parentMember.isAll()) {
             return Util.makeFqName(
-                            getUniqueNameWithoutAll(parentMember),
-                            member.getName());
+                getUniqueNameWithoutAll(parentMember),
+                member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
         }
@@ -883,9 +884,10 @@ public class Query extends QueryPart {
      */
     private NamedSet lookupNamedSet(String name) {
         for (Formula formula : formulas) {
-            if (!formula.isMember() &&
-                formula.getElement() != null &&
-                formula.getName().equals(name)) {
+            if (!formula.isMember()
+                && formula.getElement() != null
+                && formula.getName().equals(name))
+            {
                 return (NamedSet) formula.getElement();
             }
         }
@@ -935,11 +937,11 @@ public class Query extends QueryPart {
                 while ((parent != null) && (grandParent != null)) {
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedOnAxis.ex(
-                                formulaType,
-                                uniqueName,
-                                ((QueryAxis) parent).getAxisName());
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedOnAxis.ex(
+                                    formulaType,
+                                    uniqueName,
+                                    ((QueryAxis) parent).getAxisName());
 
                         } else if (parent instanceof Formula) {
                             String parentFormulaType =
@@ -948,24 +950,24 @@ public class Query extends QueryPart {
                                           .CalculatedMember.str()
                                     : MondrianResource.instance()
                                           .CalculatedSet.str();
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedInFormula.ex(
-                                formulaType, uniqueName, parentFormulaType,
-                                ((Formula) parent).getUniqueName());
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedInFormula.ex(
+                                    formulaType, uniqueName, parentFormulaType,
+                                    ((Formula) parent).getUniqueName());
 
                         } else {
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedOnSlicer.ex(
-                                formulaType, uniqueName);
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedOnSlicer.ex(
+                                    formulaType, uniqueName);
                         }
                     }
                     ++i;
                     parent = walker.getAncestor(i);
                     grandParent = walker.getAncestor(i + 1);
                 }
-                throw MondrianResource.instance().
-                    MdxCalculatedFormulaUsedInQuery.ex(
-                    formulaType, uniqueName, Util.unparse(this));
+                throw MondrianResource.instance()
+                    .MdxCalculatedFormulaUsedInQuery.ex(
+                        formulaType, uniqueName, Util.unparse(this));
             }
         }
 
@@ -1001,12 +1003,13 @@ public class Query extends QueryPart {
         Walker walker = new Walker(this);
         while (walker.hasMoreElements()) {
             Object queryElement = walker.nextElement();
-            if (queryElement instanceof MemberExpr &&
-                ((MemberExpr) queryElement).getMember().equals(mdxElement)) {
+            if (queryElement instanceof MemberExpr
+                && ((MemberExpr) queryElement).getMember().equals(mdxElement))
+            {
                 return false;
             }
-            if (queryElement instanceof NamedSetExpr &&
-                ((NamedSetExpr) queryElement).getNamedSet().equals(
+            if (queryElement instanceof NamedSetExpr
+                && ((NamedSetExpr) queryElement).getNamedSet().equals(
                     mdxElement))
             {
                 return false;
@@ -1045,9 +1048,10 @@ public class Query extends QueryPart {
     List<Member> getDefinedMembers() {
         List<Member> definedMembers = new ArrayList<Member>();
         for (final Formula formula : formulas) {
-            if (formula.isMember() &&
-                formula.getElement() != null &&
-                getConnection().getRole().canAccess(formula.getElement())) {
+            if (formula.isMember()
+                && formula.getElement() != null
+                && getConnection().getRole().canAccess(formula.getElement()))
+            {
                 definedMembers.add((Member) formula.getElement());
             }
         }
@@ -1059,8 +1063,8 @@ public class Query extends QueryPart {
      */
     public void setAxisShowEmptyCells(int axis, boolean showEmpty) {
         if (axis >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
-                ex(axis);
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported
+                .ex(axis);
         }
         axes[axis].setNonEmpty(!showEmpty);
     }
@@ -1071,13 +1075,13 @@ public class Query extends QueryPart {
      */
     public Hierarchy[] getMdxHierarchiesOnAxis(AxisOrdinal axis) {
         if (axis.logicalOrdinal() >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
-                ex(axis.logicalOrdinal());
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported
+                .ex(axis.logicalOrdinal());
         }
         QueryAxis queryAxis =
-            axis.isFilter() ?
-                slicerAxis :
-                axes[axis.logicalOrdinal()];
+            axis.isFilter()
+            ? slicerAxis
+            : axes[axis.logicalOrdinal()];
         return collectHierarchies(queryAxis.getSet());
     }
 
@@ -1350,8 +1354,9 @@ public class Query extends QueryPart {
                     continue;       // have already done these
                 }
                 Id id = formula.getIdentifier();
-                if (id.getSegments().size() == 1 &&
-                    id.getSegments().get(0).matches(s.name)) {
+                if (id.getSegments().size() == 1
+                    && id.getSegments().get(0).matches(s.name))
+                {
                     return formula.getNamedSet();
                 }
             }

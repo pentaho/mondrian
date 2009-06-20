@@ -21,11 +21,11 @@ import mondrian.olap.NativeEvaluator;
  * then the interpreter must compute the result itself.
  * If it returns a NativeEvaluator
  * the interpreter may choose to let the NativeEvaluator compute the result.
- * <p>
- * There exist multiple RolapNative implementations, e.g. for CrossJoin, TopCount,
- * Filter etc. If the arguments of these functions are simple enough to be evaluated
- * in SQL then a NativeEvaluator will be returned that performs the computations
- * in SQL. Otherwise null will be returned.
+ *
+ * <p>There exist multiple RolapNative implementations, e.g. for CrossJoin,
+ * TopCount, Filter etc. If the arguments of these functions are simple enough
+ * to be evaluated in SQL then a NativeEvaluator will be returned that performs
+ * the computations in SQL. Otherwise null will be returned.
  *
  * @version $Id$
  */

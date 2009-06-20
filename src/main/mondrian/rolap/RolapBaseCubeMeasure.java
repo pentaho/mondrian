@@ -106,8 +106,9 @@ public class RolapBaseCubeMeasure
 
         setProperty(Property.AGGREGATION_TYPE.name, aggregator);
         if (datatype == null) {
-            if (aggregator == RolapAggregator.Count ||
-                    aggregator == RolapAggregator.DistinctCount) {
+            if (aggregator == RolapAggregator.Count
+                || aggregator == RolapAggregator.DistinctCount)
+            {
                 datatype = "Integer";
             } else {
                 datatype = "Numeric";

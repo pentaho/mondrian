@@ -76,7 +76,8 @@ class FactoryJdbc3Impl implements Factory {
     {
         public MondrianOlap4jPreparedStatementJdbc3(
             MondrianOlap4jConnection olap4jConnection,
-            String mdx) {
+            String mdx)
+        {
             super(olap4jConnection, mdx);
         }
     }

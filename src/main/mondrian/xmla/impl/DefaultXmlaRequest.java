@@ -65,12 +65,14 @@ public class DefaultXmlaRequest
     }
 
     public DefaultXmlaRequest(final Element xmlaRoot, final String roleName)
-            throws XmlaException {
+        throws XmlaException
+    {
         this(xmlaRoot, roleName, null);
     }
 
     public DefaultXmlaRequest(final Element xmlaRoot, final Role role)
-            throws XmlaException {
+        throws XmlaException
+    {
         this(xmlaRoot, null, role);
     }
 
@@ -322,14 +324,13 @@ public class DefaultXmlaRequest
                         }
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append("DefaultXmlaRequest.initRestrictions: ");
-                            buf.append(" key=\"");
-                            buf.append(key);
-                            buf.append("\", value=\"");
-                            buf.append(value);
-                            buf.append("\"");
-                            LOGGER.debug(buf.toString());
+                            LOGGER.debug(
+                                "DefaultXmlaRequest.initRestrictions: "
+                                + " key=\""
+                                + key
+                                + "\", value=\""
+                                + value
+                                + "\"");
                         }
 
                         values.add(value);
@@ -369,14 +370,13 @@ public class DefaultXmlaRequest
                         String value = XmlaUtil.textInElement(e);
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append("DefaultXmlaRequest.initProperties: ");
-                            buf.append(" key=\"");
-                            buf.append(key);
-                            buf.append("\", value=\"");
-                            buf.append(value);
-                            buf.append("\"");
-                            LOGGER.debug(buf.toString());
+                            LOGGER.debug(
+                                "DefaultXmlaRequest.initProperties: "
+                                + " key=\""
+                                + key
+                                + "\", value=\""
+                                + value
+                                + "\"");
                         }
 
                         properties.put(key, value);

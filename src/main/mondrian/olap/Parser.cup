@@ -155,9 +155,9 @@ parser code {:
         String cube, Exp slicer, QueryPart[] cellProps)
     {
         final QueryAxis slicerAxis =
-            slicer == null ?
-                null :
-                new QueryAxis(
+            slicer == null
+                ? null
+                : new QueryAxis(
                     false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
@@ -932,7 +932,7 @@ when_list ::=
 
 when_clause ::=
         WHEN value_expression:x THEN value_expression:y {:
-            RESULT = new Exp[] {x,y};
+            RESULT = new Exp[] {x, y};
         :}
     ;
 
@@ -1353,7 +1353,8 @@ formula_specification ::=
             RESULT.add(e);
         :}
     |   single_formula_specification:hd formula_specification:tl {:
-            tl.add(0,hd); RESULT = tl;
+            tl.add(0, hd);
+            RESULT = tl;
         :}
     ;
 
@@ -1400,7 +1401,7 @@ member_property_def_list ::=
         :}
     |   member_property_definition:hd COMMA member_property_def_list:tl {:
             RESULT = tl;
-            RESULT.add(0,hd);
+            RESULT.add(0, hd);
         :}
     ;
 //

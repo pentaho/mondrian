@@ -145,13 +145,13 @@ public class MondrianProperties extends TriggerableProperties {
         }
 
         public boolean isStale() {
-            return file.exists() &&
-                    file.lastModified() > this.lastModified;
+            return file.exists()
+                && file.lastModified() > this.lastModified;
         }
 
         public String getDescription() {
-            return "file=" + file.getAbsolutePath() +
-                    " (exists=" + file.exists() + ")";
+            return "file=" + file.getAbsolutePath()
+                + " (exists=" + file.exists() + ")";
         }
     }
 
@@ -239,7 +239,8 @@ public class MondrianProperties extends TriggerableProperties {
         // copy in all system properties which start with "mondrian."
         int count = 0;
         for (Enumeration keys = System.getProperties().keys();
-             keys.hasMoreElements();) {
+             keys.hasMoreElements();)
+        {
             String key = (String) keys.nextElement();
             String value = System.getProperty(key);
             if (key.startsWith("mondrian.")) {
@@ -253,9 +254,8 @@ public class MondrianProperties extends TriggerableProperties {
             }
         }
         if (populateCount++ == 0) {
-            LOGGER.info("Mondrian: loaded "
-                    + count
-                    + " system properties");
+            LOGGER.info(
+                "Mondrian: loaded " + count + " system properties");
         }
     }
 

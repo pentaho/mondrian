@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -83,7 +83,8 @@ public class LiteralStarPredicate extends AbstractColumnPredicate {
     }
 
     public Overlap intersect(
-        StarColumnPredicate predicate) {
+        StarColumnPredicate predicate)
+    {
         return new Overlap(value, null, 0f);
     }
 
@@ -104,7 +105,8 @@ public class LiteralStarPredicate extends AbstractColumnPredicate {
         if (value) {
             // We have no 'not' operator, so there's no shorter way to represent
             // "true - constraint".
-            return new MinusStarPredicate(this, (StarColumnPredicate) predicate);
+            return new MinusStarPredicate(
+                this, (StarColumnPredicate) predicate);
         } else {
             // "false - constraint" is "false"
             return this;

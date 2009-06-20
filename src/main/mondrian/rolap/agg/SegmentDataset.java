@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 21 March, 2002
  * @version $Id$
  */
-interface SegmentDataset extends Iterable<Map.Entry<CellKey,Object>> {
+interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
     /**
      * Returns the value at a given coordinate.
      *

@@ -49,16 +49,16 @@ public class DimensionType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        return this.dimension == dimension ||
-            (definitely && this.dimension == null);
+        return this.dimension == dimension
+            || (definitely && this.dimension == null);
     }
 
     public Hierarchy getHierarchy() {
-        return dimension == null ?
-                null :
-                dimension.getHierarchies().length > 1 ?
-                null :
-                dimension.getHierarchies()[0];
+        return dimension == null
+            ? null
+            : dimension.getHierarchies().length > 1
+            ? null
+            : dimension.getHierarchies()[0];
     }
 
     public Level getLevel() {
@@ -99,7 +99,8 @@ public class DimensionType implements Type {
         }
         DimensionType that = (DimensionType) type;
         if (this.getDimension() != null
-            && this.getDimension().equals(that.getDimension())) {
+            && this.getDimension().equals(that.getDimension()))
+        {
             return new DimensionType(
                 this.getDimension());
         }

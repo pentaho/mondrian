@@ -89,8 +89,8 @@ public class ConcatenableList<T> extends AbstractList<T> {
                     throw new IndexOutOfBoundsException(
                         "Index " + index + " out of concatenable list range");
                 }
-            } else if (this.previousIndex + 1 == index &&
-                this.getIterator != null)
+            } else if (this.previousIndex + 1 == index
+                && this.getIterator != null)
             {
                 this.previousIndex = index;
                 if (this.getIterator.hasNext()) {

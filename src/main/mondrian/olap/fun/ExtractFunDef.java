@@ -34,7 +34,8 @@ class ExtractFunDef extends FunDefBase {
         "Extract",
         "Extract(<Set>, <Dimension>[, <Dimension>...])",
         "Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.",
-        Syntax.Function) {
+        Syntax.Function)
+    {
         public FunDef resolve(
             Exp[] args,
             Validator validator,
@@ -67,11 +68,14 @@ class ExtractFunDef extends FunDefBase {
             // Each dimension extracted must exist in the LHS,
             // and no dimension may be extracted more than once.
             List<Integer> extractedOrdinals = new ArrayList<Integer>();
-            final List<Dimension> extractedDimensions = new ArrayList<Dimension>();
-            findExtractedDimensions(args, extractedDimensions, extractedOrdinals);
+            final List<Dimension> extractedDimensions =
+                new ArrayList<Dimension>();
+            findExtractedDimensions(
+                args, extractedDimensions, extractedOrdinals);
             int[] parameterTypes = new int[args.length];
             parameterTypes[0] = Category.Set;
-            Arrays.fill(parameterTypes, 1, parameterTypes.length, Category.Dimension);
+            Arrays.fill(
+                parameterTypes, 1, parameterTypes.length, Category.Dimension);
             return new ExtractFunDef(this, Category.Set, parameterTypes);
         }
     };
@@ -111,11 +115,13 @@ class ExtractFunDef extends FunDefBase {
         SetType type = (SetType) args[0].getType();
         final List<Dimension> dimensions = new ArrayList<Dimension>();
         if (type.getElementType() instanceof TupleType) {
-            for (Type elementType : ((TupleType) type
-                .getElementType()).elementTypes) {
+            for (Type elementType
+                : ((TupleType) type.getElementType()).elementTypes)
+            {
                 Dimension dimension = elementType.getDimension();
                 if (dimension == null) {
-                    throw new RuntimeException("dimension of argument not known");
+                    throw new RuntimeException(
+                        "dimension of argument not known");
                 }
                 dimensions.add(dimension);
             }
@@ -136,15 +142,15 @@ class ExtractFunDef extends FunDefBase {
                 int ordinal = dimensions.indexOf(extractedDimension);
                 if (ordinal == -1) {
                     throw new RuntimeException(
-                        "dimension " +
-                            extractedDimension.getUniqueName() +
-                            " is not a dimension of the expression " + args[0]);
+                        "dimension "
+                        + extractedDimension.getUniqueName()
+                        + " is not a dimension of the expression " + args[0]);
                 }
                 if (extractedOrdinals.indexOf(ordinal) >= 0) {
                     throw new RuntimeException(
-                        "dimension " +
-                            extractedDimension.getUniqueName() +
-                            " is extracted more than once");
+                        "dimension "
+                        + extractedDimension.getUniqueName()
+                        + " is extracted more than once");
                 }
                 extractedOrdinals.add(ordinal);
                 extractedDimensions.add(extractedDimension);

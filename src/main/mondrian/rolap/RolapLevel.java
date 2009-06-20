@@ -162,19 +162,21 @@ public class RolapLevel extends LevelBase {
         this.properties = properties;
         List<Property> list = new ArrayList<Property>();
         for (Level level = this; level != null;
-             level = level.getParentLevel()) {
+             level = level.getParentLevel())
+        {
             final Property[] levelProperties = level.getProperties();
             for (final Property levelProperty : levelProperties) {
                 Property existingProperty = lookupProperty(
                     list, levelProperty.getName());
                 if (existingProperty == null) {
                     list.add(levelProperty);
-                } else if (existingProperty.getType() !=
-                    levelProperty.getType()) {
+                } else if (existingProperty.getType()
+                    != levelProperty.getType())
+                {
                     throw Util.newError(
-                        "Property " + this.getName() + "." +
-                            levelProperty.getName() + " overrides a " +
-                            "property with the same name but different type");
+                        "Property " + this.getName() + "."
+                        + levelProperty.getName() + " overrides a "
+                        + "property with the same name but different type");
                 }
             }
         }
@@ -370,9 +372,8 @@ public class RolapLevel extends LevelBase {
             final MondrianDef.Relation table = rolapHierarchy.getUniqueTable();
             if (table == null) {
                 throw Util.newError(
-                        "must specify a table for level " +
-                        getUniqueName() +
-                        " because hierarchy has more than one table");
+                    "must specify a table for level " + getUniqueName()
+                    + " because hierarchy has more than one table");
             }
             nameColumn.table = table.getAlias();
         } else {

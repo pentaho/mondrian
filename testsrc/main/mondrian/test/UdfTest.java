@@ -283,8 +283,8 @@ public class UdfTest extends FoodMartTestCase {
         Date currDate = new Date();
         String dateString = currDate.toString();
         String expected =
-            dateString.substring(0, 11) +
-            dateString.substring(dateString.length() - 4);
+            dateString.substring(0, 11)
+            + dateString.substring(dateString.length() - 4);
         assertEquals(expected, actual);
     }
 

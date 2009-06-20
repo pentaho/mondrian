@@ -641,13 +641,14 @@ public class Property extends EnumeratedValues.BasicValue {
      * unique positive ordinal.
      */
     protected Property(
-            String name,
-            Datatype type,
-            int ordinal,
-            boolean internal,
-            boolean member,
-            boolean cell,
-            String description) {
+        String name,
+        Datatype type,
+        int ordinal,
+        boolean internal,
+        boolean member,
+        boolean cell,
+        String description)
+    {
         super(name, ordinal < 0 ? nextOrdinal++ : ordinal, description);
         this.type = type;
         this.internal = internal;
@@ -763,7 +764,7 @@ public class Property extends EnumeratedValues.BasicValue {
         }
 
         // Add synonyms.
-        for (Map.Entry<String,Property> entry : synonyms.entrySet()) {
+        for (Map.Entry<String, Property> entry : synonyms.entrySet()) {
             mapUpperNameToProperties.put(
                 entry.getKey().toUpperCase(), entry.getValue());
         }

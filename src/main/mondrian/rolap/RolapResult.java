@@ -459,7 +459,8 @@ public class RolapResult extends ResultBase {
     {
         boolean changed = false;
         for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
-                it.hasNext();) {
+                it.hasNext();)
+        {
             List<Member> ms = it.next();
             Dimension d = ms.get(0).getHierarchy().getDimension();
             if (d.equals(dimension)) {
@@ -520,7 +521,8 @@ public class RolapResult extends ResultBase {
         boolean changed = false;
         List<Member> mList = new ArrayList<Member>();
         for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
-                it.hasNext();) {
+                it.hasNext();)
+        {
             List<Member> ms = it.next();
             Hierarchy h = ms.get(0).getHierarchy();
             mList.clear();
@@ -861,7 +863,8 @@ public class RolapResult extends ResultBase {
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
             if (preliminaryValue instanceof Iterable
-                && !(preliminaryValue instanceof List)) {
+                && !(preliminaryValue instanceof List))
+            {
                 Iterable iterable = (Iterable) preliminaryValue;
                 for (Object anIterable : iterable) {
                     Util.discard(anIterable);
@@ -878,8 +881,8 @@ public class RolapResult extends ResultBase {
 
             if (attempt++ > maxEvalDepth) {
                 throw Util.newInternal(
-                        "Failed to load all aggregations after " +
-                        maxEvalDepth + "passes; there's probably a cycle");
+                    "Failed to load all aggregations after "
+                    + maxEvalDepth + "passes; there's probably a cycle");
             }
         }
 
@@ -1359,9 +1362,9 @@ public class RolapResult extends ResultBase {
             value = slot.getCachedDefaultValue();
             if (value != null) {
                 if (value == Sentinel) {
-                    throw MondrianResource.instance().
-                        CycleDuringParameterEvaluation.ex(
-                        slot.getParameter().getName());
+                    throw MondrianResource.instance()
+                        .CycleDuringParameterEvaluation.ex(
+                            slot.getParameter().getName());
                 }
                 return value;
             }

@@ -102,7 +102,9 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
             bais = new ByteArrayInputStream(source.getBytes());
         }
 
-        public int readLine(byte[] arg0, int arg1, int arg2) throws IOException {
+        public int readLine(byte[] arg0, int arg1, int arg2)
+            throws IOException
+        {
             return bais.read(arg0, arg1, arg2);
         }
 

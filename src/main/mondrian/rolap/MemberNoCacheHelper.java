@@ -70,24 +70,28 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     public void putLevelMembersInCache(
         RolapLevel level,
         TupleConstraint constraint,
-        List<RolapMember> members) {
+        List<RolapMember> members)
+    {
     }
 
     public List<RolapMember> getChildrenFromCache(
         RolapMember member,
-        MemberChildrenConstraint constraint) {
+        MemberChildrenConstraint constraint)
+    {
         return null;
     }
 
     public void putChildren(
         RolapMember member,
         MemberChildrenConstraint constraint,
-        List<RolapMember> children) {
+        List<RolapMember> children)
+    {
     }
 
     public List<RolapMember> getLevelMembersFromCache(
         RolapLevel level,
-        TupleConstraint constraint) {
+        TupleConstraint constraint)
+    {
         return null;
     }
 

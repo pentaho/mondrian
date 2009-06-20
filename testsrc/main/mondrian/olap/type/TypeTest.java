@@ -99,14 +99,16 @@ public class TypeTest extends TestCase {
             assertEquals(desc, type, type.computeCommonType(type, null));
 
             int[] conversionCount = {0};
-            assertEquals(desc, type, type.computeCommonType(type, conversionCount));
+            assertEquals(
+                desc, type, type.computeCommonType(type, conversionCount));
             assertEquals(0, conversionCount[0]);
 
             // Check that each scalar type is assignable to nullable with zero
             // conversions.
             if (type instanceof ScalarType) {
                 assertEquals(type, type.computeCommonType(nullType, null));
-                assertEquals(type, type.computeCommonType(nullType, conversionCount));
+                assertEquals(
+                    type, type.computeCommonType(nullType, conversionCount));
                 assertEquals(0, conversionCount[0]);
             }
         }
@@ -124,7 +126,8 @@ public class TypeTest extends TestCase {
                 type = fromType.computeCommonType(toType, conversionCount);
                 type2 = toType.computeCommonType(fromType, conversionCount2);
                 if (conversionCount[0] == 0
-                    && conversionCount2[0] == 0) {
+                    && conversionCount2[0] == 0)
+                {
                     assertEquals(desc, type, type2);
                 }
 
@@ -141,12 +144,14 @@ public class TypeTest extends TestCase {
                         || fromType == tupleSetType && toType == setType
                         || fromType == setType && toType == tupleSetType))
                     {
-                        fail("can convert from " + fromType + " to " + toType
+                        fail(
+                            "can convert from " + fromType + " to " + toType
                             + ", but their most general type is null");
                     }
                 }
                 if (!canConvert && type != null && type.equals(toType)) {
-                    fail("cannot convert from " + fromType + " to " + toType
+                    fail(
+                        "cannot convert from " + fromType + " to " + toType
                         + ", but they have a most general type " + type);
                 }
             }
@@ -169,11 +174,13 @@ public class TypeTest extends TestCase {
         SetType setTypeWithMember = new SetType(measureMemberType);
         SetType setTypeWithTuple = new SetType(tupleType);
 
-        Type type1 = setTypeWithMember.computeCommonType(setTypeWithTuple, null);
+        Type type1 =
+            setTypeWithMember.computeCommonType(setTypeWithTuple, null);
         assertNotNull(type1);
         assertTrue(((SetType) type1).getElementType() instanceof TupleType);
 
-        Type type2 = setTypeWithTuple.computeCommonType(setTypeWithMember, null);
+        Type type2 =
+            setTypeWithTuple.computeCommonType(setTypeWithMember, null);
         assertNotNull(type2);
         assertTrue(((SetType) type2).getElementType() instanceof TupleType);
         assertEquals(type1, type2);
@@ -244,11 +251,12 @@ public class TypeTest extends TestCase {
 
     private Member getStoreChild() {
         List<Id.Segment> storeParts = new ArrayList<Id.Segment>();
-        storeParts.add(new Id.Segment("Store",Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("All Stores",Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("USA",Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("CA",Id.Quoting.UNQUOTED));
-        return getSalesCubeSchemaReader().getMemberByUniqueName(storeParts, false);
+        storeParts.add(new Id.Segment("Store", Id.Quoting.UNQUOTED));
+        storeParts.add(new Id.Segment("All Stores", Id.Quoting.UNQUOTED));
+        storeParts.add(new Id.Segment("USA", Id.Quoting.UNQUOTED));
+        storeParts.add(new Id.Segment("CA", Id.Quoting.UNQUOTED));
+        return getSalesCubeSchemaReader().getMemberByUniqueName(
+            storeParts, false);
     }
 
     private MemberType getMemberTypeHavingMaleChild(Member maleChild) {
@@ -269,21 +277,25 @@ public class TypeTest extends TestCase {
 
     private Member getMaleChild() {
         List<Id.Segment> genderParts = new ArrayList<Id.Segment>();
-        genderParts.add(new Id.Segment("Gender",Id.Quoting.UNQUOTED));
-        genderParts.add(new Id.Segment("M",Id.Quoting.UNQUOTED));
-        return getSalesCubeSchemaReader().getMemberByUniqueName(genderParts, false);
+        genderParts.add(new Id.Segment("Gender", Id.Quoting.UNQUOTED));
+        genderParts.add(new Id.Segment("M", Id.Quoting.UNQUOTED));
+        return getSalesCubeSchemaReader().getMemberByUniqueName(
+            genderParts, false);
     }
 
     private Member getUnitSalesMeasure() {
         List<Id.Segment> measureParts = new ArrayList<Id.Segment>();
-        measureParts.add(new Id.Segment("Measures",Id.Quoting.UNQUOTED));
-        measureParts.add(new Id.Segment("Unit Sales",Id.Quoting.UNQUOTED));
-        return getSalesCubeSchemaReader().getMemberByUniqueName(measureParts, false);
+        measureParts.add(new Id.Segment("Measures", Id.Quoting.UNQUOTED));
+        measureParts.add(new Id.Segment("Unit Sales", Id.Quoting.UNQUOTED));
+        return getSalesCubeSchemaReader().getMemberByUniqueName(
+            measureParts, false);
     }
 
     private SchemaReader getSalesCubeSchemaReader() {
-        return getCubeWithName("Sales", getSchemaReader().getCubes()).
-            getSchemaReader(testContext.getConnection().getRole());
+        return getCubeWithName(
+            "Sales",
+            getSchemaReader().getCubes()).getSchemaReader(
+                testContext.getConnection().getRole());
     }
 
     private SchemaReader getSchemaReader() {

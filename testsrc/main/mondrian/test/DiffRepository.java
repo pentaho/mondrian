@@ -84,8 +84,8 @@ import mondrian.olap.Util;
  *
  * <p>The {@link #lookup} method ensures that all test cases share the same
  * instance of the repository. This is important more than one one test case
- * fails. The shared instance ensures that the generated <code>.log.xml</code> file
- * contains the actual for <em>both</em> test cases.
+ * fails. The shared instance ensures that the generated <code>.log.xml</code>
+ * file contains the actual for <em>both</em> test cases.
  *
  * @author jhyde
  * @version $Id$
@@ -171,8 +171,9 @@ public class DiffRepository
             for (String prefix : prefixes) {
                 file2 = new File(file2, prefix);
             }
-            if (file2.isDirectory() &&
-                new File(file2, javaFileName).exists()) {
+            if (file2.isDirectory()
+                && new File(file2, javaFileName).exists())
+            {
                 return file2;
             }
 
@@ -225,8 +226,8 @@ public class DiffRepository
             this.root = doc.getDocumentElement();
             if (!root.getNodeName().equals(RootTag)) {
                 throw new RuntimeException(
-                    "expected root element of type '" + RootTag +
-                    "', but found '" + root.getNodeName() + "'");
+                    "expected root element of type '" + RootTag
+                    + "', but found '" + root.getNodeName() + "'");
             }
         } catch (ParserConfigurationException e) {
             throw Util.newInternal(e, "error while creating xml parser");
@@ -257,8 +258,8 @@ public class DiffRepository
             this.root = doc.getDocumentElement();
             if (!root.getNodeName().equals(RootTag)) {
                 throw new RuntimeException(
-                    "expected root element of type '" + RootTag +
-                    "', but found '" + root.getNodeName() + "'");
+                    "expected root element of type '" + RootTag
+                    + "', but found '" + root.getNodeName() + "'");
             }
         } catch (ParserConfigurationException e) {
             throw Util.newInternal(e, "error while creating xml parser");
@@ -277,16 +278,17 @@ public class DiffRepository
     {
         if (text == null) {
             return null;
-        } else if (text.startsWith("${") &&
-            text.endsWith("}")) {
+        } else if (text.startsWith("${")
+            && text.endsWith("}"))
+        {
             final String testCaseName = getCurrentTestCaseName(true);
             final String token = text.substring(2, text.length() - 1);
             if (tag == null) {
                 tag = token;
             }
-            assert token.startsWith(tag) :
-                "token '" + token +
-                "' does not match tag '" + tag + "'";
+            assert token.startsWith(tag)
+                : "token '" + token
+                + "' does not match tag '" + tag + "'";
             final String expanded = get(testCaseName, token);
             if (expanded == null) {
                 // Token is not specified. Return the original text: this will
@@ -300,8 +302,9 @@ public class DiffRepository
             // what is in the Java. It helps to have a redundant copy in the
             // resource file.
             final String testCaseName = getCurrentTestCaseName(true);
-            if (baseRepos != null &&
-                baseRepos.get(testCaseName, tag) != null) {
+            if (baseRepos != null
+                && baseRepos.get(testCaseName, tag) != null)
+            {
                 // set in base repos; don't override
             } else {
                 set(tag, text);
@@ -325,8 +328,9 @@ public class DiffRepository
 
     public void amend(String expected, String actual)
     {
-        if (expected.startsWith("${") &&
-            expected.endsWith("}")) {
+        if (expected.startsWith("${")
+            && expected.endsWith("}"))
+        {
             String token = expected.substring(2, expected.length() - 1);
             set(token, actual);
         } else {
@@ -415,7 +419,8 @@ public class DiffRepository
             if (child.getNodeName().equals(TestCaseTag)) {
                 Element testCase = (Element) child;
                 if (testCaseName.equals(
-                    testCase.getAttribute(TestCaseNameAttr))) {
+                    testCase.getAttribute(TestCaseNameAttr)))
+                {
                     return testCase;
                 }
             }
@@ -496,9 +501,8 @@ public class DiffRepository
         if (expected2 == null) {
             update(testCaseName, expected, actual);
             throw new AssertionFailedError(
-                "reference file does not contain resource '" + expected +
-                "' for testcase '" + testCaseName +
-                "'");
+                "reference file does not contain resource '" + expected
+                + "' for testcase '" + testCaseName + "'");
         } else {
             try {
                 // TODO jvs 25-Apr-2006:  reuse bulk of
@@ -602,12 +606,14 @@ public class DiffRepository
         final NodeList childNodes = testCaseElement.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node child = childNodes.item(i);
-            if (child.getNodeName().equals(ResourceTag) &&
-                resourceName.equals(
-                    ((Element) child).getAttribute(ResourceNameAttr)) &&
-                ((resourceAttribute1 == null) ||
-                resourceAttribute1.equals(
-                    ((Element) child).getAttribute(ResourceSqlDialectAttr)))) {
+            if (child.getNodeName().equals(ResourceTag)
+                && resourceName.equals(
+                    ((Element) child).getAttribute(ResourceNameAttr))
+                && ((resourceAttribute1 == null)
+                    || resourceAttribute1.equals(
+                        ((Element) child).getAttribute(
+                            ResourceSqlDialectAttr))))
+            {
                 return (Element) child;
             }
         }
@@ -696,8 +702,8 @@ public class DiffRepository
 
         default:
             throw new RuntimeException(
-                "unexpected node type: " + node.getNodeType() +
-                " (" + node + ")");
+                "unexpected node type: " + node.getNodeType()
+                + " (" + node + ")");
         }
     }
 

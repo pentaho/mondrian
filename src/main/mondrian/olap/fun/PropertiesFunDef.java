@@ -27,12 +27,13 @@ class PropertiesFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     public PropertiesFunDef(
-            String name,
-            String signature,
-            String description,
-            Syntax syntax,
-            int returnType,
-            int[] parameterTypes) {
+        String name,
+        String signature,
+        String description,
+        Syntax syntax,
+        int returnType,
+        int[] parameterTypes)
+    {
         super(name, signature, description, syntax, returnType, parameterTypes);
     }
 
@@ -58,8 +59,8 @@ class PropertiesFunDef extends FunDefBase {
         if (o == null) {
             if (!Util.isValidProperty(member, s)) {
                 throw new MondrianEvaluationException(
-                        "Property '" + s +
-                        "' is not valid for member '" + member + "'");
+                    "Property '" + s
+                    + "' is not valid for member '" + member + "'");
             }
         }
         return o;
@@ -85,9 +86,10 @@ class PropertiesFunDef extends FunDefBase {
             final int[] argTypes = new int[]{Category.Member, Category.String};
             final Exp propertyNameExp = args[1];
             final Exp memberExp = args[0];
-            if ((args.length != 2) ||
-                    (memberExp.getCategory() != Category.Member) ||
-                    (propertyNameExp.getCategory() != Category.String)) {
+            if ((args.length != 2)
+                || (memberExp.getCategory() != Category.Member)
+                || (propertyNameExp.getCategory() != Category.String))
+            {
                 return null;
             }
             int returnType = deducePropertyCategory(memberExp, propertyNameExp);

@@ -95,20 +95,20 @@ public abstract class ClearViewBase extends BatchTestCase {
                 null, "${customDimensions}");
             customDimensions =
                 (! (customDimensions.equals("")
-                    || customDimensions.equals("${customDimensions}"))) ?
-                        customDimensions : null;
+                    || customDimensions.equals("${customDimensions}")))
+                ? customDimensions : null;
             String calculatedMembers = diffRepos.expand(
                 null, "${calculatedMembers}");
             calculatedMembers =
                 (! (calculatedMembers.equals("")
-                    || calculatedMembers.equals("${calculatedMembers}"))) ?
-                        calculatedMembers : null;
+                    || calculatedMembers.equals("${calculatedMembers}")))
+                ? calculatedMembers : null;
             String namedSets = diffRepos.expand(
                 null, "${namedSets}");
             namedSets =
                 (! (namedSets.equals("")
-                    || namedSets.equals("${namedSets}"))) ?
-                        namedSets : null;
+                    || namedSets.equals("${namedSets}")))
+                ? namedSets : null;
             testContext = testContext.createSubstitutingCube(
                 cubeName, customDimensions, calculatedMembers, namedSets);
         }
@@ -125,7 +125,8 @@ public abstract class ClearViewBase extends BatchTestCase {
                 testContext.executeQuery(mdx));
             diffRepos.assertEquals("result", "${result}", result);
         } finally {
-            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+            MondrianProperties.instance().ExpandNonNative.set(
+                origExpandNonNative);
         }
     }
 

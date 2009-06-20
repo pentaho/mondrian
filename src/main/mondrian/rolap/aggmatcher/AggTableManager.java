@@ -69,10 +69,9 @@ public class AggTableManager {
         deregisterTriggers(MondrianProperties.instance());
 
         if (getLogger().isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(100);
-            buf.append("AggTableManager.finalCleanUp: schema=");
-            buf.append(schema.getName());
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                "AggTableManager.finalCleanUp: schema="
+                + schema.getName());
         }
     }
 
@@ -279,10 +278,10 @@ public class AggTableManager {
                         if (aggStar.getSize() > 0) {
                             star.addAggStar(aggStar);
                         } else {
-                            String msg = mres.AggTableZeroSize.str(
+                            getLogger().warn(
+                                mres.AggTableZeroSize.str(
                                 aggStar.getFactTable().getName(),
-                                factTableName);
-                            getLogger().warn(msg);
+                                factTableName));
                         }
                     }
                     // Note: if the dbTable name matches but the columnsOK does
@@ -463,8 +462,8 @@ public class AggTableManager {
             String alias = null;
             dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
 
-            for (JdbcSchema.Table.Column factColumn :
-                dbFactTable.getColumns())
+            for (JdbcSchema.Table.Column factColumn
+                : dbFactTable.getColumns())
             {
                 String cname = factColumn.getName();
                 RolapStar.Column[] rcs =
@@ -494,8 +493,9 @@ public class AggTableManager {
                 } else {
                     RolapStar.Column rColumn =
                         star.getFactTable().lookupColumn(cname);
-                    if ((rColumn != null) &&
-                        !(rColumn instanceof RolapStar.Measure)) {
+                    if ((rColumn != null)
+                        && !(rColumn instanceof RolapStar.Measure))
+                    {
                         // Ok, maybe its used in a non-shared dimension
                         // This is a column in the fact table which is
                         // (not necessarily) a measure but is also not
@@ -510,11 +510,11 @@ public class AggTableManager {
 
                 // warn if it has not been identified
                 if (!factColumn.hasUsage() && getLogger().isDebugEnabled()) {
-                    String msg = mres.UnknownFactTableColumn.str(
-                        msgRecorder.getContext(),
-                        dbFactTable.getName(),
-                        factColumn.getName());
-                    getLogger().debug(msg);
+                    getLogger().debug(
+                        mres.UnknownFactTableColumn.str(
+                            msgRecorder.getContext(),
+                            dbFactTable.getName(),
+                            factColumn.getName()));
                 }
             }
         } finally {

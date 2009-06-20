@@ -78,8 +78,9 @@ public class RolapConnectionTest extends TestCase {
         // test to succeed. So trivially succeed for all other JDBC
         // drivers.
         final String jdbc = properties.get("Jdbc");
-        if (jdbc != null &&
-                !jdbc.startsWith("jdbc:odbc:")) {
+        if (jdbc != null
+            && !jdbc.startsWith("jdbc:odbc:"))
+        {
             return;
         }
 
@@ -100,13 +101,15 @@ public class RolapConnectionTest extends TestCase {
             fail("Expected exception");
         } catch (SQLException e) {
             if (e.getClass().getName().equals(
-                "org.apache.commons.dbcp.DbcpException")) {
+                "org.apache.commons.dbcp.DbcpException"))
+            {
                 // This is expected. (We use string-comparison so that the
                 // compiler doesn't warn about using a deprecated class.)
-            } else if (e.getClass() == SQLException.class &&
-                e.getCause() == null &&
-                e.getMessage() != null &&
-                e.getMessage().equals("")) {
+            } else if (e.getClass() == SQLException.class
+                && e.getCause() == null
+                && e.getMessage() != null
+                && e.getMessage().equals(""))
+            {
                 // This is expected, from a later version of Dbcp.
             } else {
                 fail("Expected exception, but got a different one: " + e);
@@ -126,8 +129,9 @@ public class RolapConnectionTest extends TestCase {
         // test to succeed. So trivially succeed for all other JDBC
         // drivers.
         final String jdbc = properties.get("Jdbc");
-        if (jdbc != null &&
-                !jdbc.startsWith("jdbc:odbc:")) {
+        if (jdbc != null
+            && !jdbc.startsWith("jdbc:odbc:"))
+            {
             return;
         }
 

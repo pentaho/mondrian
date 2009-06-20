@@ -866,22 +866,29 @@ public class VbaTest extends TestCase {
         assertTrue(Math.abs(0.05 - Vba.MIRR(vals, 0.05, 0.05)) < 0.0000001);
 
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
-        assertTrue(Math.abs(0.05263266 - Vba.MIRR(vals, 0.05, 0.05)) < 0.0000001);
+        assertTrue(
+            Math.abs(0.05263266 - Vba.MIRR(vals, 0.05, 0.05)) < 0.0000001);
 
         vals = new double[] {-1000, 200, 200, 200, 200, 200, 200};
-        assertTrue(Math.abs(0.04490701 - Vba.MIRR(vals, 0.06, 0.04)) < 0.0000001);
+        assertTrue(
+            Math.abs(0.04490701 - Vba.MIRR(vals, 0.06, 0.04)) < 0.0000001);
     }
 
     public void testIPmt() {
         assertEquals(-10000.0, Vba.iPmt(0.10, 1, 30, 100000, 0, false));
-        assertEquals(-2185.473324557822, Vba.iPmt(0.10, 15, 30, 100000, 0, false));
-        assertEquals(-60.79248252633988, Vba.iPmt(0.10, 30, 30, 100000, 0, false));
+        assertEquals(
+            -2185.473324557822, Vba.iPmt(0.10, 15, 30, 100000, 0, false));
+        assertEquals(
+            -60.79248252633988, Vba.iPmt(0.10, 30, 30, 100000, 0, false));
     }
 
     public void testPPmt() {
-        assertEquals(-607.9248252633897, Vba.pPmt(0.10, 1, 30, 100000, 0, false));
-        assertEquals(-8422.451500705567, Vba.pPmt(0.10, 15, 30, 100000, 0, false));
-        assertEquals(-10547.13234273705, Vba.pPmt(0.10, 30, 30, 100000, 0, false));
+        assertEquals(
+            -607.9248252633897, Vba.pPmt(0.10, 1, 30, 100000, 0, false));
+        assertEquals(
+            -8422.451500705567, Vba.pPmt(0.10, 15, 30, 100000, 0, false));
+        assertEquals(
+            -10547.13234273705, Vba.pPmt(0.10, 30, 30, 100000, 0, false));
 
         // verify that pmt, ipmt, and ppmt add up
         double pmt = Vba.pmt(0.10, 30, 100000, 0, false);
@@ -961,8 +968,8 @@ public class VbaTest extends TestCase {
         f = 3;
         t = false;
         n = Vba.nPer(r, y, p, f, t);
-        x =
-            -0.71428571429; // can you believe it? excel returns nper as a fraction!??
+        // can you believe it? excel returns nper as a fraction!??
+        x = -0.71428571429;
         assertEquals(x, n, 1e-10);
 
         // cross check with pv

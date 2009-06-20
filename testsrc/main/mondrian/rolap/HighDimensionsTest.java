@@ -77,10 +77,13 @@ public class HighDimensionsTest extends FoodMartTestCase {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "{[Promotions].[Promotion Name].Members} on rows\n"
-                    + "from [Sales Ragged]", 1, "Promotions",
-                    highCardResults, null, true);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "{[Promotions].[Promotion Name].Members} on rows\n"
+            + "from [Sales Ragged]",
+            1,
+            "Promotions",
+            highCardResults, null, true);
     }
 
 
@@ -88,10 +91,13 @@ public class HighDimensionsTest extends FoodMartTestCase {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "head({[Promotions].[Promotion Name].Members},40) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    first40HighCardResults, null, true);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "head({[Promotions].[Promotion Name].Members},40) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            first40HighCardResults, null, true);
     }
 
     // disabled pending fix of bug MONDRIAN-527
@@ -117,21 +123,30 @@ public class HighDimensionsTest extends FoodMartTestCase {
         }
         topcount41HighCardResults = buffer.toString();
 
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "TopCount({[Promotions].[Promotion Name].Members},40, "
-                    + "[Measures].[Unit Sales]) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    topcount40HighCardResults, topcount40Cells, false);
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "TopCount({[Promotions].[Promotion Name].Members},41, "
-                    + "[Measures].[Unit Sales]) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    topcount41HighCardResults, topcount41Cells, false);
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "TopCount({[Promotions].[Promotion Name].Members},40, "
-                    + "[Measures].[Unit Sales]) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    topcount40HighCardResults, topcount40Cells, false);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "TopCount({[Promotions].[Promotion Name].Members},40, "
+            + "[Measures].[Unit Sales]) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            topcount40HighCardResults, topcount40Cells, false);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "TopCount({[Promotions].[Promotion Name].Members},41, "
+            + "[Measures].[Unit Sales]) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            topcount41HighCardResults, topcount41Cells, false);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "TopCount({[Promotions].[Promotion Name].Members},40, "
+            + "[Measures].[Unit Sales]) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            topcount40HighCardResults, topcount40Cells, false);
     }
 
 
@@ -139,27 +154,36 @@ public class HighDimensionsTest extends FoodMartTestCase {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
-                    + "non empty {[Promotions].[Promotion Name].Members} "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    nonEmptyHighCardResults, nonEmptyCells, true);
+        execHighCardTest(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "non empty {[Promotions].[Promotion Name].Members} "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            nonEmptyHighCardResults, nonEmptyCells, true);
     }
 
     public void testFilter() throws Exception {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest("select [Measures].[Unit Sales] on columns, "
-                    + "filter([Promotions].[Promotion Name].Members, "
-                    + "[Measures].[Unit Sales]>0) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    nonEmptyHighCardResults, nonEmptyCells, true);
+        execHighCardTest(
+            "select [Measures].[Unit Sales] on columns, "
+            + "filter([Promotions].[Promotion Name].Members, "
+            + "[Measures].[Unit Sales]>0) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            nonEmptyHighCardResults, nonEmptyCells, true);
 
-        execHighCardTest("select [Measures].[Unit Sales] on columns, "
-                    + "filter([Promotions].[Promotion Name].Members, "
-                    + "[Measures].[Unit Sales]>4000) "
-                    + "on rows from [Sales Ragged]", 1, "Promotions",
-                    moreThan4000highCardResults, moreThan4000Cells , true);
+        execHighCardTest(
+            "select [Measures].[Unit Sales] on columns, "
+            + "filter([Promotions].[Promotion Name].Members, "
+            + "[Measures].[Unit Sales]>4000) "
+            + "on rows from [Sales Ragged]",
+            1,
+            "Promotions",
+            moreThan4000highCardResults, moreThan4000Cells , true);
     }
 
     //
@@ -207,8 +231,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     new ArrayList<SoftReference>();
             // Tests results aren't got from database before this point
             int ii = 0;
-            for (final Position o :
-                result.getAxes()[axisIndex].getPositions()) {
+            for (final Position o
+                : result.getAxes()[axisIndex].getPositions())
+            {
                 assertNotNull(o.get(0));
                 buffer2.append(result.getCell(
                     new int[]{0, ii}).getValue().toString());
@@ -245,8 +270,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             for (int i = 4; i < ii - 40; i++) {
                 try {
                     result.getAxes()[axisIndex].getPositions().get(i).get(0);
-                    Assert.fail("Expected runtime exception of type "
-                            + "RuntimeException");
+                    Assert.fail("Expected exception");
                 } catch (RuntimeException nsee) {
                     // Everything is ok: RuntimeException of type
                     // RuntimeException is expected.

@@ -81,9 +81,9 @@ public class CacheControlImpl implements CacheControl {
             List<Dimension> dimensionality = region.getDimensionality();
             set.addAll(dimensionality);
             if (set.size() < prevSize + dimensionality.size()) {
-                throw MondrianResource.instance().
-                    CacheFlushCrossjoinDimensionsInCommon.ex(
-                    getDimensionalityList(regions));
+                throw MondrianResource.instance()
+                    .CacheFlushCrossjoinDimensionsInCommon.ex(
+                        getDimensionalityList(regions));
             }
 
             flattenCrossjoin((CellRegionImpl) region, list);
@@ -117,11 +117,12 @@ public class CacheControlImpl implements CacheControl {
         final List<CellRegionImpl> list = new ArrayList<CellRegionImpl>();
         for (CellRegion region : regions) {
             if (!region.getDimensionality().equals(
-                regions[0].getDimensionality())) {
-                throw MondrianResource.instance().
-                    CacheFlushUnionDimensionalityMismatch.ex(
-                    regions[0].getDimensionality().toString(),
-                    region.getDimensionality().toString());
+                regions[0].getDimensionality()))
+            {
+                throw MondrianResource.instance()
+                    .CacheFlushUnionDimensionalityMismatch.ex(
+                        regions[0].getDimensionality().toString(),
+                        region.getDimensionality().toString());
             }
             list.add((CellRegionImpl) region);
         }
@@ -147,8 +148,8 @@ public class CacheControlImpl implements CacheControl {
             }
         }
         if (!found) {
-            throw MondrianResource.instance().
-                CacheFlushRegionMustContainMembers.ex();
+            throw MondrianResource.instance().CacheFlushRegionMustContainMembers
+                .ex();
         }
         final UnionCellRegion union = normalize((CellRegionImpl) region);
         for (CellRegionImpl cellRegion : union.regions) {
@@ -597,11 +598,13 @@ public class CacheControlImpl implements CacheControl {
                     final String message =
                         "all members in set must belong to same level";
                     if (levelSet.add(member.getLevel())
-                        && levelSet.size() > 1) {
+                        && levelSet.size() > 1)
+                    {
                         throw new IllegalArgumentException(message);
                     }
                     if (descendants
-                        && member.getLevel().getChildLevel() != null) {
+                        && member.getLevel().getChildLevel() != null)
+                    {
                         throw new IllegalArgumentException(message);
                     }
                 }
@@ -724,9 +727,10 @@ public class CacheControlImpl implements CacheControl {
             this.upperMember = upperMember;
             this.upperInclusive = upperInclusive;
             this.descendants = descendants;
-            this.level = lowerMember == null ?
-                upperMember.getLevel() :
-                lowerMember.getLevel();
+            this.level =
+                lowerMember == null
+                ? upperMember.getLevel()
+                : lowerMember.getLevel();
         }
 
         public List<Dimension> getDimensionality() {
@@ -812,8 +816,8 @@ public class CacheControlImpl implements CacheControl {
                     region.getDimensionality();
                 dimensionality.addAll(regionDimensionality);
                 dimensionSet.addAll(regionDimensionality);
-                assert dimensionSet.size() == dimensionality.size() :
-                    "dimensions in common";
+                assert dimensionSet.size() == dimensionality.size()
+                    : "dimensions in common";
             }
         }
 
@@ -1197,9 +1201,10 @@ public class CacheControlImpl implements CacheControl {
             this.upperMember = upperMember;
             this.upperInclusive = upperInclusive;
             this.descendants = descendants;
-            this.level = lowerMember == null ?
-                upperMember.getLevel() :
-                lowerMember.getLevel();
+            this.level =
+                lowerMember == null
+                ? upperMember.getLevel()
+                : lowerMember.getLevel();
         }
 
         public String toString() {

@@ -31,8 +31,8 @@ public class SetType implements Type {
      */
     public SetType(Type elementType) {
         if (elementType != null) {
-            assert elementType instanceof MemberType ||
-                    elementType instanceof TupleType;
+            assert elementType instanceof MemberType
+                || elementType instanceof TupleType;
         }
         this.elementType = elementType;
         this.digest = "SetType<" + elementType + ">";
@@ -72,18 +72,21 @@ public class SetType implements Type {
     }
 
     public Dimension getDimension() {
-        return elementType == null ? null :
-                elementType.getDimension();
+        return elementType == null
+            ? null
+            : elementType.getDimension();
     }
 
     public Hierarchy getHierarchy() {
-        return elementType == null ? null :
-                elementType.getHierarchy();
+        return elementType == null
+            ? null
+            : elementType.getHierarchy();
     }
 
     public Level getLevel() {
-        return elementType == null ? null :
-                elementType.getLevel();
+        return elementType == null
+            ? null
+            : elementType.getLevel();
     }
 
     /**
@@ -93,9 +96,9 @@ public class SetType implements Type {
      * @return Dimensionality of this SetType
      */
     public int getArity() {
-        return elementType instanceof TupleType ?
-            ((TupleType) elementType).elementTypes.length :
-            1;
+        return elementType instanceof TupleType
+            ? ((TupleType) elementType).elementTypes.length
+            : 1;
     }
 
     public Type computeCommonType(Type type, int[] conversionCount) {

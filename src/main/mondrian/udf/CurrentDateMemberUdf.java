@@ -75,7 +75,8 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         if (arg0 instanceof Hierarchy) {
             resultDateMember = ((Hierarchy) arg0).getNullMember();
         } else {
-            resultDateMember = ((Dimension) arg0).getHierarchy().getNullMember();
+            resultDateMember =
+                ((Dimension) arg0).getHierarchy().getNullMember();
         }
         return resultDateMember;
     }

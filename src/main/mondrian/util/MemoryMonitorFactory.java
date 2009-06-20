@@ -41,7 +41,8 @@ import mondrian.olap.Util;
  * @version $Id$
  */
 public final class MemoryMonitorFactory
-        extends ObjectFactory.Singleton<MemoryMonitor> {
+    extends ObjectFactory.Singleton<MemoryMonitor>
+{
 
     /**
      * Single instance of the <code>MemoryMonitorFactory</code>.

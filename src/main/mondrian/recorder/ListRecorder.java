@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2006 Julian Hyde and others
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -67,12 +67,11 @@ public class ListRecorder extends AbstractRecorder {
         case ERROR:
             errorList.add(e);
             break;
-        default :
+        default:
             e = new Entry(
                 context,
-                "Unknown message type enum \"" +
-                msgType +
-                "\" for message: " + msg,
+                "Unknown message type enum \"" + msgType
+                + "\" for message: " + msg,
                 MsgType.WARN,
                 info);
             warnList.add(e);
@@ -105,8 +104,9 @@ public class ListRecorder extends AbstractRecorder {
     }
 
     static void logMessage(
-            final Entry e,
-            final Logger logger) {
+        final Entry e,
+        final Logger logger)
+    {
         logMessage(e.getContext(), e.getMessage(), e.getMsgType(), logger);
     }
 

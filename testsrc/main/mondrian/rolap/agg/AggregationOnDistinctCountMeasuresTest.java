@@ -45,8 +45,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         salesCube = (RolapCube) cubeByName(
             getTestContext().getConnection(),
             cubeNameSales);
-        salesCubeSchemaReader = salesCube.
-            getSchemaReader(getTestContext().getConnection().getRole());
+        salesCubeSchemaReader =
+            salesCube.getSchemaReader(
+                getTestContext().getConnection().getRole());
     }
 
     public TestContext getTestContext() {
@@ -1362,8 +1363,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     private List<Member[]> optimizeChildren(List<Member[]> memberList) {
-        return AggregateFunDef.AggregateCalc.
-            optimizeChildren(memberList, schemaReader,salesCube);
+        return AggregateFunDef.AggregateCalc.optimizeChildren(
+            memberList, schemaReader, salesCube);
     }
 
     private List<Member[]> tupleList(List<Member> members) {

@@ -526,7 +526,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         String content)
     {
         if (testCaseName.startsWith("testDrillThrough")
-            && filename.equals("${response}")) {
+            && filename.equals("${response}"))
+        {
             // Different databases have slightly different column types, which
             // results in slightly different inferred xml schema for the drill-
             // through result.

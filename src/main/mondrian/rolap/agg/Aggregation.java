@@ -203,8 +203,9 @@ public class Aggregation {
      * would be returned anyway.
      */
     public StarColumnPredicate[] optimizePredicates(
-            RolapStar.Column[] columns,
-            StarColumnPredicate[] predicates) {
+        RolapStar.Column[] columns,
+        StarColumnPredicate[] predicates)
+    {
         RolapStar star = getStar();
         Util.assertTrue(predicates.length == columns.length);
         StarColumnPredicate[] newPredicates = predicates.clone();
@@ -264,11 +265,13 @@ public class Aggregation {
                         level = m.getLevel();
                     } else {
                         if (parent != null
-                                && !parent.equals(m.getParentMember())) {
+                            && !parent.equals(m.getParentMember()))
+                        {
                             parent = null; // no common parent
                         }
                         if (level != null
-                                && !level.equals(m.getLevel())) {
+                            && !level.equals(m.getLevel()))
+                        {
                             // should never occur, constraints are of same level
                             level = null;
                         }
@@ -352,7 +355,8 @@ public class Aggregation {
             }
             // eliminate this constraint
             if (MondrianProperties.instance().OptimizePredicates.get()
-                    || bloats[j] == 1) {
+                || bloats[j] == 1)
+            {
                 newPredicates[j] = new LiteralStarPredicate(columns[j], true);
             }
         }
@@ -397,8 +401,9 @@ public class Aggregation {
     }
 
     public void flush(
-            CacheControl cacheControl,
-            RolapCacheRegion cacheRegion) {
+        CacheControl cacheControl,
+        RolapCacheRegion cacheRegion)
+    {
         // Compare the bitmaps.
         //
         // Case 1: aggregate bitmap contains request bitmap.
@@ -445,8 +450,8 @@ public class Aggregation {
                 // and the columns defining the segment. Therefore, the segment
                 // is definitely affected. Flush it.
                 cacheControl.trace(
-                        "discard segment - it has no columns in common: " +
-                                segment);
+                    "discard segment - it has no columns in common: "
+                    + segment);
                 continue;
             }
 
@@ -464,7 +469,8 @@ public class Aggregation {
 
                 RolapStar.Column column = columns[i];
                 if (!cacheRegion.getConstrainedColumnsBitKey().get(
-                        column.getBitPosition())) {
+                    column.getBitPosition()))
+                {
                     axisKeepBitSet.set(0, keyCount);
                     continue;
                 }
@@ -557,8 +563,8 @@ public class Aggregation {
                 }
 
                 float retention =
-                        (float) axisBitSet.cardinality() /
-                                (float) axisKeys.length;
+                    (float) axisBitSet.cardinality()
+                    / (float) axisKeys.length;
 
                 if (bestColumn == -1 || retention > bestRetention) {
                     // If there are multiple partially-satisfied
@@ -671,9 +677,10 @@ public class Aggregation {
      * cell's value is null.
      */
     public Object getCellValue(
-            RolapStar.Measure measure,
-            Object[] keys,
-            RolapAggregationManager.PinSet pinSet) {
+        RolapStar.Measure measure,
+        Object[] keys,
+        RolapAggregationManager.PinSet pinSet)
+    {
         for (SoftReference<Segment> segmentref : segmentRefs) {
             Segment segment = segmentref.get();
             if (segment == null) {
@@ -1004,7 +1011,8 @@ public class Aggregation {
             for (int i = 0; i < axes.length; i++) {
                 Axis axis = axes[i];
                 if (axis.getPredicate().getConstrainedColumn().getBitPosition()
-                        == bitPosition) {
+                    == bitPosition)
+                {
                     return i;
                 }
             }

@@ -46,8 +46,9 @@ public class RoleImpl implements Role {
         role.schemaGrants.putAll(schemaGrants);
         role.cubeGrants.putAll(cubeGrants);
         role.dimensionGrants.putAll(dimensionGrants);
-        for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry :
-                hierarchyGrants.entrySet()) {
+        for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry
+            : hierarchyGrants.entrySet())
+        {
             role.hierarchyGrants.put(
                 entry.getKey(),
                 (HierarchyAccessImpl) entry.getValue().clone());
@@ -144,7 +145,7 @@ public class RoleImpl implements Role {
      * nation level.
      */
     public void removeTopLevels() {
-        for (Map.Entry<Hierarchy,HierarchyAccessImpl> entry
+        for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry
             : hierarchyGrants.entrySet())
         {
             final HierarchyAccessImpl hierarchyAccess = entry.getValue();
@@ -188,7 +189,7 @@ public class RoleImpl implements Role {
         }
         // If the role has access to a cube this dimension is part of, that's
         // good enough.
-        for (Map.Entry<Cube,Access> cubeGrant : cubeGrants.entrySet()) {
+        for (Map.Entry<Cube, Access> cubeGrant : cubeGrants.entrySet()) {
             access = toAccess(cubeGrant.getValue());
             if (access == Access.NONE) {
                 continue;
@@ -271,12 +272,14 @@ public class RoleImpl implements Role {
         HierarchyAccessImpl hierarchyAccess =
                 hierarchyGrants.get(level.getHierarchy());
         if (hierarchyAccess != null) {
-            if (hierarchyAccess.topLevel != null &&
-                    level.getDepth() < hierarchyAccess.topLevel.getDepth()) {
+            if (hierarchyAccess.topLevel != null
+                && level.getDepth() < hierarchyAccess.topLevel.getDepth())
+            {
                 return Access.NONE;
             }
-            if (hierarchyAccess.bottomLevel != null &&
-                    level.getDepth() > hierarchyAccess.bottomLevel.getDepth()) {
+            if (hierarchyAccess.bottomLevel != null
+                && level.getDepth() > hierarchyAccess.bottomLevel.getDepth())
+            {
                 return Access.NONE;
             }
             return hierarchyAccess.access;
@@ -411,7 +414,8 @@ public class RoleImpl implements Role {
             Util.assertTrue(member.getHierarchy() == hierarchy);
             // Remove any existing grants to descendants of "member"
             for (Iterator<Member> memberIter =
-                    memberGrants.keySet().iterator(); memberIter.hasNext();) {
+                    memberGrants.keySet().iterator(); memberIter.hasNext();)
+            {
                 Member m = memberIter.next();
                 if (m.isChildOrEqualTo(member)) {
                     memberIter.remove();
@@ -426,7 +430,8 @@ public class RoleImpl implements Role {
                 loop:
                 for (Member m = member.getParentMember();
                      m != null;
-                     m = m.getParentMember()) {
+                     m = m.getParentMember())
+                {
                     final Access memberAccess = memberGrants.get(m);
                     if (memberAccess == null) {
                         if (childGrantsExist(m)) {
@@ -460,7 +465,8 @@ public class RoleImpl implements Role {
                 // child visible.
                 for (Member m = member.getParentMember();
                      m != null;
-                     m = m.getParentMember()) {
+                     m = m.getParentMember())
+                {
                     switch (toAccess(memberGrants.get(m))) {
                     case NONE:
                         memberGrants.put(m, Access.CUSTOM);
@@ -504,8 +510,9 @@ public class RoleImpl implements Role {
                     if (memberAccess == null) {
                         continue;
                     }
-                    if (memberAccess == Access.CUSTOM &&
-                            m != member) {
+                    if (memberAccess == Access.CUSTOM
+                        && m != member)
+                    {
                         // If member's ancestor has custom access, that
                         // means that member has no access.
                         return Access.NONE;
@@ -515,8 +522,8 @@ public class RoleImpl implements Role {
                 // If there is no inherited access, check for implicit access.
                 // A member is implicitly visible if one of its descendants is
                 // visible.
-                for (Map.Entry<Member, Access> entry :
-                         memberGrants.entrySet())
+                for (Map.Entry<Member, Access> entry
+                    : memberGrants.entrySet())
                 {
                     final Member grantedMember = entry.getKey();
                     switch (entry.getValue()) {
@@ -552,7 +559,7 @@ public class RoleImpl implements Role {
         }
 
         public boolean hasInaccessibleDescendants(Member member) {
-            for (Map.Entry<Member,Access> entry : memberGrants.entrySet()) {
+            for (Map.Entry<Member, Access> entry : memberGrants.entrySet()) {
                 switch (entry.getValue()) {
                 case NONE:
                     Member grantedMember = entry.getKey();

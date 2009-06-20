@@ -62,8 +62,8 @@ class MondrianOlap4jCellSetMetaData implements CellSetMetaData {
                     return property.getName();
                 }
             };
-        for (Property.StandardCellProperty property :
-            Property.StandardCellProperty.values())
+        for (Property.StandardCellProperty property
+            : Property.StandardCellProperty.values())
         {
             if (query.hasCellProperty(property.getName())) {
                 list.add(property);

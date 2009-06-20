@@ -50,9 +50,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
-        final Calc calc = call.getArgCount() > 1 ?
-            compiler.compileScalar(call.getArg(1), true) :
-                new ValueCalc(call);
+        final Calc calc =
+            call.getArgCount() > 1
+            ? compiler.compileScalar(call.getArg(1), true)
+            : new ValueCalc(call);
         return new AggregateCalc(call, listCalc, calc);
     }
 
@@ -151,8 +152,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 rolapEvaluator = (RolapEvaluator) evaluator;
             }
 
-            if ((rolapEvaluator != null) &&
-                rolapEvaluator.getDialect().supportsUnlimitedValueList()) {
+            if ((rolapEvaluator != null)
+                && rolapEvaluator.getDialect().supportsUnlimitedValueList())
+            {
                 // If the DBMS does not have an upper limit on IN list
                 // predicate size, then don't attempt any list
                 // optimization, since the current algorithm is
@@ -166,10 +168,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // characters long and Access gives "Query is too complex".
                 // The optimization is expensive, so we only want to do it
                 // if the DBMS can't execute the query otherwise.
-                if ((rolapEvaluator != null) &&
-                    rolapEvaluator.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.ACCESS &&
-                    false) {
+                if ((rolapEvaluator != null)
+                    && rolapEvaluator.getDialect().getDatabaseProduct()
+                        == Dialect.DatabaseProduct.ACCESS
+                    && false)
+                {
                     tupleList = removeOverlappingTupleEntries(tupleList);
                 }
                 if (true) {
@@ -214,8 +217,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                         Member[] tuple2 = iterator.next();
                         if (isSuperSet(tuple1, tuple2)) {
                             iterator.remove();
-                        } else if (isSuperSet(tuple2,  tuple1) ||
-                            isEqual(tuple1, tuple2)) {
+                        } else if (isSuperSet(tuple2,  tuple1)
+                            || isEqual(tuple1, tuple2))
+                        {
                             ignore = true;
                             break;
                         }
@@ -244,7 +248,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 if (!member2.isChildOrEqualTo(member1)) {
                     return false;
                 }
-                if (member1.getLevel().getDepth() < member2.getLevel().getDepth()) {
+                if (member1.getLevel().getDepth()
+                    < member2.getLevel().getDepth())
+                {
                     parentLevelCount++;
                 }
             }
@@ -411,10 +417,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     }
 
                     Member currentParentMember = current.getParentMember();
-                    if (firstParentMember == null &&
-                        currentParentMember == null ||
-                        (firstParentMember != null &&
-                        firstParentMember.equals(currentParentMember))) {
+                    if (firstParentMember == null
+                        && currentParentMember == null
+                        || (firstParentMember != null
+                        && firstParentMember.equals(currentParentMember)))
+                    {
                         membersToBeOptimized.add(current);
                         iterator.remove();
                     }
@@ -422,11 +429,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
                 int childCountOfParent = -1;
                 if (firstParentMember != null) {
-                    childCountOfParent = getChildCount(firstParentMember, reader);
+                    childCountOfParent =
+                        getChildCount(firstParentMember, reader);
                 }
-                if (childCountOfParent != -1 &&
-                    membersToBeOptimized.size() == childCountOfParent &&
-                    canOptimize(firstParentMember,baseCubeForMeasure)) {
+                if (childCountOfParent != -1
+                    && membersToBeOptimized.size() == childCountOfParent
+                    && canOptimize(firstParentMember, baseCubeForMeasure))
+                {
                     optimizedMembers.add(firstParentMember);
                     didOptimize = true;
                 } else {
@@ -453,8 +462,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          */
         private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
             for (int i = 0; i < tuple1.length; i++) {
-                if (!tuple1[i].getUniqueName().
-                    equals(tuple2[i].getUniqueName())) {
+                if (!tuple1[i].getUniqueName().equals(
+                    tuple2[i].getUniqueName()))
+                {
                     return false;
                 }
             }

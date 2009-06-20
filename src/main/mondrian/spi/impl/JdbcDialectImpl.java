@@ -154,10 +154,10 @@ public class JdbcDialectImpl implements Dialect {
         try {
             final String quoteIdentifierString =
                 databaseMetaData.getIdentifierQuoteString();
-            return "".equals(quoteIdentifierString) ?
+            return "".equals(quoteIdentifierString)
                 // quoting not supported
-                null :
-                quoteIdentifierString;
+                ? null
+                : quoteIdentifierString;
         } catch (SQLException e) {
             throw Util.newInternal(e, "while quoting identifier");
         }
@@ -176,17 +176,19 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
-        DatabaseMetaData databaseMetaData) {
+        DatabaseMetaData databaseMetaData)
+    {
         Set<List<Integer>> supports = new HashSet<List<Integer>>();
         try {
             for (int type : RESULT_SET_TYPE_VALUES) {
                 for (int concurrency : CONCURRENCY_VALUES) {
                     if (databaseMetaData.supportsResultSetConcurrency(
-                            type, concurrency)) {
+                            type, concurrency))
+                    {
                         String driverName =
                             databaseMetaData.getDriverName();
-                        if (type != ResultSet.TYPE_FORWARD_ONLY &&
-                            driverName.equals(
+                        if (type != ResultSet.TYPE_FORWARD_ONLY
+                            && driverName.equals(
                                 "JDBC-ODBC Bridge (odbcjt32.dll)"))
                         {
                             // In JDK 1.6, the Jdbc-Odbc bridge announces
@@ -216,8 +218,8 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
-        return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr +
-            " END";
+        return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr
+            + " END";
     }
 
     public String quoteIdentifier(final String val) {
@@ -249,7 +251,7 @@ public class JdbcDialectImpl implements Dialect {
         int k = val.indexOf('.');
         if (k > 0) {
             // qualified
-            String val1 = Util.replace(val.substring(0,k), q, q + q);
+            String val1 = Util.replace(val.substring(0, k), q, q + q);
             String val2 = Util.replace(val.substring(k + 1), q, q + q);
             buf.append(q);
             buf.append(val1);
@@ -325,7 +327,8 @@ public class JdbcDialectImpl implements Dialect {
         // it is a valid SQL:2003 literal) because it's really
         // NULL in disguise, and NULL is always treated specially.
         if (!value.equalsIgnoreCase("TRUE")
-            && !(value.equalsIgnoreCase("FALSE"))) {
+            && !(value.equalsIgnoreCase("FALSE")))
+        {
             throw new NumberFormatException(
                 "Illegal BOOLEAN literal:  " + value);
         }
@@ -465,7 +468,8 @@ public class JdbcDialectImpl implements Dialect {
                     int maxLen = -1;
                     for (String[] strings : valueList) {
                         if (strings[i] != null
-                            && strings[i].length() > maxLen) {
+                            && strings[i].length() > maxLen)
+                        {
                             maxLen = strings[i].length();
                         }
                     }

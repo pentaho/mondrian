@@ -37,8 +37,10 @@ import java.util.*;
  * @since December, 2005
  * @version $Id$
  */
-public abstract class XmlaServlet extends HttpServlet
-                                  implements XmlaConstants {
+public abstract class XmlaServlet
+    extends HttpServlet
+    implements XmlaConstants
+{
 
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
@@ -62,19 +64,20 @@ public abstract class XmlaServlet extends HttpServlet
     }
 
     /**
-     * If paramName's value is not null and 'true', then return true.
-     *
+     * Returns true if paramName's value is not null and 'true'.
      */
     public static boolean getBooleanInitParameter(
-            ServletConfig servletConfig,
-            String paramName) {
+        ServletConfig servletConfig,
+        String paramName)
+    {
         String paramValue = servletConfig.getInitParameter(paramName);
         return paramValue != null && Boolean.valueOf(paramValue);
     }
 
     public static boolean getParameter(
-            HttpServletRequest req,
-            String paramName) {
+        HttpServletRequest req,
+        String paramName)
+    {
         String paramValue = req.getParameter(paramName);
         return paramValue != null && Boolean.valueOf(paramValue);
     }
@@ -170,11 +173,10 @@ public abstract class XmlaServlet extends HttpServlet
                     response.setCharacterEncoding(charEncoding);
                 } catch (UnsupportedEncodingException uee) {
                     charEncoding = null;
-                    String msg = "Unsupported character encoding '" +
-                        charEncoding +
-                        "': " +
-                        "Use default character encoding from HTTP client for now";
-                    LOGGER.warn(msg);
+                    LOGGER.warn(
+                        "Unsupported character encoding '" + charEncoding
+                        + "': Use default character encoding from HTTP client "
+                        + "for now");
                 }
             }
 
@@ -190,7 +192,8 @@ public abstract class XmlaServlet extends HttpServlet
                     if (!callback.processHttpHeader(
                         request,
                         response,
-                        context)) {
+                        context))
+                    {
                         return;
                     }
                 }
@@ -227,8 +230,9 @@ public abstract class XmlaServlet extends HttpServlet
 
                 // check request's content type
                 String contentType = request.getContentType();
-                if (contentType == null ||
-                    contentType.indexOf("text/xml") == -1) {
+                if (contentType == null
+                    || contentType.indexOf("text/xml") == -1)
+                {
                     throw new IllegalArgumentException(
                         "Only accepts content type 'text/xml', not '"
                         + contentType + "'");
@@ -463,9 +467,9 @@ public abstract class XmlaServlet extends HttpServlet
                     paramValue,
                     Util.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
-                    String msg = "XmlaServlet.makeDataSources: " +
-                            "paramValue=" + paramValue;
-                    LOGGER.debug(msg);
+                    LOGGER.debug(
+                        "XmlaServlet.makeDataSources: paramValue="
+                        + paramValue);
                 }
                 // is the parameter a valid URL
                 MalformedURLException mue = null;
@@ -495,9 +499,9 @@ public abstract class XmlaServlet extends HttpServlet
         }
 
         if (LOGGER.isDebugEnabled()) {
-            String msg = "XmlaServlet.makeDataSources: " +
-                    "dataSourcesConfigUrl=" + dataSourcesConfigUrl;
-            LOGGER.debug(msg);
+            LOGGER.debug(
+                "XmlaServlet.makeDataSources: dataSourcesConfigUrl="
+                + dataSourcesConfigUrl);
         }
         // don't try to parse a null
         return (dataSourcesConfigUrl == null)
@@ -535,8 +539,8 @@ public abstract class XmlaServlet extends HttpServlet
         } catch (Exception e) {
             throw Util.newError(
                 e,
-                "Failed to parse data sources config '" +
-                dataSourcesConfigUrl.toExternalForm() + "'");
+                "Failed to parse data sources config '"
+                + dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
@@ -562,9 +566,9 @@ public abstract class XmlaServlet extends HttpServlet
                     Util.toMap(System.getProperties()));
 
             if (LOGGER.isDebugEnabled()) {
-                String msg = "XmlaServlet.parseDataSources: " +
-                    "dataSources=" + dataSourcesConfigString;
-                LOGGER.debug(msg);
+                LOGGER.debug(
+                    "XmlaServlet.parseDataSources: dataSources="
+                    + dataSourcesConfigString);
             }
             final Parser parser = XOMUtil.createDefaultParser();
             final DOMWrapper doc = parser.parse(dataSourcesConfigString);
@@ -572,8 +576,8 @@ public abstract class XmlaServlet extends HttpServlet
         } catch (XOMException e) {
             throw Util.newError(
                 e,
-                "Failed to parse data sources config: " +
-                dataSourcesConfigString);
+                "Failed to parse data sources config: "
+                + dataSourcesConfigString);
         }
     }
 
@@ -613,8 +617,10 @@ public abstract class XmlaServlet extends HttpServlet
                         try {
                             callback.init(servletConfig);
                         } catch (Exception e) {
-                            LOGGER.warn("Failed to initialize callback '" +
-                                className + "'", e);
+                            LOGGER.warn(
+                                "Failed to initialize callback '"
+                                + className + "'",
+                                e);
                             continue nextCallback;
                         }
 
@@ -622,13 +628,13 @@ public abstract class XmlaServlet extends HttpServlet
                         count++;
 
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info("Register callback '" +
-                                className + "'");
+                            LOGGER.info(
+                                "Register callback '" + className + "'");
                         }
                     } else {
-                        LOGGER.warn("'" + className +
-                            "' is not an implementation of '" +
-                            XmlaRequestCallback.class + "'");
+                        LOGGER.warn(
+                            "'" + className + "' is not an implementation of '"
+                            + XmlaRequestCallback.class + "'");
                     }
                 } catch (ClassNotFoundException cnfe) {
                     LOGGER.warn(

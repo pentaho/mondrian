@@ -265,7 +265,9 @@ public class QueryRunner extends Thread {
         }
     }
 
-    private static void runTest(int numThreads, int seconds, boolean randomQueries) {
+    private static void runTest(
+        int numThreads, int seconds, boolean randomQueries)
+    {
         QueryRunner[] runners = new QueryRunner[numThreads];
 
         for (int idx = 0; idx < runners.length; idx++) {

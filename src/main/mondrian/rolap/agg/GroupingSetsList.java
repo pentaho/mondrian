@@ -122,7 +122,8 @@ class GroupingSetsList {
     private void loadRollupIndex() {
         RolapStar.Column[] detailedColumns = getDefaultColumns();
         for (int columnIndex = 0; columnIndex < detailedColumns.length;
-             columnIndex++) {
+             columnIndex++)
+        {
             int rollupIndex =
                 rollupColumns.indexOf(detailedColumns[columnIndex]);
             columnIndexToGroupingIndexMap.put(columnIndex, rollupIndex);

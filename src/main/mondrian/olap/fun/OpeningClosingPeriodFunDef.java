@@ -34,33 +34,34 @@ import java.util.List;
 class OpeningClosingPeriodFunDef extends FunDefBase {
     private final boolean opening;
 
-    static final Resolver OpeningPeriodResolver = new MultiResolver(
+    static final Resolver OpeningPeriodResolver =
+        new MultiResolver(
             "OpeningPeriod",
             "OpeningPeriod([<Level>[, <Member>]])",
             "Returns the first descendant of a member at a level.",
-            new String[] {"fm", "fml", "fmlm"}) {
-        protected FunDef createFunDef(
-                Exp[] args, FunDef dummyFunDef) {
-            return new OpeningClosingPeriodFunDef(
-                    dummyFunDef, true);
+            new String[] {"fm", "fml", "fmlm"})
+    {
+        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(dummyFunDef, true);
         }
     };
 
-    static final Resolver ClosingPeriodResolver = new MultiResolver(
+    static final Resolver ClosingPeriodResolver =
+        new MultiResolver(
             "ClosingPeriod",
             "ClosingPeriod([<Level>[, <Member>]])",
             "Returns the last descendant of a member at a level.",
-            new String[] {"fm", "fml", "fmlm", "fmm"}) {
-        protected FunDef createFunDef(
-                Exp[] args, FunDef dummyFunDef) {
-            return new OpeningClosingPeriodFunDef(
-                    dummyFunDef, false);
+            new String[] {"fm", "fml", "fmlm", "fmm"})
+    {
+        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(dummyFunDef, false);
         }
     };
 
     public OpeningClosingPeriodFunDef(
-            FunDef dummyFunDef,
-            boolean opening) {
+        FunDef dummyFunDef,
+        boolean opening)
+    {
         super(dummyFunDef);
         this.opening = opening;
     }
@@ -73,11 +74,10 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
-            Hierarchy hierarchy = defaultTimeDimension
-                    .getHierarchy();
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return MemberType.forHierarchy(hierarchy);
         }
         return super.getResultType(validator, args);
@@ -93,8 +93,8 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             defaultTimeDimension =
                 compiler.getEvaluator().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
             levelCalc = null;
@@ -103,8 +103,8 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             defaultTimeDimension =
                 compiler.getEvaluator().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             levelCalc = compiler.compileLevel(call.getArg(0));
             memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
@@ -121,11 +121,11 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                 memberCalc.getType().getDimension();
             final Dimension levelDimension = levelCalc.getType().getDimension();
             if (!memberDimension.equals(levelDimension)) {
-                throw MondrianResource.instance().
-                    FunctionMbrAndLevelHierarchyMismatch.ex(
-                    opening ? "OpeningPeriod" : "ClosingPeriod",
-                    levelDimension.getUniqueName(),
-                    memberDimension.getUniqueName());
+                throw MondrianResource.instance()
+                    .FunctionMbrAndLevelHierarchyMismatch.ex(
+                        opening ? "OpeningPeriod" : "ClosingPeriod",
+                        levelDimension.getUniqueName(),
+                        memberDimension.getUniqueName());
             }
         }
         return new AbstractMemberCalc(

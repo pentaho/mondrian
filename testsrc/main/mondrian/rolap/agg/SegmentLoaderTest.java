@@ -51,7 +51,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return getData(true);
             }
         };
-        loader.load(groupingSets, null,null);
+        loader.load(groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -292,8 +292,9 @@ public class SegmentLoaderTest extends BatchTestCase {
                 List<Object[]> data = new ArrayList<Object[]>();
                 data.add(new Object[]{"1997", "Food", "Deli", "F", "5990"});
                 data.add(new Object[]{"1997", "Food", "Deli", "M", "6047"});
-                data.add(new Object[]{
-                    "1997", "Food", "Canned_Products", "F", "867"});
+                data.add(
+                    new Object[] {
+                        "1997", "Food", "Canned_Products", "F", "867"});
 
                 return data;
             }
@@ -718,21 +719,25 @@ public class SegmentLoaderTest extends BatchTestCase {
         data.add(
             new Object[]{"1997", "Food", "Canned_Products", "M", "945", 0});
         if (incSummaryData) {
-            data.add(new Object[]{
-                "1997", "Food", "Canned_Products", null, "1812", 1});
+            data.add(
+                new Object[]{
+                    "1997", "Food", "Canned_Products", null, "1812", 1});
         }
         data.add(new Object[]{"1997", "Drink", "Dairy", "F", "1987", 0});
         data.add(new Object[]{"1997", "Drink", "Dairy", "M", "2199", 0});
         if (incSummaryData) {
             data.add(new Object[]{"1997", "Drink", "Dairy", null, "4186", 1});
         }
-        data.add(new Object[]{
-            "1997", "Non-Consumable", "Carousel", "F", "368", 0});
-        data.add(new Object[]{
-            "1997", "Non-Consumable", "Carousel", "M", "473", 0});
+        data.add(
+            new Object[]{
+                "1997", "Non-Consumable", "Carousel", "F", "368", 0});
+        data.add(
+            new Object[]{
+                "1997", "Non-Consumable", "Carousel", "M", "473", 0});
         if (incSummaryData) {
-            data.add(new Object[]{
-                "1997", "Non-Consumable", "Carousel", null, "841", 1});
+            data.add(
+                new Object[]{
+                    "1997", "Non-Consumable", "Carousel", null, "841", 1});
         }
         return data;
     }

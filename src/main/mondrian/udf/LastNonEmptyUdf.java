@@ -111,8 +111,8 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
         // default hierarchy and return it's null member.
         final Hierarchy hierarchy = memberListExp.getType().getHierarchy();
         return (hierarchy == null)
-            ? memberListExp.getType().getDimension().
-                getHierarchies()[0].getNullMember()
+            ? memberListExp.getType().getDimension()
+                .getHierarchies()[0].getNullMember()
             : hierarchy.getNullMember();
     }
 

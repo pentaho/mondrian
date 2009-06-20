@@ -37,10 +37,11 @@ public class MemberType implements Type {
      * @param member The precise member, or null if not known
      */
     public MemberType(
-            Dimension dimension,
-            Hierarchy hierarchy,
-            Level level,
-            Member member) {
+        Dimension dimension,
+        Hierarchy hierarchy,
+        Level level,
+        Member member)
+    {
         this.dimension = dimension;
         this.hierarchy = hierarchy;
         this.level = level;
@@ -131,8 +132,8 @@ public class MemberType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        return this.dimension == dimension ||
-            (!definitely && this.dimension == null);
+        return this.dimension == dimension
+            || (!definitely && this.dimension == null);
     }
 
     public Type getValueType() {
@@ -162,18 +163,20 @@ public class MemberType implements Type {
             return getValueType().computeCommonType(type, conversionCount);
         }
         if (type instanceof TupleType) {
-            return type.computeCommonType(this,conversionCount);
+            return type.computeCommonType(this, conversionCount);
         }
         if (!(type instanceof MemberType)) {
             return null;
         }
         MemberType that = (MemberType) type;
         if (this.getMember() != null
-            && this.getMember().equals(that.getMember())) {
+            && this.getMember().equals(that.getMember()))
+        {
             return this;
         }
         if (this.getLevel() != null
-            && this.getLevel().equals(that.getLevel())) {
+            && this.getLevel().equals(that.getLevel()))
+        {
             return new MemberType(
                 this.getDimension(),
                 this.getHierarchy(),
@@ -181,7 +184,8 @@ public class MemberType implements Type {
                 null);
         }
         if (this.getHierarchy() != null
-            && this.getHierarchy().equals(that.getHierarchy())) {
+            && this.getHierarchy().equals(that.getHierarchy()))
+        {
             return new MemberType(
                 this.getDimension(),
                 this.getHierarchy(),
@@ -189,7 +193,8 @@ public class MemberType implements Type {
                 null);
         }
         if (this.getDimension() != null
-            && this.getDimension().equals(that.getDimension())) {
+            && this.getDimension().equals(that.getDimension()))
+        {
             return new MemberType(
                 this.getDimension(),
                 null,

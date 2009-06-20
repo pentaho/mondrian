@@ -34,7 +34,7 @@ import java.util.WeakHashMap;
 public class CacheMap<S, T> implements Map<S, T> {
     private LinkedNode head;
     private LinkedNode tail;
-    private final Map<S, Pair<S,T>> map;
+    private final Map<S, Pair<S, T>> map;
     private final int maxSize;
 
     /**
@@ -45,7 +45,7 @@ public class CacheMap<S, T> implements Map<S, T> {
     public CacheMap(final int size) {
         this.head = new LinkedNode(null, null);
         this.tail = new LinkedNode(head, null);
-        this.map = new WeakHashMap<S,Pair<S,T>>(size);
+        this.map = new WeakHashMap<S, Pair<S, T>>(size);
         this.maxSize = size;
     }
 
@@ -64,40 +64,46 @@ public class CacheMap<S, T> implements Map<S, T> {
     }
 
     public Set entrySet() {
-        final Set<Map.Entry<S,T>> set = new HashSet<Map.Entry<S,T>>();
-        for (final Map.Entry<S, Pair<S,T>> entry : this.map.entrySet()) {
-            set.add(new Map.Entry<S,T>() {
-                        public boolean equals(Object s) {
-                            if (s instanceof Map.Entry) {
-                                return ((Map.Entry) s).getKey().equals(
-                                                entry.getKey())
-                                        && ((Map.Entry) s).getValue().equals(
-                                                entry.getValue().value);
-                            } else {
-                                return false;
-                            }
+        final Set<Map.Entry<S, T>> set = new HashSet<Map.Entry<S, T>>();
+        for (final Map.Entry<S, Pair<S, T>> entry : this.map.entrySet()) {
+            set.add(
+                new Map.Entry<S, T>() {
+                    public boolean equals(Object s) {
+                        if (s instanceof Map.Entry) {
+                            return ((Map.Entry) s).getKey().equals(
+                                    entry.getKey())
+                                && ((Map.Entry) s).getValue().equals(
+                                    entry.getValue().value);
+                        } else {
+                            return false;
                         }
-                        public S getKey() {
-                            return entry.getKey();
-                        }
-                        public T getValue() {
-                            return entry.getValue().value;
-                        }
-                        public int hashCode() {
-                            return entry.hashCode();
-                        }
-                        public T setValue(final T x) {
-                            return entry.setValue(new Pair<S,T>(
-                                    x, new LinkedNode(head, entry.getKey())))
-                                    .value;
-                        }
-                    });
+                    }
+
+                    public S getKey() {
+                        return entry.getKey();
+                    }
+
+                    public T getValue() {
+                        return entry.getValue().value;
+                    }
+
+                    public int hashCode() {
+                        return entry.hashCode();
+                    }
+
+                    public T setValue(final T x) {
+                        return entry.setValue(
+                            new Pair<S, T>(
+                                x,
+                                new LinkedNode(head, entry.getKey()))).value;
+                    }
+                });
         }
         return set;
     }
 
     public T get(final Object key) {
-        final Pair<S,T> pair = map.get(key);
+        final Pair<S, T> pair = map.get(key);
         if (pair != null) {
             final LinkedNode<S> node = pair.getNode();
             if (node == null) {
@@ -120,7 +126,8 @@ public class CacheMap<S, T> implements Map<S, T> {
     }
 
     public T put(final S key, final T value) {
-        final Pair<S, T> pair = new Pair<S,T>(value, new LinkedNode(head, key));
+        final Pair<S, T> pair =
+            new Pair<S, T>(value, new LinkedNode(head, key));
         final Pair<S, T> obj = map.put(key, pair);
         if (map.size() > maxSize) {
             tail.getPrevious().remove();
@@ -138,7 +145,7 @@ public class CacheMap<S, T> implements Map<S, T> {
     }
 
     public T remove(final Object key) {
-        final Pair<S,T> pair = map.get(key);
+        final Pair<S, T> pair = map.get(key);
         if (pair == null) {
             return null;
         }
@@ -152,7 +159,7 @@ public class CacheMap<S, T> implements Map<S, T> {
 
     public Collection<T> values() {
         final List<T> vals = new ArrayList<T>();
-        for (final Pair<S,T> pair : map.values()) {
+        for (final Pair<S, T> pair : map.values()) {
             vals.add(pair.value);
         }
         return vals;

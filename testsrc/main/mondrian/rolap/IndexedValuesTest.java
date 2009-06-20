@@ -50,11 +50,11 @@ public class IndexedValuesTest extends FoodMartTestCase {
 
         // Results of two previous queries must be the same
         assertEquals(
-            result2.getCell(new int[] {0,0}).getValue(),
-            result1.getCell(new int[] {0,0}).getValue());
+            result2.getCell(new int[] {0, 0}).getValue(),
+            result1.getCell(new int[] {0, 0}).getValue());
         assertEquals(
-            result2.getCell(new int[] {1,0}).getValue(),
-            result1.getCell(new int[] {1,0}).getValue());
+            result2.getCell(new int[] {1, 0}).getValue(),
+            result1.getCell(new int[] {1, 0}).getValue());
     }
 
 }

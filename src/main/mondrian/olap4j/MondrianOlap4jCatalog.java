@@ -28,7 +28,8 @@ class MondrianOlap4jCatalog implements Catalog, Named {
     final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
 
     MondrianOlap4jCatalog(
-        MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData) {
+        MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData)
+    {
         this.olap4jDatabaseMetaData = olap4jDatabaseMetaData;
     }
 

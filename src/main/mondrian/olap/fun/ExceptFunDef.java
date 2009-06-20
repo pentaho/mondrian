@@ -41,31 +41,37 @@ class ExceptFunDef extends FunDefBase {
         // todo: implement ALL
         final ListCalc listCalc0 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc1 = compiler.compileList(call.getArg(1));
-        final Type elementType = ((SetType) listCalc0.getType()).getElementType();
+        final Type elementType =
+            ((SetType) listCalc0.getType()).getElementType();
         if (elementType instanceof TupleType) {
             final TupleListCalc tupleListCalc0 = (TupleListCalc) listCalc0;
             final TupleListCalc tupleListCalc1 = (TupleListCalc) listCalc1;
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member[]> list0 =
                         tupleListCalc0.evaluateTupleList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List<Member[]> list1 = tupleListCalc1.evaluateTupleList(evaluator);
+                    List<Member[]> list1 =
+                        tupleListCalc1.evaluateTupleList(evaluator);
                     return exceptTuples(list0, list1);
                 }
             };
         } else {
             final MemberListCalc memberListCalc0 = (MemberListCalc) listCalc0;
             final MemberListCalc memberListCalc1 = (MemberListCalc) listCalc1;
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
+            {
                 public List evaluateList(Evaluator evaluator) {
-                    List<Member> list0 = memberListCalc0.evaluateMemberList(evaluator);
+                    List<Member> list0 =
+                        memberListCalc0.evaluateMemberList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List<Member> list1 = memberListCalc1.evaluateMemberList(evaluator);
+                    List<Member> list1 =
+                        memberListCalc1.evaluateMemberList(evaluator);
                     return except(list0, list1);
                 }
             };

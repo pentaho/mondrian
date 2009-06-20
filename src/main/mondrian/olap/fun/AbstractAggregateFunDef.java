@@ -33,7 +33,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     protected Exp validateArg(
-            Validator validator, Exp[] args, int i, int category) {
+        Validator validator, Exp[] args, int i, int category)
+    {
         // If expression cache is enabled, wrap first expression (the set)
         // in a function which will use the expression cache.
         if (i == 0) {
@@ -100,8 +101,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
                 parent = parent.getParent();
             }
             if (productLen > iterationLimit) {
-                throw MondrianResource.instance().
-                    IterationLimitExceeded.ex(iterationLimit);
+                throw MondrianResource.instance()
+                    .IterationLimitExceeded.ex(iterationLimit);
             }
         }
         evaluator.setIterationLength(currLen);
@@ -139,12 +140,15 @@ public class AbstractAggregateFunDef extends FunDefBase {
         RolapCube virtualCube = (RolapCube) evaluator.getCube();
         RolapCube baseCube = (RolapCube) evaluator.getMeasureCube();
         if (virtualCube.isVirtual() && baseCube != null) {
-            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
-                return ignoreUnrelatedDimensions(tuplesForAggregation, baseCube);
+            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
+            {
+                return ignoreUnrelatedDimensions(
+                    tuplesForAggregation, baseCube);
             } else if (MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get()) {
+                .IgnoreMeasureForNonJoiningDimension.get())
+            {
                 return ignoreMeasureForNonJoiningDimension(
-                        tuplesForAggregation, baseCube);
+                    tuplesForAggregation, baseCube);
             }
         }
         return tuplesForAggregation;
@@ -190,8 +194,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         for (int i = 0; i < tuplesForAggregation.size(); i++) {
             Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
             for (int j = 0; j < tuples.length; j++) {
-                if (nonJoiningDimensions.contains(
-                    tuples[j].getDimension())) {
+                if (nonJoiningDimensions.contains(tuples[j].getDimension())) {
                     final Hierarchy hierarchy =
                         tuples[j].getDimension().getHierarchy();
                     if (hierarchy.hasAll()) {

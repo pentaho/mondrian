@@ -28,7 +28,7 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class HierarchizeFunDef extends FunDefBase {
-    static final String[] prePost = {"PRE","POST"};
+    static final String[] prePost = {"PRE", "POST"};
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Hierarchize",
             "Hierarchize(<Set>[, POST])",
@@ -61,7 +61,8 @@ class HierarchizeFunDef extends FunDefBase {
             final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
             return new AbstractTupleListCalc(call, new Calc[] {listCalc}) {
                 public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-                    List<Member[]> list = tupleListCalc.evaluateTupleList(evaluator);
+                    List<Member[]> list =
+                        tupleListCalc.evaluateTupleList(evaluator);
                     hierarchizeTupleList(list, post, arity);
                     return list;
                 }

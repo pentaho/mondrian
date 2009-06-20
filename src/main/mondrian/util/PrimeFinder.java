@@ -205,7 +205,7 @@ final class PrimeFinder {
         int from = Integer.parseInt(args[0]);
         int to = Integer.parseInt(args[1]);
 
-        statistics(from,to,new PrintWriter(System.out));
+        statistics(from, to, new PrintWriter(System.out));
     }
 
     /**
@@ -215,7 +215,9 @@ final class PrimeFinder {
         // check that primes contain no accidental errors
         for (int i = 0; i < primeCapacities.length - 1; i++) {
             if (primeCapacities[i] >= primeCapacities[i + 1]) {
-                throw new RuntimeException("primes are unsorted or contain duplicates; detected at " + i + "@" + primeCapacities[i]);
+                throw new RuntimeException(
+                    "primes are unsorted or contain duplicates; detected at "
+                    + i + "@" + primeCapacities[i]);
             }
         }
 

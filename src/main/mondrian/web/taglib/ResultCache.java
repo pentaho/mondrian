@@ -53,7 +53,8 @@ public class ResultCache implements HttpSessionBindingListener {
     public static ResultCache getInstance(
         HttpSession session,
         ServletContext servletContext,
-        String name) {
+        String name)
+    {
         String fqname = ATTR_NAME + name;
         ResultCache resultCache = (ResultCache) session.getAttribute(fqname);
         if (resultCache == null) {

@@ -81,7 +81,8 @@ public class ExplicitRules {
          */
         public static ExplicitRules.Group make(
             final RolapCube cube,
-            final MondrianDef.Cube xmlCube) {
+            final MondrianDef.Cube xmlCube)
+        {
             Group group = new Group(cube);
 
             MondrianDef.Relation relation = xmlCube.fact;
@@ -105,10 +106,10 @@ public class ExplicitRules {
                     }
                 }
             } else {
-                String msg = mres.CubeRelationNotTable.str(
-                    cube.getName(),
-                    relation.getClass().getName());
-                LOGGER.warn(msg);
+                LOGGER.warn(
+                    mres.CubeRelationNotTable.str(
+                        cube.getName(),
+                        relation.getClass().getName()));
             }
 
             if (LOGGER.isDebugEnabled()) {
@@ -198,7 +199,8 @@ public class ExplicitRules {
          * Is the given tableName included either by exact name or by pattern.
          */
         public ExplicitRules.TableDef getIncludeByTableDef(
-            final String tableName) {
+            final String tableName)
+        {
             // An exact match on a NameTableDef takes precedences over a
             // fuzzy match on a PatternTableDef, so
             // first look throught NameTableDef then PatternTableDef
@@ -297,11 +299,11 @@ public class ExplicitRules {
     }
 
     private static Exclude make(final MondrianDef.AggExclude aggExclude) {
-        return (aggExclude.getNameAttribute() != null) ?
-            new ExcludeName(
+        return (aggExclude.getNameAttribute() != null)
+            ? new ExcludeName(
                 aggExclude.getNameAttribute(),
-                aggExclude.isIgnoreCase()) :
-            (Exclude) new ExcludePattern(
+                aggExclude.isIgnoreCase())
+            : (Exclude) new ExcludePattern(
                 aggExclude.getPattern(),
                 aggExclude.isIgnoreCase());
     }
@@ -433,10 +435,11 @@ RME TODO
 
         private ExcludePattern(
             final String pattern,
-            final boolean ignoreCase) {
-            this.pattern = (ignoreCase) ?
-                Pattern.compile(pattern, Pattern.CASE_INSENSITIVE) :
-                Pattern.compile(pattern);
+            final boolean ignoreCase)
+        {
+            this.pattern = (ignoreCase)
+                ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
+                : Pattern.compile(pattern);
         }
 
         public boolean isExcluded(final String tableName) {
@@ -490,12 +493,12 @@ RME TODO
             final MondrianDef.AggTable aggTable,
             final ExplicitRules.Group group)
         {
-            return (aggTable instanceof MondrianDef.AggName) ?
-                ExplicitRules.NameTableDef.make(
-                    (MondrianDef.AggName) aggTable, group) :
-                (ExplicitRules.TableDef)
-                    ExplicitRules.PatternTableDef.make(
-                        (MondrianDef.AggPattern) aggTable, group);
+            return (aggTable instanceof MondrianDef.AggName)
+                ? ExplicitRules.NameTableDef.make(
+                    (MondrianDef.AggName) aggTable, group)
+                : (ExplicitRules.TableDef)
+                ExplicitRules.PatternTableDef.make(
+                    (MondrianDef.AggPattern) aggTable, group);
         }
 
         /**
@@ -848,7 +851,8 @@ RME TODO
 
         protected TableDef(
             final boolean ignoreCase,
-            final ExplicitRules.Group aggGroup) {
+            final ExplicitRules.Group aggGroup)
+        {
             this.id = nextId();
             this.ignoreCase = ignoreCase;
             this.aggGroup = aggGroup;
@@ -930,8 +934,9 @@ RME TODO
             return new Recognizer.Matcher() {
                 public boolean matches(final String name) {
                     for (Iterator<String> it =
-                        ExplicitRules.TableDef.this.getIgnoreColumnNames();
-                        it.hasNext();) {
+                            ExplicitRules.TableDef.this.getIgnoreColumnNames();
+                        it.hasNext();)
+                    {
                         String ignoreName = it.next();
                         if (ignoreName.equals(name)) {
                             return true;
@@ -950,8 +955,8 @@ RME TODO
                 public boolean matches(String name) {
                     // Match is case insensitive
                     final String factCountName = TableDef.this.factCountName;
-                    return factCountName != null &&
-                           factCountName.equalsIgnoreCase(name);
+                    return factCountName != null
+                        && factCountName.equalsIgnoreCase(name);
                 }
             };
         }
@@ -1225,10 +1230,12 @@ RME TODO
         }
 
         private final String name;
+
         public NameTableDef(
             final String name,
             final boolean ignoreCase,
-            final ExplicitRules.Group group) {
+            final ExplicitRules.Group group)
+        {
             super(ignoreCase, group);
             this.name = name;
         }
@@ -1238,9 +1245,9 @@ RME TODO
          * or, if set, a case insensitive match).
          */
         public boolean matches(final String tableName) {
-            return (this.ignoreCase) ?
-                this.name.equalsIgnoreCase(tableName) :
-                this.name.equals(tableName);
+            return (this.ignoreCase)
+                ? this.name.equalsIgnoreCase(tableName)
+                : this.name.equals(tableName);
         }
 
         /**
@@ -1309,7 +1316,8 @@ RME TODO
         public PatternTableDef(
             final String pattern,
             final boolean ignoreCase,
-            final ExplicitRules.Group group) {
+            final ExplicitRules.Group group)
+        {
             super(ignoreCase, group);
             this.pattern = (this.ignoreCase)
                 ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
@@ -1414,7 +1422,8 @@ RME TODO
     private static void checkAttributeString(
         final MessageRecorder msgRecorder,
         final String attrValue,
-        final String attrName) {
+        final String attrName)
+    {
         if (attrValue == null) {
             msgRecorder.reportError(mres.NullAttributeString.str(
                 msgRecorder.getContext(),

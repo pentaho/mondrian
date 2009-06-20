@@ -29,8 +29,8 @@ public class ArrayHolder<T> {
     }
 
     public boolean equals(Object o) {
-        return o instanceof ArrayHolder &&
-            Arrays.equals(a, ((ArrayHolder) o).a);
+        return o instanceof ArrayHolder
+            && Arrays.equals(a, ((ArrayHolder) o).a);
     }
 }
 

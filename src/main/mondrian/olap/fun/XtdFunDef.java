@@ -71,15 +71,16 @@ class XtdFunDef extends FunDefBase {
             Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return new SetType(MemberType.forHierarchy(hierarchy));
         }
         final Type type = args[0].getType();
-        if (type.getDimension().getDimensionType() !=
-                DimensionType.TimeDimension) {
+        if (type.getDimension().getDimensionType()
+            != DimensionType.TimeDimension)
+        {
             throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }
         return super.getResultType(validator, args);
@@ -112,13 +113,13 @@ class XtdFunDef extends FunDefBase {
                 }
 
                 public boolean dependsOn(Dimension dimension) {
-                    return dimension.getDimensionType() ==
-                            mondrian.olap.DimensionType.TimeDimension;
+                    return dimension.getDimensionType()
+                        == mondrian.olap.DimensionType.TimeDimension;
                 }
             };
         default:
             final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
+                compiler.compileMember(call.getArg(0));
             return new AbstractListCalc(call, new Calc[] {memberCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     return periodsToDate(
@@ -133,11 +134,12 @@ class XtdFunDef extends FunDefBase {
         private final LevelType levelType;
 
         public ResolverImpl(
-                String name,
-                String signature,
-                String description,
-                String[] signatures,
-                LevelType levelType) {
+            String name,
+            String signature,
+            String description,
+            String[] signatures,
+            LevelType levelType)
+        {
             super(name, signature, description, signatures);
             this.levelType = levelType;
         }

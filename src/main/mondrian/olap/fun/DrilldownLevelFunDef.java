@@ -58,7 +58,8 @@ class DrilldownLevelFunDef extends FunDefBase {
                 : null;
         final int arity = ((SetType) listCalc.getType()).getArity();
         if (indexCalc == null) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -73,7 +74,8 @@ class DrilldownLevelFunDef extends FunDefBase {
                 }
             };
         } else if (arity == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -95,7 +97,8 @@ class DrilldownLevelFunDef extends FunDefBase {
                 }
             };
         } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member[]> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -123,7 +126,8 @@ class DrilldownLevelFunDef extends FunDefBase {
         }
     }
 
-    List<Member> drill(int searchDepth, List<Member> list, Evaluator evaluator) {
+    List<Member> drill(int searchDepth, List<Member> list, Evaluator evaluator)
+    {
         if (searchDepth == -1) {
             searchDepth = list.get(0).getLevel().getDepth();
 
@@ -143,9 +147,10 @@ class DrilldownLevelFunDef extends FunDefBase {
             Member member = list.get(i);
             drilledSet.add(member);
 
-            Member nextMember = i == (m - 1) ?
-                null :
-                list.get(i + 1);
+            Member nextMember =
+                i == (m - 1)
+                ? null
+                : list.get(i + 1);
 
             //
             // This member is drilled if it's at the correct depth
@@ -154,7 +159,8 @@ class DrilldownLevelFunDef extends FunDefBase {
             // at least one descendant
             //
             if (member.getLevel().getDepth() == searchDepth
-                    && !FunUtil.isAncestorOf(member, nextMember, true)) {
+                && !FunUtil.isAncestorOf(member, nextMember, true))
+            {
                 final List<Member> childMembers =
                     evaluator.getSchemaReader().getMemberChildren(member);
                 for (Member childMember : childMembers) {

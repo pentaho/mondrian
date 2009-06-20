@@ -471,8 +471,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSample8() {
-        if (TestContext.instance().getDialect().getDatabaseProduct() ==
-            Dialect.DatabaseProduct.INFOBRIGHT)
+        if (TestContext.instance().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.INFOBRIGHT)
         {
             // Skip this test on Infobright, because [Promotion Sales] is
             // defined wrong.
@@ -6567,8 +6567,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "{[Gender].[AGG]}\n"
                 + "Row #0: \n");
         } finally {
-            props.IgnoreMeasureForNonJoiningDimension.
-                set(ignoreMeasureForNonJoiningDimension);
+            props.IgnoreMeasureForNonJoiningDimension.set(
+                ignoreMeasureForNonJoiningDimension);
         }
     }
 

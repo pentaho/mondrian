@@ -106,9 +106,10 @@ class RolapDimension extends DimensionBase {
             // remaps the xml hierarchy relation to the fact table.
             // moved out of RolapHierarchy constructor
             // this should eventually be phased out completely
-            if (xmlDimension.hierarchies[i].relation == null &&
-                    xmlDimension.hierarchies[i].memberReaderClass == null &&
-                    cube != null) {
+            if (xmlDimension.hierarchies[i].relation == null
+                && xmlDimension.hierarchies[i].memberReaderClass == null
+                && cube != null)
+            {
                 xmlDimension.hierarchies[i].relation = cube.fact;
             }
 
@@ -138,9 +139,10 @@ class RolapDimension extends DimensionBase {
                     } else {
                         // Dimension type was set according to first level.
                         // Make sure that other levels fit to definition.
-                        if (dimensionType == DimensionType.TimeDimension &&
-                            !lev.getLevelType().isTime() &&
-                            !lev.isAll()) {
+                        if (dimensionType == DimensionType.TimeDimension
+                            && !lev.getLevelType().isTime()
+                            && !lev.isAll())
+                        {
                             throw MondrianResource.instance()
                                 .NonTimeLevelInTimeHierarchy.ex(
                                     getUniqueName());

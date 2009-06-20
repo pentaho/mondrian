@@ -457,13 +457,14 @@ public class DialectTest extends TestCase {
                         // but allowed the statement to be executed anyway.
                         // But don't fail.
                         Util.discard(
-                            "expected to fail for type=" + type +
-                            ", concur=" + concur);
+                            "expected to fail for type=" + type
+                            + ", concur=" + concur);
                     }
                 } catch (SQLException e) {
                     if (b) {
-                        fail("expected to succeed for type=" + type +
-                            ", concur=" + concur);
+                        fail(
+                            "expected to succeed for type=" + type
+                            + ", concur=" + concur);
                         throw Util.newInternal(e, "query [" + sql + "] failed");
                     }
                 } finally {
@@ -550,7 +551,8 @@ public class DialectTest extends TestCase {
     private void assertInline(
         List<String> nameList,
         List<String> typeList,
-        String[]... valueList) throws SQLException {
+        String[]... valueList) throws SQLException
+    {
         String sql =
             getDialect().generateInline(
                 nameList,

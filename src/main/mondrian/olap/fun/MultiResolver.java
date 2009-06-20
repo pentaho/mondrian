@@ -4,6 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2005 Kana Software, Inc. and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -48,10 +49,11 @@ public abstract class MultiResolver extends FunUtil implements Resolver {
      *     {@link FunUtil#decodeParameterCategories(String)}.
      */
     protected MultiResolver(
-            String name,
-            String signature,
-            String description,
-            String[] signatures) {
+        String name,
+        String signature,
+        String description,
+        String[] signatures)
+    {
         this.name = name;
         this.signature = signature;
         this.description = description;
@@ -120,8 +122,9 @@ outer:
     public boolean requiresExpression(int k) {
         for (String signature : signatures) {
             int[] parameterTypes = decodeParameterCategories(signature);
-            if ((k < parameterTypes.length) &&
-                parameterTypes[k] == Category.Set) {
+            if ((k < parameterTypes.length)
+                && parameterTypes[k] == Category.Set)
+            {
                 return false;
             }
         }

@@ -26,12 +26,13 @@ public interface Schema {
      * @post return.length() > 0
      */
     String getName();
+
     /**
      * Finds a cube called <code>cube</code> in this schema; if no cube
      * exists, <code>failIfNotFound</code> controls whether to raise an error
      * or return <code>null</code>.
      */
-    Cube lookupCube(String cube,boolean failIfNotFound);
+    Cube lookupCube(String cube, boolean failIfNotFound);
 
     /**
      * Returns a list of all cubes in this schema.

@@ -109,12 +109,14 @@ class MondrianServerImpl extends MondrianServer {
             }
             int dot1 = versionString.indexOf('.');
             final int majorVersion =
-                dot1 < 0 ? 1 :
-                Integer.valueOf(versionString.substring(0, dot1));
+                dot1 < 0
+                ? 1
+                : Integer.valueOf(versionString.substring(0, dot1));
             int dot2 = versionString.indexOf('.', dot1 + 1);
             final int minorVersion =
-                dot2 < 0 ? 0 :
-                Integer.valueOf(versionString.substring(dot1 + 1, dot2));
+                dot2 < 0
+                ? 0
+                : Integer.valueOf(versionString.substring(dot1 + 1, dot2));
             version = new MondrianVersion() {
                 public String getVersionString() {
                     return versionString;

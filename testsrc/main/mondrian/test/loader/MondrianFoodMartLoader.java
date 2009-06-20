@@ -363,13 +363,15 @@ public class MondrianFoodMartLoader {
         String productName = metaData.getDatabaseProductName();
         String version = metaData.getDatabaseProductVersion();
 
-        LOGGER.info("Output connection is " + productName +
-                ", version: " + version);
+        LOGGER.info(
+            "Output connection is " + productName
+            + ", version: " + version);
 
         dialect = DialectManager.createDialect(null, connection);
 
-        LOGGER.info("Mondrian Dialect is " + dialect +
-                ", detected database product: " + dialect.getDatabaseProduct());
+        LOGGER.info(
+            "Mondrian Dialect is " + dialect
+            + ", detected database product: " + dialect.getDatabaseProduct());
 
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT
             && indexes)
@@ -692,15 +694,16 @@ public class MondrianFoodMartLoader {
         }
         if (!infobrightLoad) {
             LOGGER.info(
-                "Table " + table +
-                ": loaded " + tableRowCount + " rows.");
+                "Table " + table
+                + ": loaded " + tableRowCount + " rows.");
             return;
         }
         fileOutput.close();
         LOGGER.info(
-            "Infobright bulk load: Table " + table +
-            ": loaded " + tableRowCount + " rows.");
-        final String sql = "LOAD DATA INFILE '"
+            "Infobright bulk load: Table " + table
+            + ": loaded " + tableRowCount + " rows.");
+        final String sql =
+            "LOAD DATA INFILE '"
             + file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")
             + "' INTO TABLE "
             + (schema != null ? schema + "." : "")
@@ -2563,13 +2566,14 @@ public class MondrianFoodMartLoader {
          * represent this logical type.
          */
         String toPhysical(Dialect dialect) {
-            if (this == Integer ||
-                    this == Currency ||
-                    this == Smallint ||
-                    this == Varchar30 ||
-                    this == Varchar60 ||
-                    this == Varchar255 ||
-                    this == Real) {
+            if (this == Integer
+                || this == Currency
+                || this == Smallint
+                || this == Varchar30
+                || this == Varchar60
+                || this == Varchar255
+                || this == Real)
+            {
                 return name;
             }
             if (this == Boolean) {

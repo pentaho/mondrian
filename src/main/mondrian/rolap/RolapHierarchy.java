@@ -176,8 +176,9 @@ public class RolapHierarchy extends HierarchyBase {
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
-        if (xmlHierarchy.allMemberCaption != null &&
-            xmlHierarchy.allMemberCaption.length() > 0) {
+        if (xmlHierarchy.allMemberCaption != null
+            && xmlHierarchy.allMemberCaption.length() > 0)
+        {
             this.allMember.setCaption(xmlHierarchy.allMemberCaption);
         }
         this.allMember.setOrdinal(0);
@@ -188,8 +189,9 @@ public class RolapHierarchy extends HierarchyBase {
             this.levels[0] = allLevel;
             for (int i = 0; i < xmlHierarchy.levels.length; i++) {
                 final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
-                if (xmlLevel.getKeyExp() == null &&
-                        xmlHierarchy.memberReaderClass == null) {
+                if (xmlLevel.getKeyExp() == null
+                    && xmlHierarchy.memberReaderClass == null)
+                {
                     throw MondrianResource.instance()
                         .LevelMustHaveNameExpression.ex(xmlLevel.name);
                 }
@@ -212,10 +214,11 @@ public class RolapHierarchy extends HierarchyBase {
         } else {
             this.sharedHierarchyName = null;
         }
-        if (xmlHierarchy.relation != null &&
-                xmlHierarchy.memberReaderClass != null) {
-            throw MondrianResource.instance().
-                HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
+        if (xmlHierarchy.relation != null
+            && xmlHierarchy.memberReaderClass != null)
+        {
+            throw MondrianResource.instance()
+                .HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
         }
         if (!Util.isEmpty(xmlHierarchy.caption)) {
             setCaption(xmlHierarchy.caption);
@@ -239,8 +242,8 @@ public class RolapHierarchy extends HierarchyBase {
         if (sharedHierarchyName == null || that.sharedHierarchyName == null) {
             return false;
         } else {
-            return sharedHierarchyName.equals(that.sharedHierarchyName) &&
-                getUniqueName().equals(that.getUniqueName());
+            return sharedHierarchyName.equals(that.sharedHierarchyName)
+                && getUniqueName().equals(that.getUniqueName());
         }
     }
 
@@ -291,8 +294,8 @@ public class RolapHierarchy extends HierarchyBase {
             if (defaultMember == null) {
                 throw Util.newInternal(
                     "Can not find Default Member with name \""
-                        + defaultMemberName + "\" in Hierarchy \"" +
-                        getName() + "\"");
+                    + defaultMemberName + "\" in Hierarchy \""
+                    + getName() + "\"");
             }
         }
     }
@@ -346,8 +349,8 @@ public class RolapHierarchy extends HierarchyBase {
             return relation.getAlias().equals(tableName);
         } else {
             MondrianDef.Join join = (MondrianDef.Join) relationOrJoin;
-            return tableExists(tableName, join.left) ||
-                tableExists(tableName, join.right);
+            return tableExists(tableName, join.left)
+                || tableExists(tableName, join.right);
         }
     }
 
@@ -371,8 +374,8 @@ public class RolapHierarchy extends HierarchyBase {
                 getRolapSchema().getSchemaReader();
             List<RolapMember> calcMemberList =
                 Util.cast(schemaReader.getCalculatedMembers(getLevels()[0]));
-            for (RolapMember rootMember :
-                UnionIterator.over(rootMembers, calcMemberList))
+            for (RolapMember rootMember
+                : UnionIterator.over(rootMembers, calcMemberList))
             {
                 if (rootMember.isHidden()) {
                     continue;
@@ -404,10 +407,11 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     public Member createMember(
-            Member parent,
-            Level level,
-            String name,
-            Formula formula) {
+        Member parent,
+        Level level,
+        String name,
+        Formula formula)
+    {
         if (formula == null) {
             return new RolapMember(
                 (RolapMember) parent, (RolapLevel) level, name);
@@ -458,8 +462,8 @@ public class RolapHierarchy extends HierarchyBase {
     void addToFrom(SqlQuery query, MondrianDef.Expression expression) {
         if (relation == null) {
             throw Util.newError(
-                    "cannot add hierarchy " + getUniqueName() +
-                    " to query: it does not have a <Table>, <View> or <Join>");
+                "cannot add hierarchy " + getUniqueName()
+                + " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
         MondrianDef.RelationOrJoin subRelation = relation;
@@ -494,8 +498,8 @@ public class RolapHierarchy extends HierarchyBase {
     void addToFrom(SqlQuery query, RolapStar.Table table) {
         if (getRelation() == null) {
             throw Util.newError(
-                    "cannot add hierarchy " + getUniqueName() +
-                    " to query: it does not have a <Table>, <View> or <Join>");
+                "cannot add hierarchy " + getUniqueName()
+                + " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
         MondrianDef.RelationOrJoin subRelation = null;
@@ -610,8 +614,8 @@ public class RolapHierarchy extends HierarchyBase {
         switch (access) {
         case NONE:
             role.getAccess(this); // todo: remove
-            throw Util.newInternal("Illegal access to members of hierarchy "
-                    + this);
+            throw Util.newInternal(
+                "Illegal access to members of hierarchy " + this);
         case ALL:
             return (isRagged())
                 ? new RestrictedMemberReader(getMemberReader(), role)
@@ -639,7 +643,8 @@ public class RolapHierarchy extends HierarchyBase {
                         new DummyExp(setType), new Calc[0])
                     {
                         public List<Member> evaluateMemberList(
-                            Evaluator evaluator) {
+                            Evaluator evaluator)
+                        {
                             return FunUtil.getNonEmptyMemberChildren(
                                 evaluator,
                                 ((RolapEvaluator) evaluator).getExpanding());
@@ -703,8 +708,9 @@ public class RolapHierarchy extends HierarchyBase {
      */
     public boolean isRagged() {
         for (Level level : levels) {
-            if (((RolapLevel) level).getHideMemberCondition() !=
-                RolapLevel.HideMemberCondition.Never) {
+            if (((RolapLevel) level).getHideMemberCondition()
+                != RolapLevel.HideMemberCondition.Never)
+            {
                 return true;
             }
         }

@@ -273,10 +273,12 @@ public class RolapUtil {
         String alertValue = alertProperty.get();
 
         if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.WARN.toString())) {
+            org.apache.log4j.Level.WARN.toString()))
+        {
             LOGGER.warn(alertMsg);
         } else if (alertValue.equalsIgnoreCase(
-                       org.apache.log4j.Level.ERROR.toString())) {
+            org.apache.log4j.Level.ERROR.toString()))
+        {
             LOGGER.error(alertMsg);
             throw MondrianResource.instance().NativeEvaluationUnsupported.ex(
                 functionName);
@@ -297,10 +299,12 @@ public class RolapUtil {
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
                     Class.forName(jdbcDriver);
-                    LOGGER.info("Mondrian: JDBC driver "
+                    LOGGER.info(
+                        "Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
-                    LOGGER.warn("Mondrian: Warning: JDBC driver "
+                    LOGGER.warn(
+                        "Mondrian: Warning: JDBC driver "
                         + jdbcDriver + " not found");
                 }
             }
@@ -314,7 +318,8 @@ public class RolapUtil {
      * accurate.
      */
     public static ExpCompiler createDependencyTestingCompiler(
-            ExpCompiler compiler) {
+        ExpCompiler compiler)
+    {
         return new RolapDependencyTestingEvaluator.DteCompiler(compiler);
     }
 
@@ -353,9 +358,11 @@ public class RolapUtil {
         for (Member member : members) {
             int rc;
             if (searchName.quoting == Id.Quoting.KEY
-                    && member instanceof RolapMember) {
-                if (((RolapMember) member).getKey().toString()
-                        .equals(searchName.name)) {
+                && member instanceof RolapMember)
+            {
+                if (((RolapMember) member).getKey().toString().equals(
+                    searchName.name))
+                {
                     return member;
                 }
             }
@@ -375,15 +382,19 @@ public class RolapUtil {
                 return member;
             }
             if (matchType == MatchType.BEFORE) {
-                if (rc < 0 &&
-                    (bestMatch == null ||
-                        FunUtil.compareSiblingMembers(member, bestMatch) > 0)) {
+                if (rc < 0
+                    && (bestMatch == null
+                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        > 0))
+                {
                     bestMatch = member;
                 }
             } else if (matchType == MatchType.AFTER) {
-                if (rc > 0 &&
-                    (bestMatch == null ||
-                        FunUtil.compareSiblingMembers(member, bestMatch) < 0)) {
+                if (rc > 0
+                    && (bestMatch == null
+                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        < 0))
+                {
                     bestMatch = member;
                 }
             }

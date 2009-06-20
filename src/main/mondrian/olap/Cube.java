@@ -110,7 +110,8 @@ public interface Cube extends OlapElement {
     /**
      * Finds out non joining dimensions for this cube.
      *
-     * @param otherDims Set of dimensions to be tested for existance in this cube
+     * @param otherDims Set of dimensions to be tested for existence
+     *     in this cube
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
     Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims);

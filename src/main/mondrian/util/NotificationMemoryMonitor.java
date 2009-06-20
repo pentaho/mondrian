@@ -54,8 +54,9 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             // I don't know whether this approach is better, or whether
             // we should rather check for the pool name "Tenured Gen"?
-            if (pool.getType() == MemoryType.HEAP &&
-                pool.isUsageThresholdSupported()) {
+            if (pool.getType() == MemoryType.HEAP
+                && pool.isUsageThresholdSupported())
+            {
                 return pool;
             }
         }

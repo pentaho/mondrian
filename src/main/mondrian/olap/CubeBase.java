@@ -122,14 +122,15 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
         // Look for hierarchies named '[dimension.hierarchy]'.
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && s.name.contains(".")) {
+            && s.name.contains("."))
+        {
             for (Dimension dimension : dimensions) {
                 if (!s.name.startsWith(dimension.getName())) {
                     // Rough check to save time.
                     continue;
                 }
-                for (Hierarchy hierarchy :
-                    schemaReader.getDimensionHierarchies(dimension))
+                for (Hierarchy hierarchy
+                    : schemaReader.getDimensionHierarchies(dimension))
                 {
                     if (Util.equalName(
                         s.name,
@@ -165,8 +166,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     public Dimension getTimeDimension() {
         for (Dimension dimension : dimensions) {
-            if (dimension.getDimensionType() ==
-                DimensionType.TimeDimension) {
+            if (dimension.getDimensionType()
+                == DimensionType.TimeDimension)
+            {
                 return dimension;
             }
         }

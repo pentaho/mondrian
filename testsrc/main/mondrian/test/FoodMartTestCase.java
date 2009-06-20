@@ -218,8 +218,8 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected boolean isGroupingSetsSupported() {
-        return MondrianProperties.instance().EnableGroupingSets.get() &&
-                getTestContext().getDialect().supportsGroupingSets();
+        return MondrianProperties.instance().EnableGroupingSets.get()
+            && getTestContext().getDialect().supportsGroupingSets();
     }
 
     protected boolean isDefaultNullMemberRepresentation() {
@@ -330,11 +330,11 @@ public class FoodMartTestCase extends TestCase {
     {
         Member maleMember =
             member(
-                Id.Segment.toList("Gender","All Gender","M"),
+                Id.Segment.toList("Gender", "All Gender", "M"),
                 salesCubeSchemaReader);
         Member femaleMember =
             member(
-                Id.Segment.toList("Gender","All Gender","F"),
+                Id.Segment.toList("Gender", "All Gender", "F"),
                 salesCubeSchemaReader);
         Member [] members;
         if (includeAllMember) {
@@ -455,8 +455,11 @@ class TestCaseForker {
     ChooseRunnable chooseRunnable;
 
     public TestCaseForker(
-            BasicQueryTest testCase, long timeoutMs, int threadCount,
-            ChooseRunnable chooseRunnable) {
+        BasicQueryTest testCase,
+        long timeoutMs,
+        int threadCount,
+        ChooseRunnable chooseRunnable)
+    {
         this.testCase = testCase;
         this.timeoutMs = timeoutMs;
         this.threads = new Thread[threadCount];
@@ -464,10 +467,10 @@ class TestCaseForker {
     }
 
     public void run() {
-        ThreadGroup threadGroup = null;//new ThreadGroup("TestCaseForker thread group");
+        ThreadGroup threadGroup = null;
         for (int i = 0; i < threads.length; i++) {
             final int threadIndex = i;
-            this.threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
+            threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
                 public void run() {
                     try {
                         chooseRunnable.run(threadIndex);

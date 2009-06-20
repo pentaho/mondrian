@@ -184,7 +184,8 @@ public abstract class RolapSchemaReader
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         if (memberReader instanceof
-            RolapCubeHierarchy.RolapCubeHierarchyMemberReader) {
+            RolapCubeHierarchy.RolapCubeHierarchyMemberReader)
+        {
             List list =
                 ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)
                  memberReader)
@@ -227,7 +228,8 @@ public abstract class RolapSchemaReader
         final Hierarchy hierarchy = level.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         if (memberReader instanceof
-            RolapCubeHierarchy.RolapCubeHierarchyMemberReader) {
+            RolapCubeHierarchy.RolapCubeHierarchyMemberReader)
+        {
             final MemberCacheHelper cache =
                 ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader)
                     memberReader).getRolapCubeMemberCacheHelper();
@@ -522,8 +524,8 @@ public abstract class RolapSchemaReader
             // This is a regular level. It has children iff there is a lower
             // level.
             final Level childLevel = level.getChildLevel();
-            return (childLevel != null) &&
-                (role.getAccess(childLevel) != Access.NONE);
+            return (childLevel != null)
+                && (role.getAccess(childLevel) != Access.NONE);
         }
     }
 
@@ -631,8 +633,9 @@ public abstract class RolapSchemaReader
                 new StringType());
             this.system = system;
             this.propertyDefinition =
-                system ? null :
-                    MondrianProperties.instance().getPropertyDefinition(name);
+                system
+                ? null
+                : MondrianProperties.instance().getPropertyDefinition(name);
         }
 
         public Scope getScope() {

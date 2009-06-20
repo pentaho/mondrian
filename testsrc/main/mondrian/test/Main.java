@@ -328,9 +328,9 @@ public class Main extends TestSuite {
      */
     private static boolean isRunOnce() {
         final MondrianProperties properties = MondrianProperties.instance();
-        return !properties.Warmup.get() &&
-                properties.VUsers.get() == 1 &&
-                properties.Iterations.get() == 1;
+        return !properties.Warmup.get()
+            && properties.VUsers.get() == 1
+            && properties.Iterations.get() == 1;
     }
 
     /**
@@ -404,7 +404,8 @@ public class Main extends TestSuite {
     }
 
     private static void printTestInfo(
-        TestSuite suite, String testClassName, int startCount, int endCount) {
+        TestSuite suite, String testClassName, int startCount, int endCount)
+    {
         String testInfo = testSuiteInfo.get(suite);
         String newTestInfo =
             "[" + startCount + " - " + endCount + "] : " + testClassName + "\n";

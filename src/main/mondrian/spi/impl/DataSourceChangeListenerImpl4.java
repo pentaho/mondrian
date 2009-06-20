@@ -52,7 +52,7 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
 
     /** Creates a new instance of DataSourceChangeListenerImpl2 */
     public DataSourceChangeListenerImpl4() {
-        this(0,0);
+        this(0, 0);
     }
 
     public DataSourceChangeListenerImpl4(

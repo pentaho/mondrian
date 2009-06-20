@@ -97,12 +97,13 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         // dependent on everything),
         // or if the ratio of fake evals to real evals is too high (which
         // would make us too slow).
-        if (dteRoot.disabled ||
-                dteRoot.faking ||
-                isNonEmpty() ||
-                (double) dteRoot.fakeCallCount >
-                (double) dteRoot.callCount * dteRoot.random.nextDouble() *
-                2 * dteRoot.expDeps) {
+        if (dteRoot.disabled
+            || dteRoot.faking
+            || isNonEmpty()
+            || (double) dteRoot.fakeCallCount
+            > (double) dteRoot.callCount * dteRoot.random.nextDouble()
+            * 2 * dteRoot.expDeps)
+        {
             return result;
         }
         if (independentDimensions.length == 0) {
@@ -114,16 +115,16 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         final int i = dteRoot.random.nextInt(independentDimensions.length);
         final Member saveMember = getContext(independentDimensions[i]);
         final Member otherMember =
-                dteRoot.chooseOtherMember(
-                        saveMember, getQuery().getSchemaReader(false));
+            dteRoot.chooseOtherMember(
+                saveMember, getQuery().getSchemaReader(false));
         setContext(otherMember);
         final Object otherResult = calc.evaluate(this);
         if (false) {
             System.out.println(
-                    "original=" + saveMember.getUniqueName() +
-                    ", member=" + otherMember.getUniqueName() +
-                    ", originalResult=" + result + "" +
-                    ", result=" + otherResult);
+                "original=" + saveMember.getUniqueName()
+                + ", member=" + otherMember.getUniqueName()
+                + ", originalResult=" + result
+                + ", result=" + otherResult);
         }
         if (!equals(otherResult, result)) {
             final Member[] members = getMembers();
@@ -135,12 +136,12 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                 buf.append(members[j].getUniqueName());
             }
             throw Util.newInternal(
-                    "Expression '" + mdxString +
-                    "' claims to be independent of dimension " +
-                    saveMember.getDimension() + " but is not; context is {" +
-                    buf.toString() + "}; First result: " +
-                    toString(result) + ", Second result: " +
-                    toString(otherResult));
+                "Expression '" + mdxString
+                + "' claims to be independent of dimension "
+                + saveMember.getDimension() + " but is not; context is {"
+                + buf.toString() + "}; First result: "
+                + toString(result) + ", Second result: "
+                + toString(otherResult));
         }
         // Restore context.
         setContext(saveMember);
@@ -175,8 +176,8 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             return false;
         }
         if (o1 instanceof List) {
-            return o2 instanceof List &&
-                equals(
+            return o2 instanceof List
+                && equals(
                     ((List) o1).toArray(),
                     ((List) o2).toArray());
         }
@@ -258,7 +259,9 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          * @return other member of same hierarchy
          */
         private Member chooseOtherMember(
-                final Member save, SchemaReader schemaReader) {
+            final Member save,
+            SchemaReader schemaReader)
+        {
             final Hierarchy hierarchy = save.getHierarchy();
             int attempt = 0;
             while (true) {
@@ -269,7 +272,8 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                 for (int i = 0; i < levelDepth; i++) {
                     List<Member> members;
                     if (i == 0) {
-                        members = schemaReader.getLevelMembers(levels[i], false);
+                        members =
+                            schemaReader.getLevelMembers(levels[i], false);
                     } else {
                         members = schemaReader.getMemberChildren(member);
                     }

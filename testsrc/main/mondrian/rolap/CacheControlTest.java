@@ -461,7 +461,8 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     private CacheControl.CellRegion createCellRegion(
         TestContext testContext,
-        CacheControl cacheControl) {
+        CacheControl cacheControl)
+    {
         // Flush a region of the cache.
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);

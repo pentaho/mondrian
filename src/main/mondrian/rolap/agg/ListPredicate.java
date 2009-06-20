@@ -61,8 +61,9 @@ public abstract class ListPredicate implements StarPredicate {
                     columnBitKey.or(predicate.getConstrainedColumnBitKey());
             }
             children.add(predicate);
-            for (RolapStar.Column column :
-                predicate.getConstrainedColumnList()) {
+            for (RolapStar.Column column
+                : predicate.getConstrainedColumnList())
+            {
                 if (!columns.contains(column)) {
                     columns.add(column);
                 }
@@ -100,14 +101,15 @@ public abstract class ListPredicate implements StarPredicate {
 
     public boolean equalConstraint(StarPredicate that) {
         boolean isEqual =
-            that instanceof ListPredicate &&
-            getConstrainedColumnBitKey().equals(
+            that instanceof ListPredicate
+            && getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
 
         if (isEqual) {
             ListPredicate thatPred = (ListPredicate) that;
-            if (getOp() != thatPred.getOp() ||
-                getChildren().size() != thatPred.getChildren().size()) {
+            if (getOp() != thatPred.getOp()
+                || getChildren().size() != thatPred.getChildren().size())
+            {
                 isEqual = false;
             }
 

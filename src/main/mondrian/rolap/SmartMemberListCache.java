@@ -4,6 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,14 +17,16 @@ import mondrian.rolap.sql.SqlConstraint;
 /**
  * Uses a {@link mondrian.rolap.cache.SmartCache} to store lists of members,
  * where the key depends on a {@link mondrian.rolap.sql.SqlConstraint}.
- * <p>
- * Example 1
+ *
+ * <p>Example 1:
+ *
  * <pre>
  *   select ...
  *   [Customer].[Name].members on rows
  *   ...
  * </pre>
- * Example 2
+ *
+ * <p>Example 2:
  * <pre>
  *   select ...
  *   NON EMPTY [Customer].[Name].members on rows
@@ -31,11 +34,12 @@ import mondrian.rolap.sql.SqlConstraint;
  *   WHERE ([Store#14], [Product].[Product#1])
  * </pre>
  *
- * The first set, <em>all</em> customers are computed, in the second only those, who
- * have bought Product#1 in Store#14. We want to put both results into the cache. Then the
- * key for the cache entry is the Level that the members belong to <em>plus</em> the
- * costraint that restricted the amount of members fetched. For Level.Members the key
- * consists of the Level and the cacheKey of the {@link mondrian.rolap.sql.SqlConstraint}
+ * <p>The first set, <em>all</em> customers are computed, in the second only
+ * those, who have bought Product#1 in Store#14. We want to put both results
+ * into the cache. Then the key for the cache entry is the Level that the
+ * members belong to <em>plus</em> the costraint that restricted the amount of
+ * members fetched. For Level.Members the key consists of the Level and the
+ * cacheKey of the {@link mondrian.rolap.sql.SqlConstraint}.
  *
  * @see mondrian.rolap.sql.SqlConstraint#getCacheKey
  *
@@ -100,7 +104,8 @@ public class SmartMemberListCache <K, V> {
     }
 
     public V get(K key, SqlConstraint constraint) {
-        Key2<K, Object> key2 = new Key2<K, Object>(key, constraint.getCacheKey());
+        Key2<K, Object> key2 =
+            new Key2<K, Object>(key, constraint.getCacheKey());
         return cache.get(key2);
     }
 

@@ -60,7 +60,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         public void addConstraint(
             SqlQuery sqlQuery,
             RolapCube baseCube,
-            AggStar aggStar) {
+            AggStar aggStar)
+        {
             if (orderByExpr != null) {
                 RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
                 String orderBySql = sql.generateTopCountOrderBy(orderByExpr);

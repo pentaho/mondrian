@@ -68,7 +68,8 @@ class GenerateFunDef extends FunDefBase {
         final IterCalc iterCalc = compiler.compileIter(call.getArg(0));
         final boolean tupleIn = ((SetType) iterCalc.getType()).getArity() != 1;
         if (call.getArg(1).getType() instanceof StringType) {
-            final StringCalc stringCalc = compiler.compileString(call.getArg(1));
+            final StringCalc stringCalc =
+                compiler.compileString(call.getArg(1));
             final StringCalc delimCalc;
             if (call.getArgCount() == 3) {
                 delimCalc = compiler.compileString(call.getArg(2));

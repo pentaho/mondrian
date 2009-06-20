@@ -439,8 +439,10 @@ public abstract class ObjectFactory<V> {
                 return constructor.newInstance(parameterValues);
             }
         } catch (Exception exc) {
-            throw new CreationException("Error creating object of type \"" +
-                        this.interfaceClass.getName() + "\"" , exc);
+            throw new CreationException(
+                "Error creating object of type \""
+                + this.interfaceClass.getName() + "\"",
+                exc);
         }
     }
 

@@ -101,10 +101,12 @@ public interface Member extends OlapElement, Comparable {
     boolean isCalculated();
 
     /**
-     * Returns whether this member should be evaluated within the Evaluator, normally
-     * isCalculated() and isEvaluated() should return the same value, but in situations
-     * where mondrian would like to treat the two concepts separately such in role based
-     * security, these values may differ.
+     * Returns whether this member should be evaluated within the Evaluator.
+     *
+     * <p>Normally {@link #isCalculated} and {@link #isEvaluated} should return
+     * the same value, but in situations where mondrian would like to treat the
+     * two concepts separately such in role based security, these values may
+     * differ.
      *
      * @return true if evaluated
      */
@@ -136,7 +138,8 @@ public interface Member extends OlapElement, Comparable {
     Object getPropertyValue(String propertyName, boolean matchCase);
 
     /**
-     * Returns the formatted value of the property named <code>propertyName</code>.
+     * Returns the formatted value of the property named
+     * <code>propertyName</code>.
      */
     String getPropertyFormattedValue(String propertyName);
 

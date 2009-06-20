@@ -77,7 +77,7 @@ public class MdxQueryServlet extends HttpServlet {
         String queryName = request.getParameter("query");
         request.setAttribute("query", queryName);
         if (queryName != null) {
-            processTransform(request,response);
+            processTransform(request, response);
             return;
         }
         String queryString = request.getParameter("queryString");
@@ -164,7 +164,7 @@ public class MdxQueryServlet extends HttpServlet {
             } else {
                 html.append("<tr>");
                 for (int i = 0; i < columns.size(); i++) {
-                    showCell(html,result.getCell(new int[]{i}));
+                    showCell(html, result.getCell(new int[] {i}));
                 }
                 html.append("</tr>");
             }

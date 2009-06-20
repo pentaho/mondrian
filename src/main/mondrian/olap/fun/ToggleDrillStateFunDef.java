@@ -47,25 +47,32 @@ class ToggleDrillStateFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         if (call.getArgCount() > 2) {
-            throw MondrianResource.instance().ToggleDrillStateRecursiveNotSupported.ex();
+            throw MondrianResource.instance()
+                .ToggleDrillStateRecursiveNotSupported.ex();
         }
         final ListCalc listCalc0 =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         final ListCalc listCalc1 =
-                compiler.compileList(call.getArg(1));
+            compiler.compileList(call.getArg(1));
         if (((SetType) call.getType()).getArity() == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
+            {
                 public List evaluateList(Evaluator evaluator) {
-                    final List<Member> list0 = listCalc0.evaluateList(evaluator);
-                    final List<Member> list1 = listCalc1.evaluateList(evaluator);
+                    final List<Member> list0 =
+                        listCalc0.evaluateList(evaluator);
+                    final List<Member> list1 =
+                        listCalc1.evaluateList(evaluator);
                     return toggleDrillStateMembers(evaluator, list0, list1);
                 }
             };
         } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
+            {
                 public List evaluateList(Evaluator evaluator) {
-                    final List<Member[]> list0 = listCalc0.evaluateList(evaluator);
-                    final List<Member> list1 = listCalc1.evaluateList(evaluator);
+                    final List<Member[]> list0 =
+                        listCalc0.evaluateList(evaluator);
+                    final List<Member> list1 =
+                        listCalc1.evaluateList(evaluator);
                     return toggleDrillStateTuples(evaluator, list0, list1);
                 }
             };
@@ -172,7 +179,8 @@ class ToggleDrillStateFunDef extends FunDefBase {
                     }
                 } while (i < n);
             } else {
-                List<Member> children = evaluator.getSchemaReader().getMemberChildren(m);
+                List<Member> children =
+                    evaluator.getSchemaReader().getMemberChildren(m);
                 for (Member child : children) {
                     Member[] members = o.clone();
                     members[k] = child;

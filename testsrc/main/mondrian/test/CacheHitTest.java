@@ -66,7 +66,7 @@ public class CacheHitTest extends FoodMartTestCase {
         suite.addTest(QueryAllTest.suite());
 
         System.out.println("== " + this.getName() + " ==");
-        runTestSuiteInOrder(suite,50);
+        runTestSuiteInOrder(suite, 50);
         clearCache("Sales");
     }
 
@@ -104,7 +104,7 @@ public class CacheHitTest extends FoodMartTestCase {
         suite.addTest(QueryAllVCTest.suite());
 
         System.out.println("== " + this.getName() + " ==");
-        runTestSuiteInOrder(suite,50);
+        runTestSuiteInOrder(suite, 50);
         clearCache("Warehouse and Sales");
     }
 

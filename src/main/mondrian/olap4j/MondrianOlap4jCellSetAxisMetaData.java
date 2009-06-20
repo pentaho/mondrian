@@ -69,16 +69,19 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
             // each dimension not already in the slicer or in another axes.
             Set<Dimension> dimensionSet = new HashSet<Dimension>();
             for (CellSetAxisMetaData cellSetAxisMetaData
-                : cellSetMetaData.getAxesMetaData()) {
+                : cellSetMetaData.getAxesMetaData())
+            {
                 for (Hierarchy hierarchy
-                    : cellSetAxisMetaData.getHierarchies()) {
+                    : cellSetAxisMetaData.getHierarchies())
+                {
                     dimensionSet.add(hierarchy.getDimension());
                 }
             }
             List<Hierarchy> hierarchyList =
                 new ArrayList<Hierarchy>();
             for (Dimension dimension
-                : cellSetMetaData.getCube().getDimensions()) {
+                : cellSetMetaData.getCube().getDimensions())
+            {
                 if (dimensionSet.add(dimension)) {
                     hierarchyList.add(dimension.getDefaultHierarchy());
                 }

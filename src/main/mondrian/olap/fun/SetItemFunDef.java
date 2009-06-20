@@ -33,18 +33,21 @@ import java.util.ArrayList;
  * @since Mar 23, 2006
  */
 class SetItemFunDef extends FunDefBase {
-    static final Resolver intResolver = new ReflectiveMultiResolver(
+    static final Resolver intResolver =
+        new ReflectiveMultiResolver(
             "Item",
             "<Set>.Item(<Index>)",
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the zero-based position of the tuple in the set in <Index>.",
             new String[] {"mmxn"},
             SetItemFunDef.class);
 
-    static final Resolver stringResolver = new ResolverBase(
+    static final Resolver stringResolver =
+        new ResolverBase(
             "Item",
             "<Set>.Item(<String> [, ...])",
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the member name (or names) in <String>.",
-            Syntax.Method) {
+            Syntax.Method)
+    {
         public FunDef resolve(
             Exp[] args,
             Validator validator,
@@ -68,12 +71,14 @@ class SetItemFunDef extends FunDefBase {
             // All args must be strings.
             for (int i = 1; i < args.length; i++) {
                 if (!validator.canConvert(
-                        args[i], Category.String, conversions)) {
+                    args[i], Category.String, conversions))
+                {
                     return null;
                 }
             }
             if (args.length - 1 != arity) {
-                throw Util.newError("Argument count does not match set's cardinality " + arity);
+                throw Util.newError(
+                    "Argument count does not match set's cardinality " + arity);
             }
             final int category = arity == 1 ? Category.Member : Category.Tuple;
             FunDef dummy = createDummyFunDef(this, category, args);

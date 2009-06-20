@@ -85,7 +85,8 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, true, member98Q2, false)</code>
+     * <code>createMemberRegion(true, member97Q3, true, member98Q2,
+     * false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, inclusive:<br/>
      * [Time].[1997].[Q3],<br/>
@@ -96,7 +97,8 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, false, member98Q2, false)</code>
+     * <code>createMemberRegion(true, member97Q3, false, member98Q2,
+     * false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, exclusive:<br/>
      * [Time].[1997].[Q4],<br/>
@@ -105,7 +107,8 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, false, member98Q2, false)</code>
+     * <code>createMemberRegion(true, member97Q3, false, member98Q2,
+     * false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, including their descendants, and
      * including the lower bound but not the upper bound:<br/>
@@ -356,7 +359,7 @@ public interface CacheControl {
      */
     MemberEditCommand createSetPropertyCommand(
         MemberSet set,
-        Map<String,Object> propertyValues)
+        Map<String, Object> propertyValues)
         throws IllegalArgumentException;
 
     // other

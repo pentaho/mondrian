@@ -61,8 +61,8 @@ public class QueryAxis extends QueryPart {
     {
         assert dimensionProperties != null;
         assert axisOrdinal != null;
-        this.nonEmpty = nonEmpty ||
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
+        this.nonEmpty = nonEmpty
+            || MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
         this.exp = set;
         this.axisOrdinal = axisOrdinal;
         this.subtotalVisibility = subtotalVisibility;
@@ -127,9 +127,9 @@ public class QueryAxis extends QueryPart {
 
     private static Exp normalizeSlicerExpression(Exp exp) {
         Exp slicer = exp;
-        if (slicer instanceof LevelExpr ||
-            slicer instanceof HierarchyExpr ||
-            slicer instanceof DimensionExpr)
+        if (slicer instanceof LevelExpr
+            || slicer instanceof HierarchyExpr
+            || slicer instanceof DimensionExpr)
         {
             slicer = new UnresolvedFunCall(
                 "DefaultMember", Syntax.Property, new Exp[] {
@@ -137,17 +137,19 @@ public class QueryAxis extends QueryPart {
         }
         if (slicer == null) {
             ;
-        } else if (slicer instanceof FunCall &&
-                   ((FunCall) slicer).getSyntax() == Syntax.Parentheses) {
-            slicer = new UnresolvedFunCall(
-                    "{}", Syntax.Braces, new Exp[] {
-                        slicer});
+        } else if (slicer instanceof FunCall
+            && ((FunCall) slicer).getSyntax() == Syntax.Parentheses)
+        {
+            slicer =
+                new UnresolvedFunCall(
+                    "{}", Syntax.Braces, new Exp[] {slicer});
         } else {
-            slicer = new UnresolvedFunCall(
+            slicer =
+                new UnresolvedFunCall(
                     "{}", Syntax.Braces, new Exp[] {
                         new UnresolvedFunCall(
-                                "()", Syntax.Parentheses, new Exp[] {
-                                    slicer})});
+                            "()", Syntax.Parentheses, new Exp[] {
+                                slicer})});
         }
 
         return slicer;
@@ -216,10 +218,10 @@ public class QueryAxis extends QueryPart {
             // If expression is a member or a tuple, implicitly convert it
             // into a set. Dimensions and hierarchies can be converted to
             // members, thence to sets.
-            if (type instanceof MemberType ||
-                type instanceof TupleType ||
-                type instanceof DimensionType ||
-                type instanceof HierarchyType)
+            if (type instanceof MemberType
+                || type instanceof TupleType
+                || type instanceof DimensionType
+                || type instanceof HierarchyType)
             {
                 exp =
                     new UnresolvedFunCall(
@@ -262,16 +264,19 @@ public class QueryAxis extends QueryPart {
 
     public void addLevel(Level level) {
         Util.assertTrue(level != null, "addLevel needs level");
-        exp = new UnresolvedFunCall("Crossjoin", Syntax.Function, new Exp[]{
-            exp,
-            new UnresolvedFunCall("Members", Syntax.Property, new Exp[]{
-                new LevelExpr(level)})});
+        exp = new UnresolvedFunCall(
+            "Crossjoin", Syntax.Function, new Exp[] {
+                exp,
+                new UnresolvedFunCall(
+                    "Members", Syntax.Property, new Exp[] {
+                        new LevelExpr(level)})});
     }
 
     void setSubtotalVisibility(boolean bShowSubtotals) {
-        subtotalVisibility = bShowSubtotals ?
-            SubtotalVisibility.Show :
-            SubtotalVisibility.Hide;
+        subtotalVisibility =
+            bShowSubtotals
+            ? SubtotalVisibility.Show
+            : SubtotalVisibility.Hide;
     }
 
     public SubtotalVisibility getSubtotalVisibility() {

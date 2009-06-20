@@ -2405,8 +2405,8 @@ public class SchemaTest extends FoodMartTestCase {
         // until bug MONDRIAN-495, "Table filter concept does not support
         // dialects." is fixed, this test case only works on MySQL
         if (!Bug.BugMondrian495Fixed
-            && TestContext.instance().getDialect().getDatabaseProduct() !=
-               Dialect.DatabaseProduct.MYSQL)
+            && TestContext.instance().getDialect().getDatabaseProduct()
+            != Dialect.DatabaseProduct.MYSQL)
         {
             return;
         }

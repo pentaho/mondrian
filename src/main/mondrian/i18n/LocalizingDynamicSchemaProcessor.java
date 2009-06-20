@@ -121,9 +121,12 @@ public class LocalizingDynamicSchemaProcessor
                     match.appendReplacement(intlSchema, intlProperty);
                 }
             } catch (MissingResourceException e) {
-                LOGGER.error("Missing resource for key [" + key + "]",e);
+                LOGGER.error("Missing resource for key [" + key + "]", e);
             } catch (NullPointerException e) {
-                LOGGER.error("missing resource key at substring(" + start + "," + end + ")", e);
+                LOGGER.error(
+                    "missing resource key at substring(" + start + "," + end
+                    + ")",
+                    e);
             }
         }
         match.appendTail(intlSchema);

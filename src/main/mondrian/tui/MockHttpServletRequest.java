@@ -60,19 +60,25 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
         MockRequestDispatcher() {
         }
+
         public void setPath(String path) {
             this.path = path;
         }
+
         public String getPath() {
             return this.path;
         }
+
         public void forward(ServletRequest request, ServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException
+        {
             this.forwardedRequest = request;
             this.forwardedResponse = response;
         }
+
         public void include(ServletRequest request, ServletResponse response)
-                throws ServletException, IOException {
+            throws ServletException, IOException
+        {
             this.includedRequest = request;
             this.includedResponse = response;
         }
@@ -206,7 +212,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *
      */
     public void setCharacterEncoding(String charEncoding)
-            throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException
+    {
         this.charEncoding = charEncoding;
     }
 

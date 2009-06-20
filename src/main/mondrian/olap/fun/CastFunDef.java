@@ -58,9 +58,9 @@ public class CastFunDef extends FunDefBase {
         final Type targetType)
     {
         return Util.newInternal(
-            "cannot convert value '" + o +
-            "' to targetType '" + targetType +
-            "'");
+            "cannot convert value '" + o
+            + "' to targetType '" + targetType
+            + "'");
     }
 
     public static int toInt(
@@ -120,7 +120,8 @@ public class CastFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-            Exp[] args, Validator validator, List<Conversion> conversions) {
+            Exp[] args, Validator validator, List<Conversion> conversions)
+        {
             if (args.length != 2) {
                 return null;
             }

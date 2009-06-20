@@ -26,8 +26,8 @@ import java.util.List;
  * Definition of the <code>Filter</code> MDX function.
  *
  * <p>Syntax:
- * <blockquote><code>Filter(&lt;Set&gt;, &lt;Search Condition&gt;)</code></blockquote>
- *
+ * <blockquote><code>Filter(&lt;Set&gt;, &lt;Search
+ * Condition&gt;)</code></blockquote>
  *
  * @author jhyde
  * @version $Id$
@@ -48,10 +48,12 @@ class FilterFunDef extends FunDefBase {
         // it makes NamedSet.CurrentOrdinal work.
         final List<ResultStyle> styles = compiler.getAcceptableResultStyles();
         if (styles.contains(ResultStyle.ITERABLE)
-            || styles.contains(ResultStyle.ANY)) {
+            || styles.contains(ResultStyle.ANY))
+        {
             return compileCallIterable(call, compiler);
         } else if (styles.contains(ResultStyle.LIST)
-            || styles.contains(ResultStyle.MUTABLE_LIST)) {
+            || styles.contains(ResultStyle.MUTABLE_LIST))
+        {
             return compileCallList(call, compiler);
         } else {
             throw ResultStyleException.generate(

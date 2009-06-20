@@ -103,9 +103,10 @@ public class MondrianResultPrinter implements TestListener {
         } else {
             getWriter().println();
             getWriter().println("FAILURES!!!");
-            getWriter().println("Tests run: " + result.runCount() +
-                         ",  Failures: " + result.failureCount() +
-                         ",  Errors: " + result.errorCount());
+            getWriter().println(
+                "Tests run: " + result.runCount()
+                + ",  Failures: " + result.failureCount()
+                + ",  Errors: " + result.errorCount());
         }
         getWriter().println();
         getWriter().println("Time: " + elapsedTimeAsString(runTime));

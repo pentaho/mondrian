@@ -71,7 +71,8 @@ public class FunInfo implements Comparable<FunInfo> {
         this.parameterTypes = new int[signatures.length][];
         for (int i = 0; i < signatures.length; i++) {
             returnTypes[i] = FunUtil.decodeReturnCategory(signatures[i]);
-            parameterTypes[i] = FunUtil.decodeParameterCategories(signatures[i]);
+            parameterTypes[i] =
+                FunUtil.decodeParameterCategories(signatures[i]);
         }
         this.sigs = makeSigs(syntax, name, returnTypes, parameterTypes);
     }
@@ -85,8 +86,10 @@ public class FunInfo implements Comparable<FunInfo> {
         this.returnTypes = null;
         this.parameterTypes = null;
         final String signature = resolver.getSignature();
-        this.sigs = signature == null ? new String[0] :
-                new String[] {signature};
+        this.sigs =
+            signature == null
+            ? new String[0]
+            : new String[] {signature};
     }
 
     FunInfo(

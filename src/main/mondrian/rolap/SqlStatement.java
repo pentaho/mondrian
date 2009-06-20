@@ -144,8 +144,8 @@ public class SqlStatement {
             RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
 
             if (RolapUtil.LOGGER.isDebugEnabled()) {
-                RolapUtil.LOGGER.debug(component + ": executing sql [" +
-                    sql + "]" + status);
+                RolapUtil.LOGGER.debug(
+                    component + ": executing sql [" + sql + "]" + status);
             }
         }
     }
@@ -190,8 +190,8 @@ public class SqlStatement {
         RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
 
         if (RolapUtil.LOGGER.isDebugEnabled()) {
-            RolapUtil.LOGGER.debug(component + ": done executing sql [" +
-                sql + "]" + status);
+            RolapUtil.LOGGER.debug(
+                component + ": done executing sql [" + sql + "]" + status);
         }
     }
 

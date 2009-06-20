@@ -46,8 +46,9 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     private void checkAxis(
-            String s,
-            String expectedName) {
+        String s,
+        String expectedName)
+    {
         Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
         Query query = p.parseInternal(null, q, false, funTable, false, false);
@@ -137,9 +138,9 @@ public class ParserTest extends FoodMartTestCase {
             Exception nested = (Exception) e.getCause();
             String message = nested.getMessage();
             if (message.indexOf(expected) < 0) {
-                fail("Actual result [" + message +
-                    "] did not contain [" + expected +
-                    "]");
+                fail(
+                    "Actual result [" + message
+                    + "] did not contain [" + expected + "]");
             }
         }
     }
@@ -324,8 +325,8 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     /**
-     * Verify that calculated measures made of several * operators can resolve them
-     * correctly.
+     * Verifies that calculated measures made of several '*' operators
+     * can resolve them correctly.
      */
     public void testMultiplication() {
         Parser p = new Parser();
@@ -334,7 +335,8 @@ public class ParserTest extends FoodMartTestCase {
 
         try {
             final Query query =
-                p.parseInternal(getConnection(), mdx, false, funTable, false, false);
+                p.parseInternal(
+                    getConnection(), mdx, false, funTable, false, false);
             query.resolve();
         } catch (Throwable e) {
             fail(e.getMessage());
@@ -443,7 +445,8 @@ public class ParserTest extends FoodMartTestCase {
      */
     private void assertParseQuery(String mdx, final String expected) {
         Parser p = new TestParser();
-        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
+        final Query query =
+            p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
@@ -459,7 +462,8 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(String expr, final String expected) {
         TestParser p = new TestParser();
         final String mdx = wrapExpr(expr);
-        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
+        final Query query =
+            p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
@@ -484,11 +488,12 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         protected Query makeQuery(
-                Formula[] formulae,
-                QueryAxis[] axes,
-                String cube,
-                Exp slicer,
-                QueryPart[] cellProps) {
+            Formula[] formulae,
+            QueryAxis[] axes,
+            String cube,
+            Exp slicer,
+            QueryPart[] cellProps)
+        {
             setFormulas(formulae);
             setAxes(axes);
             setCube(cube);

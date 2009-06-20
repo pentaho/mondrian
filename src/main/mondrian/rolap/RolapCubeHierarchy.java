@@ -189,7 +189,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 ((MondrianDef.Relation) oldrel).getAlias(),
                 ((MondrianDef.Relation) newrel).getAlias());
         } else if (oldrel instanceof MondrianDef.Join
-                     && newrel instanceof MondrianDef.Join) {
+            && newrel instanceof MondrianDef.Join)
+        {
             MondrianDef.Join oldjoin = (MondrianDef.Join)oldrel;
             MondrianDef.Join newjoin = (MondrianDef.Join)newrel;
             extractNewAliases(oldjoin.left, newjoin.left);
@@ -555,8 +556,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
 
             synchronized (cacheHelper) {
-                for (Map.Entry<RolapMember, List<RolapMember>> entry :
-                    tempMap.entrySet())
+                for (Map.Entry<RolapMember, List<RolapMember>> entry
+                    : tempMap.entrySet())
                 {
                     final RolapMember member = entry.getKey();
                     if (rolapCubeCacheHelper.getChildrenFromCache(
@@ -737,18 +738,21 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 //     specific joins occur
 
                 if (cacheHelper.getChangeListener() != null) {
-                    if (cacheHelper.getChangeListener()
-                            .isHierarchyChanged(getHierarchy())) {
+                    if (cacheHelper.getChangeListener().isHierarchyChanged(
+                        getHierarchy()))
+                    {
                         cacheHelper.flushCache();
                         rolapCubeCacheHelper.flushCache();
 
                         if (rolapHierarchy.getMemberReader()
-                                instanceof SmartMemberReader) {
+                                instanceof SmartMemberReader)
+                        {
                             SmartMemberReader smartMemberReader =
                                 (SmartMemberReader)
                                     rolapHierarchy.getMemberReader();
                             if (smartMemberReader.getMemberCache()
-                                    instanceof MemberCacheHelper) {
+                                    instanceof MemberCacheHelper)
+                            {
                                 MemberCacheHelper helper =
                                     (MemberCacheHelper)
                                         smartMemberReader.getMemberCache();
@@ -1010,18 +1014,18 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public RolapCubeMember lookupCubeMember(
             RolapCubeMember parent,
             RolapMember member,
-            RolapCubeLevel level) {
-                if (member.getKey() == null) {
-                    if (member.isAll()) {
-                        return getAllMember();
-                    }
-
-                    throw new NullPointerException();
+            RolapCubeLevel level)
+        {
+            if (member.getKey() == null) {
+                if (member.isAll()) {
+                    return getAllMember();
                 }
 
-                RolapCubeMember cubeMember = new RolapCubeMember(
-                            parent, member, level, parentDimension.getCube());
-                return cubeMember;
+                throw new NullPointerException();
+            }
+
+            return new RolapCubeMember(
+                parent, member, level, parentDimension.getCube());
         }
 
         public int getMemberCount() {

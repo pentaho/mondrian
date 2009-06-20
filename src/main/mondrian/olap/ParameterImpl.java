@@ -28,7 +28,8 @@ import mondrian.calc.impl.GenericCalc;
  * @since Jul 22, 2006
  */
 public class ParameterImpl
-    implements Parameter, ParameterCompilable {
+    implements Parameter, ParameterCompilable
+{
 
     private final String name;
     private String description;
@@ -76,9 +77,9 @@ public class ParameterImpl
         this.description = description;
         this.type = type;
         assert defaultExp != null;
-        assert type instanceof StringType ||
-            type instanceof NumericType ||
-            type instanceof MemberType;
+        assert type instanceof StringType
+            || type instanceof NumericType
+            || type instanceof MemberType;
     }
 
     public Scope getScope() {
@@ -136,8 +137,8 @@ public class ParameterImpl
             return false;
         }
         ParameterImpl that = (ParameterImpl) other;
-        return that.getName().equals(this.getName()) &&
-            that.defaultExp.equals(this.defaultExp);
+        return that.getName().equals(this.getName())
+            && that.defaultExp.equals(this.defaultExp);
     }
 
     public int hashCode() {
@@ -156,9 +157,9 @@ public class ParameterImpl
     }
 
     public void setType(Type type) {
-        assert type instanceof StringType ||
-            type instanceof NumericType ||
-            type instanceof MemberType;
+        assert type instanceof StringType
+            || type instanceof NumericType
+            || type instanceof MemberType;
         this.type = type;
     }
 

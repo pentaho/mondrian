@@ -981,9 +981,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: [Time].[1997].[Q4]\n"
                 + "Row #1: [Time].[1997].[Q2].[6]\n"
                 + "Row #2: [Time].[#null]\n"
-                +
                 // MSAS returns "" here.
-                "");
+                + "");
         }
     }
 
@@ -4126,8 +4125,9 @@ public class FunctionTest extends FoodMartTestCase {
      * tests that a null passed in returns an empty set in range function
      */
     public void testNullRange() {
-        assertAxisReturns("[Time].[1997].[Q1].[2] : NULL", //[Time].[1997].[Q2].[5]
-                          ""); // Empty Set
+        assertAxisReturns(
+            "[Time].[1997].[Q1].[2] : NULL", //[Time].[1997].[Q2].[5]
+            ""); // Empty Set
     }
 
     /**
@@ -4828,7 +4828,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     private void checkDataResults(
-            Double[][] expected, Result result, final double tolerance) {
+        Double[][] expected,
+        Result result,
+        final double tolerance)
+    {
         int[] coords = new int[2];
 
         for (int row = 0; row < expected.length; row++) {
@@ -5253,9 +5256,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void _testParallelPeriodThrowsException() {
-        assertQueryThrows("select {parallelperiod([Time].[Year], 1)} on columns "
-                + "from [Sales] where ([Time].[1998].[Q1].[2])",
-                "This should say something about Time appearing on two different axes (slicer an columns)");
+        assertQueryThrows(
+            "select {parallelperiod([Time].[Year], 1)} on columns "
+            + "from [Sales] where ([Time].[1998].[Q1].[2])",
+            "This should say something about Time appearing on two different axes (slicer an columns)");
     }
 
     public void testParallelPeriodDepends() {
@@ -5308,23 +5312,24 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testParallelPeriodLevel() {
-        assertQueryReturns("with "
-                + "    member [Measures].[Prev Unit Sales] as "
-                + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter]))' "
-                + "select "
-                + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital Status].[M]}) on columns, "
-                + "    {[Time].[1997].[Q3].[8]} on rows "
-                + "from  "
-                + "    [Sales]",
-                           "Axis #0:\n"
-                           + "{}\n"
-                           + "Axis #1:\n"
-                           + "{[Measures].[Unit Sales], [Marital Status].[All Marital Status].[M]}\n"
-                           + "{[Measures].[Prev Unit Sales], [Marital Status].[All Marital Status].[M]}\n"
-                           + "Axis #2:\n"
-                           + "{[Time].[1997].[Q3].[8]}\n"
-                           + "Row #0: 10,957\n"
-                           + "Row #0: 10,280\n");
+        assertQueryReturns(
+            "with "
+            + "    member [Measures].[Prev Unit Sales] as "
+            + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter]))' "
+            + "select "
+            + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital Status].[M]}) on columns, "
+            + "    {[Time].[1997].[Q3].[8]} on rows "
+            + "from  "
+            + "    [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales], [Marital Status].[All Marital Status].[M]}\n"
+            + "{[Measures].[Prev Unit Sales], [Marital Status].[All Marital Status].[M]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "Row #0: 10,957\n"
+            + "Row #0: 10,280\n");
     }
 
     public void testPlus() {
@@ -5366,9 +5371,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 266,773\n"
             + "Row #1: \n"
             + "Row #2: 266,773\n"
-            +
             // with bug 1234759, this was null
-            "");
+            + "");
     }
 
     public void testMinusAssociativity() {
@@ -5457,8 +5461,8 @@ public class FunctionTest extends FoodMartTestCase {
             assertExprReturns("NULL/NULL", "");
             assertExprReturns("1/NULL", "");
         } finally {
-            MondrianProperties.instance().NullDenominatorProducesNull.
-            set(origNullDenominatorProducesNull);
+            MondrianProperties.instance().NullDenominatorProducesNull.set(
+                origNullDenominatorProducesNull);
         }
     }
 

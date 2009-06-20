@@ -77,8 +77,8 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
-                if (segment.axes[j].getPredicate() !=
-                    segments[0].axes[j].getPredicate())
+                if (segment.axes[j].getPredicate()
+                    != segments[0].axes[j].getPredicate())
                 {
                     assert !fail;
                     return false;

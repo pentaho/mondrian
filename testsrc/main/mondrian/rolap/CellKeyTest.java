@@ -318,10 +318,10 @@ public class CellKeyTest extends FoodMartTestCase {
             + "Row #0: 8\n";
 
         /*
-         * Make sure ExpandNonNative is not set. Otherwise, the query is evaluated
-         * natively. For the given data set(which contains NULL members), native
-         * evaluation produces results in a different order from the non-native
-         * evaluation.
+         * Make sure ExpandNonNative is not set. Otherwise, the query is
+         * evaluated natively. For the given data set(which contains NULL
+         * members), native evaluation produces results in a different order
+         * from the non-native evaluation.
          */
         boolean origExpandNonNative =
             MondrianProperties.instance().ExpandNonNative.get();

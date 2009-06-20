@@ -37,8 +37,9 @@ public class GroupingSetsCollector {
     }
 
     public void add(GroupingSet aggInfo) {
-        assert groupingSets.isEmpty() ||
-            groupingSets.get(0).getColumns().length >= aggInfo.getColumns().length;
+        assert groupingSets.isEmpty()
+            || groupingSets.get(0).getColumns().length
+            >= aggInfo.getColumns().length;
         groupingSets.add(aggInfo);
     }
 

@@ -309,8 +309,9 @@ public class CsvLoader {
                 } else if (c == CHEVRON_START) {
                     inChevrons = true;
                 }
-                if (inDoubleQuote || inSingleQuote ||
-                        inParen || inBracket || inBraces || inChevrons) {
+                if (inDoubleQuote || inSingleQuote
+                    || inParen || inBracket || inBraces || inChevrons)
+                {
                     buf.append(c);
                 } else if (c == this.separator) {
                     String data  = buf.toString();

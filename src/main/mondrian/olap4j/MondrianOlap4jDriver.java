@@ -126,7 +126,7 @@ public class MondrianOlap4jDriver implements Driver {
         List<DriverPropertyInfo> list = new ArrayList<DriverPropertyInfo>();
 
         // First, add the contents of info
-        for (Map.Entry<Object,Object> entry : info.entrySet()) {
+        for (Map.Entry<Object, Object> entry : info.entrySet()) {
             list.add(
                 new DriverPropertyInfo(
                     (String) entry.getKey(),

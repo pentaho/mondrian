@@ -91,20 +91,18 @@ public abstract class ConnectionBase implements Connection {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            StringBuilder buf = new StringBuilder(256);
-            buf.append(Util.nl);
-            buf.append(expr);
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                Util.nl
+                + expr);
         }
         try {
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
             return parser.parseExpression(this, expr, debug, funTable);
         } catch (Throwable exception) {
-            throw
-                MondrianResource.instance().FailedToParseQuery.ex(
-                    expr,
-                    exception);
+            throw MondrianResource.instance().FailedToParseQuery.ex(
+                expr,
+                exception);
         }
     }
 
@@ -126,10 +124,9 @@ public abstract class ConnectionBase implements Connection {
 
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            StringBuilder buf = new StringBuilder(256);
-            buf.append(Util.nl);
-            buf.append(query);
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                Util.nl
+                + query);
         }
 
         try {

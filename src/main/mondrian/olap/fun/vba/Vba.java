@@ -166,9 +166,10 @@ public class Vba {
             }
             return v;
         } else {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "number parameter " + number
-                    + " of Int function must be " + "of type number");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "number parameter " + number
+                + " of Int function must be " + "of type number");
         }
     }
 
@@ -180,9 +181,10 @@ public class Vba {
             return Integer.toHexString(((Number) number).intValue())
                     .toUpperCase();
         } else {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "number parameter " + number
-                    + " of Hex function must be " + "of type number");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "number parameter " + number
+                + " of Hex function must be " + "of type number");
         }
     }
 
@@ -198,9 +200,10 @@ public class Vba {
             }
             return v;
         } else {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "number parameter " + number
-                    + " of Int function must be " + "of type number");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "number parameter " + number
+                + " of Int function must be " + "of type number");
         }
     }
 
@@ -213,9 +216,10 @@ public class Vba {
         if (number instanceof Number) {
             return Integer.toOctalString(((Number) number).intValue());
         } else {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "number parameter " + number
-                    + " of Oct function must be " + "of type number");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "number parameter " + number
+                + " of Oct function must be " + "of type number");
         }
     }
 
@@ -245,9 +249,10 @@ public class Vba {
                 return number.toString();
             }
         } else {
-            throw new InvalidArgumentException("Invalid parameter. "
-                    + "number parameter " + number
-                    + " of Str function must be " + "of type number");
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "number parameter " + number
+                + " of Str function must be " + "of type number");
         }
     }
 
@@ -812,10 +817,14 @@ public class Vba {
         } else {
             double r1 = rate + 1;
             double ryr = (due ? r1 : 1) * pmt / rate;
-            double a1 = ((ryr - fv) < 0) ? Math.log(fv - ryr) : Math.log(ryr
-                    - fv);
-            double a2 = ((ryr - fv) < 0) ? Math.log(-pv - ryr) : Math.log(pv
-                    + ryr);
+            double a1 =
+                ((ryr - fv) < 0)
+                ? Math.log(fv - ryr)
+                : Math.log(ryr - fv);
+            double a2 =
+                ((ryr - fv) < 0)
+                ? Math.log(-pv - ryr)
+                : Math.log(pv + ryr);
             double a3 = Math.log(r1);
             return (a1 - a2) / a3;
         }
@@ -884,9 +893,10 @@ public class Vba {
             return -(fv + pv) / nPer;
         } else {
             double r1 = rate + 1;
-            return (fv + pv * Math.pow(r1, nPer)) * rate / ((due
-                ? r1
-                : 1) * (1 - Math.pow(r1, nPer)));
+            return
+                (fv + pv * Math.pow(r1, nPer))
+                * rate
+                / ((due ? r1 : 1) * (1 - Math.pow(r1, nPer)));
         }
     }
 
@@ -1549,8 +1559,9 @@ public class Vba {
     @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
     public static String formatPercent(
-            // todo: impl & test
-            Object expression, int numDigitsAfterDecimal /* default -1 */) {
+        // todo: impl & test
+        Object expression, int numDigitsAfterDecimal /* default -1 */)
+    {
         return formatPercent(expression, numDigitsAfterDecimal, -1);
     }
 
@@ -1615,8 +1626,7 @@ public class Vba {
                 DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix("(");
                 dformat.setNegativeSuffix(
-                        "" + dformat.getDecimalFormatSymbols().getPercent() +
-                        ")");
+                    "" + dformat.getDecimalFormatSymbols().getPercent() +  ")");
             } else {
                 DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix(

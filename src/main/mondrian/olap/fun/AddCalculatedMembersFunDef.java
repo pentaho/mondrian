@@ -73,9 +73,9 @@ class AddCalculatedMembersFunDef extends FunDefBase {
             } else if (dim != member.getDimension()) {
                 throw newEvalException(
                     this,
-                    "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
-                        + dim.toString() + " vs " +
-                        member.getDimension().toString());
+                    "Only members from the same dimension are allowed in the "
+                    + "AddCalculatedMembers set: " + dim.toString()
+                    + " vs " + member.getDimension().toString());
             }
             if (!levelMap.containsKey(member.getLevel())) {
                 levelMap.put(member.getLevel(), null);

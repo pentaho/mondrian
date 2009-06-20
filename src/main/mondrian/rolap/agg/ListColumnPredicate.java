@@ -54,7 +54,9 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * @param list List of child predicates
      */
     public ListColumnPredicate(
-        RolapStar.Column column, List<StarColumnPredicate> list) {
+        RolapStar.Column column,
+        List<StarColumnPredicate> list)
+    {
         super(column);
         this.children = list;
         childrenHashMap = null;
@@ -116,8 +118,8 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
 
     public boolean equalConstraint(StarPredicate that) {
         boolean isEqual =
-            that instanceof ListColumnPredicate &&
-            getConstrainedColumnBitKey().equals(
+            that instanceof ListColumnPredicate
+            && getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
 
         if (isEqual) {
@@ -200,8 +202,8 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             return new Overlap(false, null, 0f);
         } else {
             float selectivity =
-                (float) matchCount /
-                    (float) children.size();
+                (float) matchCount
+                / (float) children.size();
             return new Overlap(true, predicate, selectivity);
         }
     }

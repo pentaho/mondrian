@@ -97,11 +97,12 @@ class ExplicitRecognizer extends Recognizer {
 
                 String aggColumnName = aggColumn.getName();
 
-                for (ExplicitRules.TableDef.Measure measure :
-                    getTableDef().getMeasures())
+                for (ExplicitRules.TableDef.Measure measure
+                    : getTableDef().getMeasures())
                 {
                     // Column name match is case insensitive
-                    if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
+                    if (measure.getColumnName().equalsIgnoreCase(aggColumnName))
+                    {
                         String name = measure.getName();
                         List<Id.Segment> parts = Util.parseIdentifier(name);
                         String nameLast = parts.get(parts.size() - 1).name;
@@ -125,7 +126,8 @@ class ExplicitRecognizer extends Recognizer {
             // foreign key.
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
                      dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                 it.hasNext();) {
+                 it.hasNext();)
+            {
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
                 JdbcSchema.Table.Column factColumn = factUsage.getColumn();
 
@@ -167,9 +169,10 @@ class ExplicitRecognizer extends Recognizer {
      * @param aggColumn
      */
     protected void makeMeasure(
-            final ExplicitRules.TableDef.Measure measure,
-            RolapAggregator factAgg,
-            final JdbcSchema.Table.Column aggColumn) {
+        final ExplicitRules.TableDef.Measure measure,
+        RolapAggregator factAgg,
+        final JdbcSchema.Table.Column aggColumn)
+    {
         RolapStar.Measure rm = measure.getRolapStarMeasure();
 
         JdbcSchema.Table.Column.Usage aggUsage =
@@ -185,16 +188,17 @@ class ExplicitRecognizer extends Recognizer {
     }
 
     /**
-     * This creates a foreign key usage.
+     * Creates a foreign key usage.
      *
-     * <p> First the column name of the fact usage which is a foreign key is used to
-     * search for a foreign key definition in the ExplicitRules.tableDef.
-     * If not found, thats ok, it is just a lost dimension.
-     * If found, look for a column in the aggregate table with that name and
-     * make a foreign key usage.
+     * <p> First the column name of the fact usage which is a foreign key is
+     * used to search for a foreign key definition in the
+     * ExplicitRules.tableDef.  If not found, thats ok, it is just a lost
+     * dimension.  If found, look for a column in the aggregate table with that
+     * name and make a foreign key usage.
      */
     protected int matchForeignKey(
-            final JdbcSchema.Table.Column.Usage factUsage) {
+        final JdbcSchema.Table.Column.Usage factUsage)
+    {
         JdbcSchema.Table.Column factColumn = factUsage.getColumn();
         String aggFK = getTableDef().getAggregateFK(factColumn.getName());
 
@@ -219,7 +223,7 @@ class ExplicitRecognizer extends Recognizer {
     }
 
     /**
-     * This creates a level usage. A level usage is a column that is used in a
+     * Creates a level usage. A level usage is a column that is used in a
      * collapsed dimension aggregate table.
      *
      * <p> First, iterate through the ExplicitRules.TableDef's level
@@ -230,21 +234,25 @@ class ExplicitRecognizer extends Recognizer {
      * was found.
      */
     protected boolean matchLevel(
-            final Hierarchy hierarchy,
-            final HierarchyUsage hierarchyUsage,
-            final RolapLevel rlevel) {
+        final Hierarchy hierarchy,
+        final HierarchyUsage hierarchyUsage,
+        final RolapLevel rlevel)
+    {
         msgRecorder.pushContextName("ExplicitRecognizer.matchLevel");
         try {
             // Try to match a Level's name against the RolapLevel unique name.
             String levelUniqueName = rlevel.getUniqueName();
-            for (ExplicitRules.TableDef.Level level : getTableDef().getLevels()) {
+            for (ExplicitRules.TableDef.Level level : getTableDef().getLevels())
+            {
                 if (level.getName().equals(levelUniqueName)) {
                     // Ok, got a match, so now make a measue
                     //makeLevel(level, xxxxolumn);
                     // Now can we find a column in the aggTable that matches the
                     // Level's column
                     String columnName = level.getColumnName();
-                    for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
+                    for (JdbcSchema.Table.Column aggColumn
+                        : aggTable.getColumns())
+                    {
                         if (aggColumn.getName().equals(columnName)) {
                             makeLevel(
                                 aggColumn,

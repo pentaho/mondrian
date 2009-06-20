@@ -57,10 +57,12 @@ public class JdbcTreeModel implements javax.swing.tree.TreeModel {
                     Node table = new Node(trs.getString(3), Node.TABLE);
                     cat.children.add(table);
                     //get the tables for each catalog.
-                    ResultSet crs = metadata.getColumns(cat.name, null, table.name, null);
+                    ResultSet crs =
+                        metadata.getColumns(cat.name, null, table.name, null);
                     try {
                         while (crs.next()) {
-                            Node column = new Node(crs.getString(4), Node.COLUMN);
+                            Node column =
+                                new Node(crs.getString(4), Node.COLUMN);
                             table.children.add(column);
                         }
                     } finally {

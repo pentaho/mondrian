@@ -263,10 +263,11 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      * @return Validated argument
      */
     protected Exp validateArg(
-            Validator validator,
-            Exp[] args,
-            int i,
-            int category) {
+        Validator validator,
+        Exp[] args,
+        int i,
+        int category)
+    {
         return args[i];
     }
 
@@ -376,9 +377,9 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      */
     public Type getResultType(Validator validator, Exp[] args) {
         Type firstArgType =
-            args.length > 0 ?
-                args[0].getType() :
-                null;
+            args.length > 0
+            ? args[0].getType()
+            : null;
         Type type = castType(firstArgType, getReturnCategory());
         if (type != null) {
             return type;
@@ -388,8 +389,9 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        throw Util.newInternal("function '" + getSignature() +
-                "' has not been implemented");
+        throw Util.newInternal(
+            "function '" + getSignature()
+            + "' has not been implemented");
     }
 
     public String getSignature() {

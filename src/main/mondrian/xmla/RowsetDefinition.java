@@ -62,7 +62,8 @@ enum RowsetDefinition {
             DiscoverDatasourcesRowset.ProviderType,
             DiscoverDatasourcesRowset.AuthenticationMode,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverDatasourcesRowset(request, handler);
         }
@@ -86,37 +87,38 @@ enum RowsetDefinition {
             DiscoverSchemaRowsetsRowset.Restrictions,
             DiscoverSchemaRowsetsRowset.Description,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverSchemaRowsetsRowset(request, handler);
         }
         protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
-            writer.startElement("xsd:complexType", new String[] {
-                "name", "row"
-            });
+            writer.startElement(
+                "xsd:complexType",
+                "name", "row");
             writer.startElement("xsd:sequence");
             for (Column column : columnDefinitions) {
                 final String name = XmlaUtil.encodeElementName(column.name);
 
                 if (column == DiscoverSchemaRowsetsRowset.Restrictions) {
-                    writer.startElement("xsd:element", new String[]{
+                    writer.startElement(
+                        "xsd:element",
                         "sql:field", column.name,
                         "name", name,
                         "minOccurs", "0",
-                        "maxOccurs", "unbounded"
-                    });
+                        "maxOccurs", "unbounded");
                     writer.startElement("xsd:complexType");
                     writer.startElement("xsd:sequence");
-                    writer.element("xsd:element", new String[]{
+                    writer.element(
+                        "xsd:element",
                         "name", "Name",
                         "type", "xsd:string",
-                        "sql:field", "Name"
-                    });
-                    writer.element("xsd:element", new String[]{
+                        "sql:field", "Name");
+                    writer.element(
+                        "xsd:element",
                         "name", "Type",
                         "type", "xsd:string",
-                        "sql:field", "Type"
-                    });
+                        "sql:field", "Type");
 
                     writer.endElement(); // xsd:sequence
                     writer.endElement(); // xsd:complexType
@@ -187,7 +189,8 @@ enum RowsetDefinition {
             DiscoverEnumeratorsRowset.ElementDescription,
             DiscoverEnumeratorsRowset.ElementValue,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverEnumeratorsRowset(request, handler);
         }
@@ -214,7 +217,8 @@ enum RowsetDefinition {
             DiscoverPropertiesRowset.IsRequired,
             DiscoverPropertiesRowset.Value,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverPropertiesRowset(request, handler);
         }
@@ -234,7 +238,8 @@ enum RowsetDefinition {
         new Column[] {
             DiscoverKeywordsRowset.Keyword,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverKeywordsRowset(request, handler);
         }
@@ -258,7 +263,8 @@ enum RowsetDefinition {
             DiscoverLiteralsRowset.LiteralInvalidStartingChars,
             DiscoverLiteralsRowset.LiteralMaxLength,
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverLiteralsRowset(request, handler);
         }
@@ -283,7 +289,8 @@ enum RowsetDefinition {
         },
         new Column[] {
             DbschemaCatalogsRowset.CatalogName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaCatalogsRowset(request, handler);
         }
@@ -319,7 +326,8 @@ enum RowsetDefinition {
             DbschemaColumnsRowset.TableCatalog,
             DbschemaColumnsRowset.TableSchema,
             DbschemaColumnsRowset.TableName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaColumnsRowset(request, handler);
         }
@@ -352,7 +360,8 @@ enum RowsetDefinition {
         },
         new Column[] {
             DbschemaProviderTypesRowset.DataType,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaProviderTypesRowset(request, handler);
         }
@@ -369,7 +378,8 @@ enum RowsetDefinition {
             DbschemaSchemataRowset.CatalogName,
             DbschemaSchemataRowset.SchemaName,
             DbschemaSchemataRowset.SchemaOwner,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaSchemataRowset(request, handler);
         }
@@ -406,7 +416,8 @@ enum RowsetDefinition {
             DbschemaTablesRowset.TableCatalog,
             DbschemaTablesRowset.TableSchema,
             DbschemaTablesRowset.TableName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaTablesRowset(request, handler);
         }
@@ -439,7 +450,8 @@ enum RowsetDefinition {
             DbschemaTablesInfoRowset.Description,
             DbschemaTablesInfoRowset.TablePropId,
         },
-        null /* cannot find doc -- presume unsorted */) {
+        null /* cannot find doc -- presume unsorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DbschemaTablesInfoRowset(request, handler);
         }
@@ -473,18 +485,19 @@ enum RowsetDefinition {
      */
     MDSCHEMA_ACTIONS(
         11, null, new Column[] {
-        MdschemaActionsRowset.SchemaName,
-        MdschemaActionsRowset.CubeName,
-        MdschemaActionsRowset.ActionName,
-        MdschemaActionsRowset.Coordinate,
-        MdschemaActionsRowset.CoordinateType,
-    }, new Column[] {
-        // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
-        // ACTION_NAME.
-        MdschemaActionsRowset.SchemaName,
-        MdschemaActionsRowset.CubeName,
-        MdschemaActionsRowset.ActionName,
-    }) {
+            MdschemaActionsRowset.SchemaName,
+            MdschemaActionsRowset.CubeName,
+            MdschemaActionsRowset.ActionName,
+            MdschemaActionsRowset.Coordinate,
+            MdschemaActionsRowset.CoordinateType,
+        }, new Column[] {
+            // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
+            // ACTION_NAME.
+            MdschemaActionsRowset.SchemaName,
+            MdschemaActionsRowset.CubeName,
+            MdschemaActionsRowset.ActionName,
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaActionsRowset(request, handler);
         }
@@ -535,7 +548,8 @@ enum RowsetDefinition {
             MdschemaCubesRowset.CatalogName,
             MdschemaCubesRowset.SchemaName,
             MdschemaCubesRowset.CubeName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaCubesRowset(request, handler);
         }
@@ -589,7 +603,8 @@ enum RowsetDefinition {
             MdschemaDimensionsRowset.SchemaName,
             MdschemaDimensionsRowset.CubeName,
             MdschemaDimensionsRowset.DimensionName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaDimensionsRowset(request, handler);
         }
@@ -633,7 +648,8 @@ enum RowsetDefinition {
             MdschemaFunctionsRowset.InterfaceName,
             MdschemaFunctionsRowset.FunctionName,
             MdschemaFunctionsRowset.Origin,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaFunctionsRowset(request, handler);
         }
@@ -700,7 +716,8 @@ enum RowsetDefinition {
             MdschemaHierarchiesRowset.CubeName,
             MdschemaHierarchiesRowset.DimensionUniqueName,
             MdschemaHierarchiesRowset.HierarchyName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaHierarchiesRowset(request, handler);
         }
@@ -772,7 +789,8 @@ enum RowsetDefinition {
             MdschemaLevelsRowset.DimensionUniqueName,
             MdschemaLevelsRowset.HierarchyUniqueName,
             MdschemaLevelsRowset.LevelNumber,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaLevelsRowset(request, handler);
         }
@@ -831,7 +849,8 @@ enum RowsetDefinition {
             MdschemaMeasuresRowset.SchemaName,
             MdschemaMeasuresRowset.CubeName,
             MdschemaMeasuresRowset.MeasureName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaMeasuresRowset(request, handler);
         }
@@ -902,7 +921,8 @@ enum RowsetDefinition {
             MdschemaMembersRowset.LevelUniqueName,
             MdschemaMembersRowset.LevelNumber,
             MdschemaMembersRowset.MemberOrdinal,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaMembersRowset(request, handler);
         }
@@ -972,7 +992,8 @@ enum RowsetDefinition {
             MdschemaPropertiesRowset.PropertyContentType,
             MdschemaPropertiesRowset.Description
         },
-        null /* not sorted */) {
+        null /* not sorted */)
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaPropertiesRowset(request, handler);
         }
@@ -1011,7 +1032,8 @@ enum RowsetDefinition {
             MdschemaSetsRowset.CatalogName,
             MdschemaSetsRowset.SchemaName,
             MdschemaSetsRowset.CubeName,
-        }) {
+        })
+    {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new MdschemaSetsRowset(request, handler);
         }
@@ -1088,8 +1110,9 @@ enum RowsetDefinition {
                         return -1;
                     } else if (val2 == null) {
                         return 1;
-                    } else if (val1 instanceof String &&
-                        val2 instanceof String) {
+                    } else if (val1 instanceof String
+                       && val2 instanceof String)
+                    {
                         int v =
                             ((String) val1).compareToIgnoreCase((String) val2);
                         // if equal (= 0), compare next column
@@ -1126,50 +1149,50 @@ enum RowsetDefinition {
     }
 
     protected void writeRowsetXmlSchemaTop(SaxWriter writer) {
-        writer.startElement("xsd:schema", new String[] {
+        writer.startElement(
+            "xsd:schema",
             "xmlns:xsd", XmlaConstants.NS_XSD,
             "xmlns", XmlaConstants.NS_XMLA_ROWSET,
             "xmlns:xsi", XmlaConstants.NS_XSI,
             "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
             "targetNamespace", XmlaConstants.NS_XMLA_ROWSET,
-            "elementFormDefault", "qualified"
-        });
+            "elementFormDefault", "qualified");
 
-        writer.startElement("xsd:element", new String[] {
-            "name", "root"
-        });
+        writer.startElement(
+            "xsd:element",
+            "name", "root");
         writer.startElement("xsd:complexType");
         writer.startElement("xsd:sequence");
-        writer.element("xsd:element", new String[] {
+        writer.element(
+            "xsd:element",
             "name", "row",
             "type", "row",
             "minOccurs", "0",
-            "maxOccurs", "unbounded"
-        });
+            "maxOccurs", "unbounded");
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:complexType
         writer.endElement(); // xsd:element
 
         // MS SQL includes this in its schema section even thought
         // its not need for most queries.
-        writer.startElement("xsd:simpleType", new String[] {
-            "name", "uuid"
-        });
-        writer.startElement("xsd:restriction", new String[] {
-            "base", "xsd:string"
-        });
-        writer.element("xsd:pattern", new String[] {
-            "value", UUID_PATTERN
-        });
+        writer.startElement(
+            "xsd:simpleType",
+            "name", "uuid");
+        writer.startElement(
+            "xsd:restriction",
+            "base", "xsd:string");
+        writer.element(
+            "xsd:pattern",
+            "value", UUID_PATTERN);
 
         writer.endElement(); // xsd:restriction
         writer.endElement(); // xsd:simpleType
     }
 
     protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "row"
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "row");
         writer.startElement("xsd:sequence");
         for (Column column : columnDefinitions) {
             final String name = XmlaUtil.encodeElementName(column.name);
@@ -1244,9 +1267,9 @@ enum RowsetDefinition {
         }
 
         boolean isEnum() {
-            return this == Enumeration ||
-                this == EnumerationArray ||
-                this == EnumString;
+            return this == Enumeration
+               || this == EnumerationArray
+               || this == EnumString;
         }
 
         String getName() {
@@ -1459,10 +1482,10 @@ enum RowsetDefinition {
             String description)
         {
             assert type != null;
-            assert (type == Type.Enumeration ||
-                type == Type.EnumerationArray ||
-                type == Type.EnumString) ==
-                (enumeratedType != null);
+            assert (type == Type.Enumeration
+                    || type == Type.EnumerationArray
+                    || type == Type.EnumString)
+                   == (enumeratedType != null);
             // Line endings must be UNIX style (LF) not Windows style (LF+CR).
             // Thus the client will receive the same XML, regardless
             // of the server O/S.
@@ -1496,8 +1519,9 @@ enum RowsetDefinition {
          */
         protected final Object getFromField(Object row) {
             try {
-                String javaFieldName = name.substring(0, 1).toLowerCase() +
-                    name.substring(1);
+                String javaFieldName =
+                    name.substring(0, 1).toLowerCase()
+                    + name.substring(1);
                 Field field = row.getClass().getField(javaFieldName);
                 return field.get(row);
             } catch (NoSuchFieldException e) {
@@ -1639,8 +1663,9 @@ enum RowsetDefinition {
             List<Row> rows)
             throws XmlaException
         {
-            for (DataSourcesConfig.DataSource ds : handler
-                .getDataSourceEntries().values()) {
+            for (DataSourcesConfig.DataSource ds
+                : handler.getDataSourceEntries().values())
+            {
                 Row row = new Row();
                 row.set(DataSourceName.name, ds.getDataSourceName());
                 row.set(
@@ -1842,8 +1867,9 @@ enum RowsetDefinition {
             List<Row> rows)
             throws XmlaException
         {
-            for (PropertyDefinition propertyDefinition :
-                PropertyDefinition.class.getEnumConstants()) {
+            for (PropertyDefinition propertyDefinition
+                : PropertyDefinition.class.getEnumConstants())
+            {
                 if (!propertyNameRT.passes(propertyDefinition.name())) {
                     continue;
                 }
@@ -1946,9 +1972,9 @@ enum RowsetDefinition {
                     row.set(EnumType.name, "string");
 
                     String name =
-                        value instanceof Enumeration.EnumWithName ?
-                            ((Enumeration.EnumWithName) value).userName() :
-                            value.name();
+                        value instanceof Enumeration.EnumWithName
+                        ? ((Enumeration.EnumWithName) value).userName()
+                        : value.name();
                     row.set(ElementName.name, name);
 
                     if (value instanceof Enumeration.EnumWithDesc) {
@@ -1984,8 +2010,8 @@ enum RowsetDefinition {
                     }
                 }
             );
-            for (RowsetDefinition rowsetDefinition :
-                RowsetDefinition.class.getEnumConstants())
+            for (RowsetDefinition rowsetDefinition
+                : RowsetDefinition.class.getEnumConstants())
             {
                 for (Column column : rowsetDefinition.columnDefinitions) {
                     if (column.enumeration != null) {
@@ -2020,8 +2046,8 @@ enum RowsetDefinition {
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
-                "A list of all the keywords reserved by a provider.\n" +
-                    "Example: AND");
+                "A list of all the keywords reserved by a provider.\n"
+                + "Example: AND");
 
         public void populate(
             XmlaResponse response,
@@ -3216,20 +3242,17 @@ TODO: see above
             String hierarchyName = getHierarchyName(hierarchy);
             String levelName = level.getName();
 
-            String tableName = cubeName +
-                ':' + hierarchyName + ':' + levelName;
+            String tableName =
+                cubeName + ':' + hierarchyName + ':' + levelName;
 
             String desc = level.getDescription();
             if (desc == null) {
                 //TODO: currently this is always null
-                desc = schemaName +
-                    " - " +
-                    cubeName +
-                    " Cube - " +
-                    hierarchyName +
-                    " Hierarchy - " +
-                    levelName +
-                    " Level";
+                desc =
+                    schemaName + " - "
+                    + cubeName + " Cube - "
+                    + hierarchyName + " Hierarchy - "
+                    + levelName + " Level";
             }
 
             Row row = new Row();
@@ -3686,10 +3709,9 @@ TODO: see above
 
                     String desc = cube.getDescription();
                     if (desc == null) {
-                        desc = catalogName +
-                            " Schema - " +
-                            cube.getName() +
-                            " Cube";
+                        desc =
+                            catalogName + " Schema - "
+                            + cube.getName() + " Cube";
                     }
 
                     Row row = new Row();
@@ -3964,8 +3986,9 @@ TODO: see above
             for (Dimension dimension : cube.getDimensions()) {
                 String name = dimension.getName();
                 String unique = dimension.getUniqueName();
-                if (dimensionNameRT.passes(name) &&
-                    dimensionUniqueNameRT.passes(unique)) {
+                if (dimensionNameRT.passes(name)
+                    && dimensionUniqueNameRT.passes(unique))
+                {
                     populateDimension(
                         schemaReader, catalogName,
                         cube, dimension, rows);
@@ -3988,10 +4011,9 @@ TODO: see above
 
             String desc = dimension.getDescription();
             if (desc == null) {
-                desc = cube.getName() +
-                    " Cube - " +
-                    dimension.getName() +
-                    " Dimension";
+                desc =
+                    cube.getName() + " Cube - "
+                    + dimension.getName() + " Dimension";
             }
 
             Row row = new Row();
@@ -4253,8 +4275,9 @@ TODO: see above
                             "\r",
                             "");
                     }
-                    if ((paramCategories == null) ||
-                        (paramCategories.length == 0)) {
+                    if ((paramCategories == null)
+                        || (paramCategories.length == 0))
+                    {
                         Row row = new Row();
                         row.set(FunctionName.name, fi.getName());
                         row.set(Description.name, description);
@@ -4611,8 +4634,9 @@ TODO: see above
             for (Hierarchy hierarchy : hierarchies) {
                 if (genOutput) {
                     String unique = hierarchy.getUniqueName();
-                    if (hierarchyNameRT.passes(hierarchy.getName()) &&
-                        hierarchyUniqueNameRT.passes(unique)) {
+                    if (hierarchyNameRT.passes(hierarchy.getName())
+                        && hierarchyUniqueNameRT.passes(unique))
+                    {
                         populateHierarchy(
                             schemaReader, catalogName,
                             cube, dimension, (HierarchyBase) hierarchy,
@@ -4644,10 +4668,9 @@ TODO: see above
 
             String desc = hierarchy.getDescription();
             if (desc == null) {
-                desc = cube.getName() +
-                    " Cube - " +
-                    getHierarchyName(hierarchy) +
-                    " Hierarchy";
+                desc =
+                    cube.getName() + " Cube - "
+                    + getHierarchyName(hierarchy) + " Hierarchy";
             }
 
             Row row = new Row();
@@ -4986,8 +5009,9 @@ TODO: see above
             for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
                 String uniqueName = level.getUniqueName();
                 String name = level.getName();
-                if (levelUniqueNameRT.passes(uniqueName) &&
-                    levelNameRT.passes(name)) {
+                if (levelUniqueNameRT.passes(uniqueName)
+                    && levelNameRT.passes(name))
+                {
                     outputLevel(
                         schemaReader,
                         catalogName, cube, hierarchy, level, rows);
@@ -5022,12 +5046,10 @@ TODO: see above
             }
             String desc = level.getDescription();
             if (desc == null) {
-                desc = cube.getName() +
-                    " Cube - " +
-                    getHierarchyName(hierarchy) +
-                    " Hierarchy - " +
-                    level.getName() +
-                    " Level";
+                desc =
+                    cube.getName() + " Cube - "
+                    + getHierarchyName(hierarchy) + " Hierarchy - "
+                    + level.getName() + " Level";
             }
 
             int adjustedLevelDepth = level.getDepth();
@@ -5067,8 +5089,8 @@ TODO: see above
                 RolapLevel rl = (RolapLevel) level;
                 row.set(
                     LevelUniqueSettings.name,
-                    (rl.isUnique() ? 1 : 0) +
-                        (rl.isAll() ? 2 : 0));
+                    (rl.isUnique() ? 1 : 0)
+                    + (rl.isAll() ? 2 : 0));
             } else {
                 // can not access unique member attribute
                 // this is the best we can do.
@@ -5344,20 +5366,23 @@ TODO: see above
                     for (Member member : storedMembers) {
                         String name = member.getName();
                         String unique = member.getUniqueName();
-                        if (measureNameRT.passes(name) &&
-                            measureUniqueNameRT.passes(unique)) {
+                        if (measureNameRT.passes(name)
+                            && measureUniqueNameRT.passes(unique))
+                        {
                             populateMember(
                                 schemaReader, catalogName,
                                 member, cube, levelListStr, rows);
                         }
                     }
 
-                    for (Member member :
-                        schemaReader.getCalculatedMembers(measuresHierarchy)) {
+                    for (Member member
+                        : schemaReader.getCalculatedMembers(measuresHierarchy))
+                    {
                         String name = member.getName();
                         String unique = member.getUniqueName();
-                        if (measureNameRT.passes(name) &&
-                            measureUniqueNameRT.passes(unique)) {
+                        if (measureNameRT.passes(name)
+                            && measureUniqueNameRT.passes(unique))
+                        {
                             populateMember(
                                 schemaReader, catalogName,
                                 member, cube, null, rows);
@@ -5392,10 +5417,9 @@ TODO: see above
             //TODO: currently this is always null
             String desc = member.getDescription();
             if (desc == null) {
-                desc = cube.getName() +
-                    " Cube - " +
-                    member.getName() +
-                    " Member";
+                desc =
+                    cube.getName() + " Cube - "
+                    + member.getName() + " Member";
             }
 
             Row row = new Row();
@@ -5785,20 +5809,22 @@ TODO: see above
             if (isRestricted(LevelNumber)) {
                 int levelNumber = getRestrictionValueAsInt(LevelNumber);
                 if (levelNumber == -1) {
-                    LOGGER.warn("RowsetDefinition.populateHierarchy: " +
-                        "LevelNumber invalid");
+                    LOGGER.warn(
+                        "RowsetDefinition.populateHierarchy: "
+                        + "LevelNumber invalid");
                     return;
                 }
                 Level[] levels = hierarchy.getLevels();
                 if (levelNumber >= levels.length) {
-                    LOGGER.warn("RowsetDefinition.populateHierarchy: " +
-                        "LevelNumber (" +
-                        levelNumber +
-                        ") is greater than number of levels (" +
-                        levels.length +
-                        ") for hierarchy \"" +
-                        hierarchy.getUniqueName() +
-                        "\"");
+                    LOGGER.warn(
+                        "RowsetDefinition.populateHierarchy: "
+                        + "LevelNumber ("
+                        + levelNumber
+                        + ") is greater than number of levels ("
+                        + levels.length
+                        + ") for hierarchy \""
+                        + hierarchy.getUniqueName()
+                        + "\"");
                     return;
                 }
 
@@ -5852,9 +5878,9 @@ TODO: see above
                     schemaReader.getMemberParent(member);
                 final List<Member> siblings =
                     (parent == null)
-                    ? schemaReader.getHierarchyRootMembers(
+                        ? schemaReader.getHierarchyRootMembers(
                         member.getHierarchy())
-                    : schemaReader.getMemberChildren(parent);
+                        : schemaReader.getMemberChildren(parent);
 
                 for (Member sibling : siblings) {
                     if (sibling.equals(member)) {
@@ -5875,7 +5901,7 @@ TODO: see above
                         schemaReader, catalogName,
                         cube, child,
                         Enumeration.TreeOp.Self.userOrdinal() |
-                            Enumeration.TreeOp.Descendants.userOrdinal(),
+                        Enumeration.TreeOp.Descendants.userOrdinal(),
                         rows);
                 }
             } else if (mask(
@@ -5898,7 +5924,7 @@ TODO: see above
                         schemaReader, catalogName,
                         cube, parent,
                         Enumeration.TreeOp.Self.userOrdinal() |
-                            Enumeration.TreeOp.Ancestors.userOrdinal(), rows);
+                        Enumeration.TreeOp.Ancestors.userOrdinal(), rows);
                 }
             } else if (mask(treeOp, Enumeration.TreeOp.Parent.userOrdinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
@@ -6178,7 +6204,7 @@ TODO: see above
             Cube[] cubes = connection.getSchemaReader().getCubes();
             for (Cube cube : cubes) {
                 if (!cubeNameRT.passes(cube.getName())) {
-                     continue;
+                    continue;
                 }
                 populateNamedSets(cube, catalogName, rows);
             }
@@ -6510,14 +6536,11 @@ TODO: see above
             DBType dbType = getDBTypeFromProperty(property);
             row.set(DataType.name, dbType.userOrdinal);
 
-            String desc = cube.getName() +
-                " Cube - " +
-                getHierarchyName(hierarchy) +
-                " Hierarchy - " +
-                level.getName() +
-                " Level - " +
-                property.getName() +
-                " Property";
+            String desc =
+                cube.getName() + " Cube - "
+                + getHierarchyName(hierarchy) + " Hierarchy - "
+                + level.getName() + " Level - "
+                + property.getName() + " Property";
             row.set(Description.name, desc);
 
             addRow(row, rows);

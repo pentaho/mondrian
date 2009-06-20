@@ -18,9 +18,9 @@ import mondrian.olap.Member;
 public class MemberHelper {
     private final Object mObject;
     public MemberHelper(Object entry) {
-        if ((entry == null) ||
-            (entry instanceof Member) ||
-            (entry instanceof Member[]))
+        if ((entry == null)
+            || (entry instanceof Member)
+            || (entry instanceof Member[]))
         {
             mObject = entry;
         } else {
@@ -41,8 +41,8 @@ public class MemberHelper {
             return mh.mObject == null;
         } else if (mh.mObject instanceof Member && mObject instanceof Member) {
             return ((Member)mObject).equals(mh.mObject);
-        } else if (mh.mObject instanceof Member[] &&
-            mObject instanceof Member[])
+        } else if (mh.mObject instanceof Member[]
+            && mObject instanceof Member[])
         {
             Member[] array1 = (Member[])mh.mObject;
             Member[] array2 = (Member[])this.mObject;

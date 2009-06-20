@@ -131,8 +131,8 @@ public class JavaFunDef extends FunDefBase {
         List<FunDef> list = new ArrayList<FunDef>();
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
-            if (Modifier.isStatic(method.getModifiers()) &&
-                !method.getName().equals("main"))
+            if (Modifier.isStatic(method.getModifiers())
+                && !method.getName().equals("main"))
             {
                 list.add(generateFunDef(method));
             }

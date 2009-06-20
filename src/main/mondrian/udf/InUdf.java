@@ -31,7 +31,8 @@ public class InUdf implements UserDefinedFunction {
 
         for (Object anArg1 : arg1) {
             if (((Member) arg0).getUniqueName().equals(
-                ((Member) anArg1).getUniqueName())) {
+                ((Member) anArg1).getUniqueName()))
+            {
                 return Boolean.TRUE;
             }
         }

@@ -118,10 +118,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public void getMemberRange(
-            Level level,
-            Member startMember,
-            Member endMember,
-            List<Member> list) {
+        Level level,
+        Member startMember,
+        Member endMember,
+        List<Member> list)
+    {
         schemaReader.getMemberRange(level, startMember, endMember, list);
     }
 
@@ -214,7 +215,8 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public NativeEvaluator getNativeSetEvaluator(
-            FunDef fun, Exp[] args, Evaluator evaluator, Calc calc) {
+        FunDef fun, Exp[] args, Evaluator evaluator, Calc calc)
+    {
         return schemaReader.getNativeSetEvaluator(fun, args, evaluator, calc);
     }
 

@@ -58,85 +58,101 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_003()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_005()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_006()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_007()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     // disabled because runs out of memory/hangs
     public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_009()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     // disabled because runs out of memory/hangs
     public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_012()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_013()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     // disabled because runs out of memory/hangs
     public void _testCognosMDXSuiteConvertedAdventureWorksToFoodMart_014()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_015()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_016()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_017()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_020()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_021()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_024()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_028()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 
     public void testCognosMDXSuiteConvertedAdventureWorksToFoodMart_029()
-            throws Exception {
+        throws Exception
+    {
         executeMDX();
     }
 

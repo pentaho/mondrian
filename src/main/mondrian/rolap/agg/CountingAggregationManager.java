@@ -82,8 +82,8 @@ public class CountingAggregationManager extends AggregationManager {
      * @return a double value represent hit ratio
      */
     public double getHitRatio() {
-        return ((double) requestCount.value() - missCount.value()) /
-            requestCount.value();
+        return ((double) requestCount.value() - missCount.value())
+            / requestCount.value();
     }
 
     /**

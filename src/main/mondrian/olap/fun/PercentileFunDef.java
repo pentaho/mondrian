@@ -52,7 +52,8 @@ class PercentileFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 double percent = percentCalc.evaluateDouble(evaluator) * 0.01;
-                return percentile(evaluator.push(false), memberList, calc, percent);
+                return percentile(
+                    evaluator.push(false), memberList, calc, percent);
             }
 
             public boolean dependsOn(Dimension dimension) {

@@ -44,8 +44,8 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof MondrianOlap4jLevel &&
-            level.equals(((MondrianOlap4jLevel) obj).level);
+        return obj instanceof MondrianOlap4jLevel
+            && level.equals(((MondrianOlap4jLevel) obj).level);
     }
 
     public int hashCode() {

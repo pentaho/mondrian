@@ -76,10 +76,12 @@ public class ScalarType implements Type {
         } else if (type instanceof NullType) {
             return this;
         } else if (this instanceof NullType
-            && type instanceof ScalarType) {
+            && type instanceof ScalarType)
+        {
             return type;
         } else if (this.getClass() == ScalarType.class
-            && type instanceof ScalarType) {
+            && type instanceof ScalarType)
+        {
             return this;
         } else if (type.getClass() == ScalarType.class) {
             return type;

@@ -68,21 +68,24 @@ public class RolapAxisTest extends FoodMartTestCase {
     }
     public void testMemberArrayList() {
         List<Member[]> list = new ArrayList<Member[]>();
-        list.add(new Member[] {
-            new TestMember("a"),
-            new TestMember("b"),
-            new TestMember("c")
-        });
-        list.add(new Member[] {
-            new TestMember("d"),
-            new TestMember("e"),
-            new TestMember("f")
-        });
-        list.add(new Member[] {
-            new TestMember("g"),
-            new TestMember("h"),
-            new TestMember("i")
-        });
+        list.add(
+            new Member[] {
+                new TestMember("a"),
+                new TestMember("b"),
+                new TestMember("c")
+            });
+        list.add(
+            new Member[] {
+                new TestMember("d"),
+                new TestMember("e"),
+                new TestMember("f")
+            });
+        list.add(
+            new Member[] {
+                new TestMember("g"),
+                new TestMember("h"),
+                new TestMember("i")
+            });
 
         StringBuffer buf = new StringBuffer(100);
 
@@ -164,21 +167,24 @@ public class RolapAxisTest extends FoodMartTestCase {
     }
     public void testMemberArrayIterable() {
         List<Member[]> list = new ArrayList<Member[]>();
-        list.add(new Member[] {
-            new TestMember("a"),
-            new TestMember("b"),
-            new TestMember("c")
-        });
-        list.add(new Member[] {
-            new TestMember("d"),
-            new TestMember("e"),
-            new TestMember("f")
-        });
-        list.add(new Member[] {
-            new TestMember("g"),
-            new TestMember("h"),
-            new TestMember("i")
-        });
+        list.add(
+            new Member[] {
+                new TestMember("a"),
+                new TestMember("b"),
+                new TestMember("c")
+            });
+        list.add(
+            new Member[] {
+                new TestMember("d"),
+                new TestMember("e"),
+                new TestMember("f")
+            });
+        list.add(
+            new Member[] {
+                new TestMember("g"),
+                new TestMember("h"),
+                new TestMember("i")
+            });
 
         StringBuffer buf = new StringBuffer(100);
 

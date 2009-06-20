@@ -7,16 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
-/*
-// This software is subject to the terms of the Eclipse Public License v1.0
-// Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
-*/
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -36,6 +26,8 @@ import java.util.*;
 /**
  * Extracted Target from original place.
  * Unknown functonallity.
+ *
+ * @version $Id$
  */
 public class Target {
     private final HighCardSqlTupleReader sqlTupleReader;
@@ -122,7 +114,8 @@ public class Target {
     }
 
     private int internalAddRow(ResultSet resultSet, int column)
-            throws SQLException {
+        throws SQLException
+    {
         RolapMember member = null;
         if (currMember != null) {
             member = currMember;
@@ -208,8 +201,8 @@ public class Target {
                 if (0 < limit && index < 0) {
                     // Cannot send NoSuchElementException since its intercepted
                     // by AbstractSequentialList to identify out of bounds.
-                    throw new RuntimeException("Element " + idx
-                            + " has been forgotten");
+                    throw new RuntimeException(
+                        "Element " + idx + " has been forgotten");
                 }
 
                 while (index >= list.size() && this.moreRows) {

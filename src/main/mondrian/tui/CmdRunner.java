@@ -173,11 +173,11 @@ public class CmdRunner {
      */
     private static String getPropertyValue(String propertyName) {
         final Property property = PropertyInfo.lookupProperty(
-                MondrianProperties.instance(),
-                propertyName);
-        return property.isSet() ?
-                property.getString() :
-                null;
+            MondrianProperties.instance(),
+            propertyName);
+        return property.isSet()
+            ? property.getString()
+            : null;
     }
 
     public static void listProperty(String propertyName, StringBuilder buf) {
@@ -222,10 +222,11 @@ public class CmdRunner {
             final Class<? extends Object> clazz = properties.getClass();
             final Field[] fields = clazz.getFields();
             for (Field field : fields) {
-                if (!Modifier.isPublic(field.getModifiers()) ||
-                    Modifier.isStatic(field.getModifiers()) ||
-                    !Property.class.isAssignableFrom(
-                        field.getType())) {
+                if (!Modifier.isPublic(field.getModifiers())
+                    || Modifier.isStatic(field.getModifiers())
+                    || !Property.class.isAssignableFrom(
+                        field.getType()))
+                {
                     continue;
                 }
                 final Property property;
@@ -265,9 +266,10 @@ public class CmdRunner {
             } catch (NoSuchFieldException e) {
                 return null;
             }
-            if (!Modifier.isPublic(field.getModifiers()) ||
-                    Modifier.isStatic(field.getModifiers()) ||
-                    !Property.class.isAssignableFrom(field.getType())) {
+            if (!Modifier.isPublic(field.getModifiers())
+                || Modifier.isStatic(field.getModifiers())
+                || !Property.class.isAssignableFrom(field.getType()))
+            {
                 return null;
             }
             try {
@@ -391,7 +393,8 @@ public class CmdRunner {
         // assume member, dimension, hierarchy, level
         OlapElement element = Util.lookup(query, Util.parseIdentifier(trimmed));
 
-        debug("parseParameter. exp="
+        debug(
+            "parseParameter. exp="
             + ((element == null) ? "null" : element.getClass().getName()));
 
         if (element instanceof Member) {
@@ -411,8 +414,8 @@ public class CmdRunner {
     }
 
     public static void listParameterNameValues(StringBuilder buf) {
-        for (Map.Entry<Object, String> e :
-            CmdRunner.paraNameValues.entrySet())
+        for (Map.Entry<Object, String> e
+            : CmdRunner.paraNameValues.entrySet())
         {
             buf.append(e.getKey());
             buf.append('=');
@@ -488,9 +491,10 @@ public class CmdRunner {
     }
 
     public void executeCubeCommand(
-            String cubename,
-            String command,
-            StringBuilder buf) {
+        String cubename,
+        String command,
+        StringBuilder buf)
+    {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -511,10 +515,11 @@ public class CmdRunner {
     }
 
     public void setCubeAttribute(
-            String cubename,
-            String name,
-            String value,
-            StringBuilder buf) {
+        String cubename,
+        String name,
+        String value,
+        StringBuilder buf)
+    {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -894,10 +899,10 @@ public class CmdRunner {
             }
 
             // Are we ready to execute an mdx query.
-            if ((line == null) ||
-                    ((line.length() == 1) &&
-                    ((line.charAt(0) == EXECUTE_CHAR) ||
-                        (line.charAt(0) == CANCEL_CHAR))))
+            if ((line == null)
+                || ((line.length() == 1)
+                    && ((line.charAt(0) == EXECUTE_CHAR)
+                        || (line.charAt(0) == CANCEL_CHAR))))
             {
                 // If EXECUTE_CHAR, then execute, otherwise its the
                 // CANCEL_CHAR and simply empty buffer.
@@ -975,8 +980,9 @@ public class CmdRunner {
             if (c == ESCAPE_CHAR) {
                 buf.append(ESCAPE_CHAR);
                 buf.append(line.charAt(++offset));
-            } else if (!inName &&
-                    ((c == STRING_CHAR_1) || (c == STRING_CHAR_2))) {
+            } else if (!inName
+                       && ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)))
+            {
                 i = readString(reader, line, offset, buf, i);
                 offset = 0;
             } else {
@@ -1129,8 +1135,9 @@ public class CmdRunner {
                      break;
                 }
             // check for nested block
-            } else if (allowNestedComments &&
-                     line.substring(offset).startsWith(startDelim)) {
+            } else if (allowNestedComments
+                       && line.substring(offset).startsWith(startDelim))
+            {
                 if (addToBuf) {
                     buf.append(startDelim);
                 }
@@ -2499,7 +2506,8 @@ public class CmdRunner {
     }
 
     private static Options parseOptions(String[] args)
-            throws BadOption, IOException {
+        throws BadOption, IOException
+    {
         final Options options = new Options();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];

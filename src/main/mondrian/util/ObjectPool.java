@@ -101,7 +101,7 @@ public class ObjectPool<T> {
         double minLoadFactor,
         double maxLoadFactor)
     {
-        setUp(initialCapacity,minLoadFactor,maxLoadFactor);
+        setUp(initialCapacity, minLoadFactor, maxLoadFactor);
     }
 
     /**
@@ -273,8 +273,8 @@ public class ObjectPool<T> {
         }
         if (minLoadFactor >= maxLoadFactor) {
             throw new IllegalArgumentException(
-                "Illegal minLoadFactor: " + minLoadFactor +
-                " and maxLoadFactor: " + maxLoadFactor);
+                "Illegal minLoadFactor: " + minLoadFactor
+                + " and maxLoadFactor: " + maxLoadFactor);
         }
         capacity = nextPrime(capacity);
 

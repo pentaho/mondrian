@@ -59,10 +59,11 @@ class PeriodsToDateFunDef extends FunDefBase {
             MemberType memberType = (MemberType) args[1].getType();
             if (memberType.getHierarchy() != null
                 && hierarchyType.getHierarchy() != null
-                && memberType.getHierarchy() != hierarchyType.getHierarchy()) {
+                && memberType.getHierarchy() != hierarchyType.getHierarchy())
+            {
                 throw Util.newError(
-                    "Type mismatch: member must belong to hierarchy " +
-                        hierarchyType.getHierarchy().getUniqueName());
+                    "Type mismatch: member must belong to hierarchy "
+                    + hierarchyType.getHierarchy().getUniqueName());
             }
         }
 
@@ -73,15 +74,15 @@ class PeriodsToDateFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final LevelCalc levelCalc =
-                call.getArgCount() > 0 ?
-                compiler.compileLevel(call.getArg(0)) :
-                null;
+            call.getArgCount() > 0
+            ? compiler.compileLevel(call.getArg(0))
+            : null;
         final MemberCalc memberCalc =
-                call.getArgCount() > 1 ?
-                compiler.compileMember(call.getArg(1)) :
-                null;
-        final Dimension timeDimension = compiler
-                .getEvaluator().getCube().getTimeDimension();
+            call.getArgCount() > 1
+            ? compiler.compileMember(call.getArg(1))
+            : null;
+        final Dimension timeDimension =
+            compiler.getEvaluator().getCube().getTimeDimension();
 
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public List evaluateList(Evaluator evaluator) {
@@ -89,8 +90,8 @@ class PeriodsToDateFunDef extends FunDefBase {
                 final Level level;
                 if (levelCalc == null) {
                     if (timeDimension == null) {
-                        throw MondrianResource.instance().
-                                    NoTimeDimensionInCube.ex(getName());
+                        throw MondrianResource.instance().NoTimeDimensionInCube
+                            .ex(getName());
                     }
                     member = evaluator.getContext(timeDimension);
                     level = member.getLevel().getParentLevel();
@@ -116,8 +117,8 @@ class PeriodsToDateFunDef extends FunDefBase {
                     return levelCalc.getType().usesDimension(dimension, true) ;
                 } else {
                     if (timeDimension == null) {
-                        throw MondrianResource.instance().
-                                    NoTimeDimensionInCube.ex(getName());
+                        throw MondrianResource.instance().NoTimeDimensionInCube
+                            .ex(getName());
                     }
                     return dimension == timeDimension;
                 }

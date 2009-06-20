@@ -75,9 +75,9 @@ public class RolapCalculatedMember extends RolapMember {
 
     public boolean isCalculatedInQuery() {
         final String memberScope =
-                (String) getPropertyValue(Property.MEMBER_SCOPE.name);
-        return memberScope == null ||
-                memberScope.equals("QUERY");
+            (String) getPropertyValue(Property.MEMBER_SCOPE.name);
+        return memberScope == null
+            || memberScope.equals("QUERY");
     }
 
     public Exp getExpression() {

@@ -95,16 +95,16 @@ public class MemberTuplePredicate implements StarPredicate {
     }
 
     public int hashCode() {
-        return this.columnList.hashCode() * 31 +
-            Arrays.hashCode(this.bounds) * 31;
+        return this.columnList.hashCode() * 31
+            + Arrays.hashCode(this.bounds) * 31;
     }
 
     public boolean equals(Object obj) {
         if (obj instanceof MemberTuplePredicate) {
             MemberTuplePredicate that =
                 (MemberTuplePredicate) obj;
-            return this.columnList.equals(that.columnList) &&
-                Arrays.equals(this.bounds, that.bounds);
+            return this.columnList.equals(that.columnList)
+                && Arrays.equals(this.bounds, that.bounds);
         } else {
             return false;
         }
@@ -300,9 +300,9 @@ public class MemberTuplePredicate implements StarPredicate {
         public boolean equals(Object obj) {
             if (obj instanceof Bound) {
                 Bound that = (Bound) obj;
-                return this.member.equals(that.member) &&
-                    Arrays.equals(this.values, that.values) &&
-                    Arrays.equals(this.relOps, that.relOps);
+                return this.member.equals(that.member)
+                    && Arrays.equals(this.values, that.values)
+                    && Arrays.equals(this.relOps, that.relOps);
             } else {
                 return false;
             }

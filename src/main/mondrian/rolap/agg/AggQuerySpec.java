@@ -43,7 +43,9 @@ class AggQuerySpec {
 
     AggQuerySpec(
         final AggStar aggStar,
-        final boolean rollup, GroupingSetsList groupingSetsList) {
+        final boolean rollup,
+        GroupingSetsList groupingSetsList)
+    {
         this.aggStar = aggStar;
         this.segments = groupingSetsList.getDefaultSegments();
         this.rollup = rollup;

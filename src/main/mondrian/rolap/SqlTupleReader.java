@@ -811,8 +811,9 @@ public class SqlTupleReader implements TupleReader {
 
         if (hierarchy instanceof RolapCubeHierarchy) {
             RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy)hierarchy;
-            if (baseCube != null &&
-                    !cubeHierarchy.getDimension().getCube().equals(baseCube)) {
+            if (baseCube != null
+                && !cubeHierarchy.getDimension().getCube().equals(baseCube))
+            {
                 // replace the hierarchy with the underlying base cube hierarchy
                 // in the case of virtual cubes
                 hierarchy = baseCube.findBaseCubeHierarchy(hierarchy);
@@ -823,8 +824,9 @@ public class SqlTupleReader implements TupleReader {
         int levelDepth = level.getDepth();
 
         // Determine if the aggregate table contains the collapsed level
-        boolean levelCollapsed = (aggStar != null) &&
-                        isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+        boolean levelCollapsed =
+            (aggStar != null)
+            && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
 
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel currLevel = levels[i];
@@ -1073,8 +1075,9 @@ public class SqlTupleReader implements TupleReader {
         for (Target target : targets) {
             RolapLevel level = target.level;
             if (!level.isAll()) {
-                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level) &&
-                    levelContainsMultipleColumns(level)) {
+                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level)
+                    && levelContainsMultipleColumns(level))
+                {
                     return null;
                 }
             }

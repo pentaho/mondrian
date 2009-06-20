@@ -1120,7 +1120,8 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeProcessor
-        extends FilterDynamicSchemaProcessor {
+        extends FilterDynamicSchemaProcessor
+    {
         public String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1143,7 +1144,8 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeAndSchemaProcessor
-        extends FilterDynamicSchemaProcessor {
+        extends FilterDynamicSchemaProcessor
+    {
         protected String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1181,7 +1183,8 @@ public class NamedSetTest extends FoodMartTestCase {
      * error.
      */
     public static class MixedNamedSetSchemaProcessor
-        extends FilterDynamicSchemaProcessor {
+        extends FilterDynamicSchemaProcessor
+    {
         protected String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1202,9 +1205,9 @@ public class NamedSetTest extends FoodMartTestCase {
                 + "      formula=\"Aggregate([CA Cities], [Measures].[Unit Sales])\">\n"
                 + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.0\"/>\n"
                 + "  </CalculatedMember>\n"
-                +
+
                 // set [Top Products In CA] references member [CA City Sales]
-                "<NamedSet name=\"Top Products In CA\">\n"
+                + "<NamedSet name=\"Top Products In CA\">\n"
                 + "  <Formula>TopCount([Product].[Product Department].MEMBERS, 3, ([Time].[1997].[Q3], [Measures].[CA City Sales]))</Formula>\n"
                 + "</NamedSet>\n"
                 + "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>\n"

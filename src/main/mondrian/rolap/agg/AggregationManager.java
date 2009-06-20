@@ -131,11 +131,10 @@ public class AggregationManager extends RolapAggregationManager {
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(256);
-            buf.append("DrillThroughSQL: ");
-            buf.append(sql);
-            buf.append(Util.nl);
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                "DrillThroughSQL: "
+                + sql
+                + Util.nl);
         }
 
         return sql;
@@ -186,8 +185,8 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
                     buf.append(Util.nl);
-                    for (AggStar.Table.Column column :
-                             aggStar.getFactTable().getColumns())
+                    for (AggStar.Table.Column column
+                        : aggStar.getFactTable().getColumns())
                     {
                         buf.append("   ");
                         buf.append(column);
@@ -202,10 +201,9 @@ public class AggregationManager extends RolapAggregationManager {
                 String sql = aggQuerySpec.generateSqlQuery();
 
                 if (getLogger().isDebugEnabled()) {
-                    StringBuilder buf = new StringBuilder(256);
-                    buf.append("generateSqlQuery: sql=");
-                    buf.append(sql);
-                    getLogger().debug(buf.toString());
+                    getLogger().debug(
+                        "generateSqlQuery: sql="
+                        + sql);
                 }
 
                 return sql;
@@ -217,18 +215,10 @@ public class AggregationManager extends RolapAggregationManager {
         if (getLogger().isDebugEnabled()) {
             RolapStar star = groupingSetsList.getStar();
 
-            StringBuilder buf = new StringBuilder(256);
-            buf.append("NO MATCH: ");
-            buf.append(star.getFactTable().getAlias());
-            buf.append(Util.nl);
-            buf.append("   foreign=");
-            buf.append(levelBitKey);
-            buf.append(Util.nl);
-            buf.append("   measure=");
-            buf.append(measureBitKey);
-            buf.append(Util.nl);
-
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                "NO MATCH: " + star.getFactTable().getAlias() + Util.nl
+                + "   foreign=" + levelBitKey + Util.nl
+                + "   measure=" + measureBitKey + Util.nl);
         }
 
 
@@ -239,10 +229,9 @@ public class AggregationManager extends RolapAggregationManager {
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(256);
-            buf.append("generateSqlQuery: sql=");
-            buf.append(sql);
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                "generateSqlQuery: sql="
+                + sql);
         }
 
         return sql;
@@ -318,7 +307,8 @@ public class AggregationManager extends RolapAggregationManager {
             final BitSet distinctMeasures = distinctMeasuresBitKey.toBitSet();
             BitKey combinedLevelBitKey = null;
             for (int k = distinctMeasures.nextSetBit(0); k >= 0;
-                k = distinctMeasures.nextSetBit(k + 1)) {
+                k = distinctMeasures.nextSetBit(k + 1))
+            {
                 final AggStar.FactTable.Measure distinctMeasure =
                     aggStar.lookupMeasure(k);
                 BitKey rollableLevelBitKey =
@@ -373,8 +363,9 @@ System.out.println(buf.toString());
                 // For each such measure, is it based upon a foreign key.
                 // Are there any foreign keys left over. No, can use AggStar.
                 BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
-                for (AggStar.FactTable.Measure measure : aggStar.getFactTable()
-                    .getMeasures()) {
+                for (AggStar.FactTable.Measure measure
+                    : aggStar.getFactTable().getMeasures())
+                {
                     if (measure.isDistinct()) {
                         if (measureBitKey.get(measure.getBitPosition())) {
                             fkBitKey.clear(measure.getBitPosition());
@@ -389,7 +380,8 @@ System.out.println(buf.toString());
             }
 
             if (!aggStar.select(
-                levelBitKey, combinedLevelBitKey, measureBitKey)) {
+                levelBitKey, combinedLevelBitKey, measureBitKey))
+            {
                 continue;
             }
 
@@ -409,7 +401,8 @@ System.out.println(buf.toString());
      */
     public static class PinSetImpl
         extends HashSet<Segment>
-        implements RolapAggregationManager.PinSet {
+        implements RolapAggregationManager.PinSet
+    {
     }
 }
 

@@ -57,8 +57,8 @@ abstract class Rowset implements XmlaConstants {
         this.handler = handler;
         ArrayList<RowsetDefinition.Column> list =
             new ArrayList<RowsetDefinition.Column>();
-        for (Map.Entry<String, Object> restrictionEntry :
-            restrictions.entrySet())
+        for (Map.Entry<String, Object> restrictionEntry
+            : restrictions.entrySet())
         {
             String restrictedColumn = restrictionEntry.getKey();
             LOGGER.debug(
@@ -66,13 +66,15 @@ abstract class Rowset implements XmlaConstants {
             final RowsetDefinition.Column column = definition.lookupColumn(
                 restrictedColumn);
             if (column == null) {
-                throw Util.newError("Rowset '" + definition.name() +
-                    "' does not contain column '" + restrictedColumn + "'");
+                throw Util.newError(
+                    "Rowset '" + definition.name()
+                    + "' does not contain column '" + restrictedColumn + "'");
             }
             if (!column.restriction) {
-                throw Util.newError("Rowset '" + definition.name() +
-                    "' column '" + restrictedColumn +
-                    "' does not allow restrictions");
+                throw Util.newError(
+                    "Rowset '" + definition.name()
+                    + "' column '" + restrictedColumn
+                    + "' does not allow restrictions");
             }
             // Check that the value is of the right type.
             final Object restriction = restrictionEntry.getValue();
@@ -86,9 +88,10 @@ abstract class Rowset implements XmlaConstants {
                 case StringSometimesArray:
                     break; // OK
                 default:
-                    throw Util.newError("Rowset '" + definition.name() +
-                        "' column '" + restrictedColumn +
-                        "' can only be restricted on one value at a time");
+                    throw Util.newError(
+                        "Rowset '" + definition.name()
+                        + "' column '" + restrictedColumn
+                        + "' can only be restricted on one value at a time");
                 }
             }
             list.add(column);
@@ -102,8 +105,9 @@ abstract class Rowset implements XmlaConstants {
             final PropertyDefinition propertyDef =
                 Util.lookup(PropertyDefinition.class, propertyName);
             if (propertyDef == null) {
-                throw Util.newError("Rowset '" + definition.name() +
-                    "' does not support property '" + propertyName + "'");
+                throw Util.newError(
+                    "Rowset '" + definition.name()
+                    + "' does not support property '" + propertyName + "'");
             }
             final String propertyValue = propertyEntry.getValue();
             setProperty(propertyDef, propertyValue);
@@ -141,9 +145,10 @@ abstract class Rowset implements XmlaConstants {
             }
             // fall through
         default:
-            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name() +
-                    "' does not support property '" + propertyDef.name() +
-                    "' (value is '" + value + "')");
+            LOGGER.warn(
+                "Warning: Rowset '" + rowsetDefinition.name()
+                + "' does not support property '" + propertyDef.name()
+                + "' (value is '" + value + "')");
         }
     }
 
@@ -197,8 +202,8 @@ abstract class Rowset implements XmlaConstants {
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
-        for (RowsetDefinition.Column column :
-                 rowsetDefinition.columnDefinitions)
+        for (RowsetDefinition.Column column
+            : rowsetDefinition.columnDefinitions)
         {
             Object value = row.get(column.name);
             if (value == null) {
@@ -207,10 +212,11 @@ abstract class Rowset implements XmlaConstants {
                         CLIENT_FAULT_FC,
                         HSB_BAD_NON_NULLABLE_COLUMN_CODE,
                         HSB_BAD_NON_NULLABLE_COLUMN_FAULT_FS,
-                        Util.newInternal("Value required for column " +
-                            column.name +
-                            " of rowset " +
-                            rowsetDefinition.name()));
+                        Util.newInternal(
+                            "Value required for column "
+                            + column.name
+                            + " of rowset "
+                            + rowsetDefinition.name()));
                 }
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
@@ -281,8 +287,8 @@ abstract class Rowset implements XmlaConstants {
             });
         for (E anEnum : enumsSortedByName) {
             Row row = new Row();
-            for (RowsetDefinition.Column column :
-                     rowsetDefinition.columnDefinitions)
+            for (RowsetDefinition.Column column
+                : rowsetDefinition.columnDefinitions)
             {
                 row.names.add(column.name);
                 row.values.add(column.get(anEnum));
@@ -367,10 +373,9 @@ abstract class Rowset implements XmlaConstants {
                 try {
                     return Integer.parseInt(rval.get(0));
                 } catch (NumberFormatException ex) {
-                    LOGGER.info("Rowset.getRestrictionValue: "+
-                        "bad integer restriction \""+
-                        rval+
-                        "\"");
+                    LOGGER.info(
+                        "Rowset.getRestrictionValue: "
+                        + "bad integer restriction \"" + rval + "\"");
                     return -1;
                 }
             }

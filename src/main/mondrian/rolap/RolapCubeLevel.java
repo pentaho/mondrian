@@ -123,7 +123,8 @@ public class RolapCubeLevel extends RolapLevel {
                     ((MondrianDef.Table) rel).getAlias(),
                     col.getColumnName());
             } else if (rel instanceof MondrianDef.Join
-                        || rel instanceof MondrianDef.Relation) {
+                || rel instanceof MondrianDef.Relation)
+            {
                 // need to determine correct name of alias for this level.
                 // this may be defined in level
                 // col.table
@@ -136,8 +137,9 @@ public class RolapCubeLevel extends RolapLevel {
             // with the new aliased name
             return exp;
         }
-        throw new RuntimeException("conversion of Class " + exp.getClass() +
-                                    " unsupported at this time");
+        throw new RuntimeException(
+            "conversion of Class " + exp.getClass()
+            + " unsupported at this time");
     }
 
     public void setStarKeyColumn(RolapStar.Column column) {
@@ -287,24 +289,26 @@ public class RolapCubeLevel extends RolapLevel {
                 // (this happens in virtual cubes). The starMeasure only has
                 // a value for the 'all' member of the hierarchy (or for the
                 // default member if the hierarchy has no 'all' member)
-                return member != hierarchy.getDefaultMember() ||
-                    hierarchy.hasAll();
+                return member != hierarchy.getDefaultMember()
+                    || hierarchy.hasAll();
             }
 
             final StarColumnPredicate predicate;
             if (member.isCalculated()) {
                 predicate = null;
             } else {
-                predicate = false ? new MemberColumnPredicate(column, member) :
-                    new ValueColumnPredicate(column, member.getKey());
+                predicate =
+                    false
+                    ? new MemberColumnPredicate(column, member)
+                    : new ValueColumnPredicate(column, member.getKey());
             }
 
             // use the member as constraint; this will give us some
             //  optimization potential
             request.addConstrainedColumn(column, predicate);
 
-            if (request.extendedContext &&
-                getNameExp() != null)
+            if (request.extendedContext
+                && getNameExp() != null)
             {
                 final RolapStar.Column nameColumn = column.getNameColumn();
 

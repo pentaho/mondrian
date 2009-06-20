@@ -104,7 +104,7 @@ public class SchemaTreeCellEditor
                     new MondrianGuiDef.Table(
                         "", "Table 2", ""));
         } else if (retValue.equals("Table")) {
-            relationObj = new MondrianGuiDef.Table("","Table","");
+            relationObj = new MondrianGuiDef.Table("", "Table", "");
         }
 
         TreePath tpath = tree.getSelectionPath();

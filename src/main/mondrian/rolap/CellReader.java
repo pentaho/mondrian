@@ -56,8 +56,9 @@ interface CellReader {
     Object get(RolapEvaluator evaluator);
 
     /**
-     * Returns the number of times this cell reader has told a lie (since creation),
-     * because the required cell value is not in the cache.
+     * Returns the number of times this cell reader has told a lie
+     * (since creation), because the required cell value is not in the
+     * cache.
      */
     int getMissCount();
 

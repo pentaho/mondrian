@@ -409,7 +409,8 @@ public class BitKeyTest extends TestCase {
     public void testOr() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 BitKey bitKey1 = makeAndSet(size1, positions1);
                 BitKey bitKey = bitKey0.or(bitKey1);
@@ -421,8 +422,8 @@ public class BitKeyTest extends TestCase {
                     max = Math.max(max, positions1[i]);
                 }
                 for (int pos = 0; pos <= max; pos++) {
-                    boolean expected = contains(positions0, pos) ||
-                            contains(positions1, pos);
+                    boolean expected = contains(positions0, pos)
+                        || contains(positions1, pos);
                     assertEquals(expected, bitKey.get(pos));
                 }
             }
@@ -435,7 +436,8 @@ public class BitKeyTest extends TestCase {
     public void testAnd() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 BitKey bitKey1 = makeAndSet(size1, positions1);
                 BitKey bitKey = bitKey0.and(bitKey1);
@@ -447,8 +449,9 @@ public class BitKeyTest extends TestCase {
                     max = Math.max(max, positions1[i]);
                 }
                 for (int pos = 0; pos <= max; pos++) {
-                    boolean expected = contains(positions0, pos) &&
-                            contains(positions1, pos);
+                    boolean expected =
+                        contains(positions0, pos)
+                        && contains(positions1, pos);
                     assertEquals(expected, bitKey.get(pos));
                 }
             }
@@ -461,7 +464,8 @@ public class BitKeyTest extends TestCase {
     public void testAndNot() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 BitKey bitKey1 = makeAndSet(size1, positions1);
                 BitKey bitKey = bitKey0.andNot(bitKey1);
@@ -473,8 +477,9 @@ public class BitKeyTest extends TestCase {
                     max = Math.max(max, positions1[i]);
                 }
                 for (int pos = 0; pos <= max; pos++) {
-                    boolean expected = contains(positions0, pos) &&
-                            !contains(positions1, pos);
+                    boolean expected =
+                        contains(positions0, pos)
+                        && !contains(positions1, pos);
                     assertEquals(expected, bitKey.get(pos));
                 }
             }
@@ -487,7 +492,8 @@ public class BitKeyTest extends TestCase {
     public void testIntersects() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 BitKey bitKey1 = makeAndSet(size1, positions1);
                 boolean result = bitKey0.intersects(bitKey1);
@@ -510,13 +516,15 @@ public class BitKeyTest extends TestCase {
     public void testToBitSet() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 final BitSet bitSet = bitKey0.toBitSet();
                 int j = 0;
                 for (int i = bitSet.nextSetBit(0);
                      i >= 0;
-                     i = bitSet.nextSetBit(i + 1)) {
+                     i = bitSet.nextSetBit(i + 1))
+                {
                     assertTrue(i == positions0[j++]);
                 }
                 assertTrue(j == positions0.length);
@@ -530,7 +538,8 @@ public class BitKeyTest extends TestCase {
     public void testCompareTo() {
         doTestOp(new Checker() {
             public void check(
-                    int size0, int[] positions0, int size1, int[] positions1) {
+                int size0, int[] positions0, int size1, int[] positions1)
+            {
                 BitKey bitKey0 = makeAndSet(size0, positions0);
                 BitKey bitKey1 = makeAndSet(size1, positions1);
                 int c = bitKey0.compareTo(bitKey1);
@@ -596,7 +605,7 @@ public class BitKeyTest extends TestCase {
         checker.check(size2, positions13, size2, positions12);
 
         int[] positions14 = {63};
-        int[] positions15 = {63,127,191};
+        int[] positions15 = {63, 127, 191};
         checker.check(size1, positions14, size1, positions14);
         checker.check(size2, positions15, size2, positions15);
     }
@@ -681,7 +690,7 @@ public class BitKeyTest extends TestCase {
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            3,6,9,12,15,24,35,48
+            3, 6, 9, 12, 15, 24, 35, 48
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
@@ -689,7 +698,7 @@ public class BitKeyTest extends TestCase {
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            1,3, 60, 63
+            1, 3, 60, 63
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
@@ -697,7 +706,7 @@ public class BitKeyTest extends TestCase {
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            0,1,62,63
+            0, 1, 62, 63
         };
         doTestIterator(bitPositions);
 
@@ -711,7 +720,7 @@ public class BitKeyTest extends TestCase {
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            1, 63,64,65,66,127
+            1, 63, 64, 65, 66, 127
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
@@ -733,15 +742,15 @@ public class BitKeyTest extends TestCase {
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            0,1,127,193
+            0, 1, 127, 193
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            0,1,127,128,191,192,193
+            0, 1, 127, 128, 191, 192, 193
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {
-            0,1,62,63,64,127,128,191,192,193
+            0, 1, 62, 63, 64, 127, 128, 191, 192, 193
         };
         doTestIterator(bitPositions);
         bitPositions = new int[] {

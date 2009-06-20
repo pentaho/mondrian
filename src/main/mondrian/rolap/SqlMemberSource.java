@@ -214,18 +214,19 @@ class SqlMemberSource
                         // this error, try a workaround similar to the Sybase
                         // workaround above.
                         throw Util.newInternal(
-                            "Cannot generate query to count members of level '" +
-                            level.getUniqueName() +
-                            "': database supports neither SELECT-in-FROM nor compound COUNT DISTINCT");
+                            "Cannot generate query to count members of level '"
+                            + level.getUniqueName()
+                            + "': database supports neither SELECT-in-FROM nor "
+                            + "compound COUNT DISTINCT");
                     }
                 }
                 hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
 
                 String keyExp = level2.getKeyExp().getExpression(sqlQuery);
-                if (columnCount > 0 &&
-                    !sqlQuery.getDialect().allowsCompoundCountDistinct() &&
-                    sqlQuery.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.SYBASE)
+                if (columnCount > 0
+                    && !sqlQuery.getDialect().allowsCompoundCountDistinct()
+                    && sqlQuery.getDialect().getDatabaseProduct()
+                    == Dialect.DatabaseProduct.SYBASE)
                 {
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
@@ -299,8 +300,8 @@ class SqlMemberSource
                 if (limit > 0 && limit < stmt.rowCount) {
                     // result limit exceeded, throw an exception
                     throw stmt.handle(
-                        MondrianResource.instance().MemberFetchLimitExceeded.
-                        ex(limit));
+                        MondrianResource.instance().MemberFetchLimitExceeded.ex(
+                            limit));
                 }
 
                 int column = 0;
@@ -423,19 +424,21 @@ RME is this right
 
     // implement MemberReader
     public List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal) {
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(null);
+            sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal,
-            TupleConstraint constraint) {
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint)
+    {
         if (level.isAll()) {
             final List<RolapMember> list = new ArrayList<RolapMember>();
             list.add(hierarchy.getAllMember());
@@ -549,8 +552,9 @@ RME is this right
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
-        boolean collapsedLevel = (aggStar != null) &&
-                        isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+        boolean collapsedLevel =
+            (aggStar != null)
+            && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
 
         if (!collapsedLevel) {
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
@@ -674,8 +678,9 @@ RME is this right
         // member objects
 
         if (!childLevel.isAll()) {
-            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel) &&
-                levelContainsMultipleColumns(childLevel)) {
+            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel)
+                && levelContainsMultipleColumns(childLevel))
+            {
                 return null;
             }
         }
@@ -788,9 +793,10 @@ RME is this right
     {
         // allow parent child calculated members through
         // this fixes the non closure parent child hierarchy bug
-        if (!parentMember.isAll() &&
-                parentMember.isCalculated() &&
-                !parentMember.getLevel().isParentChild()) {
+        if (!parentMember.isAll()
+            && parentMember.isCalculated()
+            && !parentMember.getLevel().isParentChild())
+        {
             return;
         }
         getMemberChildren2(parentMember, children, constraint);
@@ -876,8 +882,8 @@ RME is this right
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
                     // result limit exceeded, throw an exception
-                    throw MondrianResource.instance().MemberFetchLimitExceeded.
-                        ex(limit);
+                    throw MondrianResource.instance().MemberFetchLimitExceeded
+                        .ex(limit);
                 }
 
                 Object value = resultSet.getObject(1);
@@ -942,11 +948,11 @@ RME is this right
             // to the parent member; the data member does not have any
             // children.
             final RolapParentChildMember parentChildMember =
-                childLevel.hasClosedPeer() ?
-                    new RolapParentChildMember(
-                            parentMember, childLevel, value, member)
-                    : new RolapParentChildMemberNoClosure(
-                            parentMember, childLevel, value, member);
+                childLevel.hasClosedPeer()
+                ? new RolapParentChildMember(
+                    parentMember, childLevel, value, member)
+                : new RolapParentChildMemberNoClosure(
+                    parentMember, childLevel, value, member);
 
             member = parentChildMember;
         }
@@ -986,12 +992,12 @@ RME is this right
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
-                "while generating query to retrieve children of parent/child " +
-                    "hierarchy member " + member);
+                "while generating query to retrieve children of parent/child "
+                + "hierarchy member " + member);
         Util.assertTrue(
             member.isAll(),
-            "In the current implementation, parent/child hierarchies must " +
-                "have only one level (plus the 'All' level).");
+            "In the current implementation, parent/child hierarchies must "
+            + "have only one level (plus the 'All' level).");
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
@@ -1003,8 +1009,9 @@ RME is this right
         String parentId = level.getParentExp().getExpression(sqlQuery);
         StringBuilder condition = new StringBuilder(64);
         condition.append(parentId);
-        if (level.getNullParentValue() == null ||
-                level.getNullParentValue().equalsIgnoreCase("NULL")) {
+        if (level.getNullParentValue() == null
+            || level.getNullParentValue().equalsIgnoreCase("NULL"))
+        {
             condition.append(" IS NULL");
         } else {
             // Quote the value if it doesn't seem to be a number.
@@ -1055,8 +1062,8 @@ RME is this right
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
-                "while generating query to retrieve children of " +
-                    "parent/child hierarchy member " + member);
+                "while generating query to retrieve children of "
+                + "parent/child hierarchy member " + member);
         RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
@@ -1197,7 +1204,8 @@ RME is this right
      * Unfortunately it's the best we can do without a closure table.
      */
     private static class RolapParentChildMemberNoClosure
-        extends RolapParentChildMember {
+        extends RolapParentChildMember
+    {
 
         public RolapParentChildMemberNoClosure(
             RolapMember parentMember,

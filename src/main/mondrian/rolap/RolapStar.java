@@ -209,10 +209,10 @@ public class RolapStar {
             String compatibleForeignKey,
             String compatibleJoinKey)
         {
-            return (parent == compatibleParent &&
-                origRel.getClass().equals(rel.getClass()) &&
-                foreignKey.equals(compatibleForeignKey) &&
-                joinKey.equals(compatibleJoinKey));
+            return parent == compatibleParent
+                && origRel.getClass().equals(rel.getClass())
+                && foreignKey.equals(compatibleForeignKey)
+                && joinKey.equals(compatibleJoinKey);
         }
     }
 
@@ -601,8 +601,8 @@ public class RolapStar {
         if (changeListener != null) {
             if (cacheAggregations && !RolapStar.disableCaching) {
                 synchronized (sharedAggregations) {
-                    for (Map.Entry<AggregationKey, Aggregation> e :
-                        sharedAggregations.entrySet())
+                    for (Map.Entry<AggregationKey, Aggregation> e
+                        : sharedAggregations.entrySet())
                     {
                         AggregationKey aggregationKey = e.getKey();
 
@@ -687,7 +687,7 @@ public class RolapStar {
     private void pushAggregateModification(
         AggregationKey localAggregationKey,
         Aggregation localAggregation,
-        Map<AggregationKey,Aggregation> destAggregations)
+        Map<AggregationKey, Aggregation> destAggregations)
     {
         if (cacheAggregations && !RolapStar.disableCaching) {
             synchronized (destAggregations) {
@@ -702,7 +702,8 @@ public class RolapStar {
 
                     if (localAggregationKey.equals(aggregationKey)) {
                         if (localAggregation.getCreationTimestamp().after(
-                            aggregation.getCreationTimestamp())) {
+                            aggregation.getCreationTimestamp()))
+                        {
                             it.remove();
                         } else {
                             // Entry is newer, do not replace
@@ -855,8 +856,9 @@ public class RolapStar {
             columnList.addAll(table.columnList);
         }
         for (Table child : table.children) {
-            if (joinColumn == null ||
-                child.getJoinCondition().left.equals(joinColumn)) {
+            if (joinColumn == null
+                || child.getJoinCondition().left.equals(joinColumn))
+            {
                 collectColumns(columnList, child, null);
             }
         }
@@ -1197,7 +1199,8 @@ public class RolapStar {
             SqlQuery sqlQuery = getSqlQuery();
             if (sqlQuery.getDialect().allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect("count(distinct "
+                sqlQuery.addSelect(
+                    "count(distinct "
                     + generateExprString(sqlQuery) + ")");
 
                 // no need to join fact table here
@@ -1215,17 +1218,18 @@ public class RolapStar {
                 sqlQuery.addSelect("count(*)");
                 sqlQuery.addFrom(inner, "init", failIfExists);
             } else {
-                throw Util.newInternal("Cannot compute cardinality: this " +
-                    "database neither supports COUNT DISTINCT nor SELECT in " +
-                    "the FROM clause.");
+                throw Util.newInternal(
+                    "Cannot compute cardinality: this "
+                    + "database neither supports COUNT DISTINCT nor SELECT in "
+                    + "the FROM clause.");
             }
             String sql = sqlQuery.toString();
             final SqlStatement stmt =
                 RolapUtil.executeQuery(
                     dataSource, sql,
                     "RolapStar.Column.getCardinality",
-                    "while counting distinct values of column '" +
-                    expression.getGenericExpression());
+                    "while counting distinct values of column '"
+                    + expression.getGenericExpression());
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 Util.assertTrue(resultSet.next());
@@ -1269,8 +1273,8 @@ public class RolapStar {
             // is unfortunate, and we will fix it some day. For now, create
             // a fake column with all of the information needed by the toSql
             // method, and a copy of the predicate wrapping that fake column.
-            if (!Bug.BugMondrian313Fixed ||
-                !Bug.BugMondrian314Fixed
+            if (!Bug.BugMondrian313Fixed
+                || !Bug.BugMondrian314Fixed
                 && predicate.getConstrainedColumn() == null)
             {
                 Column column = new Column(datatype) {
@@ -1582,8 +1586,9 @@ public class RolapStar {
             for (Column column : getColumns()) {
                 if (column instanceof Measure) {
                     Measure measure = (Measure) column;
-                    if (measure.getName().equals(name) &&
-                        measure.getCubeName().equals(cubeName)) {
+                    if (measure.getName().equals(name)
+                        && measure.getCubeName().equals(cubeName))
+                    {
                         return measure;
                     }
                 }
@@ -1709,14 +1714,15 @@ public class RolapStar {
         }
 
         private Column makeColumnForLevelExpr(
-                RolapCube cube,
-                RolapLevel level,
-                String name,
-                MondrianDef.Expression xmlExpr,
-                Dialect.Datatype datatype,
-                Column nameColumn,
-                Column parentColumn,
-                String usagePrefix) {
+            RolapCube cube,
+            RolapLevel level,
+            String name,
+            MondrianDef.Expression xmlExpr,
+            Dialect.Datatype datatype,
+            Column nameColumn,
+            Column parentColumn,
+            String usagePrefix)
+        {
             Table table = this;
             if (xmlExpr instanceof MondrianDef.Column) {
                 final MondrianDef.Column xmlColumn =
@@ -1726,15 +1732,15 @@ public class RolapStar {
                 table = findAncestor(tableName);
                 if (table == null) {
                     throw Util.newError(
-                            "Level '" + level.getUniqueName()
-                            + "' of cube '"
-                            + this
-                            + "' is invalid: table '" + tableName
-                            + "' is not found in current scope"
-                            + Util.nl
-                            + ", star:"
-                            + Util.nl
-                            + getStar());
+                        "Level '" + level.getUniqueName()
+                        + "' of cube '"
+                        + this
+                        + "' is invalid: table '" + tableName
+                        + "' is not found in current scope"
+                        + Util.nl
+                        + ", star:"
+                        + Util.nl
+                        + getStar());
                 }
                 RolapStar.AliasReplacer aliasReplacer =
                     new RolapStar.AliasReplacer(tableName, table.getAlias());
@@ -1925,7 +1931,8 @@ public class RolapStar {
         public void addToFrom(
             SqlQuery query,
             boolean failIfExists,
-            boolean joinToParent) {
+            boolean joinToParent)
+        {
             query.addFrom(relation, alias, failIfExists);
             Util.assertTrue((parent == null) == (joinCondition == null));
             if (joinToParent) {
@@ -2092,7 +2099,8 @@ public class RolapStar {
             if (!(left instanceof MondrianDef.Column)) {
                 // TODO: Will this ever print?? if not then left should be
                 // of type MondrianDef.Column.
-                LOGGER.debug("Condition.left NOT Column: "
+                LOGGER.debug(
+                    "Condition.left NOT Column: "
                     + left.getClass().getName());
             }
             this.left = left;
@@ -2122,8 +2130,8 @@ public class RolapStar {
                 return false;
             }
             Condition that = (Condition) obj;
-            return (this.left.equals(that.left) &&
-                    this.right.equals(that.right));
+            return this.left.equals(that.left)
+                && this.right.equals(that.right);
         }
 
         public String toString() {

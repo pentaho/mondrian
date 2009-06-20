@@ -425,8 +425,8 @@ public class RolapCube extends CubeBase {
 
         this.cubeUsages = new RolapCubeUsages(xmlVirtualCube.cubeUsage);
 
-        for (MondrianDef.VirtualCubeMeasure xmlMeasure :
-                 xmlVirtualCube.measures)
+        for (MondrianDef.VirtualCubeMeasure xmlMeasure
+            : xmlVirtualCube.measures)
         {
             // Lookup a measure in an existing cube.
             RolapCube cube = schema.lookupCube(xmlMeasure.cubeName);
@@ -452,9 +452,9 @@ public class RolapCube extends CubeBase {
                                 xmlMeasure.name, xmlMeasure.cubeName);
                         if (calcMember == null) {
                             throw Util.newInternal(
-                                "Could not find XML Calculated Member '" +
-                                    xmlMeasure.name + "' in XML cube '" +
-                                    xmlMeasure.cubeName + "'");
+                                "Could not find XML Calculated Member '"
+                                + xmlMeasure.name + "' in XML cube '"
+                                + xmlMeasure.cubeName + "'");
                         }
                         List<MondrianDef.CalculatedMember> memberList =
                             calculatedMembersMap.get(cube);
@@ -494,8 +494,8 @@ public class RolapCube extends CubeBase {
             }
             if (!found) {
                 throw Util.newInternal(
-                    "could not find measure '" + xmlMeasure.name +
-                        "' in cube '" + xmlMeasure.cubeName + "'");
+                    "could not find measure '" + xmlMeasure.name
+                    + "' in cube '" + xmlMeasure.cubeName + "'");
             }
         }
 
@@ -759,8 +759,8 @@ public class RolapCube extends CubeBase {
 
         // Now pick through the formulas.
         Util.assertTrue(
-            queryExp.formulas.length ==
-                xmlCalcMembers.size() + xmlNamedSets.size());
+            queryExp.formulas.length
+            == xmlCalcMembers.size() + xmlNamedSets.size());
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
             postCalcMember(xmlCalcMembers, i, queryExp, memberList);
         }
@@ -962,15 +962,18 @@ public class RolapCube extends CubeBase {
         }
         // Flag that the calc members are defined against a cube; will
         // determine the value of Member.isCalculatedInQuery
-        buf.append(",").append(Util.nl).
-                append(Util.quoteMdxIdentifier(Property.MEMBER_SCOPE.name)).
-                append(" = 'CUBE'");
+        buf.append(",")
+            .append(Util.nl);
+        Util.quoteMdxIdentifier(Property.MEMBER_SCOPE.name, buf);
+        buf.append(" = 'CUBE'");
 
         // Assign the member an ordinal higher than all of the stored measures.
         if (!propNames.contains(Property.MEMBER_ORDINAL.getName())) {
-            buf.append(",").append(Util.nl).
-                    append(Property.MEMBER_ORDINAL).append(" = ").
-                    append(measureCount + j);
+            buf.append(",")
+                .append(Util.nl)
+                .append(Property.MEMBER_ORDINAL)
+                .append(" = ")
+                .append(measureCount + j);
         }
         buf.append(Util.nl);
     }
@@ -980,8 +983,11 @@ public class RolapCube extends CubeBase {
         String expr)
     {
         Property prop = Property.lookup(name, false);
-        if (prop != null && prop.getType() == Property.Datatype.TYPE_NUMERIC &&
-                isSurroundedWithQuotes(expr) && expr.length() > 2) {
+        if (prop != null
+            && prop.getType() == Property.Datatype.TYPE_NUMERIC
+            && isSurroundedWithQuotes(expr)
+            && expr.length() > 2)
+        {
             return expr.substring(1, expr.length() - 1);
         }
         return expr;
@@ -1085,8 +1091,9 @@ public class RolapCube extends CubeBase {
     }
 
     MondrianDef.CubeDimension lookup(
-            MondrianDef.CubeDimension[] xmlDimensions,
-            String name) {
+        MondrianDef.CubeDimension[] xmlDimensions,
+        String name)
+    {
         for (MondrianDef.CubeDimension cd : xmlDimensions) {
             if (name.equals(cd.name)) {
                 return cd;
@@ -1231,8 +1238,10 @@ public class RolapCube extends CubeBase {
             // Only one, so let lower level error checking handle problems
             createUsage(hierarchies[0], xmlCubeDimension);
 
-        } else if ((xmlCubeDimension instanceof MondrianDef.DimensionUsage) &&
-            (((MondrianDef.DimensionUsage) xmlCubeDimension).level != null)) {
+        } else if ((xmlCubeDimension instanceof MondrianDef.DimensionUsage)
+            && (((MondrianDef.DimensionUsage) xmlCubeDimension).level
+                != null))
+        {
             // More than one, make sure if we are joining by level, that
             // at least one hierarchy can and those that can not are
             // not registered
@@ -1243,7 +1252,8 @@ public class RolapCube extends CubeBase {
 
             for (RolapCubeHierarchy hierarchy : hierarchies) {
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapCube<init>: hierarchy="
+                    getLogger().debug(
+                        "RolapCube<init>: hierarchy="
                         + hierarchy.getName());
                 }
                 RolapLevel joinLevel = (RolapLevel)
@@ -1265,7 +1275,8 @@ public class RolapCube extends CubeBase {
             // just do it
             for (RolapCubeHierarchy hierarchy : hierarchies) {
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapCube<init>: hierarchy="
+                    getLogger().debug(
+                        "RolapCube<init>: hierarchy="
                         + hierarchy.getName());
                 }
                 createUsage(hierarchy, xmlCubeDimension);
@@ -1279,10 +1290,11 @@ public class RolapCube extends CubeBase {
     {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("RolapCube.createUsage: "+
-                "cube="  + getName()+
-                ", hierarchy=" + hierarchy.getName() +
-                ", usage=" + usage);
+            LOGGER.debug(
+                "RolapCube.createUsage: "
+                + "cube=" + getName()
+                + ", hierarchy=" + hierarchy.getName()
+                + ", usage=" + usage);
         }
         for (HierarchyUsage hierUsage : hierarchyUsages) {
             if (hierUsage.equals(usage)) {
@@ -1333,7 +1345,8 @@ public class RolapCube extends CubeBase {
             if (hu.getHierarchyName().equals(name)) {
                 if (list != null) {
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsages: "
+                        getLogger().debug(
+                            "RolapCube.getUsages: "
                             + "add list HierarchyUsage.name=" + hu.getName());
                     }
                     list.add(hu);
@@ -1342,7 +1355,8 @@ public class RolapCube extends CubeBase {
                 } else {
                     list = new ArrayList<HierarchyUsage>();
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsages: "
+                        getLogger().debug(
+                            "RolapCube.getUsages: "
                             + "add list hierUsage.name="
                             + hierUsage.getName()
                             + ", hu.name="
@@ -1401,7 +1415,8 @@ public class RolapCube extends CubeBase {
             if ((s != null) && s.equals(source)) {
                 if (list != null) {
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsagesBySource: "
+                        getLogger().debug(
+                            "RolapCube.getUsagesBySource: "
                             + "add list HierarchyUsage.name="
                             + hu.getName());
                     }
@@ -1411,7 +1426,8 @@ public class RolapCube extends CubeBase {
                 } else {
                     list = new ArrayList<HierarchyUsage>();
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsagesBySource: "
+                        getLogger().debug(
+                            "RolapCube.getUsagesBySource: "
                             + "add list hierUsage.name="
                             + hierUsage.getName()
                             + ", hu.name="
@@ -1547,13 +1563,14 @@ public class RolapCube extends CubeBase {
                             if (tableName != null) {
                                 relation = snip(relation, tableName);
 
-                                if (relation == null &&
-                                    getLogger().isDebugEnabled()) {
+                                if (relation == null
+                                    && getLogger().isDebugEnabled())
+                                {
                                     getLogger().debug(
                                         "RolapCube.registerDimension: after snip relation==null");
                                     getLogger().debug(
                                         "RolapCube.registerDimension: snip relationTmp2="
-                                            + format(relationTmp2));
+                                        + format(relationTmp2));
                                 }
                             }
                         }
@@ -1691,16 +1708,15 @@ public class RolapCube extends CubeBase {
                         this, level, parentColumn, usagePrefix);
                 } else {
                     // Issue warning and keep going.
-                    StringBuilder buf = new StringBuilder(64);
-                    buf.append("RolapCube.makeColumns: for cube \"");
-                    buf.append(getName());
-                    buf.append("\" the Level \"");
-                    buf.append(level.getName());
-                    buf.append("\" has a table name attribute \"");
-                    buf.append(tableName);
-                    buf.append("\" but the associated RolapStar does not");
-                    buf.append(" have a table with that name.");
-                    getLogger().warn(buf.toString());
+                    getLogger().warn(
+                        "RolapCube.makeColumns: for cube \""
+                        + getName()
+                        + "\" the Level \""
+                        + level.getName()
+                        + "\" has a table name attribute \""
+                        + tableName
+                        + "\" but the associated RolapStar does not"
+                        + " have a table with that name.");
 
                     parentColumn = table.makeColumns(
                         this, level, parentColumn, usagePrefix);
@@ -1993,8 +2009,8 @@ public class RolapCube extends CubeBase {
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
 
-            return validateNodes(join.left, map) &&
-                validateNodes(join.right, map);
+            return validateNodes(join.left, map)
+                && validateNodes(join.right, map);
 
         } else {
             throw Util.newInternal("bad relation type " + relation);
@@ -2315,12 +2331,14 @@ public class RolapCube extends CubeBase {
 
         for (int i = 0; i < getDimensions().length; i++) {
             Dimension dimension = getDimensions()[i];
-            if (dimension.getName().equals(levelDimName) ||
-                (isClosure && dimension.getName().equals(closDimName))) {
+            if (dimension.getName().equals(levelDimName)
+                || (isClosure && dimension.getName().equals(closDimName)))
+            {
                 for (int j = 0; j <  dimension.getHierarchies().length; j++) {
                     Hierarchy hier = dimension.getHierarchies()[j];
-                    if (hier.getName().equals(levelHierName) ||
-                        (isClosure && hier.getName().equals(closHierName))) {
+                    if (hier.getName().equals(levelHierName)
+                        || (isClosure && hier.getName().equals(closHierName)))
+                    {
                         if (isClosure) {
                             return (RolapCubeLevel)
                                 ((RolapCubeLevel) hier.getLevels()[1])
@@ -2462,14 +2480,14 @@ public class RolapCube extends CubeBase {
             if (tagName.equals("CalculatedMember")) {
                 xmlCalcMember = new MondrianDef.CalculatedMember(def);
             } else {
-                throw new XOMException("Got <" + tagName +
-                    "> when expecting <CalculatedMember>");
+                throw new XOMException(
+                    "Got <" + tagName + "> when expecting <CalculatedMember>");
             }
         } catch (XOMException e) {
             throw Util.newError(
                 e,
-                "Error while creating calculated member from XML [" +
-                xml + "]");
+                "Error while creating calculated member from XML ["
+                + xml + "]");
         }
 
         final List<RolapMember> memberList = new ArrayList<RolapMember>();
@@ -2548,8 +2566,8 @@ public class RolapCube extends CubeBase {
             for (Formula formula : calculatedMemberList) {
                 final String formulaUniqueName =
                     formula.getMdxMember().getUniqueName();
-                if (formulaUniqueName.equals(uniqueName) &&
-                    getRole().canAccess(formula.getMdxMember()))
+                if (formulaUniqueName.equals(uniqueName)
+                    && getRole().canAccess(formula.getMdxMember()))
                 {
                     return formula.getMdxMember();
                 }

@@ -45,7 +45,8 @@ import java.util.Enumeration;
  * @version $Id$
  */
 public class XmlaErrorTest extends XmlaBaseTestCase
-        implements XmlaConstants {
+    implements XmlaConstants
+{
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
@@ -56,8 +57,8 @@ public class XmlaErrorTest extends XmlaBaseTestCase
     static String password = null;
 
     static boolean isEquals(String s1, String s2) {
-        return (s1 == s2) ||
-            ((s1 != null) && (s2 != null) && (s1.equals(s2)));
+        return (s1 == s2)
+            || ((s1 != null) && (s2 != null) && (s1.equals(s2)));
     }
 
     static class Callback implements XmlaRequestCallback {
@@ -141,8 +142,8 @@ System.out.println("password=" + password);
             }
 
             String expect = request.getHeader(EXPECT);
-            if ((expect != null) &&
-                expect.equalsIgnoreCase(EXPECT_100_CONTINUE))
+            if ((expect != null)
+                && expect.equalsIgnoreCase(EXPECT_100_CONTINUE))
             {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
@@ -166,10 +167,11 @@ System.out.println("password=" + password);
         }
 
         public void postAction(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context) throws Exception
+        {
         }
     }
 

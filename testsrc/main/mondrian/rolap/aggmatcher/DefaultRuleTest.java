@@ -29,9 +29,10 @@ import java.io.FileReader;
  * @version $Id$
  */
 public class DefaultRuleTest extends TestCase {
-    private static final Logger LOGGER = Logger.getLogger(DefaultRuleTest.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(DefaultRuleTest.class);
     private static final String DIRECTORY =
-                "testsrc/main/mondrian/rolap/aggmatcher";
+        "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String TEST_RULE_XML = "TestRule.xml";
 
     private DefaultDef.AggRules rules;

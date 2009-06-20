@@ -135,7 +135,9 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
          * @param index Index
          */
         public MondrianOlap4jPosition(
-            mondrian.olap.Position mondrianPosition, int index) {
+            mondrian.olap.Position mondrianPosition,
+            int index)
+        {
             this.mondrianPosition = mondrianPosition;
             this.index = index;
         }

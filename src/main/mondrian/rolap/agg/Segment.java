@@ -128,8 +128,9 @@ class Segment {
      * {@link #waitUntilLoaded}.
      */
     synchronized void setData(
-            SegmentDataset data,
-            RolapAggregationManager.PinSet pinnedSegments) {
+        SegmentDataset data,
+        RolapAggregationManager.PinSet pinnedSegments)
+    {
         Util.assertTrue(this.data == null);
         Util.assertTrue(this.state == State.Loading);
 
@@ -321,7 +322,8 @@ class Segment {
             case Ready:
                 return; // excellent!
             case Failed:
-                throw Util.newError("Pending segment failed to load: "
+                throw Util.newError(
+                    "Pending segment failed to load: "
                     + toString());
             default:
                 throw Util.badValue(state);
@@ -391,7 +393,8 @@ class Segment {
         BitSet[] axisKeepBitSets,
         int bestColumn,
         StarColumnPredicate bestPredicate,
-        List<Segment.Region> excludedRegions) {
+        List<Segment.Region> excludedRegions)
+    {
         assert axisKeepBitSets.length == axes.length;
 
         // Create a new segment with a subset of the values. If only one
@@ -400,7 +403,7 @@ class Segment {
         final Aggregation.Axis[] newAxes = axes.clone();
 
         // For each axis, map from old position to new position.
-        final Map<Integer,Integer>[] axisPosMaps = new Map[axes.length];
+        final Map<Integer, Integer>[] axisPosMaps = new Map[axes.length];
 
         int valueCount = 1;
         for (int j = 0; j < axes.length; j++) {
@@ -424,7 +427,8 @@ class Segment {
                     = new HashMap<Integer, Integer>();
                 for (int bit = keepBitSet.nextSetBit(0);
                     bit >= 0;
-                    bit = keepBitSet.nextSetBit(bit + 1)) {
+                    bit = keepBitSet.nextSetBit(bit + 1))
+                {
                     map.put(bit, newAxisKeyList.size());
                     newAxisKeyList.add(axisKeys[bit]);
                 }
@@ -583,8 +587,8 @@ class Segment {
             if (obj instanceof Region) {
                 Region that = (Region) obj;
                 return Arrays.equals(
-                    this.predicates, that.predicates) &&
-                    Arrays.equals(
+                        this.predicates, that.predicates)
+                    && Arrays.equals(
                         this.multiColumnPredicates,
                         that.multiColumnPredicates);
             } else {
@@ -604,8 +608,9 @@ class Segment {
         public void describe(StringBuilder buf) {
             int k = 0;
             for (StarColumnPredicate predicate : predicates) {
-                if (predicate instanceof LiteralStarPredicate &&
-                    ((LiteralStarPredicate) predicate).getValue()) {
+                if (predicate instanceof LiteralStarPredicate
+                    && ((LiteralStarPredicate) predicate).getValue())
+                {
                     continue;
                 }
                 if (k++ > 0) {
@@ -614,8 +619,9 @@ class Segment {
                 predicate.describe(buf);
             }
             for (StarPredicate predicate : multiColumnPredicates) {
-                if (predicate instanceof LiteralStarPredicate &&
-                    ((LiteralStarPredicate) predicate).getValue()) {
+                if (predicate instanceof LiteralStarPredicate
+                    && ((LiteralStarPredicate) predicate).getValue())
+                {
                     continue;
                 }
                 if (k++ > 0) {

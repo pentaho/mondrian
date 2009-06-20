@@ -24,7 +24,8 @@ import mondrian.resource.MondrianResource;
  */
 public abstract class LevelBase
     extends OlapElementBase
-    implements Level {
+    implements Level
+{
 
     protected final Hierarchy hierarchy;
     protected final String name;
@@ -36,10 +37,11 @@ public abstract class LevelBase
     protected int  approxRowCount;
 
     protected LevelBase(
-            Hierarchy hierarchy,
-            String name,
-            int depth,
-            LevelType levelType) {
+        Hierarchy hierarchy,
+        String name,
+        int depth,
+        LevelType levelType)
+    {
         this.hierarchy = hierarchy;
         this.name = name;
         this.uniqueName = Util.makeFqName(hierarchy, name);

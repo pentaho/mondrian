@@ -501,8 +501,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits | other.bits0) == this.bits) &&
-                    (other.bits1 == 0);
+                return ((this.bits | other.bits0) == this.bits)
+                    && (other.bits1 == 0);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -838,8 +838,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits0 | other.bits0) == this.bits0) &&
-                    ((this.bits1 | other.bits1) == this.bits1);
+                return ((this.bits0 | other.bits0) == this.bits0)
+                    && ((this.bits1 | other.bits1) == this.bits1);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -866,8 +866,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return (this.bits0 & other.bits0) != 0 ||
-                    (this.bits1 & other.bits1) != 0;
+                return (this.bits0 & other.bits0) != 0
+                    || (this.bits1 & other.bits1) != 0;
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -975,8 +975,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (o instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) o;
-                return (this.bits0 == other.bits0) &&
-                    (this.bits1 == other.bits1);
+                return (this.bits0 == other.bits0)
+                    && (this.bits1 == other.bits1);
 
             } else if (o instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) o;
@@ -1021,8 +1021,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
 
         public boolean isEmpty() {
-            return bits0 == 0 &&
-                    bits1 == 0;
+            return bits0 == 0
+                && bits1 == 0;
         }
 
         // implement Comparable (in lazy, expensive fashion)
@@ -1253,8 +1253,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits[0] | other.bits0) == this.bits[0]) &&
-                    ((this.bits[1] | other.bits1) == this.bits[1]);
+                return ((this.bits[0] | other.bits0) == this.bits[0])
+                    && ((this.bits[1] | other.bits1) == this.bits[1]);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -1284,8 +1284,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return (this.bits[0] & other.bits0) != 0 ||
-                    (this.bits[1] & other.bits1) != 0;
+                return (this.bits[0] & other.bits0) != 0
+                    || (this.bits[1] & other.bits1) != 0;
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;

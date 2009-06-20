@@ -43,12 +43,12 @@ public class DefaultXmlaResponse implements XmlaResponse  {
         writer.completeBeforeElement("root");
         Throwable throwable = XmlaUtil.rootThrowable(t);
         writer.startElement("Messages");
-        writer.startElement("Error", new String[] {
-                "ErrorCode", throwable.getClass().getName(),
-                "Description", throwable.getMessage(),
-                "Source", "Mondrian",
-                "Help", "",
-        });
+        writer.startElement(
+            "Error",
+            "ErrorCode", throwable.getClass().getName(),
+            "Description", throwable.getMessage(),
+            "Source", "Mondrian",
+            "Help", "");
         writer.endElement(); // </Messages>
         writer.endElement(); // </Error>
     }

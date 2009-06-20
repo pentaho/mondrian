@@ -165,8 +165,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
         int k = getDistinctMeasureCount();
         final Dialect dialect = sqlQuery.getDialect();
-        if (!dialect.allowsCountDistinct() && k > 0 ||
-            !dialect.allowsMultipleCountDistinct() && k > 1) {
+        if (!dialect.allowsCountDistinct() && k > 0
+            || !dialect.allowsMultipleCountDistinct() && k > 1)
+        {
             distinctGenerateSql(sqlQuery, countOnly);
         } else {
             nonDistinctGenerateSql(sqlQuery);
@@ -300,8 +301,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
     protected void extraPredicates(SqlQuery sqlQuery) {
         List<StarPredicate> predicateList = getPredicateList();
         for (StarPredicate predicate : predicateList) {
-            for (RolapStar.Column column :
-                predicate.getConstrainedColumnList()) {
+            for (RolapStar.Column column
+                : predicate.getConstrainedColumnList())
+            {
                 final RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
             }

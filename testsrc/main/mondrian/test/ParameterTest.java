@@ -111,12 +111,14 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testNumericParameter() {
-        String s = executeExpr("Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")");
-        Assert.assertEquals("5",s);
+        String s =
+            executeExpr("Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")");
+        Assert.assertEquals("5", s);
     }
 
     public void testStringParameter() {
-        String s = executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
+        String s =
+            executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
         Assert.assertEquals("xy", s);
     }
 
@@ -408,8 +410,8 @@ public class ParameterTest extends FoodMartTestCase {
         Set<RolapConnectionProperties> overrideableProps = Util.enumSetOf(
             RolapConnectionProperties.Catalog,
             RolapConnectionProperties.Locale);
-        for (RolapConnectionProperties prop :
-            RolapConnectionProperties.class.getEnumConstants())
+        for (RolapConnectionProperties prop
+            : RolapConnectionProperties.class.getEnumConstants())
         {
             if (!overrideableProps.contains(prop)) {
                 // try to override prop
@@ -424,7 +426,9 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests accessing system properties as parameters in a statement.
      */
     public void testSystemPropsGet() {
-        for (Property property : MondrianProperties.instance().getPropertyList()) {
+        for (Property property
+            : MondrianProperties.instance().getPropertyList())
+        {
             assertExprReturns(
                 "ParamRef("
                 + Util.singleQuoteString(property.getPath())
@@ -456,7 +460,9 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests setting system properties.
      */
     public void testSystemPropsSet() {
-        for (Property property : MondrianProperties.instance().getPropertyList()) {
+        for (Property property
+            : MondrianProperties.instance().getPropertyList())
+        {
             final String propName = property.getPath();
             assertSetPropertyFails(propName, "System");
         }

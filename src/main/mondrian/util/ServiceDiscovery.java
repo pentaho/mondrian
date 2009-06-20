@@ -94,8 +94,8 @@ public class ServiceDiscovery<T> {
                     }
                 } catch (IOException e) {
                     logger.warn(
-                        "Error while finding service file " + resourceURL +
-                            " for " + theInterface,
+                        "Error while finding service file " + resourceURL
+                        + " for " + theInterface,
                         e);
                 } finally {
                     if (is != null) {
@@ -126,8 +126,8 @@ public class ServiceDiscovery<T> {
         Set<Class<T>> uniqueClasses)
     {
         // Split should leave me with a class name in the first string
-        // which will nicely ignore comments in the line. I checked and found that
-        // it also doesn't choke if:
+        // which will nicely ignore comments in the line. I checked
+        // and found that it also doesn't choke if:
         // a- There are no spaces on the line - you end up with one entry
         // b- A line begins with a whitespace character (the trim() fixes that)
         // c- Multiples of the same interface are filtered out

@@ -61,7 +61,8 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             new String[]{"fxxnn"}, false, false);
 
     public TopBottomPercentSumFunDef(
-            FunDef dummyFunDef, boolean top, boolean percent) {
+        FunDef dummyFunDef, boolean top, boolean percent)
+    {
         super(dummyFunDef);
         this.top = top;
         this.percent = percent;
@@ -82,9 +83,10 @@ class TopBottomPercentSumFunDef extends FunDefBase {
         private final boolean percent;
 
         public ResolverImpl(
-                final String name, final String signature,
-                final String description, final String[] signatures,
-                boolean top, boolean percent) {
+            final String name, final String signature,
+            final String description, final String[] signatures,
+            boolean top, boolean percent)
+        {
             super(name, signature, description, signatures);
             this.top = top;
             this.percent = percent;

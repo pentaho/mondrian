@@ -285,7 +285,8 @@ public class UtilTestCase extends TestCase {
     }
 
     private static void checkReplace(
-            String original, String seek, String replace, String expected) {
+        String original, String seek, String replace, String expected)
+    {
         // Check whether the JDK does what we expect. (If it doesn't it's
         // probably a bug in the test, not the JDK.)
         assertEquals(expected, original.replaceAll(seek, replace));

@@ -42,8 +42,8 @@ public class SortTest extends FoodMartTestCase
             for (int j = 0; j < values.length; j++) {
                 int expected = i < j ? -1 : i == j ? 0 : 1;
                 assertEquals(
-                    "values[" + i +  "]=" + values[i] + ", values[" + j +
-                        "]=" + values[j],
+                    "values[" + i +  "]=" + values[i] + ", values[" + j
+                    + "]=" + values[j],
                     expected,
                     FunUtil.compareValues(values[i], values[j]));
             }

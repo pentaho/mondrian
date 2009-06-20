@@ -67,9 +67,9 @@ class TopBottomCountFunDef extends FunDefBase {
         final IntegerCalc integerCalc =
                 compiler.compileInteger(call.getArg(1));
         final Calc orderCalc =
-                call.getArgCount() > 2 ?
-                compiler.compileScalar(call.getArg(2), true) :
-                null;
+            call.getArgCount() > 2
+            ? compiler.compileScalar(call.getArg(2), true)
+            : null;
         final int arity = ((SetType) call.getType()).getArity();
         return new AbstractListCalc(
             call,

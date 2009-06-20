@@ -49,8 +49,8 @@ class ResultComparator {
         HashSet<String> defaultDimMembers = new HashSet<String>();
 
         for (Dimension dim : dims) {
-            String uniqueName = dim.getHierarchies()[0].
-                getDefaultMember().getUniqueName();
+            String uniqueName =
+                dim.getHierarchies()[0].getDefaultMember().getUniqueName();
             defaultDimMembers.add(uniqueName);
         }
 

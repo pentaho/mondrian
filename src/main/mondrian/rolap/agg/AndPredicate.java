@@ -107,9 +107,10 @@ public class AndPredicate extends ListPredicate {
         // implementing "longest common prefix" algorithm which is an overkill.
         BitKey inListRHSBitKey = inListLHSBitKey.copy();
 
-        if (!columnBitKey.equals(inListLHSBitKey) ||
-            (children.size() > 1 &&
-             !sqlQuery.getDialect().supportsMultiValueInExpr())) {
+        if (!columnBitKey.equals(inListLHSBitKey)
+            || (children.size() > 1
+             && !sqlQuery.getDialect().supportsMultiValueInExpr()))
+        {
             inListRHSBitKey.clear();
         } else {
             for (StarPredicate predicate : children) {

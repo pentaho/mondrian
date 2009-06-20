@@ -212,20 +212,24 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     {
         return cc.createUnionSet(
             // all stores in OR
-            cc.createMemberSet(findMember(tc, "Sales", "Retail","OR"), true),
+            cc.createMemberSet(findMember(tc, "Sales", "Retail", "OR"), true),
             // all stores in Hidalgo, Zacatecas
-            cc.createMemberSet(findMember(tc, "Sales", "Retail","Zacatecas","Hidalgo"), true),
+            cc.createMemberSet(
+                findMember(tc, "Sales", "Retail", "Zacatecas", "Hidalgo"),
+                true),
             // a single store
-            cc.createMemberSet(findMember(tc, "Sales", "Retail","CA","Alameda","HQ"), false),
+            cc.createMemberSet(
+                findMember(tc, "Sales", "Retail", "CA", "Alameda", "HQ"),
+                false),
             // a range of stores
             cc.createMemberSet(
-                true, findMember(tc, "Sales", "Retail","WA","Bremerton"),
-                true, findMember(tc, "Sales", "Retail","Yucatan","Merida"),
+                true, findMember(tc, "Sales", "Retail", "WA", "Bremerton"),
+                true, findMember(tc, "Sales", "Retail", "Yucatan", "Merida"),
                 false),
             // all stores in a range of states
             cc.createMemberSet(
-                true, findMember(tc, "Sales", "Retail","DF"),
-                true, findMember(tc, "Sales", "Retail","Jalisco"),
+                true, findMember(tc, "Sales", "Retail", "DF"),
+                true, findMember(tc, "Sales", "Retail", "Jalisco"),
                 true));
     }
 
@@ -306,14 +310,18 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             resultString);
 
         // Change properties
-        Member m = findMember(tc, "Sales", "Store","USA","CA","San Francisco","Store 14");
+        Member m =
+            findMember(
+                tc, "Sales", "Store", "USA", "CA", "San Francisco", "Store 14");
         cc.execute(cc.createSetPropertyCommand(m, "Store Manager", "Higgins"));
         cc.execute(
             cc.createCompoundCommand(
                 Arrays.asList(
-                    cc.createSetPropertyCommand(m, "Street address", "770 Mission St"),
+                    cc.createSetPropertyCommand(
+                        m, "Street address", "770 Mission St"),
                     cc.createSetPropertyCommand(m, "Store Sqft", 6000),
-                    cc.createSetPropertyCommand(m, "Has coffee bar", "false"))));
+                    cc.createSetPropertyCommand(
+                        m, "Has coffee bar", "false"))));
 
         // Repeat same query; verify properties are changed.
         // Changing properties does not affect measures, so results unchanged.
@@ -380,7 +388,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // after we filter set to just members of store level we're ok
         final Member hqMember =
-            findMember(tc, "Sales", "Retail","CA","Alameda","HQ");
+            findMember(tc, "Sales", "Retail", "CA", "Alameda", "HQ");
         final CacheControl.MemberSet filteredMemberSet =
             cc.filter(hqMember.getLevel(), memberSet);
         command =

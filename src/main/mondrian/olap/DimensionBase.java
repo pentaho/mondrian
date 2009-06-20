@@ -24,7 +24,8 @@ import mondrian.resource.MondrianResource;
  */
 public abstract class DimensionBase
     extends OlapElementBase
-    implements Dimension {
+    implements Dimension
+{
 
     protected final String name;
     protected final String uniqueName;
@@ -74,7 +75,8 @@ public abstract class DimensionBase
     }
 
     public String getQualifiedName() {
-        return MondrianResource.instance().MdxDimensionName.str(getUniqueName());
+        return MondrianResource.instance().MdxDimensionName.str(
+            getUniqueName());
     }
 
     public boolean isMeasures() {
@@ -108,8 +110,8 @@ public abstract class DimensionBase
             // New (SSAS-compatible) behavior. If there is no matching
             // hierarchy, find the first level with the given name.
             if (oe == null) {
-                for (Hierarchy hierarchy :
-                    schemaReader.getDimensionHierarchies(this))
+                for (Hierarchy hierarchy
+                    : schemaReader.getDimensionHierarchies(this))
                 {
                     oe = hierarchy.lookupChild(schemaReader, s, matchType);
                     if (oe != null) {

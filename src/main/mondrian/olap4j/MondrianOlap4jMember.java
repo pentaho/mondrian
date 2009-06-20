@@ -46,8 +46,8 @@ class MondrianOlap4jMember implements Member, Named {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof MondrianOlap4jMember &&
-            member.equals(((MondrianOlap4jMember) obj).member);
+        return obj instanceof MondrianOlap4jMember
+            && member.equals(((MondrianOlap4jMember) obj).member);
     }
 
     public int hashCode() {
@@ -64,7 +64,8 @@ class MondrianOlap4jMember implements Member, Named {
             }
 
             public MondrianOlap4jMember get(int index) {
-                return new MondrianOlap4jMember(olap4jSchema, children.get(index));
+                return new MondrianOlap4jMember(
+                    olap4jSchema, children.get(index));
             }
 
             public int size() {
@@ -139,7 +140,9 @@ class MondrianOlap4jMember implements Member, Named {
         return member.getPropertyFormattedValue(property.getName());
     }
 
-    public void setProperty(Property property, Object value) throws OlapException {
+    public void setProperty(Property property, Object value)
+        throws OlapException
+    {
         member.setProperty(property.getName(), value);
     }
 

@@ -118,7 +118,7 @@ public class PropertySaver {
      * Sets all properties back to their original values.
      */
     public void reset() {
-        for (Map.Entry<Property,String> entry : originalValues.entrySet()) {
+        for (Map.Entry<Property, String> entry : originalValues.entrySet()) {
             final String value = entry.getValue();
             //noinspection StringEquality
             if (value == NOT_SET) {

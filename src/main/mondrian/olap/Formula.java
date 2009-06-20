@@ -188,8 +188,8 @@ public class Formula extends QueryPart {
                     } else {
                         Hierarchy hierarchy = parent.getHierarchy();
                         if (hierarchy == null) {
-                            throw MondrianResource.instance().
-                                MdxCalculatedHierarchyError.ex(id.toString());
+                            throw MondrianResource.instance()
+                                .MdxCalculatedHierarchyError.ex(id.toString());
                         }
                         level = hierarchy.getLevels()[0];
                     }
@@ -376,8 +376,9 @@ public class Formula extends QueryPart {
         }
         if (exp instanceof FunCall) {
             FunCall call = (FunCall) exp;
-            if (call.getFunName().equals("-") &&
-                call.getSyntax() == Syntax.Prefix) {
+            if (call.getFunName().equals("-")
+                && call.getSyntax() == Syntax.Prefix)
+            {
                 final Number number = quickEval(call.getArg(0));
                 if (number == null) {
                     return null;
@@ -507,7 +508,7 @@ public class Formula extends QueryPart {
          */
         private boolean hasCyclicReference(Exp expr) {
             List<MemberExpr> expList = new ArrayList<MemberExpr>();
-            return hasCyclicReference(expr,expList);
+            return hasCyclicReference(expr, expList);
         }
 
         private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
@@ -523,7 +524,7 @@ public class Formula extends QueryPart {
                         (RolapCalculatedMember) member;
                     Exp exp1 =
                         calculatedMember.getExpression().accept(validator);
-                    return hasCyclicReference(exp1,expList);
+                    return hasCyclicReference(exp1, expList);
                 }
             }
             if (expr instanceof FunCall) {

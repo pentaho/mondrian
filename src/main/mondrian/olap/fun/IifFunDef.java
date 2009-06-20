@@ -131,7 +131,8 @@ public class IifFunDef extends FunDefBase {
             "Returns one of two numeric values determined by a logical test.",
             "fnbnn")
         {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
+            {
                 final BooleanCalc booleanCalc =
                     compiler.compileBoolean(call.getArg(0));
                 final Calc calc1 = compiler.compileScalar(call.getArg(1), true);
@@ -158,7 +159,8 @@ public class IifFunDef extends FunDefBase {
             "Returns one of two tuples determined by a logical test.",
             "ftbtt")
         {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
+            {
                 final BooleanCalc booleanCalc =
                     compiler.compileBoolean(call.getArg(0));
                 final Calc calc1 = compiler.compileTuple(call.getArg(1));

@@ -34,7 +34,8 @@ public class PartialSortTest extends TestCase
     // subroutines
 
     // returns a new array of random integers
-    private Integer[] newRandomIntegers(int length, int minValue, int maxValue) {
+    private Integer[] newRandomIntegers(int length, int minValue, int maxValue)
+    {
         final int delta = maxValue - minValue;
         Integer[] vec = new Integer[length];
         for (int i = 0; i < length; i++) {
@@ -53,8 +54,11 @@ public class PartialSortTest extends TestCase
         FunUtil.partialSort(items, comp, limit);
     }
 
-    // predicate: checks that results have been partially sorted; simplest case, on int[]
-    private static boolean isPartiallySorted(int[] vec, int limit, boolean descending) {
+    // predicate: checks that results have been partially sorted;
+    // simplest case, on int[]
+    private static boolean isPartiallySorted(
+        int[] vec, int limit, boolean descending)
+    {
         // elements {0 <= i < limit} are sorted
         for (int i = 1; i < limit; i++) {
             int delta = vec[i] - vec[i - 1];
@@ -68,7 +72,8 @@ public class PartialSortTest extends TestCase
                 }
             }
         }
-        // elements {limit <= i} are just bigger or smaller than the bound vec[limit - 1];
+        // elements {limit <= i} are just bigger or smaller than the
+        // bound vec[limit - 1];
         int bound = vec[limit - 1];
         for (int i = limit; i < vec.length; i++) {
             int delta = vec[i] - bound;
@@ -100,9 +105,10 @@ public class PartialSortTest extends TestCase
         return isPartiallySorted(vec, limit, order, descending, null);
     }
 
-    // Same predicate generalized: uses two Comparators, a sort key (ascending or
-    // descending), and a tie-breaker (always ascending). This is a contrivance to
-    // verify a stable partial sort, on a special input array.
+    // Same predicate generalized: uses two Comparators, a sort key
+    // (ascending or descending), and a tie-breaker (always
+    // ascending). This is a contrivance to verify a stable partial
+    // sort, on a special input array.
     private static <T>  boolean isPartiallySorted(
         T[] vec, int limit,
         Comparator<? super T> order, boolean descending,
@@ -112,11 +118,11 @@ public class PartialSortTest extends TestCase
         for (int i = 1; i < limit; i++) {
             int delta = order.compare(vec[i], vec[i - 1]);
             if (delta == 0) {
-                if (tieBreaker != null &&
-                    tieBreaker.compare(vec[i],  vec[i - 1]) < 0)
-                    {
-                        return false;
-                    }
+                if (tieBreaker != null
+                    && tieBreaker.compare(vec[i],  vec[i - 1]) < 0)
+                {
+                    return false;
+                }
             } else if (descending) {
                 if (delta > 0) {
                     return false;
@@ -128,7 +134,8 @@ public class PartialSortTest extends TestCase
             }
         }
 
-        // elements {limit <= i} are just bigger or smaller than the bound vec[limit - 1];
+        // elements {limit <= i} are just bigger or smaller than the
+        // bound vec[limit - 1];
         T bound = vec[limit - 1];
         for (int i = limit; i < vec.length; i++) {
             int delta = order.compare(vec[i], bound);
@@ -431,16 +438,17 @@ public class PartialSortTest extends TestCase
         if (desc) {
             comp = new ReverseComparator(comp);
         }
-        List<Item> sorted = FunUtil.stablePartialSort(Arrays.asList(vec), comp, limit);
+        List<Item> sorted =
+            FunUtil.stablePartialSort(Arrays.asList(vec), comp, limit);
         return sorted.toArray(new Item[0]);
     }
 
     public void testPredicateIsStablySorted() {
-        Item[] vec = newPartlySortedItems(24 ,4, false);
+        Item[] vec = newPartlySortedItems(24, 4, false);
         assertTrue(Item.isStablySorted(vec, 4,  false));
         assertFalse(Item.isStablySorted(vec, 4, true));
 
-        vec = newPartlySortedItems(24 ,8, true);
+        vec = newPartlySortedItems(24, 8, true);
         assertTrue(Item.isStablySorted(vec, 4,  true));
         assertFalse(Item.isStablySorted(vec, 4, false));
 
@@ -505,7 +513,8 @@ public class PartialSortTest extends TestCase
         System.out.println("sorting the max " + limit + " of " + length + " random Integers");
 
         // random input, 3 copies
-        Integer[] vec1 = newRandomIntegers(length, 0, length / 5); // repeated keys
+        // repeated keys
+        Integer[] vec1 = newRandomIntegers(length, 0, length / 5);
         Integer[] vec2 = new Integer[length];
         Integer[] vec3 = new Integer[length];
         System.arraycopy(vec1, 0, vec2, 0, length);
@@ -524,7 +533,8 @@ public class PartialSortTest extends TestCase
         System.out.println(" partial quicksort took " + dt + " msecs");
 
         // stable partial sort vec3
-        Comparator comp = new ReverseComparator(ComparatorUtils.naturalComparator());
+        Comparator comp =
+            new ReverseComparator(ComparatorUtils.naturalComparator());
         List<Integer> vec3List = Arrays.asList(vec3);
         now = System.currentTimeMillis();
         FunUtil.stablePartialSort(vec3List, comp, limit);

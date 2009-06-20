@@ -11,12 +11,11 @@
 package mondrian.olap;
 
 /**
- * this interface provides a user exit to redefine
- *  a member property display string.
+ * Callback to redefine a member property display string.
  */
 public interface PropertyFormatter {
-    String formatProperty(Member member, String propertyName, Object propertyValue);
+    String formatProperty(
+        Member member, String propertyName, Object propertyValue);
 }
 
 // End PropertyFormatter.java
-

@@ -56,8 +56,8 @@ public class Pair <L, R>
         if (obj instanceof Pair) {
             //noinspection unchecked
             Pair<L, R> pair = (Pair) obj;
-            return Util.equals(this.left, pair.left) &&
-                Util.equals(this.right, pair.right);
+            return Util.equals(this.left, pair.left)
+                && Util.equals(this.right, pair.right);
         }
         return false;
     }

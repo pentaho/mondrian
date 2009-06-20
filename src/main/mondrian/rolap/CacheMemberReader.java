@@ -163,9 +163,9 @@ class CacheMemberReader implements MemberReader, MemberCache {
         List<RolapMember> list = new ArrayList<RolapMember>();
         int levelDepth = level.getDepth();
         for (RolapMember member : members) {
-            if ((member.getLevel().getDepth() == levelDepth) &&
-                (startOrdinal <= member.getOrdinal()) &&
-                (member.getOrdinal() < endOrdinal))
+            if ((member.getLevel().getDepth() == levelDepth)
+                && (startOrdinal <= member.getOrdinal())
+                && (member.getOrdinal() < endOrdinal))
             {
                 list.add(member);
             }
@@ -214,7 +214,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     public void getMemberChildren(
         List<RolapMember> parentMembers,
-        List<RolapMember> children) {
+        List<RolapMember> children)
+    {
         for (Member member : members) {
             if (parentMembers.contains(member.getParentMember())) {
                 ((List)children).add(member);
@@ -233,9 +234,10 @@ class CacheMemberReader implements MemberReader, MemberCache {
     public RolapMember getLeadMember(RolapMember member, int n) {
         if (n >= 0) {
             for (int ordinal = member.getOrdinal(); ordinal < members.size();
-                 ordinal++) {
-                if ((members.get(ordinal).getLevel() == member.getLevel()) &&
-                    (n-- == 0))
+                 ordinal++)
+            {
+                if ((members.get(ordinal).getLevel() == member.getLevel())
+                    && (n-- == 0))
                 {
                     return members.get(ordinal);
                 }
@@ -244,8 +246,9 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
         } else {
             for (int ordinal = member.getOrdinal(); ordinal >= 0; ordinal--) {
-                if ((members.get(ordinal).getLevel() == member.getLevel()) &&
-                    (n++ == 0)) {
+                if ((members.get(ordinal).getLevel() == member.getLevel())
+                    && (n++ == 0))
+                {
                     return members.get(ordinal);
                 }
             }
@@ -274,12 +277,17 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return members.size();
     }
 
-    public int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+    public int compare(
+        RolapMember m1,
+        RolapMember m2,
+        boolean siblingsAreEqual)
+    {
         if (m1 == m2) {
             return 0;
         }
-        if (siblingsAreEqual &&
-            (m1.getParentMember() == m2.getParentMember())) {
+        if (siblingsAreEqual
+            && (m1.getParentMember() == m2.getParentMember()))
+        {
             return 0;
         }
         Util.assertTrue(members.get(m1.getOrdinal()) == m1);

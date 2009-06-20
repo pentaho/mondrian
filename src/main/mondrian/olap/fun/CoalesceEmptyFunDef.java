@@ -28,7 +28,8 @@ import java.util.List;
 public class CoalesceEmptyFunDef extends FunDefBase {
     static final ResolverBase Resolver = new ResolverImpl();
 
-    public CoalesceEmptyFunDef(ResolverBase resolverBase, int type, int[] types) {
+    public CoalesceEmptyFunDef(ResolverBase resolverBase, int type, int[] types)
+    {
         super(resolverBase,  type, types);
     }
 

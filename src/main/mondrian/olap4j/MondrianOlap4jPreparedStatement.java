@@ -113,7 +113,8 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public void setBigDecimal(
-        int parameterIndex, BigDecimal x) throws SQLException {
+        int parameterIndex, BigDecimal x) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
@@ -134,22 +135,26 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public void setTimestamp(
-        int parameterIndex, Timestamp x) throws SQLException {
+        int parameterIndex, Timestamp x) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
     public void setAsciiStream(
-        int parameterIndex, InputStream x, int length) throws SQLException {
+        int parameterIndex, InputStream x, int length) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
     public void setUnicodeStream(
-        int parameterIndex, InputStream x, int length) throws SQLException {
+        int parameterIndex, InputStream x, int length) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
     public void setBinaryStream(
-        int parameterIndex, InputStream x, int length) throws SQLException {
+        int parameterIndex, InputStream x, int length) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
@@ -158,7 +163,8 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public void setObject(
-        int parameterIndex, Object x, int targetSqlType) throws SQLException {
+        int parameterIndex, Object x, int targetSqlType) throws SQLException
+    {
         getParameter(parameterIndex).setValue(x);
     }
 
@@ -181,7 +187,8 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public void setCharacterStream(
-        int parameterIndex, Reader reader, int length) throws SQLException {
+        int parameterIndex, Reader reader, int length) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -206,22 +213,26 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public void setDate(
-        int parameterIndex, Date x, Calendar cal) throws SQLException {
+        int parameterIndex, Date x, Calendar cal) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public void setTime(
-        int parameterIndex, Time x, Calendar cal) throws SQLException {
+        int parameterIndex, Time x, Calendar cal) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public void setTimestamp(
-        int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
+        int parameterIndex, Timestamp x, Calendar cal) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public void setNull(
-        int parameterIndex, int sqlType, String typeName) throws SQLException {
+        int parameterIndex, int sqlType, String typeName) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -233,7 +244,8 @@ abstract class MondrianOlap4jPreparedStatement
         int parameterIndex,
         Object x,
         int targetSqlType,
-        int scaleOrLength) throws SQLException {
+        int scaleOrLength) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -321,11 +333,15 @@ abstract class MondrianOlap4jPreparedStatement
                     return Number.class;
                 }
 
-                public Class<Dimension> dimensionType(DimensionType dimensionType) {
+                public Class<Dimension> dimensionType(
+                    DimensionType dimensionType)
+                {
                     return Dimension.class;
                 }
 
-                public Class<Hierarchy> hierarchyType(HierarchyType hierarchyType) {
+                public Class<Hierarchy> hierarchyType(
+                    HierarchyType hierarchyType)
+                {
                     return Hierarchy.class;
                 }
 

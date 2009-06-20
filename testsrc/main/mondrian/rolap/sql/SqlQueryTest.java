@@ -43,7 +43,8 @@ public class SqlQueryTest extends BatchTestCase {
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL) {
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
+        {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
@@ -80,23 +81,25 @@ public class SqlQueryTest extends BatchTestCase {
             String expected;
             String lineSep = System.getProperty("line.separator");
             if (!b) {
-                expected = "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
+                expected =
+                    "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
                     + "from \"s\".\"t1\" =as= \"t1alias\" where a=b "
                     + "group by grouping sets ((gs1,gs2,gs3))";
             } else {
-                expected = "select " + lineSep +
-                    "    c1 as \"c0\", " + lineSep  +
-                    "    c2 as \"c1\"" + lineSep  +
-                    "    , grouping(gf0) as \"g0\"" + lineSep  +
-                    "from " + lineSep  +
-                    "    \"s\".\"t1\" =as= \"t1alias\"" + lineSep  +
-                    "where " + lineSep  +
-                    "    a=b" + lineSep  +
-                    " group by grouping sets ((" + lineSep  +
-                    "    gs1," + lineSep  +
-                    "    gs2," + lineSep  +
-                    "    gs3" + lineSep  +
-                    "))";
+                expected =
+                    "select " + lineSep
+                    + "    c1 as \"c0\", " + lineSep
+                    + "    c2 as \"c1\"" + lineSep
+                    + "    , grouping(gf0) as \"g0\"" + lineSep
+                    + "from " + lineSep
+                    + "    \"s\".\"t1\" =as= \"t1alias\"" + lineSep
+                    + "where " + lineSep
+                    + "    a=b" + lineSep
+                    + " group by grouping sets ((" + lineSep
+                    + "    gs1," + lineSep
+                    + "    gs2," + lineSep
+                    + "    gs3" + lineSep
+                    + "))";
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),

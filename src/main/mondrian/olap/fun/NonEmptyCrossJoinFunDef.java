@@ -43,7 +43,9 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
-        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}, false) {
+        return new AbstractListCalc(
+            call, new Calc[] {listCalc1, listCalc2}, false)
+        {
             public List evaluateList(Evaluator evaluator) {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
                 // evaluate the arguments in non empty mode

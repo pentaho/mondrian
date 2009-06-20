@@ -123,7 +123,8 @@ public class TraversalList<T> extends UnsupportedList<T[]> {
         final T[][] array;
         if (a != null
             && a.length == size()
-            && a.getClass().getComponentType() == clazz) {
+            && a.getClass().getComponentType() == clazz)
+        {
             array = (T[][]) a;
         } else {
             // TODO: use reflection to create a real T[][]

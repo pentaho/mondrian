@@ -51,13 +51,15 @@ class HeadTailFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         final IntegerCalc integerCalc =
-                call.getArgCount() > 1 ?
-                compiler.compileInteger(call.getArg(1)) :
-                ConstantCalc.constantInteger(1);
+            call.getArgCount() > 1
+            ? compiler.compileInteger(call.getArg(1))
+            : ConstantCalc.constantInteger(1);
         if (head) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc}) {
+            return new AbstractListCalc(
+                call, new Calc[] {listCalc, integerCalc})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     evaluator = evaluator.push(false);
                     List list = listCalc.evaluateList(evaluator);
@@ -66,7 +68,9 @@ class HeadTailFunDef extends FunDefBase {
                 }
             };
         } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc}) {
+            return new AbstractListCalc(
+                call, new Calc[] {listCalc, integerCalc})
+            {
                 public List evaluateList(Evaluator evaluator) {
                     evaluator = evaluator.push(false);
                     List list = listCalc.evaluateList(evaluator);

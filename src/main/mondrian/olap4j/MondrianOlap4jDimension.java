@@ -38,8 +38,8 @@ class MondrianOlap4jDimension implements Dimension, Named {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof MondrianOlap4jDimension &&
-            dimension.equals(((MondrianOlap4jDimension) obj).dimension);
+        return obj instanceof MondrianOlap4jDimension
+            && dimension.equals(((MondrianOlap4jDimension) obj).dimension);
     }
 
     public int hashCode() {

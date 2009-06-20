@@ -32,7 +32,8 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
      *
      * @param connection Connection
      */
-    public MicrosoftSqlServerDialect(Connection connection) throws SQLException {
+    public MicrosoftSqlServerDialect(Connection connection) throws SQLException
+    {
         super(connection);
     }
 

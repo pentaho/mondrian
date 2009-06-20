@@ -74,7 +74,8 @@ class ExistsFunDef extends FunDefBase
                 }
 
                 for (Object  leftObject : left) {
-                    if (leftObject instanceof Object[]) { // leftObject is a tuple
+                    if (leftObject instanceof Object[]) {
+                        // leftObject is a tuple
                         boolean exist = true;
                         for (Object rightObject : right) {
                             for (int i = 0; i < rightSize; i++) {
@@ -88,8 +89,8 @@ class ExistsFunDef extends FunDefBase
                                         (Object []) rightObject;
                                     rightMem = (Member) (rightObjs[i]);
                                 }
-                                if (! isOnSameHierarchyChain(
-                                        leftMem, rightMem)) {
+                                if (!isOnSameHierarchyChain(leftMem, rightMem))
+                                {
                                     exist = false;
                                     break;
                                 }
@@ -99,11 +100,13 @@ class ExistsFunDef extends FunDefBase
                                 break;
                             }
                         }
-                    } else { // leftObject is a member
+                    } else {
+                        // leftObject is a member
                         for (Object rightObject : right) {
                             if (isOnSameHierarchyChain(
-                                    (Member) leftObject,
-                                    (Member) rightObject)) {
+                                (Member) leftObject,
+                                (Member) rightObject))
+                            {
                                 result.add(leftObject);
                                 break;
                             }

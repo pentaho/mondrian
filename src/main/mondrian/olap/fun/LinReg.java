@@ -115,48 +115,54 @@ public abstract class LinReg extends FunDefBase {
     public static final int Slope = 3;
     public static final int Variance = 4;
 
-    static final Resolver InterceptResolver = new ReflectiveMultiResolver(
+    static final Resolver InterceptResolver =
+        new ReflectiveMultiResolver(
             "LinRegIntercept",
             "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             InterceptFunDef.class);
 
-    static final Resolver PointResolver = new ReflectiveMultiResolver(
+    static final Resolver PointResolver =
+        new ReflectiveMultiResolver(
             "LinRegPoint",
             "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",
-            new String[]{"fnnxn","fnnxnn"},
+            new String[]{"fnnxn", "fnnxnn"},
             PointFunDef.class);
 
-    static final Resolver SlopeResolver = new ReflectiveMultiResolver(
+    static final Resolver SlopeResolver =
+        new ReflectiveMultiResolver(
             "LinRegSlope",
             "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             SlopeFunDef.class);
 
-    static final Resolver R2Resolver = new ReflectiveMultiResolver(
+    static final Resolver R2Resolver =
+        new ReflectiveMultiResolver(
             "LinRegR2",
             "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             R2FunDef.class);
 
-    static final Resolver VarianceResolver = new ReflectiveMultiResolver(
+    static final Resolver VarianceResolver =
+        new ReflectiveMultiResolver(
             "LinRegVariance",
             "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             VarianceFunDef.class);
 
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final DoubleCalc yCalc = compiler.compileDouble(call.getArg(1));
-        final DoubleCalc xCalc = call.getArgCount() > 2 ?
-                compiler.compileDouble(call.getArg(2)) :
-                new ValueCalc(call);
+        final DoubleCalc xCalc =
+            call.getArgCount() > 2
+            ? compiler.compileDouble(call.getArg(2))
+            : new ValueCalc(call);
         final boolean isTuples =
                 ((SetType) listCalc.getType()).getElementType() instanceof
                 TupleType;
@@ -271,9 +277,10 @@ public abstract class LinReg extends FunDefBase {
                 compiler.compileDouble(call.getArg(0));
             final ListCalc listCalc = compiler.compileList(call.getArg(1));
             final DoubleCalc yCalc = compiler.compileDouble(call.getArg(2));
-            final DoubleCalc xCalc = call.getArgCount() > 3 ?
-                    compiler.compileDouble(call.getArg(3)) :
-                    new ValueCalc(call);
+            final DoubleCalc xCalc =
+                call.getArgCount() > 3
+                ? compiler.compileDouble(call.getArg(3))
+                : new ValueCalc(call);
             final boolean isTuples =
                     ((SetType) listCalc.getType()).getElementType() instanceof
                     TupleType;
@@ -290,10 +297,13 @@ public abstract class LinReg extends FunDefBase {
         private final boolean tuples;
 
         public PointCalc(
-                ResolvedFunCall call,
-                DoubleCalc xPointCalc,
-                ListCalc listCalc,
-                DoubleCalc yCalc, DoubleCalc xCalc, boolean tuples) {
+            ResolvedFunCall call,
+            DoubleCalc xPointCalc,
+            ListCalc listCalc,
+            DoubleCalc yCalc,
+            DoubleCalc xCalc,
+            boolean tuples)
+        {
             super(call, new Calc[]{xPointCalc, listCalc, yCalc, xCalc});
             this.xPointCalc = xPointCalc;
             this.listCalc = listCalc;
@@ -310,8 +320,9 @@ public abstract class LinReg extends FunDefBase {
                 return FunUtil.DoubleNull;
             }
             // use first arg to generate y position
-            double yPoint = xPoint * value.getSlope() +
-                    value.getIntercept();
+            double yPoint =
+                xPoint * value.getSlope()
+                + value.getIntercept();
             return yPoint;
         }
     }
@@ -374,11 +385,12 @@ public abstract class LinReg extends FunDefBase {
     }
 
     protected static LinReg.Value process(
-            Evaluator evaluator,
-            ListCalc listCalc,
-            DoubleCalc yCalc,
-            DoubleCalc xCalc,
-            boolean isTuples) {
+        Evaluator evaluator,
+        ListCalc listCalc,
+        DoubleCalc yCalc,
+        DoubleCalc xCalc,
+        boolean isTuples)
+    {
         List members = listCalc.evaluateList(evaluator.push(false));
 
         evaluator = evaluator.push();
@@ -389,7 +401,7 @@ public abstract class LinReg extends FunDefBase {
         SetWrapper swX = sws[1];
 
         if (swY.errorCount > 0) {
-debug("LinReg.process","ERROR error(s) count ="  + swY.errorCount);
+            debug("LinReg.process", "ERROR error(s) count ="  + swY.errorCount);
             // TODO: throw exception
             return null;
         } else if (swY.v.size() == 0) {
@@ -511,8 +523,8 @@ debug("LinReg.process","ERROR error(s) count ="  + swY.errorCount);
         double sumXX = 0.0;
         double sumXY = 0.0;
 
-debug("LinReg.linearReg","ylist.size()=" + ylist.size());
-debug("LinReg.linearReg","xlist.size()=" + xlist.size());
+        debug("LinReg.linearReg", "ylist.size()=" + ylist.size());
+        debug("LinReg.linearReg", "xlist.size()=" + xlist.size());
         int n = 0;
         for (int i = 0; i < size; i++) {
             Object yo = ylist.get(i);
@@ -524,7 +536,7 @@ debug("LinReg.linearReg","xlist.size()=" + xlist.size());
             double y = ((Double) yo).doubleValue();
             double x = ((Double) xo).doubleValue();
 
-debug("LinReg.linearReg"," " + i + " (" + x + "," + y + ")");
+            debug("LinReg.linearReg", " " + i + " (" + x + "," + y + ")");
             sumX += x;
             sumY += y;
             sumXX += x * x;
@@ -534,8 +546,10 @@ debug("LinReg.linearReg"," " + i + " (" + x + "," + y + ")");
         double xMean = sumX / n;
         double yMean = sumY / n;
 
-debug("LinReg.linearReg", "yMean=" + yMean);
-debug("LinReg.linearReg", "(n*sumXX - sumX*sumX)=" + (n * sumXX - sumX * sumX));
+        debug("LinReg.linearReg", "yMean=" + yMean);
+        debug(
+            "LinReg.linearReg",
+            "(n*sumXX - sumX*sumX)=" + (n * sumXX - sumX * sumX));
         // The regression line is the line that minimizes the variance of the
         // errors. The mean error is zero; so, this means that it minimizes the
         // sum of the squares errors.
@@ -543,7 +557,7 @@ debug("LinReg.linearReg", "(n*sumXX - sumX*sumX)=" + (n * sumXX - sumX * sumX));
         double intercept = yMean - slope * xMean;
 
         LinReg.Value value = new LinReg.Value(intercept, slope, xlist, ylist);
-debug("LinReg.linearReg","value=" + value);
+        debug("LinReg.linearReg", "value=" + value);
 
         return value;
     }
@@ -578,12 +592,13 @@ debug("LinReg.linearReg","value=" + value);
         private final int regType;
 
         public LinRegCalc(
-                ResolvedFunCall call,
-                ListCalc listCalc,
-                DoubleCalc yCalc,
-                DoubleCalc xCalc,
-                boolean tuples,
-                int regType) {
+            ResolvedFunCall call,
+            ListCalc listCalc,
+            DoubleCalc yCalc,
+            DoubleCalc xCalc,
+            boolean tuples,
+            int regType)
+        {
             super(call, new Calc[]{listCalc, yCalc, xCalc});
             this.listCalc = listCalc;
             this.yCalc = yCalc;

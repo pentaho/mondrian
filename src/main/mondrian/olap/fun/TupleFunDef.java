@@ -134,9 +134,11 @@ public class TupleFunDef extends FunDefBase {
                     // Arg must be a member:
                     //  OK: ([Gender].[S], [Time].[1997])   (member, member)
                     //  OK: ([Gender], [Time])           (dimension, dimension)
-                    // Not OK: ([Gender].[S], [Store].[Store City]) (member, level)
+                    // Not OK:
+                    //  ([Gender].[S], [Store].[Store City]) (member, level)
                     if (!validator.canConvert(
-                            arg, Category.Member, conversions)) {
+                        arg, Category.Member, conversions))
+                    {
                         return null;
                     }
                     argTypes[i] = Category.Member;

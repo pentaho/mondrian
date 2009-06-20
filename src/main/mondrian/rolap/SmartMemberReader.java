@@ -63,8 +63,8 @@ public class SmartMemberReader implements MemberReader {
         this.cacheHelper = new MemberCacheHelper(source.getHierarchy());
         if (!source.setCache(cacheHelper)) {
             throw Util.newInternal(
-                    "MemberSource (" + source + ", " + source.getClass() +
-                    ") does not support cache-writeback");
+                "MemberSource (" + source + ", " + source.getClass()
+                + ") does not support cache-writeback");
         }
     }
 
@@ -115,11 +115,12 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal) {
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(null);
+            sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
@@ -276,8 +277,8 @@ public class SmartMemberReader implements MemberReader {
             ((List)result).add(child);
         }
         synchronized (cacheHelper) {
-            for (Map.Entry<RolapMember, List<RolapMember>> entry :
-                tempMap.entrySet())
+            for (Map.Entry<RolapMember, List<RolapMember>> entry
+                : tempMap.entrySet())
             {
                 final RolapMember member = entry.getKey();
                 if (cacheHelper.getChildrenFromCache(member, constraint)
@@ -372,10 +373,9 @@ public class SmartMemberReader implements MemberReader {
                 return;
             }
         }
-        throw Util.newInternal("sibling iterator did not hit end point, start="
-                + startMember
-                + ", end="
-                + endMember);
+        throw Util.newInternal(
+            "sibling iterator did not hit end point, start="
+            + startMember + ", end=" + endMember);
     }
 
     public int getMemberCount() {
@@ -490,14 +490,17 @@ public class SmartMemberReader implements MemberReader {
                     "member " + member + " not found among its siblings");
             }
         }
+
         boolean hasNext() {
-            return (this.position < this.siblings.size() - 1) ||
-                (parentIterator != null) &&
-                parentIterator.hasNext();
+            return (this.position < this.siblings.size() - 1)
+                || (parentIterator != null)
+                && parentIterator.hasNext();
         }
+
         Object next() {
             return nextMember();
         }
+
         RolapMember nextMember() {
             if (++this.position >= this.siblings.size()) {
                 if (parentIterator == null) {
@@ -511,14 +514,17 @@ public class SmartMemberReader implements MemberReader {
             }
             return this.siblings.get(this.position);
         }
+
         boolean hasPrevious() {
-            return (this.position > 0) ||
-                (parentIterator != null) &&
-                parentIterator.hasPrevious();
+            return (this.position > 0)
+                || (parentIterator != null)
+                && parentIterator.hasPrevious();
         }
+
         Object previous() {
             return previousMember();
         }
+
         RolapMember previousMember() {
             if (--this.position < 0) {
                 if (parentIterator == null) {

@@ -164,7 +164,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             Util.discard(r3);
             s3 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
-            assertEquals("[]",s3);
+            assertEquals("[]", s3);
 
             // Manually clear the cache to make compare sql result later on
             smrch.mapKeyToMember.clear();
@@ -201,7 +201,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             Util.discard(r5);
             s5 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
-            assertEquals(s4,s5);
+            assertEquals(s4, s5);
 
             // Attach dummy change listener that tells mondrian the datasource
             // is always changed and tells that aggregate cache is always
@@ -219,7 +219,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             Util.discard(r6);
             s6 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();
-            assertEquals(s1,s6);
+            assertEquals(s1, s6);
         } finally {
             smrch.changeListener = null;
             ssmrch.changeListener = null;

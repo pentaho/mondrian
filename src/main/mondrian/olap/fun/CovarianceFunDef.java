@@ -23,25 +23,28 @@ import mondrian.mdx.ResolvedFunCall;
 import java.util.List;
 
 /**
- * Definition of the <code>Covariance</code> and <code>CovarianceN</code> MDX functions.
+ * Definition of the <code>Covariance</code> and
+ * <code>CovarianceN</code> MDX functions.
  *
  * @author jhyde
  * @version $Id$
  * @since Mar 23, 2006
  */
 class CovarianceFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver CovarianceResolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver CovarianceResolver =
+        new ReflectiveMultiResolver(
             "Covariance",
             "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Returns the covariance of two series evaluated over a set (biased).",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             CovarianceFunDef.class);
 
-    static final MultiResolver CovarianceNResolver = new ReflectiveMultiResolver(
+    static final MultiResolver CovarianceNResolver =
+        new ReflectiveMultiResolver(
             "CovarianceN",
             "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])",
             "Returns the covariance of two series evaluated over a set (unbiased).",
-            new String[]{"fnxn","fnxnn"},
+            new String[]{"fnxn", "fnxnn"},
             CovarianceFunDef.class);
 
     private final boolean biased;
@@ -53,18 +56,19 @@ class CovarianceFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         final Calc calc1 =
-                compiler.compileScalar(call.getArg(1), true);
-        final Calc calc2 = call.getArgCount() > 2 ?
-                compiler.compileScalar(call.getArg(2), true) :
-                new ValueCalc(call);
-        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2}) {
+            compiler.compileScalar(call.getArg(1), true);
+        final Calc calc2 =
+            call.getArgCount() > 2
+            ? compiler.compileScalar(call.getArg(2), true)
+            : new ValueCalc(call);
+        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2})
+        {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = listCalc.evaluateList(evaluator);
-                return (Double)covariance(
-                        evaluator.push(false), memberList,
-                        calc1, calc2, biased);
+                return (Double) covariance(
+                    evaluator.push(false), memberList, calc1, calc2, biased);
             }
 
             public boolean dependsOn(Dimension dimension) {

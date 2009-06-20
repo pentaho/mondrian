@@ -101,15 +101,16 @@ class DefaultRecognizer extends Recognizer {
             int measureCountCount = 0;
 
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
-                dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                it.hasNext();) {
+                     dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
+                it.hasNext();)
+            {
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
 
                 Matcher matcher = getMeasureMatcher(factUsage);
 
                 int matchCount = 0;
-                for (JdbcSchema.Table.Column aggColumn :
-                         aggTable.getColumns())
+                for (JdbcSchema.Table.Column aggColumn
+                    : aggTable.getColumns())
                 {
                     // if marked as ignore, then do not consider
                     if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {

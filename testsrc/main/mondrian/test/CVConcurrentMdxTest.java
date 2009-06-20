@@ -183,13 +183,14 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
                     // current limitation: only run queries if
                     // calculated members are not specified
                     if (diffRepos.get(testCaseName, "calculatedMembers")
-                        == null) {
+                        == null)
+                    {
                         // trim the starting newline char only
                         if (result.startsWith(Util.nl)) {
                             result = result.replaceFirst(Util.nl, "");
                         }
-                        QueryAndResult queryResult = new QueryAndResult(
-                            query,result);
+                        QueryAndResult queryResult =
+                            new QueryAndResult(query, result);
                         queryList.add(queryResult);
                     }
                 }

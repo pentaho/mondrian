@@ -135,8 +135,9 @@ public class Util extends XOMUtil {
     public static <T> boolean isSorted(List<T> list) {
         T prev = null;
         for (T t : list) {
-            if (prev != null &&
-                ((Comparable<T>) prev).compareTo(t) >= 0) {
+            if (prev != null
+                && ((Comparable<T>) prev).compareTo(t) >= 0)
+            {
                 return false;
             }
             prev = t;
@@ -151,9 +152,9 @@ public class Util extends XOMUtil {
         StringBuilder retString = new StringBuilder(st.length() + 20);
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
-            if ((c == ']') &&
-                ((i + 1) < st.length()) &&
-                (st.charAt(i + 1) != '.'))
+            if ((c == ']')
+                && ((i + 1) < st.length())
+                && (st.charAt(i + 1) != '.'))
             {
                 retString.append(']'); //escaping character
             }
@@ -630,13 +631,12 @@ public class Util extends XOMUtil {
             }
             if (child == null) {
                 if (LOGGER.isDebugEnabled()) {
-                    StringBuilder buf = new StringBuilder(64);
-                    buf.append("Util.lookupCompound: ");
-                    buf.append("parent.name=");
-                    buf.append(parent.getName());
-                    buf.append(" has no child with name=");
-                    buf.append(name);
-                    LOGGER.debug(buf.toString());
+                    LOGGER.debug(
+                        "Util.lookupCompound: "
+                        + "parent.name="
+                        + parent.getName()
+                        + " has no child with name="
+                        + name);
                 }
 
                 if (!failIfNotFound) {
@@ -652,13 +652,12 @@ public class Util extends XOMUtil {
             parent = child;
         }
         if (LOGGER.isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(64);
-            buf.append("Util.lookupCompound: ");
-            buf.append("found child.name=");
-            buf.append(parent.getName());
-            buf.append(", child.class=");
-            buf.append(parent.getClass().getName());
-            LOGGER.debug(buf.toString());
+            LOGGER.debug(
+                "Util.lookupCompound: "
+                + "found child.name="
+                + parent.getName()
+                + ", child.class="
+                + parent.getClass().getName());
         }
 
         switch (category) {
@@ -777,8 +776,9 @@ public class Util extends XOMUtil {
                 olapElement =
                     schemaReader.lookupCompound(
                         q.getCube(), namePartsButOne, false, Category.Member);
-                if (olapElement != null &&
-                    isValidProperty((Member) olapElement, propertyName)) {
+                if (olapElement != null
+                    && isValidProperty((Member) olapElement, propertyName))
+                {
                     return new UnresolvedFunCall(
                         propertyName, Syntax.Property, new Exp[] {
                             createExpr(olapElement)});
@@ -802,8 +802,8 @@ public class Util extends XOMUtil {
                 if (olapElement != null) {
                     olapElement = olapElement.getHierarchy().getNullMember();
                 } else {
-                    throw MondrianResource.instance().MdxChildObjectNotFound.
-                        ex(fullName, q.getCube().getQualifiedName());
+                    throw MondrianResource.instance().MdxChildObjectNotFound
+                        .ex(fullName, q.getCube().getQualifiedName());
                 }
             } else {
                 throw MondrianResource.instance().MdxChildObjectNotFound.ex(
@@ -926,20 +926,20 @@ public class Util extends XOMUtil {
             }
             if (!hierarchy.hasAll()) {
                 if (matchType == MatchType.BEFORE) {
-                    if (rc < 0 &&
-                        (bestMatch == -1 ||
-                        FunUtil.compareSiblingMembers(
-                            rootMember,
-                            rootMembers.get(bestMatch)) > 0))
+                    if (rc < 0
+                        && (bestMatch == -1
+                            || FunUtil.compareSiblingMembers(
+                                rootMember,
+                                rootMembers.get(bestMatch)) > 0))
                     {
                         bestMatch = k;
                     }
                 } else if (matchType == MatchType.AFTER) {
-                    if (rc > 0 &&
-                        (bestMatch == -1 ||
-                        FunUtil.compareSiblingMembers(
-                            rootMember,
-                            rootMembers.get(bestMatch)) < 0))
+                    if (rc > 0
+                        && (bestMatch == -1
+                            || FunUtil.compareSiblingMembers(
+                                rootMember,
+                                rootMembers.get(bestMatch)) < 0))
                     {
                         bestMatch = k;
                     }
@@ -1113,9 +1113,10 @@ public class Util extends XOMUtil {
         boolean caseSensitive =
             MondrianProperties.instance().CaseSensitive.get();
         final Property property = Property.lookup(propertyName, caseSensitive);
-        if (property != null &&
-                property.isMemberProperty() &&
-                property.isStandard()) {
+        if (property != null
+            && property.isMemberProperty()
+            && property.isStandard())
+        {
             return property;
         }
         return null;
@@ -1169,9 +1170,10 @@ public class Util extends XOMUtil {
     public static <T extends Enum<T>> RuntimeException badValue(
         Enum<T> anEnum)
     {
-        return Util.newInternal("Was not expecting value '" + anEnum +
-            "' for enumeration '" + anEnum.getDeclaringClass().getName() +
-            "' in this context");
+        return Util.newInternal(
+            "Was not expecting value '" + anEnum
+            + "' for enumeration '" + anEnum.getDeclaringClass().getName()
+            + "' in this context");
     }
 
     /**
@@ -1494,9 +1496,9 @@ public class Util extends XOMUtil {
      */
     public static RuntimeException unexpected(Enum value) {
         return Util.newInternal(
-            "Was not expecting value '" + value +
-                "' for enumeration '" + value.getClass().getName() +
-                "' in this context");
+            "Was not expecting value '" + value
+            + "' for enumeration '" + value.getClass().getName()
+            + "' in this context");
     }
 
     /**
@@ -1570,8 +1572,8 @@ public class Util extends XOMUtil {
      */
     public static String getErrorMessage(Throwable err) {
         boolean prependClassName =
-            !(err instanceof java.sql.SQLException ||
-              err.getClass() == java.lang.Exception.class);
+            !(err instanceof java.sql.SQLException
+              || err.getClass() == java.lang.Exception.class);
         return getErrorMessage(err, prependClassName);
     }
 
@@ -1649,7 +1651,8 @@ public class Util extends XOMUtil {
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
     public static class PropertyList
-        implements Iterable<Pair<String, String>> {
+        implements Iterable<Pair<String, String>>
+    {
         List<Pair<String, String>> list =
             new ArrayList<Pair<String, String>>();
 
@@ -1868,8 +1871,8 @@ public class Util extends XOMUtil {
                     return value;
                 } else {
                     throw new RuntimeException(
-                            "quoted value ended too soon, at position " + i +
-                            " in '" + s + "'");
+                        "quoted value ended too soon, at position " + i
+                        + " in '" + s + "'");
                 }
             } else {
                 String value;
@@ -2204,8 +2207,8 @@ public class Util extends XOMUtil {
             }
 
             if (!file.isReadable()) {
-                throw newError("Virtual file is not readable: " +
-                    url);
+                throw newError(
+                    "Virtual file is not readable: " + url);
             }
 
             fileContent = file.getContent();
@@ -2345,8 +2348,9 @@ public class Util extends XOMUtil {
     public static <T> Iterable<T> castToIterable(
         final Object iterable)
     {
-        if (Util.Retrowoven &&
-            !(iterable instanceof Iterable)) {
+        if (Util.Retrowoven
+            && !(iterable instanceof Iterable))
+        {
             return new Iterable<T>() {
                 public Iterator<T> iterator() {
                     return ((Collection<T>) iterable).iterator();
@@ -2368,7 +2372,8 @@ public class Util extends XOMUtil {
      * valid.
      */
     public static <E extends Enum<E>> E lookup(
-        Class<E> clazz, String name, E defaultValue) {
+        Class<E> clazz, String name, E defaultValue)
+    {
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {

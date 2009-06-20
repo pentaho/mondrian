@@ -57,9 +57,9 @@ class CaseMatchFunDef extends FunDefBase {
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
-                args.length % 2 == 0 ?
-                compiler.compile(args[args.length - 1]) :
-                ConstantCalc.constantNull(call.getType());
+            args.length % 2 == 0
+            ? compiler.compile(args[args.length - 1])
+            : ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 

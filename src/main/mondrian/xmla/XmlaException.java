@@ -34,11 +34,11 @@ public class XmlaException extends MondrianException {
         String nsPrefix,
         String faultCode, String code)
     {
-        return nsPrefix +
-            ':' +
-            faultCode +
-            '.' +
-            code;
+        return nsPrefix
+            + ':'
+            + faultCode
+            + '.'
+            + code;
     }
     public static String formatDetail(String msg) {
         return XmlaConstants.FAULT_FS_PREFIX + msg;
@@ -57,10 +57,11 @@ public class XmlaException extends MondrianException {
     private final String faultString;
 
     public XmlaException(
-            String faultCode,
-            String code,
-            String faultString,
-            Throwable cause) {
+        String faultCode,
+        String code,
+        String faultString,
+        Throwable cause)
+    {
         super(faultString, cause);
         this.faultCode = faultCode;
         this.code = code;

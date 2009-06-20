@@ -311,7 +311,8 @@ class RolapCell implements Cell {
                 || def.getName().equals("*")
                 || def.getName().equals("CoalesceEmpty")
                 // Allow parentheses but don't allow tuple
-                || def.getName().equals("()") && args.length == 1) {
+                || def.getName().equals("()") && args.length == 1)
+            {
                 visitChildren(args);
                 return null;
             }

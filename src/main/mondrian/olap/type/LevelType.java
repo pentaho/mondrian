@@ -81,8 +81,8 @@ public class LevelType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        return this.dimension == dimension ||
-            (!definitely && this.dimension == null);
+        return this.dimension == dimension
+            || (!definitely && this.dimension == null);
     }
 
     public Dimension getDimension() {
@@ -121,18 +121,21 @@ public class LevelType implements Type {
         }
         LevelType that = (LevelType) type;
         if (this.getLevel() != null
-            && this.getLevel().equals(that.getLevel())) {
+            && this.getLevel().equals(that.getLevel()))
+        {
             return this;
         }
         if (this.getHierarchy() != null
-            && this.getHierarchy().equals(that.getHierarchy())) {
+            && this.getHierarchy().equals(that.getHierarchy()))
+        {
             return new LevelType(
                 this.getDimension(),
                 this.getHierarchy(),
                 null);
         }
         if (this.getDimension() != null
-            && this.getDimension().equals(that.getDimension())) {
+            && this.getDimension().equals(that.getDimension()))
+        {
             return new LevelType(
                 this.getDimension(),
                 null,

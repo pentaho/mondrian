@@ -9,12 +9,7 @@
 */
 package mondrian.xmla.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -133,54 +128,56 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Element envElem = soapDoc.getDocumentElement();
 
             if (LOGGER.isDebugEnabled()) {
-                StringBuilder buf = new StringBuilder(100);
-                buf.append("XML/A request content").append(nl);
-                buf.append(XmlaUtil.element2Text(envElem));
-                LOGGER.debug(buf.toString());
+                final StringWriter writer = new StringWriter();
+                writer.write("XML/A request content");
+                writer.write(nl);
+                XmlaUtil.element2Text(envElem, writer);
+                LOGGER.debug(writer.toString());
             }
 
             if ("Envelope".equals(envElem.getLocalName())) {
                 if (!(NS_SOAP_ENV_1_1.equals(envElem.getNamespaceURI()))) {
-                    String msg = "Invalid SOAP message: " +
-                        "Envelope element not in SOAP namespace";
                     throw new XmlaException(
                         CLIENT_FAULT_FC,
                         USM_DOM_PARSE_CODE,
                         USM_DOM_PARSE_FAULT_FS,
-                        new SAXException(msg));
+                        new SAXException(
+                            "Invalid SOAP message: "
+                            + "Envelope element not in SOAP namespace"));
                 }
             } else {
-                String msg = "Invalid SOAP message: " +
-                        "Top element not Envelope";
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE,
                     USM_DOM_PARSE_FAULT_FS,
-                    new SAXException(msg));
+                    new SAXException(
+                        "Invalid SOAP message: "
+                        + "Top element not Envelope"));
             }
 
             Element[] childs =
                 XmlaUtil.filterChildElements(envElem, NS_SOAP_ENV_1_1, "Header");
             if (childs.length > 1) {
-                String msg = "Invalid SOAP message: " +
-                        "More than one Header elements";
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE,
                     USM_DOM_PARSE_FAULT_FS,
-                    new SAXException(msg));
+                    new SAXException(
+                        "Invalid SOAP message: "
+                        + "More than one Header elements"));
             }
             requestSoapParts[0] = childs.length == 1 ? childs[0] : null;
 
-            childs = XmlaUtil.filterChildElements(envElem, NS_SOAP_ENV_1_1, "Body");
+            childs =
+                XmlaUtil.filterChildElements(envElem, NS_SOAP_ENV_1_1, "Body");
             if (childs.length != 1) {
-                String msg = "Invalid SOAP message: " +
-                        "Does not have one Body element";
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE,
                     USM_DOM_PARSE_FAULT_FS,
-                    new SAXException(msg));
+                    new SAXException(
+                        "Invalid SOAP message: "
+                        + "Does not have one Body element"));
             }
             requestSoapParts[1] = childs[0];
         } catch (XmlaException xex) {
@@ -236,8 +233,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     }
                     // Is its value "1"
                     String mustUnderstandValue = attr.getValue();
-                    if ((mustUnderstandValue == null) ||
-                            (! mustUnderstandValue.equals("1"))) {
+                    if ((mustUnderstandValue == null)
+                        || (!mustUnderstandValue.equals("1")))
+                    {
                         continue;
                     }
 
@@ -344,21 +342,21 @@ public class DefaultXmlaServlet extends XmlaServlet {
         // extract the SessionId attrs value and put into context
         Attr attr = e.getAttributeNode(XMLA_SESSION_ID);
         if (attr == null) {
-            String msg = "Invalid XML/A message: " +
-                XMLA_SESSION +
-                " Header element with no " +
-                XMLA_SESSION_ID +
-                " attribute";
-            throw new SAXException(msg);
+            throw new SAXException(
+                "Invalid XML/A message: "
+                + XMLA_SESSION
+                + " Header element with no "
+                + XMLA_SESSION_ID
+                + " attribute");
         }
         String value = attr.getValue();
         if (value == null) {
-            String msg = "Invalid XML/A message: " +
-                XMLA_SESSION +
-                " Header element with " +
-                XMLA_SESSION_ID +
-                " attribute but no attribute value";
-            throw new SAXException(msg);
+            throw new SAXException(
+                "Invalid XML/A message: "
+                + XMLA_SESSION
+                + " Header element with "
+                + XMLA_SESSION_ID
+                + " attribute but no attribute value");
         }
         return value;
     }
@@ -379,17 +377,14 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Element[] ereqs =
                 XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Execute");
             if (dreqs.length + ereqs.length != 1) {
-                String msg = "Invalid XML/A message: " +
-                    " Body has " +
-                    dreqs.length +
-                    " Discover Requests and " +
-                    ereqs.length +
-                    " Execute Requests";
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE,
                     HSB_BAD_SOAP_BODY_FAULT_FS,
-                    new RuntimeException(msg));
+                    new RuntimeException(
+                        "Invalid XML/A message: Body has "
+                        + dreqs.length + " Discover Requests and "
+                        + ereqs.length + " Execute Requests"));
             }
 
             Element xmlaReqElem = (dreqs.length == 0 ? ereqs[0] : dreqs[0]);
@@ -682,9 +677,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
             // header entries.
             if (phase != Phase.PROCESS_HEADER) {
                 writer.startElement("detail");
-                writer.startElement(FAULT_NS_PREFIX + ":error", new String[] {
-                        "xmlns:" + FAULT_NS_PREFIX, MONDRIAN_NAMESPACE
-                });
+                writer.startElement(
+                    FAULT_NS_PREFIX + ":error",
+                    "xmlns:" + FAULT_NS_PREFIX, MONDRIAN_NAMESPACE);
                 writer.startElement("code");
                 writer.characters(code);
                 writer.endElement(); // code

@@ -132,8 +132,8 @@ public interface Modulos {
         }
         public final int getCellOrdinal(final int[] pos) {
             final int[] modulos = this.modulos;
-            return (pos[0] * modulos[0]) +
-                   (pos[1] * modulos[1]);
+            return (pos[0] * modulos[0])
+                + (pos[1] * modulos[1]);
         }
     }
     public class Three extends Base {
@@ -157,9 +157,9 @@ public interface Modulos {
         }
         public final int getCellOrdinal(final int[] pos) {
             final int[] modulos = this.modulos;
-            return (pos[0] * modulos[0]) +
-                   (pos[1] * modulos[1]) +
-                   (pos[2] * modulos[2]);
+            return (pos[0] * modulos[0])
+                + (pos[1] * modulos[1])
+                + (pos[2] * modulos[2]);
         }
     }
     public class Many extends Base {

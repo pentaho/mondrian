@@ -44,7 +44,8 @@ class XmlUtility {
 
         try {
             factory.setNamespaceAware(true);
-            factory.setIgnoringElementContentWhitespace(ignoreIgnorableWhitespace);
+            factory.setIgnoringElementContentWhitespace(
+                ignoreIgnorableWhitespace);
             factory.setValidating(validate);
 
             // if this is true we are using XML Schema validation and not a DTD
@@ -116,14 +117,18 @@ class XmlUtility {
         for (int idx = 0; idx < len; idx++) {
             char ch = enc.charAt(idx);
 
-            if (ch == '&' && enc.charAt(idx + 1) == 'l' &&
-                    enc.charAt(idx + 2) == 't' &&
-                    enc.charAt(idx + 3) == ';') {
+            if (ch == '&'
+                && enc.charAt(idx + 1) == 'l'
+                && enc.charAt(idx + 2) == 't'
+                && enc.charAt(idx + 3) == ';')
+            {
                 result.append('<');
                 idx += 3;
-            } else if (ch == '&' && enc.charAt(idx + 1) == 'g' &&
-                    enc.charAt(idx + 2) == 't' &&
-                    enc.charAt(idx + 3) == ';') {
+            } else if (ch == '&'
+                       && enc.charAt(idx + 1) == 'g'
+                       && enc.charAt(idx + 2) == 't'
+                       && enc.charAt(idx + 3) == ';')
+            {
                 result.append('>');
                 idx += 3;
             } else {

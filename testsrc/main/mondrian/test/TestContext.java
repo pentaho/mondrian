@@ -147,7 +147,7 @@ public class TestContext {
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             connectProperties = new Util.PropertyList();
-            connectProperties.put("Provider","mondrian");
+            connectProperties.put("Provider", "mondrian");
         } else {
              connectProperties = Util.parseConnectString(connectString);
         }
@@ -250,7 +250,8 @@ public class TestContext {
         if (MondrianProperties.instance().TestHighCardinalityDimensionList
             .get() != null
             && propertyList.get(
-            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null) {
+            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null)
+        {
             propertyList.put(
                 RolapConnectionProperties.DynamicSchemaProcessor.name(),
                 HighCardDynamicSchemaProcessor.class.getName());
@@ -325,9 +326,9 @@ public class TestContext {
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
             int i = s.indexOf("<Dimension name=\"Store\">");
-            s = s.substring(0, i) +
-                parameterDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + parameterDefs
+                + s.substring(i);
         }
 
         // Add cube definitions, if specified.
@@ -335,9 +336,9 @@ public class TestContext {
             int i =
                 s.indexOf(
                     "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
-            s = s.substring(0, i) +
-                cubeDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + cubeDefs
+                + s.substring(i);
         }
 
         // Add virtual cube definitions, if specified.
@@ -345,9 +346,9 @@ public class TestContext {
             int i = s.indexOf(
                 "<VirtualCube name=\"Warehouse and Sales\" "
                 + "defaultMeasure=\"Store Sales\">");
-            s = s.substring(0, i) +
-                virtualCubeDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + virtualCubeDefs
+                + s.substring(i);
         }
 
         // Add named set definitions, if specified. Schema-level named sets
@@ -357,9 +358,9 @@ public class TestContext {
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i) +
-                namedSetDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + namedSetDefs
+                + s.substring(i);
         }
 
         // Add definitions of roles, if specified.
@@ -368,17 +369,17 @@ public class TestContext {
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i) +
-                roleDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + roleDefs
+                + s.substring(i);
         }
 
         // Add definitions of user-defined functions, if specified.
         if (udfDefs != null) {
             int i = s.indexOf("</Schema>");
-            s = s.substring(0, i) +
-                udfDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + udfDefs
+                + s.substring(i);
         }
         return s;
     }
@@ -445,9 +446,9 @@ public class TestContext {
         // Add dimension definitions, if specified.
         if (dimensionDefs != null) {
             int i = s.indexOf("<Dimension ", h);
-            s = s.substring(0, i) +
-                dimensionDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + dimensionDefs
+                + s.substring(i);
         }
 
         // Add calculated member definitions, if specified.
@@ -456,9 +457,9 @@ public class TestContext {
             if (i < 0 || i > end) {
                 i = end;
             }
-            s = s.substring(0, i) +
-                memberDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + memberDefs
+                + s.substring(i);
         }
 
         if (namedSetDefs != null) {
@@ -466,9 +467,9 @@ public class TestContext {
             if (i < 0 || i > end) {
                 i = end;
             }
-            s = s.substring(0, i) +
-                namedSetDefs +
-                s.substring(i);
+            s = s.substring(0, i)
+                + namedSetDefs
+                + s.substring(i);
         }
 
         return s;
@@ -899,8 +900,9 @@ public class TestContext {
         }
         String stackTrace = getStackTrace(throwable);
         if (stackTrace.indexOf(pattern) < 0) {
-            Assert.fail("query's error does not match pattern '" + pattern +
-                    "'; error is [" + stackTrace + "]");
+            Assert.fail(
+                "query's error does not match pattern '" + pattern
+                + "'; error is [" + stackTrace + "]");
         }
     }
 
@@ -1009,8 +1011,8 @@ public class TestContext {
             message += nl;
         }
         message +=
-                "Expected:" + nl + expected + nl +
-                "Actual:" + nl + actual + nl;
+            "Expected:" + nl + expected + nl
+            + "Actual:" + nl + actual + nl;
         if (java) {
             message += "Actual java:" + nl + toJavaString(actual) + nl;
         }
@@ -1067,9 +1069,9 @@ public class TestContext {
             s = s.substring(0, s.length() - spurious.length());
         }
         String message =
-                "Expected pattern:" + nl + expected + nl +
-                "Actual: " + nl + actual + nl +
-                "Actual java: " + nl + s + nl;
+            "Expected pattern:" + nl + expected + nl
+            + "Actual: " + nl + actual + nl
+            + "Actual java: " + nl + s + nl;
         throw new ComparisonFailure(message, expected.pattern(), actual);
     }
 
@@ -1394,9 +1396,8 @@ public class TestContext {
             long time = System.currentTimeMillis();
             final long execMs = time - startTime;
             Util.addDatabaseTime(execMs);
-            String status = ", exec " + execMs + " ms";
 
-            RolapUtil.SQL_LOGGER.debug(status);
+            RolapUtil.SQL_LOGGER.debug(", exec " + execMs + " ms");
 
             int rows = 0;
             while (rs.next()) {
@@ -1405,7 +1406,8 @@ public class TestContext {
 
             Assert.assertEquals("row count", expectedRows, rows);
         } catch (SQLException e) {
-            throw new Exception("ERROR in SQL - invalid for database: "
+            throw new Exception(
+                "ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
                 + "\n" + actualSql,
                 e);

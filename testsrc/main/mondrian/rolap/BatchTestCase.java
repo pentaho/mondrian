@@ -48,7 +48,7 @@ public class BatchTestCase extends FoodMartTestCase {
     protected final String[] fieldValueProductDepartment = {
         "Alcoholic Beverages", "Baked Goods", "Baking Goods",
          "Beverages", "Breakfast Foods", "Canned Foods",
-        "Canned Products","Carousel", "Checkout", "Dairy",
+        "Canned Products", "Carousel", "Checkout", "Dairy",
         "Deli", "Eggs", "Frozen Foods", "Health and Hygiene",
         "Household", "Meat", "Packaged Foods", "Periodicals",
         "Produce", "Seafood", "Snack Foods", "Snacks",
@@ -657,10 +657,12 @@ public class BatchTestCase extends FoodMartTestCase {
         String[] tables;
         String[] columns;
         List<String[]> valueList;
+
         CellRequestConstraint(
             String[] tables,
             String[] columns,
-            List<String[]> valueList) {
+            List<String[]> valueList)
+        {
             this.tables = tables;
             this.columns = columns;
             this.valueList = valueList;

@@ -272,12 +272,13 @@ public class FormatTest extends TestCase {
     }
 
     private static Date makeCalendar(
-            final int year,
-            final int month,
-            final int date,
-            final int hourOfDay,
-            final int minute,
-            final int second) {
+        final int year,
+        final int month,
+        final int date,
+        final int hourOfDay,
+        final int minute,
+        final int second)
+    {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month - 1, date, hourOfDay, minute, second);
         return calendar.getTime();

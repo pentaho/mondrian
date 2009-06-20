@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2006 Julian Hyde and others.
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -161,7 +161,8 @@ public interface MessageRecorder {
      * @param info extra information (not meant to be part of printed message)
      * @throws RecorderException if too many error messages have been added.
      */
-    void reportError(final Exception ex, final Object info) throws RecorderException;
+    void reportError(final Exception ex, final Object info)
+        throws RecorderException;
 
     /**
      * Add an error message.
@@ -178,7 +179,8 @@ public interface MessageRecorder {
      * @param info extra information (not meant to be part of printed message)
      * @throws RecorderException if too many error messages have been added.
      */
-    void reportError(final String msg, final Object info) throws RecorderException;
+    void reportError(final String msg, final Object info)
+        throws RecorderException;
 
     /**
      * Add a warning message.

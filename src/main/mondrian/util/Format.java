@@ -324,13 +324,15 @@ public class Format {
                 buf.append(n);
             } else {
                 int i;
-                if (n == 0 &&
-                    formats.length >= 3 &&
-                    formats[2] != null) {
+                if (n == 0
+                    && formats.length >= 3
+                    && formats[2] != null)
+                {
                     i = 2;
-                } else if (n < 0 &&
-                           formats.length >= 2 &&
-                           formats[1] != null) {
+                } else if (n < 0
+                    && formats.length >= 2
+                    && formats[1] != null)
+                {
                     if (formats[1].isApplicableTo(n)) {
                         n = -n;
                         i = 1;
@@ -352,14 +354,16 @@ public class Format {
                 buf.append(n);
             } else {
                 int i;
-                if (n == 0 &&
-                    formats.length >= 3 &&
-                    formats[2] != null) {
+                if (n == 0
+                    && formats.length >= 3
+                    && formats[2] != null)
+                {
                     i = 2;
-                } else if (n < 0 &&
-                           formats.length >= 2 &&
-                           formats[1] != null &&
-                           formats[1].isApplicableTo(n)) {
+                } else if (n < 0
+                    && formats.length >= 2
+                    && formats[1] != null
+                    && formats[1].isApplicableTo(n))
+                {
                     n = -n;
                     i = 1;
                 } else {
@@ -668,7 +672,9 @@ public class Format {
         }
 
         private static boolean shows(
-                FloatingDecimal fd, int formatDigitsRightOfPoint) {
+            FloatingDecimal fd,
+            int formatDigitsRightOfPoint)
+        {
             final int i0 = - fd.decExponent - formatDigitsRightOfPoint;
             if (i0 < 0) {
                 return true;
@@ -741,12 +747,12 @@ public class Format {
             case FORMAT_C:
             {
                 boolean dateSet = !(
-                    calendar.get(Calendar.DAY_OF_YEAR) == 0 &&
-                    calendar.get(Calendar.YEAR) == 0);
+                    calendar.get(Calendar.DAY_OF_YEAR) == 0
+                    && calendar.get(Calendar.YEAR) == 0);
                 boolean timeSet = !(
-                    calendar.get(Calendar.SECOND) == 0 &&
-                    calendar.get(Calendar.MINUTE) == 0 &&
-                    calendar.get(Calendar.HOUR) == 0);
+                    calendar.get(Calendar.SECOND) == 0
+                    &&  calendar.get(Calendar.MINUTE) == 0
+                    && calendar.get(Calendar.HOUR) == 0);
                 if (dateSet) {
                     format(FORMAT_DDDDD, calendar, buf);
                 }
@@ -790,11 +796,11 @@ public class Format {
                 // Officially, we should use the system's short date
                 // format. But for now, we always print using the default
                 // format, m/d/yy.
-                format(FORMAT_M, calendar,buf);
+                format(FORMAT_M, calendar, buf);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_D, calendar,buf);
+                format(FORMAT_D, calendar, buf);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_YY, calendar,buf);
+                format(FORMAT_YY, calendar, buf);
                 break;
             }
             case FORMAT_DDDDDD:
@@ -927,11 +933,11 @@ public class Format {
             {
                 // Officially, we should use the system's time format. But
                 // for now, we always print using the default format, h:mm:ss.
-                format(FORMAT_H, calendar,buf);
+                format(FORMAT_H, calendar, buf);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_NN, calendar,buf);
+                format(FORMAT_NN, calendar, buf);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_SS, calendar,buf);
+                format(FORMAT_SS, calendar, buf);
                 break;
             }
             case FORMAT_AMPM:
@@ -1038,10 +1044,11 @@ public class Format {
                 monthsLong = monthsLong_en;
             }
             this.monthsLong = monthsLong;
-            if (daysOfWeekShort.length != 8 ||
-                daysOfWeekLong.length != 8 ||
-                monthsShort.length != 13 ||
-                monthsLong.length != 13) {
+            if (daysOfWeekShort.length != 8
+                || daysOfWeekLong.length != 8
+                || monthsShort.length != 13
+                || monthsLong.length != 13)
+            {
                 throw new IllegalArgumentException(
                     "Format: day or month array has incorrect length");
             }
@@ -1218,7 +1225,7 @@ public class Format {
     {
         Util.discard(purpose);
         Util.discard(description);
-        return new Token(code,flags,token);
+        return new Token(code, flags, token);
     }
 
     public static final List<Token> getTokenList()
@@ -1668,8 +1675,8 @@ public class Format {
                             + ";("  + locale.currencyFormat + ")";
                     } else {
                         throw new Error(
-                            "Format: internal: token " + macroTokens[i].name +
-                            " should have translation");
+                            "Format: internal: token " + macroTokens[i].name
+                            + " should have translation");
                     }
                 } else {
                     formatString = macroTokens[i].translation;
@@ -1756,8 +1763,9 @@ loop:
                                 if (prevFormat instanceof LiteralFormat) {
                                     // ignore boilerplate
                                     j--;
-                                } else if (prevFormat.code == FORMAT_H ||
-                                           prevFormat.code == FORMAT_HH) {
+                                } else if (prevFormat.code == FORMAT_H
+                                    || prevFormat.code == FORMAT_HH)
+                                {
                                     theyMeantMinute = true;
                                     break;
                                 } else {
@@ -1820,7 +1828,7 @@ loop:
                                 s = "";
                                 newFormatString = "";
                             } else {
-                                s = formatString.substring(1,2);
+                                s = formatString.substring(1, 2);
                                 newFormatString = formatString.substring(2);
                             }
                             format = new LiteralFormat(s);
@@ -1834,8 +1842,9 @@ loop:
                         {
                             numberState = RIGHT_OF_EXP;
                             expFormat = token.code;
-                            if (zeroesLeftOfPoint == 0 &&
-                                zeroesRightOfPoint == 0) {
+                            if (zeroesLeftOfPoint == 0
+                                && zeroesRightOfPoint == 0)
+                            {
                                 // We need a mantissa, so that format(123.45,
                                 // "E+") gives "1E+2", not "0E+2" or "E+2".
                                 zeroesLeftOfPoint = 1;
@@ -1924,7 +1933,7 @@ loop:
                 // None of the standard format elements matched.  Make the
                 // current character into a literal.
                 format = new LiteralFormat(
-                    formatString.substring(0,1));
+                    formatString.substring(0, 1));
                 newFormatString = formatString.substring(1);
             }
 
@@ -1988,14 +1997,16 @@ loop:
                 // If there is a thousands separator (",") immediately to the
                 // left of the point, or at the end of the number, divide the
                 // number by 1000.  (Or by 1000^n if there are more than one.)
-                if (haveSeenNumber &&
-                    i + 1 < formats.length &&
-                    formats[i + 1].code != FORMAT_THOUSEP &&
-                    formats[i + 1].code != FORMAT_0 &&
-                    formats[i + 1].code != FORMAT_POUND) {
+                if (haveSeenNumber
+                    && i + 1 < formats.length
+                    && formats[i + 1].code != FORMAT_THOUSEP
+                    && formats[i + 1].code != FORMAT_0
+                    && formats[i + 1].code != FORMAT_POUND)
+                {
                     for (int j = i;
                          j >= 0 && formats[j].code == FORMAT_THOUSEP;
-                         j--) {
+                         j--)
+                    {
                         decimalShift -= 3;
                         formats[j] = new LiteralFormat(""); // ignore
                     }
@@ -2024,9 +2035,11 @@ loop:
 
         // Create a CompoundFormat containing all of the format elements.
         BasicFormat alternateFormat =
-                formats.length == 0 ? null :
-                formats.length == 1 ? formats[0] :
-                new CompoundFormat(formats);
+            formats.length == 0
+            ? null
+            : formats.length == 1
+            ? formats[0]
+            : new CompoundFormat(formats);
         alternateFormatList.add(alternateFormat);
         return formatString;
     }
@@ -2089,9 +2102,10 @@ loop:
         private FieldPosition pos;
 
         public StringBuffer format(
-                double number,
-                StringBuffer result,
-                FieldPosition fieldPosition) {
+             double number,
+             StringBuffer result,
+             FieldPosition fieldPosition)
+        {
             pos = fieldPosition;
             return result;
         }
@@ -2980,7 +2994,7 @@ static class FloatingDecimal {
         }
         if (n == 0) {
             nDigits = 1;
-            digits = new char[] {'0','0','0','0','0','0','0','0'};
+            digits = new char[] {'0', '0', '0', '0', '0', '0', '0', '0'};
             decExponent = 0;
         } else {
             nDigits = 0;
@@ -2999,8 +3013,9 @@ static class FloatingDecimal {
     // jhyde added
     public void shift(int i)
     {
-        if (isExceptional ||
-            nDigits == 1 && digits[0] == '0') {
+        if (isExceptional
+            || nDigits == 1 && digits[0] == '0')
+        {
             ; // don't multiply zero
         } else {
             decExponent += i;
@@ -3147,10 +3162,11 @@ static class FloatingDecimal {
 
             // Now print the number.
             for (int j = firstDigitToPrint; j < wholeDigits; j++) {
-                if (thousandChar != '\0' &&
-                    (wholeDigits - j) % 3 == 0 &&
-                    j > firstDigitToPrint &&
-                    j < wholeDigits - 1) {
+                if (thousandChar != '\0'
+                    && (wholeDigits - j) % 3 == 0
+                    && j > firstDigitToPrint
+                    && j < wholeDigits - 1)
+                {
                     result[i++] = thousandChar;
                 }
                 result[i++] = digits2[j];

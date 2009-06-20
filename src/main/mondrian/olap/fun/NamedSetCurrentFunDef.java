@@ -22,7 +22,8 @@ import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 
 /**
- * Definition of the <code>&lt;Named Set&gt;.Current</code> MDX builtin function.
+ * Definition of the <code>&lt;Named Set&gt;.Current</code> MDX
+ * builtin function.
  *
  * @author jhyde
  * @version $Id$

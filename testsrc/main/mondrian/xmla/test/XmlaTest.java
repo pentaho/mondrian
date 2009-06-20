@@ -77,7 +77,8 @@ public class XmlaTest extends TestCase {
 
     protected void runTest() throws Exception {
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()
-            && getName().equals("mdschemaLevelsCubeDimRestrictions")) {
+            && getName().equals("mdschemaLevelsCubeDimRestrictions"))
+        {
             // Changes in unique names of hierarchies and levels mean that the
             // output is a different order in the old behavior, and cannot be
             // fixed by a few sed-like comparisons.
@@ -139,7 +140,8 @@ public class XmlaTest extends TestCase {
         XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
         handler.process(request, response);
 
-        return XmlaUtil.stream2Element(new ByteArrayInputStream(resBuf.toByteArray()));
+        return XmlaUtil.stream2Element(
+            new ByteArrayInputStream(resBuf.toByteArray()));
     }
 
     public static TestSuite suite() {
@@ -150,9 +152,10 @@ public class XmlaTest extends TestCase {
         MondrianProperties properties = MondrianProperties.instance();
         String filePattern = properties.QueryFilePattern.get();
 
-        final Pattern pattern = filePattern == null ?
-            null :
-            Pattern.compile(filePattern);
+        final Pattern pattern =
+            filePattern == null
+            ? null
+            : Pattern.compile(filePattern);
 
         List<String> testCaseNames = diffRepos.getTestCaseNames();
 

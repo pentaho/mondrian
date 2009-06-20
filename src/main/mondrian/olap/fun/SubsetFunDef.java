@@ -42,14 +42,16 @@ class SubsetFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         final IntegerCalc startCalc =
-                compiler.compileInteger(call.getArg(1));
+            compiler.compileInteger(call.getArg(1));
         final IntegerCalc countCalc =
-                call.getArgCount() > 2 ?
-                compiler.compileInteger(call.getArg(2)) :
-                null;
-        return new AbstractListCalc(call, new Calc[] {listCalc, startCalc, countCalc}) {
+            call.getArgCount() > 2
+            ? compiler.compileInteger(call.getArg(2))
+            : null;
+        return new AbstractListCalc(
+            call, new Calc[] {listCalc, startCalc, countCalc})
+        {
             public List evaluateList(Evaluator evaluator) {
                 evaluator = evaluator.push(false);
                 final List list =

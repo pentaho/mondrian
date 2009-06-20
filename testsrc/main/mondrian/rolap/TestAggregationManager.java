@@ -162,7 +162,7 @@ public class TestAggregationManager extends BatchTestCase {
      */
     private void _testFemaleUnitSalesSql_withAggs() {
         CellRequest request = createRequest(
-            "Sales","[Measures].[Unit Sales]", "customer", "gender", "F");
+            "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -187,8 +187,9 @@ public class TestAggregationManager extends BatchTestCase {
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
     public void testMultipleMeasures() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+              && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
 
@@ -332,8 +333,9 @@ public class TestAggregationManager extends BatchTestCase {
          * Note: the following aggregate loading sqls contain no
          * references to the parent level column "store_country".
          */
-        if (MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get()) {
+        if (MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
             accessMysqlSql =
                 "select `store`.`store_state` as `c0`,"
                 + " `agg_c_14_sales_fact_1997`.`the_year` as `c1`,"
@@ -568,8 +570,9 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testCountDistinctAggMatch() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+              && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
         CellRequest request = createRequest(
@@ -684,8 +687,9 @@ public class TestAggregationManager extends BatchTestCase {
      * can only belong to one group.
      */
     public void testCountDistinctRollupAlongDim() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+              && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
         // Request has granularity
@@ -741,8 +745,9 @@ public class TestAggregationManager extends BatchTestCase {
      * As above, but we rollup [Marital Status] but not [Gender].
      */
     public void testCountDistinctRollup2() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+              && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
         CellRequest request = createRequest(
@@ -853,8 +858,9 @@ public class TestAggregationManager extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
         SqlPattern[] patterns = {
@@ -1212,8 +1218,9 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testAggregatingTuples() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
 
@@ -1321,8 +1328,9 @@ public class TestAggregationManager extends BatchTestCase {
      * this test verifies the collapsed children code in SqlMemberSource
      */
     public void testCollapsedChildren() {
-        if (!(MondrianProperties.instance().UseAggregates.get() &&
-                MondrianProperties.instance().ReadAggregates.get())) {
+        if (!(MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()))
+        {
             return;
         }
 

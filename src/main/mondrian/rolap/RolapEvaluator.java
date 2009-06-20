@@ -209,10 +209,12 @@ public class RolapEvaluator implements Evaluator {
         RolapCube virtualCube = getCube();
         RolapCube baseCube = getMeasureCube();
         if (virtualCube.isVirtual() && baseCube != null) {
-            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
+            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
+            {
                 return false;
             } else if (MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get()) {
+                .IgnoreMeasureForNonJoiningDimension.get())
+            {
                 Set<Dimension> nonJoiningDimensions =
                     baseCube.nonJoiningDimensions(members);
                 if (!nonJoiningDimensions.isEmpty()) {
@@ -510,8 +512,9 @@ public class RolapEvaluator implements Evaluator {
 
         outer:
         for (RolapEvaluator eval2 = (RolapEvaluator) eval.getParent();
-                 eval2 != null;
-                 eval2 = (RolapEvaluator) eval2.getParent()) {
+             eval2 != null;
+             eval2 = (RolapEvaluator) eval2.getParent())
+        {
             if (eval2.expandingMember != eval.expandingMember) {
                 continue;
             }
@@ -536,9 +539,9 @@ public class RolapEvaluator implements Evaluator {
             }
             throw FunUtil.newEvalException(
                 null,
-                "Infinite loop while evaluating calculated member '" +
-                eval.expandingMember + "'; context stack is " +
-                eval.getContextString());
+                "Infinite loop while evaluating calculated member '"
+                + eval.expandingMember + "'; context stack is "
+                + eval.getContextString());
         }
     }
 
@@ -547,7 +550,8 @@ public class RolapEvaluator implements Evaluator {
         final StringBuilder buf = new StringBuilder("{");
         int frameCount = 0;
         for (RolapEvaluator eval = this; eval != null;
-                 eval = (RolapEvaluator) eval.getParent()) {
+             eval = (RolapEvaluator) eval.getParent())
+        {
             if (eval.expandingMember == null) {
                 continue;
             }
@@ -557,8 +561,9 @@ public class RolapEvaluator implements Evaluator {
             buf.append("(");
             int memberCount = 0;
             for (Member m : eval.currentMembers) {
-                if (skipDefaultMembers &&
-                    m == m.getHierarchy().getDefaultMember()) {
+                if (skipDefaultMembers
+                    && m == m.getHierarchy().getDefaultMember())
+                {
                     continue;
                 }
                 if (memberCount++ > 0) {
@@ -690,8 +695,8 @@ public class RolapEvaluator implements Evaluator {
             // more than one usage
             if (member == null) {
                 getLogger().debug(
-                        "RolapEvaluator.getExpResultCacheKey: " +
-                        "member == null; dimensionOrdinal=" + i);
+                    "RolapEvaluator.getExpResultCacheKey: "
+                    + "member == null; dimensionOrdinal=" + i);
                 continue;
             }
 
@@ -713,12 +718,14 @@ public class RolapEvaluator implements Evaluator {
 
             boolean isValidResult;
 
-            if (!aggCacheDirty &&
-                (aggregateCacheMissCountBefore == aggregateCacheMissCountAfter)) {
+            if (!aggCacheDirty
+                && (aggregateCacheMissCountBefore
+                    == aggregateCacheMissCountAfter))
+            {
                 // Cache the evaluation result as valid result if the
-                // evaluation did not use any missing aggregates. Missing aggregates
-                // could be used when aggregate cache is not fully loaded, or if
-                // new missing aggregates are seen.
+                // evaluation did not use any missing aggregates. Missing
+                // aggregates could be used when aggregate cache is not fully
+                // loaded, or if new missing aggregates are seen.
                 isValidResult = true;
             } else {
                 // Cache the evaluation result as invalid result if the
@@ -775,8 +782,8 @@ public class RolapEvaluator implements Evaluator {
      * configurable.
      *
      * <p>The SOLVE_ORDER value is absolute regardless of where it is defined;
-     * e.g. a query defined calculated member with a SOLVE_ORDER of 1 always takes
-     * precedence over a cube defined value of 2.
+     * e.g. a query defined calculated member with a SOLVE_ORDER of 1 always
+     * takes precedence over a cube defined value of 2.
      *
      * <p>No special consideration is given to the aggregate function.
      */
@@ -927,8 +934,8 @@ public class RolapEvaluator implements Evaluator {
      * @return boolean
      */
     public boolean shouldIgnoreUnrelatedDimensions() {
-        return getCube().
-            shouldIgnoreUnrelatedDimensions(getMeasureCube().getName());
+        return getCube().shouldIgnoreUnrelatedDimensions(
+            getMeasureCube().getName());
     }
 }
 

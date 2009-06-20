@@ -48,11 +48,11 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
         ValueColumnPredicate upperBound)
     {
         super(column);
-        assert lowerBound == null ||
-            lowerBound.getConstrainedColumn() == column;
+        assert lowerBound == null
+            || lowerBound.getConstrainedColumn() == column;
         assert !(lowerBound == null && lowerInclusive);
-        assert upperBound == null ||
-            upperBound.getConstrainedColumn() == column;
+        assert upperBound == null
+            || upperBound.getConstrainedColumn() == column;
         assert !(upperBound == null && upperInclusive);
         this.lowerInclusive = lowerInclusive;
         this.lowerBound = lowerBound;
@@ -72,10 +72,10 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
         if (obj instanceof RangeColumnPredicate) {
             RangeColumnPredicate that =
                 (RangeColumnPredicate) obj;
-            return this.lowerInclusive == that.lowerInclusive &&
-                this.lowerBound.equals(that.lowerBound) &&
-                this.upperInclusive == that.upperInclusive &&
-                this.upperBound.equals(that.upperBound);
+            return this.lowerInclusive == that.lowerInclusive
+                && this.lowerBound.equals(that.lowerBound)
+                && this.upperInclusive == that.upperInclusive
+                && this.upperBound.equals(that.upperBound);
         } else {
             return false;
         }
@@ -89,13 +89,15 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
 
     public boolean evaluate(Object value) {
         if (lowerBound != null) {
-            int c = ((Comparable<Object>) lowerBound.getValue()).compareTo(value);
+            int c =
+                ((Comparable<Object>) lowerBound.getValue()).compareTo(value);
             if (lowerInclusive ? c > 0 : c >= 0) {
                 return false;
             }
         }
         if (upperBound != null) {
-            int c = ((Comparable<Object>) upperBound.getValue()).compareTo(value);
+            int c =
+                ((Comparable<Object>) upperBound.getValue()).compareTo(value);
             if (upperInclusive ? c < 0 : c <= 0) {
                 return false;
             }

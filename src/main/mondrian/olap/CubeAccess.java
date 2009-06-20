@@ -100,7 +100,8 @@ public class CubeAccess {
     public void addGrantCubeSlicer(
         String sHierarchy,
         String sMember,
-        boolean bMember) {
+        boolean bMember)
+    {
         if (bMember) {
             boolean fail = false;
             List<Id.Segment> sMembers = Util.parseIdentifier(sMember);
@@ -151,8 +152,9 @@ public class CubeAccess {
         List<Hierarchy> hierarchyList = cubeAccess.getNoAccessHierarchyList();
         List<Member> limitedMemberList = cubeAccess.getLimitedMemberList();
 
-        if ((this.hierarchyList.size() != hierarchyList.size()) ||
-            (this.memberList.size() != limitedMemberList.size())) {
+        if ((this.hierarchyList.size() != hierarchyList.size())
+            || (this.memberList.size() != limitedMemberList.size()))
+        {
             return false;
         }
         for (Hierarchy o : hierarchyList) {

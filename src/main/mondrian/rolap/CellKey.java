@@ -266,8 +266,8 @@ public interface CellKey {
                 return (this.ordinal0 == other.ordinal0);
             } else if (o instanceof Many) {
                 Many many = (Many) o;
-                return many.ordinals.length == 1 &&
-                    many.ordinals[0] == this.ordinal0;
+                return many.ordinals.length == 1
+                    && many.ordinals[0] == this.ordinal0;
             } else {
                 return false;
             }
@@ -308,13 +308,13 @@ public interface CellKey {
         public boolean equals(Object o) {
             if (o instanceof Two) {
                 Two other = (Two) o;
-                return (other.ordinal0 == this.ordinal0) &&
-                       (other.ordinal1 == this.ordinal1);
+                return (other.ordinal0 == this.ordinal0)
+                    && (other.ordinal1 == this.ordinal1);
             } else if (o instanceof Many) {
                 Many many = (Many) o;
-                return many.ordinals.length == 2 &&
-                    many.ordinals[0] == this.ordinal0 &&
-                    many.ordinals[1] == this.ordinal1;
+                return many.ordinals.length == 2
+                    && many.ordinals[0] == this.ordinal0
+                    && many.ordinals[1] == this.ordinal1;
             } else {
                 return false;
             }
@@ -396,15 +396,15 @@ public interface CellKey {
             // here we cheat, we know that all CellKey's will be the same size
             if (o instanceof Three) {
                 Three other = (Three) o;
-                return (other.ordinal0 == this.ordinal0) &&
-                       (other.ordinal1 == this.ordinal1) &&
-                       (other.ordinal2 == this.ordinal2);
+                return (other.ordinal0 == this.ordinal0)
+                    && (other.ordinal1 == this.ordinal1)
+                    && (other.ordinal2 == this.ordinal2);
             } else if (o instanceof Many) {
                 Many many = (Many) o;
-                return many.ordinals.length == 3 &&
-                    many.ordinals[0] == this.ordinal0 &&
-                    many.ordinals[1] == this.ordinal1 &&
-                    many.ordinals[2] == this.ordinal2;
+                return many.ordinals.length == 3
+                    && many.ordinals[0] == this.ordinal0
+                    && many.ordinals[1] == this.ordinal1
+                    && many.ordinals[2] == this.ordinal2;
             } else {
                 return false;
             }

@@ -62,9 +62,10 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
             Util.assertTrue(name.equals(""));
             break;
         default:
-            Util.assertTrue(!name.startsWith("$") &&
-                !name.equals("{}") &&
-                !name.equals("()"));
+            Util.assertTrue(
+                !name.startsWith("$")
+                && !name.equals("{}")
+                && !name.equals("()"));
             break;
         }
     }

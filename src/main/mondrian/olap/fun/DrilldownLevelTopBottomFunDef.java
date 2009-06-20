@@ -78,11 +78,11 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                 ? compiler.compileLevel(call.getArg(2))
                 : null;
         final Calc orderCalc =
-                call.getArgCount() > 3 ?
-                compiler.compileScalar(call.getArg(3), true) :
-                new ValueCalc(
-                    new DummyExp(
-                        new ScalarType()));
+            call.getArgCount() > 3
+            ? compiler.compileScalar(call.getArg(3), true)
+            : new ValueCalc(
+                new DummyExp(
+                    new ScalarType()));
         return new AbstractListCalc(
             call,
             new Calc[] {listCalc, integerCalc, orderCalc})

@@ -26,11 +26,11 @@ public interface SaxWriter {
 
     public void startElement(String name);
 
-    public void startElement(String name, String[] attrs);
+    public void startElement(String name, String... attrs);
 
     public void endElement();
 
-    public void element(String name, String[] attrs);
+    public void element(String name, String... attrs);
 
     public void characters(String data);
 

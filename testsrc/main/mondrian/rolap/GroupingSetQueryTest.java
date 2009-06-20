@@ -60,7 +60,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE)
+        {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
@@ -159,8 +160,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
         }
     }
     public void testNotUsingGroupingSetWhenGroupUsesDifferentAggregateTable() {
-        if (!(prop.UseAggregates.get() &&
-            prop.ReadAggregates.get())) {
+        if (!(prop.UseAggregates.get()
+              && prop.ReadAggregates.get()))
+        {
             return;
         }
 

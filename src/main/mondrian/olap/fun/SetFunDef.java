@@ -612,17 +612,20 @@ public class SetFunDef extends FunDefBase {
             int[] parameterTypes = new int[args.length];
             for (int i = 0; i < args.length; i++) {
                 if (validator.canConvert(
-                        args[i], Category.Member, conversions)) {
+                    args[i], Category.Member, conversions))
+                {
                     parameterTypes[i] = Category.Member;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Set, conversions)) {
+                    args[i], Category.Set, conversions))
+                {
                     parameterTypes[i] = Category.Set;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Tuple, conversions)) {
+                    args[i], Category.Tuple, conversions))
+                {
                     parameterTypes[i] = Category.Tuple;
                     continue;
                 }

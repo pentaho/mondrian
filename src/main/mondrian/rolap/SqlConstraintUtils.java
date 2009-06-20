@@ -270,9 +270,10 @@ public class SqlConstraintUtils {
         RolapLevel memberLevel = member.getLevel();
         RolapMember firstUniqueParent = member;
         RolapLevel firstUniqueParentLevel = null;
-        for (; firstUniqueParent != null &&
-            !firstUniqueParent.getLevel().isUnique();
-             firstUniqueParent = firstUniqueParent.getParentMember()) {
+        for (; firstUniqueParent != null
+                 && !firstUniqueParent.getLevel().isUnique();
+             firstUniqueParent = firstUniqueParent.getParentMember())
+        {
         }
 
         if (firstUniqueParent != null) {
@@ -285,8 +286,10 @@ public class SqlConstraintUtils {
         // If this constraint is part of a native cross join and there
         // are multiple values for the parent members, then we can't
         // use single value IN clauses
-        if (crossJoin &&
-            !memberLevel.isUnique() && !membersAreCrossProduct(members)) {
+        if (crossJoin
+            && !memberLevel.isUnique()
+            && !membersAreCrossProduct(members))
+        {
             assert (member.getParentMember() != null);
             condition +=
                 constrainMultiLevelMembers(
@@ -423,8 +426,9 @@ public class SqlConstraintUtils {
             for (RolapMember m : members) {
                 if (m.isCalculated()) {
                     if (restrictMemberTypes) {
-                        throw Util.newInternal("addMemberConstraint: cannot " +
-                            "restrict SQL to calculated member :" + m);
+                        throw Util.newInternal(
+                            "addMemberConstraint: cannot "
+                            + "restrict SQL to calculated member :" + m);
                     }
                     continue;
                 }
@@ -486,9 +490,8 @@ public class SqlConstraintUtils {
 
                     RolapStar.Column column = null;
                     if (level instanceof RolapCubeLevel) {
-                        column =
-                            ((RolapCubeLevel)level).
-                                    getBaseStarKeyColumn(baseCube);
+                        column = ((RolapCubeLevel)level).getBaseStarKeyColumn(
+                            baseCube);
                     }
 
                     if (column != null) {
@@ -545,8 +548,9 @@ public class SqlConstraintUtils {
                 RolapLevel childrenLevel =
                     (RolapLevel)(p.getLevel().getChildLevel());
 
-                if (sqlQuery.getDialect().supportsMultiValueInExpr() &&
-                    childrenLevel != memberLevel) {
+                if (sqlQuery.getDialect().supportsMultiValueInExpr()
+                    && childrenLevel != memberLevel)
+                {
                     // Multi-level children and multi-value IN list supported
                     condition.append(
                         generateMultiValueInExpr(
@@ -831,8 +835,9 @@ public class SqlConstraintUtils {
         for (RolapMember m : members) {
             if (m.isCalculated()) {
                 if (restrictMemberTypes) {
-                    throw Util.newInternal("addMemberConstraint: cannot " +
-                        "restrict SQL to calculated member :" + m);
+                    throw Util.newInternal(
+                        "addMemberConstraint: cannot "
+                        + "restrict SQL to calculated member :" + m);
                 }
                 continue;
             }
@@ -952,8 +957,9 @@ public class SqlConstraintUtils {
             }
             if (m.isCalculated()) {
                 if (restrictMemberTypes) {
-                    throw Util.newInternal("addMemberConstraint: cannot " +
-                        "restrict SQL to calculated member :" + m);
+                    throw Util.newInternal(
+                        "addMemberConstraint: cannot "
+                        + "restrict SQL to calculated member :" + m);
                 }
                 continue;
             }
@@ -991,10 +997,10 @@ public class SqlConstraintUtils {
 
             StarColumnPredicate cc = getColumnPredicates(column, c);
 
-            if (!dialect.supportsUnlimitedValueList() &&
-                cc instanceof ListColumnPredicate &&
-                ((ListColumnPredicate) cc).getPredicates().size() >
-                maxConstraints)
+            if (!dialect.supportsUnlimitedValueList()
+                && cc instanceof ListColumnPredicate
+                && ((ListColumnPredicate) cc).getPredicates().size()
+                > maxConstraints)
             {
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They

@@ -85,8 +85,9 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         if (predicate instanceof StarColumnPredicate) {
             StarColumnPredicate starColumnPredicate =
                 (StarColumnPredicate) predicate;
-            if (starColumnPredicate.getConstrainedColumn() ==
-                getConstrainedColumn()) {
+            if (starColumnPredicate.getConstrainedColumn()
+                == getConstrainedColumn())
+            {
                 return orColumn(starColumnPredicate);
             }
         }

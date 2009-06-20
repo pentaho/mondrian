@@ -274,7 +274,8 @@ abstract class Recognizer {
 
             for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     factColumn.getUsages(JdbcSchema.UsageType.MEASURE);
-                    mit.hasNext();) {
+                    mit.hasNext();)
+            {
                 JdbcSchema.Table.Column.Usage factUsage = mit.next();
                 if (factUsage.getAggregator() == RolapAggregator.Avg) {
                     avgFactUsage = factUsage;
@@ -486,8 +487,8 @@ abstract class Recognizer {
                         // making sure that this HierarchyUsage's
                         // foreign key is not in the list.
                         String foreignKey = hierarchyUsage.getForeignKey();
-                        boolean b = foreignKey == null ||
-                            inNotSeenForeignKeys(
+                        boolean b = foreignKey == null
+                            || inNotSeenForeignKeys(
                                 foreignKey,
                                 notSeenForeignKeys);
                         if (!b) {
@@ -546,7 +547,8 @@ abstract class Recognizer {
      * @param notSeenForeignKeys
      */
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
-        LOGGER.debug("Recognizer.printNotSeenForeignKeys: "
+        LOGGER.debug(
+            "Recognizer.printNotSeenForeignKeys: "
             + aggTable.getName());
         for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
@@ -615,15 +617,16 @@ abstract class Recognizer {
                 // make sure we are looking at the
                 // same table and column
                 for (Iterator<JdbcSchema.Table.Column.Usage> uit =
-                    aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
-                     uit.hasNext();) {
+                         aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
+                     uit.hasNext();)
+                {
                     JdbcSchema.Table.Column.Usage aggUsage = uit.next();
 
                     MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
                     String cName = levelColumnName;
 
-                    if (! aggUsage.relation.equals(rel) ||
-                        ! aggColumn.column.name.equals(cName))
+                    if (! aggUsage.relation.equals(rel)
+                        || ! aggColumn.column.name.equals(cName))
                     {
                         // this is an error so return
                         String msg = mres.DoubleMatchForLevel.str(

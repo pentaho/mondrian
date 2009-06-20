@@ -60,7 +60,8 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     }
 
     protected String generateExpectedString(String nos, Properties props)
-            throws Exception {
+        throws Exception
+    {
         String expectedFileName = getOutFileName(nos);
 
         String expectedStr = fileToString(expectedFileName);
@@ -104,13 +105,16 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         }
 
         public void preAction(
-                HttpServletRequest request,
-                Element[] requestSoapParts,
-                Map<String, Object> context) throws Exception {
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context) throws Exception
+        {
         }
 
         private void setSessionId(Map<String, Object> context) {
-            context.put(MY_SESSION_ID, getSessionId("XmlaExcel2000Test", Action.CREATE));
+            context.put(
+                MY_SESSION_ID,
+                getSessionId("XmlaExcel2000Test", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, Object> context) {
@@ -118,10 +122,11 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
             return (String) context.get(MY_SESSION_ID);
         }
         public void postAction(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context) throws Exception
+        {
         }
     }
 
@@ -200,14 +205,17 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     public void test18() throws Exception {
         helperTest("18", true);
     }
+
     protected void helperTest(String nos, boolean doSessionId)
-            throws Exception {
+        throws Exception
+    {
         if (doSessionId) {
             Util.discard(getSessionId(Action.CREATE));
         }
         Properties props = new Properties();
         doTest(nos, props);
     }
+
     /////////////////////////////////////////////////////////////////////////
     // expect
     /////////////////////////////////////////////////////////////////////////
@@ -231,7 +239,8 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     }
 
     protected void helperTestExpect(String nos, boolean doSessionId)
-            throws Exception {
+        throws Exception
+    {
         if (doSessionId) {
             Util.discard(getSessionId(Action.CREATE));
         }
@@ -245,13 +254,16 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         Properties props = new Properties();
         doTest(req, nos, props);
     }
+
     /////////////////////////////////////////////////////////////////////////
     // helpers
     /////////////////////////////////////////////////////////////////////////
+
     public void doTest(
-            MockHttpServletRequest req,
-            String nos,
-            Properties props) throws Exception {
+        MockHttpServletRequest req,
+        String nos,
+        Properties props) throws Exception
+    {
         String requestText = generateRequestString(nos, props);
 
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -340,7 +352,8 @@ System.out.println("XXXXXXX");
     }
 
     protected String generateRequestString(String nos, Properties props)
-            throws Exception {
+        throws Exception
+    {
         String reqFileName = "excel_2000_" + nos + "_in.xml";
 if (DEBUG) {
 System.out.println("reqFileName=" + reqFileName);

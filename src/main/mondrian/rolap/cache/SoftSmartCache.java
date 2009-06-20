@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -106,21 +107,21 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         final Iterator<Map.Entry<K, CacheReference>> cacheIterator =
             cache.entrySet().iterator();
         return new Iterator<Map.Entry<K, V>>() {
-            private Map.Entry<K,V> entry;
+            private Map.Entry<K, V> entry;
 
             public boolean hasNext() {
                 if (entry != null) {
                     return true;
                 }
                 while (cacheIterator.hasNext()) {
-                    Map.Entry<K,CacheReference> cacheEntry =
+                    Map.Entry<K, CacheReference> cacheEntry =
                         cacheIterator.next();
                     // skip over entries that have been garbage collected
                     final V value = cacheEntry.getValue().get();
                     if (value != null) {
                         // Would use AbstractMap.SimpleEntry but it's not public
                         // until JDK 1.6.
-                        entry = new Pair<K,V>(cacheEntry.getKey(), value);
+                        entry = new Pair<K, V>(cacheEntry.getKey(), value);
                         return true;
                     }
                 }

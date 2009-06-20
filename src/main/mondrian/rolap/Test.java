@@ -68,25 +68,16 @@ public class Test {
             statement = connection.createStatement();
             statement2 = connection.createStatement();
             String sql =
-                "select * from (" +
-                " select *, \"fname\" + ' ' + \"lname\" as \"name\" from \"customer\")" +
-                "order by \"country\", \"state_province\", \"city\", \"name\"";
-//          sql = "select * from \"customer\" " +
-//              "where (\"country\", \"state_province\") = " +
-//              " ('Canada', 'BC')";
-//          sql = "select * from \"customer\" " +
-//              "where \"country\" = 'Canada' " +
-//              " and \"state_province\" = 'BC'";
+                "select * from ("
+                + " select *, \"fname\" + ' ' + \"lname\" as \"name\" from \"customer\")"
+                + "order by \"country\", \"state_province\", \"city\", \"name\"";
             java.sql.ResultSet resultSet = statement.executeQuery(sql);
-            if (true) {
-//              return;
-            }
             int i = 0;
             while (resultSet.next()) {
                 int customer_id = resultSet.getInt("customer_id");
                 statement2.executeUpdate(
-                    "update \"customer\" set \"ordinal\" = " + (++i * 3) +
-                    " where \"customer_id\" = " + customer_id);
+                    "update \"customer\" set \"ordinal\" = " + (++i * 3)
+                    + " where \"customer_id\" = " + customer_id);
             }
             connection.commit();
         } finally {

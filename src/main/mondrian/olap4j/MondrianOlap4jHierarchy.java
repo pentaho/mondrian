@@ -42,8 +42,8 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof MondrianOlap4jHierarchy &&
-            hierarchy.equals(((MondrianOlap4jHierarchy) obj).hierarchy);
+        return obj instanceof MondrianOlap4jHierarchy
+            && hierarchy.equals(((MondrianOlap4jHierarchy) obj).hierarchy);
     }
 
     public int hashCode() {

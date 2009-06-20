@@ -86,7 +86,8 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             final String suffix = "_" + Integer.toString(j);
             columnName = originalColumnName;
             if (originalColumnName.length() + suffix.length()
-                > maxColumnNameLength) {
+                > maxColumnNameLength)
+            {
                 columnName =
                     originalColumnName.substring(
                         0, maxColumnNameLength - suffix.length());

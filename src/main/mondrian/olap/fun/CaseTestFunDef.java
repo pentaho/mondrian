@@ -58,9 +58,9 @@ class CaseTestFunDef extends FunDefBase {
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
-                args.length % 2 == 1 ?
-                compiler.compileScalar(args[args.length - 1], true) :
-                ConstantCalc.constantNull(call.getType());
+            args.length % 2 == 1
+            ? compiler.compileScalar(args[args.length - 1], true)
+            : ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 
@@ -102,7 +102,9 @@ class CaseTestFunDef extends FunDefBase {
             int mismatchingArgs = 0;
             int returnType = args[1].getCategory();
             for (int i = 0; i < clauseCount; i++) {
-                if (!validator.canConvert(args[j++], Category.Logical, conversions)) {
+                if (!validator.canConvert(
+                    args[j++], Category.Logical, conversions))
+                {
                     mismatchingArgs++;
                 }
                 if (!validator.canConvert(args[j++], returnType, conversions)) {

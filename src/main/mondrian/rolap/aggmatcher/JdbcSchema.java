@@ -920,8 +920,8 @@ public class JdbcSchema {
         public void setTableUsageType(final TableUsageType tableUsageType) {
             // if usageIter has already been set, then usageIter can NOT be
             // reset
-            if ((this.tableUsageType != TableUsageType.UNKNOWN) &&
-                    (this.tableUsageType != tableUsageType))
+            if ((this.tableUsageType != TableUsageType.UNKNOWN)
+                && (this.tableUsageType != tableUsageType))
             {
                 throw mres.AttemptToChangeTableUsage.ex(
                     getName(),

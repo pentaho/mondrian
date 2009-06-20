@@ -26,7 +26,8 @@ import java.util.ArrayList;
  */
 public abstract class MemberBase
     extends OlapElementBase
-    implements Member {
+    implements Member
+{
 
     protected Member parentMember;
     protected final Level level;
@@ -86,7 +87,9 @@ public abstract class MemberBase
             | (memberType == MemberType.ALL ? FLAG_ALL : 0)
             | (memberType == MemberType.NULL ? FLAG_NULL : 0)
             | (computeCalculated(memberType) ? FLAG_CALCULATED : 0)
-            | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
+            | (level.getHierarchy().getDimension().isMeasures()
+               ? FLAG_MEASURE
+               : 0);
     }
 
     protected MemberBase() {

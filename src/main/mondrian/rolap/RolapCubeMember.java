@@ -64,7 +64,8 @@ public class RolapCubeMember extends RolapMember {
             // this is a special case ...
             // replace hierarchy name portion of all member with new name
             if (member.getLevel().getHierarchy().getName().equals(
-                    level.getHierarchy().getName())) {
+                    level.getHierarchy().getName()))
+            {
                 rolapAllMemberCubeName = member.getName();
             } else {
                 // special case if we're dealing with a closure
@@ -85,8 +86,9 @@ public class RolapCubeMember extends RolapMember {
             rolapAllMemberCubeName = null;
             Object name = rolapMember.getPropertyValue(Property.NAME.name);
             if (name != null
-                    && !(rolapMember.getKey() != null && name.equals(rolapMember
-                            .getKey()))) {
+                && !(rolapMember.getKey() != null
+                     && name.equals(rolapMember.getKey())))
+            {
                 // Save memory by only saving the name as a property if it's
                 // different from the key.
                 setUniqueName(name);

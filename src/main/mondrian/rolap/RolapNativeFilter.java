@@ -57,7 +57,8 @@ public class RolapNativeFilter extends RolapNativeSet {
         public void addConstraint(
             SqlQuery sqlQuery,
             RolapCube baseCube,
-            AggStar aggStar) {
+            AggStar aggStar)
+        {
             // Use aggregate table to generate filter condition
             RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
             String filterSql =  sql.generateFilterCondition(filterExpr);

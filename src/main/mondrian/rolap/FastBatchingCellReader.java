@@ -270,8 +270,8 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     boolean shouldUseGroupingFunction() {
-        return MondrianProperties.instance().EnableGroupingSets.get() &&
-            doesDBSupportGroupingSets();
+        return MondrianProperties.instance().EnableGroupingSets.get()
+            && doesDBSupportGroupingSets();
     }
 
     /**
@@ -657,9 +657,10 @@ public class FastBatchingCellReader implements CellReader {
             List<RolapStar.Measure> distinctSqlMeasureList =
                 new ArrayList<RolapStar.Measure>();
             for (RolapStar.Measure measure : measuresList) {
-                if (measure.getAggregator().isDistinct() &&
-                    measure.getExpression() instanceof
-                        MondrianDef.MeasureExpression) {
+                if (measure.getAggregator().isDistinct()
+                    && measure.getExpression() instanceof
+                        MondrianDef.MeasureExpression)
+                {
                     MondrianDef.MeasureExpression measureExpr =
                         (MondrianDef.MeasureExpression) measure.getExpression();
                     MondrianDef.SQL measureSql = measureExpr.expressions[0];
@@ -707,7 +708,8 @@ public class FastBatchingCellReader implements CellReader {
         private boolean constraintsMatch(Batch other) {
             if (areBothDistinctCountBatches(other)) {
                 if (getConstrainedColumnsBitKey().equals(
-                    other.getConstrainedColumnsBitKey())) {
+                    other.getConstrainedColumnsBitKey()))
+                {
                     return hasSameCompoundPredicate(other)
                         && haveSameValues(other);
                 } else {
@@ -794,8 +796,8 @@ public class FastBatchingCellReader implements CellReader {
                     predicate = predicate.and(orPredicate);
                 }
             }
-            for (StarPredicate starPredicate :
-                batchKey.getCompoundPredicateList())
+            for (StarPredicate starPredicate
+                : batchKey.getCompoundPredicateList())
             {
                 if (predicate == null) {
                     predicate = starPredicate;
@@ -912,7 +914,8 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public int compare(
-            Batch o1, Batch o2) {
+            Batch o1, Batch o2)
+        {
             if (o1.columns.length != o2.columns.length) {
                 return o1.columns.length - o2.columns.length;
             }

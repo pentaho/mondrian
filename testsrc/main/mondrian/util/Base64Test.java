@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -47,7 +47,8 @@ public class Base64Test extends TestCase
         byte[] decoded = Base64.decode(encoded, 0, encoded.length);
         assertTrue(Arrays.equals(data, decoded));
 
-        Base64.InputStream in = new Base64.InputStream(new ByteArrayInputStream(encoded));
+        Base64.InputStream in =
+            new Base64.InputStream(new ByteArrayInputStream(encoded));
         out_bytes = new ByteArrayOutputStream();
         byte[] buffer = new byte[3];
         for (int n = in.read(buffer); n > 0; n = in.read(buffer)) {

@@ -24,7 +24,8 @@ import mondrian.resource.MondrianResource;
  */
 public abstract class HierarchyBase
     extends OlapElementBase
-    implements Hierarchy {
+    implements Hierarchy
+{
 
     protected final Dimension dimension;
     /**
@@ -111,7 +112,8 @@ public abstract class HierarchyBase
     }
 
     public String getQualifiedName() {
-        return MondrianResource.instance().MdxHierarchyName.str(getUniqueName());
+        return MondrianResource.instance().MdxHierarchyName.str(
+            getUniqueName());
     }
 
     public abstract boolean isRagged();

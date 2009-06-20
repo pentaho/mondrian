@@ -28,7 +28,8 @@ public class TypeUtil {
         if (type instanceof MemberType
             || type instanceof LevelType
             || type instanceof HierarchyType
-            || type instanceof DimensionType) {
+            || type instanceof DimensionType)
+        {
             return type.getHierarchy();
         } else {
             throw Util.newInternal("not an mdx object");
@@ -80,9 +81,10 @@ public class TypeUtil {
         type = stripSetType(type);
         if (type instanceof MemberType) {
             return (MemberType) type;
-        } else if (type instanceof DimensionType ||
-                type instanceof HierarchyType ||
-                type instanceof LevelType) {
+        } else if (type instanceof DimensionType
+            || type instanceof HierarchyType
+            || type instanceof LevelType)
+        {
             return MemberType.forType(type);
         } else {
             return null;
@@ -103,12 +105,14 @@ public class TypeUtil {
             TupleType tupleType1 = (TupleType) type1;
             if (type2 instanceof TupleType) {
                 TupleType tupleType2 = (TupleType) type2;
-                if (tupleType1.elementTypes.length ==
-                        tupleType2.elementTypes.length) {
+                if (tupleType1.elementTypes.length
+                    == tupleType2.elementTypes.length)
+                {
                     for (int i = 0; i < tupleType1.elementTypes.length; i++) {
                         if (!isUnionCompatible(
                                 tupleType1.elementTypes[i],
-                                tupleType2.elementTypes[i])) {
+                                tupleType2.elementTypes[i]))
+                        {
                             return false;
                         }
                     }
@@ -142,9 +146,9 @@ public class TypeUtil {
         final Hierarchy hierarchy1,
         final Hierarchy hierarchy2)
     {
-        return hierarchy1 == null ||
-            hierarchy2 == null ||
-            hierarchy2.getUniqueName().equals(
+        return hierarchy1 == null
+            || hierarchy2 == null
+            || hierarchy2.getUniqueName().equals(
                 hierarchy1.getUniqueName());
     }
 
@@ -168,9 +172,9 @@ public class TypeUtil {
      *   scalar value.
      */
     public static boolean canEvaluate(Type type) {
-        return ! (type instanceof SetType ||
-                type instanceof CubeType ||
-                type instanceof LevelType);
+        return ! (type instanceof SetType
+                  || type instanceof CubeType
+                  || type instanceof LevelType);
     }
 
     /**
@@ -184,9 +188,9 @@ public class TypeUtil {
     }
 
     public static boolean couldBeMember(Type type) {
-        return type instanceof MemberType ||
-                type instanceof HierarchyType ||
-                type instanceof DimensionType;
+        return type instanceof MemberType
+            || type instanceof HierarchyType
+            || type instanceof DimensionType;
     }
 
     /**

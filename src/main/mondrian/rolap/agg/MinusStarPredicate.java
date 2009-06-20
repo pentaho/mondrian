@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,16 +49,16 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
     public boolean equals(Object obj) {
         if (obj instanceof MinusStarPredicate) {
             MinusStarPredicate that = (MinusStarPredicate) obj;
-            return this.plus.equals(that.plus) &&
-                this.minus.equals(that.minus);
+            return this.plus.equals(that.plus)
+                && this.minus.equals(that.minus);
         } else {
             return false;
         }
     }
 
     public int hashCode() {
-        return plus.hashCode() * 31 +
-            minus.hashCode();
+        return plus.hashCode() * 31
+            + minus.hashCode();
     }
 
     public RolapStar.Column getConstrainedColumn() {
@@ -75,8 +75,8 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
     }
 
     public boolean evaluate(Object value) {
-        return plus.evaluate(value) &&
-            !minus.evaluate(value);
+        return plus.evaluate(value)
+            && !minus.evaluate(value);
     }
 
     public void describe(StringBuilder buf) {
@@ -135,7 +135,8 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
                     new ArrayList<StarColumnPredicate>();
                 unionList.addAll(minusList.getPredicates());
                 unionList.add(
-                    new ValueColumnPredicate(column, valuePredicate.getValue()));
+                    new ValueColumnPredicate(
+                        column, valuePredicate.getValue()));
                 return new MinusStarPredicate(
                     plus,
                     new ListColumnPredicate(column, unionList));

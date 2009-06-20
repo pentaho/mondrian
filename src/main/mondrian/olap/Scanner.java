@@ -123,8 +123,10 @@ public class Scanner {
 
     /**
      * Peeks at the character n after {@link #nextChar} without advancing.
-     * lookahead(0) returns the current char (nextChar).
-     * lookahead(1) returns the next char (was lookaheadChar, same as lookahead());
+     *
+     * <p>lookahead(0) returns the current char (nextChar).
+     * lookahead(1) returns the next char (was lookaheadChar, same as
+     * lookahead());
      */
     private int lookahead(int n) throws IOException {
         if (n == 0) {
@@ -206,9 +208,10 @@ public class Scanner {
                 name = m_aResWords[s.sym];
             }
 
-            LOGGER.error("Scanner returns #" + s.sym +
-                (name == null ? "" : ":" + name) +
-                (s.value == null ? "" : "(" + s.value.toString() + ")"));
+            LOGGER.error(
+                "Scanner returns #" + s.sym
+                + (name == null ? "" : ":" + name)
+                + (s.value == null ? "" : "(" + s.value.toString() + ")"));
         }
         return s;
     }
@@ -231,66 +234,66 @@ public class Scanner {
         //   awk '{printf "initResword(%20s,%c%s%c);",$1,34,$1,34}'
         m_resWordsTable = new Hashtable<String, Integer>();
         iMaxResword = 0;
-//      initResword(ParserSym.ALL                 ,"ALL");
-        initResword(ParserSym.AND                 ,"AND");
-        initResword(ParserSym.AS                  ,"AS");
-//      initResword(ParserSym.ASC                 ,"ASC");
-        initResword(ParserSym.AXIS                ,"AXIS");
-//      initResword(ParserSym.BACK_COLOR          ,"BACK_COLOR");
-//      initResword(ParserSym.BASC                ,"BASC");
-//      initResword(ParserSym.BDESC               ,"BDESC");
-        initResword(ParserSym.CAST                ,"CAST"); // mondrian extension
-        initResword(ParserSym.CASE                ,"CASE");
-        initResword(ParserSym.CELL                ,"CELL");
-//      initResword(ParserSym.CELL_ORDINAL        ,"CELL_ORDINAL");
-        initResword(ParserSym.CHAPTERS            ,"CHAPTERS");
-//      initResword(ParserSym.CHILDREN            ,"CHILDREN");
-        initResword(ParserSym.COLUMNS             ,"COLUMNS");
-//      initResword(ParserSym.DESC                ,"DESC");
-        initResword(ParserSym.DIMENSION           ,"DIMENSION");
-        initResword(ParserSym.ELSE                ,"ELSE");
-        initResword(ParserSym.EMPTY               ,"EMPTY");
-        initResword(ParserSym.END                 ,"END");
-//      initResword(ParserSym.FIRSTCHILD          ,"FIRSTCHILD");
-//      initResword(ParserSym.FIRSTSIBLING        ,"FIRSTSIBLING");
-//      initResword(ParserSym.FONT_FLAGS          ,"FONT_FLAGS");
-//      initResword(ParserSym.FONT_NAME           ,"FONT_NAME");
-//      initResword(ParserSym.FONT_SIZE           ,"FONT_SIZE");
-//      initResword(ParserSym.FORE_COLOR          ,"FORE_COLOR");
-//      initResword(ParserSym.FORMATTED_VALUE     ,"FORMATTED_VALUE");
-//      initResword(ParserSym.FORMAT_STRING       ,"FORMAT_STRING");
-        initResword(ParserSym.FROM                ,"FROM");
-        initResword(ParserSym.IS                  ,"IS");
-        initResword(ParserSym.IN                  ,"IN");
-//      initResword(ParserSym.LAG                 ,"LAG");
-//      initResword(ParserSym.LASTCHILD           ,"LASTCHILD");
-//      initResword(ParserSym.LASTSIBLING         ,"LASTSIBLING");
-//      initResword(ParserSym.LEAD                ,"LEAD");
-        initResword(ParserSym.MATCHES             ,"MATCHES");
-        initResword(ParserSym.MEMBER              ,"MEMBER");
-//      initResword(ParserSym.MEMBERS             ,"MEMBERS");
-//      initResword(ParserSym.NEXTMEMBER          ,"NEXTMEMBER");
-        initResword(ParserSym.NON                 ,"NON");
-        initResword(ParserSym.NOT                 ,"NOT");
-        initResword(ParserSym.NULL                ,"NULL");
-        initResword(ParserSym.ON                  ,"ON");
-        initResword(ParserSym.OR                  ,"OR");
-        initResword(ParserSym.PAGES               ,"PAGES");
-//      initResword(ParserSym.PARENT              ,"PARENT");
-//      initResword(ParserSym.PREVMEMBER          ,"PREVMEMBER");
-        initResword(ParserSym.PROPERTIES          ,"PROPERTIES");
-//      initResword(ParserSym.RECURSIVE           ,"RECURSIVE");
-        initResword(ParserSym.ROWS                ,"ROWS");
-        initResword(ParserSym.SECTIONS            ,"SECTIONS");
-        initResword(ParserSym.SELECT              ,"SELECT");
-        initResword(ParserSym.SET                 ,"SET");
-//      initResword(ParserSym.SOLVE_ORDER         ,"SOLVE_ORDER");
-        initResword(ParserSym.THEN                ,"THEN");
-//      initResword(ParserSym.VALUE               ,"VALUE");
-        initResword(ParserSym.WHEN                ,"WHEN");
-        initResword(ParserSym.WHERE               ,"WHERE");
-        initResword(ParserSym.WITH                ,"WITH");
-        initResword(ParserSym.XOR                 ,"XOR");
+//      initResword(ParserSym.ALL                 , "ALL");
+        initResword(ParserSym.AND                 , "AND");
+        initResword(ParserSym.AS                  , "AS");
+//      initResword(ParserSym.ASC                 , "ASC");
+        initResword(ParserSym.AXIS                , "AXIS");
+//      initResword(ParserSym.BACK_COLOR          , "BACK_COLOR");
+//      initResword(ParserSym.BASC                , "BASC");
+//      initResword(ParserSym.BDESC               , "BDESC");
+        initResword(ParserSym.CAST                , "CAST"); // mondrian extension
+        initResword(ParserSym.CASE                , "CASE");
+        initResword(ParserSym.CELL                , "CELL");
+//      initResword(ParserSym.CELL_ORDINAL        , "CELL_ORDINAL");
+        initResword(ParserSym.CHAPTERS            , "CHAPTERS");
+//      initResword(ParserSym.CHILDREN            , "CHILDREN");
+        initResword(ParserSym.COLUMNS             , "COLUMNS");
+//      initResword(ParserSym.DESC                , "DESC");
+        initResword(ParserSym.DIMENSION           , "DIMENSION");
+        initResword(ParserSym.ELSE                , "ELSE");
+        initResword(ParserSym.EMPTY               , "EMPTY");
+        initResword(ParserSym.END                 , "END");
+//      initResword(ParserSym.FIRSTCHILD          , "FIRSTCHILD");
+//      initResword(ParserSym.FIRSTSIBLING        , "FIRSTSIBLING");
+//      initResword(ParserSym.FONT_FLAGS          , "FONT_FLAGS");
+//      initResword(ParserSym.FONT_NAME           , "FONT_NAME");
+//      initResword(ParserSym.FONT_SIZE           , "FONT_SIZE");
+//      initResword(ParserSym.FORE_COLOR          , "FORE_COLOR");
+//      initResword(ParserSym.FORMATTED_VALUE     , "FORMATTED_VALUE");
+//      initResword(ParserSym.FORMAT_STRING       , "FORMAT_STRING");
+        initResword(ParserSym.FROM                , "FROM");
+        initResword(ParserSym.IS                  , "IS");
+        initResword(ParserSym.IN                  , "IN");
+//      initResword(ParserSym.LAG                 , "LAG");
+//      initResword(ParserSym.LASTCHILD           , "LASTCHILD");
+//      initResword(ParserSym.LASTSIBLING         , "LASTSIBLING");
+//      initResword(ParserSym.LEAD                , "LEAD");
+        initResword(ParserSym.MATCHES             , "MATCHES");
+        initResword(ParserSym.MEMBER              , "MEMBER");
+//      initResword(ParserSym.MEMBERS             , "MEMBERS");
+//      initResword(ParserSym.NEXTMEMBER          , "NEXTMEMBER");
+        initResword(ParserSym.NON                 , "NON");
+        initResword(ParserSym.NOT                 , "NOT");
+        initResword(ParserSym.NULL                , "NULL");
+        initResword(ParserSym.ON                  , "ON");
+        initResword(ParserSym.OR                  , "OR");
+        initResword(ParserSym.PAGES               , "PAGES");
+//      initResword(ParserSym.PARENT              , "PARENT");
+//      initResword(ParserSym.PREVMEMBER          , "PREVMEMBER");
+        initResword(ParserSym.PROPERTIES          , "PROPERTIES");
+//      initResword(ParserSym.RECURSIVE           , "RECURSIVE");
+        initResword(ParserSym.ROWS                , "ROWS");
+        initResword(ParserSym.SECTIONS            , "SECTIONS");
+        initResword(ParserSym.SELECT              , "SELECT");
+        initResword(ParserSym.SET                 , "SET");
+//      initResword(ParserSym.SOLVE_ORDER         , "SOLVE_ORDER");
+        initResword(ParserSym.THEN                , "THEN");
+//      initResword(ParserSym.VALUE               , "VALUE");
+        initResword(ParserSym.WHEN                , "WHEN");
+        initResword(ParserSym.WHERE               , "WHERE");
+        initResword(ParserSym.WITH                , "WITH");
+        initResword(ParserSym.XOR                 , "XOR");
 
         m_aResWords = new String[iMaxResword + 1];
         Enumeration<String> e = m_resWordsTable.keys();
@@ -328,9 +331,11 @@ public class Scanner {
 
     private Symbol makeId(String s, boolean quoted, boolean ampersand) {
         return makeSymbol(
-            quoted && ampersand ? ParserSym.AMP_QUOTED_ID :
-            quoted ? ParserSym.QUOTED_ID :
-            ParserSym.ID,
+            quoted && ampersand
+            ? ParserSym.AMP_QUOTED_ID
+            : quoted
+            ? ParserSym.QUOTED_ID
+            : ParserSym.ID,
             s);
     }
 
@@ -560,8 +565,9 @@ public class Scanner {
 
                     case '+':
                     case '-':
-                        if (state == State.inExponent &&
-                            digitCount == 0) {
+                        if (state == State.inExponent
+                            && digitCount == 0)
+                        {
                             // We're looking at the sign after the 'e'.
                             positive = !positive;
                             advance();
@@ -802,13 +808,14 @@ public class Scanner {
                 // If it's whitespace, skip over it.
                 // (When we switch to JDK 1.5, use Character.isWhitespace(int);
                 // til then, there's just Character.isWhitespace(char).)
-                if (nextChar <= Character.MAX_VALUE &&
-                        Character.isWhitespace((char) nextChar)) {
+                if (nextChar <= Character.MAX_VALUE
+                    && Character.isWhitespace((char) nextChar))
+                {
                     // fall through
                 } else {
                     // everything else is an error
                     throw new RuntimeException(
-                            "Unexpected character '" + (char) nextChar + "'");
+                        "Unexpected character '" + (char) nextChar + "'");
                 }
 
             case ' ':

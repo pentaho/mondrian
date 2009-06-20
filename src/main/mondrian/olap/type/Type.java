@@ -100,7 +100,8 @@ public interface Type {
      * <p>One use of common types is to determine the types of the arguments
      * to the <code>Iif</code> function. For example, the call
      *
-     * <blockquote><code>Iif(1 > 2, [Measures].[Unit Sales], 5)</code></blockquote>
+     * <blockquote><code>Iif(1 &gt; 2, [Measures].[Unit Sales],
+     * 5)</code></blockquote>
      *
      * has type ScalarType, because DecimalType(-1, 0) is a subtype of
      * ScalarType, and MeasureType can be converted implicitly to ScalarType.

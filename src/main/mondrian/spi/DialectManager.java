@@ -326,18 +326,18 @@ public abstract class DialectManager {
             } catch (InstantiationException e) {
                 throw Util.newError(
                     e,
-                    "Error while instantiating dialect of class " +
-                        constructor.getClass());
+                    "Error while instantiating dialect of class "
+                    + constructor.getClass());
             } catch (IllegalAccessException e) {
                 throw Util.newError(
                     e,
-                    "Error while instantiating dialect of class " +
-                        constructor.getClass());
+                    "Error while instantiating dialect of class "
+                    + constructor.getClass());
             } catch (InvocationTargetException e) {
                 throw Util.newError(
                     e,
-                    "Error while instantiating dialect of class " +
-                        constructor.getClass());
+                    "Error while instantiating dialect of class "
+                    + constructor.getClass());
             }
         }
     }

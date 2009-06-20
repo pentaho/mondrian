@@ -73,8 +73,9 @@ public class Walker implements Enumeration {
         // Unwind stack until we find a level we have not completed.
         do {
             Frame frame = (Frame) stack.peek();
-            if (frame.children != null &&
-                ++frame.childIndex < frame.children.length) {
+            if (frame.children != null
+                && ++frame.childIndex < frame.children.length)
+            {
                 // Here is an unvisited child.  Visit it.
                 visit(frame, frame.children[frame.childIndex]);
                 return;
@@ -181,8 +182,9 @@ public class Walker implements Enumeration {
     {
         // We can't use currentFrame.parent.iChild because moveToNext() may
         // have changed it.
-        return currentFrame.parent == null ? 0 :
-            arrayFind(currentFrame.parent.children, currentFrame.node);
+        return currentFrame.parent == null
+            ? 0
+            : arrayFind(currentFrame.parent.children, currentFrame.node);
     }
 
     /** get the ordinal within its parent node of the <code>iDepth</code>th
@@ -190,9 +192,11 @@ public class Walker implements Enumeration {
     public int getAncestorOrdinal(int iDepth)
     {
         Frame f = getAncestorFrame(iDepth);
-        return f == null ? -1 :
-            f.parent == null ? 0 :
-            arrayFind(f.parent.children, f.node);
+        return f == null
+            ? -1
+            : f.parent == null
+            ? 0
+            : arrayFind(f.parent.children, f.node);
     }
 
     /** Override this function to prune the tree, or to allow objects which are
@@ -246,15 +250,20 @@ public class Walker implements Enumeration {
         PrintWriter pw = new PrintWriter(System.out);
         Region usa = new Region(
             "USA", new Region[] {
-            new Region("CA", new Region[] {
-                new Region("San Francisco", new Region[]{
-            new Region("WesternAddition", new Region[]{ new Region("Haight", null)}),
+            new Region(
+                "CA", new Region[] {
+                    new Region(
+                        "San Francisco", new Region[] {
+            new Region(
+                "WesternAddition", new Region[] {
+                    new Region("Haight", null)}),
                     new Region("Soma", null)
                 }),
                 new Region("Los Angeles", null)}),
-            new Region("WA", new Region[] {
-                new Region("Seattle", null),
-                new Region("Tacoma", null)})});
+            new Region(
+                "WA", new Region[] {
+                    new Region("Seattle", null),
+                    new Region("Tacoma", null)})});
 
         Walker walker = new Walker(usa);
         if (false) {

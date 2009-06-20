@@ -46,25 +46,12 @@ class CountFunDef extends AbstractAggregateFunDef {
             compiler.compileAs(
                 call.getArg(0), null, ResultStyle.ITERABLE_ANY);
         final boolean includeEmpty =
-                call.getArgCount() < 2 ||
-                ((Literal) call.getArg(1)).getValue().equals(
-                        "INCLUDEEMPTY");
+            call.getArgCount() < 2
+            || ((Literal) call.getArg(1)).getValue().equals(
+                "INCLUDEEMPTY");
         return new AbstractIntegerCalc(
                 call, new Calc[] {calc}) {
             public int evaluateInteger(Evaluator evaluator) {
-/*
-                if (calc instanceof ListCalc) {
-                    ListCalc listCalc = (ListCalc) calc;
-                    List memberList = evaluateCurrentList(listCalc, evaluator);
-                    return count(evaluator, memberList, includeEmpty);
-                } else {
-                    // must be IterCalc
-                    IterCalc iterCalc = (IterCalc) calc;
-                    Iterable iterable =
-                        evaluateCurrentIterable(iterCalc, evaluator);
-                    return count(evaluator, iterable, includeEmpty);
-                }
-*/
                 evaluator = evaluator.push(false);
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;

@@ -600,10 +600,10 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index > RolapAxis.MemberArrayIterable.this.len) {
                     throw new IndexOutOfBoundsException(
-                        "Index: " +
-                        index +
-                        ", Size: " +
-                        RolapAxis.MemberArrayIterable.this.len);
+                        "Index: "
+                        + index
+                        + ", Size: "
+                        + RolapAxis.MemberArrayIterable.this.len);
                 }
                 return list.get(offset)[index];
             }
@@ -670,10 +670,10 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index > RolapAxis.MemberArrayList.this.len) {
                     throw new IndexOutOfBoundsException(
-                        "Index: " +
-                        index +
-                        ", Size: " +
-                        RolapAxis.MemberArrayList.this.len);
+                        "Index: "
+                        + index
+                        + ", Size: "
+                        + RolapAxis.MemberArrayList.this.len);
                 }
                 return list.get(offset)[index];
             }

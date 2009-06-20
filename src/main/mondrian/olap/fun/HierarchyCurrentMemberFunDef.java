@@ -17,7 +17,8 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
 /**
- * Definition of the <code>&lt;Hierarchy&gt;.CurrentMember</code> MDX builtin function.
+ * Definition of the <code>&lt;Hierarchy&gt;.CurrentMember</code> MDX
+ * builtin function.
  *
  * @author jhyde
  * @version $Id$

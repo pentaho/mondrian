@@ -29,7 +29,7 @@ public class PropertiesTest extends FoodMartTestCase {
      * Tests existence and values of mandatory member properties.
      */
     public void testMandatoryMemberProperties() {
-        Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
+        Cube salesCube = getConnection().getSchema().lookupCube("Sales", true);
         SchemaReader scr = salesCube.getSchemaReader(null);
         Member member =
             scr.getMemberByUniqueName(
@@ -167,7 +167,7 @@ public class PropertiesTest extends FoodMartTestCase {
     }
 
     public void testGetChildCardinalityPropertyValue() {
-        Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
+        Cube salesCube = getConnection().getSchema().lookupCube("Sales", true);
         SchemaReader scr = salesCube.getSchemaReader(null);
         Member memberForCardinalityTest =
             scr.getMemberByUniqueName(

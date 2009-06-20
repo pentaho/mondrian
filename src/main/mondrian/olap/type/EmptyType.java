@@ -13,7 +13,8 @@ package mondrian.olap.type;
  * The type of a empty expression.
  *
  * <p>An example of an empty expression is the third argument to the call
- * <code>DrilldownLevelTop({[Store].[USA]}, 2, , [Measures].[Unit Sales])</code>.
+ * <code>DrilldownLevelTop({[Store].[USA]}, 2, , [Measures].[Unit
+ * Sales])</code>.
  * </p>
  *
  * @author medstat

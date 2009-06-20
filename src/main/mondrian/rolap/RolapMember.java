@@ -220,10 +220,11 @@ public class RolapMember extends MemberBase {
             ((RolapMember) member).setOrdinal(ordinal++);
         } else {
             // TODO
-            LOGGER.warn("RolapMember.setAllChildren: NOT RolapMember " +
-                "member.name=" + member.getName() +
-                ", member.class=" + member.getClass().getName() +
-                ", ordinal=" + ordinal);
+            LOGGER.warn(
+                "RolapMember.setAllChildren: NOT RolapMember "
+                + "member.name=" + member.getName()
+                + ", member.class=" + member.getClass().getName()
+                + ", ordinal=" + ordinal);
             ordinal++;
         }
         return ordinal;
@@ -375,8 +376,9 @@ public class RolapMember extends MemberBase {
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
 
-        if (name != null &&
-                !(key != null && name.equals(key.toString()))) {
+        if (name != null
+            && !(key != null && name.equals(key.toString())))
+        {
             // Save memory by only saving the name as a property if it's
             // different from the key.
             setProperty(Property.NAME.name, name);
@@ -419,13 +421,13 @@ public class RolapMember extends MemberBase {
     }
 
     public boolean equals(Object o) {
-        return (o == this) ||
-                ((o instanceof RolapMember) && equals((RolapMember) o));
+        return (o == this)
+            || ((o instanceof RolapMember) && equals((RolapMember) o));
     }
 
     public boolean equals(OlapElement o) {
-        return (o instanceof RolapMember) &&
-                equals((RolapMember) o);
+        return (o instanceof RolapMember)
+            && equals((RolapMember) o);
     }
 
     private boolean equals(RolapMember that) {
@@ -605,13 +607,15 @@ public class RolapMember extends MemberBase {
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();
-                return parentMember == null ? 0 :
-                    parentMember.getLevel().getDepth();
+                return parentMember == null
+                    ? 0
+                    : parentMember.getLevel().getDepth();
 
             case Property.PARENT_UNIQUE_NAME_ORDINAL:
                 parentMember = getParentMember();
-                return parentMember == null ? null :
-                        parentMember.getUniqueName();
+                return parentMember == null
+                    ? null
+                    : parentMember.getUniqueName();
 
             case Property.PARENT_COUNT_ORDINAL:
                 parentMember = getParentMember();
@@ -730,8 +734,9 @@ public class RolapMember extends MemberBase {
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // compare by unique name, if one ore both members are null
-        if (this.key == RolapUtil.sqlNullValue ||
-            other.key == RolapUtil.sqlNullValue) {
+        if (this.key == RolapUtil.sqlNullValue
+            || other.key == RolapUtil.sqlNullValue)
+        {
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // as both keys are not null, compare by key

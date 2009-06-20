@@ -128,7 +128,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Row #0: 266,773\n");
     }
 
-    public void testVMShouldNotPushUpAggregateMemberDefinedOnNonJoiningDimension() {
+    public void testVMShouldNotPushUpAggMemberDefinedOnNonJoiningDimension() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Total Sales] AS "
             + "'ValidMeasure(Measures.[Warehouse Sales]) + [Measures].[Unit Sales]',"
@@ -148,7 +148,8 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Row #0: 30,405.602\n");
     }
 
-    public void testAggregateMemberDefinedOnNonJoiningDimensionWithNonAllDefaultMember() {
+    public void testAggMemberDefinedOnNonJoiningDimensionWithNonAllDefltMember()
+    {
         // Gender dim to have Gender.F as default member
         TestContext context = TestContext.create(
             null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
@@ -278,9 +279,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{{[Warehouse].[All Warehouses].[USA].[OR],[Warehouse].[All Warehouses].[USA].[WA]}})' "
             + "SET [COG_OQP_INT_s2] AS "
             + "'{[Measures].[Store Invoice],[Measures].[Unit Sales VM],[Measures].[VirtualMeasure]}' "
-            +
-
-            "SELECT "
+            + "SELECT "
             + "[COG_OQP_INT_s2] DIMENSION PROPERTIES PARENT_LEVEL, "
             + "PARENT_UNIQUE_NAME ON AXIS(0), "
             + "{[COG_OQP_INT_s4], HEAD({([Product].[COG_OQP_USR_Aggregate(Product Set)1], "

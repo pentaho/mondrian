@@ -113,7 +113,8 @@ public class MondrianTestRunner extends BaseTestRunner {
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 public void run() {
-                    setStopReason("Test stopped because the time limit expired.");
+                    setStopReason(
+                        "Test stopped because the time limit expired.");
                     result.stop();
                 }
             }, 1000L * (long)getTimeLimit());
@@ -124,8 +125,9 @@ public class MondrianTestRunner extends BaseTestRunner {
         for (int i = 0; i < getVUsers(); i++) {
             threads[i] = new Thread(new Runnable() {
                 public void run() {
-                    //System.out.println("Thread: " + Thread.currentThread().getName());
-                    for (int j = 0; getIterations() == 0 || j < getIterations(); j++) {
+                    for (int j = 0; getIterations() == 0 || j < getIterations();
+                         j++)
+                    {
                         suite.run(result);
                         if (!result.wasSuccessful()) {
                             setStopReason("Test stopped due to errors.");

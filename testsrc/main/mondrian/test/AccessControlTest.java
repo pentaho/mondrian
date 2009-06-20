@@ -121,7 +121,7 @@ public class AccessControlTest extends FoodMartTestCase {
             salesCube.getSchemaReader(null); // unrestricted
         final Member member =
             schemaReader.getMemberByUniqueName(
-                Util.parseIdentifier(memberName),true);
+                Util.parseIdentifier(memberName), true);
         final Access actualAccess = role.getAccess(member);
         Assert.assertEquals(memberName, expectedAccess, actualAccess);
     }
@@ -1213,8 +1213,8 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "      </HierarchyGrant>\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
-                + "</Role>").
-            withRole("Buggy Role");
+                + "</Role>")
+            .withRole("Buggy Role");
 
         final String mdx = "select\n"
             + "  {[Measures].[Number of Employees]} on columns,\n"

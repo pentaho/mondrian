@@ -379,8 +379,8 @@ public class QueryPanel extends javax.swing.JPanel {
 
     private JInternalFrame lookupFrame(String sfname) {
         JInternalFrame sf = null;
-        for (Map.Entry<JInternalFrame, JMenuItem> entry :
-            schemaWindowMap.entrySet())
+        for (Map.Entry<JInternalFrame, JMenuItem> entry
+            : schemaWindowMap.entrySet())
         {
             if ((entry.getValue()).getText().equals(sfname)) {
                 sf = entry.getKey();

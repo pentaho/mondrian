@@ -71,7 +71,8 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+    {
         return null;
     }
 

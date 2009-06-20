@@ -374,8 +374,8 @@ public class SegmentLoader {
         boolean axisContainsNull,
         RolapStar.Column column)
     {
-        for (GroupingSet groupingSet :
-                 groupingSetsList.getRollupGroupingSets())
+        for (GroupingSet groupingSet
+            : groupingSetsList.getRollupGroupingSets())
         {
             RolapStar.Column[] columns = groupingSet.getColumns();
             for (int i = 0; i < columns.length; i++) {
@@ -433,7 +433,8 @@ public class SegmentLoader {
             // get the columns
             int columnIndex = 0;
             for (int axisIndex = 0; axisIndex < arity;
-                 axisIndex++, columnIndex++) {
+                 axisIndex++, columnIndex++)
+            {
                 Object o = row[columnIndex];
                 if (o == null) {
                     o = RolapUtil.sqlNullValue;
@@ -600,16 +601,16 @@ public class SegmentLoader {
             (possibleCount - countThreshold) * densityThreshold >
                 actualCount;
         if (possibleCount < countThreshold) {
-            assert !sparse :
-                "Should never use sparse if count is less "
+            assert !sparse
+                : "Should never use sparse if count is less "
                 + "than threshold, possibleCount=" + possibleCount
                 + ", actualCount=" + actualCount
                 + ", countThreshold=" + countThreshold
                 + ", densityThreshold=" + densityThreshold;
         }
         if (possibleCount == actualCount) {
-            assert !sparse :
-                "Should never use sparse if result is 100% dense: "
+            assert !sparse
+                : "Should never use sparse if result is 100% dense: "
                 + "possibleCount=" + possibleCount
                 + ", actualCount=" + actualCount
                 + ", countThreshold=" + countThreshold

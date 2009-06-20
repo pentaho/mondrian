@@ -678,8 +678,8 @@ public abstract class RolapAggregationManager {
         if (region instanceof CacheControlImpl.CrossjoinCellRegion) {
             final CacheControlImpl.CrossjoinCellRegion crossjoin =
                 (CacheControlImpl.CrossjoinCellRegion) region;
-            for (CacheControl.CellRegion component :
-                crossjoin.getComponents())
+            for (CacheControl.CellRegion component
+                : crossjoin.getComponents())
             {
                 constrainCacheRegion(cacheRegion, baseCube, component);
             }
@@ -721,15 +721,15 @@ public abstract class RolapAggregationManager {
                 new RangeColumnPredicate(
                     column,
                     rangeRegion.getLowerInclusive(),
-                    (rangeRegion.getLowerBound() == null ?
-                        null :
-                        new MemberColumnPredicate(
-                            column, rangeRegion.getLowerBound())),
+                    (rangeRegion.getLowerBound() == null
+                     ? null
+                     : new MemberColumnPredicate(
+                        column, rangeRegion.getLowerBound())),
                     rangeRegion.getUpperInclusive(),
-                    (rangeRegion.getUpperBound() == null ?
-                        null :
-                        new MemberColumnPredicate(
-                            column, rangeRegion.getUpperBound()))),
+                    (rangeRegion.getUpperBound() == null
+                     ? null
+                     : new MemberColumnPredicate(
+                        column, rangeRegion.getUpperBound()))),
                 baseCube,
                 cacheRegion);
         } else {

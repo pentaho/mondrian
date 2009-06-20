@@ -124,8 +124,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             alertCrossJoinNonNative(
                 evaluator,
                 fun,
-            "either all arguments contain the ALL member, " +
-            "or empty member lists, or one has a calculated member");
+                "either all arguments contain the ALL member, "
+                + "or empty member lists, or one has a calculated member");
             return null;
         }
 
@@ -146,8 +146,9 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
 
-        if ((cube.isVirtual() &&
-                !evaluator.getQuery().nativeCrossJoinVirtualCube())) {
+        if ((cube.isVirtual()
+             && !evaluator.getQuery().nativeCrossJoinVirtualCube()))
+        {
             // Something in the query at large (namely, some unsupported
             // function on the [Measures] dimension) prevented native
             // evaluation with virtual cubes; may need to alert
@@ -161,7 +162,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 evaluator,
                 false,
                 levels.toArray(new RolapLevel[levels.size()]),
-                restrictMemberTypes())) {
+                restrictMemberTypes()))
+        {
             // Missing join conditions due to non-conforming dimensions
             // meant native evaluation would have led to a true cross
             // product, which we want to defer instead of pushing it down;

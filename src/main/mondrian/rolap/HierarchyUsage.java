@@ -296,12 +296,12 @@ public class HierarchyUsage {
     public boolean equals(Object o) {
         if (o instanceof HierarchyUsage) {
             HierarchyUsage other = (HierarchyUsage) o;
-            return (this.kind == other.kind) &&
-                Util.equals(this.fact, other.fact) &&
-                this.hierarchyName.equals(other.hierarchyName) &&
-                Util.equalName(this.name, other.name) &&
-                Util.equalName(this.source, other.source) &&
-                Util.equalName(this.foreignKey, other.foreignKey);
+            return (this.kind == other.kind)
+                && Util.equals(this.fact, other.fact)
+                && this.hierarchyName.equals(other.hierarchyName)
+                && Util.equalName(this.name, other.name)
+                && Util.equalName(this.source, other.source)
+                && Util.equalName(this.foreignKey, other.foreignKey);
         } else {
             return false;
         }
@@ -355,8 +355,9 @@ public class HierarchyUsage {
             this.joinTable =
                 findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
-        } else if (hierarchy.getXmlHierarchy() != null &&
-                hierarchy.getXmlHierarchy().primaryKey != null) {
+        } else if (hierarchy.getXmlHierarchy() != null
+            && hierarchy.getXmlHierarchy().primaryKey != null)
+        {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
             //    also specify the "primaryKeyTable" attribute if the hierarchy
             //    is a join (hence has more than one table).
@@ -424,8 +425,8 @@ public class HierarchyUsage {
             if (table == null) {
                 // todo: i18n msg
                 throw Util.newError(
-                    "no table '" + tableName +
-                    "' found in hierarchy " + hierarchy.getUniqueName());
+                    "no table '" + tableName
+                    + "' found in hierarchy " + hierarchy.getUniqueName());
             }
         }
         return table;

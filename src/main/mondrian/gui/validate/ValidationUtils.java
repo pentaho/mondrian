@@ -892,7 +892,8 @@ public class ValidationUtils {
                                     parentTable.name);
                             }
                         } else if (parentHierarchy.relation
-                            instanceof MondrianGuiDef.Join) {
+                            instanceof MondrianGuiDef.Join)
+                        {
                             // relation is join, table should be specified
                             return messages.getString(
                                 "schemaTreeCellRenderer.tableMustBeSet.alert",

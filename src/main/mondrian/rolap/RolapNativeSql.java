@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -113,7 +114,8 @@ public class RolapNativeSql {
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
             if (dialect.getDatabaseProduct().getFamily()
-                == Dialect.DatabaseProduct.DB2) {
+                == Dialect.DatabaseProduct.DB2)
+            {
                 expr = "FLOAT(" + expr + ")";
             }
             return expr;

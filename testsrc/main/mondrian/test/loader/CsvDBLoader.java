@@ -265,8 +265,9 @@ public class CsvDBLoader extends DBLoader {
         loadTables(reader, tableList);
     }
 
-    public void loadTables(Reader reader, List<Table> tableList) throws Exception {
-//System.out.println("CsvLoader.loadTables: TOP:");
+    public void loadTables(Reader reader, List<Table> tableList)
+        throws Exception
+    {
         CsvLoader csvloader = null;
         try {
             Table table = null;
@@ -613,7 +614,7 @@ if (value0.startsWith("# ")) {
                         + nullString
                         + "\", linenos " + lineNos);
                 }
-                columnType = columnType.substring(0,index).trim();
+                columnType = columnType.substring(0, index).trim();
 //System.out.println("columnType="+columnType);
                 type = Type.getType(columnType);
 //System.out.println("nullsAllowed="+nullsAllowed);

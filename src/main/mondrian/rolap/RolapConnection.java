@@ -156,8 +156,9 @@ public class RolapConnection extends ConnectionBase {
                 // If there is no external data source is passed in, we expect
                 // the properties Jdbc, JdbcUser, DataSource to be set, as they
                 // are used to generate the schema cache key.
-                final String connectionKey = jdbcConnectString +
-                    getJdbcProperties(connectInfo).toString();
+                final String connectionKey =
+                    jdbcConnectString
+                    + getJdbcProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
                     catalogUrl,
@@ -210,7 +211,8 @@ public class RolapConnection extends ConnectionBase {
                 Dialect dialect =
                     DialectManager.createDialect(this.dataSource, conn);
                 if (dialect.getDatabaseProduct()
-                    == Dialect.DatabaseProduct.DERBY) {
+                    == Dialect.DatabaseProduct.DERBY)
+                {
                     // Derby requires a little extra prodding to do the
                     // validation to detect an error.
                     statement = conn.createStatement();
@@ -400,8 +402,8 @@ public class RolapConnection extends ConnectionBase {
             } catch (NamingException e) {
                 throw Util.newInternal(
                     e,
-                    "Error while looking up data source (" +
-                        dataSourceName + ")");
+                    "Error while looking up data source ("
+                    + dataSourceName + ")");
             }
             if (poolNeeded) {
                 dataSource =
@@ -418,9 +420,9 @@ public class RolapConnection extends ConnectionBase {
             return dataSource;
         } else {
             throw Util.newInternal(
-                "Connect string '" + connectInfo.toString() +
-                    "' must contain either '" + RolapConnectionProperties.Jdbc +
-                    "' or '" + RolapConnectionProperties.DataSource + "'");
+                "Connect string '" + connectInfo.toString()
+                + "' must contain either '" + RolapConnectionProperties.Jdbc
+                + "' or '" + RolapConnectionProperties.DataSource + "'");
         }
     }
 
@@ -454,7 +456,7 @@ public class RolapConnection extends ConnectionBase {
      */
     private static Properties getJdbcProperties(Util.PropertyList connectInfo) {
         Properties jdbcProperties = new Properties();
-        for (Pair<String,String> entry : connectInfo) {
+        for (Pair<String, String> entry : connectInfo) {
             if (entry.left.startsWith(
                 RolapConnectionProperties.JdbcPropertyPrefix))
             {
@@ -500,8 +502,9 @@ public class RolapConnection extends ConnectionBase {
 
     public Object getProperty(String name) {
         // Mask out the values of certain properties.
-        if (name.equals(RolapConnectionProperties.JdbcPassword.name()) ||
-            name.equals(RolapConnectionProperties.CatalogContent.name())) {
+        if (name.equals(RolapConnectionProperties.JdbcPassword.name())
+            || name.equals(RolapConnectionProperties.CatalogContent.name()))
+        {
             return "";
         }
         return connectInfo.get(name);
@@ -586,14 +589,16 @@ public class RolapConnection extends ConnectionBase {
             } catch (Exception e1) {
                 queryString = "?";
             }
-            throw Util.newError(e, "Error while executing query [" +
-                    queryString + "]");
+            throw Util.newError(
+                e,
+                "Error while executing query [" + queryString + "]");
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
-                RolapUtil.MDX_LOGGER.debug(currId + ": exec: " +
-                    (System.currentTimeMillis() - query.getQueryStartTime()) +
-                    " ms");
+                RolapUtil.MDX_LOGGER.debug(
+                    currId + ": exec: "
+                    + (System.currentTimeMillis() - query.getQueryStartTime())
+                    + " ms");
             }
         }
     }
@@ -663,7 +668,8 @@ public class RolapConnection extends ConnectionBase {
         }
 
         public Connection getConnection(String username, String password)
-                throws SQLException {
+            throws SQLException
+        {
             if (jdbcProperties == null) {
                 return java.sql.DriverManager.getConnection(
                     jdbcConnectString, username, password);

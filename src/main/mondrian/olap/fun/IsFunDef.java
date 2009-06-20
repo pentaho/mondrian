@@ -42,7 +42,9 @@ class IsFunDef extends FunDefBase {
         case Category.Tuple:
             final TupleCalc tupleCalc0 = compiler.compileTuple(call.getArg(0));
             final TupleCalc tupleCalc1 = compiler.compileTuple(call.getArg(1));
-            return new AbstractBooleanCalc(call, new Calc[] {tupleCalc0, tupleCalc1}) {
+            return new AbstractBooleanCalc(
+                call, new Calc[] {tupleCalc0, tupleCalc1})
+            {
                 public boolean evaluateBoolean(Evaluator evaluator) {
                     Member[] o0 = tupleCalc0.evaluateTuple(evaluator);
                     Member[] o1 = tupleCalc1.evaluateTuple(evaluator);

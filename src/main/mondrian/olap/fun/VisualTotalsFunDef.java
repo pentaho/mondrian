@@ -29,7 +29,8 @@ import java.util.List;
  * @since Jan 16, 2006
  */
 public class VisualTotalsFunDef extends FunDefBase {
-    static final Resolver Resolver = new ReflectiveMultiResolver(
+    static final Resolver Resolver =
+        new ReflectiveMultiResolver(
             "VisualTotals",
             "VisualTotals(<Set>[, <Pattern>])",
             "Dynamically totals child members specified in a set using a pattern for the total label in the result set.",
@@ -41,16 +42,18 @@ public class VisualTotalsFunDef extends FunDefBase {
     }
 
     protected Exp validateArg(
-            Validator validator, Exp[] args, int i, int category) {
-        final Exp validatedArg = super.validateArg(validator, args, i, category);
+        Validator validator, Exp[] args, int i, int category)
+    {
+        final Exp validatedArg =
+            super.validateArg(validator, args, i, category);
         if (i == 0) {
             // The function signature guarantees that we have a set of members
             // or a set of tuples.
             final SetType setType = (SetType) validatedArg.getType();
             final Type elementType = setType.getElementType();
             if (!(elementType instanceof MemberType)) {
-                throw MondrianResource.instance().
-                        VisualTotalsAppliedToTuples.ex();
+                throw MondrianResource.instance().VisualTotalsAppliedToTuples
+                    .ex();
             }
         }
         return validatedArg;
@@ -58,9 +61,10 @@ public class VisualTotalsFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
-        final StringCalc stringCalc = call.getArgCount() > 1 ?
-                compiler.compileString(call.getArg(1)) :
-                null;
+        final StringCalc stringCalc =
+            call.getArgCount() > 1
+            ? compiler.compileString(call.getArg(1))
+            : null;
         return new CalcImpl(call, listCalc, stringCalc);
     }
 
@@ -72,7 +76,8 @@ public class VisualTotalsFunDef extends FunDefBase {
         private final StringCalc stringCalc;
 
         public CalcImpl(
-                ResolvedFunCall call, ListCalc listCalc, StringCalc stringCalc) {
+            ResolvedFunCall call, ListCalc listCalc, StringCalc stringCalc)
+        {
             super(call, new Calc[] {listCalc, stringCalc});
             this.listCalc = listCalc;
             this.stringCalc = stringCalc;
@@ -86,8 +91,9 @@ public class VisualTotalsFunDef extends FunDefBase {
                 Member member = list.get(i);
                 if (i + 1 < memberCount) {
                     Member nextMember = resultList.get(i + 1);
-                    if (nextMember != member &&
-                            nextMember.isChildOrEqualTo(member)) {
+                    if (nextMember != member
+                        && nextMember.isChildOrEqualTo(member))
+                    {
                         resultList.set(
                             i,
                             createMember(member, i, resultList, evaluator));
@@ -196,9 +202,10 @@ public class VisualTotalsFunDef extends FunDefBase {
         private final Exp exp;
 
         VisualTotalMember(
-                Member member,
-                String name,
-                final Exp exp) {
+            Member member,
+            String name,
+            final Exp exp)
+        {
             super(
                 (RolapMember) member.getParentMember(),
                 (RolapLevel) member.getLevel(),
@@ -233,7 +240,8 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, MatchType matchType) {
+            SchemaReader schemaReader, String s, MatchType matchType)
+        {
             throw new UnsupportedOperationException();
         }
 

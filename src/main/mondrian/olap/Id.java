@@ -27,7 +27,8 @@ import java.util.Collections;
  */
 public class Id
     extends ExpBase
-    implements Cloneable {
+    implements Cloneable
+{
 
     private final List<Segment> segments;
 
@@ -97,8 +98,9 @@ public class Id
     public Exp accept(Validator validator) {
         if (segments.size() == 1) {
             final Segment s = segments.get(0);
-            if (s.quoting == Quoting.UNQUOTED &&
-                validator.getFunTable().isReserved(s.name)) {
+            if (s.quoting == Quoting.UNQUOTED
+                && validator.getFunTable().isReserved(s.name))
+            {
                 return Literal.createSymbol(s.name.toUpperCase());
             }
         }
@@ -195,8 +197,8 @@ public class Id
         public boolean equals(final Object o) {
             if (o instanceof Segment) {
                 Segment that = (Segment) o;
-                return that.name.equals(this.name) &&
-                    that.quoting == this.quoting;
+                return that.name.equals(this.name)
+                    && that.quoting == this.quoting;
             } else {
                 return false;
             }

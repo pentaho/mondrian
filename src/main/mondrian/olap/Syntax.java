@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,7 +40,9 @@ public enum Syntax {
             pw.print(fun);
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(
+            String name, int returnType, int[] argTypes)
+        {
             // e.g. "<Set>.Current"
             return getTypeDescription(argTypes[0]) + "." + name;
         }
@@ -67,13 +69,15 @@ public enum Syntax {
             pw.print(")");
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             // e.g. "<Member>.Lead(<Numeric Expression>)"
-            return (returnType == Category.Unknown ? "" :
-                    getTypeDescription(returnType) + " ") +
-                getTypeDescription(argTypes[0]) + "." +
-                name + "(" + getTypeDescriptionCommaList(argTypes, 1) +
-                ")";
+            return (returnType == Category.Unknown
+                    ? ""
+                    : getTypeDescription(returnType) + " ")
+                + getTypeDescription(argTypes[0]) + "."
+                + name + "(" + getTypeDescriptionCommaList(argTypes, 1)
+                + ")";
         }
     },
 
@@ -90,10 +94,11 @@ public enum Syntax {
             }
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             // e.g. "<Numeric Expression> / <Numeric Expression>"
-            return getTypeDescription(argTypes[0]) + " " + name + " " +
-                getTypeDescription(argTypes[1]);
+            return getTypeDescription(argTypes[0]) + " " + name + " "
+                + getTypeDescription(argTypes[1]);
         }
     },
 
@@ -110,7 +115,8 @@ public enum Syntax {
             }
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             // e.g. "- <Numeric Expression>"
             return name + " " + getTypeDescription(argTypes[0]);
         }
@@ -129,7 +135,8 @@ public enum Syntax {
             }
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             // e.g. "<Expression> IS NULL"
             return getTypeDescription(argTypes[0]) + " " + name;
         }
@@ -141,7 +148,8 @@ public enum Syntax {
      * is, the set construction operator.
      */
     Braces {
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             return "{" + getTypeDescriptionCommaList(argTypes, 0) + "}";
         }
 
@@ -156,7 +164,8 @@ public enum Syntax {
      * expressions, and the tuple construction operator.
      */
     Parentheses {
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             return "(" + getTypeDescriptionCommaList(argTypes, 0) + ")";
         }
 
@@ -208,7 +217,8 @@ public enum Syntax {
             }
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             String s = getTypeDescription(argTypes[0]);
             if (argTypes[0] == Category.Logical) {
                 return "CASE WHEN " + s + " THEN <Expression> ... END";
@@ -237,7 +247,8 @@ public enum Syntax {
             pw.print(")");
         }
 
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             return "CAST(<Expression> AS <Type>)";
         }
     },
@@ -268,7 +279,8 @@ public enum Syntax {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             assert args.length == 0;
         }
-        public String getSignature(String name, int returnType, int[] argTypes) {
+        public String getSignature(String name, int returnType, int[] argTypes)
+        {
             return "";
         }};
 
@@ -294,16 +306,17 @@ public enum Syntax {
      */
     public String getSignature(String name, int returnType, int[] argTypes) {
         // e.g. "StripCalculatedMembers(<Set>)"
-        return (returnType == Category.Unknown ? "" :
-                getTypeDescription(returnType) + " ") +
-            name + "(" + getTypeDescriptionCommaList(argTypes, 0) +
-            ")";
+        return (returnType == Category.Unknown
+                ? ""
+                : getTypeDescription(returnType) + " ")
+            + name + "(" + getTypeDescriptionCommaList(argTypes, 0)
+            + ")";
     }
 
     private static boolean needParen(Exp[] args) {
-        return !(args.length == 1 &&
-                args[0] instanceof FunCall &&
-                ((FunCall) args[0]).getSyntax() == Syntax.Parentheses);
+        return !(args.length == 1
+                 && args[0] instanceof FunCall
+                 && ((FunCall) args[0]).getSyntax() == Syntax.Parentheses);
     }
 
     private static String getTypeDescription(int type) {
@@ -312,14 +325,16 @@ public enum Syntax {
 
     private static String getTypeDescriptionCommaList(int[] types, int start) {
         int initialSize = (types.length - start) * 16;
-        StringBuilder sb = new StringBuilder(initialSize > 0 ? initialSize : 16);
+        StringBuilder sb =
+            new StringBuilder(initialSize > 0 ? initialSize : 16);
         for (int i = start; i < types.length; i++) {
             if (i > start) {
                 sb.append(", ");
             }
             sb.append("<")
-                    .append(Category.instance.getDescription(types[i] & Category.Mask))
-                    .append(">");
+                .append(
+                    Category.instance.getDescription(types[i] & Category.Mask))
+                .append(">");
         }
         return sb.toString();
     }

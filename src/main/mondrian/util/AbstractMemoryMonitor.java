@@ -24,7 +24,8 @@ import java.util.ListIterator;
  * @version $Id$
  */
 public abstract class AbstractMemoryMonitor
-        implements MemoryMonitor, MemoryMonitor.Test {
+    implements MemoryMonitor, MemoryMonitor.Test
+{
 
     /**
      * Basically, 100 percent.
@@ -49,8 +50,8 @@ public abstract class AbstractMemoryMonitor
             this.threshold = threshold;
         }
         public boolean equals(final Object other) {
-            return (other instanceof Entry) &&
-                   (listener == ((Entry) other).listener);
+            return (other instanceof Entry)
+                && (listener == ((Entry) other).listener);
         }
         public int hashCode() {
             return listener.hashCode();

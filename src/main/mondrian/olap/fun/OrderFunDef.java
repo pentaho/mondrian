@@ -50,10 +50,13 @@ class OrderFunDef extends FunDefBase {
                 MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
                 List<MemberCalc> constantList = new ArrayList<MemberCalc>();
                 List<Calc> variableList = new ArrayList<Calc>();
-                final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
+                final MemberCalc[] calcs =
+                    (MemberCalc[]) memberValueCalc.getCalcs();
                 for (MemberCalc memberCalc : calcs) {
-                    if (memberCalc instanceof ConstantCalc &&
-                        !listCalc.dependsOn(memberCalc.getType().getDimension())) {
+                    if (memberCalc instanceof ConstantCalc
+                        && !listCalc.dependsOn(
+                            memberCalc.getType().getDimension()))
+                    {
                         constantList.add(memberCalc);
                     } else {
                         variableList.add(memberCalc);
@@ -112,7 +115,9 @@ class OrderFunDef extends FunDefBase {
     }
 
     private void buildKeySpecList(
-        List<SortKeySpec> keySpecList, ResolvedFunCall call, ExpCompiler compiler)
+        List<SortKeySpec> keySpecList,
+        ResolvedFunCall call,
+        ExpCompiler compiler)
     {
         final int argCount = call.getArgs().length;
         int j = 1; // args[0] is the input set
@@ -123,8 +128,9 @@ class OrderFunDef extends FunDefBase {
             arg = call.getArg(j);
             key = compiler.compileScalar(arg, true);
             j++;
-            if ((j >= argCount) ||
-                (call.getArg(j).getCategory() !=  Category.Symbol)) {
+            if ((j >= argCount)
+                || (call.getArg(j).getCategory() != Category.Symbol))
+            {
                 dir = Flag.ASC;
             } else {
                 dir = getLiteralArg(call, j, Flag.ASC, Flag.class);
@@ -221,9 +227,10 @@ class OrderFunDef extends FunDefBase {
             assert originalKeySpecCount == 1;
             Flag sortKeyDir = keySpecList.get(0).getDirection();
             return Collections.singletonList(
-                (Object) (sortKeyDir.descending ?
-                    (sortKeyDir.brk ? Flag.BDESC : Flag.DESC) :
-                    (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
+                (Object)
+                (sortKeyDir.descending
+                 ? (sortKeyDir.brk ? Flag.BDESC : Flag.DESC)
+                 : (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
         public boolean dependsOn(Dimension dimension) {
@@ -260,10 +267,12 @@ class OrderFunDef extends FunDefBase {
                 SortKeySpec key = (SortKeySpec) iter.next();
                 Calc expCalc = key.getKey();
                 if (expCalc instanceof MemberOrderKeyFunDef.CalcImpl) {
-                    Calc[] calcs = ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
+                    Calc[] calcs =
+                        ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
                     MemberCalc memberCalc = (MemberCalc) calcs[0];
-                    if (memberCalc instanceof ConstantCalc ||
-                        !listDimensions.contains(memberCalc.getType().getDimension()))
+                    if (memberCalc instanceof ConstantCalc
+                        || !listDimensions.contains(
+                            memberCalc.getType().getDimension()))
                     {
                         iter.remove();
                     }
@@ -341,7 +350,11 @@ class OrderFunDef extends FunDefBase {
                 purgeKeySpecList(keySpecList, list);
                 if (!keySpecList.isEmpty()) {
                     return sortTuples(
-                        evaluator.push(false), iterable, list, keySpecList, arity);
+                        evaluator.push(false),
+                        iterable,
+                        list,
+                        keySpecList,
+                        arity);
                 } else {
                     return list;
                 }
@@ -353,9 +366,10 @@ class OrderFunDef extends FunDefBase {
             assert originalKeySpecCount == 1;
             Flag sortKeyDir = keySpecList.get(0).getDirection();
             return Collections.singletonList(
-                (Object) (sortKeyDir.descending ?
-                    (sortKeyDir.brk ? Flag.BDESC : Flag.DESC) :
-                    (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
+                (Object)
+                (sortKeyDir.descending
+                 ? (sortKeyDir.brk ? Flag.BDESC : Flag.DESC)
+                 : (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
         public boolean dependsOn(Dimension dimension) {
@@ -392,10 +406,12 @@ class OrderFunDef extends FunDefBase {
                 SortKeySpec key = (SortKeySpec) iter.next();
                 Calc expCalc = key.getKey();
                 if (expCalc instanceof MemberOrderKeyFunDef.CalcImpl) {
-                    Calc[] calcs = ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
+                    Calc[] calcs =
+                        ((MemberOrderKeyFunDef.CalcImpl) expCalc).getCalcs();
                     MemberCalc memberCalc = (MemberCalc) calcs[0];
-                    if (memberCalc instanceof ConstantCalc ||
-                        !listDimensions.contains(memberCalc.getType().getDimension()))
+                    if (memberCalc instanceof ConstantCalc
+                        || !listDimensions.contains(
+                            memberCalc.getType().getDimension()))
                     {
                         iter.remove();
                     }

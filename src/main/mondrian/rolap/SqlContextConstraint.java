@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -36,8 +37,9 @@ import mondrian.rolap.aggmatcher.AggStar;
  * @author av
  * @since Nov 2, 2005
  */
-public class SqlContextConstraint implements MemberChildrenConstraint,
-        TupleConstraint {
+public class SqlContextConstraint
+    implements MemberChildrenConstraint, TupleConstraint
+{
     List<Object> cacheKey;
     private Evaluator evaluator;
     private boolean strict;
@@ -92,7 +94,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             for (RolapCube baseCube : baseCubes) {
                 for (Level level : levels) {
                     if (baseCube.findBaseCubeHierarchy(
-                            (RolapHierarchy)level.getHierarchy()) == null) {
+                            (RolapHierarchy) level.getHierarchy()) == null)
+                    {
                         return false;
                     }
                 }
