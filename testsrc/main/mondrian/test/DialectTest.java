@@ -527,6 +527,41 @@ public class DialectTest extends TestCase {
         }
     }
 
+    /**
+     * Tests that the dialect can generate a valid query to sort ascending and
+     * descending, with NULL values appearing last in both cases.
+     */
+    public void testForceNullCollation() throws SQLException {
+        checkForceNullCollation(true);
+        checkForceNullCollation(false);
+    }
+
+    /**
+     * Checks that the dialect can generate a valid query to sort in a given
+     * direction, with NULL values appearing last.
+     *
+     * @param ascending Whether ascending
+     */
+    private void checkForceNullCollation(boolean ascending) throws SQLException
+    {
+        Dialect dialect = getDialect();
+        String query =
+            "select "
+            + dialect.quoteIdentifier("grocery_sqft")
+            + " from "
+            + dialect.quoteIdentifier("store")
+            + " order by "
+            + dialect.generateOrderItem(
+                dialect.quoteIdentifier("grocery_sqft"), true, ascending);
+        if (ascending) {
+            // Lowest value comes first, null comes last.
+            assertFirstLast(query, 13305, null);
+        } else {
+            // Largest value comes first, null comes last.
+            assertFirstLast(query, 30351, null);
+        }
+    }
+
     private void assertFirstLast(
         String query,
         Integer expectedFirst,

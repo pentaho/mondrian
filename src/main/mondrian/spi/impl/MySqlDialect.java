@@ -146,19 +146,10 @@ public class MySqlDialect extends JdbcDialectImpl {
         boolean nullable,
         boolean ascending)
     {
-        if (nullable) {
-            assert getNullCollation() == NullCollation.NEGINF;
-            if (ascending) {
-                return "ISNULL(" + expr + "), " + expr;
-            } else {
-                return expr + " DESC";
-            }
+        if (nullable && ascending) {
+            return "ISNULL(" + expr + "), " + expr + " ASC";
         } else {
-            if (ascending) {
-                return expr + " ASC";
-            } else {
-                return expr + " DESC";
-            }
+            return super.generateOrderItem(expr, nullable, ascending);
         }
     }
 

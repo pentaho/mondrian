@@ -68,6 +68,19 @@ public class DerbyDialect extends JdbcDialectImpl {
     public boolean supportsGroupByExpressions() {
         return false;
     }
+
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending)
+    {
+        if (nullable && !ascending) {
+            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, "
+               + expr + " DESC";
+        } else {
+            return super.generateOrderItem(expr, nullable, ascending);
+        }
+    }
 }
 
 // End DerbyDialect.java

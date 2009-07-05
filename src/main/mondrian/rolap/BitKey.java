@@ -219,6 +219,28 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             return (size + 63) >> ChunkBitCount;
         }
 
+        /**
+         * Returns the number of one-bits in the two's complement binary
+         * representation of the specified <tt>long</tt> value.  This function
+         * is sometimes referred to as the <i>population count</i>.
+         *
+         * <p>(Copied from {@link java.lang.Long#bitCount(long)}, which was
+         * introduced in JDK 1.5, but we need the functionality in JDK 1.4.)
+         *
+         * @return the number of one-bits in the two's complement binary
+         *     representation of the specified <tt>long</tt> value.
+         * @since 1.5
+         */
+         protected static int bitCount(long i) {
+            i = i - ((i >>> 1) & 0x5555555555555555L);
+            i = (i & 0x3333333333333333L) + ((i >>> 2) & 0x3333333333333333L);
+            i = (i + (i >>> 4)) & 0x0f0f0f0f0f0f0f0fL;
+            i = i + (i >>> 8);
+            i = i + (i >>> 16);
+            i = i + (i >>> 32);
+            return (int)i & 0x7f;
+        }
+
         public final void set(int pos, boolean value) {
             if (value) {
                 set(pos);
@@ -410,7 +432,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
 
         public int cardinality() {
-            return Long.bitCount(bits);
+            return bitCount(bits);
         }
 
         private void or(long bits) {
@@ -743,8 +765,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
 
         public int cardinality() {
-            return Long.bitCount(bits0)
-               + Long.bitCount(bits1);
+            return bitCount(bits0)
+               + bitCount(bits1);
         }
 
         private void or(long bits0, long bits1) {
@@ -1122,7 +1144,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         public int cardinality() {
             int n = 0;
             for (int i = 0; i < bits.length; i++) {
-                n += Long.bitCount(bits[i]);
+                n += bitCount(bits[i]);
             }
             return n;
         }

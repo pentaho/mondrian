@@ -1190,8 +1190,8 @@ public class JdbcSchema {
             conn = getDataSource().getConnection();
             final DatabaseMetaData databaseMetaData = conn.getMetaData();
             String[] tableTypes = { "TABLE", "VIEW" };
-            if (databaseMetaData.getDatabaseProductName().toUpperCase()
-                .contains("VERTICA"))
+            if (databaseMetaData.getDatabaseProductName().toUpperCase().indexOf(
+                "VERTICA") >= 0)
             {
                 for (String tableType : tableTypes) {
                     loadTablesOfType(databaseMetaData, new String[]{tableType});

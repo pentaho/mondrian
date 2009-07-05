@@ -122,7 +122,7 @@ public class PropertySaver {
             final String value = entry.getValue();
             //noinspection StringEquality
             if (value == NOT_SET) {
-                properties.remove(entry.getKey());
+                properties.remove(entry.getKey().getPath());
             } else {
                 properties.setProperty(entry.getKey().getPath(), value);
             }
