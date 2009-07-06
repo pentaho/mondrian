@@ -219,7 +219,8 @@ public class ValidationUtils {
                     // which is ok with standard/time dimension.
                     if (parentDimension != null) {
                         if ((isEmpty(parentDimension.type)
-                             || parentDimension.type.equals("StandardDimension"))
+                             || parentDimension.type.equals(
+                                 "StandardDimension"))
                             && !isEmpty(level.levelType)
                             && (!level.levelType.equals(
                                 MondrianGuiDef.Level._levelType_values[0])))

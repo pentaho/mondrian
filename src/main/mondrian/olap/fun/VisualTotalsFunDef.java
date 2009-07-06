@@ -256,8 +256,12 @@ public class VisualTotalsFunDef extends FunDefBase {
      * Asterisks are replaced with the name,
      * double-asterisks are replaced with a single asterisk.
      * For example,
-     * <blockquote><code>substitute("** Subtotal - *", "Dairy")</code></blockquote>
+     *
+     * <blockquote><code>substitute("** Subtotal - *",
+     * "Dairy")</code></blockquote>
+     *
      * returns
+     *
      * <blockquote><code>"* Subtotal - Dairy"</code></blockquote>
      *
      * @param namePattern Pattern

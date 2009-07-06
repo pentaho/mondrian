@@ -473,7 +473,9 @@ public class CacheControlTest extends FoodMartTestCase {
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList("Product", "Drink", "Alcoholic Beverages", "Beer and Wine", "Beer"),
+            Id.Segment.toList(
+                "Product", "Drink", "Alcoholic Beverages", "Beer and Wine",
+                "Beer"),
             true);
         final Member memberDairy = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Product", "Drink", "Dairy"), true);
@@ -484,7 +486,10 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion regionProductBeer =
             cacheControl.createMemberRegion(memberBeer, false);
-        assertEquals("Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])", regionProductBeer.toString());
+        assertEquals(
+            "Member([Product].[All Products].[Drink]."
+            + "[Alcoholic Beverages].[Beer and Wine].[Beer])",
+            regionProductBeer.toString());
 
         final CacheControl.CellRegion regionProductDairy =
             cacheControl.createMemberRegion(memberDairy, true);
@@ -681,7 +686,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList("Product", "Drink", "Alcoholic Beverages", "Beer and Wine"),
+            Id.Segment.toList(
+                "Product", "Drink", "Alcoholic Beverages", "Beer and Wine"),
             true);
         final Member memberDairy = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Product", "Drink", "Dairy"), true);
@@ -703,7 +709,8 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot union cell regions of different dimensionalities. (Dimensionalities are '[[Time]]', '[[Product]]'.)",
+                "Cannot union cell regions of different dimensionalities. "
+                + "(Dimensionalities are '[[Time]]', '[[Product]]'.)",
                 e.getMessage());
         }
 
@@ -714,7 +721,9 @@ public class CacheControlTest extends FoodMartTestCase {
         assertNotNull(regionTimeXProduct);
         assertEquals(2, regionTimeXProduct.getDimensionality().size());
         assertEquals(
-            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]))",
+            "Crossjoin(Member([Time].[1997].[Q1]), "
+            + "Member([Product].[All Products].[Drink].[Alcoholic Beverages]."
+            + "[Beer and Wine]))",
             regionTimeXProduct.toString());
 
         // Try to combine ([Time], [Product]) region with ([Time]) region.
@@ -726,7 +735,8 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot union cell regions of different dimensionalities. (Dimensionalities are '[[Time], [Product]]', '[[Time]]'.)",
+                "Cannot union cell regions of different dimensionalities. "
+                + "(Dimensionalities are '[[Time], [Product]]', '[[Time]]'.)",
                 e.getMessage());
         }
 
@@ -739,7 +749,9 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot union cell regions of different dimensionalities. (Dimensionalities are '[[Time], [Product]]', '[[Product]]'.)",
+                "Cannot union cell regions of different dimensionalities. "
+                + "(Dimensionalities are '[[Time], [Product]]', "
+                + "'[[Product]]'.)",
                 e.getMessage());
         }
 
@@ -752,7 +764,9 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot union cell regions of different dimensionalities. (Dimensionalities are '[[Time]]', '[[Time], [Product]]'.)", e.getMessage());
+                "Cannot union cell regions of different dimensionalities. "
+                + "(Dimensionalities are '[[Time]]', '[[Time], [Product]]'.)",
+                e.getMessage());
         }
 
         // Union [Time] region with itself -- OK.
@@ -781,7 +795,8 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are '[[Product]]', '[[Product]]'.)",
+                "Cannot crossjoin cell regions which have dimensions in common."
+                + " (Dimensionalities are '[[Product]]', '[[Product]]'.)",
                 e.getMessage());
         }
 
@@ -794,7 +809,9 @@ public class CacheControlTest extends FoodMartTestCase {
             fail("expected exception, got " + cellRegion);
         } catch (RuntimeException e) {
             assertContains(
-                "Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are '[[Product]]', '[[Time], [Product]]'.)",
+                "Cannot crossjoin cell regions which have dimensions in common."
+                + " (Dimensionalities are "
+                + "'[[Product]]', '[[Time], [Product]]'.)",
                 e.getMessage());
         }
     }
@@ -814,7 +831,9 @@ public class CacheControlTest extends FoodMartTestCase {
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList("Product", "Drink", "Alcoholic Beverages", "Beer and Wine", "Beer"),
+            Id.Segment.toList(
+                "Product", "Drink", "Alcoholic Beverages", "Beer and Wine",
+                "Beer"),
             true);
         final CacheControl.CellRegion regionProductBeer =
             cacheControl.createMemberRegion(memberBeer, false);
@@ -838,7 +857,11 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionTimeXProduct,
                 regionGenderFemale);
         assertEquals(
-            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
+            "Crossjoin("
+            + "Member([Time].[1997].[Q1]), "
+            + "Member([Product].[All Products].[Drink].[Alcoholic Beverages]."
+            + "[Beer and Wine].[Beer]), "
+            + "Member([Gender].[All Gender].[F]))",
             regionTimeXProductXGender.toString());
         assertEquals(
             "[[Time], [Product], [Gender]]",
@@ -851,7 +874,11 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionProductBeer,
                 regionGenderFemale);
         assertEquals(
-            "Crossjoin(Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Gender].[All Gender].[F]))",
+            "Crossjoin("
+            + "Member([Time].[1997].[Q1]), "
+            + "Member([Product].[All Products].[Drink].[Alcoholic Beverages]"
+            + ".[Beer and Wine].[Beer]), "
+            + "Member([Gender].[All Gender].[F]))",
             regionTimeXProductXGender2.toString());
         assertEquals(
             "[[Time], [Product], [Gender]]",
@@ -863,7 +890,11 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionGenderFemale,
                 regionTimeXProduct);
         assertEquals(
-            "Crossjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1]), Member([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]))",
+            "Crossjoin("
+            + "Member([Gender].[All Gender].[F]), "
+            + "Member([Time].[1997].[Q1]), "
+            + "Member([Product].[All Products].[Drink].[Alcoholic Beverages]"
+            + ".[Beer and Wine].[Beer]))",
             regionGenderXTimeXProduct.toString());
         assertEquals(
             "[[Gender], [Time], [Product]]",
@@ -932,7 +963,19 @@ public class CacheControlTest extends FoodMartTestCase {
                         memberRegion("[Gender].[F]")),
                     memberRegion("[Time].[1997].[Q1]")));
         assertEquals(
-            "Union(Crossjoin(Member([Marital Status].[All Marital Status].[S]), Union(Crossjoin(Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])), Crossjoin(Member([Gender].[All Gender].[M]), Member([Time].[1997].[Q2])))), Crossjoin(Member([Marital Status].[All Marital Status].[S]), Member([Gender].[All Gender].[F]), Member([Time].[1997].[Q1])))",
+            "Union("
+            + "Crossjoin("
+            + "Member([Marital Status].[All Marital Status].[S]), "
+            + "Union("
+            + "Crossjoin("
+            + "Member([Gender].[All Gender].[F]), "
+            + "Member([Time].[1997].[Q1])), "
+            + "Crossjoin(Member([Gender].[All Gender].[M]), "
+            + "Member([Time].[1997].[Q2])))), "
+            + "Crossjoin("
+            + "Member([Marital Status].[All Marital Status].[S]), "
+            + "Member([Gender].[All Gender].[F]), "
+            + "Member([Time].[1997].[Q1])))",
             region.toString());
 
         final CacheControl.CellRegion normalizedRegion =

@@ -193,7 +193,8 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public void endDocument() {
         if (stack.size() != 0) {
-            throw new IllegalStateException("Document may have unbalanced elements");
+            throw new IllegalStateException(
+                "Document may have unbalanced elements");
         }
         writer.flush();
     }

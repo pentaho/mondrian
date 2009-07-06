@@ -60,11 +60,12 @@ class Enumeration {
         execute,
         discoverAndExecute;
 
-        public static final Enumeration enumeration = new Enumeration(
-            "Methods",
-            "Set of methods for which a property is applicable",
-            RowsetDefinition.Type.Enumeration,
-            Methods.class);
+        public static final Enumeration enumeration =
+            new Enumeration(
+                "Methods",
+                "Set of methods for which a property is applicable",
+                RowsetDefinition.Type.Enumeration,
+                Methods.class);
     }
 
     public enum Access implements EnumWithOrdinal {
@@ -90,9 +91,18 @@ class Enumeration {
     }
 
     public enum Format implements EnumWithDesc {
-        Tabular("a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands."),
-        Multidimensional("Indicates that the result set will use the MDDataSet format (Execute method only)."),
-        Native("The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
+        Tabular(
+            "a flat or hierarchical rowset. Similar to the XML RAW format in "
+            + "SQL. The Format property should be set to Tabular for OLE DB "
+            + "for Data Mining commands."),
+        Multidimensional(
+            "Indicates that the result set will use the MDDataSet format "
+            + "(Execute method only)."),
+        Native(
+            "The client does not request a specific format, so the provider "
+            + "may return the format  appropriate to the query. (The actual "
+            + "result type is identified by namespace of the result.)");
+
         private final String description;
 
         Format(String description) {
@@ -105,9 +115,14 @@ class Enumeration {
     }
 
     public enum AxisFormat implements EnumWithDesc {
-        TupleFormat("The MDDataSet axis is made up of one or more CrossProduct elements."),
-        ClusterFormat("Analysis Services uses the TupleFormat format for this setting."),
-        CustomFormat("The MDDataSet axis contains one or more Tuple elements.");
+        TupleFormat(
+            "The MDDataSet axis is made up of one or more CrossProduct "
+            + "elements."),
+        ClusterFormat(
+            "Analysis Services uses the TupleFormat format for this setting."),
+        CustomFormat(
+            "The MDDataSet axis contains one or more Tuple elements.");
+
         private final String description;
 
         AxisFormat(String description) {
@@ -137,17 +152,25 @@ class Enumeration {
 
     enum AuthenticationMode implements EnumWithDesc {
         Unauthenticated("no user ID or password needs to be sent."),
-        Authenticated("User ID and Password must be included in the information required for the connection."),
-        Integrated("the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
+        Authenticated(
+            "User ID and Password must be included in the information required "
+            + "for the connection."),
+        Integrated(
+            "the data source uses the underlying security to determine "
+            + "authorization, such as Integrated Security provided by "
+            + "Microsoft Internet Information Services (IIS).");
+
         private final String description;
 
         AuthenticationMode(String description) {
             this.description = description;
         }
 
-        public static final Enumeration enumeration = new Enumeration(
+        public static final Enumeration enumeration =
+            new Enumeration(
                 "AuthenticationMode",
-                "Specification of what type of security mode the data source uses.",
+                "Specification of what type of security mode the data source "
+                + "uses.",
                 RowsetDefinition.Type.EnumString,
                 AuthenticationMode.class);
 
@@ -159,14 +182,18 @@ class Enumeration {
     enum ProviderType implements EnumWithDesc {
         TDP("tabular data provider."),
         MDP("multidimensional data provider."),
-        DMP("data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+        DMP(
+            "data mining provider. A DMP provider implements the OLE DB for "
+            + "Data Mining specification.");
+
         private final String description;
 
         private ProviderType(String description) {
             this.description = description;
         }
 
-        public static final Enumeration enumeration = new Enumeration(
+        public static final Enumeration enumeration =
+            new Enumeration(
                 "ProviderType",
                 "The types of data supported by the provider.",
                 RowsetDefinition.Type.Array,
@@ -178,7 +205,9 @@ class Enumeration {
     }
 
     enum Literal implements EnumWithDesc {
-        DBLITERAL_CATALOG_NAME(2, null, 24, ".", "0123456789", "A catalog name in a text command."),
+        DBLITERAL_CATALOG_NAME(
+            2, null, 24, ".", "0123456789",
+            "A catalog name in a text command."),
         DBLITERAL_CATALOG_SEPARATOR(3, ".", 0, null, null, null),
         DBLITERAL_COLUMN_ALIAS(5, null, -1, "'\"[]", "0123456789", null),
         DBLITERAL_COLUMN_NAME(6, null, -1, ".", "0123456789", null),
@@ -190,11 +219,23 @@ class Enumeration {
         DBLITERAL_MEMBER_NAME(25, null, -1, ".", "0123456789", null),
         DBLITERAL_PROCEDURE_NAME(14, null, -1, ".", "0123456789", null),
         DBLITERAL_PROPERTY_NAME(26, null, -1, ".", "0123456789", null),
-        DBLITERAL_QUOTE(15, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
-        DBLITERAL_QUOTE_SUFFIX(28, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
+        DBLITERAL_QUOTE(
+            15, "[", -1, null, null,
+            "The character used in a text command as the opening quote for "
+            + "quoting identifiers that contain special characters."),
+        DBLITERAL_QUOTE_SUFFIX(
+            28, "]", -1, null, null,
+            "The character used in a text command as the closing quote for "
+            + "quoting identifiers that contain special characters. 1.x "
+            + "providers that use the same character as the prefix and suffix "
+            + "may not return this literal value and can set the lt member of "
+            + "the DBLITERAL structure to DBLITERAL_INVALID if requested."),
         DBLITERAL_TABLE_NAME(17, null, -1, ".", "0123456789", null),
-        DBLITERAL_TEXT_COMMAND(18, null, -1, null, null, "A text command, such as an SQL statement."),
+        DBLITERAL_TEXT_COMMAND(
+            18, null, -1, null, null,
+            "A text command, such as an SQL statement."),
         DBLITERAL_USER_NAME(19, null, 0, null, null, null);
+
         private final String literalValue;
         private final int literalMaxLength;
         private final String literalInvalidChars;
@@ -279,9 +320,12 @@ class Enumeration {
         Children("MDTREEOP_CHILDREN", 1, "Returns only the immediate children"),
         Siblings("MDTREEOP_SIBLINGS", 2, "Returns members on the same level"),
         Parent("MDTREEOP_PARENT", 4, "Returns only the immediate parent"),
-        Self("MDTREEOP_SELF", 8, "Returns the immediate member in the list of returned rows"),
+        Self(
+            "MDTREEOP_SELF", 8,
+            "Returns the immediate member in the list of returned rows"),
         Descendants("MDTREEOP_DESCENDANTS", 16, "Returns all descendants"),
         Ancestors("MDTREEOP_ANCESTORS", 32, "Returns all ancestors");
+
         private final String userName;
         private final int userOrdinal;
         private final String description;
@@ -295,7 +339,8 @@ class Enumeration {
         static final Enumeration enumeration =
             new Enumeration(
                 "TREE_OP",
-                "Bitmap which controls which relatives of a member are returned",
+                "Bitmap which controls which relatives of a member are "
+                + "returned",
                 RowsetDefinition.Type.Integer,
                 TreeOp.class);
 
@@ -313,9 +358,14 @@ class Enumeration {
     }
 
     enum VisualMode {
-        Default("DBPROPVAL_VISUAL_MODE_DEFAULT", 0, "Provider-dependent. In Microsoft SQL Server 2000 Analysis Services, this is equivalent to DBPROPVAL_VISUAL_MODE_ORIGINAL."),
+        Default(
+            "DBPROPVAL_VISUAL_MODE_DEFAULT", 0,
+            "Provider-dependent. In Microsoft SQL Server 2000 Analysis Services,"
+            + " this is equivalent to DBPROPVAL_VISUAL_MODE_ORIGINAL."),
         Visual("DBPROPVAL_VISUAL_MODE_VISUAL", 1, "Visual totals are enabled."),
-        Original("DBPROPVAL_VISUAL_MODE_ORIGINAL", 2, "Visual totals are not enabled.");
+        Original(
+            "DBPROPVAL_VISUAL_MODE_ORIGINAL", 2,
+            "Visual totals are not enabled.");
 
         VisualMode(String name2, int ordinal2, String description) {
         }
@@ -323,7 +373,8 @@ class Enumeration {
         static final Enumeration enumeration =
             new Enumeration(
                 "VisualMode",
-                "This property determines the default behavior for visual totals.",
+                "This property determines the default behavior for visual "
+                + "totals.",
                 RowsetDefinition.Type.Integer,
                 VisualMode.class);
     }

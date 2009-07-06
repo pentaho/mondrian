@@ -917,8 +917,9 @@ public class UdfTest extends FoodMartTestCase {
         }
 
         public String getDescription() {
-            return "Returns default member from hierarchy, specified as a second parameter. "+
-                "First parameter - any member from any hierarchy";
+            return "Returns default member from hierarchy, "
+                + "specified as a second parameter. "
+                + "First parameter - any member from any hierarchy";
         }
 
         public Syntax getSyntax() {

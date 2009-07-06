@@ -481,7 +481,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
         final RolapCubeMember alamedaCubeMember =
-            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA", "Alameda");
+            (RolapCubeMember) findMember(
+                tc, "Sales", "Retail", "CA", "Alameda");
         final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
         final RolapMember caMember = alamedaMember.getParentMember();
         final RolapMember rootMember = caMember.getParentMember();
@@ -545,12 +546,14 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         }
 
         final RolapCubeMember alamedaCubeMember =
-            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA", "Alameda");
+            (RolapCubeMember) findMember(
+                tc, "Sales", "Retail", "CA", "Alameda");
         final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
         final RolapMember caMember = alamedaMember.getParentMember();
 
         final RolapCubeMember empCubeMember =
-            (RolapCubeMember) findMember(tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
+            (RolapCubeMember) findMember(
+                tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
         final RolapMember empMember = empCubeMember.rolapMember;
 
         try {
@@ -578,7 +581,9 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             command = cc.createSetPropertyCommand(null, "foo", 1);
             fail("expected exception, got " + command);
         } catch (IllegalArgumentException e) {
-            assertEquals("cannot set properties on null member", e.getMessage());
+            assertEquals(
+                "cannot set properties on null member",
+                e.getMessage());
         }
 
         try {

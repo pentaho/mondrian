@@ -40,7 +40,8 @@ public class Test {
             try {
                 test.convertFoodMart();
             } catch (java.sql.SQLException e) {
-                System.out.println("Error: " + mondrian.olap.Util.getErrorMessage(e));
+                System.out.println(
+                    "Error: " + mondrian.olap.Util.getErrorMessage(e));
             }
         }
     }
@@ -104,7 +105,8 @@ public class Test {
 
     void run()
     {
-        RolapCube salesCube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
+        RolapCube salesCube =
+            (RolapCube) connection.getSchema().lookupCube("Sales", true);
         RolapHierarchy measuresHierarchy =
                 (RolapHierarchy) salesCube.getMeasuresHierarchy();
         testMemberReader(measuresHierarchy.getMemberReader());

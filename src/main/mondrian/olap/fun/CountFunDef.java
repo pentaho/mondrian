@@ -27,7 +27,8 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class CountFunDef extends AbstractAggregateFunDef {
-    static final String[] ReservedWords = new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
+    static final String[] ReservedWords =
+        new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
 
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Count",

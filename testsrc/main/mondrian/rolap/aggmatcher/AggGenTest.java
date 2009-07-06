@@ -68,7 +68,9 @@ public class AggGenTest extends FoodMartTestCase {
         props.GenerateAggregateSql.setString(trueValue);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
-        Query query = rolapConn.parseQuery("select {[Measures].[Count]} on columns from [HR]");
+        Query query =
+            rolapConn.parseQuery(
+                "select {[Measures].[Count]} on columns from [HR]");
         rolapConn.execute(query);
 
         logger.removeAppender(myAppender);

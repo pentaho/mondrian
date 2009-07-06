@@ -1052,10 +1052,10 @@ enum RowsetDefinition {
      */
     private static final String dateModified = "2005-01-25T17:35:32";
     private final String description;
-    private static final
-    String
-        UUID_PATTERN =
-        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+
+    static final String UUID_PATTERN =
+        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+        + "[0-9a-fA-F]{12}";
 
     /**
      * Creates a rowset definition.

@@ -106,7 +106,8 @@ public class Main extends TestSuite {
             MondrianTestRunner runner = new MondrianTestRunner();
             TestResult tres = runner.doRun(test);
             if (!tres.wasSuccessful()) {
-                System.out.println("Warmup run failed. Regular tests will not be run.");
+                System.out.println(
+                    "Warmup run failed. Regular tests will not be run.");
                 System.exit(1);
             }
             System.out.println("Warmup run complete. Starting regular run...");
@@ -137,7 +138,8 @@ public class Main extends TestSuite {
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
-        System.out.println("java.version: " + System.getProperty("java.version"));
+        System.out.println(
+            "java.version: " + System.getProperty("java.version"));
 
         TestSuite suite = new TestSuite();
         if (testClass != null && !testClass.equals("")) {
@@ -313,7 +315,8 @@ public class Main extends TestSuite {
         if (testInfo != null && testInfo.length() > 0) {
             System.out.println(testInfo);
         } else {
-            System.out.println("No tests to run. Check mondrian.properties setting.");
+            System.out.println(
+                "No tests to run. Check mondrian.properties setting.");
         }
 
         System.out.flush();

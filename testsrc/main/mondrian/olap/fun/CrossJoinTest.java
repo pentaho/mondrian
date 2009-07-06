@@ -98,7 +98,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberIterMemberIterCalc");
         doMemberMemberIterTest(calc);
 }
     }
@@ -108,7 +107,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberListMemberIterCalc");
         doMemberMemberIterTest(calc);
 }
     }
@@ -118,7 +116,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberIterMemberIterCalc");
         doMemberMemberIterTest(calc);
 }
     }
@@ -128,7 +125,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberListMemberIterCalc");
         doMemberMemberIterTest(calc);
 }
     }
@@ -139,19 +135,18 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member> l2 = makeListMember(m2);
         String s2 = toString(l2);
         String e2 = "{A,B,C,D}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
         Iterable<Member[]> iter = calc.makeIterable(l1, l2);
         String s = toString(iter);
-        String e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("iter="+s);
+        String e =
+            "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],"
+            + "[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
     }
     ////////////////////////////////////////////////////////////////////////
@@ -164,7 +159,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberIterMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
 }
     }
@@ -175,7 +169,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberListMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
 }
     }
@@ -185,7 +178,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberIterMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
 }
     }
@@ -195,7 +187,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberListMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
 }
     }
@@ -206,19 +197,16 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         Iterable<Member[]> iter = calc.makeIterable(l1, l3);
         String s = toString(iter);
         String e = "{[a,k,l],[a,m,n],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("iter="+s);
         Assert.assertEquals(s, e);
     }
     ////////////////////////////////////////////////////////////////////////
@@ -230,7 +218,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberArrayIterMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
 }
     }
@@ -240,7 +227,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberArrayListMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
 }
     }
@@ -250,7 +236,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberArrayIterMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
 }
     }
@@ -260,7 +245,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberArrayListMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
 }
     }
@@ -271,21 +255,21 @@ if (! Util.Retrowoven) {
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         List<Member> l2 = makeListMember(m2);
         String s2 = toString(l2);
         String e2 = "{A,B,C,D}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
         Iterable<Member[]> iter = calc.makeIterable(l3, l2);
         String s = toString(iter);
-        String e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
+        String e =
+            "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],"
+            + "[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
         Assert.assertEquals(s, e);
-//System.out.println("iter="+s);
     }
+
     ////////////////////////////////////////////////////////////////////////
     // Member[] Member[]
     ////////////////////////////////////////////////////////////////////////
@@ -295,7 +279,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberArrayIterMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
 }
     }
@@ -305,7 +288,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new IterMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testIterMemberArrayListMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
 }
     }
@@ -315,7 +297,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberArrayIterMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
 }
     }
@@ -325,7 +306,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ListMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testListMemberArrayListMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
 }
     }
@@ -336,19 +316,18 @@ if (! Util.Retrowoven) {
         List<Member[]> l4 = makeListMemberArray(m4);
         String s4 = toString(l4);
         String e4 = "{[U,V],[W,X],[Y,Z]}";
-//System.out.println("l4="+s4);
         Assert.assertEquals(s4, e4);
 
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         Iterable<Member[]> iter = calc.makeIterable(l4, l3);
         String s = toString(iter);
-        String e = "{[U,V,k,l],[U,V,m,n],[W,X,k,l],[W,X,m,n],[Y,Z,k,l],[Y,Z,m,n]}";
-//System.out.println("iter="+s);
+        String e =
+            "{[U,V,k,l],[U,V,m,n],[W,X,k,l],"
+            + "[W,X,m,n],[Y,Z,k,l],[Y,Z,m,n]}";
         Assert.assertEquals(s, e);
     }
 
@@ -366,7 +345,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ImmutableListMemberListMemberListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testImmutableListMemberListMemberListCalc");
         doMemberMemberListTest(calc);
     }
 
@@ -376,89 +354,68 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member> l2 = makeListMember(m2);
         String s2 = toString(l2);
         String e2 = "{A,B,C,D}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
         List<Member[]> list = calc.makeList(l1, l2);
         String s = toString(list);
-        String e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("list="+s);
+        String e =
+            "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],"
+            + "[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
 
         List<Member[]> subList = list.subList(0, 12);
         s = toString(subList);
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         subList = list.subList(5, 12);
         s = toString(subList);
-//System.out.println("list="+s);
         e = "{[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
 
         subList = list.subList(0, 8);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(8, subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D]}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
 
         subList = list.subList(0, 12);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(12, subList.size());
         subList = subList.subList(4, 10);
         Assert.assertEquals(6, subList.size());
-//System.out.println("subList.size="+subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{[b,A],[b,B],[b,C],[b,D],[c,A],[c,B]}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 4);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(3, subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{[b,B],[b,C],[b,D]}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 2);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(1, subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{[b,C]}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 1);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(1, subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{[b,C]}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 0);
-//System.out.println("subList.size="+subList.size());
         Assert.assertEquals(0, subList.size());
         s = toString(subList);
-//System.out.println("subList="+s);
         e = "{}";
-//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
     }
+
     ////////////////////////////////////////////////////////////////////////
     // Member Member[]
     ////////////////////////////////////////////////////////////////////////
@@ -467,7 +424,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ImmutableListMemberListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testImmutableListMemberListMemberArrayListCalc");
         doMemberMemberArrayListTest(calc);
     }
 
@@ -477,64 +433,49 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         List<Member[]> list = calc.makeList(l1, l3);
         String s = toString(list);
         String e = "{[a,k,l],[a,m,n],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         List<Member[]> subList = list.subList(0, 6);
         s = toString(subList);
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 6);
         s = toString(subList);
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(1, 5);
         s = toString(subList);
         e = "{[a,m,n],[b,k,l],[b,m,n],[c,k,l]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(4, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 3);
         s = toString(subList);
         e = "{[b,k,l],[b,m,n]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(2, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 2);
         s = toString(subList);
         e = "{[b,m,n]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(1, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(4, 4);
         s = toString(subList);
         e = "{}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(0, subList.size());
         Assert.assertEquals(s, e);
     }
@@ -547,7 +488,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ImmutableListMemberArrayListMemberListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testImmutableListMemberArrayListMemberListCalc");
         doMemberArrayMemberListTest(calc);
     }
 
@@ -557,97 +497,76 @@ if (! Util.Retrowoven) {
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         List<Member> l2 = makeListMember(m2);
         String s2 = toString(l2);
         String e2 = "{A,B,C,D}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
         List<Member[]> list = calc.makeList(l3, l2);
         String s = toString(list);
-        String e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
-//System.out.println("list="+s);
+        String e =
+            "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],"
+            + "[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
         Assert.assertEquals(s, e);
 
         List<Member[]> subList = list.subList(0, 8);
         s = toString(subList);
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(8, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(1, 7);
         s = toString(subList);
         e = "{[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(4, 5);
         s = toString(subList);
         e = "{[m,n,A]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(1, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 1);
         s = toString(subList);
         e = "{[m,n,A]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(1, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 0);
         s = toString(subList);
         e = "{}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(0, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(0, 8);
         s = toString(subList);
         e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(8, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 8);
         s = toString(subList);
         e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(8, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 7);
         s = toString(subList);
         e = "{[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 5);
         s = toString(subList);
         e = "{[k,l,C],[k,l,D],[m,n,A],[m,n,B]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(4, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 3);
         s = toString(subList);
         e = "{[k,l,D],[m,n,A]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(2, subList.size());
         Assert.assertEquals(s, e);
     }
@@ -661,7 +580,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new ImmutableListMemberArrayListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testImmutableListMemberArrayListMemberArrayIterCalc");
         doMemberArrayMemberArrayListTest(calc);
     }
 
@@ -671,88 +589,69 @@ if (! Util.Retrowoven) {
         List<Member[]> l4 = makeListMemberArray(m4);
         String s4 = toString(l4);
         String e4 = "{[U,V],[W,X],[Y,Z]}";
-//System.out.println("l4="+s4);
         Assert.assertEquals(s4, e4);
 
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         List<Member[]> list = calc.makeList(l4, l3);
         String s = toString(list);
-        String e = "{[U,V,k,l],[U,V,m,n],[W,X,k,l],[W,X,m,n],[Y,Z,k,l],[Y,Z,m,n]}";
-//System.out.println("list="+s);
+        String e =
+            "{[U,V,k,l],[U,V,m,n],[W,X,k,l],"
+            + "[W,X,m,n],[Y,Z,k,l],[Y,Z,m,n]}";
         Assert.assertEquals(s, e);
 
         List<Member[]> subList = list.subList(0, 6);
         s = toString(subList);
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(0, 6);
         s = toString(subList);
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(6, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 5);
         s = toString(subList);
         e = "{[U,V,m,n],[W,X,k,l],[W,X,m,n],[Y,Z,k,l]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(4, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(2, 4);
         s = toString(subList);
         e = "{[W,X,m,n],[Y,Z,k,l]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(2, subList.size());
         Assert.assertEquals(s, e);
 
         subList = subList.subList(1, 2);
         s = toString(subList);
         e = "{[Y,Z,k,l]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(1, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(1, 4);
         s = toString(subList);
         e = "{[U,V,m,n],[W,X,k,l],[W,X,m,n]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(3, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(2, 4);
         s = toString(subList);
         e = "{[W,X,k,l],[W,X,m,n]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(2, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(2, 3);
         s = toString(subList);
         e = "{[W,X,k,l]}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(1, subList.size());
         Assert.assertEquals(s, e);
 
         subList = list.subList(4, 4);
         s = toString(subList);
         e = "{}";
-//System.out.println("subList="+s);
-//System.out.println("expect ="+e);
         Assert.assertEquals(0, subList.size());
         Assert.assertEquals(s, e);
     }
@@ -773,7 +672,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new MutableListMemberListMemberListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testMutableListMemberListMemberListCalc");
         doMMemberMemberListTest(calc);
     }
 
@@ -783,25 +681,23 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member> l2 = makeListMember(m2);
         String s2 = toString(l2);
         String e2 = "{A,B,C,D}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
         List<Member[]> list = calc.makeList(l1, l2);
         String s = toString(list);
-        String e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("list="+s);
+        String e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],"
+            + "[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
 
         Collections.reverse(list);
         s = toString(list);
-        e = "{[c,D],[c,C],[c,B],[c,A],[b,D],[b,C],[b,B],[b,A],[a,D],[a,C],[a,B],[a,A]}";
-//System.out.println("list="+s);
+        e = "{[c,D],[c,C],[c,B],[c,A],[b,D],[b,C],"
+            + "[b,B],[b,A],[a,D],[a,C],[a,B],[a,A]}";
         Assert.assertEquals(s, e);
 
         // sort
@@ -819,16 +715,15 @@ if (! Util.Retrowoven) {
         };
         Collections.sort(list, c);
         s = toString(list);
-        e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("list="+s);
+        e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],"
+            + "[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
 
         Member[] members = list.remove(1);
         String m = toString(members);
-//System.out.println("members="+m);
         s = toString(list);
-        e = "{[a,A],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("list="+s);
+        e = "{[a,A],[a,C],[a,D],[b,A],[b,B],[b,C],"
+            + "[b,D],[c,A],[c,B],[c,C],[c,D]}";
         Assert.assertEquals(s, e);
     }
 
@@ -840,7 +735,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new MutableListMemberListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testMutableListMemberListMemberArrayListCalc");
         doMMemberMemberArrayListTest(calc);
     }
 
@@ -850,40 +744,32 @@ if (! Util.Retrowoven) {
         List<Member> l1 = makeListMember(m1);
         String s1 = toString(l1);
         String e1 = "{a,b,c}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member[]> l3 = makeListMemberArray(m3);
         String s3 = toString(l3);
         String e3 = "{[k,l],[m,n]}";
-//System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
         List<Member[]> list = calc.makeList(l1, l3);
         String s = toString(list);
         String e = "{[a,k,l],[a,m,n],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         Collections.reverse(list);
         s = toString(list);
         e = "{[c,m,n],[c,k,l],[b,m,n],[b,k,l],[a,m,n],[a,k,l]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         // sort
         Collections.sort(list, memberComparator);
         s = toString(list);
         e = "{[a,k,l],[a,m,n],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         Member[] members = list.remove(1);
-//        String m = toString(members);
-//System.out.println("members="+m);
         s = toString(list);
         e = "{[a,k,l],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
     }
 
@@ -895,7 +781,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new MutableListMemberArrayListMemberListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testMutableListMemberArrayListMemberListCalc");
         doMMemberArrayMemberListTest(calc);
     }
 
@@ -905,41 +790,33 @@ if (! Util.Retrowoven) {
         List<Member[]> l1 = makeListMemberArray(m3);
         String s1 = toString(l1);
         String e1 = "{[k,l],[m,n]}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member> l2 = makeListMember(m1);
         String s2 = toString(l2);
         String e2 = "{a,b,c}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
 
         List<Member[]> list = calc.makeList(l1, l2);
         String s = toString(list);
         String e = "{[k,l,a],[k,l,b],[k,l,c],[m,n,a],[m,n,b],[m,n,c]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         Collections.reverse(list);
         s = toString(list);
         e = "{[m,n,c],[m,n,b],[m,n,a],[k,l,c],[k,l,b],[k,l,a]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         // sort
         Collections.sort(list, memberComparator);
         s = toString(list);
         e = "{[k,l,a],[k,l,b],[k,l,c],[m,n,a],[m,n,b],[m,n,c]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         Member[] members = list.remove(1);
-//        String m = toString(members);
-//System.out.println("members="+m);
         s = toString(list);
         e = "{[k,l,a],[k,l,c],[m,n,a],[m,n,b],[m,n,c]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
     }
 
@@ -952,7 +829,6 @@ if (! Util.Retrowoven) {
             crossJoinFunDef.new MutableListMemberArrayListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
-//System.out.println("testMutableListMemberArrayListMemberArrayListCalc");
         doMMemberArrayMemberArrayListTest(calc);
     }
 
@@ -962,43 +838,37 @@ if (! Util.Retrowoven) {
         List<Member[]> l1 = makeListMemberArray(m3);
         String s1 = toString(l1);
         String e1 = "{[k,l],[m,n]}";
-//System.out.println("l1="+s1);
         Assert.assertEquals(s1, e1);
 
         List<Member[]> l2 = makeListMemberArray(m4);
         String s2 = toString(l2);
         String e2 = "{[U,V],[W,X],[Y,Z]}";
-//System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
 
         List<Member[]> list = calc.makeList(l1, l2);
         String s = toString(list);
-        String e = "{[k,l,U,V],[k,l,W,X],[k,l,Y,Z],[m,n,U,V],[m,n,W,X],[m,n,Y,Z]}";
-//System.out.println("list="+s);
+        String e = "{[k,l,U,V],[k,l,W,X],[k,l,Y,Z],"
+            + "[m,n,U,V],[m,n,W,X],[m,n,Y,Z]}";
         Assert.assertEquals(s, e);
 
         Collections.reverse(list);
         s = toString(list);
         e = "{[m,n,Y,Z],[m,n,W,X],[m,n,U,V],[k,l,Y,Z],[k,l,W,X],[k,l,U,V]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         // sort
         Collections.sort(list, memberComparator);
         s = toString(list);
         e = "{[k,l,U,V],[k,l,W,X],[k,l,Y,Z],[m,n,U,V],[m,n,W,X],[m,n,Y,Z]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
 
         Member[] members = list.remove(1);
-//        String m = toString(members);
-//System.out.println("members="+m);
         s = toString(list);
         e = "{[k,l,U,V],[k,l,Y,Z],[m,n,U,V],[m,n,W,X],[m,n,Y,Z]}";
-//System.out.println("list="+s);
         Assert.assertEquals(s, e);
     }
+
     ////////////////////////////////////////////////////////////////////////
     // Helper methods
     ////////////////////////////////////////////////////////////////////////

@@ -39,7 +39,9 @@ public class Vba {
 
     @FunctionName("CBool")
     @Signature("CBool(expression)")
-    @Description("Returns an expression that has been converted to a Variant of subtype Boolean.")
+    @Description(
+        "Returns an expression that has been converted to a Variant of subtype "
+        + "Boolean.")
     public static boolean cBool(Object expression) {
         if (expression instanceof Boolean) {
             return (Boolean) expression;
@@ -53,7 +55,9 @@ public class Vba {
 
     @FunctionName("CByte")
     @Signature("CByte(expression)")
-    @Description("Returns an expression that has been converted to a Variant of subtype Byte.")
+    @Description(
+        "Returns an expression that has been converted to a Variant of subtype "
+        + "Byte.")
     public static byte cByte(Object expression) {
         if (expression instanceof Byte) {
             return (Byte) expression;
@@ -67,7 +71,9 @@ public class Vba {
 
     @FunctionName("CDate")
     @Signature("CDate(date)")
-    @Description("Returns an expression that has been converted to a Variant of subtype Date.")
+    @Description(
+        "Returns an expression that has been converted to a Variant of subtype "
+        + "Date.")
     public static Date cDate(Object expression) {
         String str = String.valueOf(expression);
         if (expression instanceof Date) {
@@ -101,7 +107,9 @@ public class Vba {
 
     @FunctionName("CDbl")
     @Signature("CDbl(expression)")
-    @Description("Returns an expression that has been converted to a Variant of subtype Double.")
+    @Description(
+        "Returns an expression that has been converted to a Variant of subtype "
+        + "Double.")
     public static double cDbl(Object expression) {
         if (expression instanceof Number) {
             Number number = (Number) expression;
@@ -114,7 +122,9 @@ public class Vba {
 
     @FunctionName("CInt")
     @Signature("CInt(expression)")
-    @Description("Returns an expression that has been converted to a Variant of subtype Integer.")
+    @Description(
+        "Returns an expression that has been converted to a Variant of subtype "
+        + "Integer.")
     public static int cInt(Object expression) {
         if (expression instanceof Number) {
             Number number = (Number) expression;
@@ -156,7 +166,9 @@ public class Vba {
 
     @FunctionName("Fix")
     @Signature("Fix(number)")
-    @Description("Returns the integer portion of a number. If negative, returns the negative number greater than or equal to the number.")
+    @Description(
+        "Returns the integer portion of a number. If negative, returns the "
+        + "negative number greater than or equal to the number.")
     public static int fix(Object number) {
         if (number instanceof Number) {
             int v = ((Number) number).intValue();
@@ -174,8 +186,9 @@ public class Vba {
     }
 
     @FunctionName("Hex")
-    @Description("Returns a String representing the hexadecimal value of a number.")
     @Signature("Hex(number)")
+    @Description(
+        "Returns a String representing the hexadecimal value of a number.")
     public static String hex(Object number) {
         if (number instanceof Number) {
             return Integer.toHexString(((Number) number).intValue())
@@ -190,7 +203,9 @@ public class Vba {
 
     @FunctionName("Int")
     @Signature("Int(number)")
-    @Description("Returns the integer portion of a number. If negative, returns the negative number less than or equal to the number.")
+    @Description(
+        "Returns the integer portion of a number. If negative, returns the "
+        + "negative number less than or equal to the number.")
     public static int int_(Object number) {
         if (number instanceof Number) {
             int v = ((Number) number).intValue();
@@ -211,7 +226,8 @@ public class Vba {
 
     @FunctionName("Oct")
     @Signature("Oct(number)")
-    @Description("Returns a Variant (String) representing the octal value of a number.")
+    @Description(
+        "Returns a Variant (String) representing the octal value of a number.")
     public static String oct(Object number) {
         if (number instanceof Number) {
             return Integer.toOctalString(((Number) number).intValue());
@@ -258,7 +274,9 @@ public class Vba {
 
     @FunctionName("Val")
     @Signature("Val(string)")
-    @Description("Returns the numbers contained in a string as a numeric value of appropriate type.")
+    @Description(
+        "Returns the numbers contained in a string as a numeric value of "
+        + "appropriate type.")
     public static double val(String string) {
         // The Val function stops reading the string at the first character it
         // can't recognize as part of a number. Symbols and characters that are
@@ -310,7 +328,9 @@ public class Vba {
 
     @FunctionName("DateAdd")
     @Signature("DateAdd(interval, number, date)")
-    @Description("Returns a Variant (Date) containing a date to which a specified time interval has been added.")
+    @Description(
+        "Returns a Variant (Date) containing a date to which a specified time "
+        + "interval has been added.")
     public static Date dateAdd(String intervalName, double number, Date date) {
         Interval interval = Interval.valueOf(intervalName);
         final double floor = Math.floor(number);
@@ -345,8 +365,11 @@ public class Vba {
     }
 
     @FunctionName("DateDiff")
-    @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
+    @Signature(
+        "DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
+    @Description(
+        "Returns a Variant (Long) specifying the number of time intervals "
+        + "between two specified dates.")
     public static long dateDiff(String interval, Date date1, Date date2) {
         return _dateDiff(
             interval, date1, date2, Calendar.SUNDAY,
@@ -354,8 +377,11 @@ public class Vba {
     }
 
     @FunctionName("DateDiff")
-    @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
+    @Signature(
+        "DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
+    @Description(
+        "Returns a Variant (Long) specifying the number of time intervals "
+        + "between two specified dates.")
     public static long dateDiff(
         String interval, Date date1, Date date2, int firstDayOfWeek)
     {
@@ -365,8 +391,11 @@ public class Vba {
     }
 
     @FunctionName("DateDiff")
-    @Signature("DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Long) specifying the number of time intervals between two specified dates.")
+    @Signature(
+        "DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])")
+    @Description(
+        "Returns a Variant (Long) specifying the number of time intervals "
+        + "between two specified dates.")
     public static long dateDiff(
         String interval, Date date1, Date date2,
         int firstDayOfWeek, int firstWeekOfYear)
@@ -392,7 +421,9 @@ public class Vba {
 
     @FunctionName("DatePart")
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Integer) containing the specified part of a given date.")
+    @Description(
+        "Returns a Variant (Integer) containing the specified part of a given "
+        + "date.")
     public static int datePart(String interval, Date date) {
         return _datePart(
             interval, date, Calendar.SUNDAY,
@@ -401,7 +432,9 @@ public class Vba {
 
     @FunctionName("DatePart")
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Integer) containing the specified part of a given date.")
+    @Description(
+        "Returns a Variant (Integer) containing the specified part of a given "
+        + "date.")
     public static int datePart(String interval, Date date, int firstDayOfWeek) {
         return _datePart(
             interval, date, firstDayOfWeek,
@@ -410,7 +443,9 @@ public class Vba {
 
     @FunctionName("DatePart")
     @Signature("DatePart(interval, date[,firstdayofweek[, firstweekofyear]])")
-    @Description("Returns a Variant (Integer) containing the specified part of a given date.")
+    @Description(
+        "Returns a Variant (Integer) containing the specified part of a given "
+        + "date.")
     public static int datePart(
         String interval, Date date, int firstDayOfWeek,
         int firstWeekOfYear)
@@ -457,7 +492,8 @@ public class Vba {
 
     @FunctionName("DateSerial")
     @Signature("DateSerial(year, month, day)")
-    @Description("Returns a Variant (Date) for a specified year, month, and day.")
+    @Description(
+        "Returns a Variant (Date) for a specified year, month, and day.")
     public static Date dateSerial(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.clear();
@@ -481,7 +517,9 @@ public class Vba {
 
     @FunctionName("Day")
     @Signature("Day(date)")
-    @Description("Returns a Variant (Integer) specifying a whole number between 1 and 31, inclusive, representing the day of the month.")
+    @Description(
+        "Returns a Variant (Integer) specifying a whole number between 1 and "
+        + "31, inclusive, representing the day of the month.")
     public static int day(Date date) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -490,7 +528,9 @@ public class Vba {
 
     @FunctionName("Hour")
     @Signature("Hour(time)")
-    @Description("Returns a Variant (Integer) specifying a whole number between 0 and 23, inclusive, representing the hour of the day.")
+    @Description(
+        "Returns a Variant (Integer) specifying a whole number between 0 and "
+        + "23, inclusive, representing the hour of the day.")
     public static int hour(Date time) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
@@ -499,7 +539,9 @@ public class Vba {
 
     @FunctionName("Minute")
     @Signature("Minute(time)")
-    @Description("Returns a Variant (Integer) specifying a whole number between 0 and 59, inclusive, representing the minute of the hour.")
+    @Description(
+        "Returns a Variant (Integer) specifying a whole number between 0 and "
+        + "59, inclusive, representing the minute of the hour.")
     public static int minute(Date time) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
@@ -508,7 +550,9 @@ public class Vba {
 
     @FunctionName("Month")
     @Signature("Month(date)")
-    @Description("Returns a Variant (Integer) specifying a whole number between 1 and 12, inclusive, representing the month of the year.")
+    @Description(
+        "Returns a Variant (Integer) specifying a whole number between 1 and "
+        + "12, inclusive, representing the month of the year.")
     public static int month(Date date) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -518,14 +562,18 @@ public class Vba {
 
     @FunctionName("Now")
     @Signature("Now()")
-    @Description("Returns a Variant (Date) specifying the current date and time according your computer's system date and time.")
+    @Description(
+        "Returns a Variant (Date) specifying the current date and time "
+        + "according your computer's system date and time.")
     public static Date now() {
         return new Date();
     }
 
     @FunctionName("Second")
     @Signature("Second(time)")
-    @Description("Returns a Variant (Integer) specifying a whole number between 0 and 59, inclusive, representing the second of the minute.")
+    @Description(
+        "Returns a Variant (Integer) specifying a whole number between 0 and "
+        + "59, inclusive, representing the second of the minute.")
     public static int second(Date time) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
@@ -546,7 +594,9 @@ public class Vba {
 
     @FunctionName("TimeSerial")
     @Signature("TimeSerial(hour, minute, second)")
-    @Description("Returns a Variant (Date) containing the time for a specific hour, minute, and second.")
+    @Description(
+        "Returns a Variant (Date) containing the time for a specific hour, "
+        + "minute, and second.")
     public static Date timeSerial(int hour, int minute, int second) {
         final Calendar calendar = Calendar.getInstance();
         calendar.clear();
@@ -569,7 +619,9 @@ public class Vba {
 
     @FunctionName("Timer")
     @Signature("Timer()")
-    @Description("Returns a Single representing the number of seconds elapsed since midnight.")
+    @Description(
+        "Returns a Single representing the number of seconds elapsed since "
+        + "midnight.")
     public static float timer() {
         final Calendar calendar = Calendar.getInstance();
         final long now = calendar.getTimeInMillis();
@@ -583,14 +635,18 @@ public class Vba {
 
     @FunctionName("Weekday")
     @Signature("Weekday(date[, firstDayOfWeek])")
-    @Description("Returns a Variant (Integer) containing a whole number representing the day of the week.")
+    @Description(
+        "Returns a Variant (Integer) containing a whole number representing "
+        + "the day of the week.")
     public static int weekday(Date date) {
         return weekday(date, Calendar.SUNDAY);
     }
 
     @FunctionName("Weekday")
     @Signature("Weekday(date[, firstDayOfWeek])")
-    @Description("Returns a Variant (Integer) containing a whole number representing the day of the week.")
+    @Description(
+        "Returns a Variant (Integer) containing a whole number representing "
+        + "the day of the week.")
     public static int weekday(Date date, int firstDayOfWeek) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -604,7 +660,9 @@ public class Vba {
 
     @FunctionName("Year")
     @Signature("Year(date)")
-    @Description("Returns a Variant (Integer) containing a whole number representing the year.")
+    @Description(
+        "Returns a Variant (Integer) containing a whole number representing "
+        + "the year.")
     public static int year(Date date) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -639,7 +697,10 @@ public class Vba {
 
     @FunctionName("DDB")
     @Signature("DDB(cost, salvage, life, period[, factor])")
-    @Description("Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.")
+    @Description(
+        "Returns a Double specifying the depreciation of an asset for a "
+        + "specific time period using the double-declining balance method or "
+        + "some other method you specify.")
     public static double dDB(
         double cost,
         double salvage,
@@ -651,7 +712,10 @@ public class Vba {
 
     @FunctionName("DDB")
     @Signature("DDB(cost, salvage, life, period[, factor])")
-    @Description("Returns a Double specifying the depreciation of an asset for a specific time period using the double-declining balance method or some other method you specify.")
+    @Description(
+        "Returns a Double specifying the depreciation of an asset for a "
+        + "specific time period using the double-declining balance method or "
+        + "some other method you specify.")
     public static double dDB(
         double cost,
         double salvage,
@@ -664,21 +728,27 @@ public class Vba {
 
     @FunctionName("FV")
     @Signature("FV(rate, nper, pmt[, pv[, type]])")
-    @Description("Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the future value of an annuity based on "
+        + "periodic, fixed payments and a fixed interest rate.")
     public static double fV(double rate, double nPer, double pmt) {
         return fV(rate, nPer, pmt, 0d, false);
     }
 
     @FunctionName("FV")
     @Signature("FV(rate, nper, pmt[, pv[, type]])")
-    @Description("Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the future value of an annuity based on "
+        + "periodic, fixed payments and a fixed interest rate.")
     public static double fV(double rate, double nPer, double pmt, double pv) {
         return fV(rate, nPer, pmt, pv, false);
     }
 
     @FunctionName("FV")
     @Signature("FV(rate, nper, pmt[, pv[, type]])")
-    @Description("Returns a Double specifying the future value of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the future value of an annuity based on "
+        + "periodic, fixed payments and a fixed interest rate.")
     public static double fV(
         double rate,
         double nPer,
@@ -697,7 +767,10 @@ public class Vba {
 
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the interest payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double iPmt(double rate, double per, double nPer, double PV) {
         return iPmt(rate, per, nPer, PV, 0);
     }
@@ -705,7 +778,10 @@ public class Vba {
 
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the interest payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double iPmt(
         double rate,
         double per,
@@ -719,7 +795,10 @@ public class Vba {
 
     @FunctionName("IPmt")
     @Signature("IPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the interest payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the interest payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double iPmt(
         double rate,
         double per,
@@ -735,7 +814,9 @@ public class Vba {
 
     @FunctionName("IRR")
     @Signature("IRR(values()[, guess])")
-    @Description("Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).")
+    @Description(
+        "Returns a Double specifying the internal rate of return for a series "
+        + "of periodic cash flows (payments and receipts).")
     public static double IRR(double[] valueArray) {
         return IRR(valueArray, 0.10);
     }
@@ -743,7 +824,9 @@ public class Vba {
 
     @FunctionName("IRR")
     @Signature("IRR(values()[, guess])")
-    @Description("Returns a Double specifying the internal rate of return for a series of periodic cash flows (payments and receipts).")
+    @Description(
+        "Returns a Double specifying the internal rate of return for a series "
+        + "of periodic cash flows (payments and receipts).")
     public static double IRR(double[] valueArray, double guess) {
         // calc pV of stream (sum of pV's for valueArray) ((1 + guess) ^ index)
         double minGuess = 0.0;
@@ -777,7 +860,9 @@ public class Vba {
 
     @FunctionName("MIRR")
     @Signature("MIRR(values(), finance_rate, reinvest_rate)")
-    @Description("Returns a Double specifying the modified internal rate of return for a series of periodic cash flows (payments and receipts).")
+    @Description(
+        "Returns a Double specifying the modified internal rate of return for "
+        + "a series of periodic cash flows (payments and receipts).")
     public static double MIRR(
         double valueArray[],
         double financeRate,
@@ -804,7 +889,9 @@ public class Vba {
 
     @FunctionName("NPer")
     @Signature("NPer(rate, pmt, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the number of periods for an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the number of periods for an annuity "
+        + "based on periodic, fixed payments and a fixed interest rate.")
     public static double nPer(
         double rate,
         double pmt,
@@ -832,7 +919,10 @@ public class Vba {
 
     @FunctionName("NPV")
     @Signature("NPV(rate, values())")
-    @Description("Returns a Double specifying the net present value of an investment based on a series of periodic cash flows (payments and receipts) and a discount rate.")
+    @Description(
+        "Returns a Double specifying the net present value of an investment "
+        + "based on a series of periodic cash flows (payments and receipts) "
+        + "and a discount rate.")
     public static double nPV(double r, double[] cfs) {
         double npv = 0;
         double r1 = r + 1;
@@ -846,14 +936,20 @@ public class Vba {
 
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the principal payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double pPmt(double rate, double per, double nPer, double PV) {
         return pPmt(rate, per, nPer, PV, 0);
     }
 
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the principal payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double pPmt(
         double rate,
         double per,
@@ -866,7 +962,10 @@ public class Vba {
 
     @FunctionName("PPmt")
     @Signature("PPmt(rate, per, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the principal payment for a given period of an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the principal payment for a given period "
+        + "of an annuity based on periodic, fixed payments and a fixed "
+        + "interest rate.")
     public static double pPmt(
         double rate,
         double per,
@@ -881,7 +980,9 @@ public class Vba {
 
     @FunctionName("Pmt")
     @Signature("Pmt(rate, nper, pv[, fv[, type]])")
-    @Description("Returns a Double specifying the payment for an annuity based on periodic, fixed payments and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the payment for an annuity based on "
+        + "periodic, fixed payments and a fixed interest rate.")
     public static double pmt(
         double rate,
         double nPer,
@@ -902,7 +1003,10 @@ public class Vba {
 
     @FunctionName("PV")
     @Signature("PV(rate, nper, pmt[, fv[, type]])")
-    @Description("Returns a Double specifying the present value of an annuity based on periodic, fixed payments to be paid in the future and a fixed interest rate.")
+    @Description(
+        "Returns a Double specifying the present value of an annuity based on "
+        + "periodic, fixed payments to be paid in the future and a fixed "
+        + "interest rate.")
     public static double pV(
         double rate,
         double nper,
@@ -922,7 +1026,9 @@ public class Vba {
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
-    @Description("Returns a Double specifying the interest rate per period for an annuity.")
+    @Description(
+        "Returns a Double specifying the interest rate per period for an "
+        + "annuity.")
     public static double rate(
         double nPer,
         double pmt,
@@ -933,7 +1039,9 @@ public class Vba {
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
-    @Description("Returns a Double specifying the interest rate per period for an annuity.")
+    @Description(
+        "Returns a Double specifying the interest rate per period for an "
+        + "annuity.")
     public static double rate(
         double nPer,
         double pmt,
@@ -945,7 +1053,9 @@ public class Vba {
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
-    @Description("Returns a Double specifying the interest rate per period for an annuity.")
+    @Description(
+        "Returns a Double specifying the interest rate per period for an "
+        + "annuity.")
     public static double rate(
         double nPer,
         double pmt,
@@ -958,7 +1068,9 @@ public class Vba {
 
     @FunctionName("Rate")
     @Signature("Rate(nper, pmt, pv[, fv[, type[, guess]]])")
-    @Description("Returns a Double specifying the interest rate per period for an annuity.")
+    @Description(
+        "Returns a Double specifying the interest rate per period for an "
+        + "annuity.")
     public static double rate(
         double nPer, // specifies the number of payment periods
         double pmt, // payment per period of annuity
@@ -1004,14 +1116,18 @@ public class Vba {
 
     @FunctionName("SLN")
     @Signature("SLN(cost, salvage, life)")
-    @Description("Returns a Double specifying the straight-line depreciation of an asset for a single period.")
+    @Description(
+        "Returns a Double specifying the straight-line depreciation of an "
+        + "asset for a single period.")
     public static double sLN(double cost, double salvage, double life) {
         return (cost - salvage) / life;
     }
 
     @FunctionName("SYD")
     @Signature("SYD(cost, salvage, life, period)")
-    @Description("Returns a Double specifying the sum-of-years' digits depreciation of an asset for a specified period.")
+    @Description(
+        "Returns a Double specifying the sum-of-years' digits depreciation of "
+        + "an asset for a specified period.")
     public static double sYD(
         double cost,
         double salvage,
@@ -1028,7 +1144,8 @@ public class Vba {
 
     @FunctionName("IsArray")
     @Signature("IsArray(varname)")
-    @Description("Returns a Boolean value indicating whether a variable is an array.")
+    @Description(
+        "Returns a Boolean value indicating whether a variable is an array.")
     public boolean isArray(Object varName) {
         // arrays are not supported at present
         return false;
@@ -1036,7 +1153,9 @@ public class Vba {
 
     @FunctionName("IsDate")
     @Signature("IsDate(varname)")
-    @Description("Returns a Boolean value indicating whether an expression can be converted to a date..")
+    @Description(
+        "Returns a Boolean value indicating whether an expression can be "
+        + "converted to a date.")
     public static boolean isDate(Object expression) {
         // IsDate returns True if Expression represents a valid date, a valid
         // time, or a valid date and time.
@@ -1053,14 +1172,18 @@ public class Vba {
 
     @FunctionName("IsError")
     @Signature("IsError(varname)")
-    @Description("Returns a Boolean value indicating whether an expression is an error value.")
+    @Description(
+        "Returns a Boolean value indicating whether an expression is an error "
+        + "value.")
     public boolean isError(Object expression) {
         return expression instanceof Throwable;
     }
 
     @FunctionName("IsMissing")
     @Signature("IsMissing(varname)")
-    @Description("Returns a Boolean value indicating whether an optional Variant argument has been passed to a procedure.")
+    @Description(
+        "Returns a Boolean value indicating whether an optional Variant "
+        + "argument has been passed to a procedure.")
     public boolean isMissing(Object argName) {
         // We have no way to detect missing arguments.
         return false;
@@ -1068,21 +1191,27 @@ public class Vba {
 
     @FunctionName("IsNull")
     @Signature("IsNull(varname)")
-    @Description("Returns a Boolean value that indicates whether an expression contains no valid data (Null).")
+    @Description(
+        "Returns a Boolean value that indicates whether an expression "
+        + "contains no valid data (Null).")
     public boolean isNull(Object expression) {
         return expression == null;
     }
 
     @FunctionName("IsNumeric")
     @Signature("IsNumeric(varname)")
-    @Description("Returns a Boolean value indicating whether an expression can be evaluated as a number.")
+    @Description(
+        "Returns a Boolean value indicating whether an expression can be "
+        + "evaluated as a number.")
     public boolean isNumeric(Object expression) {
         return expression instanceof Number;
     }
 
     @FunctionName("IsObject")
     @Signature("IsObject(varname)")
-    @Description("Returns a Boolean value indicating whether an identifier represents an object variable.")
+    @Description(
+        "Returns a Boolean value indicating whether an identifier represents "
+        + "an object variable.")
     public boolean isObject(Object expression) {
         return false;
     }
@@ -1165,7 +1294,9 @@ public class Vba {
 
     @FunctionName("Abs")
     @Signature("Abs(number)")
-    @Description("Returns a value of the same type that is passed to it specifying the absolute value of a number.")
+    @Description(
+        "Returns a value of the same type that is passed to it specifying the "
+        + "absolute value of a number.")
     public static double abs(double number) {
         return Math.abs(number);
     }
@@ -1186,14 +1317,17 @@ public class Vba {
 
     @FunctionName("Exp")
     @Signature("Exp(number)")
-    @Description("Returns a Double specifying e (the base of natural logarithms) raised to a power.")
+    @Description(
+        "Returns a Double specifying e (the base of natural logarithms) "
+        + "raised to a power.")
     public static double exp(double number) {
         return Math.exp(number);
     }
 
     @FunctionName("Log")
     @Signature("Log(number)")
-    @Description("Returns a Double specifying the natural logarithm of a number.")
+    @Description(
+        "Returns a Double specifying the natural logarithm of a number.")
     public static double log(double number) {
         return Math.log(number);
     }
@@ -1206,14 +1340,16 @@ public class Vba {
 
     @FunctionName("Round")
     @Signature("Round(number[, numDigitsAfterDecimal])")
-    @Description("Returns a number rounded to a specified number of decimal places.")
+    @Description(
+        "Returns a number rounded to a specified number of decimal places.")
     public static double round(double number) {
         return Math.round(number);
     }
 
     @FunctionName("Round")
     @Signature("Round(number[, numDigitsAfterDecimal])")
-    @Description("Returns a number rounded to a specified number of decimal places.")
+    @Description(
+        "Returns a number rounded to a specified number of decimal places.")
     public static double round(double number, int numDigitsAfterDecimal) {
         if (numDigitsAfterDecimal == 0) {
             return Math.round(number);
@@ -1257,7 +1393,9 @@ public class Vba {
 
     @FunctionName("Asc")
     @Signature("Asc(string)")
-    @Description("Returns an Integer representing the character code corresponding to the first letter in a string.")
+    @Description(
+        "Returns an Integer representing the character code corresponding to "
+        + "the first letter in a string.")
     public static int asc(String string) {
         return string.charAt(0);
     }
@@ -1281,7 +1419,9 @@ public class Vba {
 
     @FunctionName("Chr")
     @Signature("Chr(charcode)")
-    @Description("Returns a String containing the character associated with the specified character code.")
+    @Description(
+        "Returns a String containing the character associated with the "
+        + "specified character code.")
     public static String chr(int charCode) {
         return new String(new char[] { (char) charCode });
     }
@@ -1309,15 +1449,25 @@ public class Vba {
     // FirstJan1 */)
 
     @FunctionName("FormatCurrency")
-    @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
+    @Signature(
+        "FormatCurrency(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a currency value using the "
+        + "currency symbol defined in the system control panel.")
     public static String formatCurrency(Object expression) {
         return formatCurrency(expression, -1, -2, -2, -2);
     }
 
     @FunctionName("FormatCurrency")
-    @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
+    @Signature(
+        "FormatCurrency(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a currency value using the "
+        + "currency symbol defined in the system control panel.")
     public static String formatCurrency(
         Object expression,
         int numDigitsAfterDecimal)
@@ -1326,8 +1476,13 @@ public class Vba {
     }
 
     @FunctionName("FormatCurrency")
-    @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
+    @Signature(
+        "FormatCurrency(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a currency value using the "
+        + "currency symbol defined in the system control panel.")
     public static String formatCurrency(
         Object expression,
         int numDigitsAfterDecimal,
@@ -1339,8 +1494,13 @@ public class Vba {
     }
 
     @FunctionName("FormatCurrency")
-    @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
+    @Signature(
+        "FormatCurrency(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a currency value using the "
+        + "currency symbol defined in the system control panel.")
     public static String formatCurrency(
         Object expression,
         int numDigitsAfterDecimal,
@@ -1356,8 +1516,13 @@ public class Vba {
     }
 
     @FunctionName("FormatCurrency")
-    @Signature("FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a currency value using the currency symbol defined in the system control panel.")
+    @Signature(
+        "FormatCurrency(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a currency value using the "
+        + "currency symbol defined in the system control panel.")
     public static String formatCurrency(
         Object expression,
         int numDigitsAfterDecimal,
@@ -1456,14 +1621,18 @@ public class Vba {
 
 
     @FunctionName("FormatNumber")
-    @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
+    @Signature(
+        "FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit "
+        + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(Object expression) {
         return formatNumber(expression, -1);
     }
 
     @FunctionName("FormatNumber")
-    @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
+    @Signature(
+        "FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit "
+        + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
         Object expression,
@@ -1473,7 +1642,9 @@ public class Vba {
     }
 
     @FunctionName("FormatNumber")
-    @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
+    @Signature(
+        "FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit "
+        + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
         Object expression,
@@ -1488,7 +1659,9 @@ public class Vba {
     }
 
     @FunctionName("FormatNumber")
-    @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
+    @Signature(
+        "FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit "
+        + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
         Object expression,
@@ -1504,7 +1677,9 @@ public class Vba {
     }
 
     @FunctionName("FormatNumber")
-    @Signature("FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
+    @Signature(
+        "FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit "
+        + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
             Object expression,
@@ -1549,15 +1724,25 @@ public class Vba {
     }
 
     @FunctionName("FormatPercent")
-    @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
+    @Signature(
+        "FormatPercent(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+            + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a percentage (multipled by 100) "
+        + "with a trailing % character.")
     public static String formatPercent(Object expression) {
         return formatPercent(expression, -1);
     }
 
     @FunctionName("FormatPercent")
-    @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
+    @Signature(
+        "FormatPercent(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a percentage (multipled by 100) "
+        + "with a trailing % character.")
     public static String formatPercent(
         // todo: impl & test
         Object expression, int numDigitsAfterDecimal /* default -1 */)
@@ -1566,8 +1751,13 @@ public class Vba {
     }
 
     @FunctionName("FormatPercent")
-    @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
+    @Signature(
+        "FormatPercent(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a percentage (multipled by 100) "
+        + "with a trailing % character.")
     public static String formatPercent(
         // todo: impl & test
         Object expression,
@@ -1582,8 +1772,13 @@ public class Vba {
     }
 
     @FunctionName("FormatPercent")
-    @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
+    @Signature(
+        "FormatPercent(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a percentage (multipled by 100) "
+        + "with a trailing % character.")
     public static String formatPercent(
         // todo: impl & test
         Object expression,
@@ -1597,8 +1792,13 @@ public class Vba {
     }
 
     @FunctionName("FormatPercent")
-    @Signature("FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers [,GroupDigits]]]])")
-    @Description("Returns an expression formatted as a percentage (multipled by 100) with a trailing % character.")
+    @Signature(
+        "FormatPercent(Expression[,NumDigitsAfterDecimal "
+        + "[,IncludeLeadingDigit [,UseParensForNegativeNumbers "
+        + "[,GroupDigits]]]])")
+    @Description(
+        "Returns an expression formatted as a percentage (multipled by 100) "
+        + "with a trailing % character.")
     public static String formatPercent(
         Object expression,
         int numDigitsAfterDecimal /* default -1 */,
@@ -1648,14 +1848,18 @@ public class Vba {
 
     @FunctionName("InStr")
     @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
-    @Description("Returns a Variant (Long) specifying the position of the first occurrence of one string within another.")
+    @Description(
+        "Returns a Variant (Long) specifying the position of the first "
+        + "occurrence of one string within another.")
     public static int inStr(String stringCheck, String stringMatch) {
         return inStr(1, stringCheck, stringMatch, 0);
     }
 
     @FunctionName("InStr")
     @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
-    @Description("Returns the position of an occurrence of one string within another.")
+    @Description(
+        "Returns the position of an occurrence of one string within "
+        + "another.")
     public static int inStr(
         int start /* default 1 */,
         String stringCheck,
@@ -1666,7 +1870,9 @@ public class Vba {
 
     @FunctionName("InStr")
     @Signature("InStr([start, ]stringcheck, stringmatch[, compare])")
-    @Description("Returns the position of an occurrence of one string within another.")
+    @Description(
+        "Returns the position of an occurrence of one string within "
+        + "another.")
     public static int inStr(
         int start /* default 1 */,
         String stringCheck,
@@ -1687,14 +1893,18 @@ public class Vba {
 
     @FunctionName("InStrRev")
     @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
-    @Description("Returns the position of an occurrence of one string within another, from the end of string.")
+    @Description(
+        "Returns the position of an occurrence of one string within another, "
+        + "from the end of string.")
     public static int inStrRev(String stringCheck, String stringMatch) {
         return inStrRev(stringCheck, stringMatch, -1);
     }
 
     @FunctionName("InStrRev")
     @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
-    @Description("Returns the position of an occurrence of one string within another, from the end of string.")
+    @Description(
+        "Returns the position of an occurrence of one string within another, "
+        + "from the end of string.")
     public static int inStrRev(
         String stringCheck,
         String stringMatch,
@@ -1705,7 +1915,9 @@ public class Vba {
 
     @FunctionName("InStrRev")
     @Signature("InStrRev(stringcheck, stringmatch[, start[, compare]])")
-    @Description("Returns the position of an occurrence of one string within another, from the end of string.")
+    @Description(
+        "Returns the position of an occurrence of one string within another, "
+        + "from the end of string.")
     public static int inStrRev(
         String stringCheck,
         String stringMatch,
@@ -1738,7 +1950,9 @@ public class Vba {
 
     @FunctionName("LTrim")
     @Signature("LTrim(string)")
-    @Description("Returns a Variant (String) containing a copy of a specified string without leading spaces.")
+    @Description(
+        "Returns a Variant (String) containing a copy of a specified string "
+        + "without leading spaces.")
     public static String lTrim(String string) {
         int i = 0, n = string.length();
         while (i < n) {
@@ -1756,7 +1970,9 @@ public class Vba {
 
     @FunctionName("Left")
     @Signature("Left(string, length)")
-    @Description("Returns a specified number of characters from the left side of a string.")
+    @Description(
+        "Returns a specified number of characters from the left side of a "
+        + "string.")
     public static String left(String string, int length) {
         final int stringLength = string.length();
         if (length >= stringLength) {
@@ -1849,7 +2065,9 @@ public class Vba {
 
     @FunctionName("RTrim")
     @Signature("RTrim(string)")
-    @Description("Returns a Variant (String) containing a copy of a specified string without trailing spaces.")
+    @Description(
+        "Returns a Variant (String) containing a copy of a specified string "
+        + "without trailing spaces.")
     public static String rTrim(String string) {
         int i = string.length() - 1;
         while (i >= 0) {
@@ -1862,8 +2080,11 @@ public class Vba {
     }
 
     @FunctionName("Replace")
-    @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
-    @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
+    @Signature(
+        "Replace(expression, find, replace[, start[, count[, compare]]])")
+    @Description(
+        "Returns a string in which a specified substring has been replaced "
+        + "with another substring a specified number of times.")
     public static String replace(
         String expression,
         String find,
@@ -1878,8 +2099,11 @@ public class Vba {
     }
 
     @FunctionName("Replace")
-    @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
-    @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
+    @Signature(
+        "Replace(expression, find, replace[, start[, count[, compare]]])")
+    @Description(
+        "Returns a string in which a specified substring has been replaced "
+        + "with another substring a specified number of times.")
     public static String replace(
         String expression,
         String find,
@@ -1891,8 +2115,11 @@ public class Vba {
     }
 
     @FunctionName("Replace")
-    @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
-    @Description("Returns a string in which a specified substring has been replaced with another substring a specified number of times.")
+    @Signature(
+        "Replace(expression, find, replace[, start[, count[, compare]]])")
+    @Description(
+        "Returns a string in which a specified substring has been replaced "
+        + "with another substring a specified number of times.")
     public static String replace(
         String expression,
         String find,
@@ -1903,7 +2130,8 @@ public class Vba {
     }
 
     @FunctionName("Replace")
-    @Signature("Replace(expression, find, replace[, start[, count[, compare]]])")
+    @Signature(
+        "Replace(expression, find, replace[, start[, count[, compare]]])")
     @Description("")
     public static String replace(
         String expression,
@@ -1944,7 +2172,9 @@ public class Vba {
 
     @FunctionName("Right")
     @Signature("Right(string, length)")
-    @Description("Returns a Variant (String) containing a specified number of characters from the right side of a string.")
+    @Description(
+        "Returns a Variant (String) containing a specified number of "
+        + "characters from the right side of a string.")
     public static String right(String string, int length) {
         final int stringLength = string.length();
         if (length >= stringLength) {
@@ -1957,7 +2187,9 @@ public class Vba {
 
     @FunctionName("Space")
     @Signature("Space(number)")
-    @Description("Returns a Variant (String) consisting of the specified number of spaces.")
+    @Description(
+        "Returns a Variant (String) consisting of the specified number of "
+        + "spaces.")
     public static String space(int number) {
         return string(number, ' ');
     }
@@ -1967,14 +2199,18 @@ public class Vba {
 
     @FunctionName("StrComp")
     @Signature("StrComp(string1, string2[, compare])")
-    @Description("Returns a Variant (Integer) indicating the result of a string comparison.")
+    @Description(
+        "Returns a Variant (Integer) indicating the result of a string "
+        + "comparison.")
     public static int strComp(String string1, String string2) {
         return strComp(string1, string2, 0);
     }
 
     @FunctionName("StrComp")
     @Signature("StrComp(string1, string2[, compare])")
-    @Description("Returns a Variant (Integer) indicating the result of a string comparison.")
+    @Description(
+        "Returns a Variant (Integer) indicating the result of a string "
+        + "comparison.")
     public static int strComp(
         String string1,
         String string2,
@@ -1991,7 +2227,9 @@ public class Vba {
 
     @FunctionName("StrReverse")
     @Signature("StrReverse(string)")
-    @Description("Returns a string in which the character order of a specified string is reversed.")
+    @Description(
+        "Returns a string in which the character order of a specified string "
+        + "is reversed.")
     public static String strReverse(String expression) {
         final char[] chars = expression.toCharArray();
         for (int i = 0, j = chars.length - 1; i < j; i++, j--) {
@@ -2020,7 +2258,9 @@ public class Vba {
 
     @FunctionName("Trim")
     @Signature("Trim(string)")
-    @Description("Returns a Variant (String) containing a copy of a specified string without leading and trailing spaces.")
+    @Description(
+        "Returns a Variant (String) containing a copy of a specified string "
+        + "without leading and trailing spaces.")
     public static String trim(String string) {
         // JDK has a method for trim, but not ltrim or rtrim
         return string.trim();

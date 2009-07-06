@@ -93,7 +93,9 @@ public class MondrianTestRunner extends BaseTestRunner {
            public void endTest(Test arg0) {
                 if (arg0 instanceof TestCase) {
                  long longb = System.currentTimeMillis() - longa[0];
-                 System.out.println("endTest " + ((TestCase)arg0).getName() + " " + longb + " ms");
+                 System.out.println(
+                     "endTest " + ((TestCase)arg0).getName() + " " + longb
+                     + " ms");
               }
            }
 
@@ -148,8 +150,9 @@ public class MondrianTestRunner extends BaseTestRunner {
             try {
                 threads[i].join();
             } catch (InterruptedException e) {
-                System.out.println("Thread: " + threads[i].getName() + " interrupted: "
-                        + e.getMessage());
+                System.out.println(
+                    "Thread: " + threads[i].getName() + " interrupted: "
+                    + e.getMessage());
             }
         }
 

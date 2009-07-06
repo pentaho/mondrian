@@ -190,7 +190,8 @@ public class SchemaPropertyCellRenderer
                 stringRenderer.setToolTipText(
                     workbench.getResourceConverter().getString(
                         "schemaPropertyCellRenderer.selectJoinObject",
-                        "Select the Join/Table object from Schema tree to edit."));
+                        "Select the Join/Table object from Schema tree to "
+                        + "edit."));
                 stringRenderer.setOpaque(true);
                 stringRenderer.setBackground(Color.LIGHT_GRAY);
                 return stringRenderer;
@@ -332,11 +333,10 @@ public class SchemaPropertyCellRenderer
     private String generateJoinStr(Object value) {
         MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join) value;
         String joinStr = "<html>"
-                         + generateLeftRightStr(currentJoin.left)
-                         + " <b>JOIN</b> "
-                         + generateLeftRightStr(currentJoin.right)
-                         + "</html>";
-        //===String joinStr = "<html>" + " <b>JOIN</b> (<blockquote>" + generateLeftRightStr(currentJoin.left) + "<br>" + generateLeftRightStr(currentJoin.right) + "<br>)</blockquote>" +"</html>";
+            + generateLeftRightStr(currentJoin.left)
+            + " <b>JOIN</b> "
+            + generateLeftRightStr(currentJoin.right)
+            + "</html>";
         return joinStr;
     }
 
@@ -351,11 +351,10 @@ public class SchemaPropertyCellRenderer
         }
         MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join) currentObj;
         String joinStr = "("
-                         + generateLeftRightStr(currentJoin.left)
-                         + " <b>JOIN</b> "
-                         + generateLeftRightStr(currentJoin.right)
-                         + ")";
-        //===String joinStr = " <b>JOIN</b> (<blockquote>" + generateLeftRightStr(currentJoin.left) + "<br>" + generateLeftRightStr(currentJoin.right) + "<br>)</blockquote>" ;
+            + generateLeftRightStr(currentJoin.left)
+            + " <b>JOIN</b> "
+            + generateLeftRightStr(currentJoin.right)
+            + ")";
         return joinStr;
     }
 

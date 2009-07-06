@@ -833,7 +833,8 @@ public class SchemaExplorer
         addDimensionUsageButton.setIcon(
             new ImageIcon(
                 myClassLoader.getResource(
-                    getResourceConverter().getGUIReference("addDimensionUsage"))));
+                    getResourceConverter().getGUIReference(
+                        "addDimensionUsage"))));
         addDimensionUsageButton.setToolTipText(
             getResourceConverter().getString(
                 "schemaExplorer.addDimensionUsage.title",
@@ -2547,9 +2548,11 @@ public class SchemaExplorer
         //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Role)) {
             JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
+                this,
+                getResourceConverter().getString(
                     "schemaExplorer.roleNotSelected.alert",
-                    "Role not selected."), alert, JOptionPane.WARNING_MESSAGE);
+                    "Role not selected."),
+                alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -2557,8 +2560,7 @@ public class SchemaExplorer
 
         MondrianGuiDef.SchemaGrant schemaGrant =
             new MondrianGuiDef.SchemaGrant();
-        schemaGrant.access =
-            ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
+        schemaGrant.access = "";
         schemaGrant.cubeGrants = new MondrianGuiDef.CubeGrant[0];
 
         //add cube to schema
@@ -2612,8 +2614,7 @@ public class SchemaExplorer
             (MondrianGuiDef.SchemaGrant) path;
 
         MondrianGuiDef.CubeGrant cubeGrant = new MondrianGuiDef.CubeGrant();
-        cubeGrant.access =
-            ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
+        cubeGrant.access = "";
         cubeGrant.dimensionGrants = new MondrianGuiDef.DimensionGrant[0];
         cubeGrant.hierarchyGrants = new MondrianGuiDef.HierarchyGrant[0];
 
@@ -2724,8 +2725,7 @@ public class SchemaExplorer
 
         MondrianGuiDef.HierarchyGrant hieGrant =
             new MondrianGuiDef.HierarchyGrant();
-        hieGrant.access =
-            ""; //get unique name //"New Dimension Usage" + cube.dimensions.length;
+        hieGrant.access = "";
         hieGrant.memberGrants = new MondrianGuiDef.MemberGrant[0];
 
         //add cube to schema

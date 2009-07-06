@@ -69,7 +69,10 @@ public class HighDimensionsTest extends FoodMartTestCase {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
-        assertTrue("Query failed to execute within " + (60 * baselineTime) + " milliseconds", t1 - t0 < 60 * baselineTime);
+        assertTrue(
+            "Query failed to execute within " + (60 * baselineTime)
+            + " milliseconds",
+            t1 - t0 < 60 * baselineTime);
     }
 
 

@@ -42,7 +42,8 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx = "select {[Measures].[Store Count]} on columns from Cheques";
+        String mdx =
+            "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
@@ -64,7 +65,8 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx = "select {[Measures].[Sales Count]} on columns from Cheques";
+        String mdx =
+            "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
@@ -86,7 +88,8 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx = "select {[Measures].[Total Amount]} on columns from Cheques";
+        String mdx =
+            "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 

@@ -301,7 +301,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "`product`.`brand_name` as `Brand Name`, `product`.`product_name` as `Product Name`, "
             + "`promotion`.`media_type` as `Media Type`, `promotion`.`promotion_name` as `Promotion Name`, "
             + "`customer`.`country` as `Country`, `customer`.`state_province` as `State Province`, `customer`.`city` as `City`, "
-            + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`, "
+            + nameExpStr + " as `Name`, "
+            + "`customer`.`customer_id` as `Name (Key)`, "
             + "`customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`, `customer`.`marital_status` as `Marital Status`, "
             + "`customer`.`yearly_income` as `Yearly Income`, "
             + "`sales_fact_1997`.`unit_sales` as `Unit Sales` "
@@ -328,7 +329,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "`product_class`.`product_family` ASC, `product_class`.`product_department` ASC, `product_class`.`product_category` ASC, "
             + "`product_class`.`product_subcategory` ASC, `product`.`brand_name` ASC, `product`.`product_name` ASC, "
             + "`promotion.media_type` ASC, `promotion`.`promotion_name` ASC, "
-            + "`customer`.`country` ASC, `customer`.`state_province` ASC, `customer`.`city` ASC, " + nameExpStr + " ASC, "
+            + "`customer`.`country` ASC, "
+            + "`customer`.`state_province` ASC, `customer`.`city` ASC, "
+            + nameExpStr + " ASC, "
             + "`customer`.`customer_id` ASC, `customer`.`education` ASC, `customer`.gender` ASC, `customer`.`marital_status` ASC, `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 141);
@@ -641,7 +644,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store_ragged`.`store_id` as `Store Id (Key)`, `promotion`.`media_type` as `Media Type`,"
             + " `promotion`.`promotion_name` as `Promotion Name`, `customer`.`country` as `Country`,"
             + " `customer`.`state_province` as `State Province`, `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`,"
+            + " " + nameExpStr + " as `Name`,"
+            + " `customer`.`customer_id` as `Name (Key)`,"
             + " `customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`,"
             + " `customer`.`marital_status` as `Marital Status`,"
             + " `customer`.`yearly_income` as `Yearly Income`,"

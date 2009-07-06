@@ -703,17 +703,20 @@ cube_name ::= compound_id ;
 value_expression ::=
         term5
     |   value_expression:x OR term5:y {:
-            RESULT = new UnresolvedFunCall("OR", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                new UnresolvedFunCall("OR", Syntax.Infix, new Exp[] {x, y});
         :}
     |   value_expression:x XOR term5:y {:
-            RESULT = new UnresolvedFunCall("XOR", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                new UnresolvedFunCall("XOR", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
 term5 ::=
         term4
     |   term5:x AND term4:y {:
-            RESULT = new UnresolvedFunCall("AND", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                new UnresolvedFunCall("AND", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
@@ -735,29 +738,39 @@ term3 ::=
         // conflict by shifting, which is what we want. Compile with expect=61
         // to ignore the conflicts and continue.
         term3:x IS NULL {:
-            RESULT = new UnresolvedFunCall("IS NULL", Syntax.Postfix, new Exp[] {x});
+            RESULT =
+                new UnresolvedFunCall("IS NULL", Syntax.Postfix, new Exp[] {x});
         :}
-    |   term3:x IS term2:y {: // e.g. "x IS y"; but "x IS NULL" is handled elsewhere
-            RESULT = new UnresolvedFunCall("IS", Syntax.Infix, new Exp[] {x, y});
+    |   term3:x IS term2:y {:
+            // e.g. "x IS y"; but "x IS NULL" is handled elsewhere
+            RESULT =
+                new UnresolvedFunCall("IS", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x IS EMPTY {:
-            RESULT = new UnresolvedFunCall("IS EMPTY", Syntax.Postfix, new Exp[] {x});
+            RESULT =
+                new UnresolvedFunCall(
+                    "IS EMPTY", Syntax.Postfix, new Exp[] {x});
         :}
     |   term3:x MATCHES term2:y {:
-            RESULT = new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                new UnresolvedFunCall(
+                    "MATCHES", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x NOT MATCHES term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[]
-                {new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y})});
+                "NOT", Syntax.Prefix, new Exp[] {
+                    new UnresolvedFunCall(
+                        "MATCHES", Syntax.Infix, new Exp[] {x, y})});
         :}
     |   term3:x IN term2:y {:
-            RESULT = new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x NOT IN term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[]
-                {new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y})});
+                "NOT", Syntax.Prefix, new Exp[] {
+                    new UnresolvedFunCall(
+                        "IN", Syntax.Infix, new Exp[] {x, y})});
         :}
     ;
 
@@ -770,7 +783,8 @@ term2 ::=
             RESULT = new UnresolvedFunCall("-", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term2:x CONCAT term:y {:
-            RESULT = new UnresolvedFunCall("||", Syntax.Infix, new Exp[] {x, y});
+            RESULT =
+                 new UnresolvedFunCall("||", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
@@ -869,7 +883,9 @@ value_expression_primary ::=
         :}
     |   CAST LPAREN expression:e AS identifier:t RPAREN {:
             RESULT = new UnresolvedFunCall(
-                "CAST", Syntax.Cast, new Exp[] {e, Literal.createSymbol(t.name)});
+                "CAST", Syntax.Cast, new Exp[] {
+                    e,
+                    Literal.createSymbol(t.name)});
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)

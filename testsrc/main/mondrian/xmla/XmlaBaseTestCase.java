@@ -381,14 +381,16 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             }
         }
         response = new String(bytes);
-if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: soap response=" + response);
-}
+        if (DEBUG) {
+            System.out.println(
+                "XmlaBaseTestCase.doTests: soap response=" + response);
+        }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-if (DEBUG) {
-                System.out.println("XmlaBaseTestCase.doTests: XML Data is Valid");
-}
+                if (DEBUG) {
+                    System.out.println(
+                        "XmlaBaseTestCase.doTests: XML Data is Valid");
+                }
             }
         }
 

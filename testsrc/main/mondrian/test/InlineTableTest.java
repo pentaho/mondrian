@@ -246,8 +246,10 @@ public class InlineTableTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Alternative Promotion].[All Alternative Promotions]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29" + extra + "]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20" + extra + "]}\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29"
+            + extra + "]}\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20"
+            + extra + "]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: \n"
             + "Row #0: \n");

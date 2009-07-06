@@ -725,7 +725,22 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // Axis #2:
         // {[Time].[1997].[Q2]}
         // Row #0: (null)
-        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
+        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite
+        // loop while evaluating calculated member '[Measures].[Foo]'; context
+        // stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
         //
         // So encapsulate the error string as a pattern.
         final String expectedPattern =

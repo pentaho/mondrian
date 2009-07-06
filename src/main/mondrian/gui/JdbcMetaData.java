@@ -842,7 +842,8 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a list of "schemaname -> table name -> fk col" string objects if schema is not given
+                // return a list of "schemaname -> table name -> fk col" string
+                // objects if schema is not given
                 boolean duplicate = tracker.count() > 1;
 
                 for (DbTable t : tracker.namedTable) {
@@ -878,7 +879,8 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a list of "fk col name" string objects if schema is given
+                // return a list of "fk col name" string objects if schema is
+                // given
                 if (t instanceof FactTable && t.name.equals(factTable)) {
                     f.addAll(((FactTable) t).fks.keySet());
                 }
@@ -898,7 +900,8 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a list of "schemaname -> table name -> fk col" string objects if schema is not given
+                // return a list of "schemaname -> table name -> fk col" string
+                // objects if schema is not given
                 boolean duplicate = tracker.count() > 1;
 
                 for (DbTable t : tracker.namedTable) {
@@ -934,7 +937,8 @@ public class JdbcMetaData {
                     return f;
                 }
 
-                // return a list of "fk col name" string objects if schema is given
+                // return a list of "fk col name" string objects if schema is
+                // given
                 if (t instanceof FactTable && t.name.equals(factTable)) {
                     f.addAll(((FactTable) t).fks.values());
                 }

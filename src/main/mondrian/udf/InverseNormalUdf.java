@@ -94,16 +94,20 @@ public class InverseNormalUdf implements UserDefinedFunction {
          */
         double dbl = d.doubleValue();
         if (dbl < 0.0 || dbl > 1.0) {
-            LOGGER.debug("Invalid value for inverse normal distribution: " + dbl);
-            throw new MondrianEvaluationException("Invalid value for inverse normal distribution: " + dbl);
+            LOGGER.debug(
+                "Invalid value for inverse normal distribution: " + dbl);
+            throw new MondrianEvaluationException(
+                "Invalid value for inverse normal distribution: " + dbl);
         }
         try {
             Double result = new Double(nd.inverseCumulativeProbability(dbl));
             LOGGER.debug("Inverse Normal result : " + result.doubleValue());
             return result;
         } catch (MathException e) {
-            LOGGER.debug("Exception calculating inverse normal distribution: " + dbl, e);
-            throw new MondrianEvaluationException("Exception calculating inverse normal distribution: " + dbl);
+            LOGGER.debug(
+                "Exception calculating inverse normal distribution: " + dbl, e);
+            throw new MondrianEvaluationException(
+                "Exception calculating inverse normal distribution: " + dbl);
         }
     }
 

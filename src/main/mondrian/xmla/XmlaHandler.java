@@ -59,7 +59,8 @@ public class XmlaHandler implements XmlaConstants {
     private static final String EMPTY_MD_DATA_SET_XML_SCHEMA =
         computeEmptyXsd(SetType.MD_DATA_SET);
 
-    private static final String NS_XML_SQL = "urn:schemas-microsoft-com:xml-sql";
+    private static final String NS_XML_SQL =
+        "urn:schemas-microsoft-com:xml-sql";
 
     //
     // Some xml schema data types.
@@ -1598,7 +1599,7 @@ public class XmlaHandler implements XmlaConstants {
                     "base", XSD_STRING);
                 writer.element(
                     "xsd:pattern",
-                    "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+                    "value", RowsetDefinition.UUID_PATTERN);
                 writer.endElement(); // xsd:restriction
                 writer.endElement(); // xsd:simpleType
             }
@@ -2574,7 +2575,7 @@ public class XmlaHandler implements XmlaConstants {
                     "base", XSD_STRING);
                 writer.element(
                     "xsd:pattern",
-                    "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+                    "value", RowsetDefinition.UUID_PATTERN);
                 writer.endElement(); // xsd:restriction
                 writer.endElement(); // xsd:simpleType
             }
@@ -2699,7 +2700,9 @@ public class XmlaHandler implements XmlaConstants {
                 CLIENT_FAULT_FC,
                 HSB_DISCOVER_FORMAT_CODE,
                 HSB_DISCOVER_FORMAT_FAULT_FS,
-                new UnsupportedOperationException("<Format>: only 'Tabular' allowed in Discover method type"));
+                new UnsupportedOperationException(
+                    "<Format>: only 'Tabular' allowed in Discover method "
+                    + "type"));
         }
         final String contentName =
             request.getProperties().get(PropertyDefinition.Content.name());
@@ -2839,9 +2842,11 @@ public class XmlaHandler implements XmlaConstants {
 
         if (LOGGER.isDebugEnabled()) {
             if (conn == null) {
-                LOGGER.debug("XmlaHandler.getConnection: returning connection null");
+                LOGGER.debug(
+                    "XmlaHandler.getConnection: returning connection null");
             } else {
-                LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
+                LOGGER.debug(
+                    "XmlaHandler.getConnection: returning connection not null");
             }
         }
         return conn;
@@ -3053,7 +3058,8 @@ public class XmlaHandler implements XmlaConstants {
                 String countSql = buf.toString();
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Advanced drill through counting sql: " + countSql);
+                    LOGGER.debug(
+                        "Advanced drill through counting sql: " + countSql);
                 }
                 SqlStatement smt =
                     RolapUtil.executeQuery(
@@ -3111,7 +3117,8 @@ public class XmlaHandler implements XmlaConstants {
                 } else {
                     System.out.println(",");
                 }
-                System.out.print("        new MetadataColumn(\"" + column.name + "\")");
+                System.out.print(
+                    "        new MetadataColumn(\"" + column.name + "\")");
             }
             System.out.println("),");
         }

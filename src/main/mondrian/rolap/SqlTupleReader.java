@@ -748,7 +748,8 @@ public class SqlTupleReader implements TupleReader {
         RolapCube baseCube,
         WhichSelect whichSelect)
     {
-        String s = "while generating query to retrieve members of level(s) " + targets;
+        String s =
+            "while generating query to retrieve members of level(s) " + targets;
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
 
         Evaluator evaluator = getEvaluator(constraint);

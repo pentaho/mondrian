@@ -51,10 +51,14 @@ public class ParameterTest extends FoodMartTestCase {
 
     public void testChangeable() {
         // jpivot needs to set a parameters value before the query is executed
-        String mdx = "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} ON COLUMNS from [Sales]";
+        String mdx =
+            "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} "
+            + "ON COLUMNS from [Sales]";
         Query query = getConnection().parseQuery(mdx);
         SchemaReader sr = query.getSchemaReader(false);
-        Member m = sr.getMemberByUniqueName(Id.Segment.toList("Time", "1997", "Q2", "5"), true);
+        Member m =
+            sr.getMemberByUniqueName(
+                Id.Segment.toList("Time", "1997", "Q2", "5"), true);
         Parameter p = sr.getParameter("Foo");
         p.setValue(m);
         assertEquals(m, p.getValue());
@@ -118,14 +122,17 @@ public class ParameterTest extends FoodMartTestCase {
 
     public void testStringParameter() {
         String s =
-            executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
+            executeExpr(
+                "Parameter(\"S\",STRING,\"x\" || \"y\","
+                + "\"A string parameter\")");
         Assert.assertEquals("xy", s);
     }
 
     public void testNumericParameterStringValueFails() {
         assertExprThrows(
             "Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",
-            "Default value of parameter 'S' is inconsistent with its type, NUMERIC");
+            "Default value of parameter 'S' is inconsistent with its type, "
+            + "NUMERIC");
     }
 
     public void testParameterDimension() {
@@ -349,7 +356,8 @@ public class ParameterTest extends FoodMartTestCase {
             resultString);
 
         // Set one parameter and execute again.
-        query.setParameter("ProductMember", "[Product].[All Products].[Food].[Eggs]");
+        query.setParameter(
+            "ProductMember", "[Product].[All Products].[Food].[Eggs]");
         result = connection.execute(query);
         resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
@@ -363,7 +371,8 @@ public class ParameterTest extends FoodMartTestCase {
             resultString);
 
         // Now set both parameters and execute again.
-        query.setParameter("ProductMember", "[Product].[All Products].[Food].[Deli]");
+        query.setParameter(
+            "ProductMember", "[Product].[All Products].[Food].[Deli]");
         query.setParameter("Time", "[Time].[1997].[Q2].[4]");
         result = connection.execute(query);
         resultString = TestContext.toString(result);
@@ -383,7 +392,11 @@ public class ParameterTest extends FoodMartTestCase {
     public void testFoo() {
         Connection connection = getTestContext().getConnection();
         try {
-            String mdx = "with member [Measures].[s] as Parameter(\"x\", NUMERIC, 1) select {[Measures].[s]} on columns, {Time.Children} on rows from [Sales]";
+            String mdx =
+                "with member [Measures].[s] as Parameter(\"x\", NUMERIC, 1) "
+                + "select {[Measures].[s]} on columns, "
+                + "{Time.Children} on rows "
+                + "from [Sales]";
             Query query = connection.parseQuery(mdx);
             query.setParameter("x", "8");
         } finally {
@@ -475,7 +488,9 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testSchemaProp() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"prop\" type=\"String\" defaultValue=\" 'foo bar' \" />", null,
+            "<Parameter name=\"prop\" type=\"String\" "
+            + "defaultValue=\" 'foo bar' \" />",
+            null,
             null,
             null, null, null);
         tc.assertExprReturns("ParamRef(\"prop\")", "foo bar");

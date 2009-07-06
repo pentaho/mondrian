@@ -175,7 +175,9 @@ public class RolapConnectionTest extends TestCase {
     {
         // Workaround Java bug #6504538 (see http://bugs.sun.com) with synopsis
         // "DriverManager.getConnection throws IllegalArgumentException".
-        if (System.getProperties().getProperty("java.version").startsWith("1.6.")) {
+        if (System.getProperties().getProperty("java.version")
+            .startsWith("1.6."))
+        {
             properties.remove("jdbc.charSet");
 
             final StringBuilder buf = new StringBuilder();
@@ -250,7 +252,9 @@ public class RolapConnectionTest extends TestCase {
         properties.remove(RolapConnectionProperties.CatalogContent.name());
 
         if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
-            RolapUtil.SQL_LOGGER.debug(this.getName() + "\n  [Connection Properties | " + properties + "]\n");
+            RolapUtil.SQL_LOGGER.debug(
+                this.getName() + "\n  [Connection Properties | " + properties
+                + "]\n");
         } else {
             System.out.println(properties);
         }
@@ -263,8 +267,9 @@ public class RolapConnectionTest extends TestCase {
         } catch (MondrianException e) {
             assertTrue(
                 e.getMessage().indexOf(
-                    "Connect string must contain property 'Catalog' or property 'CatalogContent'")
-                    >= 0);
+                    "Connect string must contain property 'Catalog' or "
+                    + "property 'CatalogContent'")
+                >= 0);
         }
     }
 
@@ -346,7 +351,10 @@ public class RolapConnectionTest extends TestCase {
             RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc, desc.startsWith("Jdbc="));
-        assertTrue(desc, desc.indexOf("JdbcUser=bogususer; JdbcPassword=boguspassword") >= 0);
+        assertTrue(
+            desc,
+            desc.indexOf("JdbcUser=bogususer; JdbcPassword=boguspassword")
+            >= 0);
         final String jndiName = "jndiDataSource";
         THREAD_INITIAL_CONTEXT.set(
             new InitialContext() {
@@ -409,24 +417,41 @@ public class RolapConnectionTest extends TestCase {
                 fail("Expected exception");
             } catch (MondrianException e) {
                 final String s = TestContext.getStackTrace(e);
-                assertTrue(s, s.indexOf(
-                    "Error while creating SQL connection: DataSource=jndiDataSource") >= 0);
+                assertTrue(
+                    s,
+                    s.indexOf(
+                        "Error while creating SQL connection: "
+                        + "DataSource=jndiDataSource") >= 0);
                 switch (dialect.getDatabaseProduct()) {
                 case DERBY:
-                    assertTrue(s, s.indexOf(
-                        "Caused by: java.sql.SQLException: Schema 'BOGUSUSER' does not exist") >= 0);
+                    assertTrue(
+                        s,
+                        s.indexOf(
+                            "Caused by: java.sql.SQLException: "
+                            + "Schema 'BOGUSUSER' does not exist") >= 0);
                     break;
                 case ORACLE:
-                    assertTrue(s, s.indexOf(
-                        "Caused by: java.sql.SQLException: ORA-01017: invalid username/password; logon denied") >= 0);
+                    assertTrue(
+                        s,
+                        s.indexOf(
+                            "Caused by: java.sql.SQLException: ORA-01017: "
+                            + "invalid username/password; logon denied") >= 0);
                     break;
                 case MYSQL:
-                    assertTrue(s, s.indexOf(
-                        "Caused by: java.sql.SQLException: Access denied for user 'bogususer'@'localhost' (using password: YES)") >= 0);
+                    assertTrue(
+                        s,
+                        s.indexOf(
+                            "Caused by: java.sql.SQLException: Access denied "
+                            + "for user 'bogususer'@'localhost' (using "
+                            + "password: YES)") >= 0);
                     break;
                 case POSTGRESQL:
-                    assertTrue(s, s.indexOf(
-                        "Caused by: org.postgresql.util.PSQLException: FATAL: password authentication failed for user \"bogususer\"") >= 0);
+                    assertTrue(
+                        s,
+                        s.indexOf(
+                            "Caused by: org.postgresql.util.PSQLException: "
+                            + "FATAL: password authentication failed for "
+                            + "user \"bogususer\"") >= 0);
                     break;
                 }
             } finally {

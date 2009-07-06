@@ -98,9 +98,13 @@ public class QueryRunner extends Thread {
 
 //        // #9
 //        "with\n"
-//        + "  member [Product].[Non dairy] as '[Product].[All Products] - [Product].[Food].[Dairy]'\n"
-//        + "  member [Measures].[Dairy ever] as 'sum([Time].members, ([Measures].[Unit Sales],[Product].[Food].[Dairy]))'\n"
-//        + "  set [Customers who never bought dairy] as 'filter([Customers].members, [Measures].[Dairy ever] = 0)'\n"
+//        + "  member [Product].[Non dairy] as"
+//        + " '[Product].[All Products] - [Product].[Food].[Dairy]'\n"
+//        + "  member [Measures].[Dairy ever] as"
+//        + " 'sum([Time].members, "
+//        + "([Measures].[Unit Sales],[Product].[Food].[Dairy]))'\n"
+//        + "  set [Customers who never bought dairy] as"
+//        + " 'filter([Customers].members, [Measures].[Dairy ever] = 0)'\n"
 //        + "select\n"
 //        + " {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns,\n"
 //        + "  [Customers who never bought dairy] on rows\n"
@@ -293,9 +297,8 @@ public class QueryRunner extends Thread {
 
     public static void main(String[] args) {
         if (args.length != 3) {
-            System.err.println("usage: QueryRunner numThreads seconds randomQueries");
-
-            return;
+            System.err.println(
+                "usage: QueryRunner numThreads seconds randomQueries");
         } else {
             runTest(
                 Integer.parseInt(args[0]),

@@ -312,7 +312,8 @@ public class XmlaSupport {
         buf.append(nl);
         buf.append("       <ProviderType>MDP</ProviderType>");
         buf.append(nl);
-        buf.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
+        buf.append(
+            "       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
         buf.append(nl);
         buf.append("       <Catalogs>");
         buf.append(nl);
@@ -1028,15 +1029,18 @@ public class XmlaSupport {
             return false;
         }
         if (! dataDoc.hasChildNodes()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc has no children");
+            LOGGER.debug(
+                "XmlaSupport.validateEmbeddedSchema: dataDoc has no children");
             return false;
         }
         String dataStr = XmlUtil.toString(dataDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc:\n=" + dataStr);
+            LOGGER.debug(
+                "XmlaSupport.validateEmbeddedSchema: dataDoc:\n=" + dataStr);
         }
         if (! (dataDoc instanceof Document)) {
-            LOGGER.warn("XmlaSupport.validateEmbeddedSchema: dataDoc not Document");
+            LOGGER.warn(
+                "XmlaSupport.validateEmbeddedSchema: dataDoc not Document");
             return false;
         }
 
@@ -1045,19 +1049,25 @@ public class XmlaSupport {
             doc,
             new BufferedReader(new StringReader(schemaTransform)));
         if (schemaDoc == null) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc is null");
+            LOGGER.debug(
+                "XmlaSupport.validateEmbeddedSchema: schemaDoc is null");
             return false;
         }
         if (! schemaDoc.hasChildNodes()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc has no children");
+            LOGGER.debug(
+                "XmlaSupport.validateEmbeddedSchema: "
+                + "schemaDoc has no children");
             return false;
         }
         String schemaStr = XmlUtil.toString(schemaDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc:\n=" + schemaStr);
+            LOGGER.debug(
+                "XmlaSupport.validateEmbeddedSchema: schemaDoc:\n="
+                + schemaStr);
         }
         if (! (schemaDoc instanceof Document)) {
-            LOGGER.warn("XmlaSupport.validateEmbeddedSchema: schemaDoc not Document");
+            LOGGER.warn(
+                "XmlaSupport.validateEmbeddedSchema: schemaDoc not Document");
             return false;
         }
 

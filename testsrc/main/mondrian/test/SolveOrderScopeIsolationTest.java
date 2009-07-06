@@ -101,7 +101,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             case SCOPED:
                 break;
             default:
-                fail("Tests for solve order mode " + mode.toString() + " have not been implemented.");
+                fail(
+                    "Tests for solve order mode " + mode.toString()
+                    + " have not been implemented.");
             }
         }
     }

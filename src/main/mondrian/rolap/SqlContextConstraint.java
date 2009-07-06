@@ -23,10 +23,10 @@ import mondrian.rolap.aggmatcher.AggStar;
  * limits the result of a Member SQL query to the current evaluation context.
  * All Members of the current context are joined against the fact table and only
  * those rows are returned, that have an entry in the fact table.
- * <p>
- * For example, if you have two dimensions, "invoice" and "time", and the current
- * context (e.g. the slicer) contains a day from the "time" dimension, then
- * only the invoices of that day are found. Used to optimize NON EMPTY.
+ *
+ * <p>For example, if you have two dimensions, "invoice" and "time", and the
+ * current context (e.g. the slicer) contains a day from the "time" dimension,
+ * then only the invoices of that day are found. Used to optimize NON EMPTY.
  *
  * <p> The {@link TupleConstraint} methods may silently ignore calculated
  * members (depends on the <code>strict</code> c'tor argument), so these may

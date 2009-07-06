@@ -46,8 +46,10 @@ public class XmlaTest extends TestCase {
             Logger.getLogger(XmlaTest.class);
 
     static {
-        XMLUnit.setControlParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-        XMLUnit.setTestParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+        XMLUnit.setControlParser(
+            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+        XMLUnit.setTestParser(
+            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setIgnoreWhitespace(true);
     }
 
@@ -186,9 +188,11 @@ public class XmlaTest extends TestCase {
     public static class OtherTest extends TestCase {
         public void testEncodeElementName() {
             assertEquals("Foo", XmlaUtil.encodeElementName("Foo"));
-            assertEquals("Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
+            assertEquals(
+                "Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
             if (false) // FIXME:
-            assertEquals("Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
+            assertEquals(
+                "Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
         }
     }
 }

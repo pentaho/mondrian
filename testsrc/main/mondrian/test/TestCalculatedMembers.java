@@ -73,7 +73,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals("Mondrian Error:Calculated member '[Measures].[Profit2]' already exists in cube 'Sales'")) {
+            if (!msg.equals(
+                "Mondrian Error:Calculated member '[Measures].[Profit2]' "
+                + "already exists in cube 'Sales'"))
+            {
                 throw e;
             }
         }
@@ -124,7 +127,11 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals("Mondrian Error:Member property must have a value or an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
+            if (!msg.equals(
+                "Mondrian Error:Member property must have a value or an "
+                + "expression. (Property 'FORMAT_STRING' of member 'Profit4' "
+                + "of cube 'Sales'.)"))
+            {
                 throw e;
             }
         }
@@ -140,7 +147,11 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals("Mondrian Error:Member property must not have both a value and an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
+            if (!msg.equals(
+                "Mondrian Error:Member property must not have both a value and "
+                + "an expression. (Property 'FORMAT_STRING' of member "
+                + "'Profit4' of cube 'Sales'.)"))
+            {
                 throw e;
             }
         }
@@ -156,7 +167,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals("Mondrian Error:Named set in cube 'Sales' has bad formula")) {
+            if (!msg.equals(
+                "Mondrian Error:Named set in cube 'Sales' has bad formula"))
+            {
                 throw e;
             }
         }
@@ -359,7 +372,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalculatedMemberCaption() {
-        String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
+        String mdx =
+            "select {[Measures].[Profit Growth]} on columns from Sales";
         Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.getPositions().get(0);
@@ -374,7 +388,9 @@ public class TestCalculatedMembers extends BatchTestCase {
         String queryString =
             "with member [Measures].[Foo] as ' Filter([Product].members, 1 <> 0) '"
             + "select {[Measures].[Foo]} on columns from [Sales]";
-        String pattern = "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must not be a set";
+        String pattern =
+            "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must "
+            + "not be a set";
         assertQueryThrows(queryString, pattern);
 
         // A tuple is OK, because it can be converted to a scalar expression.
@@ -638,7 +654,8 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     /**
      * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-137">
-     * MONDRIAN-137, "error if calc member in schema file contains single quotes"</a>.
+     * MONDRIAN-137, "error if calc member in schema file contains single
+     * quotes"</a>.
      */
     public void testQuoteInCalcMember() {
         final String cubeName = "Sales_Bug1410383";
@@ -865,7 +882,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberCustomFormatterInQueryNegative2() {
-        String query = "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
+        String query =
+            "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
             + " CELL_FORMATTER='java.lang.String' \n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
             + " {[Store].Children} on rows\n"
@@ -991,7 +1009,8 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testCreateCalculatedMember() {
         // REVIEW: What is the purpose of this test?
-        String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
+        String query =
+            "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
             + "SELECT {[Measures].[Unit Sales]} on 0\n"
             + "FROM [Sales]\n"
             + "WHERE ([Product].[Calculated Member])";

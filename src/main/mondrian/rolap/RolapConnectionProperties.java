@@ -17,7 +17,8 @@ package mondrian.rolap;
  *
  * <p><b>Note to developers</b>: If you add or modify a connection-string
  * property, you must also modify the
- * <a target="_top" href="{@docRoot}/../configuration.html#Connect_string_properties">
+ * <a target="_top"
+ * href="{@docRoot}/../configuration.html#Connect_string_properties">
  * Configuration Specification</a>.
  *
  * @version $Id$

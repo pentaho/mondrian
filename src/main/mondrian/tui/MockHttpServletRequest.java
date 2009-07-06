@@ -49,7 +49,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class MockHttpServletRequest implements HttpServletRequest {
     public static String AUTHORIZATION = "Authorization";
-    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
+    public final static String DATE_FORMAT_HEADER =
+        "EEE, d MMM yyyy HH:mm:ss Z";
 
     public static class MockRequestDispatcher implements RequestDispatcher {
         private ServletRequest forwardedRequest;

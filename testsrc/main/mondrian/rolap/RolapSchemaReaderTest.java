@@ -32,7 +32,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 "Sales Ragged", "Sales 2"
         };
 
-        Connection connection = getTestContext().withRole("No HR Cube").getConnection();
+        Connection connection =
+            getTestContext().withRole("No HR Cube").getConnection();
         try {
             SchemaReader reader = connection.getSchemaReader();
 

@@ -769,7 +769,8 @@ public class RolapHierarchy extends HierarchyBase {
      *     &lt;Level name="Employee Id" type="Numeric" uniqueMembers="true"
      *            column="employee_id" parentColumn="supervisor_id"
      *            nameColumn="full_name" nullParentValue="0"&gt;
-     *       &lt;Closure parentColumn="supervisor_id" childColumn="employee_id"&gt;
+     *       &lt;Closure parentColumn="supervisor_id"
+     *                   childColumn="employee_id"&gt;
      *          &lt;Table name="employee_closure"/&gt;
      *       &lt;/Closure&gt;
      *       ...

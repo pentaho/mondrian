@@ -438,7 +438,8 @@ public class SetFunDef extends FunDefBase {
                                     }
                                 }
                                 public void remove() {
-                                    throw new UnsupportedOperationException("remove");
+                                    throw new UnsupportedOperationException(
+                                        "remove");
                                 }
                             };
                         }
@@ -471,7 +472,8 @@ public class SetFunDef extends FunDefBase {
                                     }
                                 }
                                 public void remove() {
-                                    throw new UnsupportedOperationException("remove");
+                                    throw new UnsupportedOperationException(
+                                        "remove");
                                 }
                             };
                         }

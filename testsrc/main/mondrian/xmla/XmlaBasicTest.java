@@ -638,7 +638,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
     // Testcase for bug 1653587.
     public void testExecuteCrossjoin() throws Exception {
        String requestType = "EXECUTE";
-        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String query =
+            "SELECT CrossJoin({[Product].[All Products].children}, "
+            + "{[Customers].[All Customers].children}) ON columns FROM Sales";
         String request =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<soapenv:Envelope\n"
@@ -675,7 +677,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      */
     public void testExecuteCrossjoinRole() throws Exception {
         String requestType = "EXECUTE";
-        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String query =
+            "SELECT CrossJoin({[Product].[All Products].children}, "
+            + "{[Customers].[All Customers].children}) ON columns FROM Sales";
         String request =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<soapenv:Envelope\n"
@@ -739,7 +743,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                 if (hierarchy.getUniqueName().equals(hname)) {
                     return new HierarchyAccess() {
                         public Access getAccess(Member member) {
-                            String mname = "[Customers].[All Customers].[Mexico]";
+                            String mname =
+                                "[Customers].[All Customers].[Mexico]";
                             if (member.getUniqueName().equals(mname)) {
                                 return Access.NONE;
                             } else {

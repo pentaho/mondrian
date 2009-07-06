@@ -807,7 +807,8 @@ public class TestContext {
                 + Util.singleQuoteString(expression)
                 + " select {[Measures].[Foo]} on columns from " + cubeName;
         } else {
-            queryString = "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
+            queryString =
+                "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
         }
         Connection connection = getConnection();
         Query query = connection.parseQuery(queryString);

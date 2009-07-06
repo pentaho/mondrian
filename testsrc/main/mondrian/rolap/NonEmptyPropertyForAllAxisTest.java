@@ -78,7 +78,9 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyForAllAxesWithOutPropertySet() {
-        final String MDX_QUERY = "SELECT {customers.USA.CA.[Santa Cruz].[Brian Merlo]} on 0, [product].[product category].members on 1 FROM [sales]";
+        final String MDX_QUERY =
+            "SELECT {customers.USA.CA.[Santa Cruz].[Brian Merlo]} on 0, "
+            + "[product].[product category].members on 1 FROM [sales]";
         final String EXPECTED_RESULT =
             "Axis #0:\n"
             + "{}\n"

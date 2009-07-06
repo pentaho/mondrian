@@ -35,13 +35,16 @@ public class VisualTotalsTest extends TestCase {
     }
 
     public void testSubstituteOneStarBegin() {
-        final String actual = VisualTotalsFunDef.substitute("* is the word.", "Grease");
+        final String actual =
+            VisualTotalsFunDef.substitute("* is the word.", "Grease");
         final String expected = "Grease is the word.";
         assertEquals(expected, actual);
     }
 
     public void testSubstituteOneStarEnd() {
-        final String actual = VisualTotalsFunDef.substitute("Lies, damned lies, and *!", "statistics");
+        final String actual =
+            VisualTotalsFunDef.substitute(
+                "Lies, damned lies, and *!", "statistics");
         final String expected = "Lies, damned lies, and statistics!";
         assertEquals(expected, actual);
     }
@@ -53,7 +56,9 @@ public class VisualTotalsTest extends TestCase {
     }
 
     public void testSubstituteCombined() {
-        final String actual = VisualTotalsFunDef.substitute("*: see small print**** for *", "disclaimer");
+        final String actual =
+            VisualTotalsFunDef.substitute(
+                "*: see small print**** for *", "disclaimer");
         final String expected = "disclaimer: see small print** for disclaimer";
         assertEquals(expected, actual);
     }

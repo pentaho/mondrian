@@ -764,7 +764,7 @@ public class JdbcDialectImpl implements Dialect {
         } else if (productName.startsWith("DB2")) {
             if (productName.startsWith("DB2 UDB for AS/400")) {
                 // TB "04.03.0000 V4R3m0"
-                //  this version cannot handle subqueries and is considered "old"
+                // this version cannot handle subqueries and is considered "old"
                 // DEUKA "05.01.0000 V5R1m0" is ok
                 String[] version_release = productVersion.split("\\.", 3);
                 /*

@@ -35,13 +35,13 @@ import javax.servlet.http.Cookie;
  * <p>
  * If you need to add to this implementation, please do so.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public class MockHttpServletResponse implements HttpServletResponse {
 
-    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
-
+    public final static String DATE_FORMAT_HEADER =
+        "EEE, d MMM yyyy HH:mm:ss Z";
 
     static class MockServletOutputStream extends ServletOutputStream {
         private ByteArrayOutputStream buffer;

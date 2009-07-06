@@ -34,7 +34,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private static final String cubeNameSales2 = "Sales 2";
     private static final String measureStoreSales = "[Measures].[Store Sales]";
     private static final String fieldNameMaritalStatus = "marital_status";
-    private static final String measureCustomerCount = "[Measures].[Customer Count]";
+    private static final String measureCustomerCount =
+        "[Measures].[Customer Count]";
 
     private boolean useGroupingSets;
     private boolean formattedSql;

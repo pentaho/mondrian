@@ -106,7 +106,8 @@ public class SimpleTestRunner {
 
                 if (testcase == null) {
                     if (classname == null) {
-                        usage("Must supply TestCase classname before methodname");
+                        usage(
+                            "Must supply TestCase classname before methodname");
                     }
                     testcase = makeTestCase(classname, methodname);
                 } else {

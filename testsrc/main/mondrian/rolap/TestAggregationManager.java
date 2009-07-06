@@ -708,8 +708,12 @@ public class TestAggregationManager extends BatchTestCase {
         // table (the same as the distinct-count measure), we can roll up.
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
-            new String[] { "time_by_day", "time_by_day", "time_by_day", "product_class", "product_class", "product_class" },
-            new String[] { "the_year", "quarter", "month_of_year", "product_family", "product_department", "product_category" },
+            new String[] {
+                "time_by_day", "time_by_day", "time_by_day",
+                "product_class", "product_class", "product_class" },
+            new String[] {
+                "the_year", "quarter", "month_of_year",
+                "product_family", "product_department", "product_category" },
             new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat" });
 
         SqlPattern[] patterns = {
@@ -752,8 +756,12 @@ public class TestAggregationManager extends BatchTestCase {
         }
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
-            new String[] { "time_by_day", "time_by_day", "time_by_day", "product_class", "product_class", "product_class", "customer" },
-            new String[] { "the_year", "quarter", "month_of_year", "product_family", "product_department", "product_category", "gender" },
+            new String[] {
+                "time_by_day", "time_by_day", "time_by_day",
+                "product_class", "product_class", "product_class", "customer" },
+            new String[] {
+                "the_year", "quarter", "month_of_year", "product_family",
+                "product_department", "product_category", "gender" },
             new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat", "F" });
 
         SqlPattern[] patterns = {
@@ -1184,7 +1192,8 @@ public class TestAggregationManager extends BatchTestCase {
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] { "product_class", "product_class", "product_class" },
-            new String[] { "product_family", "product_department", "product_category" },
+            new String[] {
+                "product_family", "product_department", "product_category" },
             new String[] { "Food", "Deli", "Meat" },
             makeConstraintYearQuarterMonth(compoundMembers));
 
@@ -1342,14 +1351,16 @@ public class TestAggregationManager extends BatchTestCase {
                 ACCESS_MYSQL,
                 "select "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0` "
-                + "from "
-                + "`agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
+                + "from `agg_g_ms_pcat_sales_fact_1997` "
+                + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`",
                 null)
         };
 
-        String query = "select non empty [Gender].[All Gender].Children on rows from [Sales]";
+        String query =
+            "select non empty [Gender].[All Gender].Children on rows "
+            + "from [Sales]";
 
         assertQuerySqlOrNot(
             getTestContext(), query, patterns, false, false, false);

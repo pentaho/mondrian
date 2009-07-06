@@ -510,7 +510,8 @@ public class PartialSortTest extends TestCase
     // Compares elapsed time of full sort (mergesort), partial sort, and stable
     // partial sort on the same input set.
     private void speedTest(int length, int limit) {
-        System.out.println("sorting the max " + limit + " of " + length + " random Integers");
+        System.out.println(
+            "sorting the max " + limit + " of " + length + " random Integers");
 
         // random input, 3 copies
         // repeated keys

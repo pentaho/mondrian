@@ -2119,7 +2119,8 @@ public class RolapStar {
             return this.right.getExpression(query);
         }
         public String toString(SqlQuery query) {
-            return left.getExpression(query) + " = " + right.getExpression(query);
+            return left.getExpression(query) + " = "
+                + right.getExpression(query);
         }
         public int hashCode() {
             return left.hashCode() ^ right.hashCode();

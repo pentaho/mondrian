@@ -36,14 +36,21 @@ public abstract class Excel {
 
     @FunctionName("Acos")
     @JavaFunDef.Signature("Acos(number)")
-    @Description("Returns the arccosine, or inverse cosine, of a number. The arccosine is the angle whose cosine is Arg1. The returned angle is given in radians in the range 0 (zero) to pi.")
+    @Description(
+        "Returns the arccosine, or inverse cosine, of a number. The arccosine "
+        + "is the angle whose cosine is Arg1. The returned angle is given in "
+        + "radians in the range 0 (zero) to pi.")
     public static double acos(double number) {
         return Math.acos(number);
     }
 
     @FunctionName("Acosh")
     @JavaFunDef.Signature("Acosh(number)")
-    @Description("Returns the inverse hyperbolic cosine of a number. Number must be greater than or equal to 1. The inverse hyperbolic cosine is the value whose hyperbolic cosine is Arg1, so Acosh(Cosh(number)) equals Arg1.")
+    @Description(
+        "Returns the inverse hyperbolic cosine of a number. Number must be "
+        + "greater than or equal to 1. The inverse hyperbolic cosine is the "
+        + "value whose hyperbolic cosine is Arg1, so Acosh(Cosh(number)) "
+        + "equals Arg1.")
     public static double acosh(double x) {
         return Math.log(x + Math.sqrt((x * x) - 1.0));
     }
@@ -65,28 +72,41 @@ public abstract class Excel {
 
     @FunctionName("Asin")
     @JavaFunDef.Signature("Asin(number)")
-    @Description("Returns the arcsine, or inverse sine, of a number. The arcsine is the angle whose sine is Arg1. The returned angle is given in radians in the range -pi/2 to pi/2.")
+    @Description(
+        "Returns the arcsine, or inverse sine, of a number. The arcsine is the "
+        + "angle whose sine is Arg1. The returned angle is given in radians in "
+        + "the range -pi/2 to pi/2.")
     public static double asin(double number) {
         return Math.asin(number);
     }
 
     @FunctionName("Asinh")
     @JavaFunDef.Signature("Asinh(number)")
-    @Description("Returns the inverse hyperbolic sine of a number. The inverse hyperbolic sine is the value whose hyperbolic sine is Arg1, so Asinh(Sinh(number)) equals Arg1.")
+    @Description(
+        "Returns the inverse hyperbolic sine of a number. The inverse "
+        + "hyperbolic sine is the value whose hyperbolic sine is Arg1, "
+        + "so Asinh(Sinh(number)) equals Arg1.")
     public static double asinh(double x) {
         return Math.log(x + Math.sqrt(1.0 + (x * x)));
     }
 
     @FunctionName("Atan2")
     @JavaFunDef.Signature("Atan2(x, y)")
-    @Description("Returns the arctangent, or inverse tangent, of the specified x- and y-coordinates. The arctangent is the angle from the x-axis to a line containing the origin (0, 0) and a point with coordinates (x_num, y_num). The angle is given in radians between -pi and pi, excluding -pi.")
+    @Description(
+        "Returns the arctangent, or inverse tangent, of the specified x- and "
+        + "y-coordinates. The arctangent is the angle from the x-axis to a "
+        + "line containing the origin (0, 0) and a point with coordinates "
+        + "(x_num, y_num). The angle is given in radians between -pi and pi, "
+        + "excluding -pi.")
     public static double atan2(double y, double x) {
         return Math.atan2(y, x);
     }
 
     @FunctionName("Atanh")
     @JavaFunDef.Signature("Atanh(number)")
-    @Description("Returns the inverse hyperbolic tangent of a number. Number must be between -1 and 1 (excluding -1 and 1).")
+    @Description(
+        "Returns the inverse hyperbolic tangent of a number. Number "
+        + "must be between -1 and 1 (excluding -1 and 1).")
     public static double atanh(double x) {
         return .5 * Math.log((1.0 + x) / (1.0 - x));
     }
@@ -742,7 +762,9 @@ public abstract class Excel {
 
 
     @FunctionName("Pi")
-    @Description("Returns the number 3.14159265358979, the mathematical constant pi, accurate to 15 digits.")
+    @Description(
+        "Returns the number 3.14159265358979, the mathematical constant pi, "
+        + "accurate to 15 digits.")
     public static double pi() {
         return Math.PI;
     }

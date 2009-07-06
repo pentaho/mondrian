@@ -2571,7 +2571,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         // todo:
         // <Cube>
         // <Hierarchy name="h1"><Table name="t1"/></Hierarchy>
-        // <Hierarchy name="h2"><Table name="t2"/><Level tableName="t1"/></Hierarchy>
+        // <Hierarchy name="h2">
+        //   <Table name="t2"/>
+        //   <Level tableName="t1"/>
+        // </Hierarchy>
         // </Cube>
     }
 
@@ -3185,7 +3188,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}\n"
 
             // null is at the end in order for DBMSs that sort nulls high
-            + (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" : "")
+            + (nullsSortHigh
+               ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n"
+               : "")
             + "Row #" + row++ + ": 266,773\n"
             + (!nullsSortHigh ? "Row #" + row++ + ": 39,329\n" : "")
             + "Row #" + row++ + ": 26,079\n"
@@ -4198,7 +4203,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testDifferentCalculations2() {
         assertQueryReturns(
             // todo: "[Store].[USA].[CA]" should be "[Store].CA",
-            //  "[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]" should be "[Product].[Beer]"
+            //  "[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+            // should be "[Product].[Beer]"
             "WITH MEMBER Measures.[Average Units Ordered] AS\n"
             + "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'\n"
             + "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS,\n"
@@ -4418,7 +4424,8 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testDifferentCalcsForDifferentTimePeriods() {
         assertQueryReturns(
-            // note: "[Product].[Drink Forecast - Standard]" was "[Drink Forecast - Standard]"
+            // note: "[Product].[Drink Forecast - Standard]"
+            // was "[Drink Forecast - Standard]"
             "WITH MEMBER [Product].[Drink Forecast - Standard] AS\n"
             + "  '[Product].[All Products].[Drink] * 2'\n"
             + "MEMBER [Product].[Drink Forecast - Dynamic] AS \n"

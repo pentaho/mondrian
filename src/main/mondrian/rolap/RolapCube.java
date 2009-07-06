@@ -123,7 +123,8 @@ public class RolapCube extends CubeBase {
 
         if (getLogger().isDebugEnabled()) {
             if (isVirtual()) {
-                getLogger().debug("RolapCube<init>: virtual cube="  + this.name);
+                getLogger().debug(
+                    "RolapCube<init>: virtual cube="  + this.name);
             } else {
                 getLogger().debug("RolapCube<init>: cube="  + this.name);
             }
@@ -1527,7 +1528,6 @@ public class RolapCube extends CubeBase {
                 MondrianDef.RelationOrJoin relationTmp2 = relation;
 
                 if (levelName != null) {
-                    //System.out.println("RolapCube.registerDimension: levelName=" +levelName);
                     // When relation is a table, this does nothing. Otherwise
                     // it tries to arrange the joins so that the fact table
                     // in the RolapStar will be joining at the lowest level.

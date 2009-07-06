@@ -27,7 +27,7 @@ import java.util.Map;
  * <code>Class.forName("mondrian.olap4j.MondrianOlap4jDriver");</code>
  * </blockquote>
  *
- * Then create a connection using a URL with the prefix "jdbc:mondrian:".
+ * <p>Then create a connection using a URL with the prefix "jdbc:mondrian:".
  * For example,
  *
  * <blockquote>
@@ -36,10 +36,12 @@ import java.util.Map;
  * import org.olap4j.OlapConnection;<br/>
  * <br/>
  * Connection connection =<br/>
- * &nbsp;&nbsp;&nbsp;DriverManager.getConnection(<br/>
- * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"jdbc:mondrian:Jdbc=jdbc:odbc:MondrianFoodMart; Catalog=file:/mondrian/demo/FoodMart.xml; JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver");<br/>
+ * &nbsp;&nbsp;DriverManager.getConnection(<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"jdbc:mondrian:Jdbc=jdbc:odbc:MondrianFoodMart;
+ * Catalog=file:/mondrian/demo/FoodMart.xml;
+ * JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver");<br/>
  * OlapConnection olapConnection =<br/>
- * &nbsp;&nbsp;&nbsp;connection.unwrap(OlapConnection.class);</code>
+ * &nbsp;&nbsp;connection.unwrap(OlapConnection.class);</code>
  * </blockquote>
  *
  * <p>Note how we use the {@link Connection#unwrap(Class)} method to down-cast

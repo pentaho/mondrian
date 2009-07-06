@@ -31,12 +31,17 @@ public interface XmlaConstants {
     public static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     /* Namespaces for XML/A */
-    public static final String NS_XMLA = "urn:schemas-microsoft-com:xml-analysis";
-    public static final String NS_XMLA_MDDATASET = "urn:schemas-microsoft-com:xml-analysis:mddataset";
-    public static final String NS_XMLA_EMPTY = "urn:schemas-microsoft-com:xml-analysis:empty";
-    public static final String NS_XMLA_ROWSET = "urn:schemas-microsoft-com:xml-analysis:rowset";
+    public static final String NS_XMLA =
+        "urn:schemas-microsoft-com:xml-analysis";
+    public static final String NS_XMLA_MDDATASET =
+        "urn:schemas-microsoft-com:xml-analysis:mddataset";
+    public static final String NS_XMLA_EMPTY =
+        "urn:schemas-microsoft-com:xml-analysis:empty";
+    public static final String NS_XMLA_ROWSET =
+        "urn:schemas-microsoft-com:xml-analysis:rowset";
     public static final String NS_SQL = "urn:schemas-microsoft-com:xml-sql";
-    public static final String NS_XMLA_EX = "urn:schemas-microsoft-com:xml-analysis:exception";
+    public static final String NS_XMLA_EX =
+        "urn:schemas-microsoft-com:xml-analysis:exception";
 
 
     public static final String SOAP_PREFIX = "SOAP-ENV";
@@ -66,12 +71,13 @@ public interface XmlaConstants {
     public static final String CONTEXT_XMLA_SESSION_ID   = "session_id";
 
     // context key for session state storage
-    public static final String CONTEXT_XMLA_SESSION_STATE      = "SessionState";
-    public static final String CONTEXT_XMLA_SESSION_STATE_BEGIN = "SessionStateBegin";
-    public static final String CONTEXT_XMLA_SESSION_STATE_WITHIN   = "SessionStateWithin";
-    public static final String CONTEXT_XMLA_SESSION_STATE_END   = "SessionStateEnd";
-
-
+    public static final String CONTEXT_XMLA_SESSION_STATE = "SessionState";
+    public static final String CONTEXT_XMLA_SESSION_STATE_BEGIN =
+        "SessionStateBegin";
+    public static final String CONTEXT_XMLA_SESSION_STATE_WITHIN =
+        "SessionStateWithin";
+    public static final String CONTEXT_XMLA_SESSION_STATE_END =
+        "SessionStateEnd";
 
 
     /* XMLA protocol constants */
@@ -80,7 +86,7 @@ public interface XmlaConstants {
 
     /** The content type default value - shared across more than one file */
     public static final Enumeration.Content CONTENT_DEFAULT =
-                    Enumeration.Content.SchemaData;
+        Enumeration.Content.SchemaData;
 
    /*************************************************************************
     *
@@ -128,13 +134,16 @@ public interface XmlaConstants {
 
     public static final String USM_DOM_FACTORY_CODE = "00USMB01";
     public static final String USM_DOM_FACTORY_FAULT_FS =
-            "DocumentBuilder cannot be created which satisfies the configuration requested";
+        "DocumentBuilder cannot be created which satisfies the configuration "
+        + "requested";
 
     public static final String USM_DOM_PARSE_IO_CODE = "00USMC01";
-    public static final String USM_DOM_PARSE_IO_FAULT_FS = "DOM parse IO errors occur";
+    public static final String USM_DOM_PARSE_IO_FAULT_FS =
+        "DOM parse IO errors occur";
 
     public static final String USM_DOM_PARSE_CODE = "00USMC02";
-    public static final String USM_DOM_PARSE_FAULT_FS = "DOM parse errors occur";
+    public static final String USM_DOM_PARSE_FAULT_FS =
+        "DOM parse errors occur";
 
     // unknown error while unmarshalling soap message
     public static final String USM_UNKNOWN_CODE = "00USMU01";
@@ -264,10 +273,12 @@ public interface XmlaConstants {
             "XMLA connection with role must be authenticated";
 
     public static final String HSB_PARSE_QUERY_CODE = "00HSBD01";
-    public static final String HSB_PARSE_QUERY_FAULT_FS = "XMLA MDX parse failed";
+    public static final String HSB_PARSE_QUERY_FAULT_FS =
+        "XMLA MDX parse failed";
 
     public static final String HSB_EXECUTE_QUERY_CODE = "00HSBD02";
-    public static final String HSB_EXECUTE_QUERY_FAULT_FS = "XMLA MDX execute failed";
+    public static final String HSB_EXECUTE_QUERY_FAULT_FS =
+        "XMLA MDX execute failed";
 
     public static final String HSB_DISCOVER_FORMAT_CODE = "00HSBE01";
     public static final String HSB_DISCOVER_FORMAT_FAULT_FS =

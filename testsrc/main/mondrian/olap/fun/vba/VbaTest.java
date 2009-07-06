@@ -276,9 +276,12 @@ public class VbaTest extends TestCase {
         final Date feb2007 = calendar.getTime();
         assertEquals("2007/02/01 00:00:00", feb2007);
 
-        assertEquals("2008/04/24 19:10:45", Vba.dateAdd("yyyy", 0, SAMPLE_DATE));
-        assertEquals("2009/04/24 19:10:45", Vba.dateAdd("yyyy", 1, SAMPLE_DATE));
-        assertEquals("2006/04/24 19:10:45", Vba.dateAdd("yyyy", -2, SAMPLE_DATE));
+        assertEquals(
+            "2008/04/24 19:10:45", Vba.dateAdd("yyyy", 0, SAMPLE_DATE));
+        assertEquals(
+            "2009/04/24 19:10:45", Vba.dateAdd("yyyy", 1, SAMPLE_DATE));
+        assertEquals(
+            "2006/04/24 19:10:45", Vba.dateAdd("yyyy", -2, SAMPLE_DATE));
         // partial years interpolate
         final Date sampleDatePlusTwoPointFiveYears =
             Vba.dateAdd("yyyy", 2.5, SAMPLE_DATE);
@@ -309,7 +312,8 @@ public class VbaTest extends TestCase {
         assertEquals("2008/02/08 06:00:00", Vba.dateAdd("m", 12.25, feb2007));
 
         assertEquals("2008/05/01 19:10:45", Vba.dateAdd("y", 7, SAMPLE_DATE));
-        assertEquals("2008/05/02 01:10:45", Vba.dateAdd("y", 7.25, SAMPLE_DATE));
+        assertEquals(
+            "2008/05/02 01:10:45", Vba.dateAdd("y", 7.25, SAMPLE_DATE));
         assertEquals("2008/04/24 23:10:45", Vba.dateAdd("h", 4, SAMPLE_DATE));
         assertEquals("2008/04/24 20:00:45", Vba.dateAdd("n", 50, SAMPLE_DATE));
         assertEquals("2008/04/24 19:10:36", Vba.dateAdd("s", -9, SAMPLE_DATE));
@@ -356,10 +360,14 @@ public class VbaTest extends TestCase {
         assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 1));
         assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 2));
         assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.TUESDAY, 3));
-        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 0));
-        assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 1));
-        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 2));
-        assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 3));
+        assertEquals(
+            18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 0));
+        assertEquals(
+            18, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 1));
+        assertEquals(
+            17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 2));
+        assertEquals(
+            17, Vba.datePart("ww", SAMPLE_DATE, Calendar.WEDNESDAY, 3));
         assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 0));
         assertEquals(18, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 1));
         assertEquals(17, Vba.datePart("ww", SAMPLE_DATE, Calendar.THURSDAY, 2));
@@ -409,7 +417,8 @@ public class VbaTest extends TestCase {
             Date date = DateFormat.getDateTimeInstance().parse(
                     "October 19, 1962 4:35:47 PM");
             assertEquals("Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date));
-            assertEquals("Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date, 0));
+            assertEquals(
+                "Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date, 0));
             assertEquals("October 19, 1962", Vba.formatDateTime(date, 1));
             assertEquals("10/19/62", Vba.formatDateTime(date, 2));
             String datestr = Vba.formatDateTime(date, 3);
@@ -916,10 +925,12 @@ public class VbaTest extends TestCase {
             Vba.inStr("the quick brown fox jumps over the lazy dog", "the"));
         assertEquals(
             32,
-            Vba.inStr(16, "the quick brown fox jumps over the lazy dog", "the"));
+            Vba.inStr(
+                16, "the quick brown fox jumps over the lazy dog", "the"));
         assertEquals(
             0,
-            Vba.inStr(16, "the quick brown fox jumps over the lazy dog", "cat"));
+            Vba.inStr(
+                16, "the quick brown fox jumps over the lazy dog", "cat"));
         assertEquals(
             0,
             Vba.inStr(1, "the quick brown fox jumps over the lazy dog", "cat"));
@@ -943,9 +954,11 @@ public class VbaTest extends TestCase {
             Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the"));
         assertEquals(
             1,
-            Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the", 16));
+            Vba.inStrRev(
+                "the quick brown fox jumps over the lazy dog", "the", 16));
         try {
-            Vba.inStrRev("the quick brown fox jumps over the lazy dog", "the", 0);
+            Vba.inStrRev(
+                "the quick brown fox jumps over the lazy dog", "the", 0);
             fail();
         } catch (InvalidArgumentException e) {
             assertTrue(e.getMessage().indexOf("-1 or a location") >= 0);

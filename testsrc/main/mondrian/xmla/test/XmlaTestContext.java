@@ -92,14 +92,20 @@ public class XmlaTestContext {
             + "<DataSources>"
             + "   <DataSource>"
             + "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>"
-            + "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>"
+            + "       <DataSourceDescription>"
+            + DATASOURCE_DESCRIPTION
+            + "</DataSourceDescription>"
             + "       <URL>http://localhost:8080/mondrian/xmla</URL>"
-            + "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>"
+            + "       <DataSourceInfo>"
+            + getConnectString()
+            + "</DataSourceInfo>"
             + "       <ProviderName>Mondrian</ProviderName>"
             + "       <ProviderType>MDP</ProviderType>"
             + "       <AuthenticationMode>Unauthenticated</AuthenticationMode>"
             + "       <Catalogs>"
-            + "          <Catalog name='FoodMart'><Definition>" + catalogUrl + "</Definition></Catalog>"
+            + "          <Catalog name='FoodMart'><Definition>"
+            + catalogUrl
+            + "</Definition></Catalog>"
             + "       </Catalogs>"
             + "   </DataSource>"
             + "</DataSources>");

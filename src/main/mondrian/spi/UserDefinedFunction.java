@@ -24,7 +24,8 @@ import org.apache.log4j.Category;
  * <blockquote><code>
  * &lt;Schema&gt;<br/>
  * &nbsp;&nbsp;&nbsp;&nbsp;....<br/>
- * &nbsp;&nbsp;&nbsp;&nbsp;&lt;UserDefinedFunction name="MyFun" class="com.acme.MyFun"&gt;<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&lt;UserDefinedFunction name="MyFun"
+ * class="com.acme.MyFun"&gt;<br/>
  * &lt;/Schema&gt;</code></blockquote>
  *
  * @author jhyde

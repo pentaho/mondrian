@@ -40,7 +40,8 @@ public class InUdf implements UserDefinedFunction {
     }
 
     public String getDescription() {
-        return "Returns true if the member argument is contained in the set argument.";
+        return "Returns true if the member argument is contained in the set "
+            + "argument.";
     }
 
     public String getName() {

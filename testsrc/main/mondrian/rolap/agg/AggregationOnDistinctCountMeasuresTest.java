@@ -407,7 +407,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-//        assertQueryReturns("select {[PRODUCT].[BRAND NAME].MEMBERS} on 0 from sales", "");
         int origMaxConstraint = props.MaxConstraints.get();
         props.MaxConstraints.set(7);
 

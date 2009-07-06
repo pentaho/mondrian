@@ -43,21 +43,20 @@ public class Checkin_7641 extends CsvDBTestCase {
     public void testImplicitMember() throws Exception {
         // explicit use of [Product].[Class1]
         String mdx =
-        " select NON EMPTY Crossjoin("+
-        " Hierarchize(Union({[Product].[Class1]}, [Product].[Class1].Children)), "+
-        " {[Measures].[Requested Value], "+
-        " [Measures].[Shipped Value]}"+
-        ") ON COLUMNS,"+
-        " NON EMPTY Hierarchize(Union({[Geography].[All Regions]},"+
-            "[Geography].[All Regions].Children)) ON ROWS"+
-        " from [ImplicitMember]";
+            " select NON EMPTY Crossjoin("
+            + " Hierarchize(Union({[Product].[Class1]}, "
+            + "[Product].[Class1].Children)), "
+            + " {[Measures].[Requested Value], "
+            + " [Measures].[Shipped Value]}"
+            + ") ON COLUMNS,"
+            + " NON EMPTY Hierarchize(Union({[Geography].[All Regions]},"
+            + "[Geography].[All Regions].Children)) ON ROWS"
+            + " from [ImplicitMember]";
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
-//System.out.println(resultString1);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
-//System.out.println(resultString2);
 
         assertEquals(resultString1, resultString2);
     }

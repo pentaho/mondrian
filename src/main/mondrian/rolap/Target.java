@@ -180,7 +180,9 @@ public class Target {
                 while (this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
                     if (limit > 0 && !asList && list.size() > limit) {
-                        System.out.println("Target: 199, Ouch! Toooo big array..." + this.hashCode());
+                        System.out.println(
+                            "Target: 199, Ouch! Toooo big array..."
+                            + this.hashCode());
                         new Throwable().printStackTrace();
                     }
                 }

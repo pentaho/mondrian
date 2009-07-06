@@ -272,7 +272,8 @@ public class ConcurrentValidatingQueryRunner extends Thread {
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
 
-        Cube whsalesCube = connection.getSchema().lookupCube("Warehouse and Sales", true);
+        Cube whsalesCube =
+            connection.getSchema().lookupCube("Warehouse and Sales", true);
         measuresRegion =
             cacheControl.createMeasuresRegion(whsalesCube);
         cacheControl.flush(measuresRegion);

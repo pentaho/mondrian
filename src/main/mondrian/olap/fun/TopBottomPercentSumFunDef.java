@@ -171,7 +171,8 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 } else if (o instanceof Exception) {
                     // ignore the error
                 } else {
-                    throw Util.newInternal("got " + o + " when expecting Number");
+                    throw Util.newInternal(
+                        "got " + o + " when expecting Number");
                 }
             }
 

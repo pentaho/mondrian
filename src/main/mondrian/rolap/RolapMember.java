@@ -73,7 +73,8 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.getAllMembers: time=" + (end - start));
+                LOGGER.debug(
+                    "RolapMember.getAllMembers: time=" + (end - start));
             }
         }
     }
@@ -267,7 +268,8 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.setOrdinalsTopDown: time=" + (end - start));
+                LOGGER.debug(
+                    "RolapMember.setOrdinalsTopDown: time=" + (end - start));
             }
         }
     }

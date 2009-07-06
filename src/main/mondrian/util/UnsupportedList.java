@@ -55,87 +55,108 @@ public abstract class UnsupportedList<T> implements List<T> {
     }
 
     public Object[] toArray() {
-        throw new UnsupportedOperationException(getClass().getName() + ".toArray");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".toArray");
     }
 
     public void add(int index, T element) {
-        throw new UnsupportedOperationException(getClass().getName() + ".add");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".add");
     }
 
     public T remove(int index) {
-        throw new UnsupportedOperationException(getClass().getName() + ".remove");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".remove");
     }
 
     public int indexOf(Object o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".indexOf");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".indexOf");
     }
 
     public int lastIndexOf(Object o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".lastIndexOf");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".lastIndexOf");
     }
 
     public List<T> subList(int fromIndex, int toIndex) {
-        throw new UnsupportedOperationException(getClass().getName() + ".subList");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".subList");
     }
 
     public boolean contains(Object o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".contains");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".contains");
     }
 
     public <T> T[] toArray(T[] a) {
-        throw new UnsupportedOperationException(getClass().getName() + ".toArray");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".toArray");
     }
 
     public boolean add(T o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".add");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".add");
     }
 
     public boolean remove(Object o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".remove");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".remove");
     }
 
     public boolean containsAll(Collection<?> c) {
-        throw new UnsupportedOperationException(getClass().getName() + ".containsAll");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".containsAll");
     }
 
     public boolean addAll(Collection<? extends T> c) {
-        throw new UnsupportedOperationException(getClass().getName() + ".addAll");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".addAll");
     }
 
     public boolean addAll(int index, Collection<? extends T> c) {
-        throw new UnsupportedOperationException(getClass().getName() + ".addAll");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".addAll");
     }
 
     public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException(getClass().getName() + ".removeAll");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".removeAll");
     }
 
     public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException(getClass().getName() + ".retainAll");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".retainAll");
     }
 
     public void clear() {
-        throw new UnsupportedOperationException(getClass().getName() + ".clear");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".clear");
     }
 
     public boolean equals(Object o) {
-        throw new UnsupportedOperationException(getClass().getName() + ".equals");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".equals");
     }
 
     public int hashCode() {
-        throw new UnsupportedOperationException(getClass().getName() + ".hashCode");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".hashCode");
     }
 
     public ListIterator<T> listIterator() {
-        throw new UnsupportedOperationException(getClass().getName() + ".listIterator");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".listIterator");
     }
 
     public ListIterator<T> listIterator(int index) {
-        throw new UnsupportedOperationException(getClass().getName() + ".listIterator");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".listIterator");
     }
 
     public Iterator<T> iterator() {
-        throw new UnsupportedOperationException(getClass().getName() + ".iterator");
+        throw new UnsupportedOperationException(
+            getClass().getName() + ".iterator");
     }
 
 
@@ -152,19 +173,24 @@ public abstract class UnsupportedList<T> implements List<T> {
         public boolean hasNext() {
             return (cursor != size());
         }
+
         public T next() {
             try {
                 T next = get(cursor);
                 lastRet = cursor++;
                 return next;
             } catch (IndexOutOfBoundsException e) {
-                System.out.println("UnsupportedList.Itr.next: cursor="  +  cursor);
-                System.out.println("UnsupportedList.Itr.next: size="  +  size());
+                System.out.println(
+                    "UnsupportedList.Itr.next: cursor="  +  cursor);
+                System.out.println(
+                    "UnsupportedList.Itr.next: size="  +  size());
                 throw new NoSuchElementException();
             }
         }
+
         public void remove() {
-            throw new UnsupportedOperationException(getClass().getName() + ".remove");
+            throw new UnsupportedOperationException(
+                getClass().getName() + ".remove");
         }
     }
 
@@ -206,11 +232,13 @@ public abstract class UnsupportedList<T> implements List<T> {
                 throw new ConcurrentModificationException();
             }
 */
-            throw new UnsupportedOperationException(getClass().getName() + ".set");
+            throw new UnsupportedOperationException(
+                getClass().getName() + ".set");
         }
 
         public void add(T o) {
-            throw new UnsupportedOperationException(getClass().getName() + ".add");
+            throw new UnsupportedOperationException(
+                getClass().getName() + ".add");
         }
     }
 

@@ -185,7 +185,8 @@ public class SqlStatement {
         }
         long time = System.currentTimeMillis();
         long totalMs = time - startTime;
-        String status = ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
+        String status =
+            ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
 
         RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
 

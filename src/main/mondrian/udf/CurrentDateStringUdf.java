@@ -39,7 +39,8 @@ public class CurrentDateStringUdf implements UserDefinedFunction {
     }
 
     public String getDescription() {
-        return "Returns the current date formatted as specified by the format parameter.";
+        return "Returns the current date formatted as specified by the format "
+            + "parameter.";
     }
 
     public String getName() {

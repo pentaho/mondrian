@@ -109,12 +109,15 @@ System.out.println("userPass=" + userPass);
 }
                 if (! authScheme.equals(HttpServletRequest.BASIC_AUTH)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
-                        new Exception("Authorization: bad schema: " + authScheme));
+                        new Exception(
+                            "Authorization: bad schema: " + authScheme));
                 }
                 int index = userPass.indexOf(':');
                 if (index == -1) {
                     throw XmlaRequestCallback.Helper.authorizationException(
-                        new Exception("Authorization: badly formed userPass in encoding: " + encoded));
+                        new Exception(
+                            "Authorization: badly formed userPass in encoding: "
+                            + encoded));
                 }
                 String userid = userPass.substring(0, index);
                 String password =
@@ -159,7 +162,9 @@ System.out.println("password=" + password);
             Element[] requestSoapParts,
             Map<String, Object> context) throws Exception
         {
-            context.put(MY_SESSION_ID, getSessionId("XmlaExcelXPTest", Action.CREATE));
+            context.put(
+                MY_SESSION_ID,
+                getSessionId("XmlaExcelXPTest", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, Object> context) {
@@ -330,10 +335,16 @@ System.out.println("password=" + password);
                 notSame("faultcode", this.faultCode, expectedFault.faultCode);
             }
             if (! isEquals(this.faultString, expectedFault.faultString)) {
-                notSame("faultstring", this.faultString, expectedFault.faultString);
+                notSame(
+                    "faultstring",
+                    this.faultString,
+                    expectedFault.faultString);
             }
             if (! isEquals(this.faultActor, expectedFault.faultActor)) {
-                notSame("faultactor", this.faultActor, expectedFault.faultActor);
+                notSame(
+                    "faultactor",
+                    this.faultActor,
+                    expectedFault.faultActor);
             }
             if (! isEquals(this.errorNS, expectedFault.errorNS)) {
                 throw new Exception(

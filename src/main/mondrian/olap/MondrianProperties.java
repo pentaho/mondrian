@@ -540,7 +540,7 @@ public class MondrianProperties extends TriggerableProperties {
      * dialect. The tests are skipped if no expected sqls are
      * found for the current dialect.
      *
-     * Possible values are the following:
+     * <p>Possible values are the following:
      * "NONE": no warning (default)
      * "ANY": any dialect
      * "ACCESS"
@@ -549,9 +549,11 @@ public class MondrianProperties extends TriggerableProperties {
      * "MYSQL"
      *  ...and any Dialect enum in SqlPattern.Dialect
      *
-     * Specific tests can overwrite the default setting. The priority is
-     * Settings besides "ANY" in mondrian.properties file < Any setting in the test < "ANY"
-     *
+     * <p>Specific tests can overwrite the default setting. The priority is:<ul>
+     * <li>Settings besides "ANY" in mondrian.properties file
+     * <li>&lt; Any setting in the test
+     * <li>&lt; "ANY"
+     * </ul>
      */
     public transient final StringProperty WarnIfNoPatternForDialect =
         new StringProperty(
@@ -1123,7 +1125,9 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public transient final StringProperty SolveOrderMode =
         new StringProperty(
-            this, "mondrian.rolap.SolveOrderMode", SolveOrderModeEnum.ABSOLUTE.name());
+            this,
+            "mondrian.rolap.SolveOrderMode",
+            SolveOrderModeEnum.ABSOLUTE.name());
 
     /**
      * Strategies for applying solve order, exposed via the property

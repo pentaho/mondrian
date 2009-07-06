@@ -156,7 +156,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
             }
 
             Element[] childs =
-                XmlaUtil.filterChildElements(envElem, NS_SOAP_ENV_1_1, "Header");
+                XmlaUtil.filterChildElements(
+                    envElem, NS_SOAP_ENV_1_1, "Header");
             if (childs.length > 1) {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,

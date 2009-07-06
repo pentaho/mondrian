@@ -218,7 +218,8 @@ public class FunUtil extends Util {
         final Type leftType = TypeUtil.stripSetType(left.getType());
         final Type rightType = TypeUtil.stripSetType(right.getType());
         if (!TypeUtil.isUnionCompatible(leftType, rightType)) {
-            throw newEvalException(funDef, "Expressions must have the same hierarchy");
+            throw newEvalException(
+                funDef, "Expressions must have the same hierarchy");
         }
     }
 
@@ -935,7 +936,7 @@ public class FunUtil extends Util {
             return Syntax.Internal;
         default:
             throw newInternal(
-                    "unknown syntax code '" + c + "' in string '" + flags + "'");
+                "unknown syntax code '" + c + "' in string '" + flags + "'");
         }
     }
 

@@ -56,13 +56,16 @@ public class AccessControlTest extends FoodMartTestCase {
         Cube salesCube = schema.lookupCube("Sales", true);
         // todo: add Schema.lookupDimension
         final SchemaReader schemaReader = salesCube.getSchemaReader(role);
-        Dimension genderDimension = (Dimension) schemaReader.lookupCompound(
-                salesCube, Id.Segment.toList("Gender"), true, Category.Dimension);
+        Dimension genderDimension =
+            (Dimension) schemaReader.lookupCompound(
+                salesCube, Id.Segment.toList("Gender"), true,
+                Category.Dimension);
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
         testContext.assertAxisThrows(
-            "[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
+            "[Gender].children",
+            "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
     public void testRoleMemberAccessNonExistentMemberFails() {
@@ -738,8 +741,12 @@ public class AccessControlTest extends FoodMartTestCase {
                     + "</Role>")
                 .withRole("Role1");
         testContext.assertExprReturns("[Measures].[Unit Sales]", v1);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA])", v1);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA])", v2);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], [Customers].[USA])",
+            v1);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], [Customers].[USA].[CA])",
+            v2);
     }
 
     /**
@@ -784,10 +791,21 @@ public class AccessControlTest extends FoodMartTestCase {
                     + "</Role>")
                 .withRole("Role1");
         testContext.assertExprReturns("[Measures].[Unit Sales]", v1);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA])", v1);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA])", v2);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA], [Store].[USA].[CA])", v2);
-        testContext.assertExprReturns("([Measures].[Unit Sales], [Customers].[USA].[CA], [Store].[USA].[CA].[San Diego])", v3);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], [Customers].[USA])",
+            v1);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], [Customers].[USA].[CA])",
+            v2);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], "
+            + "[Customers].[USA].[CA], [Store].[USA].[CA])",
+            v2);
+        testContext.assertExprReturns(
+            "([Measures].[Unit Sales], "
+            + "[Customers].[USA].[CA], "
+            + "[Store].[USA].[CA].[San Diego])",
+            v3);
     }
 
     // todo: performance test where 1 of 1000 children is not visible
@@ -959,8 +977,8 @@ public class AccessControlTest extends FoodMartTestCase {
 
     /**
      * Test to verify that non empty crossjoins enforce role access.
-     * Testcase for bug 1888821, "Non Empty Crossjoin fails to enforce role
-     * access".
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-369">
+     * MONDRIAN-369, "Non Empty Crossjoin fails to enforce role access".
      */
     public void testNonEmptyAccess() {
         TestContext testContext =
@@ -995,7 +1013,7 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.assertQueryReturns(mdx, expected);
         checkQuery(testContext, mdx);
 
-        // with bug 1888821, non empty crossjoin did not return the correct
+        // with bug MONDRIAN-397, non empty crossjoin did not return the correct
         // list
         final String mdx2 =
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1042,8 +1060,8 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.assertQueryReturns(mdx, expected);
         checkQuery(testContext, mdx);
 
-        // with bug 1888821, <Level>.members inside non empty crossjoin did not
-        // return the correct list
+        // with bug MONDRIAN-397, <Level>.members inside non empty crossjoin did
+        // not return the correct list
         final String mdx2 =
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "NON EMPTY Crossjoin({[Gender].[All Gender]}, "
@@ -1054,8 +1072,9 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 1952029, "Rollup policy doesn't work for members
-     * that are implicitly visible".
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-406">
+     * MONDRIAN-406, "Rollup policy doesn't work for members
+     * that are implicitly visible"</a>.
      */
     public void testGoodman() {
         final String query = "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -1169,23 +1188,27 @@ public class AccessControlTest extends FoodMartTestCase {
                 .withRole("California manager");
     }
 
-    public void testBug1949935() {
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-402">
+     * MONDRIAN-402, "Bug in RolapCubeHierarchy.hashCode() ?"</a>.
+     * Access-control elements for hierarchies with
+     * same name in different cubes could not be distinguished.
+     */
+    public void testBugMondrian402() {
         final TestContext testContext =
             TestContext.create(
                 null, null, null, null, null,
                 "<Role name=\"California manager\">\n"
-                    + "  <SchemaGrant access=\"none\">\n"
-                    + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"none\" />\n"
-                    + "    </CubeGrant>\n"
-                    + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\">\n"
-                    + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" />\n"
-                    + "    </CubeGrant>\n"
-                    + "  </SchemaGrant>\n"
-                    + "</Role>")
-            .withRole("California manager");
-        // With bug 1949935, access-control elements for hierarchies with same
-        // name in different cubes could not be distinguished.
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"none\" />\n"
+                + "    </CubeGrant>\n"
+                + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" />\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>")
+                .withRole("California manager");
         assertHierarchyAccess(
             testContext.getConnection(), Access.NONE, "Sales", "Store");
         assertHierarchyAccess(
@@ -1278,11 +1301,12 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 2028231,
-     * "Internal error in HierarchizeArrayComparator". Occurs when apply
-     * Hierarchize function to tuples on a hierarchy with partial-rollup.
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-435">
+     * MONDRIAN-435, "Internal error in HierarchizeArrayComparator"</a>. Occurs
+     * when apply Hierarchize function to tuples on a hierarchy with
+     * partial-rollup.
      */
-    public void testBug2028231() {
+    public void testBugMondrian435() {
         final TestContext testContext =
             TestContext.create(
                 null, null, null, null, null, BiServer1574Role1)
@@ -1310,12 +1334,12 @@ public class AccessControlTest extends FoodMartTestCase {
         // explicit tuples, not crossjoin
         testContext.assertQueryReturns(
             "select hierarchize("
-                + "    { ([Store Size in SQFT], [Product]),\n"
-                + "      ([Store Size in SQFT].[20319], [Product].[Food]),\n"
-                + "      ([Store Size in SQFT], [Product].[Drink].[Dairy]),\n"
-                + "      ([Store Size in SQFT].[20319], [Product]) }\n"
-                + ") on 0,"
-                + "[Store Type].Members on 1 from [Warehouse]",
+            + "    { ([Store Size in SQFT], [Product]),\n"
+            + "      ([Store Size in SQFT].[20319], [Product].[Food]),\n"
+            + "      ([Store Size in SQFT], [Product].[Drink].[Dairy]),\n"
+            + "      ([Store Size in SQFT].[20319], [Product]) }\n"
+            + ") on 0,"
+            + "[Store Type].Members on 1 from [Warehouse]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1339,17 +1363,17 @@ public class AccessControlTest extends FoodMartTestCase {
         // so disappears
         testContext.assertQueryReturns(
             "select non empty hierarchize("
-                + "union("
-                + "  union("
-                + "    crossjoin({[Store Size in SQFT]}, {[Product]}),"
-                + "    crossjoin({[Store Size in SQFT], [Store Size in SQFT].Children}, {[Product]}),"
-                + "    all),"
-                + "  union("
-                + "    crossjoin({[Store Size in SQFT].Parent}, {[Product].[Drink]}),"
-                + "    crossjoin({[Store Size in SQFT].Children}, {[Product].[Food]}),"
-                + "    all),"
-                + "  all)) on 0,"
-                + "[Store Type].Members on 1 from [Warehouse]",
+            + "union("
+            + "  union("
+            + "    crossjoin({[Store Size in SQFT]}, {[Product]}),"
+            + "    crossjoin({[Store Size in SQFT], [Store Size in SQFT].Children}, {[Product]}),"
+            + "    all),"
+            + "  union("
+            + "    crossjoin({[Store Size in SQFT].Parent}, {[Product].[Drink]}),"
+            + "    crossjoin({[Store Size in SQFT].Children}, {[Product].[Food]}),"
+            + "    all),"
+            + "  all)) on 0,"
+            + "[Store Type].Members on 1 from [Warehouse]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1419,11 +1443,11 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 2031158,
-     * "SubstitutingMemberReader.getMemberBuilder gives
-     * UnsupportedOperationException".
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-436">
+     * MONDRIAN-436, "SubstitutingMemberReader.getMemberBuilder gives
+     * UnsupportedOperationException"</a>.
      */
-    public void testBug2031158() {
+    public void testBugMondrian436() {
         propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
         propSaver.set(propSaver.properties.EnableNativeFilter, true);
         propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
@@ -1432,12 +1456,12 @@ public class AccessControlTest extends FoodMartTestCase {
 
         // Run with native enabled, then with whatever properties are set for
         // this test run.
-        checkBug2031158();
+        checkBugMondrian436();
         propSaver.reset();
-        checkBug2031158();
+        checkBugMondrian436();
     }
 
-    private void checkBug2031158() {
+    private void checkBugMondrian436() {
         final TestContext testContext =
             TestContext.create(
                 null, null, null, null, null, BiServer1574Role1)
@@ -1445,18 +1469,18 @@ public class AccessControlTest extends FoodMartTestCase {
 
         testContext.assertQueryReturns(
             "select non empty {[Measures].[Units Ordered],\n"
-                + "            [Measures].[Units Shipped]} on 0,\n"
-                + "non empty hierarchize(\n"
-                + "    union(\n"
-                + "        crossjoin(\n"
-                + "            {[Store Size in SQFT]},\n"
-                + "            {[Product].[Drink],\n"
-                + "             [Product].[Food],\n"
-                + "             [Product].[Drink].[Dairy]}),\n"
-                + "        crossjoin(\n"
-                + "            {[Store Size in SQFT].[20319]},\n"
-                + "            {[Product].Children}))) on 1\n"
-                + "from [Warehouse]",
+            + "            [Measures].[Units Shipped]} on 0,\n"
+            + "non empty hierarchize(\n"
+            + "    union(\n"
+            + "        crossjoin(\n"
+            + "            {[Store Size in SQFT]},\n"
+            + "            {[Product].[Drink],\n"
+            + "             [Product].[Food],\n"
+            + "             [Product].[Drink].[Dairy]}),\n"
+            + "        crossjoin(\n"
+            + "            {[Store Size in SQFT].[20319]},\n"
+            + "            {[Product].Children}))) on 1\n"
+            + "from [Warehouse]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

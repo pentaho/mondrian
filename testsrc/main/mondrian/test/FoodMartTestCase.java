@@ -170,7 +170,8 @@ public class FoodMartTestCase extends TestCase {
      * the result is the expected one.
      */
     public void assertBooleanExprReturns(String expression, boolean expected) {
-        final String iifExpression = "Iif (" + expression + ",\"true\",\"false\")";
+        final String iifExpression =
+            "Iif (" + expression + ",\"true\",\"false\")";
         final String actual = executeExpr(iifExpression);
         final String expectedString = expected ? "true" : "false";
         assertEquals(expectedString, actual);

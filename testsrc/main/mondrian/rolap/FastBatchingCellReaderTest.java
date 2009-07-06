@@ -310,8 +310,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testGroupBatchesForTwoSetOfGroupableBatches() {
-        String[] fieldValuesStoreType = {"Deluxe Supermarket", "Gourmet Supermarket", "HeadQuarters",
-                "Mid-Size Grocery", "Small Grocery", "Supermarket"};
+        String[] fieldValuesStoreType = {
+            "Deluxe Supermarket", "Gourmet Supermarket", "HeadQuarters",
+            "Mid-Size Grocery", "Small Grocery", "Supermarket"
+        };
         String fieldStoreType = "store_type";
         String tableStore = "store";
 
@@ -1183,7 +1185,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             // Teradata gives "Syntax error: expected something between '(' and
             // the 'select' keyword." in 12.0.
         case NETEZZA:
-            // Netezza gives an "ERROR:  Correlated Subplan expressions not supported"
+            // Netezza gives an "ERROR:  Correlated Subplan expressions not
+            // supported"
             return;
         }
 
@@ -1718,7 +1721,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     /*
-     * Test case for bug 1785406 to fix "query already contains alias" exception.
+     * Test case for bug 1785406 to fix "query already contains alias"
+     * exception.
      *
      * <p>Note: 1785406 is a regression from checkin 9710. Code changes made in
      * 9710 is no longer in use (and removed). So this bug will not occur;

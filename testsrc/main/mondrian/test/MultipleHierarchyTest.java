@@ -24,7 +24,8 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
     public void testWeekly() {
         // [Time.Weekly] has an 'all' member, but [Time] does not.
         assertAxisReturns("{[Time].CurrentMember}", "[Time].[1997]");
-        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time].[Weekly].[All Weeklys]");
+        assertAxisReturns(
+            "{[Time.Weekly].CurrentMember}", "[Time].[Weekly].[All Weeklys]");
     }
 
     public void testWeekly2() {

@@ -205,25 +205,14 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
             Object valueMList = calcMList.evaluate(eval2);
 
             if (finalEval()) {
-/*
-System.out.println("MultiCalc.evaluator: valueIter.size="+((List)valueIter).size());
-System.out.println("MultiCalc.evaluator: valueList.size="+((List)valueList).size());
-System.out.println("MultiCalc.evaluator: valueMList.size="+((List)valueMList).size());
-*/
-
                 if (! compare(valueIter, valueList)) {
-                    throw new RuntimeException("MultiCalc.evaluator: ERROR Iter-List");
+                    throw new RuntimeException(
+                        "MultiCalc.evaluator: ERROR Iter-List");
                 }
                 if (! compare(valueIter, valueMList)) {
-                    throw new RuntimeException("MultiCalc.evaluator: ERROR Iter-MList");
+                    throw new RuntimeException(
+                        "MultiCalc.evaluator: ERROR Iter-MList");
                 }
-/*
-                if (! compare(valueMList, valueList)) {
-System.out.println("MultiCalc.evaluator: lists NOT EQUALS cnt="+cnt);
-                } else {
-System.out.println("MultiCalc.evaluator: lists EQUALS cnt="+cnt);
-                }
-*/
             }
 
             return (onlyMutableList) ? valueMList : valueIter;

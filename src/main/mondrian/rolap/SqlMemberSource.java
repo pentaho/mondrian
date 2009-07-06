@@ -261,7 +261,8 @@ class SqlMemberSource
             SqlQuery outerQuery =
                 SqlQuery.newQuery(
                     dataSource,
-                    "while generating query to count members in level " + level);
+                    "while generating query to count members in level "
+                    + level);
             outerQuery.addSelect("count(*)");
             // Note: the "init" is for Postgres, which requires
             // FROM-queries to have an alias

@@ -223,7 +223,8 @@ public enum Syntax {
             if (argTypes[0] == Category.Logical) {
                 return "CASE WHEN " + s + " THEN <Expression> ... END";
             } else {
-                return "CASE " + s + " WHEN " + s + " THEN <Expression> ... END";
+                return "CASE " + s + " WHEN " + s
+                    + " THEN <Expression> ... END";
             }
         }
     },
@@ -320,7 +321,8 @@ public enum Syntax {
     }
 
     private static String getTypeDescription(int type) {
-        return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
+        return "<" + Category.instance.getDescription(type & Category.Mask)
+            + ">";
     }
 
     private static String getTypeDescriptionCommaList(int[] types, int start) {

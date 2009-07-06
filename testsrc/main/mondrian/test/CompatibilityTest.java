@@ -138,10 +138,18 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Customers].[All Customers]", "[Customers].[aLl CuStOmErS]");
         checkAxis("[Customers].[All Customers]", "[Customers].[all customers]");
 
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[Mexico]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[MEXICO]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mExIcO]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mexico]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[Mexico]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[MEXICO]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[mExIcO]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[mexico]");
     }
 
     /**
@@ -211,10 +219,18 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Profit]", "[Measures].PROFIT");
         checkAxis("[Measures].[Profit]", "[Measures].profit");
 
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].Mexico");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].MEXICO");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mExIcO");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mexico");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].Mexico");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].MEXICO");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].mExIcO");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].mexico");
     }
 
     /**
@@ -223,10 +239,21 @@ public class CompatibilityTest extends FoodMartTestCase {
      */
     public void testHierarchyNames() {
         checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[Customers].[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "Customers.[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[Customers].Customers.[All Customers]");
-        // don't know if this makes sense: checkAxis("[Customers].[All Customers]", "[Customers.Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "[Customers].[Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "Customers.[Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "[Customers].Customers.[All Customers]");
+        if (false) {
+            // don't know if this makes sense
+            checkAxis(
+                "[Customers].[All Customers]",
+                "[Customers.Customers].[All Customers]");
+        }
     }
 
     private void checkAxis(String result, String expression) {

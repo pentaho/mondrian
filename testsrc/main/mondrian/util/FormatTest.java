@@ -358,7 +358,8 @@ public class FormatTest extends TestCase {
         checkFormat(null, date2, "Long Date", "Tuesday, September 07, 2010");
 
         // international currency symbol
-        checkFormat(null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
+        checkFormat(
+            null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
     }
 
     public void testFrenchLocale() {
@@ -374,7 +375,8 @@ public class FormatTest extends TestCase {
             Arrays.asList(fr.daysOfWeekShort).toString());
         assertEquals(
             "[janvier, f" + I18nTest.EA + "vrier, mars, avril, mai, juin,"
-            + " juillet, ao" + I18nTest.UC + "t, septembre, octobre, novembre, d"
+            + " juillet, ao" + I18nTest.UC
+            + "t, septembre, octobre, novembre, d"
             + I18nTest.EA + "cembre, ]",
             Arrays.asList(fr.monthsLong).toString());
         assertEquals(

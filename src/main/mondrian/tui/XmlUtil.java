@@ -66,28 +66,30 @@ public class XmlUtil {
      */
     public static final String getSoapXmlaXds2xd(String xmlaPrefix) {
         return
-        "<?xml version='1.0'?>" + LINE_SEP
-        + "<xsl:stylesheet " + LINE_SEP
+            "<?xml version='1.0'?>" + LINE_SEP
+            + "<xsl:stylesheet " + LINE_SEP
             + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + LINE_SEP
             + "xmlns:xalan='http://xml.apache.org/xslt' " + LINE_SEP
             + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " + LINE_SEP
-            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' " + LINE_SEP
-            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' " + LINE_SEP
+            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' "
+            + LINE_SEP
+            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' "
+            + LINE_SEP
             + "xmlns:xmla='urn:schemas-microsoft-com:xml-analysis' " + LINE_SEP
             + "version='1.0' " + LINE_SEP
-                + "> " + LINE_SEP
-        + "<xsl:output method='xml'  " + LINE_SEP
+            + "> " + LINE_SEP
+            + "<xsl:output method='xml'  " + LINE_SEP
             + "encoding='UTF-8' " + LINE_SEP
             + "indent='yes'  " + LINE_SEP
             + "xalan:indent-amount='2'/> " + LINE_SEP
             + "  " + LINE_SEP
             + "<!-- consume '/' and apply --> " + LINE_SEP
             + "<xsl:template match='/'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Envelope' and apply --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Envelope'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Header' --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Header'> " + LINE_SEP
@@ -97,23 +99,24 @@ public class XmlUtil {
                 + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP
-            + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> "
+            + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'return' and apply --> " + LINE_SEP
             + "<xsl:template match='" + xmlaPrefix + ":return'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'xsd:schema' --> " + LINE_SEP
             + "<xsl:template match='xsd:schema'> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- copy everything else --> " + LINE_SEP
             + "<xsl:template match='*|@*'> " + LINE_SEP
-                + "<xsl:copy> " + LINE_SEP
-                    + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
-                + "</xsl:copy> " + LINE_SEP
+            + "<xsl:copy> " + LINE_SEP
+            + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
+            + "</xsl:copy> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
-        + "</xsl:stylesheet>";
+            + "</xsl:stylesheet>";
     }
 
     /**
@@ -122,57 +125,60 @@ public class XmlUtil {
      */
     public static final String getSoapXmlaXds2xs(String xmlaPrefix) {
         return
-        "<?xml version='1.0'?> " + LINE_SEP
-        + "<xsl:stylesheet  " + LINE_SEP
+            "<?xml version='1.0'?> " + LINE_SEP
+            + "<xsl:stylesheet  " + LINE_SEP
             + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'  " + LINE_SEP
             + "xmlns:xalan='http://xml.apache.org/xslt' " + LINE_SEP
             + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " + LINE_SEP
-            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' " + LINE_SEP
-            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'  " + LINE_SEP
+            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' "
+            + LINE_SEP
+            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'  "
+            + LINE_SEP
             + "xmlns:xmla='urn:schemas-microsoft-com:xml-analysis' " + LINE_SEP
             + "version='1.0' " + LINE_SEP
-                + "> " + LINE_SEP
-        + "<xsl:output method='xml'  " + LINE_SEP
+            + "> " + LINE_SEP
+            + "<xsl:output method='xml'  " + LINE_SEP
             + "encoding='UTF-8' " + LINE_SEP
             + "indent='yes'  " + LINE_SEP
             + "xalan:indent-amount='2'/> " + LINE_SEP
             + "<!-- consume '/' and apply --> " + LINE_SEP
             + "<xsl:template match='/'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Envelope' and apply --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Envelope'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Header' --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Header'> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Body' and apply --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Body'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP
-            + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> "
+            + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'return' and apply --> " + LINE_SEP
             + "<xsl:template match='" + xmlaPrefix + ":return'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'root' and apply --> " + LINE_SEP
             + "<xsl:template match='ROW:root'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'row' --> " + LINE_SEP
             + "<xsl:template match='ROW:row'> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- copy everything else --> " + LINE_SEP
             + "<xsl:template match='*|@*'> " + LINE_SEP
-                + "<xsl:copy> " + LINE_SEP
-                    + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
-                + "</xsl:copy> " + LINE_SEP
+            + "<xsl:copy> " + LINE_SEP
+            + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
+            + "</xsl:copy> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
-        + "</xsl:stylesheet>";
+            + "</xsl:stylesheet>";
     }
 
     /**
@@ -181,43 +187,46 @@ public class XmlUtil {
     public static final String getXmlaXds2xd(String ns) {
         String xmlaPrefix = (ns == null) ? "" : (ns + ":");
         return
-        "<?xml version='1.0'?>" + LINE_SEP
-        + "<xsl:stylesheet " + LINE_SEP
+            "<?xml version='1.0'?>" + LINE_SEP
+            + "<xsl:stylesheet " + LINE_SEP
             + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + LINE_SEP
             + "xmlns:xalan='http://xml.apache.org/xslt' " + LINE_SEP
             + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " + LINE_SEP
-            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' " + LINE_SEP
-            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' " + LINE_SEP
+            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' "
+            + LINE_SEP
+            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' "
+            + LINE_SEP
             + "xmlns:xmla='urn:schemas-microsoft-com:xml-analysis' " + LINE_SEP
             + "version='1.0' " + LINE_SEP
-                + "> " + LINE_SEP
-        + "<xsl:output method='xml'  " + LINE_SEP
+            + "> " + LINE_SEP
+            + "<xsl:output method='xml'  " + LINE_SEP
             + "encoding='UTF-8' " + LINE_SEP
             + "indent='yes'  " + LINE_SEP
             + "xalan:indent-amount='2'/> " + LINE_SEP
             + "  " + LINE_SEP
             + "<!-- consume '/' and apply --> " + LINE_SEP
             + "<xsl:template match='/'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP
-            + "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> "
+            + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'return' and apply --> " + LINE_SEP
             + "<xsl:template match='" + xmlaPrefix + "return'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'xsd:schema' --> " + LINE_SEP
             + "<xsl:template match='xsd:schema'> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- copy everything else --> " + LINE_SEP
             + "<xsl:template match='*|@*'> " + LINE_SEP
-                + "<xsl:copy> " + LINE_SEP
-                    + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
-                + "</xsl:copy> " + LINE_SEP
+            + "<xsl:copy> " + LINE_SEP
+            + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
+            + "</xsl:copy> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
-        + "</xsl:stylesheet>";
+            + "</xsl:stylesheet>";
     }
 
     /**
@@ -226,46 +235,49 @@ public class XmlUtil {
     public static final String getXmlaXds2xs(String ns) {
         String xmlaPrefix = (ns == null) ? "" : (ns + ":");
         return
-        "<?xml version='1.0'?> " + LINE_SEP
-        + "<xsl:stylesheet  " + LINE_SEP
+            "<?xml version='1.0'?> " + LINE_SEP
+            + "<xsl:stylesheet  " + LINE_SEP
             + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'  " + LINE_SEP
             + "xmlns:xalan='http://xml.apache.org/xslt' " + LINE_SEP
             + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " + LINE_SEP
-            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' " + LINE_SEP
-            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'  " + LINE_SEP
+            + "xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset' "
+            + LINE_SEP
+            + "xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'  "
+            + LINE_SEP
             + "xmlns:xmla='urn:schemas-microsoft-com:xml-analysis' " + LINE_SEP
             + "version='1.0' " + LINE_SEP
-                + "> " + LINE_SEP
-        + "<xsl:output method='xml'  " + LINE_SEP
+            + "> " + LINE_SEP
+            + "<xsl:output method='xml'  " + LINE_SEP
             + "encoding='UTF-8' " + LINE_SEP
             + "indent='yes'  " + LINE_SEP
             + "xalan:indent-amount='2'/> " + LINE_SEP
             + "<!-- consume '/' and apply --> " + LINE_SEP
             + "<xsl:template match='/'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP
-            + "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> "
+            + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'return' and apply --> " + LINE_SEP
             + "<xsl:template match='" + xmlaPrefix + "return'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'root' and apply --> " + LINE_SEP
             + "<xsl:template match='ROW:root'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'row' --> " + LINE_SEP
             + "<xsl:template match='ROW:row'> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- copy everything else --> " + LINE_SEP
             + "<xsl:template match='*|@*'> " + LINE_SEP
-                + "<xsl:copy> " + LINE_SEP
-                    + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
-                + "</xsl:copy> " + LINE_SEP
+            + "<xsl:copy> " + LINE_SEP
+            + "<xsl:apply-templates select='@*|node()'/> " + LINE_SEP
+            + "</xsl:copy> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
-        + "</xsl:stylesheet>";
+            + "</xsl:stylesheet>";
     }
 
     /**

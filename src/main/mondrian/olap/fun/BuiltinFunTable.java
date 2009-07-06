@@ -221,9 +221,11 @@ public class BuiltinFunTable extends FunTableImpl {
                 if (o instanceof Dimension) {
                     return (Dimension) o;
                 } else if (o == null) {
-                    throw newEvalException(this, "Dimension '" + s + "' not found");
+                    throw newEvalException(
+                        this, "Dimension '" + s + "' not found");
                 } else {
-                    throw newEvalException(this, "Dimensions(" + s + ") found " + o);
+                    throw newEvalException(
+                        this, "Dimensions(" + s + ") found " + o);
                 }
             }
         });
@@ -359,7 +361,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 } else if (o == null) {
                     throw newEvalException(this, "Level '" + s + "' not found");
                 } else {
-                    throw newEvalException(this, "Levels('" + s + "') found " + o);
+                    throw newEvalException(
+                        this, "Levels('" + s + "') found " + o);
                 }
             }
         });

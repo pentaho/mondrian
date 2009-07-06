@@ -35,10 +35,30 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
     private static final String CATALOG_0_NAME = "FoodMart0";
     private static final String CATALOG_1_NAME = "FoodMart1";
     private static final String CATALOG_2_NAME = "FoodMart2";
-    private static final String CATALOG_0_DEFINITION = "<Catalog name='" + CATALOG_0_NAME + "'><Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart0;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Definition></Catalog>";
-    private static final String CATALOG_0_UPDATED_DEFINITION = "<Catalog name='" + CATALOG_0_NAME + "'><Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart0.0;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Definition></Catalog>";
-    private static final String CATALOG_1_DEFINITION = "<Catalog name='" + CATALOG_1_NAME + "'><Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart1;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Definition></Catalog>";
-    private static final String CATALOG_2_DEFINITION = "<Catalog name='" + CATALOG_2_NAME + "'><Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart2;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Definition></Catalog>";
+    private static final String CATALOG_0_DEFINITION =
+        "<Catalog name='" + CATALOG_0_NAME + "'>"
+        + "<Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart0;"
+        + "JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver"
+        + "</Definition>"
+        + "</Catalog>";
+    private static final String CATALOG_0_UPDATED_DEFINITION =
+        "<Catalog name='" + CATALOG_0_NAME + "'>"
+        + "<Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart0.0;"
+        + "JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver"
+        + "</Definition>"
+        + "</Catalog>";
+    private static final String CATALOG_1_DEFINITION =
+        "<Catalog name='" + CATALOG_1_NAME + "'>"
+        + "<Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart1;"
+        + "JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver"
+        + "</Definition>"
+        + "</Catalog>";
+    private static final String CATALOG_2_DEFINITION =
+        "<Catalog name='" + CATALOG_2_NAME + "'>"
+        + "<Definition>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart2;"
+        + "JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver"
+        + "</Definition>"
+        + "</Catalog>";
     private static final String DATASOURCE_1_NAME = "DATASOURCENAME1";
     private static final String DATASOURCE_2_NAME = "DATASOURCENAME2";
 
@@ -116,7 +136,6 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         assertFalse(xmlaServlet.areCatalogsEqual(catalog1, catalog2));
     }
 
-
     private DataSourcesConfig.DataSources getDataSources(String... catalogs)
         throws XOMException
     {
@@ -138,12 +157,23 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             ds.append("  <DataSourceName>")
                 .append(dsName)
                 .append("</DataSourceName>");
-            ds.append("       <DataSourceDescription>DATASOURCE_DESCRIPTION</DataSourceDescription>");
+            ds.append(
+                "       <DataSourceDescription>"
+                + "DATASOURCE_DESCRIPTION"
+                + "</DataSourceDescription>");
             ds.append("       <URL>http://localhost:8080/mondrian/xmla</URL>");
-            ds.append("       <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=oracle.jdbc.OracleDriver;Catalog=/WEB-INF/queries/FoodMart.xml</DataSourceInfo>");
+            ds.append("       <DataSourceInfo>Provider=mondrian;")
+                .append("Jdbc=jdbc:oracle:thin:foodmart/foodmart@")
+                .append("//marmalade.hydromatic.net:1521/XE;")
+                .append("JdbcUser=foodmart;JdbcPassword=foodmart;")
+                .append("JdbcDrivers=oracle.jdbc.OracleDriver;")
+                .append("Catalog=/WEB-INF/queries/FoodMart.xml")
+                .append("</DataSourceInfo>");
             ds.append("       <ProviderName>Mondrian</ProviderName>");
             ds.append("       <ProviderType>MDP</ProviderType>");
-            ds.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
+            ds.append("       <AuthenticationMode>")
+                .append("Unauthenticated")
+                .append("</AuthenticationMode>");
             ds.append("       <Catalogs>");
             final String[] catalogs = entry.getValue();
             for (String catalog : catalogs) {

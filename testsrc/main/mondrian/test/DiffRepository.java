@@ -510,7 +510,8 @@ public class DiffRepository
                 // insensitivity, it can report on the line
                 // at which the first diff occurs, which is useful
                 // for largish snippets
-                String expected2Canonical = Util.replace(expected2, Util.nl, "\n");
+                String expected2Canonical =
+                    Util.replace(expected2, Util.nl, "\n");
                 String actualCanonical = Util.replace(actual, Util.nl, "\n");
                 Assert.assertEquals(
                     expected2Canonical,
