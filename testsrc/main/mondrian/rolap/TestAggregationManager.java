@@ -880,7 +880,8 @@ public class TestAggregationManager extends BatchTestCase {
                 + "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 "
                 + "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` "
                 + "group by `store`.`store_country` "
-                + "order by `store`.`store_country` ASC",
+                + "order by Iif(`store`.`store_country` IS NULL, 1, 0),"
+                + " `store`.`store_country` ASC",
                 26),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
@@ -1359,7 +1360,7 @@ public class TestAggregationManager extends BatchTestCase {
         };
 
         String query =
-            "select non empty [Gender].[All Gender].Children on rows "
+            "select non empty [Gender].[All Gender].Children on columns\n"
             + "from [Sales]";
 
         assertQuerySqlOrNot(

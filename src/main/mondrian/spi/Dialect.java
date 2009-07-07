@@ -541,6 +541,63 @@ public interface Dialect {
     boolean allowsOrderByAlias();
 
     /**
+     * Returns true if this dialect allows only integers in the ORDER BY
+     * clause of a UNION (or other set operation) query.
+     *
+     * <p>For example,
+     *
+     * <code>SELECT x, y + z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y + z FROM t<br/>
+     * ORDER BY 1, 2</code>
+     *
+     * is allowed but
+     *
+     * <code>SELECT x, y, z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y, z FROM t<br/>
+     * ORDER BY x</code>
+     *
+     * is not.
+     *
+     * <p>Teradata is an example of a dialect with this restriction.
+     *
+     * @return whether this dialect allows only integers in the ORDER BY
+     * clause of a UNION (or other set operation) query
+     */
+    boolean requiresUnionOrderByOrdinal();
+
+    /**
+     * Returns true if this dialect allows an expression in the ORDER BY
+     * clause of a UNION (or other set operation) query only if it occurs in
+     * the SELECT clause.
+     *
+     * <p>For example,
+     *
+     * <code>SELECT x, y + z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y + z FROM t<br/>
+     * ORDER BY y + z</code>
+     *
+     * is allowed but
+     *
+     * <code>SELECT x, y, z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y, z FROM t<br/>
+     * ORDER BY y + z</code>
+     * <code>SELECT x, y, z FROM t ORDER BY y + z</code>
+     *
+     * is not.
+     *
+     * <p>Access is an example of a dialect with this restriction.
+     *
+     * @return whether this dialect allows an expression in the ORDER BY
+     * clause of a UNION (or other set operation) query only if it occurs in
+     * the SELECT clause
+     */
+    boolean requiresUnionOrderByExprToBeInSelectClause();
+
+    /**
      * Returns true if this dialect supports multi-value IN expressions.
      * E.g.,
      *
@@ -772,7 +829,7 @@ public interface Dialect {
          * Null values order as positive infinity.
          * They appear last with ASC, first with DESC.
          */
-        POSINF;
+        POSINF,
     }
 }
 

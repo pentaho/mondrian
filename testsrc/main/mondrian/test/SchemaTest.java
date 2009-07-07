@@ -1521,7 +1521,7 @@ public class SchemaTest extends FoodMartTestCase {
         }
         // Note that 'product_id' is NOT one of the columns with unknown usage.
         // It is used as a level in the degenerate dimension [Time Degenerate].
-        assertEquals(
+        TestContext.assertEqualsVerbose(
             "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_count' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'month_of_year' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'quarter' with unknown usage.\n"
@@ -1604,7 +1604,7 @@ public class SchemaTest extends FoodMartTestCase {
         } finally {
             logger.removeAppender(appender);
         }
-        assertEquals(
+        TestContext.assertEqualsVerbose(
             "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_l_03_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'time_id' with unknown usage.\n",
             sw.toString());
     }

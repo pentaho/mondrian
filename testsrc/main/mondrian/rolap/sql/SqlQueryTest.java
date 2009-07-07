@@ -33,25 +33,16 @@ public class SqlQueryTest extends BatchTestCase {
         super.setUp();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
 
-        /*
-         * This test warns of missing sql patterns for
-         *
-         * ACCESS
-         * MYSQL
-         *
-         */
+        // This test warns of missing sql patterns for MYSQL.
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
         {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
-            /*
-             * Do not warn unless the dialect is "ACCESS" or "MYSQL", or
-             * if the test chooses to warn regardless of the dialect.
-             */
+            // Do not warn unless the dialect is "MYSQL", or
+            // if the test chooses to warn regardless of the dialect.
             prop.WarnIfNoPatternForDialect.set("NONE");
         }
     }

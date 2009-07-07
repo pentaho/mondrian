@@ -723,6 +723,14 @@ public class JdbcDialectImpl implements Dialect {
         return requiresOrderByAlias();
     }
 
+    public boolean requiresUnionOrderByOrdinal() {
+        return false;
+    }
+
+    public boolean requiresUnionOrderByExprToBeInSelectClause() {
+        return false;
+    }
+
     public boolean supportsMultiValueInExpr() {
         return false;
     }

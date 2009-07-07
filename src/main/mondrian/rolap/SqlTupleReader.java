@@ -18,6 +18,7 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -877,10 +878,25 @@ public class SqlTupleReader implements TupleReader {
                 // not column name strings or expressions.
                 switch (whichSelect) {
                 case LAST:
+                    boolean nullable = true;
+                    final Dialect dialect = sqlQuery.getDialect();
+                    if (dialect.requiresUnionOrderByExprToBeInSelectClause()
+                        || dialect.requiresUnionOrderByOrdinal())
+                    {
+                        // If the expression is nullable and the dialect
+                        // sorts NULL values first, the dialect will try to
+                        // add an expression 'Iif(expr IS NULL, 1, 0)' into
+                        // the ORDER BY clause, and that is not allowed by this
+                        // dialect. So, pretend that the expression is not
+                        // nullable. NULL values, if present, will be sorted
+                        // wrong, but that's better than generating an invalid
+                        // query.
+                        nullable = false;
+                    }
                     sqlQuery.addOrderBy(
                         Integer.toString(
                             sqlQuery.getCurrentSelectListSize()),
-                            true, false, true);
+                        true, false, nullable);
                     break;
                 case ONLY:
                     sqlQuery.addOrderBy(ordinalSql, true, false, true);

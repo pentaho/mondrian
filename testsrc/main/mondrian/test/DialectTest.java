@@ -349,6 +349,31 @@ public class DialectTest extends TestCase {
         }
     }
 
+    public void testRequiresUnionOrderByExprToBeInSelectClause() {
+        String sql =
+            dialectize(
+                "SELECT [unit_sales], [store_sales]\n"
+                + "FROM [sales_fact_1997]\n"
+                + "UNION ALL\n"
+                + "SELECT [unit_sales], [store_sales]\n"
+                + "FROM [sales_fact_1997]\n"
+                + "ORDER BY [unit_sales] + [store_sales]");
+
+        if (!getDialect().requiresUnionOrderByExprToBeInSelectClause()) {
+            assertQuerySucceeds(sql);
+        } else {
+            String[] errs = {
+                // access
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] The ORDER "
+                + "BY expression \\(\\[unit_sales\\]\\+\\[store_sales\\]\\) "
+                + "includes fields that are not selected by the query\\.  "
+                + "Only those fields requested in the first query can be "
+                + "included in an ORDER BY expression\\.",
+            };
+            assertQueryFails(sql, errs);
+        }
+    }
+
     public void testSupportsGroupByExpressions() {
         String sql =
             dialectize(
@@ -506,21 +531,21 @@ public class DialectTest extends TestCase {
         Dialect dialect = getDialect();
         String ascQuery =
             "select "
-            + dialect.quoteIdentifier("grocery_sqft")
+            + dialect.quoteIdentifier("store_manager")
             + " from "
             + dialect.quoteIdentifier("store")
             + " order by "
-            + dialect.quoteIdentifier("grocery_sqft");
+            + dialect.quoteIdentifier("store_manager");
         String descQuery = ascQuery + " DESC";
         Dialect.NullCollation nullCollation = getDialect().getNullCollation();
         switch (nullCollation) {
         case NEGINF:
-            assertFirstLast(ascQuery, null, 30351);
-            assertFirstLast(descQuery, 30351, null);
+            assertFirstLast(ascQuery, null, "Williams");
+            assertFirstLast(descQuery, "Williams", null);
             break;
         case POSINF:
-            assertFirstLast(ascQuery, 13305, null);
-            assertFirstLast(descQuery, null, 13305);
+            assertFirstLast(ascQuery, "Brown", null);
+            assertFirstLast(descQuery, null, "Brown");
             break;
         default:
             fail("unexpected value " + nullCollation);
@@ -547,38 +572,38 @@ public class DialectTest extends TestCase {
         Dialect dialect = getDialect();
         String query =
             "select "
-            + dialect.quoteIdentifier("grocery_sqft")
+            + dialect.quoteIdentifier("store_manager")
             + " from "
             + dialect.quoteIdentifier("store")
             + " order by "
             + dialect.generateOrderItem(
-                dialect.quoteIdentifier("grocery_sqft"), true, ascending);
+                dialect.quoteIdentifier("store_manager"), true, ascending);
         if (ascending) {
             // Lowest value comes first, null comes last.
-            assertFirstLast(query, 13305, null);
+            assertFirstLast(query, "Brown", null);
         } else {
             // Largest value comes first, null comes last.
-            assertFirstLast(query, 30351, null);
+            assertFirstLast(query, "Williams", null);
         }
     }
 
     private void assertFirstLast(
         String query,
-        Integer expectedFirst,
-        Integer expectedLast) throws SQLException
+        String expectedFirst,
+        String expectedLast) throws SQLException
     {
         ResultSet resultSet =
             getConnection().createStatement().executeQuery(query);
-        List<Integer> values = new ArrayList<Integer>();
+        List<String> values = new ArrayList<String>();
         while (resultSet.next()) {
-            values.add(resultSet.getInt(1));
+            values.add(resultSet.getString(1));
             if (resultSet.wasNull()) {
                 values.set(values.size() - 1, null);
             }
         }
         resultSet.close();
-        Integer actualFirst = values.get(0);
-        Integer actualLast = values.get(values.size() - 1);
+        String actualFirst = values.get(0);
+        String actualLast = values.get(values.size() - 1);
         assertEquals(expectedFirst, actualFirst);
         assertEquals(expectedLast, actualLast);
     }

@@ -446,6 +446,10 @@ public class BatchTestCase extends FoodMartTestCase {
             return sql.replaceAll(" =as= ", " as ");
         case DERBY:
             return sql.replaceAll("`", "\"");
+        case ACCESS:
+            return sql.replaceAll(
+                "ISNULL\\(([^)]*)\\)",
+                "Iif($1 IS NULL, 1, 0)");
         default:
             return sql;
         }

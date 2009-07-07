@@ -8,6 +8,8 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.spi.Dialect;
+
 import java.util.List;
 import java.util.Calendar;
 import java.sql.*;
@@ -59,6 +61,24 @@ public class AccessDialect extends JdbcDialectImpl {
         buf.append("/");
         buf.append(calendar.get(Calendar.YEAR));
         buf.append("#");
+    }
+
+    public NullCollation getNullCollation() {
+        return NullCollation.NEGINF;
+    }
+
+    public String generateOrderItem(
+        String expr, boolean nullable, boolean ascending)
+    {
+        if (ascending && nullable) {
+            return "Iif(" + expr + " IS NULL, 1, 0), " + expr + " ASC";
+        } else {
+            return super.generateOrderItem(expr, nullable, ascending);
+        }
+    }
+
+    public boolean requiresUnionOrderByExprToBeInSelectClause() {
+        return true;
     }
 
     public boolean allowsCountDistinct() {
