@@ -222,12 +222,12 @@ public class JdbcDialectImpl implements Dialect {
     }
 
      /**
-      * Detects whether the database is configured to permit queries
+      * <p>Detects whether the database is configured to permit queries
       * that include columns in the SELECT that are not also in the GROUP BY.
-      * MySQL is an example of one that does, though this is configurable.
+      * MySQL is an example of one that does, though this is configurable.</p>
       *
-      * The expectation is that this will not change while Mondrian is
-      * running, though some databases (MySQL) allow changing it on the fly.
+      * <p>The expectation is that this will not change while Mondrian is
+      * running, though some databases (MySQL) allow changing it on the fly.</p>
       *
       * @param conn The database connection
       * @return Whether the feature is enabled.
@@ -239,20 +239,6 @@ public class JdbcDialectImpl implements Dialect {
         // Most simply don't support it
         return false;
     }
-
-    public boolean setSelectNotInGroupBy(Connection connection, boolean allow)
-        throws SQLException
-    {
-        // most don't support enabling this feture, so only return success
-        // if the request wouldn't change anything.  Derived classes can
-        // overrride.
-        if (allow == allowsSelectNotInGroupBy()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     public String toUpper(String expr) {
         return "UPPER(" + expr + ")";

@@ -109,14 +109,14 @@ class RolapProperty extends Property {
     }
 
     /**
-     * @return Returns the dependsOnLevelValue setting (if unset,
+     * @return <p>Returns the dependsOnLevelValue setting (if unset,
      * returns false).  This indicates whether the property is
      * functionally dependent on the level with which it is
-     * associated.
+     * associated.</p>
      *
-     * If true, then the property column can be eliminated from
+     * <p>If true, then the property column can be eliminated from
      * the GROUP BY clause for queries on certain databases such
-     * as MySQL.
+     * as MySQL.</p>
      */
     public boolean dependsOnLevelValue() {
         return dependsOnLevelValue;

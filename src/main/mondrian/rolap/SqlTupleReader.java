@@ -777,13 +777,13 @@ public class SqlTupleReader implements TupleReader {
 
 
     /**
-     * Determines whether the GROUP BY clause is required, based on the schema
-     * definitions of the hierarchy and level properties.
+     * <p>Determines whether the GROUP BY clause is required, based on the
+     * schema definitions of the hierarchy and level properties.</p>
      *
-     * The GROUP BY clause may only be eliminated if the level identified by the
-     * uniqueKeyLevelName exists, the query is at a depth to include it, and all
-     * properties in the included levels are functionally dependent on the
-     * levels.
+     * <p>The GROUP BY clause may only be eliminated if the level identified by
+     * the uniqueKeyLevelName exists, the query is at a depth to include it,
+     * and all properties in the included levels are functionally dependent on
+     * their level values.</p>
      *
      *
      * @param sqlQuery     The query object being constructed

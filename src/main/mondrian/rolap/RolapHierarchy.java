@@ -895,13 +895,15 @@ public class RolapHierarchy extends HierarchyBase {
 
 
     /**
-     * Gets "unique key level name" attribute of this Hierarchy, if set.
+     * <p>Gets "unique key level name" attribute of this Hierarchy, if set.
      * If set, this property indicates that all level properties are
      * functionally dependent (invariant) on their associated levels,
      * and that the set of levels from the root to the named level (inclusive)
-     * effectively defines an alternate key.
+     * effectively defines an alternate key.</p>
      *
-     * This allows the GROUP BY to be eliminated from associated queries.
+     * <p>This allows the GROUP BY to be eliminated from associated queries.</p>
+     *
+     * @return the name of the "unique key" level, or null if not specified
      */
     public String getUniqueKeyLevelName() {
         return uniqueKeyLevelName;
