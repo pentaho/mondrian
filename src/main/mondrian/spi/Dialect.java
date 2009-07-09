@@ -663,9 +663,19 @@ public interface Dialect {
     boolean allowsDialectSharing();
 
     /**
-     * Returns whether the database currently permits queries to
-     * SELECT columns that are not listed in the GROUP BY clause.
-     * Most don't, MySQL is an example of one that does.
+     * Returns whether the database currently permits queries to include in the
+     * SELECT clause expressions that are not listed in the GROUP BY clause. The
+     * SQL standard allows this if the database can deduce that the expression
+     * is functionally dependent on columns in the GROUP BY clause.
+     *
+     * <p>For example, {@code SELECT empno, first_name || ' ' || last_name FROM
+     * emps GROUP BY empno} is valid because {@code empno} is the primary key of
+     * the {@code emps} table, and therefore all columns are dependent on it.
+     * For a given value of {@code empno},
+     * {@code first_name || ' ' || last_name} has a unique value.
+     *
+     * <p>Most databases do not, MySQL is an example of one that does (if the
+     * functioality is enabled).
      *
      * @return Whether this Dialect allows SELECT clauses to contain
      * columns that are not in the GROUP BY clause

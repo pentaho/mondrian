@@ -369,6 +369,10 @@ public class DialectTest extends TestCase {
                 + "includes fields that are not selected by the query\\.  "
                 + "Only those fields requested in the first query can be "
                 + "included in an ORDER BY expression\\.",
+                // derby (yes, lame message)
+                "Java exception: ': java.lang.NullPointerException'.",
+                // oracle
+                "ORA-01785: ORDER BY item must be the number of a SELECT-list expression\n",
             };
             assertQueryFails(sql, errs);
         }
@@ -383,11 +387,11 @@ public class DialectTest extends TestCase {
         if (getDialect().supportsGroupByExpressions()) {
             assertQuerySucceeds(sql);
         } else {
-            assertQueryFails(
-                sql,
-                new String[] {
-                    "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY"
-                });
+            final String[] errs = {
+                // mysql
+                "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY",
+            };
+            assertQueryFails(sql, errs);
         }
     }
 
@@ -739,7 +743,7 @@ public class DialectTest extends TestCase {
                 }
                 throw new AssertionFailedError(
                     "error [" + message
-                        + "] did not match any of the supplied patterns");
+                    + "] did not match any of the supplied patterns");
             }
             assertTrue(resultSet.next());
             Object col1 = resultSet.getObject(1);
@@ -754,6 +758,42 @@ public class DialectTest extends TestCase {
                     // ignore
                 }
             }
+        }
+    }
+
+    /**
+     * Unit test for {@link Dialect#allowsSelectNotInGroupBy}.
+     */
+    public void testAllowsSelectNotInGroupBy() throws SQLException {
+        Dialect dialect = getDialect();
+        String sql =
+            "select "
+            + dialect.quoteIdentifier("time_id")
+            + ", "
+            + dialect.quoteIdentifier("the_month")
+            + " from "
+            + dialect.quoteIdentifier("time_by_day")
+            + " group by "
+            + dialect.quoteIdentifier("time_id");
+        if (dialect.allowsSelectNotInGroupBy()) {
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sql);
+            assertTrue(resultSet.next());
+            resultSet.close();
+        } else {
+            String[] errs = {
+                // oracle
+                "ORA-00979: not a GROUP BY expression\n",
+                // derby
+                "The SELECT list of a grouped query contains at least one "
+                + "invalid expression. If a SELECT list has a GROUP BY, the "
+                + "list may only contain valid grouping expressions and valid "
+                + "aggregate expressions.  ",
+                // mysql (if sql_mode contains ONLY_FULL_GROUP_BY)
+                "ERROR 1055 (42000): 'foodmart.time_by_day.the_month' isn't in "
+                + "GROUP BY",
+            };
+            assertQueryFails(sql, errs);
         }
     }
 }
