@@ -972,6 +972,19 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property that defines
+     * the name of the class used for mapping member properties
+     * to their respective values.
+     *
+     * <p>If the value is
+     * non-null, it is used by the <code>PropertyValueFactory</code>
+     * to create the implementation.
+     */
+    public transient final StringProperty PropertyValueMapClass =
+        new StringProperty(
+            this, "mondrian.rolap.RolapMember.PropertyValueMap.class", null);
+
+    /**
+     * Property that defines
      * when to apply the crossjoin optimization algorithm.
      *
      * <p>If a crossjoin input list's size is larger than this property's

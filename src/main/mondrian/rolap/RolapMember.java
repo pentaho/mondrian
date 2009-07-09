@@ -14,8 +14,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.util.ObjectFactory;
+import mondrian.util.CreationException;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.collections.map.Flat3Map;
+import org.eigenbase.util.property.StringProperty;
+
 import java.util.*;
 
 /**
@@ -505,7 +510,8 @@ public class RolapMember extends MemberBase {
 
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
-            mapPropertyNameToValue = new HashMap<String, Object>();
+            mapPropertyNameToValue =
+                PropertyValueMapFactory.getPropertyValueMap();
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
@@ -820,6 +826,49 @@ public class RolapMember extends MemberBase {
             : val.toString();
     }
 
+    public static final class PropertyValueMapFactory
+    extends ObjectFactory<Map>
+    {
+
+        /**
+         * Single instance of the <code>PropertyValueMapFactory</code>.
+         */
+        private static final PropertyValueMapFactory factory;
+        static {
+            factory = new PropertyValueMapFactory();
+        }
+
+        /**
+         * Access the <code>PropertyValueMapFactory</code> instance.
+         *
+         * @return the <code>Map</code>.
+         */
+        public static Map getPropertyValueMap() {
+            return factory.getObject();
+        }
+
+        /**
+         * The constructor for the <code>PropertyValueMapFactory</code>. This
+         * passes the <code>Map</code> class to the <code>ObjectFactory</code>
+         * base class.
+         */
+        private PropertyValueMapFactory() {
+            super(Map.class);
+        }
+
+
+        protected StringProperty getStringProperty() {
+            return MondrianProperties.instance().PropertyValueMapClass;
+        }
+
+        protected Map getDefault(
+            Class[] parameterTypes,
+            Object[] parameterValues)
+            throws CreationException
+        {
+            return new Flat3Map();
+        }
+    }
 }
 
 // End RolapMember.java
