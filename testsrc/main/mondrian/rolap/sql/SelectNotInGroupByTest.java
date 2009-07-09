@@ -90,9 +90,9 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         + "    `store`.`store_state`, \n"
         + "    `store`.`store_name`\n"
         + "order by \n"
-        + "    ISNULL(`store`.`store_country`), `store`.`store_country`, \n"
-        + "    ISNULL(`store`.`store_city`), `store`.`store_city`, \n"
-        + "    ISNULL(`store`.`store_name`), `store`.`store_name`\n";
+        + "    ISNULL(`store`.`store_country`), `store`.`store_country` ASC, \n"
+        + "    ISNULL(`store`.`store_city`), `store`.`store_city` ASC, \n"
+        + "    ISNULL(`store`.`store_name`), `store`.`store_name` ASC\n";
 
     public static final String sqlWithNoGroupBy =
         "select \n"
@@ -103,9 +103,9 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         + "from \n"
         + "    `store` as `store`\n"
         + "order by \n"
-        + "    ISNULL(`store`.`store_country`), `store`.`store_country`, \n"
-        + "    ISNULL(`store`.`store_city`), `store`.`store_city`, \n"
-        + "    ISNULL(`store`.`store_name`), `store`.`store_name`\n";
+        + "    ISNULL(`store`.`store_country`), `store`.`store_country` ASC, \n"
+        + "    ISNULL(`store`.`store_city`), `store`.`store_city` ASC, \n"
+        + "    ISNULL(`store`.`store_name`), `store`.`store_name` ASC\n";
 
     public static final String sqlWithLevelGroupBy =
         "select \n"
@@ -120,9 +120,9 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         + "    `store`.`store_city`, \n"
         + "    `store`.`store_name`\n"
         + "order by \n"
-        + "    ISNULL(`store`.`store_country`), `store`.`store_country`, \n"
-        + "    ISNULL(`store`.`store_city`), `store`.`store_city`, \n"
-        + "    ISNULL(`store`.`store_name`), `store`.`store_name`\n";
+        + "    ISNULL(`store`.`store_country`), `store`.`store_country` ASC, \n"
+        + "    ISNULL(`store`.`store_city`), `store`.`store_city` ASC, \n"
+        + "    ISNULL(`store`.`store_name`), `store`.`store_name` ASC\n";
 
 
     public void testDependentPropertySkipped() {
