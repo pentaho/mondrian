@@ -775,6 +775,74 @@ public class SqlTupleReader implements TupleReader {
         return sqlQuery.toString();
     }
 
+
+    /**
+     * Determines whether the GROUP BY clause is required, based on the schema
+     * definitions of the hierarchy and level properties.
+     *
+     * The GROUP BY clause may only be eliminated if the level identified by the
+     * uniqueKeyLevelName exists, the query is at a depth to include it, and all
+     * properties in the included levels are functionally dependent on the
+     * levels.
+     *
+     *
+     * @param sqlQuery     The query object being constructed
+     * @param hierarchy    Hierarchy of the cube
+     * @param levels       Levels in this hierarchy
+     * @param levelDepth   Level depth at which the query is occuring
+     * @return whether the GROUP BY is needed
+     *
+     */
+    private boolean isGroupByNeeded(
+        SqlQuery sqlQuery,
+        RolapHierarchy hierarchy,
+        RolapLevel[] levels,
+        int levelDepth)
+    {
+        /* Figure out if we need to generate GROUP BY at all.  It may only be
+         * eliminated if we are at a depth that includes the unique key level,
+         * and all properties of included levels depend on the level value.
+         */
+        boolean needsGroupBy = false;  // figure out if we need GROUP BY at all
+
+        if (hierarchy.getUniqueKeyLevelName() == null) {
+            needsGroupBy = true;
+        } else {
+            boolean foundUniqueKeyLevelName = false;
+            for (int i = 0; i <= levelDepth; i++) {
+                RolapLevel lvl = levels[i];
+
+                // can ignore the "all" level
+                if (!(lvl.isAll())) {
+                    if (hierarchy.getUniqueKeyLevelName().equals(
+                        lvl.getName()))
+                    {
+                       foundUniqueKeyLevelName = true;
+                    }
+                    for (RolapProperty p : lvl.getProperties()) {
+                        if (!p.dependsOnLevelValue()) {
+                            needsGroupBy = true;
+                            // GROUP BY is required, so break out of
+                            // properties loop
+                            break;
+                        }
+                    }
+                    if (needsGroupBy) {
+                        // GROUP BY is required, so break out of levels loop
+                        break;
+                    }
+                }
+            }
+            if (!foundUniqueKeyLevelName) {
+                // if we're not deep enough to be unique,
+                // then the GROUP BY is required
+                needsGroupBy = true;
+            }
+        }
+
+        return needsGroupBy;
+    }
+
     /**
      * Generates the SQL statement to access members of <code>level</code>. For
      * example, <blockquote>
@@ -825,6 +893,9 @@ public class SqlTupleReader implements TupleReader {
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         int levelDepth = level.getDepth();
 
+        boolean needsGroupBy =
+            isGroupByNeeded(sqlQuery, hierarchy, levels, levelDepth);
+
         // Determine if the aggregate table contains the collapsed level
         boolean levelCollapsed =
             (aggStar != null)
@@ -860,14 +931,23 @@ public class SqlTupleReader implements TupleReader {
                     hierarchy.addToFrom(sqlQuery, captionExp);
                 }
 
-                sqlQuery.addSelectGroupBy(keySql);
+                String alias = sqlQuery.addSelect(keySql);
+                if (needsGroupBy) {
+                    sqlQuery.addGroupBy(keySql, alias);
+                }
 
                 if (!ordinalSql.equals(keySql)) {
-                    sqlQuery.addSelectGroupBy(ordinalSql);
+                    alias = sqlQuery.addSelect(ordinalSql);
+                    if (needsGroupBy) {
+                        sqlQuery.addGroupBy(ordinalSql, alias);
+                    }
                 }
 
                 if (captionSql != null) {
-                    sqlQuery.addSelectGroupBy(captionSql);
+                    alias = sqlQuery.addSelect(captionSql);
+                    if (needsGroupBy) {
+                        sqlQuery.addGroupBy(captionSql, alias);
+                    }
                 }
 
                 constraint.addLevelConstraint(
@@ -906,7 +986,17 @@ public class SqlTupleReader implements TupleReader {
                 RolapProperty[] properties = currLevel.getProperties();
                 for (RolapProperty property : properties) {
                     String propSql = property.getExp().getExpression(sqlQuery);
-                    sqlQuery.addSelectGroupBy(propSql);
+                    alias = sqlQuery.addSelect(propSql);
+                    if (needsGroupBy) {
+                        // Certain dialects allow us to eliminate properties
+                        // from the group by that are functionally dependent
+                        // on the level value
+                        if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                            || !property.dependsOnLevelValue())
+                        {
+                            sqlQuery.addGroupBy(propSql, alias);
+                        }
+                    }
                 }
             } else {
                 // an earlier check was made in chooseAggStar() to verify

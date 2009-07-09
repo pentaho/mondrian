@@ -663,6 +663,16 @@ public interface Dialect {
     boolean allowsDialectSharing();
 
     /**
+     * Returns whether the database currently permits queries to
+     * SELECT columns that are not listed in the GROUP BY clause.
+     * Most don't, MySQL is an example of one that does.
+     *
+     * @return Whether this Dialect allows SELECT clauses to contain
+     * columns that are not in the GROUP BY clause
+     */
+    boolean allowsSelectNotInGroupBy();
+
+    /**
      * Enumeration of common database types.
      *
      * <p>Branching on this enumeration allows you to write code which behaves

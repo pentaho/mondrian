@@ -34,6 +34,7 @@ class RolapProperty extends Property {
 
     private final PropertyFormatter formatter;
     private final String caption;
+    private final boolean dependsOnLevelValue;
 
     /** The column or expression which yields the property's value. */
     private final MondrianDef.Expression exp;
@@ -56,12 +57,16 @@ class RolapProperty extends Property {
         MondrianDef.Expression exp,
         String formatterDef,
         String caption,
+        Boolean dependsOnLevelValue,
         boolean internal)
     {
         super(name, type, -1, internal, false, false, null);
         this.exp = exp;
         this.caption = caption;
         this.formatter = makePropertyFormatter(formatterDef);
+        this.dependsOnLevelValue =
+            dependsOnLevelValue == null ? false
+                : dependsOnLevelValue.booleanValue();
     }
 
     private PropertyFormatter makePropertyFormatter(String formatterDef) {
@@ -101,6 +106,20 @@ class RolapProperty extends Property {
             return getName();
         }
         return caption;
+    }
+
+    /**
+     * @return Returns the dependsOnLevelValue setting (if unset,
+     * returns false).  This indicates whether the property is
+     * functionally dependent on the level with which it is
+     * associated.
+     *
+     * If true, then the property column can be eliminated from
+     * the GROUP BY clause for queries on certain databases such
+     * as MySQL.
+     */
+    public boolean dependsOnLevelValue() {
+        return dependsOnLevelValue;
     }
 }
 

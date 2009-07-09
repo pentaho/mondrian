@@ -924,9 +924,9 @@ public class RolapStar {
                 columnExpr = measure.getAggregator().getExpression(columnExpr);
             }
             final String columnName = columnNameList.get(k);
-            query.addSelect(columnExpr, columnName);
+            String alias = query.addSelect(columnExpr, columnName);
             if (!(column instanceof Measure)) {
-                query.addGroupBy(columnExpr);
+                query.addGroupBy(columnExpr, alias);
             }
         }
         // remove whitespace from query - in particular, the trailing newline

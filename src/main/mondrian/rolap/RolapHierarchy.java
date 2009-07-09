@@ -55,6 +55,7 @@ public class RolapHierarchy extends HierarchyBase {
     private RolapNullMember nullMember;
 
     private String sharedHierarchyName;
+    private String uniqueKeyLevelName;
 
     private Exp aggregateChildrenExpression;
 
@@ -156,6 +157,7 @@ public class RolapHierarchy extends HierarchyBase {
                     getRolapSchema().getDialect());
         }
         this.memberReaderClass = xmlHierarchy.memberReaderClass;
+        this.uniqueKeyLevelName = xmlHierarchy.uniqueKeyLevelName;
 
         // Create an 'all' level even if the hierarchy does not officially
         // have one.
@@ -889,6 +891,20 @@ public class RolapHierarchy extends HierarchyBase {
         if (defaultMember != null) {
             this.defaultMember = defaultMember;
         }
+    }
+
+
+    /**
+     * Gets "unique key level name" attribute of this Hierarchy, if set.
+     * If set, this property indicates that all level properties are
+     * functionally dependent (invariant) on their associated levels,
+     * and that the set of levels from the root to the named level (inclusive)
+     * effectively defines an alternate key.
+     *
+     * This allows the GROUP BY to be eliminated from associated queries.
+     */
+    public String getUniqueKeyLevelName() {
+        return uniqueKeyLevelName;
     }
 
 

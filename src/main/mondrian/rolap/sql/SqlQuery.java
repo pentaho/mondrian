@@ -358,13 +358,9 @@ public class SqlQuery {
      * @return Alias of expression
      */
     public String addSelectGroupBy(final String expression) {
-        final String c = addSelect(expression);
-        if (dialect.requiresGroupByAlias()) {
-            addGroupBy(dialect.quoteIdentifier(c));
-        } else {
-            addGroupBy(expression);
-        }
-        return c;
+        final String alias = addSelect(expression);
+        addGroupBy(expression, alias);
+        return alias;
     }
 
     public int getCurrentSelectListSize()
@@ -420,6 +416,14 @@ public class SqlQuery {
     public void addGroupBy(final String expression)
     {
         groupBy.add(expression);
+    }
+
+    public void addGroupBy(final String expression, final String alias) {
+        if (dialect.requiresGroupByAlias()) {
+            addGroupBy(dialect.quoteIdentifier(alias));
+        } else {
+            addGroupBy(expression);
+        }
     }
 
     public void addHaving(final String expression)

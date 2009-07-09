@@ -45,6 +45,7 @@
 					<li><a href="#Member_properties_and_formatters">Member properties and formatters</a></li>
                     <li><a href="#Approximate_level_cardinality">Approximate level cardinality</a></li>
 					<li><a href="#Default_Measure_Attribute">Default Measure Attribute</a></li>
+                    <li><a href="#Functional_dependency_optimizations">Functional Dependency Optimizations</a></li>
                 </ol>
 		</ol>
   	</li>
@@ -970,6 +971,177 @@ element allows users to explicitly specify any VirtualCube Measure as a default 
     <div style="padding-left:20px">&lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
 </code>
 </blockquote>
+<!--
+####################################################
+##  3.3.11 Functional Dependency Optimizations #####
+#################################################### -->
+<h1>3.3.11 Functional Dependency Optimizations<a name="Functional_dependency_optimizations">&nbsp;</a></h1>
+
+<p>In some circumstances, it may be possible to optimize performance by taking advantage
+of known functional dependencies in the data being processed.  Such dependencies
+are typically the result of business rules associated with the systems producing
+the data, and often cannot be inferred just by looking at the data itself.</p>
+
+<p>Functional dependencies are declared to Mondrian using the
+<a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of the
+<a href="#XML_Property">&lt;Property&gt</a> element and the
+<a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of the
+<a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> element.</p>
+
+<p>The <a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of a
+<a href="#Member_properties">member property</a> is used to indicate
+that the value of the member property is functionally dependent on the value
+of the <a href="#XML_Level">&lt;Level&gt</a> in which the member property is
+defined.  In other words, for a given value of the level, the value of the
+property is invariant.</p>
+
+<p>The <a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of a
+<a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> is used to indicate that the given
+level (if any) taken together with all higher levels in the hierarchy acts as a
+unique alternate key, ensuring that for any unique combination of those level values,
+there is exactly one combination of values for all levels below it.
+
+<p>To illustrate, consider a hierarchy modeling cars built and licensed in the
+United States:</p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Automotive" foreignKey="auto_dim_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="auto_dim_id" uniqueKeyLevelName="Vehicle Identification Number"&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="automotive_dim"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Make" column="make_id" type="Numeric"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Model" column="model_id" type="Numeric"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="ManufacturingPlant" column="plant_id" type="Numeric"/&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Property">Property</a> name="State" column="plant_state_id" type="Numeric" dependsOnLevelValue="true"/&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Property">Property</a> name="City" column="plant_city_id" type="Numeric" dependsOnLevelValue="true"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Vehicle Identification Number" column="vehicle_id" type="Numeric"/&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Property">Property</a> name="Color" column="color_id" type="Numeric" dependsOnLevelValue="true"/&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Property">Property</a> name="Trim" column="trim_id" type="Numeric" dependsOnLevelValue="true"/&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="LicensePlateNum" column="license_id" type="String"/&gt;</div>
+                    <div style="padding-left:80px">&lt;<a href="#XML_Property">Property</a> name="State" column="license_state_id" type="Numeric" dependsOnLevelValue="true"/&gt;</div>
+            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
+    </code>
+</blockquote>
+
+<p>In the above example, we know that a given manufacturing plant exists only in
+a single city and state, that a given car only has one color scheme and
+one trim level, and that the license number is associated with a single state.
+Therefore, we can state that all of these member properties are functionally
+dependent on the associated level values.</p>
+
+<p>Additionally, we know that the Vehicle Identification Number uniquely identifies
+each car, and that each car only has one license.  Thus, we know that the
+combination of Make, Model, Manufacturing Plant, and Vehicle Ientification
+Number uniquely identify each vehicle; the license number is redundant.</p>
+
+<p>These attributes enable optimization of the GROUP BY clause in the SQL statements Mondrian generates.  Absent any
+functional dependency information, a typical query on the Automotive dimension
+would look something like:</p>
+
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">SELECT</div>
+            <div style="padding-left:40px;">`automotive_dim`.`make_id` AS c0,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`model_id` AS c1,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_id` AS c2,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_state_id` AS c3,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_city_id` AS c4,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`vehicle_id` AS c5,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`color_id` AS c6,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`trim_id` AS c7,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_id` AS c8,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_state_id` AS c9</div>
+        <div style="padding-left:20px;">FROM</div>
+            <div style="padding-left:40px;">`automotive_dim` AS `automotive_dim`,</div>
+        <div style="padding-left:20px;">GROUP BY</div>
+            <div style="padding-left:40px;">`automotive_dim`.`make_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`model_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_state_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_city_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`vehicle_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`color_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`trim_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_state_id`</div>
+        <div style="padding-left:20px;">ORDER BY</div>
+            <div style="padding-left:40px;">`...</div>
+    </code>
+</blockquote>
+
+<p>Given the functional dependence attributes in the schema example above, however,
+we know that the query is selecting at a depth that includes the "unique key" level,
+and that all properties in the query are also functionally dependent on their levels.
+In such cases the GROUP BY clause is redundant and may be eliminated completely,
+reducing SQL query performance significantly on some databases:</p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">SELECT</div>
+            <div style="padding-left:40px;">`automotive_dim`.`make_id` AS c0,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`model_id` AS c1,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_id` AS c2,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_state_id` AS c3,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_city_id` AS c4,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`vehicle_id` AS c5,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`color_id` AS c6,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`trim_id` AS c7,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_id` AS c8,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_state_id` AS c9</div>
+        <div style="padding-left:20px;">FROM</div>
+            <div style="padding-left:40px;">`automotive_dim` AS `automotive_dim`,</div>
+        <div style="padding-left:20px;">ORDER BY</div>
+            <div style="padding-left:40px;">`...</div>
+    </code>
+</blockquote>
+
+
+<p>Had the query not been deep enough to include the "unique key" level, or
+had any of the member properties not been functionally dependent on their level,
+this optimization would not be possible.</p>
+
+<p>In some cases, a different optimization can be made where there is no "unique key"
+level, but some or all of the member properties are functionally dependent on
+their level.  Some databases (notably MySQL) permit columns to be listed in the
+SELECT clause that do not also appear in the GROUP BY clause.  On such databases,
+Mondrian can simply leave the functionally dependent member properties out of
+the GROUP BY, which may reduce SQL query processing time substantially:</p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">SELECT</div>
+            <div style="padding-left:40px;">`automotive_dim`.`make_id` AS c0,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`model_id` AS c1,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_id` AS c2,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_state_id` AS c3,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_city_id` AS c4,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`vehicle_id` AS c5,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`color_id` AS c6,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`trim_id` AS c7,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_id` AS c8,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_state_id` AS c9</div>
+        <div style="padding-left:20px;">FROM</div>
+            <div style="padding-left:40px;">`automotive_dim` AS `automotive_dim`,</div>
+        <div style="padding-left:20px;">GROUP BY</div>
+            <div style="padding-left:40px;">`automotive_dim`.`make_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`model_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`plant_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`vehicle_id`,</div>
+            <div style="padding-left:40px;">`automotive_dim`.`license_id`,</div>
+        <div style="padding-left:20px;">ORDER BY</div>
+            <div style="padding-left:40px;">`...</div>
+    </code>
+</blockquote>
+
+<p>Please note that significant changes are anticipated to the schema syntax
+in Mondrian 4.0, including a new approach to declaring functional dependencies.
+While the expectation is that the 4.0 schema processor will maintain backward
+compatibility with schemas developed for Mondrian 3.1, these are transitional
+attributes introduced to allow support in the interim, and 4.0 will not be
+backward compatible with them. Therefore, any schema using these attributes will
+need to be migrated to the new syntax as part of upgrading to Mondrian 4.0</p>
 
 <!--
 #######################################

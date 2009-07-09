@@ -509,6 +509,13 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="uniqueKeyLevelName" required="false">
+            <Doc>
+		        Should be set to the level (if such a level exists) at which depth it is known
+		        that all members have entirely unique rows, allowing SQL GROUP BY clauses to
+                be completely eliminated from the query.
+            </Doc>
+        </Attribute>
 
         <Object name="relation" type="RelationOrJoin">
             <Doc>
@@ -782,6 +789,15 @@ Revision is $Id$
             <Doc>
                 A string being displayed instead of the name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="dependsOnLevelValue" required="false" type="Boolean">
+            <Doc>
+		        Should be set to true if the value of the property is functionally dependent on
+		        the level value.  This permits the associated property column to be omitted from
+		        the GROUP BY clause (if the database permits columns in the SELECT that are not
+                in the GROUP BY).  This can be a significant performance enhancement on some
+                databases, such as MySQL.
             </Doc>
         </Attribute>
     </Element>

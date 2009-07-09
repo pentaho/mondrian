@@ -13,7 +13,6 @@
 
 package mondrian.rolap;
 
-import mondrian.gui.MondrianGuiDef.AggTable;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -407,7 +406,6 @@ RME is this right
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
             sqlQuery.addOrderBy(expString, true, false, true);
-            sqlQuery.addGroupBy(expString);
             if (!exp.equals(level.getKeyExp())) {
                 sqlQuery.addSelect(expString);
             }
@@ -417,7 +415,14 @@ RME is this right
                 exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 expString = exp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(expString);
+                String alias = sqlQuery.addSelect(expString);
+                // Some dialects allow us to eliminate properties from the
+                // group by that are functionally dependent on the level value
+                if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                    || !property.dependsOnLevelValue())
+                {
+                    sqlQuery.addGroupBy(expString, alias);
+                }
             }
         }
         return sqlQuery.toString();
@@ -585,7 +590,14 @@ RME is this right
                 final MondrianDef.Expression exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 final String s = exp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(s);
+                String alias = sqlQuery.addSelect(s);
+                // Some dialects allow us to eliminate properties from the
+                // group by that are functionally dependent on the level value
+                if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                    || !property.dependsOnLevelValue())
+                {
+                    sqlQuery.addGroupBy(s, alias);
+                }
             }
         } else {
             // an earlier check was made in getAggStar() to verify
@@ -1041,7 +1053,14 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(s);
+            String alias = sqlQuery.addSelect(s);
+            // Some dialects allow us to eliminate properties from the group by
+            // that are functionally dependent on the level value
+            if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                || !property.dependsOnLevelValue())
+            {
+                sqlQuery.addGroupBy(s, alias);
+            }
         }
         return sqlQuery.toString();
     }
@@ -1093,7 +1112,14 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(s);
+            String alias = sqlQuery.addSelect(s);
+            // Some dialects allow us to eliminate properties from the group by
+            // that are functionally dependent on the level value
+            if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                || !property.dependsOnLevelValue())
+            {
+                sqlQuery.addGroupBy(s, alias);
+            }
         }
         return sqlQuery.toString();
     }

@@ -114,6 +114,60 @@ public class MySqlDialect extends JdbcDialectImpl {
         return quoteIdentifierString;
     }
 
+    /**
+     * Detects whether the database is configured to permit queries
+     * that include columns in the SELECT that are not also in the GROUP BY.
+     * This is the default in MySQL, but can be changed if the administrator
+     * sets the SQL mode to ONLY_FULL_GROUP_BY.
+     *
+     * @param connection The database connection
+     * @return Whether the feature is enabled.  If for some reason this cannot
+     * be determined explicitly (likely due to a connection issue), the return
+     * value will be false.  In the unlikely event that execution continues
+     * after such an error, "false" will always guarantee correct, if somewhat
+     * slower, results.
+     * @throws SQLException
+     */
+    protected boolean deduceSupportsSelectNotInGroupBy(Connection connection)
+        throws SQLException
+    {
+        boolean supported = false;
+        String sqlmode = getCurrentSqlMode(connection);
+        if (sqlmode == null) {
+            supported = true;
+        } else {
+            if (!sqlmode.contains("ONLY_FULL_GROUP_BY")) {
+                supported = true;
+            }
+        }
+        return supported;
+    }
+
+    public boolean canSupportSelectNotInGroupBy() {
+        return true;
+    }
+
+    private String getCurrentSqlMode(Connection connection)
+        throws SQLException
+    {
+        return getSqlMode(connection, true);
+    }
+
+    private String getSqlMode(Connection connection, boolean session)
+        throws SQLException
+    {
+        String scope = session ? "SESSION" : "GLOBAL";
+        String sqlmode = null;
+        Statement s = connection.createStatement();
+        if (s.execute("SELECT @@" + scope + ".sql_mode")) {
+            ResultSet rs = s.getResultSet();
+            rs.next();
+            sqlmode = rs.getString(1);
+        }
+        s.close();
+        return sqlmode;
+    }
+
     public boolean requiresAliasForFromQuery() {
         return true;
     }

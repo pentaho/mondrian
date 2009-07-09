@@ -64,6 +64,12 @@ public class JdbcDialectImpl implements Dialect {
     private final int maxColumnNameLength;
 
     /**
+     * Indicates whether the database allows selection of columns
+     * not listed in the group by clause.
+     */
+    protected boolean permitsSelectNotInGroupBy;
+
+    /**
      * Major database product (or null if product is not a common one)
      */
     protected final DatabaseProduct databaseProduct;
@@ -110,6 +116,8 @@ public class JdbcDialectImpl implements Dialect {
         this.maxColumnNameLength = deduceMaxColumnNameLength(metaData);
         this.databaseProduct =
             getProduct(this.productName, this.productVersion);
+        this.permitsSelectNotInGroupBy =
+            deduceSupportsSelectNotInGroupBy(connection);
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -212,6 +220,39 @@ public class JdbcDialectImpl implements Dialect {
         }
         return supports;
     }
+
+     /**
+      * Detects whether the database is configured to permit queries
+      * that include columns in the SELECT that are not also in the GROUP BY.
+      * MySQL is an example of one that does, though this is configurable.
+      *
+      * The expectation is that this will not change while Mondrian is
+      * running, though some databases (MySQL) allow changing it on the fly.
+      *
+      * @param conn The database connection
+      * @return Whether the feature is enabled.
+      * @throws SQLException
+      */
+    protected boolean deduceSupportsSelectNotInGroupBy(Connection conn)
+        throws SQLException
+    {
+        // Most simply don't support it
+        return false;
+    }
+
+    public boolean setSelectNotInGroupBy(Connection connection, boolean allow)
+        throws SQLException
+    {
+        // most don't support enabling this feture, so only return success
+        // if the request wouldn't change anything.  Derived classes can
+        // overrride.
+        if (allow == allowsSelectNotInGroupBy()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     public String toUpper(String expr) {
         return "UPPER(" + expr + ")";
@@ -701,6 +742,10 @@ public class JdbcDialectImpl implements Dialect {
 
     public boolean supportsGroupByExpressions() {
         return true;
+    }
+
+    public boolean allowsSelectNotInGroupBy() {
+        return permitsSelectNotInGroupBy;
     }
 
     public boolean supportsGroupingSets() {
