@@ -372,7 +372,10 @@ public class DialectTest extends TestCase {
                 // derby (yes, lame message)
                 "Java exception: ': java.lang.NullPointerException'.",
                 // oracle
-                "ORA-01785: ORDER BY item must be the number of a SELECT-list expression\n",
+                "ORA-01785: ORDER BY item must be the number of a SELECT-list "
+                + "expression\n",
+                // teradata
+                ".*The ORDER BY clause must contain only integer constants.",
             };
             assertQueryFails(sql, errs);
         }
@@ -792,6 +795,13 @@ public class DialectTest extends TestCase {
                 // mysql (if sql_mode contains ONLY_FULL_GROUP_BY)
                 "ERROR 1055 (42000): 'foodmart.time_by_day.the_month' isn't in "
                 + "GROUP BY",
+                // access
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] You tried "
+                + "to execute a query that does not include the specified "
+                + "expression 'the_month' as part of an aggregate function.",
+                // teradata
+                ".*Selected non-aggregate values must be part of the "
+                + "associated group.",
             };
             assertQueryFails(sql, errs);
         }
