@@ -18,7 +18,6 @@ import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
 
 import org.apache.log4j.Logger;
-import org.apache.commons.collections.map.Flat3Map;
 import org.eigenbase.util.property.StringProperty;
 
 import java.util.*;
@@ -866,7 +865,10 @@ public class RolapMember extends MemberBase {
             Object[] parameterValues)
             throws CreationException
         {
-            return new Flat3Map();
+            // REVIEW emcdermid 10-Jul-2009: Would almost certainly be more
+            // efficient to use Flat3Map from Apache commons collection, but
+            // that requires Mondrian upgrade to a newer version.
+            return new HashMap();
         }
     }
 }
