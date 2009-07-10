@@ -1114,7 +1114,20 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       org.apache.commons.collections.map.Flat3Map
       </td>
     </tr>
+    <tr>
+      <td><code>
+      <a href="api/mondrian/rolap/RolapMember/MondrianProperties.html#SqlMemberSourceValuePoolClass">
+      mondrian.util.SqlMemberSource.ValuePool.class
+      </a></code></td>
 
+      <td>string</td>
+      <td>-</td>
+      <td>
+      If set, the specified class is used to pool member property
+      values in mondrian.rolap.SqlMemberSource.  Defaults to
+      org.apache.commons.collections.map.LRUMap
+      </td>
+    </tr>
 </table>
 
 <h3>Limit properties<a name="Limit_properties">&nbsp;</a></h3>
@@ -1125,6 +1138,11 @@ time or space required to execute a query. If any of these limits are exceeded,
 mondrian throws an exception which extends
 <a href="api/mondrian/olap/ResultLimitExceededException.html">
 mondrian.olap.ResultLimitExceededException</a>.</p>
+
+<p>The <code>mondrian.util.SqlMemberSource.ValuePool.limit</code> property
+sets an upper limit on the number of values pooled
+in mondrian.rolap.SqlMemberSource.  It defaults to 0, which disables
+value pooling (as does any other value < 1).</p>
 
 <h2>Connect strings<a name="Connect_strings">&nbsp;</a></h2>
 

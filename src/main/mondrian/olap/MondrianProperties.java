@@ -971,17 +971,39 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.calc.ExpCompiler.class", null);
 
     /**
-     * Property that defines
+     * <p>Property that defines
      * the name of the class used for mapping member properties
-     * to their respective values.
+     * to their respective values.</p>
      *
      * <p>If the value is
      * non-null, it is used by the <code>PropertyValueFactory</code>
-     * to create the implementation.
+     * to create the implementation.</p>
      */
     public transient final StringProperty PropertyValueMapClass =
         new StringProperty(
             this, "mondrian.rolap.RolapMember.PropertyValueMap.class", null);
+
+
+    /**
+     * <p>Property that defines the maximum number of common values that
+     * SqlMemberSource may pool for reuse.  Defaults to 0 (turns off
+     * pooling) if not explicitly set.</p>
+     */
+    public transient final IntegerProperty SqlMemberSourceValuePoolLimit =
+        new IntegerProperty(
+            this, "mondrian.rolap.SqlMemberSource.ValuePool.limit", 0);
+
+    /**
+     * <p>Property that defines the name of the class used in SqlMemberSource
+     * to pool common values.</p>
+     *
+     * <p>If the value is non-null, it is used by the
+     * <code>SqlMemberSource.ValueMapFactory</code>
+     * to create the implementation.</p>
+     */
+    public transient final StringProperty SqlMemberSourceValuePoolClass =
+        new StringProperty(
+            this, "mondrian.util.SqlMemberSource.ValuePool.class", null);
 
     /**
      * Property that defines
