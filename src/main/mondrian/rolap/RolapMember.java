@@ -825,8 +825,34 @@ public class RolapMember extends MemberBase {
             : val.toString();
     }
 
+    /**
+     * TODO: Needs documentation.
+     *
+     * <p>REVIEW: jhyde, 2009/7/10: I'm not sure that ObjectFactory is the right
+     * basis for this factory. First, creating property-value maps occurs each
+     * time a member is created, which needs to be efficient, whereas this class
+     * uses reflection every time it creates a map.
+     *
+     * <p>Second, we might like to create a different kind of map for different
+     * members. If a member belongs to a level which has 10 member properties,
+     * we should use a HashMap; if the level has no member properties, use a
+     * Flat3Map. This factory can't take other factors into account; it always
+     * creates objects of the same type, even if it can call different
+     * constructor values.
+     *
+     * <p>So, I think
+     *
+     * <pre>interface PropertyValueMapFactory {
+     *   Map&lt;String, Object&gt; create(Member member);
+     * }</pre>
+     *
+     * would be more appropriate; and the
+     * {@link mondrian.olap.MondrianProperties#PropertyValueMapClass} property
+     * should return the name of the factory class.
+     *
+     */
     public static final class PropertyValueMapFactory
-    extends ObjectFactory<Map>
+        extends ObjectFactory<Map<String, Object>>
     {
 
         /**
@@ -842,7 +868,7 @@ public class RolapMember extends MemberBase {
          *
          * @return the <code>Map</code>.
          */
-        public static Map getPropertyValueMap() {
+        public static Map<String, Object> getPropertyValueMap() {
             return factory.getObject();
         }
 
@@ -851,8 +877,9 @@ public class RolapMember extends MemberBase {
          * passes the <code>Map</code> class to the <code>ObjectFactory</code>
          * base class.
          */
+        @SuppressWarnings({"unchecked"})
         private PropertyValueMapFactory() {
-            super(Map.class);
+            super((Class) Map.class);
         }
 
 
@@ -860,7 +887,7 @@ public class RolapMember extends MemberBase {
             return MondrianProperties.instance().PropertyValueMapClass;
         }
 
-        protected Map getDefault(
+        protected Map<String, Object> getDefault(
             Class[] parameterTypes,
             Object[] parameterValues)
             throws CreationException
@@ -868,7 +895,7 @@ public class RolapMember extends MemberBase {
             // REVIEW emcdermid 10-Jul-2009: Would almost certainly be more
             // efficient to use Flat3Map from Apache commons collection, but
             // that requires Mondrian upgrade to a newer version.
-            return new HashMap();
+            return new HashMap<String, Object>();
         }
     }
 }
