@@ -3208,7 +3208,7 @@ public class SchemaExplorer
 
     protected void addTable(ActionEvent evt) {
         MondrianGuiDef.RelationOrJoin relation = new MondrianGuiDef.Table(
-            "", "Table", "");
+            "", "Table", "", null);
         addRelation(evt, relation);
     }
 
@@ -3216,10 +3216,10 @@ public class SchemaExplorer
         MondrianGuiDef.RelationOrJoin relation = new MondrianGuiDef.Join(
             "",
             "",
-            new MondrianGuiDef.Table("", "Table 1", ""),
+            new MondrianGuiDef.Table("", "Table 1", "", null),
             "",
             "",
-            new MondrianGuiDef.Table("", "Table 2", ""));
+            new MondrianGuiDef.Table("", "Table 2", "", null));
         addRelation(evt, relation);
     }
 
@@ -3462,7 +3462,7 @@ public class SchemaExplorer
         MondrianGuiDef.Closure closure = new MondrianGuiDef.Closure();
         closure.parentColumn = "";
         closure.childColumn = "";
-        closure.table = new MondrianGuiDef.Table("", "Table", "");
+        closure.table = new MondrianGuiDef.Table("", "Table", "", null);
         if (level.closure == null) {
             level.closure = closure;
         }

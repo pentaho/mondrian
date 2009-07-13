@@ -99,12 +99,12 @@ public class SchemaTreeCellEditor
                 new MondrianGuiDef.Join(
                     "", "",
                     new MondrianGuiDef.Table(
-                        "", "Table 1", ""),
+                        "", "Table 1", "", null),
                     "", "",
                     new MondrianGuiDef.Table(
-                        "", "Table 2", ""));
+                        "", "Table 2", "", null));
         } else if (retValue.equals("Table")) {
-            relationObj = new MondrianGuiDef.Table("", "Table", "");
+            relationObj = new MondrianGuiDef.Table("", "Table", "", null);
         }
 
         TreePath tpath = tree.getSelectionPath();
