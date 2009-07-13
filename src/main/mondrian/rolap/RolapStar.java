@@ -222,7 +222,11 @@ public class RolapStar {
     {
         if (rel instanceof MondrianDef.Table) {
             MondrianDef.Table tbl = (MondrianDef.Table)rel;
-            return new MondrianDef.Table(tbl.schema, tbl.name, possibleName);
+            return new MondrianDef.Table(
+                tbl.schema,
+                tbl.name,
+                possibleName,
+                tbl.tableHints);
         } else if (rel instanceof MondrianDef.View) {
             MondrianDef.View view = (MondrianDef.View)rel;
             MondrianDef.View newView = new MondrianDef.View(view);

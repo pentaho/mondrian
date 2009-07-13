@@ -10,12 +10,17 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.spi.Dialect;
+import mondrian.util.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * <p>Test for <code>SqlQuery</code></p>
@@ -62,7 +67,7 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addGroupingFunction("gf0");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
             ArrayList<String> groupingsetsList = new ArrayList<String>();
             groupingsetsList.add("gs1");
@@ -97,6 +102,50 @@ public class SqlQueryTest extends BatchTestCase {
                 sqlQuery.toString());
         }
     }
+
+
+    public void testToStringForForcedIndexHint() {
+        Map<String, String> hints = new HashMap();
+        String expHintString = "";
+        for (boolean formatted : new boolean[]{false, true}) {
+            Dialect dialect = getTestContext().getDialect();
+
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL) {
+                hints.put("force_index", "myIndex");
+                expHintString = " FORCE INDEX (myIndex)";
+            }
+            SqlQuery sqlQuery = new SqlQuery(dialect, formatted);
+            sqlQuery.setAllowHints(true);
+            sqlQuery.addSelect("c1");
+            sqlQuery.addSelect("c2");
+            sqlQuery.addGroupingFunction("gf0");
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, hints, true);
+            sqlQuery.addWhere("a=b");
+            String expected;
+            String lineSep = System.getProperty("line.separator");
+            if (!formatted) {
+                expected =
+                    "select c1 as \"c0\", c2 as \"c1\" "
+                    + "from \"s\".\"t1\" =as= \"t1alias\""
+                    + expHintString
+                    + " where a=b";
+            } else {
+                expected =
+                    "select " + lineSep
+                    + "    c1 as \"c0\", " + lineSep
+                    + "    c2 as \"c1\"" + lineSep
+                    + "from " + lineSep
+                    + "    \"s\".\"t1\" =as= \"t1alias\""
+                    + expHintString + lineSep
+                    + "where " + lineSep
+                    + "    a=b" + lineSep;
+            }
+            assertEquals(
+                dialectize(dialect.getDatabaseProduct(), expected),
+                sqlQuery.toString());
+        }
+    }
+
 
     public void testPredicatesAreOptimizedWhenPropertyIsTrue() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
@@ -250,7 +299,7 @@ public class SqlQueryTest extends BatchTestCase {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("g1");
             sqlQuery.addGroupingFunction("g2");
@@ -300,7 +349,7 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addSelect("m1", "m1");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("c0");
             sqlQuery.addGroupingFunction("c1");

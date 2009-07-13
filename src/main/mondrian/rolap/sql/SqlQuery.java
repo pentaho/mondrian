@@ -89,6 +89,10 @@ public class SqlQuery {
     private final List<ClauseList> groupingSet;
     private final ClauseList groupingFunction;
 
+
+    /** Controls whether table optimization hints are used */
+    private boolean allowHints;
+
     /**
      * This list is used to keep track of what aliases have been  used in the
      * FROM clause. One might think that a java.util.Set would be a more
@@ -128,6 +132,12 @@ public class SqlQuery {
         this.buf = new StringBuilder(128);
         this.groupingSet = new ArrayList<ClauseList>();
         this.dialect = dialect;
+
+        // REVIEW emcdermid 10-Jul-2009: It might be okay to allow
+        // hints in all cases, but for initial implementation this
+        // allows us to them on selectively in specific situations.
+        // Usage will likely expand with experimentation.
+        this.allowHints = false;
     }
 
     /**
@@ -154,6 +164,16 @@ public class SqlQuery {
 
     public void setDistinct(final boolean distinct) {
         this.distinct = distinct;
+    }
+
+    /**
+     * Chooses whether table optimization hints may be used
+     * (assuming the dialect supports it).
+     *
+     * @param t True to allow hints to be used, false otherwise
+     */
+    public void setAllowHints(boolean t) {
+        this.allowHints = t;
     }
 
     /**
@@ -210,10 +230,11 @@ public class SqlQuery {
      * Adds <code>[schema.]table AS alias</code> to the FROM clause.
      *
      * @param schema schema name; may be null
-     * @param table table name
+     * @param name table name
      * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
      * @param filter Extra filter condition, or null
+     * @param hints table optimization hints, if any
      * @param failIfExists Whether to throw a RuntimeException if from clause
      *   already contains this alias
      *
@@ -222,9 +243,10 @@ public class SqlQuery {
      */
     boolean addFromTable(
         final String schema,
-        final String table,
+        final String name,
         final String alias,
         final String filter,
+        final Map hints,
         final boolean failIfExists)
     {
         if (fromAliases.contains(alias)) {
@@ -237,7 +259,7 @@ public class SqlQuery {
         }
 
         buf.setLength(0);
-        dialect.quoteIdentifier(buf, schema, table);
+        dialect.quoteIdentifier(buf, schema, name);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 
@@ -248,6 +270,10 @@ public class SqlQuery {
             }
             dialect.quoteIdentifier(alias, buf);
             fromAliases.add(alias);
+        }
+
+        if (this.allowHints) {
+            dialect.appendHintsAfterFromClause(buf, hints);
         }
 
         from.add(buf.toString());
@@ -305,8 +331,12 @@ public class SqlQuery {
                 ? table.getAlias()
                 : alias;
             return addFromTable(
-                table.schema, table.name, tableAlias,
-                table.getFilter(), failIfExists);
+                table.schema,
+                table.name,
+                tableAlias,
+                table.getFilter(),
+                table.getHintMap(),
+                failIfExists);
 
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;

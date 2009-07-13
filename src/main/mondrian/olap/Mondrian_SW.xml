@@ -1312,17 +1312,34 @@
         </Object>
         <Array name="aggExcludes" type="AggExclude" required="false"/>
         <Array name="aggTables" type="AggTable" required="false"/>
+        <Array name="tableHints" type="Hint" required="false">
+            <Doc>
+                Table optimization hints; may be ignored by dialect.
+            </Doc>
+        </Array>
 
         <Code><![CDATA[
+            private java.util.Map<String,String> hintMap;
             /** Convenience constructor. */
             public Table(Table table) {
-                this(table.schema, table.name, table.alias);
+                this(table.schema, table.name, table.alias, table.tableHints);
             }
-            public Table(String schema, String name, String alias) {
+            public Table(String schema, String name, String alias, Hint[] tablehints) {
                 this();
                 this.schema = schema;
                 this.name = name;
                 this.alias = alias;
+                this.hintMap = buildHintMap(tablehints);
+            }
+            private java.util.Map<String,String> buildHintMap(Hint[] th) {
+                java.util.Map<String,String> h =
+                    new java.util.HashMap<String,String>();
+                if (th != null) {
+                    for (int i = 0; i < th.length; i++) {
+                        h.put(th[i].type, th[i].cdata);
+                    }
+                }
+                return h;
             }
             /** Returns the alias or, if it is null, the table name. */
             public String getAlias() {
@@ -1363,8 +1380,26 @@
             public AggTable[] getAggTables() {
                 return aggTables;
             }
+            public java.util.Map<String,String> getHintMap() {
+                if (hintMap == null) {
+                    hintMap = buildHintMap(this.tableHints);
+                }
+                return hintMap;
+            }
             ]]>
         </Code>
+    </Element>
+
+    <Element type="Hint">
+        <Doc>
+            Dialect-specific table optimization hints
+        </Doc>
+        <Attribute name="type" required="true">
+            <Doc>
+                Type of hint, interpreted and applied on a per-dialect basis
+            </Doc>
+        </Attribute>
+        <CData/>
     </Element>
 
     <Element type="InlineTable" class="Relation">

@@ -270,7 +270,8 @@ public class AggTableManager {
                         dbTable.table = new MondrianDef.Table(
                             schema,
                             name,
-                            alias);
+                            alias,
+                            null); // don't know about table hints
                         AggStar aggStar = AggStar.makeAggStar(
                             star,
                             dbTable,
@@ -455,12 +456,18 @@ public class AggTableManager {
             MondrianDef.RelationOrJoin relation =
                 star.getFactTable().getRelation();
             String schema = null;
+            MondrianDef.Hint[] tableHints = null;
             if (relation instanceof MondrianDef.Table) {
                 schema = ((MondrianDef.Table) relation).schema;
+                tableHints = ((MondrianDef.Table) relation).tableHints;
             }
             String tableName = dbFactTable.getName();
             String alias = null;
-            dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
+            dbFactTable.table = new MondrianDef.Table(
+                schema,
+                tableName,
+                alias,
+                tableHints);
 
             for (JdbcSchema.Table.Column factColumn
                 : dbFactTable.getColumns())

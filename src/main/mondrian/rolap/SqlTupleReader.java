@@ -751,7 +751,10 @@ public class SqlTupleReader implements TupleReader {
     {
         String s =
             "while generating query to retrieve members of level(s) " + targets;
+
+        // Allow query to use optimization hints from the table definition
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
+        sqlQuery.setAllowHints(true);
 
         Evaluator evaluator = getEvaluator(constraint);
         AggStar aggStar = chooseAggStar(evaluator);

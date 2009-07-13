@@ -46,6 +46,7 @@
                     <li><a href="#Approximate_level_cardinality">Approximate level cardinality</a></li>
 					<li><a href="#Default_Measure_Attribute">Default Measure Attribute</a></li>
                     <li><a href="#Functional_dependency_optimizations">Functional Dependency Optimizations</a></li>
+                    <li><a href="#Table_hints">Table Hints</a></li>
                 </ol>
 		</ol>
   	</li>
@@ -1142,6 +1143,48 @@ compatibility with schemas developed for Mondrian 3.1, these are transitional
 attributes introduced to allow support in the interim, and 4.0 will not be
 backward compatible with them. Therefore, any schema using these attributes will
 need to be migrated to the new syntax as part of upgrading to Mondrian 4.0</p>
+
+<!--
+####################################################
+##  3.3.12 Table Hints #####
+#################################################### -->
+<h1>3.3.12 Table Hints<a name="Table_hints">&nbsp;</a></h1>
+
+<p>Mondrian supports a limited set of database-specific hints for the
+<a href="#XML_Table">&lt;Table&gt</a> element, which will then be
+passed on to SQL queries involving the table.  These hints are as
+follows:</p>
+
+	<table class="grayTable" id="table12" width="500">
+  		<tr>
+    		<td><b>Database</b></td>
+    		<td><b>Hint Type</b></td>
+    		<td><b>Permitted Values</b></td>
+    		<td><b>Description</b></td>
+  		</tr>
+  		<tr>
+    		<td>MySQL</td>
+    		<td><code>force_index</code></td>
+    		<td>The name of an index on this table</td>
+    		<td>Forces the named index to be used when selecting level values
+            from this table.</td>
+  		</tr>
+  		</table>
+
+<p>For example:</p>
+
+<blockquote style="text-indent: -20px">
+    <code>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Table">Table</a> name="automotive_dim"&gt;</div>
+            <div style="padding-left:40px">&lt;<a href="#XML_Hint">Hint</a> type="force_index"&gt;my_index&lt;/<a href="#XML_Hint">Hint</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_Table">Table</a>&gt;</div>
+    </code>
+</blockquote>
+
+<p>As with the functional dependency optimizations, support for table hints
+is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
+schema using them may need to be migrated to the new schema syntax as part of
+upgrading to Mondrian 4.0</p>
 
 <!--
 #######################################

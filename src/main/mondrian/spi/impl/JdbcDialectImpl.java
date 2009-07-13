@@ -9,6 +9,7 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 import mondrian.spi.*;
 
 import java.util.*;
@@ -122,6 +123,13 @@ public class JdbcDialectImpl implements Dialect {
 
     public DatabaseProduct getDatabaseProduct() {
         return databaseProduct;
+    }
+
+    public void appendHintsAfterFromClause(
+        StringBuilder buf,
+        Map<String, String> hints)
+    {
+        // Hints are always dialect-specific, so the default is a no-op
     }
 
     public boolean allowsDialectSharing() {
@@ -759,7 +767,7 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
-        return true;
+        return false;
     }
 
     public boolean supportsMultiValueInExpr() {

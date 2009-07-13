@@ -8,7 +8,11 @@
 */
 package mondrian.spi;
 
+import mondrian.olap.MondrianDef;
+import mondrian.util.Pair;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description of an SQL dialect.
@@ -642,6 +646,20 @@ public interface Dialect {
      * @return Database
      */
     DatabaseProduct getDatabaseProduct();
+
+    /**
+     * Assembles and returns a string containing any hints that should
+     * be appended after the FROM clause in a SELECT statement, based
+     * on any hints provided.  Any unrecognized or unsupported hints will
+     * be ignored.
+     *
+     * @param buf The Stringbuffer to which the dialect-specific syntax
+     * for any relevant table hints may be appended.  Must not be null.
+     * @param hints A map of table hints provided in the schema definition
+     */
+    void appendHintsAfterFromClause(
+        StringBuilder buf,
+        Map<String, String> hints);
 
     /**
      * Returns whether this Dialect object can be used for all connections

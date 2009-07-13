@@ -9,8 +9,12 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
+import mondrian.util.Pair;
 
 import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
 import java.sql.*;
 
 /**
@@ -148,6 +152,21 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
         s.close();
         return sqlmode;
+    }
+
+
+    public void appendHintsAfterFromClause(
+        StringBuilder buf,
+        Map<String, String> hints)
+    {
+        if (hints != null) {
+            String forcedIndex = hints.get("force_index");
+            if (forcedIndex != null) {
+                buf.append(" FORCE INDEX (");
+                buf.append(forcedIndex);
+                buf.append(")");
+            }
+        }
     }
 
     public boolean requiresAliasForFromQuery() {
