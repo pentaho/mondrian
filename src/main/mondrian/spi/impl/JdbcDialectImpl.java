@@ -767,7 +767,7 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
-        return false;
+        return true;
     }
 
     public boolean supportsMultiValueInExpr() {
