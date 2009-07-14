@@ -106,14 +106,36 @@ public class SqlQueryTest extends BatchTestCase {
 
     public void testToStringForForcedIndexHint() {
         Map<String, String> hints = new HashMap();
-        String expHintString = "";
+        hints.put("force_index", "myIndex");
+
+        String unformattedMysql =
+            "select c1 as `c0`, c2 as `c1` "
+            + "from `s`.`t1` as `t1alias`"
+            + " FORCE INDEX (myIndex)"
+            + " where a=b";
+        String formattedMysql =
+            "select " + "\n"
+            + "    c1 as `c0`, " + "\n"
+            + "    c2 as `c1`" + "\n"
+            + "from " + "\n"
+            + "    `s`.`t1` as `t1alias`"
+            + " FORCE INDEX (myIndex)" + "\n"
+            + "where " + "\n"
+            + "    a=b" + "\n";
+
+        SqlPattern[] unformattedSqlPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                unformattedMysql,
+                null)};
+        SqlPattern[] formattedSqlPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                formattedMysql,
+                null)};
+
         for (boolean formatted : new boolean[]{false, true}) {
             Dialect dialect = getTestContext().getDialect();
-
-            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL) {
-                hints.put("force_index", "myIndex");
-                expHintString = " FORCE INDEX (myIndex)";
-            }
             SqlQuery sqlQuery = new SqlQuery(dialect, formatted);
             sqlQuery.setAllowHints(true);
             sqlQuery.addSelect("c1");
@@ -121,28 +143,54 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addGroupingFunction("gf0");
             sqlQuery.addFromTable("s", "t1", "t1alias", null, hints, true);
             sqlQuery.addWhere("a=b");
-            String expected;
-            String lineSep = System.getProperty("line.separator");
+            SqlPattern[] expected;
             if (!formatted) {
-                expected =
-                    "select c1 as \"c0\", c2 as \"c1\" "
-                    + "from \"s\".\"t1\" =as= \"t1alias\""
-                    + expHintString
-                    + " where a=b";
+                expected = unformattedSqlPatterns;
             } else {
-                expected =
-                    "select " + lineSep
-                    + "    c1 as \"c0\", " + lineSep
-                    + "    c2 as \"c1\"" + lineSep
-                    + "from " + lineSep
-                    + "    \"s\".\"t1\" =as= \"t1alias\""
-                    + expHintString + lineSep
-                    + "where " + lineSep
-                    + "    a=b" + lineSep;
+                expected = formattedSqlPatterns;
             }
+            assertSqlQueryToStringMatches(sqlQuery, expected);
+        }
+    }
+
+    private void assertSqlQueryToStringMatches(
+        SqlQuery query,
+        SqlPattern[] patterns)
+    {
+        Dialect dialect = getTestContext().getDialect();
+        Dialect.DatabaseProduct d = dialect.getDatabaseProduct();
+        boolean patternFound = false;
+        for (SqlPattern sqlPattern : patterns) {
+            if (!sqlPattern.hasDatabaseProduct(d)) {
+                // If the dialect is not one in the pattern set, skip the
+                // test. If in the end no pattern is located, print a warning
+                // message if required.
+                continue;
+            }
+
+            patternFound = true;
+
+            String trigger = sqlPattern.getTriggerSql();
+
+            trigger = dialectize(d, trigger);
+
             assertEquals(
-                dialectize(dialect.getDatabaseProduct(), expected),
-                sqlQuery.toString());
+                dialectize(dialect.getDatabaseProduct(), trigger),
+                query.toString());
+        }
+
+        // Print warning message that no pattern was specified for the current
+        // dialect.
+        if (!patternFound) {
+            String warnDialect =
+                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+
+            if (warnDialect.equals(d.toString())) {
+                System.out.println(
+                    "[No expected SQL statements found for dialect \""
+                    + dialect.toString()
+                    + "\" and test not run]");
+            }
         }
     }
 

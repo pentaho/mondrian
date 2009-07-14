@@ -444,9 +444,6 @@ public class BatchTestCase extends FoodMartTestCase {
             return sql.replaceAll(" =as= ", " ");
         case TERADATA:
             return sql.replaceAll(" =as= ", " as ");
-        case MYSQL:
-            String s = sql.replaceAll(" =as= ", " as ");
-            return s.replaceAll("\"", "`");
         case DERBY:
             return sql.replaceAll("`", "\"");
         case ACCESS:
