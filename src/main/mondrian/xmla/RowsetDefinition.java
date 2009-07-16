@@ -1746,8 +1746,11 @@ enum RowsetDefinition {
                 RowsetDefinition.class.getEnumConstants().clone();
             Arrays.sort(
                 rowsetDefinitions,
-                new Comparator<Enum>() {
-                    public int compare(Enum o1, Enum o2) {
+                new Comparator<RowsetDefinition>() {
+                    public int compare(
+                        RowsetDefinition o1,
+                        RowsetDefinition o2)
+                    {
                         return o1.name().compareTo(o2.name());
                     }
                 });
@@ -1961,7 +1964,7 @@ enum RowsetDefinition {
             for (Enumeration enumerator : enumerators) {
                 final String[] valueNames = enumerator.getNames();
                 for (String valueName : valueNames) {
-                    final Enum<?> value = enumerator.getValue(valueName, true);
+                    final Enum<?> value = enumerator.getValue(valueName);
                     Row row = new Row();
                     row.set(EnumName.name, enumerator.name);
                     row.set(EnumDescription.name, enumerator.description);
@@ -2134,7 +2137,17 @@ enum RowsetDefinition {
             List<Row> rows)
             throws XmlaException
         {
-            populate(Enumeration.Literal.class, rows);
+            populate(
+                Enumeration.Literal.class,
+                rows,
+                new Comparator<Enumeration.Literal>() {
+                public int compare(
+                    Enumeration.Literal o1,
+                    Enumeration.Literal o2)
+                {
+                    return o1.name().compareTo(o2.name());
+                }
+            });
         }
 
         protected void setProperty(

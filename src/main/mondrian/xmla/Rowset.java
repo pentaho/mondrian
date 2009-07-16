@@ -272,19 +272,13 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Populates all of the values in an enumeration into a list of rows.
      */
-    protected <E extends Enum<E>> void populate(
-        Class<E> clazz,
-        List<Row> rows)
+    protected <E> void populate(
+        Class<E> clazz, List<Row> rows,
+        final Comparator<E> comparator)
         throws XmlaException
     {
         final E[] enumsSortedByName = clazz.getEnumConstants().clone();
-        Arrays.sort(
-            enumsSortedByName,
-            new Comparator<E>() {
-                public int compare(E o1, E o2) {
-                    return o1.name().compareTo(o2.name());
-                }
-            });
+        Arrays.sort(enumsSortedByName, comparator);
         for (E anEnum : enumsSortedByName) {
             Row row = new Row();
             for (RowsetDefinition.Column column

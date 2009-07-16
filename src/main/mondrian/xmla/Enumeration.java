@@ -51,7 +51,7 @@ class Enumeration {
         return names.toArray(new String[names.size()]);
     }
 
-    public Enum<?> getValue(String valueName, boolean b) {
+    public Enum<?> getValue(String valueName) {
         return Enum.valueOf(clazz, valueName);
     }
 

@@ -98,7 +98,7 @@ public class Util extends XOMUtil {
      */
     public static final boolean Retrowoven =
         Access.class.getSuperclass().getName().equals(
-            "com.rc.retroweaver.runtime.Enum_");
+            "net.sourceforge.retroweaver.runtime.java.lang.Enum");
 
     private static final UtilCompatible compatible;
 
