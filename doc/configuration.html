@@ -1102,30 +1102,39 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian/rolap/RolapMember/MondrianProperties.html#PropertyValueMapClass">
-      mondrian.rolap.RolapMember.PropertyValueMap.class
+      <a href="api/mondrian/olap/MondrianProperties.html#PropertyValueMapFactoryClass">
+      mondrian.rolap.RolapMember.PropertyValueMapFactory.class
       </a></code></td>
 
       <td>string</td>
-      <td>-</td>
       <td>
-      If set, the specified class is used to store member property
-      values in mondrian.rolap.RolapMember.  Defaults to
-      java.util.HashMap
+      <a href="api/mondrian/rolap/RolapMember.DefaultPropertyValueMapFactory.html">
+      mondrian.rolap.RolapMember.DefaultPropertyValueMapFactory</a></td>
+      <td>
+      If set, the specified factory class is used to create the Map that stores
+      member property values in
+      <a href="api/mondrian/rolap/RolapMember.html">
+      mondrian.rolap.RolapMember</a>.  The factory class must implement
+      <a href="api/mondrian/rolap/RolapMember.PropertyValueMapFactory.html">
+      mondrian.rolap.RolapMember.PropertyValueMapFactory</a>.
       </td>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian/rolap/RolapMember/MondrianProperties.html#SqlMemberSourceValuePoolClass">
-      mondrian.util.SqlMemberSource.ValuePool.class
+      <a href="api/mondrian/olap/MondrianProperties.html#SqlMemberSourceValuePoolFactoryClass">
+      mondrian.rolap.SqlMemberSource.ValuePoolFactory.class
       </a></code></td>
 
       <td>string</td>
       <td>-</td>
       <td>
-      If set, the specified class is used to pool member property
-      values in mondrian.rolap.SqlMemberSource.  Defaults to
-      org.apache.commons.collections.map.LRUMap
+      If set, the specified factory class is used to create a Map that
+      is used to pool member property values in
+      <a href="api/mondrian/rolap/SqlMemberSource.html">
+      mondrian.rolap.SqlMemberSource</a>.
+      If unset, no value pooling is done. The factory class must implement
+      <a href="api/mondrian/rolap/SqlMemberSource.ValuePoolFactory.html">
+      mondrian.rolap.SqlMemberSource.ValuePoolFactory</a>.
       </td>
     </tr>
 </table>
@@ -1138,11 +1147,6 @@ time or space required to execute a query. If any of these limits are exceeded,
 mondrian throws an exception which extends
 <a href="api/mondrian/olap/ResultLimitExceededException.html">
 mondrian.olap.ResultLimitExceededException</a>.</p>
-
-<p>The <code>mondrian.util.SqlMemberSource.ValuePool.limit</code> property
-sets an upper limit on the number of values pooled
-in mondrian.rolap.SqlMemberSource.  It defaults to 0, which disables
-value pooling (as does any other value < 1).</p>
 
 <h2>Connect strings<a name="Connect_strings">&nbsp;</a></h2>
 

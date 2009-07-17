@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
 
+import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 
@@ -346,6 +347,7 @@ public class RolapMember extends MemberBase {
      * -1. */
     private int ordinal;
     private final Object key;
+
     /**
      * Maps property name to property value.
      *
@@ -509,8 +511,9 @@ public class RolapMember extends MemberBase {
 
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
-            mapPropertyNameToValue =
-                PropertyValueMapFactory.getPropertyValueMap();
+            PropertyValueMapFactory factory =
+                PropertyValueMapFactoryFactory.getPropertyValueMapFactory();
+            mapPropertyNameToValue = factory.create(this);
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
@@ -826,41 +829,88 @@ public class RolapMember extends MemberBase {
     }
 
     /**
-     * TODO: Needs documentation.
+     * <p>Interface definition for the pluggable factory used to decide
+     * which implementation of {@link java.util.Map} to use to store
+     * property string/value pairs for member properties.</p>
      *
-     * <p>REVIEW: jhyde, 2009/7/10: I'm not sure that ObjectFactory is the right
-     * basis for this factory. First, creating property-value maps occurs each
-     * time a member is created, which needs to be efficient, whereas this class
-     * uses reflection every time it creates a map.
-     *
-     * <p>Second, we might like to create a different kind of map for different
-     * members. If a member belongs to a level which has 10 member properties,
-     * we should use a HashMap; if the level has no member properties, use a
-     * Flat3Map. This factory can't take other factors into account; it always
-     * creates objects of the same type, even if it can call different
-     * constructor values.
-     *
-     * <p>So, I think
-     *
-     * <pre>interface PropertyValueMapFactory {
-     *   Map&lt;String, Object&gt; create(Member member);
-     * }</pre>
-     *
-     * would be more appropriate; and the
-     * {@link mondrian.olap.MondrianProperties#PropertyValueMapClass} property
-     * should return the name of the factory class.
-     *
+     * <p>This permits tuning for performance, memory allocation, etcetera.
+     * For example, if a member belongs to a level which has 10 member
+     * properties a HashMap may be preferred, while if the level has
+     * only two member properties a Flat3Map may make more sense.</p>
      */
-    public static final class PropertyValueMapFactory
-        extends ObjectFactory<Map<String, Object>>
-    {
+    public interface PropertyValueMapFactory {
+        /**
+         * <p>Create a new {@link java.util.Map} to be used for storing
+         * property string/value pairs for the specified
+         * {@link mondrian.olap.Member}.</p>
+         * @param member
+         * @return the Map instance to store property/value pairs
+         */
+        Map<String, Object> create(Member member);
+    }
 
+    /**
+     * Default {@link mondrian.rolap.RolapMember.PropertyValueMapFactory}
+     * implementation, used if
+     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
+     * is not set.
+     */
+    public static final class DefaultPropertyValueMapFactory
+        implements PropertyValueMapFactory
+    {
+        /**
+         * {@inheritDoc}
+         * <p>This factory creates an
+         * {@link org.apache.commons.collections.map.Flat3Map} if
+         * it appears that the provided member has less than 3 properties,
+         * and a {@link java.util.HashMap} if it appears
+         * that it has more than 3.</p>
+         *
+         * <p>Guessing the number of properties
+         * can be tricky since some subclasses of
+         * {@link mondrian.olap.Member}</p> have additional properties
+         * that aren't explicitly declared.  The most common offenders
+         * are the (@link mondrian.olap.Measure} implementations, which
+         * often have 4 or more undeclared properties, so if the member
+         * is a measure, the factory will create a {@link java.util.HashMap}.
+         * </p>
+         *
+         * @param {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        @SuppressWarnings({"unchecked"})
+        public Map<String, Object> create(Member member) {
+            assert member != null;
+            Property[] props = member.getProperties();
+            if ((member instanceof RolapMeasure)
+                || (props == null)
+                || (props.length > 3))
+            {
+                return new HashMap<String, Object>();
+            } else {
+                return new Flat3Map();
+            }
+        }
+    }
+
+    /**
+     * <p>Creates the PropertyValueMapFactory which is in turn used
+     * to create property-value maps for member properties.</p>
+     *
+     * <p>The name of the PropertyValueMapFactory is drawn from
+     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
+     * in mondrian.properties.  If unset, it defaults to
+     * {@link mondrian.rolap.RolapMember.DefaultPropertyValueMapFactory}. </p>
+     */
+    public static final class PropertyValueMapFactoryFactory
+        extends ObjectFactory.Singleton<PropertyValueMapFactory>
+    {
         /**
          * Single instance of the <code>PropertyValueMapFactory</code>.
          */
-        private static final PropertyValueMapFactory factory;
+        private static final PropertyValueMapFactoryFactory factory;
         static {
-            factory = new PropertyValueMapFactory();
+            factory = new PropertyValueMapFactoryFactory();
         }
 
         /**
@@ -868,34 +918,30 @@ public class RolapMember extends MemberBase {
          *
          * @return the <code>Map</code>.
          */
-        public static Map<String, Object> getPropertyValueMap() {
+        public static PropertyValueMapFactory getPropertyValueMapFactory() {
             return factory.getObject();
         }
 
         /**
-         * The constructor for the <code>PropertyValueMapFactory</code>. This
-         * passes the <code>Map</code> class to the <code>ObjectFactory</code>
-         * base class.
+         * The constructor for the <code>PropertyValueMapFactoryFactory</code>.
+         * This passes the <code>PropertyValueMapFactory</code> class to the
+         * <code>ObjectFactory</code> base class.
          */
         @SuppressWarnings({"unchecked"})
-        private PropertyValueMapFactory() {
-            super((Class) Map.class);
+        private PropertyValueMapFactoryFactory() {
+            super((Class) PropertyValueMapFactory.class);
         }
-
 
         protected StringProperty getStringProperty() {
-            return MondrianProperties.instance().PropertyValueMapClass;
+            return MondrianProperties.instance().PropertyValueMapFactoryClass;
         }
 
-        protected Map<String, Object> getDefault(
+        protected PropertyValueMapFactory getDefault(
             Class[] parameterTypes,
             Object[] parameterValues)
             throws CreationException
         {
-            // REVIEW emcdermid 10-Jul-2009: Would almost certainly be more
-            // efficient to use Flat3Map from Apache commons collection, but
-            // that requires Mondrian upgrade to a newer version.
-            return new HashMap<String, Object>();
+            return new DefaultPropertyValueMapFactory();
         }
     }
 }

@@ -971,27 +971,20 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.calc.ExpCompiler.class", null);
 
     /**
-     * <p>Property that defines
-     * the name of the class used for mapping member properties
-     * to their respective values.</p>
+     * <p>Property that defines the name of the factory class used
+     * to create maps of member properties to their respective values.</p>
      *
      * <p>If the value is
      * non-null, it is used by the <code>PropertyValueFactory</code>
-     * to create the implementation.</p>
+     * to create the implementation.  If unset,
+     * {@link mondrian.rolap.RolapMember.DefaultPropertyValueMapFactory}
+     * will be used. </p>
      */
-    public transient final StringProperty PropertyValueMapClass =
+    public transient final StringProperty PropertyValueMapFactoryClass =
         new StringProperty(
-            this, "mondrian.rolap.RolapMember.PropertyValueMap.class", null);
-
-
-    /**
-     * <p>Property that defines the maximum number of common values that
-     * SqlMemberSource may pool for reuse.  Defaults to 0 (turns off
-     * pooling) if not explicitly set.</p>
-     */
-    public transient final IntegerProperty SqlMemberSourceValuePoolLimit =
-        new IntegerProperty(
-            this, "mondrian.rolap.SqlMemberSource.ValuePool.limit", 0);
+            this,
+            "mondrian.rolap.RolapMember.PropertyValueMapFactory.class",
+            null);
 
     /**
      * <p>Property that defines the name of the class used in SqlMemberSource
@@ -999,11 +992,15 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>If the value is non-null, it is used by the
      * <code>SqlMemberSource.ValueMapFactory</code>
-     * to create the implementation.</p>
+     * to create the implementation.  If it is not set, then
+     * {@link mondrian.rolap.SqlMemberSource.NullValuePoolFactory}
+     * will be used, meaning common values will not be pooled.</p>
      */
-    public transient final StringProperty SqlMemberSourceValuePoolClass =
+    public transient final StringProperty SqlMemberSourceValuePoolFactoryClass =
         new StringProperty(
-            this, "mondrian.util.SqlMemberSource.ValuePool.class", null);
+            this,
+            "mondrian.rolap.SqlMemberSource.ValuePoolFactory.class",
+            null);
 
     /**
      * Property that defines

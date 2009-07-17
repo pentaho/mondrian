@@ -28,7 +28,6 @@ import java.sql.*;
 import java.util.*;
 
 import org.eigenbase.util.property.StringProperty;
-import org.apache.commons.collections.map.LRUMap;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
@@ -49,7 +48,7 @@ class SqlMemberSource
     private MemberCache cache;
     private int lastOrdinal = 0;
     private boolean assignOrderKeys;
-    private Map valueMap = ValuePoolFactory.getValuePool();
+    private Map<Object, Object> valuePool;
 
     SqlMemberSource(RolapHierarchy hierarchy) {
         this.hierarchy = hierarchy;
@@ -57,6 +56,7 @@ class SqlMemberSource
             hierarchy.getRolapSchema().getInternalConnection().getDataSource();
         assignOrderKeys =
             MondrianProperties.instance().CompareSiblingsByOrderKey.get();
+        valuePool = ValuePoolFactoryFactory.getValuePoolFactory().create(this);
     }
 
     // implement MemberSource
@@ -1007,9 +1007,11 @@ RME is this right
      * is to allow the duplicate object to be garbage collected earlier, thus
      * keeping overall memory requirements down.</p>
      *
-     * <p>If the mondrian.rolap.SqlMemberSource.enableValueCaching property
-     * is set to false, no attempt to cache the value will be made, and the
-     * method will simply return the incoming object reference.</p>
+     * <p>If
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * is not set, then valuePool will be null and no attempt to cache the
+     * value will be made.  The method will simply return the incoming
+     * object reference.</p>
      *
      * @param incoming An object to look up.  Must be immutable in usage,
      *        even if not declared as such.
@@ -1018,14 +1020,14 @@ RME is this right
      *        or caching is disabled.
      */
     private Object getPooledValue(Object incoming) {
-        if (valueMap == null) {
+        if (valuePool == null) {
             return incoming;
         } else {
-            Object ret = this.valueMap.get(incoming);
+            Object ret = this.valuePool.get(incoming);
             if (ret != null) {
                 return ret;
             } else {
-                this.valueMap.put(incoming, incoming);
+                this.valuePool.put(incoming, incoming);
                 return incoming;
             }
         }
@@ -1294,66 +1296,99 @@ RME is this right
         }
     }
 
-
-    public static final class ValuePoolFactory
-    extends ObjectFactory<Map>
-    {
-
+    /**
+     * <p>Interface definition for the pluggable factory used to decide
+     * which implementation of {@link java.util.Map} to use to pool
+     * reusable values.</p>
+     */
+    public interface ValuePoolFactory {
         /**
-         * Single instance of the <code>PropertyValuePoolFactory</code>.
+         * <p>Create a new {@link java.util.Map} to be used to pool values.
+         * The value pool permits us to reuse references to existing objects
+         * rather than create new references to what are essentially duplicates
+         * of the same object.  The intent is to allow the duplicate object
+         * to be garbage collected earlier, thus keeping overall memory
+         * requirements down.</p>
+         *
+         * @param source The {@link SqlMemberSource} in which values are
+         * being pooled.
+         * @return a new value pool map
          */
-        private static final ValuePoolFactory factory;
+        Map<Object, Object> create(SqlMemberSource source);
+    }
+
+    /**
+     * Default {@link mondrian.rolap.SqlMemberSource.ValuePoolFactory}
+     * implementation, used if
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * is not set.
+     */
+    public static final class NullValuePoolFactory
+        implements ValuePoolFactory
+    {
+        /**
+         * {@inheritDoc}
+         * <p>This version returns null, meaning that
+         * by default values will not be pooled.</p>
+         *
+         * @param {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        public Map<Object, Object> create(SqlMemberSource source) {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Creates the ValuePoolFactory which is in turn used
+     * to create property-value maps for member properties.</p>
+     *
+     * <p>The name of the ValuePoolFactory is drawn from
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * in mondrian.properties.  If unset, it defaults to
+     * {@link mondrian.rolap.SqlMemberSource.NullValuePoolFactory}. </p>
+     */
+    public static final class ValuePoolFactoryFactory
+        extends ObjectFactory.Singleton<ValuePoolFactory>
+    {
+        /**
+         * Single instance of the <code>ValuePoolFactoryFactory</code>.
+         */
+        private static final ValuePoolFactoryFactory factory;
         static {
-            factory = new ValuePoolFactory();
+            factory = new ValuePoolFactoryFactory();
         }
 
         /**
-         * Access the <code>PropertyValuePoolFactory</code> instance.
+         * Access the <code>ValuePoolFactory</code> instance.
          *
          * @return the <code>Map</code>.
          */
-        public static Map getValuePool() {
+        public static ValuePoolFactory getValuePoolFactory() {
             return factory.getObject();
         }
 
         /**
-         * The constructor for the <code>PropertyValuePoolFactory</code>. This
-         * passes the <code>Map</code> class to the <code>ObjectFactory</code>
-         * base class.
+         * The constructor for the <code>ValuePoolFactoryFactory</code>.
+         * This passes the <code>ValuePoolFactory</code> class to the
+         * <code>ObjectFactory</code> base class.
          */
-        private ValuePoolFactory() {
-            super(Map.class);
-        }
-
-        /**
-         * Find the maximum permitted size of the value pool.  A maximum
-         * size < 1 disables the value pool.
-         * @return maximum value
-         */
-        protected int getLimit() {
-            return
-                MondrianProperties.instance()
-                        .SqlMemberSourceValuePoolLimit.get();
-        }
-
-        /**
-         * Determine whether the value pool is enabled or disabled.
-         * @return true if getLimit() > 0, false otherwise
-         */
-        protected boolean enabled() {
-            return (getLimit() > 0);
+        @SuppressWarnings({"unchecked"})
+        private ValuePoolFactoryFactory() {
+            super((Class) ValuePoolFactory.class);
         }
 
         protected StringProperty getStringProperty() {
-            return MondrianProperties.instance().SqlMemberSourceValuePoolClass;
+            return MondrianProperties.instance()
+               .SqlMemberSourceValuePoolFactoryClass;
         }
 
-        protected Map getDefault(
+        protected ValuePoolFactory getDefault(
             Class[] parameterTypes,
             Object[] parameterValues)
             throws CreationException
         {
-            return (enabled() ? new LRUMap() : null);
+            return new NullValuePoolFactory();
         }
     }
 }
