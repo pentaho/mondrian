@@ -63,9 +63,29 @@ WHERE [Time].[1997].[Q2]
 
 <h1>Parameters<a name="Parameters">&nbsp;</a></h1>
 
-<p>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow you to create parameterized MDX statements.</p>
+<p>Pseudo-functions <code>Parameter()</code> and <code>ParamRef()</code> allow you to create parameterized MDX statements.</p>
+
+<p>A call to the <code>Parameter</code> function defines a parameter's name, 
+data type and default value. A parameter always has a default value (it makes 
+life simpler for the UI). If the parameter is a member, then the data type is 
+the name of a hierarchy that the parameter must belong to. This metadata 
+potentially allows a user interface to generate a list of values for the 
+parameter.</p>
+
+<p>The purpose of the <code>ParamRef</code> function is if you want to define a 
+parameter once and use it several times in the same query. You could use 
+Parameter several times but you'd have to make sure the definitions (data type, 
+default value) are identical otherwise mondrian would complain.</p>
+
+<p>The olap4j API supports parameters as you would expect. Once you've prepared 
+a statement, you can call <code>PreparedOlapStatement.getParameterMetaData()</code>. 
+This returns an
+<a href="http://www.olap4j.org/api/org/olap4j/OlapParameterMetaData.html">
+OlapParameterMetaData</a>, which is a subclass of the JDBC
+<code>ParameterMetaData</code> object.</p>
 
 <h4>Cast operator<a name="Cast_operator">&nbsp;</a></h4>
+
 <p>The Cast operator converts scalar expressions to other types. The syntax is</p>
 <blockquote>
 	<p><code>Cast(&lt;Expression&gt; AS &lt;Type&gt;)</code></p>
@@ -2565,7 +2585,7 @@ that does not guarantee order.</p>
 <br />
 
 <p>
-    Author: Julian Hyde; last modified September 2008.<br/>
+    Author: Julian Hyde; last modified July 2009.<br/>
     Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/mdx.html?ac=22">log</a>)<br/>
     Copyright (C) 2005-2009 Julian Hyde
 </p>
