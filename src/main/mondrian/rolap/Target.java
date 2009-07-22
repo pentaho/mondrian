@@ -7,43 +7,46 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
+
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
-import mondrian.olap.fun.FunUtil;
-import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.util.*;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-/**
- * Extracted Target from original place.
- * Unknown functonallity.
+ /**
+ * <p>
+ * helper class for HighCardSqlTupleReader
+ *  {@link mondrian.rolap.HighCardSqlTupleReader}
+ * Keeps track of target levels and constraints for adding to sql query
  *
+ * </p>
+ *
+ * @author luis f. canals, Kurtis Walker
+ * @since July 23, 2009
  * @version $Id$
  */
-public class Target {
+public class Target extends TargetBase {
     private final HighCardSqlTupleReader sqlTupleReader;
-    private final RolapLevel level;
     private final MemberCache cache;
     private final TupleConstraint constraint;
-    private final TupleReader.MemberBuilder memberBuilder;
-    private final List<RolapMember> srcMembers;
 
     boolean parentChild;
     private RolapLevel[] levels;
-    private RolapMember currMember;
-    private List<List<RolapMember>> siblings;
-    private List<RolapMember> members;
     private int levelDepth;
-    private List<RolapMember> list;
 
     public Target(
         final RolapLevel level,
@@ -52,73 +55,25 @@ public class Target {
         final TupleConstraint constraint,
         final HighCardSqlTupleReader sqlTupleReader)
     {
+        super(srcMembers, level, memberBuilder);
         this.sqlTupleReader = sqlTupleReader;
-        this.level = level;
         this.constraint = constraint;
         this.cache = memberBuilder.getMemberCache();
-        this.memberBuilder = memberBuilder;
-        this.srcMembers = srcMembers;
-    }
-
-    public List<RolapMember> getSrcMembers() {
-        return this.srcMembers;
-    }
-
-    public RolapMember getCurrMember() {
-        return this.currMember;
-    }
-
-    public void removeCurrMember() {
-        this.currMember = null;
-    }
-
-    public void setCurrMember(final RolapMember m) {
-        this.currMember = m;
-    }
-
-    public void add(final RolapMember member) {
-        this.list.add(member);
     }
 
     public void open() {
         levels = (RolapLevel[]) level.getHierarchy().getLevels();
-        list = new LinkedList<RolapMember>();
+        setList(new LinkedList<RolapMember>());
         levelDepth = level.getDepth();
         parentChild = level.isParentChild();
-        // members[i] is the current member of level#i, and siblings[i]
-        // is the current member of level#i plus its siblings
-        members = new ArrayList<RolapMember>();
-        for (int i = 0; i < levels.length; i++) {
-            members.add(null);
-        }
-        siblings = new ArrayList<List<RolapMember>>();
-        for (int i = 0; i < levels.length + 1; i++) {
-            siblings.add(new ArrayList<RolapMember>());
-        }
     }
 
-    /**
-     * Scans a row of the resultset and creates a member
-     * for the result.
-     *
-     * @param resultSet result set to retrieve rows from
-     * @param column the column index to start with
-     *
-     * @return index of the last column read + 1
-     * @throws SQLException
-     */
-    public int addRow(ResultSet resultSet, int column) throws SQLException {
-        synchronized (cache) {
-            return internalAddRow(resultSet, column);
-        }
-    }
-
-    private int internalAddRow(ResultSet resultSet, int column)
-        throws SQLException
+    int internalAddRow(ResultSet resultSet, int column)
+            throws SQLException
     {
         RolapMember member = null;
-        if (currMember != null) {
-            member = currMember;
+        if (getCurrMember() != null) {
+            member = getCurrMember();
         } else {
             boolean checkCacheStatus = true;
             for (int i = 0; i <= levelDepth; i++) {
@@ -155,9 +110,9 @@ public class Target {
                 }
                 column += childLevel.getProperties().length;
             }
-            currMember = member;
+            setCurrMember(member);
         }
-        ((List) list).add(member);
+        getList().add(member);
         return column;
     }
 
@@ -179,20 +134,20 @@ public class Target {
             public int size() {
                 while (this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
-                    if (limit > 0 && !asList && list.size() > limit) {
+                    if (limit > 0 && !asList && getList().size() > limit) {
                         System.out.println(
-                            "Target: 199, Ouch! Toooo big array..."
-                            + this.hashCode());
+                                "Target: 199, Ouch! Toooo big array..."
+                                + this.hashCode());
                         new Throwable().printStackTrace();
                     }
                 }
 
-                return list.size();
+                return getList().size();
             }
 
             public RolapMember get(final int idx) {
                 if (asList) {
-                    return list.get(idx);
+                    return getList().get(idx);
                 }
 
                 if (idx == 0 && this.firstMemberAssigned) {
@@ -204,32 +159,33 @@ public class Target {
                     // Cannot send NoSuchElementException since its intercepted
                     // by AbstractSequentialList to identify out of bounds.
                     throw new RuntimeException(
-                        "Element " + idx + " has been forgotten");
+                            "Element " + idx
+                            + " has been forgotten");
                 }
 
-                while (index >= list.size() && this.moreRows) {
+                while (index >= getList().size() && this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
-                    if (!asList && limit > 0 && list.size() > limit) {
-                        while (list.size() > limit) {
+                    if (limit > 0 && getList().size() > limit) {
+                        while (getList().size() > limit) {
                             index--;
                             offset++;
-                            ((LinkedList) list).removeFirst();
+                            ((LinkedList) getList()).removeFirst();
                         }
                     }
                 }
 
                 if (idx == 0) {
-                    this.first = list.get(index);
+                    this.first = getList().get(index);
                     this.firstMemberAssigned = true;
                     return this.first;
                 } else {
-                    return list.get(index);
+                    return getList().get(index);
                 }
             }
 
             public RolapMember set(final int i, final RolapMember e) {
                 if (asList) {
-                    return list.set(i, e);
+                    return getList().set(i, e);
                 } else {
                     throw new UnsupportedOperationException();
                 }
@@ -277,71 +233,6 @@ public class Target {
         }
 
         return l;
-
-/*
-        synchronized (cache) {
-            return internalClose();
-        }
-*/
-    }
-
-
-    //
-    // Private Stuff --------------------------------------------------
-    //
-
-    /**
-     * Cleans up after all rows have been processed, and returns the list of
-     * members.
-     *
-     * @return list of members
-     */
-    private List<RolapMember> internalClose() {
-        for (int i = 0; i < members.size(); i++) {
-            RolapMember member = members.get(i);
-            final List<RolapMember> children = siblings.get(i + 1);
-            if (member != null && children != null) {
-                // If we are finding the members of a particular level, and
-                // we happen to find some of the children of an ancestor of
-                // that level, we can't be sure that we have found all of
-                // the children, so don't put them in the cache.
-                if (member.getDepth() < level.getDepth()) {
-                    continue;
-                }
-                MemberChildrenConstraint mcc =
-                    constraint.getMemberChildrenConstraint(member);
-                if (mcc != null) {
-                    cache.putChildren(member, mcc, children);
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Adds <code>member</code> just before the first element in
-     * <code>list</code> which has the same parent.
-     */
-    private void addAsOldestSibling(
-        final List<RolapMember> list,
-        final RolapMember member)
-    {
-        int i = list.size();
-        while (--i >= 0) {
-            RolapMember sibling = list.get(i);
-            if (sibling.getParentMember() != member.getParentMember()) {
-                break;
-            }
-        }
-        list.add(i + 1, member);
-    }
-
-    public RolapLevel getLevel() {
-        return level;
-    }
-
-    public String toString() {
-        return level.getUniqueName();
     }
 }
 

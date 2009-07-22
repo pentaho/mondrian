@@ -86,21 +86,6 @@ public class SqlContextConstraint
                 return false;
             }
             assert levels != null;
-            // we need to make sure all the levels join with each fact table;
-            // otherwise, it doesn't make sense to do the processing
-            // natively, as you'll end up with cartesian product joins!
-            // for each rolap cube, make sure there is a base cube level
-            // equivalent
-            for (RolapCube baseCube : baseCubes) {
-                for (Level level : levels) {
-                    if (baseCube.findBaseCubeHierarchy(
-                            (RolapHierarchy) level.getHierarchy()) == null)
-                    {
-                        return false;
-                    }
-                }
-            }
-
             query.setBaseCubes(baseCubeList);
         }
 
