@@ -875,7 +875,7 @@ public class RolapMember extends MemberBase {
          * is a measure, the factory will create a {@link java.util.HashMap}.
          * </p>
          *
-         * @param {@inheritDoc}
+         * @param member {@inheritDoc}
          * @return {@inheritDoc}
          */
         @SuppressWarnings({"unchecked"})
