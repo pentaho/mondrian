@@ -1077,7 +1077,8 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             9,
             9,
-            "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
+            "select {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "NON EMPTY Crossjoin("
             + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
             + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
             + "where ([Promotions].[All Promotions].[Bag Stuffers])");
@@ -1330,7 +1331,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "NON EMPTY Crossjoin("
             + "  {[Product].[All Products].[Drink].[Beverages], [Product].[All Products].[Drink].[Dairy]}, "
             + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
-            + "from [Sales] " + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+            + "from [Sales] "
+            + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
     /**
