@@ -18,13 +18,7 @@ import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -2163,7 +2157,7 @@ public class Util extends XOMUtil {
      * @return Apache VFS FileContent for further processing
      * @throws FileSystemException
      */
-    public static FileContent readVirtualFile(String url)
+    public static InputStream readVirtualFile(String url)
         throws FileSystemException
     {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
@@ -2180,6 +2174,17 @@ public class Util extends XOMUtil {
         }
         if (url.startsWith("file:")) {
             url = url.substring("file:".length());
+        }
+
+        //work around for VFS bug not closing http sockets
+        // (Mondrian-585)
+        if (url.startsWith("http")) {
+            try {
+                return new URL(url).openStream();
+            } catch (IOException e) {
+                throw newError(
+                    "Could not read URL: " + url);
+            }
         }
 
         File userDir = new File("").getAbsoluteFile();
@@ -2221,7 +2226,7 @@ public class Util extends XOMUtil {
                 "Cannot get virtual file content: " + url);
         }
 
-        return fileContent;
+        return fileContent.getInputStream();
     }
 
     /**

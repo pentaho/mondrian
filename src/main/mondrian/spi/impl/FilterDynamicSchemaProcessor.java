@@ -58,8 +58,8 @@ public class FilterDynamicSchemaProcessor implements DynamicSchemaProcessor {
         String schemaUrl,
         Util.PropertyList connectInfo) throws Exception
     {
-        FileContent fileContent = Util.readVirtualFile(schemaUrl);
-        return filter(schemaUrl, connectInfo, fileContent.getInputStream());
+        InputStream in = Util.readVirtualFile(schemaUrl);
+        return filter(schemaUrl, connectInfo, in);
     }
 
     /**

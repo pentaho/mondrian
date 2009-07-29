@@ -278,14 +278,22 @@ public class RolapSchema implements Schema {
 
             final DOMWrapper def;
             if (catalogStr == null) {
-                FileContent fileContent = Util.readVirtualFile(catalogUrl);
+                InputStream in = null;
+                try {
+                    in = Util.readVirtualFile(catalogUrl);
+                    def = xmlParser.parse(in);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                }
 
                 if (getLogger().isDebugEnabled()) {
                     try {
                         StringBuilder buf = new StringBuilder(1000);
-                        InputStream in = fileContent.getInputStream();
+                        InputStream debugIn = Util.readVirtualFile(catalogUrl);
                         int n;
-                        while ((n = in.read()) != -1) {
+                        while ((n = debugIn.read()) != -1) {
                             buf.append((char) n);
                         }
                         getLogger().debug(
@@ -295,7 +303,6 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                def = xmlParser.parse(fileContent.getInputStream());
             } else {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
@@ -320,6 +327,8 @@ public class RolapSchema implements Schema {
         } catch (XOMException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (FileSystemException e) {
+            throw Util.newError(e, "while parsing catalog " + catalogUrl);
+        } catch (IOException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         }
 
@@ -876,15 +885,20 @@ public class RolapSchema implements Schema {
                 try {
                     if (catalogStr == null) {
                         // Use VFS to get the content
-                        FileContent fileContent =
-                            Util.readVirtualFile(catalogUrl);
-                        StringBuilder buf = new StringBuilder(1000);
-                        InputStream in = fileContent.getInputStream();
-                        int n;
-                        while ((n = in.read()) != -1) {
-                            buf.append((char) n);
+                        InputStream in = null;
+                        try {
+                            in = Util.readVirtualFile(catalogUrl);
+                            StringBuilder buf = new StringBuilder(1000);
+                            int n;
+                            while ((n = in.read()) != -1) {
+                                buf.append((char) n);
+                            }
+                            catalogStr = buf.toString();
+                        } finally {
+                            if (in != null) {
+                                in.close();
+                            }
                         }
-                        catalogStr = buf.toString();
                     }
 
                     md5Bytes = encodeMD5(catalogStr);
