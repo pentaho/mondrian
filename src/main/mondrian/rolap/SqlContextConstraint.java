@@ -266,9 +266,9 @@ public class SqlContextConstraint
      * context.
      */
     public void addConstraint(
-            SqlQuery sqlQuery,
-            RolapCube baseCube,
-            AggStar aggStar)
+        SqlQuery sqlQuery,
+        RolapCube baseCube,
+        AggStar aggStar)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);

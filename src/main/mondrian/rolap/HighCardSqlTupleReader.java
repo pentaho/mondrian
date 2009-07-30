@@ -42,18 +42,18 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     public void addLevelMembers(
-            final RolapLevel level,
-            final MemberBuilder memberBuilder,
-            final List<RolapMember> srcMembers)
+        final RolapLevel level,
+        final MemberBuilder memberBuilder,
+        final List<RolapMember> srcMembers)
     {
         targets.add(new Target(
-                level, memberBuilder, srcMembers, constraint, this));
+            level, memberBuilder, srcMembers, constraint, this));
     }
 
     protected void prepareTuples(
-            final DataSource dataSource,
-            final List<List<RolapMember>> partialResult,
-            final List<List<RolapMember>> newPartialResult)
+        final DataSource dataSource,
+        final List<List<RolapMember>> partialResult,
+        final List<List<RolapMember>> newPartialResult)
     {
         String message = "Populating member cache with members for " + targets;
         SqlStatement stmt = null;
@@ -71,9 +71,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 }
                 String sql = makeLevelMembersSql(dataSource);
                 stmt = RolapUtil.executeQuery(
-                        dataSource, sql, maxRows,
-                        "HighCardSqlTupleReader.readTuples " + partialTargets,
-                        message, -1, -1);
+                    dataSource, sql, maxRows,
+                    "HighCardSqlTupleReader.readTuples " + partialTargets,
+                    message, -1, -1);
                 resultSet = stmt.getResultSet();
             } else {
                 resultSet = null;
@@ -97,10 +97,10 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             }
 
             this.resultLoader =
-                    new ResultLoader(
-                            enumTargetCount,
-                            targets, stmt, resultSet, execQuery, partialResult,
-                            newPartialResult);
+                new ResultLoader(
+                    enumTargetCount,
+                    targets, stmt, resultSet, execQuery, partialResult,
+                    newPartialResult);
 
             // Read first and second elements if exists (or marks
             // source as having "no more rows")
@@ -116,9 +116,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     public List<RolapMember> readMembers(
-            final DataSource dataSource,
-            final List<List<RolapMember>> partialResult,
-            final List<List<RolapMember>> newPartialResult)
+        final DataSource dataSource,
+        final List<List<RolapMember>> partialResult,
+        final List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(dataSource, partialResult, newPartialResult);
         assert targets.size() == 1;
@@ -126,9 +126,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     public List<RolapMember[]> readTuples(
-            final DataSource jdbcConnection,
-            final List<List<RolapMember>> partialResult,
-            final List<List<RolapMember>> newPartialResult)
+        final DataSource jdbcConnection,
+        final List<List<RolapMember>> partialResult,
+        final List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(jdbcConnection, partialResult, newPartialResult);
 
@@ -140,7 +140,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         }
 
         final List<RolapMember[]> tupleList =
-                new TraversalList<RolapMember>(lists, RolapMember.class);
+            new TraversalList<RolapMember>(lists, RolapMember.class);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which
@@ -148,7 +148,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         int enumTargetCount = getEnumTargetCount();
         if (enumTargetCount > 0) {
             FunUtil.hierarchizeTupleList(
-                    Util.<Member[]>cast(tupleList), false, n);
+                Util.<Member[]>cast(tupleList), false, n);
         }
         return tupleList;
     }

@@ -407,7 +407,7 @@ public class SqlTupleReader implements TupleReader {
                 if (limit > 0 && limit < ++fetchCount) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
-                            .ex((long) limit);
+                        .ex((long) limit);
                 }
 
                 if (enumTargetCount == 0) {
@@ -695,10 +695,10 @@ public class SqlTupleReader implements TupleReader {
 
                 WhichSelect whichSelect =
                     (++k == baseCubes.size() - 1)
-                            ? WhichSelect.LAST : WhichSelect.NOT_LAST;
+                        ? WhichSelect.LAST : WhichSelect.NOT_LAST;
                 final String generateSelect =
-                        generateSelectForLevels(
-                                dataSource, baseCube, whichSelect);
+                    generateSelectForLevels(
+                        dataSource, baseCube, whichSelect);
                 if (!"".equals(generateSelect)) {
                     selectString.append(prependString);
                     selectString.append(generateSelect);
@@ -719,17 +719,17 @@ public class SqlTupleReader implements TupleReader {
 
     Collection<RolapCube> getBaseCubeCollection(final Query query) {
         RolapCube.CubeComparator cubeComparator =
-                new RolapCube.CubeComparator();
+            new RolapCube.CubeComparator();
         Collection<RolapCube> baseCubes =
-                new TreeSet<RolapCube>(cubeComparator);
+            new TreeSet<RolapCube>(cubeComparator);
         baseCubes.addAll(query.getBaseCubes());
         return baseCubes;
     }
 
     String sqlForEmptyTuple(final Collection<RolapCube> baseCubes) {
         return "select 0 from "
-                + baseCubes.iterator().next().getFact().toString()
-                + " where 1 = 0";
+            + baseCubes.iterator().next().getFact().toString()
+            + " where 1 = 0";
     }
 
     /**
@@ -764,11 +764,11 @@ public class SqlTupleReader implements TupleReader {
             if (target.getSrcMembers() == null) {
                 if (targetIsOnBaseCube(target, baseCube)) {
                     addLevelMemberSql(
-                            sqlQuery,
-                            target.getLevel(),
-                            baseCube,
-                            whichSelect,
-                            aggStar);
+                        sqlQuery,
+                        target.getLevel(),
+                        baseCube,
+                        whichSelect,
+                        aggStar);
                 } else {
                     return "";
                 }
@@ -782,7 +782,7 @@ public class SqlTupleReader implements TupleReader {
 
     boolean targetIsOnBaseCube(TargetBase target, RolapCube baseCube) {
         return baseCube == null || baseCube.findBaseCubeHierarchy(
-                target.getLevel().getHierarchy()) != null;
+            target.getLevel().getHierarchy()) != null;
     }
 
     /**
@@ -1090,8 +1090,8 @@ public class SqlTupleReader implements TupleReader {
      * @return true if agg table has level or not
      */
     protected boolean isLevelCollapsed(
-            AggStar aggStar,
-            RolapCubeLevel level)
+        AggStar aggStar,
+        RolapCubeLevel level)
     {
         boolean levelCollapsed = false;
         if (level.isAll()) {

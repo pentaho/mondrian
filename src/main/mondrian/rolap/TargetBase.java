@@ -28,8 +28,8 @@ public abstract class TargetBase {
     final TupleReader.MemberBuilder memberBuilder;
 
     public TargetBase(
-            List<RolapMember> srcMembers, RolapLevel level,
-            TupleReader.MemberBuilder memberBuilder)
+        List<RolapMember> srcMembers, RolapLevel level,
+        TupleReader.MemberBuilder memberBuilder)
     {
         this.srcMembers = srcMembers;
         this.level = level;
@@ -80,7 +80,7 @@ public abstract class TargetBase {
     public abstract List<RolapMember> close();
 
     abstract int internalAddRow(ResultSet resultSet, int column)
-            throws SQLException;
+        throws SQLException;
 
     public void add(final RolapMember member) {
         this.getList().add(member);

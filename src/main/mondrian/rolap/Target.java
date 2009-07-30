@@ -118,8 +118,8 @@ public class Target extends TargetBase {
 
     public List<RolapMember> close() {
         final boolean asList = this.constraint.getEvaluator() != null
-                && this.constraint.getEvaluator().getQuery().getResultStyle()
-                    == ResultStyle.LIST;
+            && this.constraint.getEvaluator().getQuery().getResultStyle()
+            == ResultStyle.LIST;
         final int limit = MondrianProperties.instance().ResultLimit.get();
 
         final List<RolapMember> l = new AbstractList<RolapMember>() {
@@ -159,8 +159,8 @@ public class Target extends TargetBase {
                     // Cannot send NoSuchElementException since its intercepted
                     // by AbstractSequentialList to identify out of bounds.
                     throw new RuntimeException(
-                            "Element " + idx
-                            + " has been forgotten");
+                        "Element " + idx
+                        + " has been forgotten");
                 }
 
                 while (index >= getList().size() && this.moreRows) {
