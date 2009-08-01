@@ -19,6 +19,7 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -706,7 +707,7 @@ public class SqlTupleReader implements TupleReader {
                 }
             }
             if (selectString.length() == 0) {
-                return sqlForEmptyTuple(baseCubes);
+                return sqlForEmptyTuple(dataSource, baseCubes);
             }
 
             // Restore the original measure member
@@ -726,10 +727,15 @@ public class SqlTupleReader implements TupleReader {
         return baseCubes;
     }
 
-    String sqlForEmptyTuple(final Collection<RolapCube> baseCubes) {
-        return "select 0 from "
-            + baseCubes.iterator().next().getFact().toString()
-            + " where 1 = 0";
+    String sqlForEmptyTuple(
+        DataSource dataSource,
+        final Collection<RolapCube> baseCubes)
+    {
+        final SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, null);
+        sqlQuery.addSelect("0");
+        sqlQuery.addFrom(baseCubes.iterator().next().getFact(), null, true);
+        sqlQuery.addWhere("1 = 0");
+        return sqlQuery.toString();
     }
 
     /**

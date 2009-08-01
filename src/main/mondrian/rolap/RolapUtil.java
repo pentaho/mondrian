@@ -238,12 +238,8 @@ public class RolapUtil {
             new SqlStatement(
                 dataSource, sql, maxRows, component, message,
                 resultSetType, resultSetConcurrency);
-        try {
-            stmt.execute();
-            return stmt;
-        } catch (SQLException e) {
-            throw stmt.handle(e);
-        }
+        stmt.execute();
+        return stmt;
     }
 
     /**
@@ -314,8 +310,7 @@ public class RolapUtil {
     /**
      * Creates a compiler which will generate programs which will test
      * whether the dependencies declared via
-     * {@link mondrian.calc.Calc#dependsOn(mondrian.olap.Dimension)} are
-     * accurate.
+     * {@link mondrian.calc.Calc#dependsOn(Hierarchy)} are accurate.
      */
     public static ExpCompiler createDependencyTestingCompiler(
         ExpCompiler compiler)
