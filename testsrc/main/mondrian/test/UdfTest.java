@@ -725,6 +725,78 @@ public class UdfTest extends FoodMartTestCase {
             + "Row #0: \n");
     }
 
+    /**
+     * Test case for a UDF that returns a list.
+     *
+     * <p>Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-588">MONDRIAN-588,
+     * "UDF returning List works under 2.4, fails under 3.1.1"</a>.
+     */
+    public void testListUdf() {
+        TestContext tc = TestContext.create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name=\"Reverse\" className=\""
+            + ReverseFunction.class.getName()
+            + "\"/>\n",
+            null);
+        tc.assertQueryReturns(
+            "select Reverse([Gender].Members) on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: 135,215\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 266,773\n");
+    }
+
+    /**
+     * Tests that a non-static function gives an error.
+     */
+    public void testNonStaticUdfFails() {
+        TestContext tc = TestContext.create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name=\"Reverse2\" className=\""
+            + ReverseFunctionNotStatic.class.getName()
+            + "\"/>\n",
+            null);
+        tc.assertQueryThrows(
+            "select Reverse2([Gender].Members) on 0\n"
+            + "from [Sales]",
+            "Failed to load user-defined function 'Reverse2': class "
+            + "'mondrian.test.UdfTest$ReverseFunctionNotStatic' must be public "
+            + "and static");
+    }
+
+    /**
+     * Tests a function that takes a member as argument. Want to make sure that
+     * Mondrian leaves it as a member, does not try to evaluate it to a scalar
+     * value.
+     */
+    public void testMemberUdfDoesNotEvaluateToScalar() {
+        TestContext tc = TestContext.create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name=\"MemberName\" className=\""
+            + MemberNameFunction.class.getName()
+            + "\"/>\n",
+            null);
+        tc.assertExprReturns(
+            "MemberName([Gender].[F])",
+            "F");
+    }
+
     // ~ Inner classes --------------------------------------------------------
 
 
@@ -950,6 +1022,81 @@ public class UdfTest extends FoodMartTestCase {
 
         public String[] getReservedWords() {
             return null;
+        }
+    }
+
+    /**
+     * Function that reverses a list of members.
+     */
+    public static class ReverseFunction implements UserDefinedFunction {
+        public Object execute(Evaluator eval, Argument[] args) {
+            List memberList = (List) args[0].evaluate(eval);
+            Collections.reverse(memberList);
+            return memberList;
+        }
+
+        public String getDescription() {
+            return "Reverses the order of a set";
+        }
+
+        public String getName() {
+            return "Reverse";
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {new SetType(MemberType.Unknown)};
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+
+        public Type getReturnType(Type[] arg0) {
+            return arg0[0];
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+    }
+
+    /**
+     * Function that is non-static.
+     */
+    public class ReverseFunctionNotStatic extends ReverseFunction {
+    }
+
+    /**
+     * Function that takes a member and returns a name.
+     */
+    public static class MemberNameFunction implements UserDefinedFunction {
+        public Object execute(Evaluator eval, Argument[] args) {
+            Member member = (Member) args[0].evaluate(eval);
+            return member.getName();
+        }
+
+        public String getDescription() {
+            return "Returns the name of a member";
+        }
+
+        public String getName() {
+            return "MemberName";
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {MemberType.Unknown};
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+
+        public Type getReturnType(Type[] arg0) {
+            return new StringType();
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
         }
     }
 }

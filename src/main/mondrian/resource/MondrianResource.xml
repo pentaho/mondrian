@@ -352,6 +352,10 @@
     <text>Failed to load user-defined function ''{0}'': class ''{1}'' not found</text>
 </exception>
 
+<exception id="40195" name="UdfClassMustBePublicAndStatic">
+    <text>Failed to load user-defined function ''{0}'': class ''{1}'' must be public and static</text>
+</exception>
+
 <exception id="40200" name="UdfClassWrongIface">
     <text>Failed to load user-defined function ''{0}'': class ''{1}'' does not implement the required interface ''{2}''</text>
 </exception>

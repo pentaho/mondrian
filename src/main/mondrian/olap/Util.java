@@ -2474,6 +2474,16 @@ public class Util extends XOMUtil {
         Constructor<?> constructor;
         Object[] args = {};
 
+        // 0. Check that class is public and top-level or static.
+        if (!Modifier.isPublic(udfClass.getModifiers())
+            || (udfClass.getEnclosingClass() != null
+                && !Modifier.isStatic(udfClass.getModifiers())))
+        {
+            throw MondrianResource.instance().UdfClassMustBePublicAndStatic.ex(
+                functionName,
+                className);
+        }
+
         // 1. Look for a constructor "public Udf(String name)".
         try {
             constructor = udfClass.getConstructor(String.class);

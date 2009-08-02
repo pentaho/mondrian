@@ -14,6 +14,7 @@ import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -69,9 +70,9 @@ public class UdfResolver implements Resolver {
     }
 
     public FunDef resolve(
-            Exp[] args,
-            Validator validator,
-            List<Conversion> conversions)
+        Exp[] args,
+        Validator validator,
+        List<Conversion> conversions)
     {
         final Type[] parameterTypes = udf.getParameterTypes();
         if (args.length != parameterTypes.length) {
@@ -147,19 +148,23 @@ public class UdfResolver implements Resolver {
             UserDefinedFunction udf2 =
                 Util.createUdf(
                     udf.getClass(), udf.getName());
-            return new CalcImpl(call, calcs, udf2, expCalcs);
+            if (call.getType() instanceof SetType) {
+                return new ListCalcImpl(call, calcs, udf2, expCalcs);
+            } else {
+                return new ScalarCalcImpl(call, calcs, udf2, expCalcs);
+            }
         }
     }
 
     /**
-     * Expression which evaluates a user-defined function.
+     * Expression that evaluates a scalar user-defined function.
      */
-    private static class CalcImpl extends GenericCalc {
+    private static class ScalarCalcImpl extends GenericCalc {
         private final Calc[] calcs;
         private final UserDefinedFunction udf;
         private final UserDefinedFunction.Argument[] args;
 
-        public CalcImpl(
+        public ScalarCalcImpl(
             ResolvedFunCall call,
             Calc[] calcs,
             UserDefinedFunction udf,
@@ -177,6 +182,34 @@ public class UdfResolver implements Resolver {
 
         public Object evaluate(Evaluator evaluator) {
             return udf.execute(evaluator, args);
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // Be pessimistic. This effectively disables expression caching.
+            return true;
+        }
+    }
+
+    /**
+     * Expression that evaluates a list user-defined function.
+     */
+    private static class ListCalcImpl extends AbstractListCalc {
+        private final UserDefinedFunction udf;
+        private final UserDefinedFunction.Argument[] args;
+
+        public ListCalcImpl(
+            ResolvedFunCall call,
+            Calc[] calcs,
+            UserDefinedFunction udf,
+            UserDefinedFunction.Argument[] args)
+        {
+            super(call, calcs);
+            this.udf = udf;
+            this.args = args;
+        }
+
+        public List evaluateList(Evaluator evaluator) {
+            return (List) udf.execute(evaluator, args);
         }
 
         public boolean dependsOn(Dimension dimension) {
