@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
-import mondrian.olap.Hierarchy;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ import java.util.List;
  * @since May 15, 2009
  */
 class RolapTupleCalculation implements RolapCalculation {
-    private final List<Hierarchy> hierarchyList;
+    private final List<RolapHierarchy> hierarchyList;
     private final Calc calc;
 
     /**
@@ -35,7 +34,10 @@ class RolapTupleCalculation implements RolapCalculation {
      * @param hierarchyList List of hierarchies to be replaced.
      * @param calc Compiled scalar expression to compute cell
      */
-    public RolapTupleCalculation(List<Hierarchy> hierarchyList, Calc calc) {
+    public RolapTupleCalculation(
+        List<RolapHierarchy> hierarchyList,
+        Calc calc)
+    {
         this.hierarchyList = hierarchyList;
         this.calc = calc;
     }
@@ -44,10 +46,8 @@ class RolapTupleCalculation implements RolapCalculation {
         final RolapEvaluator evaluator2 = evaluator.push();
         // Restore default member for each hierarchy
         // in the tuple.
-        for (Hierarchy hierarchy : hierarchyList) {
-            final int ordinal =
-                hierarchy.getDimension().getOrdinal(
-                    evaluator.root.cube);
+        for (RolapHierarchy hierarchy : hierarchyList) {
+            final int ordinal = hierarchy.getOrdinalInCube();
             final RolapMember defaultMember =
                 evaluator.root.defaultMembers[ordinal];
             evaluator2.setContext(defaultMember);
@@ -61,7 +61,7 @@ class RolapTupleCalculation implements RolapCalculation {
         return Integer.MIN_VALUE;
     }
 
-    public int getDimensionOrdinal(RolapCube cube) {
+    public int getHierarchyOrdinal() {
         throw new UnsupportedOperationException();
     }
 

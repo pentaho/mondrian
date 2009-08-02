@@ -49,10 +49,9 @@ interface RolapCalculation {
     /**
      * Returns the ordinal of this calculation; to resolve ties.
      *
-     * @param cube Current cube
      * @return Ordinal or calculation
      */
-    int getDimensionOrdinal(RolapCube cube);
+    int getHierarchyOrdinal();
 
     /**
      * Returns whether this calculation is a member is computed from a

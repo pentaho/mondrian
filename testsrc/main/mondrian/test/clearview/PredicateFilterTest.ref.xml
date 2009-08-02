@@ -252,16 +252,16 @@ Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_E
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1],[Time].[1998].[Q2],[Time].[1998].[Q3],[Time].[1998].[Q4]}'
-Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
-Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1997]))'
-Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
 Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -303,7 +303,7 @@ Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1998].[Q4]}'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
 Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])'
 Select
@@ -387,16 +387,16 @@ Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_E
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1]}'
-Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
-Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1997]))'
-Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
 Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -437,16 +437,16 @@ Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_E
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1],[Time].[1998].[Q2],[Time].[1998].[Q3],[Time].[1998].[Q4]}'
-Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
-Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1997]))'
-Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
 Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -622,12 +622,12 @@ Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '{}'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].CurrentMember)}))) on rows
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}))) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -655,12 +655,12 @@ Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '{}'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].CurrentMember)}))) on rows
+Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}))) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -689,12 +689,12 @@ Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[U
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
 Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER]}'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3].[7]}'
-Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
-Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].CurrentMember.Parent.Parent = [Time].[1997]))'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent.Parent = [Time].[1997]))'
 Member [Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union({[Time].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Time].CurrentMember.Parent.Parent.CalculatedChild("*FILTER_MEMBER"))})) on rows
+Non Empty Union({[Time].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.Parent.CalculatedChild("*FILTER_MEMBER"))})) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -728,7 +728,7 @@ Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentM
 Set [*BASE_MEMBERS_Store] as '{[Store].[USA]}'
 Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3].[7]}'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
 Member [Store].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Store])'
 Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])'

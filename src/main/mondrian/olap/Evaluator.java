@@ -109,7 +109,7 @@ public interface Evaluator {
 
     void setContext(Member[] members);
 
-    Member getContext(Dimension dimension);
+    Member getContext(Hierarchy hierarchy);
 
     /**
      * Calculates and returns the value of the cell at the current context.

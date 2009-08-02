@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select [Time].children on axis(0),     [Store].children on axis(1) from [Warehouse and Sales] where ([Measures].[Store Sales])</mdxQuery>
+    <mdxQuery>select [Time].[Time].children on axis(0),     [Store].children on axis(1) from [Warehouse and Sales] where ([Measures].[Store Sales])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

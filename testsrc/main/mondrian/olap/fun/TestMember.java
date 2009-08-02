@@ -182,10 +182,6 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
-        public int getOrdinal(Cube cube) {
-            throw new UnsupportedOperationException();
-        }
-
         public Schema getSchema() {
             throw new UnsupportedOperationException();
         }

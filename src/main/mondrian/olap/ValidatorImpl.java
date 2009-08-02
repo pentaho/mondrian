@@ -245,6 +245,27 @@ abstract class ValidatorImpl implements Validator {
         int to,
         List<Resolver.Conversion> conversions)
     {
+        if (false)
+        if (fromExp instanceof DimensionExpr) {
+            switch (to) {
+            case Category.Hierarchy:
+            case Category.Member:
+            case Category.Tuple:
+            case Category.Level:
+                Dimension dimension = ((DimensionExpr) fromExp).getDimension();
+                if (dimension.getHierarchies().length == 1) {
+                    fromExp =
+                        new HierarchyExpr(
+                            dimension.getHierarchies()[0]);
+                    return TypeUtil.canConvert(
+                        fromExp.getType(),
+                        to,
+                        conversions);
+                }
+            default:
+                return false;
+            }
+        }
         return TypeUtil.canConvert(
             fromExp.getType(),
             to,

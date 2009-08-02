@@ -98,13 +98,6 @@ public class FoodMartTestCase extends TestCase {
     }
 
     /**
-     * @deprecated Use {@link #assertQueryThrows(String, String)}
-     */
-    public final void assertThrows(String queryString, String pattern) {
-        assertQueryThrows(queryString, pattern);
-    }
-
-    /**
      * Executes a query in a given connection.
      */
     public Result execute(Connection connection, String queryString) {

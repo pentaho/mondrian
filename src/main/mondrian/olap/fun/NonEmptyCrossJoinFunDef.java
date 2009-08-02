@@ -69,16 +69,16 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                 return result;
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                if (super.dependsOn(dimension)) {
+            public boolean dependsOn(Hierarchy hierarchy) {
+                if (super.dependsOn(hierarchy)) {
                     return true;
                 }
                 // Member calculations generate members, which mask the actual
                 // expression from the inherited context.
-                if (listCalc1.getType().usesDimension(dimension, true)) {
+                if (listCalc1.getType().usesHierarchy(hierarchy, true)) {
                     return false;
                 }
-                if (listCalc2.getType().usesDimension(dimension, true)) {
+                if (listCalc2.getType().usesHierarchy(hierarchy, true)) {
                     return false;
                 }
                 // The implicit value expression, executed to figure out

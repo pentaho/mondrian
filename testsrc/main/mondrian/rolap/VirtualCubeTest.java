@@ -396,7 +396,7 @@ public class VirtualCubeTest extends BatchTestCase {
 
     public void testLostData() {
         assertQueryReturns(
-            "select {[Time].Members} on columns,\n"
+            "select {[Time].[Time].Members} on columns,\n"
             + " {[Product].Children} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -1047,8 +1047,8 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test that R
-     olapCubeLevel is used correctly in the context of virtual cube.
+     * Test that RolapCubeLevel is used correctly in the context of virtual
+     * cube.
      */
     public void testRolapCubeLevelInVirtualCube() {
         String query1 =
@@ -1056,20 +1056,20 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' "
             + "Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' "
-            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
-            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales] ";
+            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].[Time].currentMember)}) on rows From [Warehouse and Sales] ";
 
         String query2 =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' "
             + "Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' "
-            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
-            + "Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].CurrentMember Not In {[Time].[1997].[Q1].[2]})' "
+            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].[Time].CurrentMember Not In {[Time].[1997].[Q1].[2]})' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
-            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales]";
+            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].[Time].currentMember)}) on rows From [Warehouse and Sales]";
 
         executeQuery(query1);
 

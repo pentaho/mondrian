@@ -14,7 +14,6 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
-import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.Member;
@@ -22,7 +21,6 @@ import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.fun.vba.Excel;
-import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
 
@@ -92,143 +90,19 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(HierarchyDimensionFunDef.instance);
 
         // "<Dimension>.Dimension"
-        builder.define(
-            new FunDefBase(
-                "Dimension",
-                "Returns the dimension that contains a specified hierarchy.",
-                "pdd")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                Dimension dimension =
-                        ((DimensionExpr) call.getArg(0)).getDimension();
-                return new ConstantCalc(
-                        DimensionType.forDimension(dimension),
-                        dimension);
-            }
-        });
+        builder.define(DimensionDimensionFunDef.INSTANCE);
 
         // "<Level>.Dimension"
-        builder.define(
-            new FunDefBase(
-                "Dimension",
-                "Returns the dimension that contains a specified level.",
-                "pdl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final LevelCalc levelCalc =
-                        compiler.compileLevel(call.getArg(0));
-                return new AbstractDimensionCalc(call, new Calc[] {levelCalc}) {
-                    public Dimension evaluateDimension(Evaluator evaluator) {
-                        Level level =  levelCalc.evaluateLevel(evaluator);
-                        return level.getDimension();
-                    }
-                };
-            }
-        });
+        builder.define(LevelDimensionFunDef.INSTANCE);
 
         // "<Member>.Dimension"
-        builder.define(
-            new FunDefBase(
-                "Dimension",
-                "Returns the dimension that contains a specified member.",
-                "pdm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new AbstractDimensionCalc(call, new Calc[] {memberCalc})
-                {
-                    public Dimension evaluateDimension(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return member.getDimension();
-                    }
-                };
-            }
-        });
+        builder.define(MemberDimensionFunDef.INSTANCE);
 
         // "Dimensions(<Numeric Expression>)"
-        builder.define(
-            new FunDefBase(
-                "Dimensions",
-                "Returns the dimension whose zero-based position within the cube is specified by a numeric expression.",
-                "fdn")
-        {
-            public Type getResultType(Validator validator, Exp[] args) {
-                return DimensionType.Unknown;
-            }
-
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final IntegerCalc integerCalc =
-                        compiler.compileInteger(call.getArg(0));
-                return new AbstractDimensionCalc(call, new Calc[] {integerCalc})
-                {
-                    public Dimension evaluateDimension(Evaluator evaluator) {
-                        int n = integerCalc.evaluateInteger(evaluator);
-                        return nthDimension(evaluator, n);
-                    }
-                };
-            }
-
-            Dimension nthDimension(Evaluator evaluator, int n) {
-                Cube cube = evaluator.getCube();
-                Dimension[] dimensions = cube.getDimensions();
-                if (n >= dimensions.length || n < 0) {
-                    throw newEvalException(
-                            this, "Index '" + n + "' out of bounds");
-                }
-                return dimensions[n];
-            }
-        });
+        builder.define(DimensionsNumericFunDef.INSTANCE);
 
         // "Dimensions(<String Expression>)"
-        builder.define(
-            new FunDefBase(
-                "Dimensions",
-                "Returns the dimension whose name is specified by a string.",
-                "fdS")
-        {
-            public Type getResultType(Validator validator, Exp[] args) {
-                return DimensionType.Unknown;
-            }
-
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final StringCalc stringCalc =
-                        compiler.compileString(call.getArg(0));
-                return new AbstractDimensionCalc(call, new Calc[] {stringCalc})
-                {
-                    public Dimension evaluateDimension(Evaluator evaluator) {
-                        String dimensionName =
-                                stringCalc.evaluateString(evaluator);
-                        return findDimension(dimensionName, evaluator);
-                    }
-                };
-            }
-
-            Dimension findDimension(String s, Evaluator evaluator) {
-                if (s.indexOf("[") == -1) {
-                    s = Util.quoteMdxIdentifier(s);
-                }
-                OlapElement o = evaluator.getSchemaReader().lookupCompound(
-                        evaluator.getCube(),
-                        parseIdentifier(s),
-                        false,
-                        Category.Dimension);
-                if (o instanceof Dimension) {
-                    return (Dimension) o;
-                } else if (o == null) {
-                    throw newEvalException(
-                        this, "Dimension '" + s + "' not found");
-                } else {
-                    throw newEvalException(
-                        this, "Dimensions(" + s + ") found " + o);
-                }
-            }
-        });
+        builder.define(DimensionsStringFunDef.INSTANCE);
 
         //
         // HIERARCHY FUNCTIONS
@@ -407,14 +281,6 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // In old mondrian, if a dimension has two hierarchies, only one of
-            // them can have a value at a time. Therefore
-            // <Dimension>.CurrentMember is distinct from
-            // <Hierarchy>.CurrentMember applied to the dimension's default
-            // hierarchy.
-            builder.define(DimensionCurrentMemberFunDef.instance);
-        }
         builder.define(HierarchyCurrentMemberFunDef.instance);
         builder.define(NamedSetCurrentFunDef.instance);
         builder.define(NamedSetCurrentOrdinalFunDef.instance);
@@ -655,7 +521,7 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
+                    compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
@@ -775,8 +641,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         final Calc valueFunCall)
                     {
                         Member member =
-                            evaluator.getParent().getContext(
-                                hierarchy.getDimension());
+                            evaluator.getParent().getContext(hierarchy);
                         List members =
                             (List) member.getPropertyValue(
                                 Property.CONTRIBUTING_CHILDREN.name);
@@ -906,12 +771,12 @@ public class BuiltinFunTable extends FunTableImpl {
                         return value;
                     }
 
-                    public boolean dependsOn(Dimension dimension) {
-                        if (super.dependsOn(dimension)) {
+                    public boolean dependsOn(Hierarchy hierarchy) {
+                        if (super.dependsOn(hierarchy)) {
                             return true;
                         }
-                        if (memberCalc.getType().usesDimension(
-                            dimension, true))
+                        if (memberCalc.getType().usesHierarchy(
+                            hierarchy, true))
                         {
                             return false;
                         }
@@ -987,7 +852,7 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
+                    compiler.compileMember(call.getArg(0));
                 return new AbstractMemberListCalc(
                     call, new Calc[] {memberCalc}, false)
                 {

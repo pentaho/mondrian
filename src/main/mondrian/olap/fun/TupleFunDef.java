@@ -70,7 +70,7 @@ public class TupleFunDef extends FunDefBase {
                 Exp arg = args[i];
                 types[i] = TypeUtil.toMemberType(arg.getType());
             }
-            TupleType.checkDimensions(types);
+            TupleType.checkHierarchies(types);
             return new TupleType(types);
         }
     }

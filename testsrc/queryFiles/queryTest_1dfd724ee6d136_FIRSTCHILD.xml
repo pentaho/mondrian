@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT GENERATE([Time].[Year].MEMBERS, {[Time].CURRENTMEMBER.FIRSTCHILD}) ON COLUMNS, [Store].[Store Name].MEMBERS ON ROWS FROM [Sales] WHERE (Measures.[Store Sales])</mdxQuery>
+    <mdxQuery>SELECT GENERATE([Time].[Year].MEMBERS, {[Time].[Time].CURRENTMEMBER.FIRSTCHILD}) ON COLUMNS, [Store].[Store Name].MEMBERS ON ROWS FROM [Sales] WHERE (Measures.[Store Sales])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

@@ -107,9 +107,9 @@ public class RolapEvaluator implements Evaluator {
             nonEmpty = false;
             evalAxes = false;
             cellReader = null;
-            final int dimensionCount = root.cube.getDimensions().length;
-            currentMembers = new RolapMember[dimensionCount];
-            calcMembers = new RolapCalculation[dimensionCount];
+            final int hierarchyCount = root.cube.getHierarchies().size();
+            currentMembers = new RolapMember[hierarchyCount];
+            calcMembers = new RolapCalculation[hierarchyCount];
             calcMemberCount = 0;
             slicerMembers = new ArrayList<Member>();
             aggregationLists = null;
@@ -121,10 +121,10 @@ public class RolapEvaluator implements Evaluator {
             currentMembers = parent.currentMembers.clone();
             calcMembers = parent.calcMembers.clone();
             calcMemberCount = parent.calcMemberCount;
-            slicerMembers = new ArrayList<Member> (parent.slicerMembers);
+            slicerMembers = new ArrayList<Member>(parent.slicerMembers);
             if (parent.aggregationLists != null) {
                 aggregationLists =
-                        new ArrayList<List<Member[]>>(parent.aggregationLists);
+                    new ArrayList<List<Member[]>>(parent.aggregationLists);
             } else {
                 aggregationLists = null;
             }
@@ -143,24 +143,24 @@ public class RolapEvaluator implements Evaluator {
         // we expect client to set CellReader
 
         final SchemaReader scr = this.root.schemaReader;
-        final Dimension[] dimensions = this.root.cube.getDimensions();
-        for (final Dimension dimension : dimensions) {
-            final int ordinal = dimension.getOrdinal(this.root.cube);
-            final Hierarchy hier = dimension.getHierarchy();
+        final List<RolapHierarchy> hierarchies =
+            this.root.cube.getHierarchies();
+        for (final RolapHierarchy hierarchy : hierarchies) {
+            final int ordinal = hierarchy.getOrdinalInCube();
 
             final RolapMember member =
-                (RolapMember) scr.getHierarchyDefaultMember(hier);
+                (RolapMember) scr.getHierarchyDefaultMember(hierarchy);
 
             // If there is no member, we cannot continue.
             if (member == null) {
-                throw MondrianResource.instance().InvalidHierarchyCondition
-                    .ex(hier.getUniqueName());
+                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
+                    hierarchy.getUniqueName());
             }
 
             // This fragment is a concurrency bottleneck, so use a cache of
             // hierarchy usages.
             final HierarchyUsage hierarchyUsage =
-                this.root.cube.getFirstUsage(hier);
+                this.root.cube.getFirstUsage(hierarchy);
             if (hierarchyUsage != null) {
                 member.makeUniqueName(hierarchyUsage);
             }
@@ -373,7 +373,7 @@ public class RolapEvaluator implements Evaluator {
 
     public final Member setContext(Member member) {
         final RolapMember m = (RolapMember) member;
-        final int ordinal = m.getDimension().getOrdinal(root.cube);
+        final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
         if (m.equals(previous)) {
             return m;
@@ -423,8 +423,19 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    public final RolapMember getContext(Dimension dimension) {
-        return currentMembers[dimension.getOrdinal(root.cube)];
+    public final RolapMember getContext(Hierarchy hierarchy) {
+        return currentMembers[((RolapHierarchy) hierarchy).getOrdinalInCube()];
+    }
+
+    /**
+     * More specific version of {@link #getContext(mondrian.olap.Hierarchy)},
+     * for internal code.
+     *
+     * @param hierarchy Hierarchy
+     * @return current member
+     */
+    public final RolapMember getContext(RolapHierarchy hierarchy) {
+        return currentMembers[hierarchy.getOrdinalInCube()];
     }
 
     public final Object evaluateCurrent() {
@@ -532,7 +543,7 @@ public class RolapEvaluator implements Evaluator {
                 }
 
                 final RolapMember parentMember =
-                    eval.getContext(member.getDimension());
+                    eval.getContext(member.getHierarchy());
                 if (member != parentMember) {
                     continue outer;
                 }
@@ -686,17 +697,17 @@ public class RolapEvaluator implements Evaluator {
             return key;
         }
 
-        final int[] dimensionOrdinals =
-            descriptor.getDependentDimensionOrdinals();
-        for (int i = 0; i < dimensionOrdinals.length; i++) {
-            final int dimensionOrdinal = dimensionOrdinals[i];
-            final Member member = currentMembers[dimensionOrdinal];
+        final int[] hierarchyOrdinals =
+            descriptor.getDependentHierarchyOrdinals();
+        for (int i = 0; i < hierarchyOrdinals.length; i++) {
+            final int hierarchyOrdinal = hierarchyOrdinals[i];
+            final Member member = currentMembers[hierarchyOrdinal];
 
             // more than one usage
             if (member == null) {
                 getLogger().debug(
                     "RolapEvaluator.getExpResultCacheKey: "
-                    + "member == null; dimensionOrdinal=" + i);
+                    + "member == null; hierarchyOrdinal=" + i);
                 continue;
             }
 
@@ -895,8 +906,8 @@ public class RolapEvaluator implements Evaluator {
             return true;
         } else {
             return solveOrder1 == solveOrder2
-                && calc1.getDimensionOrdinal(root.cube)
-                   < calc2.getDimensionOrdinal(root.cube);
+                && calc1.getHierarchyOrdinal()
+                    < calc2.getHierarchyOrdinal();
         }
     }
 

@@ -217,18 +217,23 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
 
             return (onlyMutableList) ? valueMList : valueIter;
         }
-        public boolean dependsOn(Dimension dimension) {
-            return calcIter.dependsOn(dimension);
+
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return calcIter.dependsOn(hierarchy);
         }
+
         public Type getType() {
             return calcIter.getType();
         }
+
         public void accept(CalcWriter calcWriter) {
             calcIter.accept(calcWriter);
         }
+
         public ResultStyle getResultStyle() {
             return calcIter.getResultStyle();
         }
+
         protected boolean compare(Object v1, Object v2) {
             if (v1 == null) {
                 return (v2 == null);
@@ -287,6 +292,7 @@ print(ma2);
                 return true;
             }
         }
+
         protected void print(Member[] ma) {
             StringBuilder buf = new StringBuilder(100);
             if (ma == null) {

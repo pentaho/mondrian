@@ -164,18 +164,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public Dimension getTimeDimension() {
-        for (Dimension dimension : dimensions) {
-            if (dimension.getDimensionType()
-                == DimensionType.TimeDimension)
-            {
-                return dimension;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Looks up a dimension in this cube based on a component of its name.
      *

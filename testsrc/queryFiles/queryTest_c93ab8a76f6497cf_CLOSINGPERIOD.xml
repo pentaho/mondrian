@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>Select {CLOSINGPERIOD([Time].[Month], [Time].CURRENTMEMBER), [Time].[1997].[Q3]} on columns from [Warehouse]</mdxQuery>
+    <mdxQuery>Select {CLOSINGPERIOD([Time].[Month], [Time].[Time].CURRENTMEMBER), [Time].[1997].[Q3]} on columns from [Warehouse]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

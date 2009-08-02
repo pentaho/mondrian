@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER Measures.[Closing Balance]    AS '([Measures].[Units Ordered], CLOSINGPERIOD(    [Time].[Month], [Time].CURRENTMEMBER)) -    ([Measures].[Units Shipped], CLOSINGPERIOD(    [Time].[Month], [Time].CURRENTMEMBER))' SELECT {[Measures].[Closing Balance]} ON COLUMNS, [Store Type].MEMBERS ON ROWS FROM [Warehouse]</mdxQuery>
+    <mdxQuery>WITH MEMBER Measures.[Closing Balance]    AS '([Measures].[Units Ordered], CLOSINGPERIOD(    [Time].[Month], [Time].[Time].CURRENTMEMBER)) -    ([Measures].[Units Shipped], CLOSINGPERIOD(    [Time].[Month], [Time].[Time].CURRENTMEMBER))' SELECT {[Measures].[Closing Balance]} ON COLUMNS, [Store Type].MEMBERS ON ROWS FROM [Warehouse]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

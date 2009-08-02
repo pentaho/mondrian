@@ -38,12 +38,6 @@ public interface Dimension extends OlapElement {
     DimensionType getDimensionType();
 
     /**
-     * Returns dimension's ordinal within a given cube.
-     * The <code>[Measures]</code> always has ordinal 0.
-     */
-    int getOrdinal(Cube cube);
-
-    /**
      * Returns the schema this dimension belongs to.
      */
     Schema getSchema();

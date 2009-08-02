@@ -63,10 +63,10 @@ class RolapEvaluatorRoot {
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
-        for (Dimension dimension : cube.getDimensions()) {
+        for (RolapHierarchy hierarchy : cube.getHierarchies()) {
             list.add(
                 (RolapMember) schemaReader.getHierarchyDefaultMember(
-                    dimension.getHierarchy()));
+                    hierarchy));
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =

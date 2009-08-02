@@ -40,6 +40,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         + "Axis #1:\n"
         + "Axis #2:\n";
 
+    private static final String timeWeekly =
+        TestContext.hierarchyName("Time", "Weekly");
+
     private MondrianProperties props = MondrianProperties.instance();
 
     public BasicQueryTest() {
@@ -156,7 +159,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // 3
         new QueryAndResult(
             "with member [Measures].[Store Sales Last Period] as "
-            + "    '([Measures].[Store Sales], Time.PrevMember)',\n"
+            + "    '([Measures].[Store Sales], Time.[Time].PrevMember)',\n"
             + "    format='#,###.00'\n"
             + "select\n"
             + "    {[Measures].[Store Sales Last Period]} on columns,\n"
@@ -912,7 +915,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  {[Gender].[M]}) ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]",
-            "Dimension '[Gender]' appears in more than one independent axis.");
+            "Hierarchy '[Gender]' appears in more than one independent axis.");
 
         // two members of same dimension in rows and filter
         assertQueryThrows(
@@ -920,7 +923,28 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]"
             + "WHERE ([Marital Status].[S], [Gender].[F])",
-            "Dimension '[Gender]' appears in more than one independent axis.");
+            "Hierarchy '[Gender]' appears in more than one independent axis.");
+
+        // members of different hierarchies of the same dimension in rows and
+        // filter
+        assertQueryReturns(
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + " {[Time].[1997].Children} ON ROWS\n"
+            + "FROM [Sales]"
+            + "WHERE ([Marital Status].[S], " + timeWeekly + ".[1997].[20])",
+            "Axis #0:\n"
+            + "{[Marital Status].[All Marital Status].[S], [Time].[Weekly].[All Weeklys].[1997].[20]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "Row #0: \n"
+            + "Row #1: 3,523\n"
+            + "Row #2: \n"
+            + "Row #3: \n");
 
         // two members of same dimension in slicer tuple
         assertQueryThrows(
@@ -928,7 +952,26 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]"
             + "WHERE ([Marital Status].[S], [Marital Status].[M])",
-            "Tuple contains more than one member of dimension '[Marital Status]'.");
+            "Tuple contains more than one member of hierarchy '[Marital Status]'.");
+
+        // two members of different hierarchies of the same dimension in the
+        // slicer tuple
+        assertQueryReturns(
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + " {[Gender].MEMBERS} ON ROWS\n"
+            + "FROM [Sales]"
+            + "WHERE ([Time].[1997].[Q1], " + timeWeekly + ".[1997].[4])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Time].[Weekly].[All Weeklys].[1997].[4]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 4,908\n"
+            + "Row #1: 2,354\n"
+            + "Row #2: 2,554\n");
 
         // testcase for bug MONDRIAN-68, "Member appears in slicer and other
         // axis should be illegal"
@@ -938,7 +981,23 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{([Product].[All Products], [Time].[1997])} ON rows\n"
             + "from Sales\n"
             + "where ([Time].[1997])",
-            "Dimension '[Time]' appears in more than one independent axis.");
+            "Hierarchy '[Time]' appears in more than one independent axis.");
+
+        // different hierarchies of same dimension on slicer and other axis
+        assertQueryReturns(
+            "select\n"
+            + "{[Measures].[Unit Sales]} on columns,\n"
+            + "{([Product].[All Products], "
+            + timeWeekly + ".[1997])} ON rows\n"
+            + "from Sales\n"
+            + "where ([Time].[1997])",
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products], [Time].[Weekly].[All Weeklys].[1997]}\n"
+            + "Row #0: 266,773\n");
     }
 
     public void testEmptyTupleSlicerFails() {
@@ -1423,7 +1482,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "select CrossJoin(\n"
             + "  {[Warehouse].DefaultMember, [Warehouse].[USA].children},\n"
             + "  {[Measures].[Unit Sales], [Measures].[Store Sales], [Measures].[Units Shipped]}) on columns,\n"
-            + " [Time].children on rows\n"
+            + " [Time].[Time].children on rows\n"
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -4430,18 +4489,18 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  '[Product].[All Products].[Drink] * 2'\n"
             + "MEMBER [Product].[Drink Forecast - Dynamic] AS \n"
             + "  '[Product].[All Products].[Drink] * \n"
-            + "   IIF([Time].CurrentMember.Name = \"1\", 1.2,\n"
-            + "     IIF([Time].CurrentMember.Name = \"2\", 1.3,\n"
-            + "       IIF([Time].CurrentMember.Name = \"3\", 1.4,\n"
-            + "         IIF([Time].CurrentMember.Name = \"4\", 1.6,\n"
-            + "           IIF([Time].CurrentMember.Name = \"5\", 2.1,\n"
-            + "             IIF([Time].CurrentMember.Name = \"6\", 2.4,\n"
-            + "               IIF([Time].CurrentMember.Name = \"7\", 2.6,\n"
-            + "                 IIF([Time].CurrentMember.Name = \"8\", 2.3,\n"
-            + "                   IIF([Time].CurrentMember.Name = \"9\", 1.9,\n"
-            + "                     IIF([Time].CurrentMember.Name = \"10\", 1.5,\n"
-            + "                       IIF([Time].CurrentMember.Name = \"11\", 1.4,\n"
-            + "                         IIF([Time].CurrentMember.Name = \"12\", 1.2, 1.0))))))))))))'\n"
+            + "   IIF([Time].[Time].CurrentMember.Name = \"1\", 1.2,\n"
+            + "     IIF([Time].[Time].CurrentMember.Name = \"2\", 1.3,\n"
+            + "       IIF([Time].[Time].CurrentMember.Name = \"3\", 1.4,\n"
+            + "         IIF([Time].[Time].CurrentMember.Name = \"4\", 1.6,\n"
+            + "           IIF([Time].[Time].CurrentMember.Name = \"5\", 2.1,\n"
+            + "             IIF([Time].[Time].CurrentMember.Name = \"6\", 2.4,\n"
+            + "               IIF([Time].[Time].CurrentMember.Name = \"7\", 2.6,\n"
+            + "                 IIF([Time].[Time].CurrentMember.Name = \"8\", 2.3,\n"
+            + "                   IIF([Time].[Time].CurrentMember.Name = \"9\", 1.9,\n"
+            + "                     IIF([Time].[Time].CurrentMember.Name = \"10\", 1.5,\n"
+            + "                       IIF([Time].[Time].CurrentMember.Name = \"11\", 1.4,\n"
+            + "                         IIF([Time].[Time].CurrentMember.Name = \"12\", 1.2, 1.0))))))))))))'\n"
             + "SELECT DESCENDANTS(Time.[1997], [Month], SELF) ON COLUMNS, \n"
             + "  {[Product].CHILDREN, [Product].[Drink Forecast - Standard], [Product].[Drink Forecast - Dynamic]} ON ROWS\n"
             + "FROM Warehouse",
@@ -5287,7 +5346,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Measures].[Store Sales]} on rows\n"
             + "from [Sales]",
-            "Dimension '[Measures]' appears in more than one independent axis");
+            "Hierarchy '[Measures]' appears in more than one independent axis");
 
         // as part of a crossjoin
         assertQueryThrows(
@@ -5295,7 +5354,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " CrossJoin({[Product].members},"
             + "           {[Measures].[Store Sales]}) on rows\n"
             + "from [Sales]",
-            "Dimension '[Measures]' appears in more than one independent axis");
+            "Hierarchy '[Measures]' appears in more than one independent axis");
 
         // as part of a tuple
         assertQueryThrows(
@@ -5305,7 +5364,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    {([Product],\n"
             + "      [Store].CurrentMember)} on rows\n"
             + "from [Sales]",
-                "Dimension '[Product]' appears in more than one independent axis");
+            "Hierarchy '[Product]' appears in more than one independent axis");
 
         // clash between columns and slicer
         assertQueryThrows(
@@ -5313,7 +5372,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Store].Members} on rows\n"
             + "from [Sales]\n"
             + "where ([Time].[1997].[Q1], [Measures].[Store Sales])",
-                "Dimension '[Measures]' appears in more than one independent axis");
+            "Hierarchy '[Measures]' appears in more than one independent axis");
 
         // within aggregate is OK
         executeQuery(
@@ -5479,8 +5538,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(
             "with member  [Gender].[test] as '\n"
             + "  aggregate(\n"
-            + "  filter (crossjoin( [Gender].[Gender].members, [Time].members), \n"
-            + "      [time].CurrentMember = [Time].[1997].[Q1]   AND\n"
+            + "  filter (crossjoin( [Gender].[Gender].members, [Time].[Time].members), \n"
+            + "      [time].[Time].CurrentMember = [Time].[1997].[Q1]   AND\n"
             + "[measures].[unit sales] > 50) )\n"
             + "'\n"
             + "select \n"
@@ -5934,7 +5993,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "With Set [*NATIVE_CJ_SET] as "
             + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' "
             + "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], [Time].[1997].[Q4]}' "
-            + "Set [*GENERATED_MEMBERS_Dates] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "Set [*GENERATED_MEMBERS_Dates] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
             + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' "
             + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA], [Store].[USA].[OR]}' "
             + "Set [*GENERATED_MEMBERS_Stores] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
@@ -6306,8 +6365,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "NON EMPTY Crossjoin("
             + "  {Product.[All Products]},\n"
             + "  Filter("
-            + "    Descendants(Time, [Time].[Month]), "
-            + "    Time.CurrentMember.Name = '5')) ON ROWS\n"
+            + "    Descendants(Time.[Time], [Time].[Month]), "
+            + "    Time.[Time].CurrentMember.Name = '5')) ON ROWS\n"
             + "from [Sales] ",
             desiredResult);
 
@@ -6316,8 +6375,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "NON EMPTY Filter("
             + "  Crossjoin("
             + "    {Product.[All Products]},\n"
-            + "    Descendants(Time, [Time].[Month])),"
-            + "  Time.CurrentMember.Name = '5') ON ROWS\n"
+            + "    Descendants(Time.[Time], [Time].[Month])),"
+            + "  Time.[Time].CurrentMember.Name = '5') ON ROWS\n"
             + "from [Sales] ",
             desiredResult);
     }
@@ -6674,6 +6733,46 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " [Store].[USA].Children on 1\n"
             + "from [Sales]",
             "All arguments to function '{}' must have same hierarchy.");
+    }
+
+    /**
+     * Tests hierarchies of the same dimension on different axes.
+     */
+    public void testHierarchiesOfSameDimensionOnDifferentAxes() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        assertQueryReturns(
+            "select [Time].[Year].Members on columns,\n"
+            + "[Time].[Weekly].[1997].[6].Children on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1998]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[1]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[26]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[27]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[28]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[29]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[30]}\n"
+            + "{[Time].[Weekly].[All Weeklys].[1997].[6].[31]}\n"
+            + "Row #0: 404\n"
+            + "Row #0: \n"
+            + "Row #1: 593\n"
+            + "Row #1: \n"
+            + "Row #2: 422\n"
+            + "Row #2: \n"
+            + "Row #3: 382\n"
+            + "Row #3: \n"
+            + "Row #4: 731\n"
+            + "Row #4: \n"
+            + "Row #5: \n"
+            + "Row #5: \n"
+            + "Row #6: \n"
+            + "Row #6: \n");
     }
 
     /**

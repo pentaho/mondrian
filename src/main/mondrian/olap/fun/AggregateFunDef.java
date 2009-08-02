@@ -16,8 +16,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.rolap.RolapAggregator;
-import mondrian.rolap.RolapEvaluator;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
 import java.util.*;
@@ -283,11 +282,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             }
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            if (dimension.isMeasures()) {
+        public boolean dependsOn(Hierarchy hierarchy) {
+            if (hierarchy.getDimension().isMeasures()) {
                 return true;
             }
-            return anyDependsButFirst(getCalcs(), dimension);
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
 
         /**

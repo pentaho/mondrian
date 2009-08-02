@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Time].CurrentMember.Hierarchy.Dimension.CurrentMember} on Axis(0) from [Sales]</mdxQuery>
+    <mdxQuery>SELECT {[Time].[Time].CurrentMember.Hierarchy.CurrentMember} on Axis(0) from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

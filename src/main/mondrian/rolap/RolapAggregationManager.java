@@ -215,6 +215,11 @@ public abstract class RolapAggregationManager {
         if (extendedContext) {
             for (int i = 1; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
+                if (member.getHierarchy().getRolapHierarchy().closureFor
+                    != null)
+                {
+                    continue;
+                }
                 addNonConstrainingColumns(member, measure.getCube(), request);
 
                 final RolapCubeLevel level = member.getLevel();

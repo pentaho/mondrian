@@ -26,7 +26,6 @@ public abstract class DimensionBase
     extends OlapElementBase
     implements Dimension
 {
-
     protected final String name;
     protected final String uniqueName;
     protected final String description;
@@ -34,10 +33,17 @@ public abstract class DimensionBase
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
+    /**
+     * Creates a DimensionBase.
+     *
+     * @param name Name
+     * @param dimensionType Type
+     * @param highCardinality Whether high-cardinality
+     */
     protected DimensionBase(
-            String name,
-            DimensionType dimensionType,
-            final boolean highCardinality)
+        String name,
+        DimensionType dimensionType,
+        final boolean highCardinality)
     {
         this.name = name;
         this.uniqueName = Util.makeFqName(name);
@@ -81,10 +87,6 @@ public abstract class DimensionBase
 
     public boolean isMeasures() {
         return getUniqueName().equals(MEASURES_UNIQUE_NAME);
-    }
-
-    public boolean usesDimension(Dimension dimension) {
-        return dimension == this;
     }
 
     public OlapElement lookupChild(
@@ -145,13 +147,12 @@ public abstract class DimensionBase
 
     private Hierarchy lookupHierarchy(Id.Segment s) {
         for (Hierarchy hierarchy : hierarchies) {
-            if (hierarchy.getName().equalsIgnoreCase(s.name)) {
+            if (Util.equalName(hierarchy.getName(), s.name)) {
                 return hierarchy;
             }
         }
         return null;
     }
 }
-
 
 // End DimensionBase.java

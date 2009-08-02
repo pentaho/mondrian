@@ -18,7 +18,6 @@ import mondrian.olap.type.SetType;
 import mondrian.olap.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -133,8 +132,8 @@ class FilterFunDef extends FunDefBase {
 
         protected abstract Iterable<Member> makeIterable(Evaluator evaluator);
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 
@@ -154,6 +153,7 @@ class FilterFunDef extends FunDefBase {
                     schemaReader.getNativeSetEvaluator(
                             call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
+                //noinspection unchecked
                 return (Iterable<Member[]>) nativeEvaluator.execute(
                     ResultStyle.ITERABLE);
             } else {
@@ -163,8 +163,8 @@ class FilterFunDef extends FunDefBase {
 
         protected abstract Iterable<Member[]> makeIterable(Evaluator evaluator);
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 
@@ -456,46 +456,44 @@ class FilterFunDef extends FunDefBase {
             // TODO: Figure this out at compile time.
             SchemaReader schemaReader = evaluator.getSchemaReader();
             NativeEvaluator nativeEvaluator =
-                    schemaReader.getNativeSetEvaluator(
-                            call.getFunDef(), call.getArgs(), evaluator, this);
+                schemaReader.getNativeSetEvaluator(
+                    call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (List) nativeEvaluator.execute(
-                        ResultStyle.ITERABLE);
-//                return (List) nativeEvaluator.execute(
-//                        ResultStyle.MUTABLE_LIST);
+                return (List) nativeEvaluator.execute(ResultStyle.ITERABLE);
             } else {
                 return makeList(evaluator);
             }
         }
         protected abstract List makeList(Evaluator evaluator);
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
+
     //
     // Member List Calcs
     //
     private static class MutableMemberListCalc extends BaseListCalc {
         MutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-            assert calcs[0] instanceof ListCalc;
+            assert calcs[0] instanceof MemberListCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
         protected List makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            ListCalc lcalc = (ListCalc) calcs[0];
+            MemberListCalc lcalc = (MemberListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List members = lcalc.evaluateList(evaluator);
+            List<Member> members = lcalc.evaluateMemberList(evaluator);
 
             // make list mutable
-            members = new ArrayList(members);
-            Iterator it = members.iterator();
+            members = new ArrayList<Member>(members);
+            Iterator<Member> it = members.iterator();
             while (it.hasNext()) {
-                Member member = (Member) it.next();
+                Member member = it.next();
                 evaluator2.setContext(member);
                 if (! bcalc.evaluateBoolean(evaluator2)) {
                     it.remove();

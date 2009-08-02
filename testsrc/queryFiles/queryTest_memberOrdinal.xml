@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select {[Product]} on columns, Hierarchize(crossjoin([Measures].allMembers, [Time].children)) on rows from [Sales 2]</mdxQuery>
+    <mdxQuery>select {[Product]} on columns, Hierarchize(crossjoin([Measures].allMembers, [Time].[Time].children)) on rows from [Sales 2]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

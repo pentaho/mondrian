@@ -49,8 +49,15 @@ public class DimensionType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
+        // REVIEW: Should be '!definitely'?
         return this.dimension == dimension
             || (definitely && this.dimension == null);
+    }
+
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        // If hierarchy belongs to this type's dimension, we might use it.
+        return hierarchy.getDimension() == this.dimension
+            && !definitely;
     }
 
     public Hierarchy getHierarchy() {

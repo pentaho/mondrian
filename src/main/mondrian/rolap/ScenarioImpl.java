@@ -69,7 +69,7 @@ public final class ScenarioImpl implements Scenario {
      */
     public void setCellValue(
         Connection connection,
-        List<Member> members,
+        List<RolapMember> members,
         double newValue,
         double currentValue,
         Cell.AllocationPolicy allocationPolicy,
@@ -148,7 +148,7 @@ public final class ScenarioImpl implements Scenario {
         writebackCells.add(
             new WritebackCell(
                 baseCube,
-                new ArrayList<Member>(members),
+                new ArrayList<RolapMember>(members),
                 constrainedColumnsBitKey,
                 compactKeyValues,
                 newValue,
@@ -187,10 +187,10 @@ public final class ScenarioImpl implements Scenario {
         // Add a value to the [Scenario] dimension of every cube that has
         // writeback enabled.
         for (RolapCube cube : schema.getCubeList()) {
-            for (Dimension dimension : cube.getDimensions()) {
-                if (isScenario(dimension)) {
+            for (RolapHierarchy hierarchy : cube.getHierarchies()) {
+                if (isScenario(hierarchy)) {
                     cube.createCalculatedMember(
-                        (RolapDimension) dimension,
+                        hierarchy,
                         getId() + "",
                         new ScenarioCalc(this));
                 }
@@ -199,15 +199,15 @@ public final class ScenarioImpl implements Scenario {
     }
 
     /**
-     * Returns whether a dimension is the [Scenario] dimension.
+     * Returns whether a hierarchy is the [Scenario] hierarchy.
      *
      * <p>TODO: use a flag
      *
-     * @param dimension Dimension
-     * @return Whether dimension is the scenario dimension
+     * @param hierarchy Hierarchy
+     * @return Whether hierarchy is the scenario hierarchy
      */
-    public static boolean isScenario(Dimension dimension) {
-        return dimension.getName().equals("Scenario");
+    public static boolean isScenario(Hierarchy hierarchy) {
+        return hierarchy.getName().equals("Scenario");
     }
 
     /**
@@ -242,7 +242,7 @@ public final class ScenarioImpl implements Scenario {
      * @return Number of atomic cells in cell
      */
     private static double computeAtomicCellCount(
-        RolapCube cube, List<Member> memberList)
+        RolapCube cube, List<RolapMember> memberList)
     {
         // Implementation generates and executes a recursive MDX query. This
         // may not be the most efficient implementation, but achieves the
@@ -315,7 +315,7 @@ public final class ScenarioImpl implements Scenario {
          */
         WritebackCell(
             RolapCube cube,
-            List<Member> members,
+            List<RolapMember> members,
             BitKey constrainedColumnsBitKey,
             Object[] keyValues,
             double newValue,
@@ -334,23 +334,20 @@ public final class ScenarioImpl implements Scenario {
             // Build the array of members by ordinal. If a member is not
             // specified for a particular dimension, use the 'all' member (not
             // necessarily the same as the default member).
-            this.membersByOrdinal = new Member[cube.getDimensions().length];
+            final List<RolapHierarchy> hierarchyList = cube.getHierarchies();
+            this.membersByOrdinal = new Member[hierarchyList.size()];
             for (int i = 0; i < membersByOrdinal.length; i++) {
-                membersByOrdinal[i] =
-                    cube.getDimensions()[i].getHierarchy().getDefaultMember();
+                membersByOrdinal[i] = hierarchyList.get(i).getDefaultMember();
             }
-            for (Member member : members) {
-                final Dimension dimension = member.getDimension();
-                if (isScenario(dimension)) {
+            for (RolapMember member : members) {
+                final RolapHierarchy hierarchy = member.getHierarchy();
+                if (isScenario(hierarchy)) {
                     assert member.isAll();
                 }
                 // REVIEW The following works because Measures is the only
                 // dimension whose members do not belong to RolapCubeDimension,
                 // just a regular RolapDimension, but has ordinal 0.
-                final int ordinal =
-                    dimension instanceof RolapCubeDimension
-                        ? ((RolapCubeDimension) dimension).cubeOrdinal
-                        : 0;
+                final int ordinal = hierarchy.getOrdinalInCube();
                 membersByOrdinal[ordinal] = member;
             }
         }

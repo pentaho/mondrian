@@ -50,8 +50,7 @@ class RolapMemberCalculation implements RolapCalculation {
 
     public RolapEvaluator pushSelf(RolapEvaluator evaluator) {
         final RolapMember defaultMember =
-            evaluator.root.defaultMembers[
-                getDimensionOrdinal(evaluator.root.cube)];
+            evaluator.root.defaultMembers[getHierarchyOrdinal()];
 
         // This method does not need to call
         // RolapEvaluator.removeCalcMember. That happens implicitly when
@@ -65,8 +64,8 @@ class RolapMemberCalculation implements RolapCalculation {
         return solveOrder;
     }
 
-    public int getDimensionOrdinal(RolapCube cube) {
-        return member.getDimension().getOrdinal(cube);
+    public int getHierarchyOrdinal() {
+        return member.getHierarchy().getOrdinalInCube();
     }
 
     public Calc getCompiledExpression(RolapEvaluatorRoot root) {

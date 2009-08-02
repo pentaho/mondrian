@@ -13,11 +13,12 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.MemberType;
 import mondrian.calc.*;
-import mondrian.calc.impl.DimensionCurrentMemberCalc;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
 
 /**
  * Definition of the <code>ParallelPeriod</code> MDX function.
@@ -44,14 +45,10 @@ class ParallelPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            Dimension defaultTimeDimension =
-                validator.getQuery().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+            RolapHierarchy defaultTimeHierarchy =
+                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
                     getName());
-            }
-            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
-            return MemberType.forHierarchy(hierarchy);
+            return MemberType.forHierarchy(defaultTimeHierarchy);
         }
         return super.getResultType(validator, args);
     }
@@ -79,24 +76,24 @@ class ParallelPeriodFunDef extends FunDefBase {
             memberCalc = compiler.compileMember(args[2]);
             break;
         case 1:
-            final Dimension dimension = args[0].getType().getDimension();
-            if (dimension != null) {
+            final Hierarchy hierarchy = args[0].getType().getHierarchy();
+            if (hierarchy != null) {
                 // For some functions, such as Levels(<string expression>),
                 // the dimension cannot be determined at compile time.
-                memberCalc = new DimensionCurrentMemberCalc(dimension);
+                memberCalc =
+                    new HierarchyCurrentMemberFunDef.FixedCalcImpl(
+                        call, hierarchy);
             } else {
                 memberCalc = null;
             }
             break;
         default:
-            final Dimension timeDimension =
-                    compiler.getEvaluator().getCube()
-                    .getTimeDimension();
-            if (timeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
-                    getName());
-            }
-            memberCalc = new DimensionCurrentMemberCalc(timeDimension);
+            final RolapHierarchy timeHierarchy =
+                ((RolapCube) compiler.getEvaluator().getCube())
+                    .getTimeHierarchy(getName());
+            memberCalc =
+                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
+                    call, timeHierarchy);
             break;
         }
 
@@ -113,7 +110,7 @@ class ParallelPeriodFunDef extends FunDefBase {
                     ancestorLevel = ancestorLevelCalc.evaluateLevel(evaluator);
                     if (memberCalc == null) {
                         member =
-                            evaluator.getContext(ancestorLevel.getDimension());
+                            evaluator.getContext(ancestorLevel.getHierarchy());
                     } else {
                         member = memberCalc.evaluateMember(evaluator);
                     }
@@ -123,8 +120,7 @@ class ParallelPeriodFunDef extends FunDefBase {
                     if (parent == null) {
                         // This is a root member,
                         // so there is no parallelperiod.
-                        return member.getHierarchy()
-                                .getNullMember();
+                        return member.getHierarchy().getNullMember();
                     }
                     ancestorLevel = parent.getLevel();
                 }

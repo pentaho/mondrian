@@ -60,8 +60,8 @@ class DescendantsFunDef extends FunDefBase {
             }
 
             MemberType memberType = (MemberType) setType.getElementType();
-            final Dimension dimension = memberType.getDimension();
-            if (dimension == null) {
+            final Hierarchy hierarchy = memberType.getHierarchy();
+            if (hierarchy == null) {
                 throw MondrianResource.instance().CannotDeduceTypeOfSet.ex();
             }
             // Convert
@@ -74,7 +74,7 @@ class DescendantsFunDef extends FunDefBase {
                     "CurrentMember",
                     Syntax.Property,
                     new Exp[] {
-                        new DimensionExpr(dimension)
+                        new HierarchyExpr(hierarchy)
                     });
             final ResolvedFunCall generateCall =
                 (ResolvedFunCall) compiler.getValidator().validate(

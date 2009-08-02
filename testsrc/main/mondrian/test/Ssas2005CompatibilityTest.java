@@ -51,11 +51,6 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     public static final boolean KEY_IMPL = false;
 
     /**
-     * Whether hierarchies from same dimension allowed on independent axes.
-     */
-    public static final boolean ALLOW_HIERS_ON_INDEP_AXES = false;
-
-    /**
      * Catch-all for tests that depend on something that hasn't been
      * implemented.
      */
@@ -485,7 +480,13 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "  {Ytd()}) on 0,\n"
             + " [Products].Children on 1\n"
             + "from [Warehouse and Sales]",
-            "xxx");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[All Productss].[Drink]}\n"
+            + "{[Product].[Products].[All Productss].[Food]}\n"
+            + "{[Product].[Products].[All Productss].[Non-Consumable]}\n");
     }
 
     public void testAxesOutOfOrder() {
@@ -545,12 +546,49 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Dimensions(3).DefaultMember",
             "Dimensions(3).AllMembers",
         };
-        for (String s : exprs) {
-            assertQueryThrows(
-                "select " + s + " on 0\n"
-                + "from [Warehouse and Sales]",
-                "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
-        }
+        final String expectedException =
+            "The 'Product' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.";
+        assertQueryThrows(
+            "select [Product].CurrentMember on 0\n"
+            + "from [Warehouse and Sales]",
+            expectedException);
+        assertQueryThrows(
+            "select [Product].DefaultMember on 0\n"
+            + "from [Warehouse and Sales]",
+            expectedException);
+        assertQueryThrows(
+            "select [Product].AllMembers on 0\n"
+            + "from [Warehouse and Sales]",
+            expectedException);
+
+        // The following are OK because Dimensions(<n>) returns a hierarchy.
+        final String expectedResult =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Time2].[1997]}\n"
+            + "Row #0: 266,773\n";
+        assertQueryReturns(
+            "select Dimensions(3).CurrentMember on 0\n"
+            + "from [Warehouse and Sales]",
+            expectedResult);
+        assertQueryReturns(
+            "select Dimensions(3).DefaultMember on 0\n"
+            + "from [Warehouse and Sales]",
+            expectedResult);
+        assertQueryReturns(
+            "select Head(Dimensions(7).AllMembers, 3) on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Currency].[All Currencys]}\n"
+            + "{[Currency].[All Currencys].[Bulk Mail]}\n"
+            + "{[Currency].[All Currencys].[Cash Register Handout]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 4,320\n"
+            + "Row #0: 6,697\n");
     }
 
     public void testImplicitCurrentMemberRequiresHierarchyQualification() {
@@ -828,12 +866,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS2005 returns error:
         //   The 'Product' dimension contains more than one hierarchy,
         //   therefore the hierarchy must be explicitly specified.
-        assertQueryThrows(
-            "with member [Measures].[Foo] as ' [Product].Parent.UniqueName '\n"
-            + "select [Measures].[Foo] on 0\n"
-            + "from [Warehouse and Sales]\n"
-            + "where [Product].[Drink].[Beverages]",
-            "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
+        assertExprThrows(
+            "[Time].Parent.UniqueName",
+            "The 'Time' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.");
     }
 
     public void testDimensionDotHierarchyInBrackets() {
@@ -956,7 +992,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "select {[Products]} on 0,\n"
             + "  {[Products]} on 1\n"
             + "from [Warehouse and Sales]",
-            "Dimension '[Product]' appears in more than one independent axis.");
+            "Hierarchy '[Product].[Products]' appears in more than one independent axis.");
     }
 
     public void testDimensionOnAxis() {
@@ -1208,9 +1244,6 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
 
     public void testLotsOfAxes() {
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            return;
-        }
-        if (!ALLOW_HIERS_ON_INDEP_AXES) {
             return;
         }
         // lots of axes, mixed ways of specifying axes

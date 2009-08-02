@@ -102,7 +102,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
                     return eval.evaluateTupleIterable();
                 }
 
-                public boolean dependsOn(Dimension dimension) {
+                public boolean dependsOn(Hierarchy hierarchy) {
                     // Given that a named set is never re-evaluated within the
                     // scope of a query, effectively it's independent of all
                     // dimensions.
@@ -122,7 +122,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
                     return eval.evaluateMemberIterable();
                 }
 
-                public boolean dependsOn(Dimension dimension) {
+                public boolean dependsOn(Hierarchy hierarchy) {
                     // Given that a named set is never re-evaluated within the
                     // scope of a query, effectively it's independent of all
                     // dimensions.

@@ -47,12 +47,6 @@ public interface Cube extends OlapElement {
     Member[] getMembersForQuery(String query, List<Member> calcMembers);
 
     /**
-     * Returns the time dimension for this cube, or <code>null</code>
-     * if there is no time dimension.
-     */
-    Dimension getTimeDimension();
-
-    /**
      * Helper method that returns the Year Level or returns null if the Time
      * Dimension does not exist or if Year is not defined in the Time Dimension.
      *

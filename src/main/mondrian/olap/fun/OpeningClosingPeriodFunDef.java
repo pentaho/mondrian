@@ -13,13 +13,13 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
-import mondrian.calc.impl.DimensionCurrentMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 
@@ -71,14 +71,10 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            Dimension defaultTimeDimension =
-                validator.getQuery().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+            RolapHierarchy defaultTimeHierarchy =
+                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
                     getName());
-            }
-            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
-            return MemberType.forHierarchy(hierarchy);
+            return MemberType.forHierarchy(defaultTimeHierarchy);
         }
         return super.getResultType(validator, args);
     }
@@ -87,27 +83,29 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         final Exp[] args = call.getArgs();
         final LevelCalc levelCalc;
         final MemberCalc memberCalc;
-        Dimension defaultTimeDimension = null;
+        RolapHierarchy defaultTimeHierarchy = null;
         switch (args.length) {
         case 0:
-            defaultTimeDimension =
-                compiler.getEvaluator().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
-                    getName());
-            }
-            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
+            defaultTimeHierarchy =
+                ((RolapCube) compiler.getEvaluator().getCube())
+                    .getTimeHierarchy(getName());
+            memberCalc =
+                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
+                    new DummyExp(
+                        MemberType.forHierarchy(defaultTimeHierarchy)),
+                    defaultTimeHierarchy);
             levelCalc = null;
             break;
         case 1:
-            defaultTimeDimension =
-                compiler.getEvaluator().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
-                    getName());
-            }
+            defaultTimeHierarchy =
+                ((RolapCube) compiler.getEvaluator().getCube())
+                    .getTimeHierarchy(getName());
             levelCalc = compiler.compileLevel(call.getArg(0));
-            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
+            memberCalc =
+                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
+                    new DummyExp(
+                        MemberType.forHierarchy(defaultTimeHierarchy)),
+                    defaultTimeHierarchy);
             break;
         default:
             levelCalc = compiler.compileLevel(call.getArg(0));

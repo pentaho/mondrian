@@ -11,10 +11,7 @@ package mondrian.calc.impl;
 
 import mondrian.calc.Calc;
 import mondrian.calc.MemberCalc;
-import mondrian.olap.Dimension;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.olap.type.ScalarType;
 import mondrian.olap.type.Type;
 
@@ -79,8 +76,8 @@ public class MemberValueCalc extends GenericCalc {
         return memberCalcs;
     }
 
-    public boolean dependsOn(Dimension dimension) {
-        if (super.dependsOn(dimension)) {
+    public boolean dependsOn(Hierarchy hierarchy) {
+        if (super.dependsOn(hierarchy)) {
             return true;
         }
         for (MemberCalc memberCalc : memberCalcs) {
@@ -95,7 +92,7 @@ public class MemberValueCalc extends GenericCalc {
             // say that it depends on the given dimension. For example,
             //   Dimensions(3).CurrentMember.Parent
             // may depend on [Store].
-            if (memberCalc.getType().usesDimension(dimension, true)) {
+            if (memberCalc.getType().usesHierarchy(hierarchy, true)) {
                 return false;
             }
         }

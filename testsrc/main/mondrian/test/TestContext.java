@@ -21,8 +21,7 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapConnectionProperties;
-import mondrian.rolap.RolapUtil;
+import mondrian.rolap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
@@ -72,16 +71,18 @@ public class TestContext {
     private static final String indent = "                ";
     private static final String lineBreak = "\"," + nl + "\"";
     private static final String lineBreak2 = "\\\\n\"" + nl + indent + "+ \"";
-    private static final String lineBreak3 = "\\n\"" + nl + indent + "+ \"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
-    private static final String[] AllDims = {
+    private static final String[] AllHiers = {
         "[Measures]",
         "[Store]",
         "[Store Size in SQFT]",
         "[Store Type]",
         "[Time]",
+        MondrianProperties.instance().SsasCompatibleNaming.get()
+            ? "[Time].[Weekly]"
+            : "[Time.Weekly]",
         "[Product]",
         "[Promotion Media]",
         "[Promotions]",
@@ -587,13 +588,6 @@ public class TestContext {
     }
 
     /**
-     * @deprecated Use {@link #assertQueryThrows(String, String)}.
-     */
-    public final void assertThrows(String queryString, String pattern) {
-        assertQueryThrows(queryString, pattern);
-    }
-
-    /**
      * Executes an expression, and asserts that it gives an error which contains
      * a particular pattern. The error might occur during parsing, or might
      * be contained within the cell value.
@@ -1034,9 +1028,6 @@ public class TestContext {
         if (s.endsWith(spurious)) {
             s = s.substring(0, s.length() - spurious.length());
         }
-        if (s.indexOf(lineBreak3) >= 0) {
-            s = "fold(" + nl + indent + s + ")";
-        }
         return s;
     }
 
@@ -1467,7 +1458,7 @@ public class TestContext {
     /**
      * Asserts that an MDX expression depends upon a given list of dimensions.
      */
-    public void assertExprDependsOn(String expr, String dimList) {
+    public void assertExprDependsOn(String expr, String hierList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getFoodMartConnection();
@@ -1482,13 +1473,13 @@ public class TestContext {
 
         // Build a list of the dimensions which the expression depends upon,
         // and check that it is as expected.
-        checkDependsOn(query, expression, dimList, true);
+        checkDependsOn(query, expression, hierList, true);
     }
 
     private void checkDependsOn(
         final Query query,
         final Exp expression,
-        String expectedDimList,
+        String expectedHierList,
         final boolean scalar)
     {
         final Calc calc =
@@ -1496,20 +1487,21 @@ public class TestContext {
                 expression,
                 scalar,
                 scalar ? null : ResultStyle.ITERABLE);
-        final Dimension[] dimensions = query.getCube().getDimensions();
+        final List<RolapHierarchy> hierarchies =
+            ((RolapCube) query.getCube()).getHierarchies();
         StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;
-        for (Dimension dimension : dimensions) {
-            if (calc.dependsOn(dimension)) {
+        for (Hierarchy hierarchy : hierarchies) {
+            if (calc.dependsOn(hierarchy)) {
                 if (dependCount++ > 0) {
                     buf.append(", ");
                 }
-                buf.append(dimension.getUniqueName());
+                buf.append(hierarchy.getUniqueName());
             }
         }
         buf.append("}");
-        String actualDimList = buf.toString();
-        Assert.assertEquals(expectedDimList, actualDimList);
+        String actualHierList = buf.toString();
+        Assert.assertEquals(expectedHierList, actualHierList);
     }
 
     /**
@@ -1680,18 +1672,18 @@ public class TestContext {
      *
      * @return string containing all dimensions except those given
      */
-    public static String allDimsExcept(String ... dims) {
-        for (String dim : dims) {
-            assert contains(AllDims, dim) : "unknown dimension " + dim;
+    public static String allHiersExcept(String ... hiers) {
+        for (String hier : hiers) {
+            assert contains(AllHiers, hier) : "unknown hierarchy " + hier;
         }
         StringBuilder buf = new StringBuilder("{");
         int j = 0;
-        for (String dim : AllDims) {
-            if (!contains(dims, dim)) {
+        for (String hier : AllHiers) {
+            if (!contains(hiers, hier)) {
                 if (j++ > 0) {
                     buf.append(", ");
                 }
-                buf.append(dim);
+                buf.append(hier);
             }
         }
         buf.append("}");
@@ -1707,8 +1699,8 @@ public class TestContext {
         return false;
     }
 
-    public static String allDims() {
-        return allDimsExcept();
+    public static String allHiers() {
+        return allHiersExcept();
     }
 
     /**
@@ -1773,6 +1765,16 @@ public class TestContext {
             return false;
         }
     }
+
+    public static String hierarchyName(String dimension, String hierarchy) {
+        return MondrianProperties.instance().SsasCompatibleNaming.get()
+            ? "[" + dimension + "].[" + hierarchy + "]"
+            : (hierarchy.equals(dimension)
+                ? "[" + dimension + "]"
+                : "[" + dimension + "." + hierarchy + "]");
+    }
+
+    //~ Inner classes ----------------------------------------------------------
 
     public static class SnoopingSchemaProcessor
         extends FilterDynamicSchemaProcessor

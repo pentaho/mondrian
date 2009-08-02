@@ -9,10 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Literal;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -67,11 +64,11 @@ class CountFunDef extends AbstractAggregateFunDef {
                 }
             }
 
-            public boolean dependsOn(Dimension dimension) {
+            public boolean dependsOn(Hierarchy hierarchy) {
                 // COUNT(<set>, INCLUDEEMPTY) is straightforward -- it
                 // depends only on the dimensions that <Set> depends
                 // on.
-                if (super.dependsOn(dimension)) {
+                if (super.dependsOn(hierarchy)) {
                     return true;
                 }
                 if (includeEmpty) {
@@ -80,7 +77,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                 // COUNT(<set>, EXCLUDEEMPTY) depends only on the
                 // dimensions that <Set> depends on, plus all
                 // dimensions not masked by the set.
-                return ! calc.getType().usesDimension(dimension, true);
+                return ! calc.getType().usesHierarchy(hierarchy, true);
             }
         };
 

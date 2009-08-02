@@ -136,6 +136,14 @@ public class MemberType implements Type {
             || (!definitely && this.dimension == null);
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        return this.hierarchy == hierarchy
+            || (!definitely
+                && this.hierarchy == null
+                && (this.dimension == null
+                    || this.dimension == hierarchy.getDimension()));
+    }
+
     public Type getValueType() {
         // todo: when members have more type information (double vs. integer
         // vs. string), return better type if member != null.

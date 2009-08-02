@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( crossjoin([Product].[All Products].[Drink].children, [Time].[1997].children),         { ([Product].currentmember, [Time].currentmember) }) on rows from [Sales]</mdxQuery>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( crossjoin([Product].[All Products].[Drink].children, [Time].[1997].children),         { ([Product].currentmember, [Time].[Time].currentmember) }) on rows from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

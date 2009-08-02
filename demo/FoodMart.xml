@@ -320,7 +320,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <CalculatedMember
       name="Profit last Period"
       dimension="Measures"
-      formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
+      formula="COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])"
       visible="false">
     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="18"/>
@@ -709,7 +709,7 @@ fullname
    <CalculatedMember
        name="Profit last Period"
        dimension="Measures"
-       formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
+       formula="COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])"
        visible="false">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="5"/>
    </CalculatedMember>

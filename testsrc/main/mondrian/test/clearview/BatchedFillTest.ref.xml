@@ -14,7 +14,7 @@ With
   Set [*BASE_MEMBERS_Store] as '{[Store].[All Stores].[USA].[CA]}'
   Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'
-  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Measures].[*FORMATTED_MEASURE_2] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
@@ -22,7 +22,7 @@ With
   Member [Measures].[*FORMATTED_MEASURE_4] as '[Measures].[Sales Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
 Select
   [*BASE_MEMBERS_Measures] on columns,
-  Non Empty Generate([*NATIVE_CJ_SET], {([Store].CurrentMember,[Time].CurrentMember)}) on rows 
+  Non Empty Generate([*NATIVE_CJ_SET], {([Store].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
 From [Sales]
 ]]>
         </Resource>
@@ -83,12 +83,12 @@ With
   Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'
-  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
 Select
   [*BASE_MEMBERS_Measures] on columns,
-  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].CurrentMember)}) on rows 
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
 From [Warehouse and Sales]   
 ]]>
         </Resource>

@@ -9,14 +9,11 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
 import mondrian.calc.impl.ValueCalc;
-import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
@@ -71,8 +68,8 @@ class CovarianceFunDef extends FunDefBase {
                     evaluator.push(false), memberList, calc1, calc2, biased);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

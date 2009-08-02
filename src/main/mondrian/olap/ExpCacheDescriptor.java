@@ -25,9 +25,16 @@ import java.util.List;
  */
 public class ExpCacheDescriptor {
     private final Exp exp;
-    private int[] dependentDimensionOrdinals;
+    private int[] dependentHierarchyOrdinals;
     private final Calc calc;
 
+    /**
+     * Creates a descriptor with a given compiled expression.
+     *
+     * @param exp Expression
+     * @param calc Compiled expression
+     * @param evaluator Evaluator
+     */
     public ExpCacheDescriptor(Exp exp, Calc calc, Evaluator evaluator) {
         this.calc = calc;
         this.exp = exp;
@@ -36,6 +43,9 @@ public class ExpCacheDescriptor {
 
     /**
      * Creates a descriptor.
+     *
+     * @param exp Expression
+     * @param evaluator Evaluator
      */
     public ExpCacheDescriptor(Exp exp, Evaluator evaluator) {
         this(exp, new BetterExpCompiler(evaluator, null));
@@ -43,6 +53,9 @@ public class ExpCacheDescriptor {
 
     /**
      * Creates a descriptor.
+     *
+     * @param exp Expression
+     * @param compiler Compiler
      */
     public ExpCacheDescriptor(Exp exp, ExpCompiler compiler) {
         this.exp = exp;
@@ -63,14 +76,14 @@ public class ExpCacheDescriptor {
         final List<Integer> ordinalList = new ArrayList<Integer>();
         final Member[] members = evaluator.getMembers();
         for (int i = 0; i < members.length; i++) {
-            Dimension dimension = members[i].getDimension();
-            if (calc.dependsOn(dimension)) {
+            Hierarchy hierarchy = members[i].getHierarchy();
+            if (calc.dependsOn(hierarchy)) {
                 ordinalList.add(i);
             }
         }
-        dependentDimensionOrdinals = new int[ordinalList.size()];
-        for (int i = 0; i < dependentDimensionOrdinals.length; i++) {
-            dependentDimensionOrdinals[i] = ordinalList.get(i);
+        dependentHierarchyOrdinals = new int[ordinalList.size()];
+        for (int i = 0; i < dependentHierarchyOrdinals.length; i++) {
+            dependentHierarchyOrdinals[i] = ordinalList.get(i);
         }
     }
 
@@ -87,12 +100,12 @@ public class ExpCacheDescriptor {
     }
 
     /**
-     * Returns the ordinals of the dimensions which this expression is
+     * Returns the ordinals of the hierarchies which this expression is
      * dependent upon. When the cache descriptor is used to generate a cache
-     * key, the key will consist of a member from each of these dimensions.
+     * key, the key will consist of a member from each of these hierarchies.
      */
-    public int[] getDependentDimensionOrdinals() {
-        return dependentDimensionOrdinals;
+    public int[] getDependentHierarchyOrdinals() {
+        return dependentHierarchyOrdinals;
     }
 
 }

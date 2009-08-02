@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns,     crossjoin([Time].children, [Store].children) on rows from [Warehouse and Sales] </mdxQuery>
+    <mdxQuery>select {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns,     crossjoin([Time].[Time].children, [Store].children) on rows from [Warehouse and Sales] </mdxQuery>
     <dataResult>
         <columns>
             <dimensions>

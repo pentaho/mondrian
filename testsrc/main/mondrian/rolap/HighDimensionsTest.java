@@ -35,25 +35,6 @@ public class HighDimensionsTest extends FoodMartTestCase {
     }
 
     public void testBug1971406() throws Exception {
-        // build up a baseline time value
-        // this is necessary for environments that might
-        // run code coverage / etc
-        // This baseline takes about 1 second on a Dell Latitude D820 Laptop.
-
-        final long nt0 = System.currentTimeMillis();
-        int t = 0;
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            t += i;
-        }
-        final long nt1 = System.currentTimeMillis();
-        long baselineTime = 0;
-
-        // this check is here to make sure the compiler doesn't optimize
-        // out the above loop
-        if (t > 0) {
-            baselineTime = nt1 - nt0;
-        }
-
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
         Query query = connection.parseQuery(
@@ -69,12 +50,53 @@ public class HighDimensionsTest extends FoodMartTestCase {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
+        final long elapsed = t1 - t0;
+
+        // scale up for slower CPUs
+        double scaleFactor = computeCpuScaleFactor();
+        final long target = (long) (60000 * scaleFactor);
         assertTrue(
-            "Query failed to execute within " + (60 * baselineTime)
-            + " milliseconds",
-            t1 - t0 < 60 * baselineTime);
+            "Query execution took " + elapsed + " milliseconds, "
+            + "which is outside target of  " + target + " milliseconds",
+            elapsed <= target);
     }
 
+    /**
+     * Computes a scale factor indicating the relative system speed. This is
+     * necessary for environments that might run code coverage, etc.
+     *
+     * <p>The method performs a benchmark computation, and returns is the ratio
+     * of the elapsed time for the current system versus the baseline. If the
+     * current system takes, say, 2 seconds to perform the benchmark
+     * computation, the method returns 2.0, meaning that the system would be
+     * expected to take twice as long to do a typical CPU-intensive task.
+     *
+     * @return Multiplier for how long this system would require to do a typical
+     * CPU-intensive task versus the baseline system
+     */
+    private static double computeCpuScaleFactor() {
+        final long nt0 = System.currentTimeMillis();
+        int t = 0;
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            t += i;
+        }
+        final long nt1 = System.currentTimeMillis();
+        long benchmarkTime = 0;
+
+        // this check is here to make sure the compiler doesn't optimize
+        // out the above loop
+        if (t > 0) {
+            benchmarkTime = nt1 - nt0;
+        }
+
+        // The benchmark takes takes about 1 second on the baseline system, a
+        // Dell Latitude D820 Laptop.
+        double scaleFactor = (double) benchmarkTime / 1000d;
+        if (false) {
+            System.out.println("scale factor = " + scaleFactor);
+        }
+        return scaleFactor;
+    }
 
     public void testPromotionsTwoDimensions() throws Exception {
         if (!Bug.BugMondrian486Fixed) {

@@ -16,9 +16,7 @@ import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Dimension;
-import mondrian.olap.Evaluator;
-import mondrian.olap.FunDef;
+import mondrian.olap.*;
 import mondrian.olap.fun.AbstractAggregateFunDef;
 import mondrian.olap.fun.MultiResolver;
 import mondrian.olap.fun.ReflectiveMultiResolver;
@@ -73,8 +71,8 @@ public class NthQuartileFunDef extends AbstractAggregateFunDef {
                     evaluator.push(false), members, doubleCalc, range);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

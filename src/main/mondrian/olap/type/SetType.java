@@ -71,6 +71,13 @@ public class SetType implements Type {
         return elementType.usesDimension(dimension, definitely);
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        if (elementType == null) {
+            return definitely;
+        }
+        return elementType.usesHierarchy(hierarchy, definitely);
+    }
+
     public Dimension getDimension() {
         return elementType == null
             ? null

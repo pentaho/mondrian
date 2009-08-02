@@ -206,7 +206,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Profit Change is defined in the query.
         assertQueryReturns(
             "WITH MEMBER [Measures].[Profit Change]\n"
-            + " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].PrevMember)'\n"
+            + " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].[Time].PrevMember)'\n"
             + "SELECT {[Measures].[Profit], [Measures].[Profit Change]} ON COLUMNS,\n"
             + " {[Time].[1997].[Q2].children} ON ROWS\n"
             + "FROM [Sales]",
@@ -405,8 +405,25 @@ public class TestCalculatedMembers extends BatchTestCase {
             "[Customers].[Country]",
             "Member expression '[Customers].[Country]' must not be a set");
 
-        // Dimension can be converted.
+        // Hierarchy can be converted.
+        assertExprReturns("[Customers].[Customers]", "266,773");
+
+        // Dimension can be converted, if unambiguous.
         assertExprReturns("[Customers]", "266,773");
+
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // SSAS 2005 does not have default hierarchies.
+            assertExprThrows(
+                "[Time]",
+                "The 'Time' dimension contains more than one hierarchy, "
+                + "therefore the hierarchy must be explicitly specified.");
+        } else {
+            // Default to first hierarchy.
+            assertExprReturns("[Time]", "266,773");
+        }
+
+        // Explicit hierarchy OK.
+        assertExprReturns("[Time].[Time]", "266,773");
 
         // Member can be converted.
         assertExprReturns("[Customers].[USA]", "266,773");
@@ -732,7 +749,7 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testChildrenOfCalcMembers() {
         assertQueryReturns(
-            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
+            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].[Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
             + "select Crossjoin([Time].[# Months Product Sold].Children,\n"
             + "     [Store].[All Stores].Children) ON COLUMNS,\n"
             + "   [Product].[All Products].Children ON ROWS from [Sales] where [Measures].[Unit Sales]",

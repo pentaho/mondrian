@@ -27,12 +27,6 @@ import mondrian.resource.MondrianResource;
  * can store the evaluation context as an array of members.
  *
  * <p>
- * The ordinal of a dimension <em>within a particular cube</em> is found by
- * calling {@link #getOrdinal(Cube)}. Ordinals
- * are contiguous and zero-based. Zero is always the <code>[Measures]</code>
- * dimension.
- *
- * <p>
  * A dimension may be either shared or private to a particular cube. The
  * dimension object doesn't actually know which; {@link Schema} has a list of
  * shared hierarchies ({@link Schema#getSharedHierarchies}), and {@link Cube}
@@ -175,8 +169,22 @@ class RolapDimension extends DimensionBase {
         }
     }
 
-    RolapHierarchy newHierarchy(String subName, boolean hasAll) {
-        RolapHierarchy hierarchy = new RolapHierarchy(this, subName, hasAll);
+    /**
+     * Creates a hierarchy.
+     *
+     * @param subName Name of this hierarchy.
+     * @param hasAll Whether hierarchy has an 'all' member
+     * @param closureFor Hierarchy for which the new hierarchy is a closure;
+     *     null for regular hierarchies
+     * @return Hierarchy
+     */
+    RolapHierarchy newHierarchy(
+        String subName,
+        boolean hasAll,
+        RolapHierarchy closureFor)
+    {
+        RolapHierarchy hierarchy =
+            new RolapHierarchy(this, subName, hasAll, closureFor);
         this.hierarchies = (RolapHierarchy[])
             RolapUtil.addElement(this.hierarchies, hierarchy);
         return hierarchy;
@@ -190,13 +198,6 @@ class RolapDimension extends DimensionBase {
      */
     public Hierarchy getHierarchy() {
         return hierarchies[0];
-    }
-
-    public int getOrdinal(Cube cube) {
-        // this is temporary to verify that all calls to this method are for
-        // the measures dimension
-        assert isMeasures();
-        return 0;
     }
 
     public Schema getSchema() {

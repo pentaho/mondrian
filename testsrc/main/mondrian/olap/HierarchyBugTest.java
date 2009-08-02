@@ -37,8 +37,8 @@ public class HierarchyBugTest extends FoodMartTestCase {
     public void testNoHierarchy() {
         String queryString =
             "select NON EMPTY "
-            + "Crossjoin(Hierarchize(Union({[Time].LastSibling}, "
-            + "[Time].LastSibling.Children)), "
+            + "Crossjoin(Hierarchize(Union({[Time].[Time].LastSibling}, "
+            + "[Time].[Time].LastSibling.Children)), "
             + "{[Measures].[Unit Sales],      "
             + "[Measures].[Store Cost]}) ON columns, "
             + "NON EMPTY Hierarchize(Union({[Store].[All Stores]}, "

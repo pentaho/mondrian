@@ -65,7 +65,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
         }
         final MemberType[] types = list.toArray(new MemberType[list.size()]);
-        TupleType.checkDimensions(types);
+        TupleType.checkHierarchies(types);
         final TupleType tupleType = new TupleType(types);
         return new SetType(tupleType);
     }

@@ -103,8 +103,8 @@ class SumFunDef extends AbstractAggregateFunDef {
                 return sumDouble(evaluator.push(), iterable, calc);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }
@@ -119,8 +119,8 @@ class SumFunDef extends AbstractAggregateFunDef {
                 return sumDouble(evaluator.push(false), memberList, calc);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

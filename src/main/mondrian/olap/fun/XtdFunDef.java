@@ -17,6 +17,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 
@@ -68,14 +70,10 @@ class XtdFunDef extends FunDefBase {
         if (args.length == 0) {
             // With no args, the default implementation cannot
             // guess the hierarchy.
-            Dimension defaultTimeDimension =
-                validator.getQuery().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+            RolapHierarchy defaultTimeHierarchy =
+                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
                     getName());
-            }
-            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
-            return new SetType(MemberType.forHierarchy(hierarchy));
+            return new SetType(MemberType.forHierarchy(defaultTimeHierarchy));
         }
         final Type type = args[0].getType();
         if (type.getDimension().getDimensionType()
@@ -112,8 +110,8 @@ class XtdFunDef extends FunDefBase {
                     return periodsToDate(evaluator, level, null);
                 }
 
-                public boolean dependsOn(Dimension dimension) {
-                    return dimension.getDimensionType()
+                public boolean dependsOn(Hierarchy hierarchy) {
+                    return hierarchy.getDimension().getDimensionType()
                         == mondrian.olap.DimensionType.TimeDimension;
                 }
             };

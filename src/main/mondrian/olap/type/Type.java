@@ -52,6 +52,38 @@ public interface Type {
     boolean usesDimension(Dimension dimension, boolean definitely);
 
     /**
+     * Returns whether this type contains a given hierarchy.<p/>
+     *
+     * For example:
+     * <ul>
+     * <li><code>HierarchyType([Customer].[Gender])</code> uses only the
+     *     <code>[Customer].[Gender]</code> hierarchy.</li>
+     * <li><code>TupleType(MemberType([Customer].[Gender]),
+     *           MemberType([Store].[Store]))</code>
+     *     uses <code>[Gender]</code>  and <code>[Store]</code>
+     *     dimensions.</li>
+     * </ul><p/>
+     *
+     * The <code>definitely</code> parameter comes into play when the
+     * dimensional information is incomplete. For example, when applied to
+     * <code>TupleType(MemberType([Customer]), MemberType([Store]))</code>,
+     * <code>usesDimension([Customer].[Gender], false)</code> returns true
+     * because the expression returns a member of one hierarchy of the
+     * <code>[Customer]</code> dimension and that might be a member of the
+     * <code>[Customer].[Gender]</code> hierarchy; but
+     * <code>usesDimension([Customer].[Gender], true)</code> returns false
+     * because might return a member of a different hierarchy, such as
+     * <code>[Customer].[State]</code>.
+     *
+     * @param hierarchy Hierarchy
+     * @param definitely If true, returns true only if this type definitely
+     *    uses the hierarchy
+     *
+     * @return whether this Type uses the given Hierarchy
+     */
+    boolean usesHierarchy(Hierarchy hierarchy, boolean definitely);
+
+    /**
      * Returns the Dimension of this Type, or null if not known.
      * If not applicable, throws.
      *

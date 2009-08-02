@@ -36,7 +36,7 @@ class StrToSetFunDef extends FunDefBase {
     private StrToSetFunDef(int[] parameterTypes) {
         super(
             "StrToSet",
-            "<Set> StrToSet(<String>[, <Dimension>...])",
+            "<Set> StrToSet(<String>[, <Hierarchy>...])",
             "Constructs a set from a string expression.",
             Syntax.Function, Category.Set, parameterTypes);
     }
@@ -373,7 +373,7 @@ class StrToSetFunDef extends FunDefBase {
             }
             final MemberType[] types =
                 list.toArray(new MemberType[list.size()]);
-            TupleType.checkDimensions(types);
+            TupleType.checkHierarchies(types);
             return new SetType(new TupleType(types));
         }
         }
@@ -402,7 +402,9 @@ class StrToSetFunDef extends FunDefBase {
             }
             for (int i = 1; i < args.length; i++) {
                 Exp exp = args[i];
-                if (!(exp instanceof DimensionExpr)) {
+                if (!(exp instanceof DimensionExpr
+                      || exp instanceof HierarchyExpr))
+                {
                     return null;
                 }
             }

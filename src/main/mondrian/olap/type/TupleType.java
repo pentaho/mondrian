@@ -75,6 +75,15 @@ public class TupleType implements Type {
         return false;
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        for (Type elementType : elementTypes) {
+            if (elementType.usesHierarchy(hierarchy, definitely)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Dimension getDimension() {
         throw new UnsupportedOperationException();
     }
@@ -152,16 +161,16 @@ public class TupleType implements Type {
      *
      * @param memberTypes Array of member types
      */
-    public static void checkDimensions(MemberType[] memberTypes) {
+    public static void checkHierarchies(MemberType[] memberTypes) {
         for (int i = 0; i < memberTypes.length; i++) {
             MemberType memberType = memberTypes[i];
             for (int j = 0; j < i; j++) {
                 MemberType member1 = memberTypes[j];
-                final Dimension dimension = memberType.getDimension();
-                final Dimension dimension1 = member1.getDimension();
-                if (dimension != null && dimension == dimension1) {
-                    throw MondrianResource.instance().DupDimensionsInTuple.ex(
-                            dimension.getUniqueName());
+                final Hierarchy hierarchy = memberType.getHierarchy();
+                final Hierarchy hierarchy1 = member1.getHierarchy();
+                if (hierarchy != null && hierarchy == hierarchy1) {
+                    throw MondrianResource.instance().DupHierarchiesInTuple.ex(
+                        hierarchy.getUniqueName());
                 }
             }
         }

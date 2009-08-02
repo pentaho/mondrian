@@ -85,7 +85,7 @@ public class ConstantCalc extends GenericCalc {
         return d;
     }
 
-    public boolean dependsOn(Dimension dimension) {
+    public boolean dependsOn(Hierarchy hierarchy) {
         // A constant -- including a catalog element -- will evaluate to the
         // same result regardless of the evaluation context. For example, the
         // member [Gender].[M] does not 'depend on' the [Gender] dimension.

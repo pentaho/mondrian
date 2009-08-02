@@ -142,8 +142,8 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                 return result;
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

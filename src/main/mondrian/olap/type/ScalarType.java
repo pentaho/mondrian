@@ -62,6 +62,10 @@ public class ScalarType implements Type {
         return false;
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        return false;
+    }
+
     public Hierarchy getHierarchy() {
         return null;
     }

@@ -271,10 +271,14 @@ public class FunUtil extends Util {
      * @return Default hierarchy, or null
      */
     public static Hierarchy getDimensionDefaultHierarchy(Dimension dimension) {
-        final Hierarchy[] hierarchies =
-            dimension.getHierarchies();
+        final Hierarchy[] hierarchies = dimension.getHierarchies();
         if (hierarchies.length == 1) {
             return hierarchies[0];
+        }
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // In SSAS 2005, dimensions with more than one hierarchy do not have
+            // a default hierarchy.
+            return null;
         }
         for (Hierarchy hierarchy : hierarchies) {
             if (hierarchy.getName() == null
@@ -1533,7 +1537,7 @@ public class FunUtil extends Util {
         Member member)
     {
         if (member == null) {
-            member = evaluator.getContext(level.getHierarchy().getDimension());
+            member = evaluator.getContext(level.getHierarchy());
         }
         Member m = member;
         while (m != null) {
@@ -1929,16 +1933,14 @@ public class FunUtil extends Util {
                 case Category.Dimension:
                 case Category.Hierarchy:
                     if (arg0 instanceof DimensionExpr
-                        && ((DimensionExpr) arg0).getDimension()
-                        .getOrdinal(cube) == 0)
+                        && ((DimensionExpr) arg0).getDimension().isMeasures())
                     {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
                     break;
                 case Category.Member:
                     if (arg0 instanceof MemberExpr
-                        && ((MemberExpr) arg0).getMember().getDimension()
-                        .getOrdinal(cube) == 0
+                        && ((MemberExpr) arg0).getMember().isMeasure()
                         && (funDef.getReturnCategory() == Category.Member
                             || funDef.getReturnCategory() == Category.Set))
                     {

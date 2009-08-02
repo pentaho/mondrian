@@ -34,12 +34,12 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
@@ -48,7 +48,7 @@ Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET
 Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] * 10000 / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
 Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
 Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
@@ -186,14 +186,14 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Time])'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].[State Province].currentMember,1).OrderKey,BASC,Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].[State Province].currentMember,1).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})'
 Set [*BASE_MEMBERS_Customers] as '[Customers].[State Province].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_4],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_3]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].[Time].currentMember)})'
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q4])}))', SOLVE_ORDER=-101
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q1])}))', SOLVE_ORDER=-101
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
@@ -203,7 +203,7 @@ Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[*CALCULATED_MEASURE_0
 Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] * 10000 / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
 Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q2])}))', SOLVE_ORDER=-101
-Member [Le System-Trend Hanger].[TrendContext_3] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_3] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Measures].[*FORMATTED_MEASURE_4] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Customers].[State Province], 1, [Customers].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q3])}))', SOLVE_ORDER=-101
@@ -551,14 +551,14 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1].[1],[Time].[1997].[Q1].[2],[Time].[1997].[Q2].[4],[Time].[1997].[Q2].[5]}'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
 Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
@@ -647,12 +647,12 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
-Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].CurrentMember.Parent In {[Time].[1997].[Q2],[Time].[1997].[Q3]})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].[Time].CurrentMember.Parent In {[Time].[1997].[Q2],[Time].[1997].[Q3]})'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_11],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_6],[Measures].[*CALCULATED_MEASURE_5],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_7],[Measures].[*CALCULATED_MEASURE_8],[Measures].[*CALCULATED_MEASURE_13],[Measures].[*CALCULATED_MEASURE_10]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Measures].[*CALCULATED_MEASURE_6] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_6])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
 Member [Measures].[*CALCULATED_MEASURE_10] as '[Measures].[*CALCULATED_MEASURE_7] - [Measures].[*CALCULATED_MEASURE_9]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
@@ -660,18 +660,18 @@ Member [Measures].[*CALCULATED_MEASURE_12] as '([Measures].[*CALCULATED_MEASURE_
 Member [Measures].[*CALCULATED_MEASURE_7] as '[Measures].[Store Cost] / 1000', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
 Member [Measures].[*FORMATTED_MEASURE_11] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Member [Measures].[*CALCULATED_MEASURE_3] as '[Measures].[*CALCULATED_MEASURE_0] - [Measures].[*CALCULATED_MEASURE_2]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_6] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_6] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
 Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
 Member [Measures].[*CALCULATED_MEASURE_13] as '([Measures].[*CALCULATED_MEASURE_7] - [Measures].[*CALCULATED_MEASURE_12])/[Measures].[*CALCULATED_MEASURE_12]', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_12] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_12] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
 Member [Measures].[*CALCULATED_MEASURE_4] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_4])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
 Member [Measures].[*CALCULATED_MEASURE_8] as '([Measures].[*CALCULATED_MEASURE_7], [Le System-Trend Hanger].[TrendContext_8])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
-Member [Le System-Trend Hanger].[TrendContext_9] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
-Member [Le System-Trend Hanger].[TrendContext_4] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_9] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_4] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
 Member [Measures].[*CALCULATED_MEASURE_5] as '([Measures].[*CALCULATED_MEASURE_0] - [Measures].[*CALCULATED_MEASURE_4])/[Measures].[*CALCULATED_MEASURE_4]', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
-Member [Le System-Trend Hanger].[TrendContext_8] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_8] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Measures].[*CALCULATED_MEASURE_9] as '([Measures].[*CALCULATED_MEASURE_7], [Le System-Trend Hanger].[TrendContext_9])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
@@ -822,19 +822,19 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=200
 
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 
 Member [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=200
@@ -856,7 +856,7 @@ Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
-Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[Store Cost], ParallelPeriod([Time].[Quarter], 1, [Time].currentMember))', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[Store Cost], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
 Member [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=200
@@ -1080,26 +1080,26 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*SUMMARY_MEASURE_5],[Measures].[*SUMMARY_MEASURE_4],[Measures].[*SUMMARY_MEASURE_6],[Measures].[*SUMMARY_MEASURE_3]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
-Member [Measures].[*SUMMARY_MEASURE_4] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_2])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Measures].[*SUMMARY_MEASURE_4] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].[Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_2])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
-Member [Measures].[*SUMMARY_MEASURE_3] as '[Measures].[*CALCULATED_MEASURE_2]/([Measures].[*CALCULATED_MEASURE_2],Ancestor([Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_3] as '[Measures].[*CALCULATED_MEASURE_2]/([Measures].[*CALCULATED_MEASURE_2],Ancestor([Time].[Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
-Member [Measures].[*SUMMARY_MEASURE_6] as '[Measures].[*CALCULATED_MEASURE_1]/([Measures].[*CALCULATED_MEASURE_1],Ancestor([Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_6] as '[Measures].[*CALCULATED_MEASURE_1]/([Measures].[*CALCULATED_MEASURE_1],Ancestor([Time].[Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
 Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
-Member [Measures].[*SUMMARY_MEASURE_5] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_1])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_5] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].[Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_1])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
 Member [Measures].[*CALCULATED_MEASURE_1] as '[Measures].[Store Cost] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
 Select
@@ -1318,17 +1318,17 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Sales]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_3]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_3_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_3_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_3_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
@@ -1336,7 +1336,7 @@ Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sales]', FORMAT_S
 Member [Measures].[*CALCULATED_MEASURE_1] as '[Measures].[Store Sales] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
 Select
 [*BASE_MEMBERS_Measures] on columns,
@@ -1491,31 +1491,31 @@ Sales
             <![CDATA[
 With
 Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Sales]))'
-Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC)'
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_4],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_5],[Measures].[*CALCULATED_MEASURE_6]}'
 Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
-Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember)})'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
 Member [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_6] as '(([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_6_0]) + ([Measures].[*CALCULATED_MEASURE_3], [Le System-Trend Hanger].[TrendContext_6_1])) / 2', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_6_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_6_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
 Member [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_4_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_4_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Measures].[*CALCULATED_MEASURE_3] as '[Measures].[Store Sales] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Sales] - 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Member [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
 Member [Measures].[*CALCULATED_MEASURE_4] as '([Measures].[*CALCULATED_MEASURE_3], [Le System-Trend Hanger].[TrendContext_4_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
 Member [Measures].[*CALCULATED_MEASURE_5] as '([Measures].[*CALCULATED_MEASURE_2] + [Measures].[*CALCULATED_MEASURE_4]) / 2', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
-Member [Le System-Trend Hanger].[TrendContext_6_1] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_6_1] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Member [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
 Member [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
 Member [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
-Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
 Select
 [*BASE_MEMBERS_Measures] on columns,
 Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows

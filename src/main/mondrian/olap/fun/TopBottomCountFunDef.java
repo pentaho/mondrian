@@ -153,8 +153,8 @@ class TopBottomCountFunDef extends FunDefBase {
             }
 
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
 
             private boolean hasHighCardDimension(List l) {

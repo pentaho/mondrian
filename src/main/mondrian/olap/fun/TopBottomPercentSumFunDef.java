@@ -187,8 +187,8 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             return list;
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 }

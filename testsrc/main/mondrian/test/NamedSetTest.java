@@ -672,7 +672,7 @@ public class NamedSetTest extends FoodMartTestCase {
         assertQueryReturns(
             "with \n"
             + "  member [Measures].[DateName] as \n"
-            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '\n"
+            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].[Time].CurrentMember.Name) '\n"
             + "select {[Measures].[DateName]} on columns,\n"
             + " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n"
             + "from [Sales]",
@@ -689,7 +689,7 @@ public class NamedSetTest extends FoodMartTestCase {
         assertQueryReturns(
             "with \n"
             + "  member [Measures].[DateName] as \n"
-            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '\n"
+            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].[Time].CurrentMember.Name, \" and \") '\n"
             + "select {[Measures].[DateName]} on columns,\n"
             + " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n"
             + "from [Sales]",
@@ -814,7 +814,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
             + "Row #0: 54,545.28\n");
         // Use non-existent set.
-        tc.assertThrows(
+        tc.assertQueryThrows(
             "SELECT {[Measures].[Store Sales]} on columns,\n"
             + " Intersect([Top CA Cities], [Top Ukrainian Cities]) on rows\n"
             + "FROM [Sales]",
@@ -829,7 +829,7 @@ public class NamedSetTest extends FoodMartTestCase {
             "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
             null,
             null);
-        tc.assertThrows(
+        tc.assertQueryThrows(
             "SELECT {[Measures].[Store Sales]} on columns,\n"
             + " {[Bad]} on rows\n"
             + "FROM [Sales]", "Named set 'Bad' has bad formula");
@@ -845,25 +845,25 @@ public class NamedSetTest extends FoodMartTestCase {
             "with set [Foo] as ' [Store].CurrentMember  '"
             + "select {[Foo]} on columns from [Sales]";
         pattern = "Set expression '[Foo]' must be a set";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set must not be a dimension.
         queryString =
             "with set [Foo] as ' [Store] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set must not be a level.
         queryString =
             "with set [Foo] as ' [Store].[Store Country] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set must not be a cube name.
         queryString =
             "with set [Foo] as ' [Sales] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(
+        assertQueryThrows(
             queryString,
             "MDX object '[Sales]' not found in cube 'Sales'");
 
@@ -871,19 +871,19 @@ public class NamedSetTest extends FoodMartTestCase {
         queryString =
             "with set [Foo] as ' \"foobar\" '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set must not be a number.
         queryString =
             "with set [Foo] as ' -1.45 '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set must not be a tuple.
         queryString =
             "with set [Foo] as ' ([Gender].[M], [Marital Status].[S]) '"
             + "select {[Foo]} on columns from [Sales]";
-        assertThrows(queryString, pattern);
+        assertQueryThrows(queryString, pattern);
 
         // Formula for a named set may be a set of tuples.
         queryString =

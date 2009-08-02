@@ -85,6 +85,14 @@ public class LevelType implements Type {
             || (!definitely && this.dimension == null);
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        return this.hierarchy == hierarchy
+            || (!definitely
+                && this.hierarchy == null
+                && (this.dimension == null
+                    || this.dimension == hierarchy.getDimension()));
+    }
+
     public Dimension getDimension() {
         return dimension;
     }

@@ -4036,7 +4036,9 @@ TODO: see above
             row.set(DimensionName.name, dimension.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(DimensionCaption.name, dimension.getCaption());
-            row.set(DimensionOrdinal.name, dimension.getOrdinal(cube));
+            row.set(
+                DimensionOrdinal.name,
+                getDimensionOrdinal(cube, dimension));
             row.set(DimensionType.name, getDimensionType(dimension));
 
             //Is this the number of primaryKey members there are??
@@ -4080,6 +4082,10 @@ TODO: see above
             row.set(DimensionIsVisible.name, true);
 
             addRow(row, rows);
+        }
+
+        private static int getDimensionOrdinal(Cube cube, Dimension dimension) {
+            return Arrays.asList(cube.getDimensions()).indexOf(dimension);
         }
 
         protected void setProperty(

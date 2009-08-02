@@ -243,13 +243,13 @@ class RolapCell implements Cell {
                 "Allocation policy must not be null");
         }
         Scenario scenario = result.getQuery().getConnection().getScenario();
-        final Member[] members = result.getCellMembers(pos);
+        final RolapMember[] members = result.getCellMembers(pos);
         for (int i = 0; i < members.length; i++) {
             Member member = members[i];
-            if (ScenarioImpl.isScenario(member.getDimension())) {
+            if (ScenarioImpl.isScenario(member.getHierarchy())) {
                 scenario =
                     (Scenario) member.getPropertyValue(Property.SCENARIO.name);
-                members[i] = member.getHierarchy().getAllMember();
+                members[i] = (RolapMember) member.getHierarchy().getAllMember();
             } else if (member.isCalculated()) {
                 throw Util.newError(
                     "Cannot write to cell: one of the coordinates ("

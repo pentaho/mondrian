@@ -24,7 +24,7 @@ import mondrian.calc.Calc;
  */
 public class ValueCalc extends GenericCalc {
     /**
-     * Creates an ValueCalc.
+     * Creates a ValueCalc.
      *
      * @param exp Source expression
      */
@@ -36,7 +36,7 @@ public class ValueCalc extends GenericCalc {
         return evaluator.evaluateCurrent();
     }
 
-    public boolean dependsOn(Dimension dimension) {
+    public boolean dependsOn(Hierarchy hierarchy) {
         return true;
     }
 }

@@ -140,7 +140,7 @@ With
   Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember.Name Not Matches ("(?i).*Low Fat Bologna.*"))'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
-  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
   Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree]}'
   Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
@@ -184,7 +184,7 @@ With
   Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember Not In {[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]})'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
-  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
   Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree]}'
   Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300

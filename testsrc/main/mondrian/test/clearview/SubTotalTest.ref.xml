@@ -107,8 +107,8 @@ Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' 
 Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' 
 Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}' 
-Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' 
-Set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].CurrentMember})' 
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' 
+Set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].[Time].CurrentMember})' 
 Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
 Member [Measures].[*SUMMARY_MEASURE_1] as
     '[Measures].[Store Cost]/([Measures].[Store Cost],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=50

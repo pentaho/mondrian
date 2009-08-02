@@ -341,8 +341,8 @@ public class RankFunDef extends FunDefBase {
             this.sortCalc = sortCalc;
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
 
         public Object evaluate(Evaluator evaluator) {

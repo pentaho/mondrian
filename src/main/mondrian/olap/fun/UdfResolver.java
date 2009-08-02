@@ -184,7 +184,7 @@ public class UdfResolver implements Resolver {
             return udf.execute(evaluator, args);
         }
 
-        public boolean dependsOn(Dimension dimension) {
+        public boolean dependsOn(Hierarchy hierarchy) {
             // Be pessimistic. This effectively disables expression caching.
             return true;
         }

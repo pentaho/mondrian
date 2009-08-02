@@ -35,6 +35,12 @@ import mondrian.calc.DummyExp;
 public class TupleValueCalc extends GenericCalc {
     private final TupleCalc tupleCalc;
 
+    /**
+     * Creates a TupleValueCalc.
+     *
+     * @param exp Expression
+     * @param tupleCalc Compiled expression to evaluate the tuple
+     */
     public TupleValueCalc(Exp exp, TupleCalc tupleCalc) {
         super(exp);
         this.tupleCalc = tupleCalc;
@@ -65,8 +71,8 @@ public class TupleValueCalc extends GenericCalc {
         return new Calc[] {tupleCalc};
     }
 
-    public boolean dependsOn(Dimension dimension) {
-        if (super.dependsOn(dimension)) {
+    public boolean dependsOn(Hierarchy hierarchy) {
+        if (super.dependsOn(hierarchy)) {
             return true;
         }
         for (Type type : ((TupleType) tupleCalc.getType()).elementTypes) {
@@ -81,7 +87,7 @@ public class TupleValueCalc extends GenericCalc {
             // say that it depends on the given dimension. For example,
             //   (Dimensions(3).CurrentMember.Parent, [Gender].[F])
             // may depend on [Store].
-            if (type.usesDimension(dimension, true)) {
+            if (type.usesHierarchy(hierarchy, true)) {
                 return false;
             }
         }

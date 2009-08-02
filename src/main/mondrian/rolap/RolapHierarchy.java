@@ -33,6 +33,14 @@ import java.io.PrintWriter;
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
  *
+ * <p>The ordinal of a hierarchy <em>within a particular cube</em> is found by
+ * calling {@link #getOrdinalInCube()}. Ordinals are contiguous and zero-based.
+ * Zero is always the <code>[Measures]</code> dimension.
+ *
+ * <p>NOTE: It is only valid to call that method on the measures hierarchy, and
+ * on members of the {@link RolapCubeHierarchy} subclass. When the measures
+ * hierarchy is of that class, we will move the method down.)
+ *
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
@@ -75,8 +83,23 @@ public class RolapHierarchy extends HierarchyBase {
      */
     private RolapMember allMember;
     private static final String ALL_LEVEL_CARDINALITY = "1";
+    final RolapHierarchy closureFor;
 
-    RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
+    /**
+     * Creates a hierarchy.
+     *
+     * @param dimension Dimension
+     * @param subName Name of this hierarchy
+     * @param hasAll Whether hierarchy has an 'all' member
+     * @param closureFor Hierarchy for which the new hierarchy is a closure;
+     *     null for regular hierarchies
+     */
+    RolapHierarchy(
+        RolapDimension dimension,
+        String subName,
+        boolean hasAll,
+        RolapHierarchy closureFor)
+    {
         super(dimension, subName, hasAll);
         this.allLevelName = "(All)";
         this.allMemberName =
@@ -85,6 +108,7 @@ public class RolapHierarchy extends HierarchyBase {
                 || name.equals(subName + "." + subName))
                 ? "All " + subName + "s"
                 : "All " + name + "s";
+        this.closureFor = closureFor;
         if (hasAll) {
             this.levels = new RolapLevel[1];
             this.levels[0] =
@@ -144,7 +168,7 @@ public class RolapHierarchy extends HierarchyBase {
         MondrianDef.Hierarchy xmlHierarchy,
         MondrianDef.CubeDimension xmlCubeDimension)
     {
-        this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
+        this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll, null);
 
         assert !(this instanceof RolapCubeHierarchy);
 
@@ -636,7 +660,7 @@ public class RolapHierarchy extends HierarchyBase {
                 Type memberType1 =
                     new mondrian.olap.type.MemberType(
                         getDimension(),
-                        getHierarchy(),
+                        this,
                         null,
                         null);
                 SetType setType = new SetType(memberType1);
@@ -652,7 +676,7 @@ public class RolapHierarchy extends HierarchyBase {
                                 ((RolapEvaluator) evaluator).getExpanding());
                         }
 
-                        public boolean dependsOn(Dimension dimension) {
+                        public boolean dependsOn(Hierarchy hierarchy) {
                             return true;
                         }
                     };
@@ -818,7 +842,7 @@ public class RolapHierarchy extends HierarchyBase {
             dimension.isHighCardinality());
 
         // Create a peer hierarchy.
-        RolapHierarchy peerHier = peerDimension.newHierarchy(null, true);
+        RolapHierarchy peerHier = peerDimension.newHierarchy(null, true, this);
         peerHier.allMemberName = getAllMemberName();
         peerHier.allMember = getAllMember();
         peerHier.allLevelName = getAllLevelName();
@@ -907,6 +931,23 @@ public class RolapHierarchy extends HierarchyBase {
      */
     public String getUniqueKeyLevelName() {
         return uniqueKeyLevelName;
+    }
+
+    /**
+     * Returns the ordinal of this hierarchy in its cube.
+     *
+     * <p>Temporarily defined against RolapHierarchy; will be moved to
+     * RolapCubeHierarchy as soon as the measures hierarchy is a
+     * RolapCubeHierarchy.
+     *
+     * @return Ordinal of this hierarchy in its cube
+     */
+    public int getOrdinalInCube() {
+        // This is temporary to verify that all calls to this method are for
+        // the measures hierarchy. For all other hierarchies, the context will
+        // be a RolapCubeHierarchy.
+        assert dimension.isMeasures();
+        return 0;
     }
 
 

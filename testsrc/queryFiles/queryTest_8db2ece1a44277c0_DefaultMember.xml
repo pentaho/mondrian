@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT [Product].Children on ROWS, {Time.DefaultMember} on COLUMNS FROM [Sales]</mdxQuery>
+    <mdxQuery>SELECT [Product].Children on ROWS, {Time.Time.DefaultMember} on COLUMNS FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

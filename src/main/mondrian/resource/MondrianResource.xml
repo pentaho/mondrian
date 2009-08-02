@@ -204,8 +204,8 @@
     <text>The member arguments to the Cousin function must be from the same hierarchy. The members are ''{0}'' and ''{1}''.</text>
 </exception>
 
-<exception id="350510" name="DimensionInIndependentAxes">
-    <text>Dimension ''{0}'' appears in more than one independent axis.</text>
+<exception id="350510" name="HierarchyInIndependentAxes">
+    <text>Hierarchy ''{0}'' appears in more than one independent axis.</text>
 </exception>
 
 <exception id="350520" name="ArgsMustHaveSameHierarchy">
@@ -228,8 +228,8 @@
     <text>Axis numbers specified in a query must be sequentially specified, and cannot contain gaps. Axis {0,number} ({1}) is missing.</text>
 </exception>
 
-<exception id="350550" name="DupDimensionsInTuple">
-    <text>Tuple contains more than one member of dimension ''{0}''.</text>
+<exception id="350550" name="DupHierarchiesInTuple">
+    <text>Tuple contains more than one member of hierarchy ''{0}''.</text>
 </exception>
 
 <exception id="350570" name="VisualTotalsAppliedToTuples">

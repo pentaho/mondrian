@@ -55,7 +55,7 @@ class OrderFunDef extends FunDefBase {
                 for (MemberCalc memberCalc : calcs) {
                     if (memberCalc instanceof ConstantCalc
                         && !listCalc.dependsOn(
-                            memberCalc.getType().getDimension()))
+                            memberCalc.getType().getHierarchy()))
                     {
                         constantList.add(memberCalc);
                     } else {
@@ -233,8 +233,8 @@ class OrderFunDef extends FunDefBase {
                  : (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
 
         private void purgeKeySpecList(
@@ -372,8 +372,8 @@ class OrderFunDef extends FunDefBase {
                  : (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
 
         private void purgeKeySpecList(
@@ -452,18 +452,18 @@ class OrderFunDef extends FunDefBase {
             return calc.evaluateDual(evaluator, subEval);
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            if (anyDepends(memberCalcs, dimension)) {
+        public boolean dependsOn(Hierarchy hierarchy) {
+            if (anyDepends(memberCalcs, hierarchy)) {
                 return true;
             }
             // Member calculations generate members, which mask the actual
             // expression from the inherited context.
             for (MemberCalc memberCalc : memberCalcs) {
-                if (memberCalc.getType().usesDimension(dimension, true)) {
+                if (memberCalc.getType().usesHierarchy(hierarchy, true)) {
                     return false;
                 }
             }
-            return calc.dependsOn(dimension);
+            return calc.dependsOn(hierarchy);
         }
 
         public ResultStyle getResultStyle() {

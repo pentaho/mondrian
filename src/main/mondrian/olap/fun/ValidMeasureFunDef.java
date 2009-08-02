@@ -188,9 +188,9 @@ public class ValidMeasureFunDef extends FunDefBase
             return false;
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            // depends on all dimensions
-            return butDepends(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            // depends on all hierarchies
+            return butDepends(getCalcs(), hierarchy);
         }
     }
 }

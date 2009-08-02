@@ -12,11 +12,12 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Cube;
 import mondrian.olap.DimensionType;
 import mondrian.olap.HierarchyBase;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Schema;
+
+import java.util.List;
 
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
@@ -26,41 +27,57 @@ import mondrian.olap.Schema;
  */
 public class RolapCubeDimension extends RolapDimension {
 
-    RolapCube parent;
+    RolapCube cube;
 
     RolapDimension rolapDimension;
     int cubeOrdinal;
     MondrianDef.CubeDimension xmlDimension;
 
+    /**
+     * Creates a RolapCubeDimension.
+     *
+     * @param cube Cube
+     * @param rolapDim Dimension wrapped by this dimension
+     * @param cubeDim XML element definition
+     * @param name Name of dimension
+     * @param cubeOrdinal Ordinal of dimension within cube
+     * @param hierarchyList List of hierarchies in cube
+     * @param highCardinality Whether high cardinality dimension
+     */
     public RolapCubeDimension(
-        RolapCube parent,
+        RolapCube cube,
         RolapDimension rolapDim,
         MondrianDef.CubeDimension cubeDim,
         String name,
         int cubeOrdinal,
+        List<RolapHierarchy> hierarchyList,
         final boolean highCardinality)
     {
         super(null, name, null, highCardinality);
         this.xmlDimension = cubeDim;
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
-        this.parent = parent;
+        this.cube = cube;
         this.caption = cubeDim.caption;
 
         // create new hierarchies
         hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
 
         for (int i = 0; i < rolapDim.getHierarchies().length; i++) {
-            hierarchies[i] = new RolapCubeHierarchy(
-                this,
-                cubeDim,
-                (RolapHierarchy) rolapDim.getHierarchies()[i],
-                ((HierarchyBase) rolapDim.getHierarchies()[i]).getSubName());
+            final RolapCubeHierarchy cubeHierarchy =
+                new RolapCubeHierarchy(
+                    this,
+                    cubeDim,
+                    (RolapHierarchy) rolapDim.getHierarchies()[i],
+                    ((HierarchyBase) rolapDim.getHierarchies()[i]).getSubName(),
+                    hierarchyList.size());
+            hierarchies[i] = cubeHierarchy;
+            hierarchyList.add(cubeHierarchy);
         }
     }
 
     public RolapCube getCube() {
-        return parent;
+        return cube;
     }
 
     public Schema getSchema() {
@@ -69,13 +86,6 @@ public class RolapCubeDimension extends RolapDimension {
 
     // this method should eventually replace the call below
     public int getOrdinal() {
-        return cubeOrdinal;
-    }
-
-    // note that the cube is not necessary here
-    public int getOrdinal(Cube cube) {
-        // this is temporary to validate that internals are consistant
-        assert cube == parent;
         return cubeOrdinal;
     }
 
@@ -88,13 +98,15 @@ public class RolapCubeDimension extends RolapDimension {
         }
 
         RolapCubeDimension that = (RolapCubeDimension)o;
-        if (!parent.equals(that.parent)) {
+        if (!cube.equals(that.cube)) {
             return false;
         }
         return getUniqueName().equals(that.getUniqueName());
     }
 
-    RolapCubeHierarchy newHierarchy(String subName, boolean hasAll) {
+    RolapCubeHierarchy newHierarchy(
+        String subName, boolean hasAll, RolapHierarchy closureFor)
+    {
         throw new UnsupportedOperationException();
     }
 

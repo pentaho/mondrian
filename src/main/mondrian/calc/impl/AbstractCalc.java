@@ -15,6 +15,8 @@ import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
 import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.rolap.RolapEvaluator;
+import mondrian.rolap.RolapHierarchy;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -105,16 +107,16 @@ public abstract class AbstractCalc implements Calc {
         return calcs;
     }
 
-    public boolean dependsOn(Dimension dimension) {
-        return anyDepends(getCalcs(), dimension);
+    public boolean dependsOn(Hierarchy hierarchy) {
+        return anyDepends(getCalcs(), hierarchy);
     }
 
     /**
      * Returns true if one of the calcs depends on the given dimension.
      */
-    public static boolean anyDepends(Calc[] calcs, Dimension dimension) {
+    public static boolean anyDepends(Calc[] calcs, Hierarchy hierarchy) {
         for (Calc calc : calcs) {
-            if (calc != null && calc.dependsOn(dimension)) {
+            if (calc != null && calc.dependsOn(hierarchy)) {
                 return true;
             }
         }
@@ -131,20 +133,20 @@ public abstract class AbstractCalc implements Calc {
      * dimensions of {Set}.
      */
     public static boolean anyDependsButFirst(
-            Calc[] calcs, Dimension dimension)
+        Calc[] calcs, Hierarchy hierarchy)
     {
         if (calcs.length == 0) {
             return false;
         }
-        if (calcs[0].dependsOn(dimension)) {
+        if (calcs[0].dependsOn(hierarchy)) {
             return true;
         }
-        if (calcs[0].getType().usesDimension(dimension, true)) {
+        if (calcs[0].getType().usesHierarchy(hierarchy, true)) {
             return false;
         }
         for (int i = 1; i < calcs.length; i++) {
             Calc calc = calcs[i];
-            if (calc != null && calc.dependsOn(dimension)) {
+            if (calc != null && calc.dependsOn(hierarchy)) {
                 return true;
             }
         }
@@ -157,15 +159,15 @@ public abstract class AbstractCalc implements Calc {
      * else true.
      */
     public static boolean butDepends(
-            Calc[] calcs, Dimension dimension)
+        Calc[] calcs, Hierarchy hierarchy)
     {
         boolean result = true;
         for (Calc calc : calcs) {
             if (calc != null) {
-                if (calc.dependsOn(dimension)) {
+                if (calc.dependsOn(hierarchy)) {
                     return true;
                 }
-                if (calc.getType().usesDimension(dimension, true)) {
+                if (calc.getType().usesHierarchy(hierarchy, true)) {
                     result = false;
                 }
             }
@@ -202,13 +204,14 @@ public abstract class AbstractCalc implements Calc {
         }
         int changeCount = 0;
         Evaluator ev = evaluator;
-        final Dimension[] dimensions = evaluator.getCube().getDimensions();
-        for (Dimension dimension : dimensions) {
-            final Member member = ev.getContext(dimension);
+        final List<RolapHierarchy> hierarchies =
+            ((RolapEvaluator) evaluator).getCube().getHierarchies();
+        for (RolapHierarchy hierarchy : hierarchies) {
+            final Member member = ev.getContext(hierarchy);
             if (member.isAll()) {
                 continue;
             }
-            if (calc.dependsOn(dimension)) {
+            if (calc.dependsOn(hierarchy)) {
                 continue;
             }
             final Member unconstrainedMember =

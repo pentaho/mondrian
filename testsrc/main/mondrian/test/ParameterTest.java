@@ -226,7 +226,7 @@ public class ParameterTest extends FoodMartTestCase {
      * hierarchy, which is illegal.
      */
     public void _testParameterDuplicateDimensionFails() {
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on rows,\n"
             + " {[Gender].[F]} on columns\n"
             + "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
@@ -249,7 +249,7 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testParamDefinedTwiceFails() {
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on rows,\n"
             + " {Parameter(\"P\",[Gender],[Gender].[M],\"Which gender?\"),\n"
             + "  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns\n"
@@ -395,7 +395,7 @@ public class ParameterTest extends FoodMartTestCase {
             String mdx =
                 "with member [Measures].[s] as Parameter(\"x\", NUMERIC, 1) "
                 + "select {[Measures].[s]} on columns, "
-                + "{Time.Children} on rows "
+                + "{Time.Time.Children} on rows "
                 + "from [Sales]";
             Query query = connection.parseQuery(mdx);
             query.setParameter("x", "8");
@@ -565,7 +565,7 @@ public class ParameterTest extends FoodMartTestCase {
             + "{[Measures].[Foo]}\n"
             + "Row #0: USA\n");
 
-        tc.assertThrows(
+        tc.assertQueryThrows(
             "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n"
             + "select {[Measures].[Foo]} on columns\n"
             + "from [Warehouse]",

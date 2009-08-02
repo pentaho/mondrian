@@ -9,9 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
@@ -52,8 +50,8 @@ class MedianFunDef extends AbstractAggregateFunDef {
                 return percentile(evaluator.push(false), memberList, calc, 0.5);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

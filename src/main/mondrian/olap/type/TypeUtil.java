@@ -285,24 +285,16 @@ public class TypeUtil {
         case Category.Array:
             return false;
         case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
+            // We can go from Dimension to Hierarchy if the dimension has a
+            // default hierarchy. From there, we can go to Member or Tuple.
+            // Even if the dimension does not have a default hierarchy, we claim
+            // now that we can do the conversion, to prevent other overloads
+            // from being chosen; we will hit an error either at compile time or
+            // at run time.
             switch (to) {
             case Category.Member:
             case Category.Tuple:
             case Category.Hierarchy:
-                final Dimension dimension = fromType.getDimension();
-                if (dimension != null) {
-                    final Hierarchy hierarchy =
-                        FunUtil.getDimensionDefaultHierarchy(dimension);
-                    if (hierarchy == null) {
-                        e = MondrianResource.instance()
-                            .CannotImplicitlyConvertDimensionToHierarchy.ex(
-                                dimension.getName());
-                    }
-                }
                 // It is more difficult to convert dimension->hierarchy than
                 // hierarchy->dimension
                 conversions.add(new ConversionImpl(from, to, 0, 2, e));
@@ -316,6 +308,10 @@ public class TypeUtil {
                 return false;
             }
         case Category.Hierarchy:
+            // Seems funny that you can 'downcast' from a hierarchy, doesn't
+            // it? But we add an implicit 'CurrentMember', for example,
+            // '[Product].PrevMember' actually means
+            // '[Product].CurrentMember.PrevMember'.
             switch (to) {
             case Category.Dimension:
             case Category.Member:

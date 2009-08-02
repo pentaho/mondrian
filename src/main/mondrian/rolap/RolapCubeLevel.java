@@ -67,15 +67,16 @@ public class RolapCubeLevel extends RolapLevel {
             this.levelReader = new NullLevelReader();
         } else if (rolapLevel.xmlClosure != null) {
             RolapDimension dimension =
-                (RolapDimension)rolapLevel.getClosedPeer()
-                                    .getHierarchy().getDimension();
+                (RolapDimension)
+                    rolapLevel.getClosedPeer().getHierarchy().getDimension();
 
             RolapCubeDimension cubeDimension =
                 new RolapCubeDimension(
-                        getCube(), dimension, xmlDimension,
-                        getDimension().getName() + "$Closure",
-                        getHierarchy().getDimension().getOrdinal(),
-                        getHierarchy().getDimension().isHighCardinality());
+                    getCube(), dimension, xmlDimension,
+                    getDimension().getName() + "$Closure",
+                    -1,
+                    getCube().hierarchyList,
+                    getHierarchy().getDimension().isHighCardinality());
 
             /*
             RME HACK

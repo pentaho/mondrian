@@ -20,9 +20,12 @@ import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.util.Bug;
 
 import java.io.*;
 import java.util.*;
+
+import org.apache.commons.collections.collection.CompositeCollection;
 
 /**
  * <code>Query</code> is an MDX query.
@@ -618,28 +621,36 @@ public class Query extends QueryPart {
             slicerAxis.validate(validator);
         }
 
-        // Make sure that no dimension is used on more than one axis.
-        final Dimension[] dimensions = getCube().getDimensions();
-        for (Dimension dimension : dimensions) {
+        // Make sure that no hierarchy is used on more than one axis.
+        for (Hierarchy hierarchy : ((RolapCube) getCube()).getHierarchies()) {
             int useCount = 0;
-            for (int j = -1; j < axes.length; j++) {
-                final QueryAxis axisExp;
-                if (j < 0) {
-                    if (slicerAxis == null) {
-                        continue;
-                    }
-                    axisExp = slicerAxis;
-                } else {
-                    axisExp = axes[j];
-                }
-                if (axisExp.getSet().getType().usesDimension(dimension, true)) {
+            for (QueryAxis axis : allAxes()) {
+                if (axis.getSet().getType().usesHierarchy(hierarchy, true)) {
                     ++useCount;
                 }
             }
             if (useCount > 1) {
-                throw MondrianResource.instance().DimensionInIndependentAxes.ex(
-                    dimension.getUniqueName());
+                throw MondrianResource.instance().HierarchyInIndependentAxes.ex(
+                    hierarchy.getUniqueName());
             }
+        }
+    }
+
+    /**
+     * Returns a collection of all axes, including the slicer as the first
+     * element, if there is a slicer.
+     *
+     * @return Collection of all axes including slicer
+     */
+    private Collection<QueryAxis> allAxes() {
+        if (slicerAxis == null) {
+            return Arrays.asList(axes);
+        } else {
+            //noinspection unchecked
+            return new CompositeCollection(
+                new Collection[] {
+                    Collections.singletonList(slicerAxis),
+                    Arrays.asList(axes)});
         }
     }
 
@@ -1152,7 +1163,7 @@ public class Query extends QueryPart {
     {
         if (olapElement instanceof Member) {
             Member member = (Member) olapElement;
-            if (member.getDimension().getOrdinal(getCube()) == 0) {
+            if (member.isMeasure()) {
                 measuresMembers.add(member);
             }
         }

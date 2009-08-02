@@ -81,7 +81,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "  </SchemaGrant>\n"
                 + "</Role>")
             .withRole("Role1");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select {[Store].Children} on 0 from [Sales]",
             "Member '[Store].[USA].[Non Existent]' not found");
     }
@@ -432,7 +432,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
     public void testNoAccessToCube() {
         final TestContext tc = new RestrictedTestContext();
-        tc.assertThrows("select from [HR]", "MDX cube 'HR' not found");
+        tc.assertQueryThrows("select from [HR]", "MDX cube 'HR' not found");
     }
 
     private Connection getRestrictedConnection() {
@@ -702,7 +702,7 @@ public class AccessControlTest extends FoodMartTestCase {
                     + "  </SchemaGrant>\n"
                     + "</Role>")
                 .withRole("Role1");
-        testContext.assertThrows(
+        testContext.assertQueryThrows(
             "select from [Sales]",
             "Illegal rollupPolicy value 'bad'");
     }
@@ -948,11 +948,11 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 7,961\n"
             + "Row #0: 124,366\n");
 
-        testContext.withRole("Role1").assertThrows(
+        testContext.withRole("Role1").assertQueryThrows(
             mdx,
             "MDX object '[Customers].[USA].[OR]' not found in cube 'Sales'");
 
-        testContext.withRole("Role2").assertThrows(
+        testContext.withRole("Role2").assertQueryThrows(
             mdx,
             "MDX cube 'Sales' not found");
 

@@ -9,10 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
-import mondrian.olap.Exp;
+import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
@@ -32,14 +29,16 @@ import java.util.List;
  */
 class StdevPFunDef extends AbstractAggregateFunDef {
 
-    static final Resolver StdevpResolver = new ReflectiveMultiResolver(
+    static final Resolver StdevpResolver =
+        new ReflectiveMultiResolver(
             "StdevP",
             "StdevP(<Set>[, <Numeric Expression>])",
             "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
             new String[]{"fnx", "fnxn"},
             StdevPFunDef.class);
 
-    static final Resolver StddevpResolver = new ReflectiveMultiResolver(
+    static final Resolver StddevpResolver =
+        new ReflectiveMultiResolver(
             "StddevP",
             "StddevP(<Set>[, <Numeric Expression>])",
             "Alias for StdevP.",
@@ -64,8 +63,8 @@ class StdevPFunDef extends AbstractAggregateFunDef {
                     evaluator.push(false), memberList, calc, true);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

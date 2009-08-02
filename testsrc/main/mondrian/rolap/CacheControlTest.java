@@ -95,7 +95,7 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     private void standardQuery(TestContext testContext) {
         testContext.assertQueryReturns(
-            "select {[Time].Members} on columns,\n"
+            "select {[Time].[Time].Members} on columns,\n"
             + " {[Product].Children} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"

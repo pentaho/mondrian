@@ -240,8 +240,8 @@ class GenerateFunDef extends FunDefBase {
             }
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 
@@ -307,8 +307,8 @@ class GenerateFunDef extends FunDefBase {
             return buf.toString();
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return anyDependsButFirst(getCalcs(), dimension);
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 }

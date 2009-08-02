@@ -62,7 +62,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
 
     public Object evaluate(
         Calc calc,
-        Dimension[] independentDimensions,
+        Hierarchy[] independentHierarchies,
         String mdxString)
     {
         final DteRoot dteRoot =
@@ -106,14 +106,14 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         {
             return result;
         }
-        if (independentDimensions.length == 0) {
+        if (independentHierarchies.length == 0) {
             return result;
         }
         dteRoot.faking = true;
         ++dteRoot.fakeCount;
         ++dteRoot.fakeCallCount;
-        final int i = dteRoot.random.nextInt(independentDimensions.length);
-        final Member saveMember = getContext(independentDimensions[i]);
+        final int i = dteRoot.random.nextInt(independentHierarchies.length);
+        final Member saveMember = getContext(independentHierarchies[i]);
         final Member otherMember =
             dteRoot.chooseOtherMember(
                 saveMember, getQuery().getSchemaReader(false));
@@ -297,17 +297,17 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private static class DteScalarCalcImpl extends GenericCalc {
         private final Calc calc;
-        private final Dimension[] independentDimensions;
+        private final Hierarchy[] independentHierarchies;
         private final String mdxString;
 
         DteScalarCalcImpl(
             Calc calc,
-            Dimension[] independentDimensions,
+            Hierarchy[] independentHierarchies,
             String mdxString)
         {
             super(new DummyExp(calc.getType()));
             this.calc = calc;
-            this.independentDimensions = independentDimensions;
+            this.independentHierarchies = independentHierarchies;
             this.mdxString = mdxString;
         }
 
@@ -318,7 +318,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         public Object evaluate(Evaluator evaluator) {
             RolapDependencyTestingEvaluator dtEval =
                 (RolapDependencyTestingEvaluator) evaluator;
-            return dtEval.evaluate(calc, independentDimensions, mdxString);
+            return dtEval.evaluate(calc, independentHierarchies, mdxString);
         }
 
         public ResultStyle getResultStyle() {
@@ -332,19 +332,19 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private static class DteIterCalcImpl extends GenericIterCalc {
         private final Calc calc;
-        private final Dimension[] independentDimensions;
+        private final Hierarchy[] independentHierarchies;
         private final boolean mutableList;
         private final String mdxString;
 
         DteIterCalcImpl(
             Calc calc,
-            Dimension[] independentDimensions,
+            Hierarchy[] independentHierarchies,
             boolean mutableList,
             String mdxString)
         {
             super(new DummyExp(calc.getType()));
             this.calc = calc;
-            this.independentDimensions = independentDimensions;
+            this.independentHierarchies = independentHierarchies;
             this.mutableList = mutableList;
             this.mdxString = mdxString;
         }
@@ -356,7 +356,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         public Object evaluate(Evaluator evaluator) {
             RolapDependencyTestingEvaluator dtEval =
                     (RolapDependencyTestingEvaluator) evaluator;
-            return dtEval.evaluate(calc, independentDimensions, mdxString);
+            return dtEval.evaluate(calc, independentHierarchies, mdxString);
         }
 
         public List evaluateList(Evaluator evaluator) {
@@ -384,7 +384,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         }
 
         protected Calc afterCompile(Exp exp, Calc calc, boolean mutable) {
-            Dimension[] dimensions = getIndependentDimensions(calc);
+            Hierarchy[] dimensions = getIndependentHierarchies(calc);
             calc = super.afterCompile(exp, calc, mutable);
             if (calc.getType() instanceof SetType) {
                 return new DteIterCalcImpl(
@@ -408,16 +408,17 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          * @param calc Expression
          * @return List of dimensions that the expression does not depend on
          */
-        private Dimension[] getIndependentDimensions(Calc calc) {
-            List<Dimension> indDimList = new ArrayList<Dimension>();
-            final Dimension[] dims =
-                getValidator().getQuery().getCube().getDimensions();
-            for (Dimension dim : dims) {
-                if (!calc.dependsOn(dim)) {
-                    indDimList.add(dim);
+        private Hierarchy[] getIndependentHierarchies(Calc calc) {
+            List<Hierarchy> list = new ArrayList<Hierarchy>();
+            final List<RolapHierarchy> hierarchies =
+                ((RolapCube) getValidator().getQuery().getCube())
+                    .getHierarchies();
+            for (Hierarchy hierarchy : hierarchies) {
+                if (!calc.dependsOn(hierarchy)) {
+                    list.add(hierarchy);
                 }
             }
-            return indDimList.toArray(new Dimension[indDimList.size()]);
+            return list.toArray(new Hierarchy[list.size()]);
         }
     }
 }

@@ -51,6 +51,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     private HierarchyUsage usage;
     private final Map<String, String> aliases = new HashMap<String, String>();
     private RolapCubeMember currentDefaultMember;
+    private final int ordinal;
 
     /**
      * True if the hierarchy is degenerate - has no dimension table of its own,
@@ -58,13 +59,24 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      */
     protected final boolean usingCubeFact;
 
+    /**
+     * Creates a RolapCubeHierarchy.
+     *
+     * @param dimension Dimension
+     * @param cubeDim XML dimension element
+     * @param rolapHierarchy Wrapped hierarchy
+     * @param subName Name of hierarchy within dimension
+     * @param ordinal Ordinal of hierarchy within cube
+     */
     public RolapCubeHierarchy(
         RolapCubeDimension dimension,
         MondrianDef.CubeDimension cubeDim,
         RolapHierarchy rolapHierarchy,
-        String subName)
+        String subName,
+        int ordinal)
     {
-        super(dimension, subName, rolapHierarchy.hasAll());
+        super(dimension, subName, rolapHierarchy.hasAll(), null);
+        this.ordinal = ordinal;
 
         if (!dimension.getCube().isVirtual()) {
             this.usage =
@@ -166,6 +178,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return rolapHierarchy;
     }
 
+    public int getOrdinalInCube() {
+        return ordinal;
+    }
+
     /**
      * Populates the alias map for the old and new relations.
      *
@@ -214,7 +230,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     }
 
     protected int computeHashCode() {
-        return Util.hash(super.computeHashCode(), this.parentDimension.parent);
+        return Util.hash(super.computeHashCode(), this.parentDimension.cube);
     }
 
     public Member createMember(

@@ -4266,7 +4266,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension whose
+                        <DESCRIPTION>Returns the hierarchy whose
                             zero-based position within the cube is
                             specified by a numeric expression.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
@@ -4277,7 +4277,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension whose name is
+                        <DESCRIPTION>Returns the hierarchy whose name is
                             specified by a string.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -5285,7 +5285,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>IsDate</FUNCTION_NAME>
                         <DESCRIPTION>Returns a Boolean value indicating
-                            whether an expression can be converted to a date..</DESCRIPTION>
+                            whether an expression can be converted to a date.</DESCRIPTION>
                         <PARAMETER_LIST>Value</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -6676,7 +6676,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>String</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>Integer, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -12532,6 +12532,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                     name="Quarter" sql:field="Quarter" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Month"
                                     sql:field="Month" type="xsd:integer"/>
+                                <xsd:element minOccurs="0" name="Week"
+                                    sql:field="Week" type="xsd:integer"/>
+                                <xsd:element minOccurs="0" name="Day"
+                                    sql:field="Day" type="xsd:integer"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -12593,6 +12597,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Year>86</Year>
                         <Quarter>86</Quarter>
                         <Month>86</Month>
+                        <Week>86</Week>
+                        <Day>86</Day>
                         <Product_x0020_Family>86</Product_x0020_Family>
                         <Product_x0020_Department>86</Product_x0020_Department>
                         <Product_x0020_Category>86</Product_x0020_Category>
@@ -12621,68 +12627,74 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Year>1997</Year>
                         <Quarter>Q1</Quarter>
                         <Month>3</Month>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Alcoholic Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Beer and Wine</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Wine</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Good</Brand_x0020_Name>
-                        <Product_x0020_Name>Good Chardonnay Wine</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Berkeley</City>
-                        <Name>David Johnson</Name>
-                        <Name_x0020__x0028_Key_x0029_>1066</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>Bachelors Degree</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>M</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$130K - $150K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
-                    </row>
-                    <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>3</Month>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Carbonated Beverages</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Soda</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Fabulous</Brand_x0020_Name>
-                        <Product_x0020_Name>Fabulous Diet Soda</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Berkeley</City>
-                        <Name>Nancy Pietrs</Name>
-                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>Partial College</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
-                    </row>
-                    <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>3</Month>
+                        <Week>11</Week>
+                        <Day>6</Day>
                         <Product_x0020_Family>Drink</Product_x0020_Family>
                         <Product_x0020_Department>Beverages</Product_x0020_Department>
                         <Product_x0020_Category>Drinks</Product_x0020_Category>
                         <Product_x0020_Subcategory>Flavored Drinks</Product_x0020_Subcategory>
                         <Brand_x0020_Name>Fabulous</Brand_x0020_Name>
                         <Product_x0020_Name>Fabulous Strawberry Drink</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Berkeley</City>
+                        <Name>Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>M</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q1</Quarter>
+                        <Month>3</Month>
+                        <Week>11</Week>
+                        <Day>6</Day>
+                        <Product_x0020_Family>Food</Product_x0020_Family>
+                        <Product_x0020_Department>Baked Goods</Product_x0020_Department>
+                        <Product_x0020_Category>Bread</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Sliced Bread</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Sphinx</Brand_x0020_Name>
+                        <Product_x0020_Name>Sphinx Wheat Bread</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Berkeley</City>
+                        <Name>Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>M</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q1</Quarter>
+                        <Month>3</Month>
+                        <Week>11</Week>
+                        <Day>6</Day>
+                        <Product_x0020_Family>Food</Product_x0020_Family>
+                        <Product_x0020_Department>Deli</Product_x0020_Department>
+                        <Product_x0020_Category>Meat</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Bologna</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Red Spade</Brand_x0020_Name>
+                        <Product_x0020_Name>Red Spade Beef Bologna</Product_x0020_Name>
                         <Media_x0020_Type>No Media</Media_x0020_Type>
                         <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
                         <State_x0020_Province>CA</State_x0020_Province>
@@ -12789,6 +12801,10 @@ FROM Sales
                                     name="Quarter" sql:field="Quarter" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Month"
                                     sql:field="Month" type="xsd:integer"/>
+                                <xsd:element minOccurs="0" name="Week"
+                                    sql:field="Week" type="xsd:integer"/>
+                                <xsd:element minOccurs="0" name="Day"
+                                    sql:field="Day" type="xsd:integer"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -12850,6 +12866,8 @@ FROM Sales
                         <Year>2</Year>
                         <Quarter>2</Quarter>
                         <Month>2</Month>
+                        <Week>2</Week>
+                        <Day>2</Day>
                         <Product_x0020_Family>2</Product_x0020_Family>
                         <Product_x0020_Department>2</Product_x0020_Department>
                         <Product_x0020_Category>2</Product_x0020_Category>
@@ -12878,6 +12896,8 @@ FROM Sales
                         <Year>1997</Year>
                         <Quarter>Q1</Quarter>
                         <Month>2</Month>
+                        <Week>9</Week>
+                        <Day>20</Day>
                         <Product_x0020_Family>Drink</Product_x0020_Family>
                         <Product_x0020_Department>Beverages</Product_x0020_Department>
                         <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
@@ -12906,6 +12926,8 @@ FROM Sales
                         <Year>1997</Year>
                         <Quarter>Q3</Quarter>
                         <Month>9</Month>
+                        <Week>39</Week>
+                        <Day>19</Day>
                         <Product_x0020_Family>Drink</Product_x0020_Family>
                         <Product_x0020_Department>Beverages</Product_x0020_Department>
                         <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
@@ -19262,16 +19284,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     <row>
                         <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the current member along a
-                            dimension during an iteration.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>CurrentMember</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current member along a
                             hierarchy during an iteration.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -19619,7 +19631,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension whose
+                        <DESCRIPTION>Returns the hierarchy whose
                             zero-based position within the cube is
                             specified by a numeric expression.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
@@ -19630,7 +19642,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension whose name is
+                        <DESCRIPTION>Returns the hierarchy whose name is
                             specified by a string.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>

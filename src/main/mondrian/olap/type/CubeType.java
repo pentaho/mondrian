@@ -39,6 +39,10 @@ public class CubeType implements Type {
         return false;
     }
 
+    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
+        return false;
+    }
+
     public Dimension getDimension() {
         return null;
     }

@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.calc;
 
 import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.type.Type;
 
 /**
@@ -79,9 +79,9 @@ public interface Calc {
     Object evaluate(Evaluator evaluator);
 
     /**
-     * Returns whether this expression depends upon a given dimension.
+     * Returns whether this expression depends upon a given hierarchy.
      *
-     * <p>If it does not depend on the dimension, then re-evaluating the
+     * <p>If it does not depend on the hierarchy, then re-evaluating the
      * expression with a different member of this context must produce the
      * same answer.<p/>
      *
@@ -94,24 +94,24 @@ public interface Calc {
      * <li>The boolean expression
      * <blockquote><code>([Measures].[Unit Sales],
      * [Time].[1997]) &gt; 1000</code></blockquote>
-     * depends on all dimensions except [Measures] and [Time].
+     * depends on all hierarchies except [Measures] and [Time].
      *
      * <li>The list expression
      * <blockquote><code>Filter([Store].[USA].Children,
      * [Measures].[Unit Sales] &lt; 50)</code></pre></blockquote>
-     * depends upon all dimensions <em>except</em> [Store] and [Measures].
-     * How so? Normally the scalar expression would depend upon all dimensions
+     * depends upon all hierarchies <em>except</em> [Store] and [Measures].
+     * How so? Normally the scalar expression would depend upon all hierarchies
      * except [Measures], but the <code>Filter</code> function sets the [Store]
      * context before evaluating the scalar expression, so it is not inherited
      * from the surrounding context.
      *
      * </ul><p/>
      *
-     * @param dimension Dimension
+     * @param hierarchy Hierarchy
      * @return Whether this expression's result depends upon the current member
-     *   of the dimension
+     *   of the hierarchy
      */
-    boolean dependsOn(Dimension dimension);
+    boolean dependsOn(Hierarchy hierarchy);
 
     /**
      * Returns the type of this expression.

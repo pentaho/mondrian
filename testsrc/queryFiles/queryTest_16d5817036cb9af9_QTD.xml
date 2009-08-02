@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Measures].[QTDProfit] AS    'SUM(QTD(), ([Measures].[Store Sales] - [Measures].[Store Cost]))' SELECT hierarchize([Time].MEMBERS) ON COLUMNS, {[Product].CHILDREN} ON ROWS FROM [Sales] WHERE ([Measures].[QTDProfit])</mdxQuery>
+    <mdxQuery>WITH MEMBER [Measures].[QTDProfit] AS    'SUM(QTD(), ([Measures].[Store Sales] - [Measures].[Store Cost]))' SELECT hierarchize([Time].[Time].MEMBERS) ON COLUMNS, {[Product].CHILDREN} ON ROWS FROM [Sales] WHERE ([Measures].[QTDProfit])</mdxQuery>
    <dataResult>
         <slicer>
             <dimensions>

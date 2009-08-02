@@ -12,7 +12,6 @@ package mondrian.olap.fun;
 import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
-import static mondrian.olap.Util.nl;
 import mondrian.test.*;
 import mondrian.resource.MondrianResource;
 import mondrian.udf.CurrentDateMemberExactUdf;
@@ -87,6 +86,11 @@ public class FunctionTest extends FoodMartTestCase {
         + "   [Product].[All Products].[Drink].[Alcoholic Beverages]."
         + "[Beer and Wine].[Beer].[Good].[Good Imported Beer])";
 
+    private static final String TimeWeekly =
+        MondrianProperties.instance().SsasCompatibleNaming.get()
+            ? "[Time].[Weekly]"
+            : "[Time.Weekly]";
+
     // ~ Constructors ----------------------------------------------------------
 
     /**
@@ -146,15 +150,15 @@ public class FunctionTest extends FoodMartTestCase {
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0], [Measures].[*FORMATTED_MEASURE_1]}' "
             + "Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q2].[6]}' "
-            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}' "
             + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
             + "Member [Measures].[*FORMATTED_MEASURE_1] as "
-            + "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
+            + "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
             + "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 "
             + "Select "
-            + "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}) on rows "
+            + "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}) on rows "
             + "From [Sales] "
             + "Where ([Product].[*FILTER_MEMBER])",
             "Axis #0:\n"
@@ -264,12 +268,16 @@ public class FunctionTest extends FoodMartTestCase {
         getTestContext().assertExprDependsOn("Dimensions(2).Name", "{}");
         getTestContext().assertMemberExprDependsOn(
             "Dimensions(3).CurrentMember",
-            TestContext.allDims());
+            TestContext.allHiers());
         assertExprReturns("Dimensions(2).Name", "Store Size in SQFT");
         // bug 1426134 -- Dimensions(0) throws 'Index '0' out of bounds'
         assertExprReturns("Dimensions(0).Name", "Measures");
         assertExprThrows("Dimensions(-1).Name", "Index '-1' out of bounds");
         assertExprThrows("Dimensions(100).Name", "Index '100' out of bounds");
+        // Since Dimensions returns a Hierarchy, can apply CurrentMember.
+        assertAxisReturns(
+            "Dimensions(3).CurrentMember",
+            "[Store Type].[All Store Types]");
     }
 
     public void testDimensionsString() {
@@ -277,8 +285,14 @@ public class FunctionTest extends FoodMartTestCase {
             "Dimensions(\"foo\").UniqueName",
             "{}");
         getTestContext().assertMemberExprDependsOn(
-            "Dimensions(\"foo\").CurrentMember", TestContext.allDims());
+            "Dimensions(\"foo\").CurrentMember", TestContext.allHiers());
         assertExprReturns("Dimensions(\"Store\").UniqueName", "[Store]");
+        // Since Dimensions returns a Hierarchy, can apply Children.
+        assertAxisReturns(
+            "Dimensions(\"Store\").Children",
+            "[Store].[All Stores].[Canada]\n"
+            + "[Store].[All Stores].[Mexico]\n"
+            + "[Store].[All Stores].[USA]");
     }
 
     public void testDimensionsDepends() {
@@ -288,8 +302,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "{Dimensions(\"Product\")})";
         assertAxisReturns(
             expression, "{[Measures].[Unit Sales], [Product].[All Products]}");
-        getTestContext()
-            .assertSetExprDependsOn(expression, TestContext.allDims());
+        getTestContext().assertSetExprDependsOn(
+            expression, TestContext.allHiers());
     }
 
     public void testTime() {
@@ -429,29 +443,29 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testLevelsNumeric() {
-        assertExprReturns("[Time].Levels(2).Name", "Month");
-        assertExprReturns("[Time].Levels(0).Name", "Year");
+        assertExprReturns("[Time].[Time].Levels(2).Name", "Month");
+        assertExprReturns("[Time].[Time].Levels(0).Name", "Year");
         assertExprReturns("[Product].Levels(0).Name", "(All)");
     }
 
     public void testLevelsTooSmall() {
         assertExprThrows(
-            "[Time].Levels(-1).Name", "Index '-1' out of bounds");
+            "[Time].[Time].Levels(-1).Name", "Index '-1' out of bounds");
     }
 
     public void testLevelsTooLarge() {
         assertExprThrows(
-            "[Time].Levels(8).Name", "Index '8' out of bounds");
+            "[Time].[Time].Levels(8).Name", "Index '8' out of bounds");
     }
 
     public void testHierarchyLevelsString() {
         assertExprReturns(
-            "[Time].Levels(\"Year\").UniqueName", "[Time].[Year]");
+            "[Time].[Time].Levels(\"Year\").UniqueName", "[Time].[Year]");
     }
 
     public void testHierarchyLevelsStringFail() {
         assertExprThrows(
-            "[Time].Levels(\"nonexistent\").UniqueName",
+            "[Time].[Time].Levels(\"nonexistent\").UniqueName",
             "Level 'nonexistent' not found in hierarchy '[Time]'");
     }
 
@@ -723,17 +737,18 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testValidMeasureDepends() {
-        String s12 = TestContext.allDimsExcept("[Measures]");
+        String s12 = TestContext.allHiersExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "ValidMeasure([Measures].[Unit Sales])", s12);
 
-        String s11 = TestContext.allDimsExcept("[Measures]", "[Time]");
+        String s11 = TestContext.allHiersExcept("[Measures]", "[Time]");
         getTestContext().assertExprDependsOn(
             "ValidMeasure(([Measures].[Unit Sales], [Time].[1997].[Q1]))", s11);
 
-        String s1 = TestContext.allDimsExcept("[Measures]");
+        String s1 = TestContext.allHiersExcept("[Measures]");
         getTestContext().assertExprDependsOn(
-            "ValidMeasure(([Measures].[Unit Sales], [Time].CurrentMember.Parent))",
+            "ValidMeasure(([Measures].[Unit Sales], "
+            + "[Time].[Time].CurrentMember.Parent))",
             s1);
     }
 
@@ -1022,14 +1037,15 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testClosingPeriod() {
         getTestContext().assertMemberExprDependsOn(
-            "ClosingPeriod([Time].[Month], [Time].CurrentMember)", "{[Time]}");
+            "ClosingPeriod([Time].[Month], [Time].[Time].CurrentMember)",
+            "{[Time]}");
 
-        String s1 = TestContext.allDimsExcept("[Measures]");
+        String s1 = TestContext.allHiersExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "(([Measures].[Store Sales],"
-            + " ClosingPeriod([Time].[Month], [Time].CurrentMember)) - "
+            + " ClosingPeriod([Time].[Month], [Time].[Time].CurrentMember)) - "
             + "([Measures].[Store Cost],"
-            + " ClosingPeriod([Time].[Month], [Time].CurrentMember)))",
+            + " ClosingPeriod([Time].[Month], [Time].[Time].CurrentMember)))",
             s1);
 
         getTestContext().assertMemberExprDependsOn(
@@ -1795,7 +1811,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         getTestContext().assertExprDependsOn(
             "[Gender].[M].Dimension.Name", "{}");
-        // implcitit call to .CurrentMember when dimension is used as a member
+        // implicit call to .CurrentMember when dimension is used as a member
         // expression
         getTestContext().assertMemberExprDependsOn(
             "[Gender].[M].Dimension",
@@ -1809,7 +1825,7 @@ public class FunctionTest extends FoodMartTestCase {
         // [Customers] is short for [Customers].CurrentMember, so
         // depends upon everything
         getTestContext().assertExprDependsOn(
-            "[Customers]", TestContext.allDims());
+            "[Customers]", TestContext.allHiers());
     }
 
     public void testCurrentMemberFromSlicer() {
@@ -1822,7 +1838,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCurrentMemberFromDefaultMember() {
         Result result = executeQuery(
-            "with member [Measures].[Foo] as '[Time].CurrentMember.Name'\n"
+            "with member [Measures].[Foo] as"
+            + " '[Time].[Time].CurrentMember.Name'\n"
             + "select {[Measures].[Foo]} on columns\n"
             + "from Sales");
         Assert.assertEquals("1997", result.getCell(new int[]{0}).getValue());
@@ -1835,7 +1852,7 @@ public class FunctionTest extends FoodMartTestCase {
                 : "Time.Weekly";
         final String queryString =
             "with member [Measures].[Foo] as\n"
-            + " 'IIf(([Time].CurrentMember.Hierarchy.Name = \""
+            + " 'IIf(([Time].[Time].CurrentMember.Hierarchy.Name = \""
             + hierarchyName
             + "\"), \n"
             + "[Measures].[Unit Sales], \n"
@@ -1854,7 +1871,7 @@ public class FunctionTest extends FoodMartTestCase {
         // As above, but context provided on rows axis as opposed to slicer.
         final String queryString1 =
             "with member [Measures].[Foo] as\n"
-            + " 'IIf(([Time].CurrentMember.Hierarchy.Name = \""
+            + " 'IIf(([Time].[Time].CurrentMember.Hierarchy.Name = \""
             + hierarchyName
             + "\"), \n"
             + "[Measures].[Unit Sales], \n"
@@ -1872,23 +1889,19 @@ public class FunctionTest extends FoodMartTestCase {
             "-12,885",
             result.getCell(coords).getFormattedValue());
 
-        // In old mondrian, [Time] and [Time].[Weekly] have the same current
-        // member.
-        final String expectedCellValue =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "-12,885"
-                : "12,885";
-
-        result = executeQuery(
+        result =
+            executeQuery(
                 queryString + " where [Time.Weekly].[1997]");
         Assert.assertEquals(
-            expectedCellValue,
+            "-12,885",
             result.getCell(coords).getFormattedValue());
 
-        result = executeQuery(
-            queryString1 + " {[Time.Weekly].[1997]} ON ROWS " + queryString2);
+        result =
+            executeQuery(
+                queryString1 + " {[Time.Weekly].[1997]} ON ROWS "
+                + queryString2);
         Assert.assertEquals(
-            expectedCellValue,
+            "-12,885",
             result.getCell(coords).getFormattedValue());
     }
 
@@ -1897,7 +1910,7 @@ public class FunctionTest extends FoodMartTestCase {
         // the first member of the first level.
         Result result =
             executeQuery(
-                "select {[Time].DefaultMember} on columns\n"
+                "select {[Time].[Time].DefaultMember} on columns\n"
                 + "from Sales");
         Assert.assertEquals(
             "1997",
@@ -1992,7 +2005,7 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            "with set [Time Regular] as [Time].Members\n"
+            "with set [Time Regular] as [Time].[Time].Members\n"
             + " set [Time Reversed] as"
             + " Order([Time Regular], [Time Regular].CurrentOrdinal, BDESC)\n"
             + "select [Time Reversed] on 0\n"
@@ -2080,11 +2093,11 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            " with set [Time Regular] as [Time].Members\n"
+            " with set [Time Regular] as [Time].[Time].Members\n"
             + "set [Every Other Time] as\n"
             + "  Generate(\n"
             + "    [Time Regular],\n"
-            + "    {[Time].Members.Item(\n"
+            + "    {[Time].[Time].Members.Item(\n"
             + "      [Time Regular].CurrentOrdinal * 2)})\n"
             + "select [Every Other Time] on 0\n"
             + "from [Sales]",
@@ -2134,7 +2147,7 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         assertQueryReturns(
-            "with set [Time Regular] as [Time].Members\n"
+            "with set [Time Regular] as [Time].[Time].Members\n"
             + " set [Time Subset] as "
             + "   Filter([Time Regular], [Time Regular].CurrentOrdinal = 3"
             + "                       or [Time Regular].CurrentOrdinal = 5)\n"
@@ -2679,22 +2692,22 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testAggregateDepends() {
         // Depends on everything except Measures, Gender
-        String s12 = TestContext.allDimsExcept("[Measures]", "[Gender]");
+        String s12 = TestContext.allHiersExcept("[Measures]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "([Measures].[Unit Sales], [Gender].[F])", s12);
         // Depends on everything except Customers, Measures, Gender
-        String s13 = TestContext.allDimsExcept("[Customers]", "[Gender]");
+        String s13 = TestContext.allHiersExcept("[Customers]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "Aggregate([Customers].Members, ([Measures].[Unit Sales], [Gender].[F]))",
             s13);
         // Depends on everything except Customers
-        String s11 = TestContext.allDimsExcept("[Customers]");
+        String s11 = TestContext.allHiersExcept("[Customers]");
         getTestContext().assertExprDependsOn(
             "Aggregate([Customers].Members)",
             s11);
         // Depends on the current member of the Product dimension, even though
         // [Product].[All Products] is referenced from the expression.
-        String s1 = TestContext.allDimsExcept("[Customers]");
+        String s1 = TestContext.allHiersExcept("[Customers]");
         getTestContext().assertExprDependsOn(
             "Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))",
             s1);
@@ -2902,7 +2915,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Declining Stores Count] AS\n"
-            + " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.PrevMember))) '\n"
+            + " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.Time.PrevMember))) '\n"
             + " MEMBER \n"
             + "  [Store].[XL_QZX] AS 'Aggregate ({ [Store].[All Stores].[USA].[WA] , [Store].[All Stores].[USA].[CA] })' \n"
             + "SELECT \n"
@@ -2941,7 +2954,7 @@ public class FunctionTest extends FoodMartTestCase {
             "count(Crossjoin([Store].[All Stores].[USA].Children, {[Gender].children}), INCLUDEEMPTY)",
             "{[Gender]}");
 
-        String s1 = TestContext.allDimsExcept("[Store]");
+        String s1 = TestContext.allHiersExcept("[Store]");
         getTestContext().assertExprDependsOn(
             "count(Crossjoin([Store].[All Stores].[USA].Children, "
             + "{[Gender].children}), EXCLUDEEMPTY)",
@@ -2955,7 +2968,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCountExcludeEmpty() {
-        String s1 = TestContext.allDimsExcept("[Store]");
+        String s1 = TestContext.allHiersExcept("[Store]");
         getTestContext().assertExprDependsOn(
             "count(Crossjoin([Store].[USA].Children, {[Gender].children}), EXCLUDEEMPTY)",
             s1);
@@ -3058,7 +3071,7 @@ public class FunctionTest extends FoodMartTestCase {
             "WITH\n"
             + "   MEMBER [Time].[1st Half Sales] AS 'Sum({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
             + "   MEMBER [Time].[2nd Half Sales] AS 'Sum({[Time].[1997].[Q3], [Time].[1997].[Q4]})'\n"
-            + "   MEMBER [Time].[Median] AS 'Median(Time.Members)'\n"
+            + "   MEMBER [Time].[Median] AS 'Median(Time.[Time].Members)'\n"
             + "SELECT\n"
             + "   NON EMPTY { [Store].[Store Name].Members} ON COLUMNS,\n"
             + "   { [Time].[1st Half Sales], [Time].[2nd Half Sales], [Time].[Median]} ON ROWS\n"
@@ -3187,7 +3200,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("[Measures].[Store Sales].VALUE", "565,238.13");
 
         // Depends upon almost everything.
-        String s1 = TestContext.allDimsExcept("[Measures]");
+        String s1 = TestContext.allHiersExcept("[Measures]");
         getTestContext().assertExprDependsOn(
             "[Measures].[Store Sales].VALUE", s1);
 
@@ -3773,26 +3786,64 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 131,558\n");
     }
 
-    public void testCrossjoinDupDimensionFails() {
+    public void testCrossjoinDupHierarchyFails() {
         assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}) ON ROWS\n"
             + "from [Sales]",
-            "Tuple contains more than one member of dimension '[Time]'.");
+            "Tuple contains more than one member of hierarchy '[Time]'.");
 
         // now with Item, for kicks
         assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " CrossJoin({[Time].[Quarter].[Q1]}, {[Time].[Month].[5]}).Item(0) ON ROWS\n"
             + "from [Sales]",
-            "Tuple contains more than one member of dimension '[Time]'.");
+            "Tuple contains more than one member of hierarchy '[Time]'.");
 
         // same query using explicit tuple
         assertQueryThrows(
             "select [Measures].[Unit Sales] ON COLUMNS,\n"
             + " ([Time].[Quarter].[Q1], [Time].[Month].[5]) ON ROWS\n"
             + "from [Sales]",
-            "Tuple contains more than one member of dimension '[Time]'.");
+            "Tuple contains more than one member of hierarchy '[Time]'.");
+    }
+
+    /**
+     * Tests cases of different hierarchies in the same dimension.
+     * (Compare to {@link #testCrossjoinDupHierarchyFails()}). Not an error.
+     */
+    public void testCrossjoinDupDimensionOk() {
+        final String expectedResult =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1], [Time].[Weekly].[All Weeklys].[1997].[10]}\n"
+            + "Row #0: 4,395\n";
+        final String timeWeekly = TestContext.hierarchyName("Time", "Weekly");
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n"
+            + " CrossJoin({[Time].[Quarter].[Q1]}, {"
+            + timeWeekly + ".[1997].[10]}) ON ROWS\n"
+            + "from [Sales]",
+            expectedResult);
+
+        // now with Item, for kicks
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n"
+            + " CrossJoin({[Time].[Quarter].[Q1]}, {"
+            + timeWeekly + ".[1997].[10]}).Item(0) ON ROWS\n"
+            + "from [Sales]",
+            expectedResult);
+
+        // same query using explicit tuple
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] ON COLUMNS,\n"
+            + " ([Time].[Quarter].[Q1], "
+            + timeWeekly + ".[1997].[10]) ON ROWS\n"
+            + "from [Sales]",
+            expectedResult);
     }
 
     public void testDescendantsM() {
@@ -3806,7 +3857,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDescendantsDepends() {
         getTestContext().assertSetExprDependsOn(
-            "Descendants([Time].CurrentMember)", "{[Time]}");
+            "Descendants([Time].[Time].CurrentMember)",
+            "{[Time]}");
     }
 
     public void testDescendantsML() {
@@ -4206,7 +4258,7 @@ public class FunctionTest extends FoodMartTestCase {
             "Descendants({}, 1)",
             "Cannot deduce type of set");
         assertAxisReturns(
-            "Descendants(Filter({[Time].Members}, 1=0), 1)",
+            "Descendants(Filter({[Time].[Time].Members}, 1=0), 1)",
             "");
     }
 
@@ -4565,8 +4617,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCoalesceEmptyDepends() {
         getTestContext().assertExprDependsOn(
             "coalesceempty([Time].[1997], [Gender].[M])",
-            TestContext.allDims());
-        String s1 = TestContext.allDimsExcept("[Measures]", "[Time]");
+            TestContext.allHiers());
+        String s1 = TestContext.allHiersExcept("[Measures]", "[Time]");
         getTestContext().assertExprDependsOn(
             "coalesceempty(([Measures].[Unit Sales], [Time].[1997]),"
             + " ([Measures].[Store Sales], [Time].[1997].[Q2]))",
@@ -4742,13 +4794,15 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testTuple() {
         assertExprReturns(
-                "([Gender].[M], [Time].Children.Item(2), [Measures].[Unit Sales])",
-                "33,249");
+            "([Gender].[M], "
+            + "[Time].[Time].Children.Item(2), "
+            + "[Measures].[Unit Sales])",
+            "33,249");
         // Calc calls MemberValue with 3 args -- more efficient than
         // constructing a tuple.
         assertExprCompilesTo(
-                "([Gender].[M], [Time].Children.Item(2), [Measures].[Unit Sales])",
-                "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMember([Time])), 2), [Measures].[Unit Sales])");
+            "([Gender].[M], [Time].[Time].Children.Item(2), [Measures].[Unit Sales])",
+            "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMemberFixed([Time])), 2), [Measures].[Unit Sales])");
     }
 
     /**
@@ -4757,35 +4811,46 @@ public class FunctionTest extends FoodMartTestCase {
      * "ClassCastException in mondrian.calc.impl.GenericCalc.evaluat".
      */
     public void testTupleArgTypes() {
-        // can coerce dims to members
+        // can coerce dimensions (if they have a unique hierarchy) and
+        // hierarchies to members
         assertExprReturns(
-                "([Gender], [Time])",
-                "266,773");
+            "([Gender], [Time].[Time])",
+            "266,773");
 
         // can coerce hierarchy to member
         assertExprReturns(
-                "([Gender].[M], [Time.Weekly])",
-                "135,215");
+            "([Gender].[M], " + TimeWeekly + ")", "135,215");
 
         // cannot coerce level to member
         assertAxisThrows(
-                "{([Gender].[M], [Store].[Store City])}",
-                "No function matches signature '(<Member>, <Level>)'");
+            "{([Gender].[M], [Store].[Store City])}",
+            "No function matches signature '(<Member>, <Level>)'");
 
         // coerce args (hierarchy, member, member, dimension)
         assertAxisReturns(
-                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media])}",
-                "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Promotion Media].[All Media]}");
+            "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media])}",
+            "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Promotion Media].[All Media]}");
 
-        // two usages of the [Time] dimension
-        assertAxisThrows(
-                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time])}",
-                "Tuple contains more than one member of dimension '[Time]'.");
+        // usage of different hierarchies in the [Time] dimension
+        assertAxisReturns(
+            "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time].[Time])}",
+            "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Time].[1997]}");
+
+        // two usages of the [Time].[Weekly] hierarchy
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            assertAxisThrows(
+                "{([Time].[Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time].[Weekly])}",
+                "Tuple contains more than one member of hierarchy '[Time].[Weekly]'.");
+        } else {
+            assertAxisThrows(
+                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time.Weekly])}",
+                "Tuple contains more than one member of hierarchy '[Time.Weekly]'.");
+        }
 
         // cannot coerce integer to member
         assertAxisThrows(
-                "{([Gender].[M], 123)}",
-                "No function matches signature '(<Member>, <Numeric Expression>)'");
+            "{([Gender].[M], 123)}",
+            "No function matches signature '(<Member>, <Numeric Expression>)'");
     }
 
     public void testTupleItem() {
@@ -4868,14 +4933,14 @@ public class FunctionTest extends FoodMartTestCase {
         // the explicitly stated dimensions
         getTestContext().assertExprDependsOn(
             "([Store].[USA], [Gender])",
-            TestContext.allDimsExcept("[Store]"));
+            TestContext.allHiersExcept("[Store]"));
 
         // The result should be all dims except [Gender], but there's a small
         // bug in MemberValueCalc.dependsOn where we escalate 'might depend' to
         // 'depends' and we return that it depends on all dimensions.
         getTestContext().assertExprDependsOn(
             "(Dimensions('Store').CurrentMember, [Gender].[F])",
-            TestContext.allDims());
+            TestContext.allHiers());
     }
 
     public void testItemNull()
@@ -5397,16 +5462,17 @@ public class FunctionTest extends FoodMartTestCase {
         // [Gender].[M] is used here as a numeric expression!
         // The numeric expression DOES depend upon [Product].
         // The expression as a whole depends upon everything except [Gender].
-        String s1 = TestContext.allDimsExcept("[Gender]");
+        String s1 = TestContext.allHiersExcept("[Gender]");
         getTestContext().assertMemberExprDependsOn(
             "ParallelPeriod([Product].[Product Family], [Gender].[M], [Product].[Food])",
             s1);
         // As above
-        String s11 = TestContext.allDimsExcept("[Gender]");
+        String s11 = TestContext.allHiersExcept("[Gender]");
         getTestContext().assertMemberExprDependsOn(
             "ParallelPeriod([Product].[Product Family], [Gender].[M])", s11);
         getTestContext().assertSetExprDependsOn(
-            "parallelperiod([Time].CurrentMember)", "{[Time]}");
+            "parallelperiod([Time].[Time].CurrentMember)",
+            "{[Time]}");
     }
 
     public void testParallelPeriodLevelLag() {
@@ -5456,7 +5522,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testPlus() {
         getTestContext().assertExprDependsOn("1 + 2", "{}");
-        String s1 = TestContext.allDimsExcept("[Measures]", "[Gender]");
+        String s1 = TestContext.allHiersExcept("[Measures]", "[Gender]");
         getTestContext().assertExprDependsOn(
             "([Measures].[Unit Sales], [Gender].[F]) + 2", s1);
 
@@ -5713,7 +5779,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testNonEmptyCrossJoin() {
         // NonEmptyCrossJoin needs to evaluate measures to find out whether
         // cells are empty, so it implicitly depends upon all dimensions.
-        String s1 = TestContext.allDimsExcept("[Store]");
+        String s1 = TestContext.allHiersExcept("[Store]");
         getTestContext().assertSetExprDependsOn(
             "NonEmptyCrossJoin([Store].[USA].Children, [Gender].Children)", s1);
 
@@ -6065,10 +6131,12 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testGenerateString() {
         assertExprReturns(
-            "Generate({Time.[1997], Time.[1998]}, Time.CurrentMember.Name)",
+            "Generate({Time.[1997], Time.[1998]},"
+            + " Time.[Time].CurrentMember.Name)",
             "19971998");
         assertExprReturns(
-            "Generate({Time.[1997], Time.[1998]}, Time.CurrentMember.Name, \" and \")",
+            "Generate({Time.[1997], Time.[1998]},"
+            + " Time.[Time].CurrentMember.Name, \" and \")",
             "1997 and 1998");
     }
 
@@ -6428,7 +6496,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Depends upon everything EXCEPT [Product], [Measures],
         // [Marital Status], [Gender].
-        String s11 = TestContext.allDimsExcept(
+        String s11 = TestContext.allHiersExcept(
             "[Product]", "[Measures]", "[Marital Status]", "[Gender]");
         getTestContext().assertSetExprDependsOn(
             "Order("
@@ -6439,7 +6507,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Depends upon everything EXCEPT [Product], [Measures],
         // [Marital Status]. Does depend upon [Gender].
-        String s12 = TestContext.allDimsExcept(
+        String s12 = TestContext.allHiersExcept(
             "[Product]", "[Measures]", "[Marital Status]");
         getTestContext().assertSetExprDependsOn(
             "Order("
@@ -6449,7 +6517,7 @@ public class FunctionTest extends FoodMartTestCase {
             s12);
 
         // Depends upon everything except [Measures].
-        String s13 = TestContext.allDimsExcept("[Measures]");
+        String s13 = TestContext.allHiersExcept("[Measures]");
         getTestContext().assertSetExprDependsOn(
             "Order("
             + "  Crossjoin("
@@ -6459,7 +6527,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "  BDESC)",
             s13);
 
-        String s1 = TestContext.allDimsExcept(
+        String s1 = TestContext.allHiersExcept(
             "[Measures]", "[Store]", "[Product]", "[Time]");
         getTestContext().assertSetExprDependsOn(
             "  Order(\n"
@@ -6471,7 +6539,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "       [Store].[USA].[CA],\n"
             + "       [Store].[USA].[OR]}),\n"
             + "    ([Time].[1997].[Q1], [Measures].[Unit Sales]),\n"
-            + "    ASC)", s1);
+            + "    ASC)",
+            s1);
     }
 
     public void testOrderCalc() {
@@ -6481,7 +6550,7 @@ public class FunctionTest extends FoodMartTestCase {
         // an immutable list, and Order wants an iterable.
         assertAxisCompilesTo(
             "order([Product].children, [Measures].[Unit Sales])",
-            "ContextCalc([Measures].[Unit Sales], Order(MemberListIterCalc(Children(CurrentMember([Product]))), ValueCalc, ASC))");
+            "ContextCalc([Measures].[Unit Sales], Order(MemberListIterCalc(Children(CurrentMemberFixed([Product]))), ValueCalc, ASC))");
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
@@ -6489,14 +6558,16 @@ public class FunctionTest extends FoodMartTestCase {
             "order([Product].children,"
             + " ([Time].[1997], [Product].CurrentMember.Parent))",
             "ContextCalc([Time].[1997], "
-            + "Order(MemberListIterCalc(Children(CurrentMember([Product]))), "
-            + "MemberValueCalc(Parent(CurrentMember([Product]))), ASC))");
+            + "Order("
+            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC))");
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
             "order([Product].children, [Product].CurrentMember.Parent)",
-            "Order(MemberListIterCalc(Children(CurrentMember([Product]))), "
-            + "MemberValueCalc(Parent(CurrentMember([Product]))), ASC)");
+            "Order("
+            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC)");
 
         // List expression is dependent on one of the constant calcs. It cannot
         // be pulled up, so [Gender].[M] is not in the ContextCalc.
@@ -6510,11 +6581,11 @@ public class FunctionTest extends FoodMartTestCase {
             Util.Retrowoven
                 ? "ContextCalc([Measures].[Store Sales], "
                   + "Order(MemberListIterCalc(Filter(Children("
-                  + "CurrentMember([Product])), "
+                  + "CurrentMemberFixed([Product])), "
                   + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0))), "
                   + "MemberValueCalc([Gender].[All Gender].[M]), ASC))"
                 : "ContextCalc([Measures].[Store Sales], "
-                  + "Order(Filter(Children(CurrentMember([Product])), "
+                  + "Order(Filter(Children(CurrentMemberFixed([Product])), "
                   + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), "
                   + "MemberValueCalc([Gender].[All Gender].[M]), ASC))");
     }
@@ -6823,9 +6894,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testOrderBug712702_Original() {
         assertQueryReturns(
-            "with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].CurrentMember, [Time].[Month]), \n"
+            "with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].[Time].CurrentMember, [Time].[Month]), \n"
             + "[Measures].[Unit Sales])' \n"
-            + "member [Measures].[Max Unit Sales] as 'Max(Descendants([Time].CurrentMember, [Time].[Month]), [Measures].[Unit Sales])' \n"
+            + "member [Measures].[Max Unit Sales] as 'Max(Descendants([Time].[Time].CurrentMember, [Time].[Month]), [Measures].[Unit Sales])' \n"
             + "select {[Measures].[Average Unit Sales], [Measures].[Max Unit Sales], [Measures].[Unit Sales]} ON columns, \n"
             + "  NON EMPTY Order(\n"
             + "    Crossjoin(\n"
@@ -7146,7 +7217,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel],"
             + "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young],"
             + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]},"
-            + "    [Measures].[Unit Sales], BDESC, [Time].currentMember, BDESC) \n"
+            + "    [Measures].[Unit Sales], BDESC, [Time].[Time].currentMember, BDESC) \n"
             + "on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -7679,7 +7750,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     private void checkTopBottomCountPercentDepends(String fun) {
         String s1 =
-            TestContext.allDimsExcept("[Measures]", "[Promotion Media]");
+            TestContext.allHiersExcept("[Measures]", "[Promotion Media]");
         getTestContext().assertSetExprDependsOn(
             fun
             + "({[Promotion Media].[Media Type].members}, "
@@ -7918,10 +7989,22 @@ public class FunctionTest extends FoodMartTestCase {
         // todo: test for garbage at end of string
     }
 
-    public void testStrToTupleDupDimensionsFails() {
+    public void testStrToTupleDuHierarchiesFails() {
         assertAxisThrows(
             "{StrToTuple(\"([Gender].[F], [Time].[1997].[Q2], [Gender].[M])\", [Gender], [Time], [Gender])}",
-                "Tuple contains more than one member of dimension '[Gender]'.");
+                "Tuple contains more than one member of hierarchy '[Gender]'.");
+    }
+
+    public void testStrToTupleDupHierInSameDimensions() {
+        assertAxisThrows(
+            "{StrToTuple("
+            + "\"([Gender].[F], "
+            + "[Time].[1997].[Q2], "
+            + "[Time].[Weekly].[1997].[10])\","
+            + " [Gender], "
+            + TestContext.hierarchyName("Time", "Weekly")
+            + ", [Gender])}",
+            "Tuple contains more than one member of hierarchy '[Gender]'.");
     }
 
     public void testStrToTupleDepends() {
@@ -7932,7 +8015,7 @@ public class FunctionTest extends FoodMartTestCase {
         // converted to scalar, depends set is larger
         getTestContext().assertExprDependsOn(
             "StrToTuple(\"[Time].[1997].[Q2]\", [Time])",
-            TestContext.allDimsExcept("[Time]"));
+            TestContext.allHiersExcept("[Time]"));
 
         getTestContext().assertMemberExprDependsOn(
             "StrToTuple(\"[Time].[1997].[Q2], [Gender].[F]\", [Time], [Gender])",
@@ -7940,7 +8023,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         getTestContext().assertExprDependsOn(
             "StrToTuple(\"[Time].[1997].[Q2], [Gender].[F]\", [Time], [Gender])",
-            TestContext.allDimsExcept("[Time]", "[Gender]"));
+            TestContext.allHiersExcept("[Time]", "[Gender]"));
     }
 
     public void testStrToSet() {
@@ -7998,7 +8081,7 @@ public class FunctionTest extends FoodMartTestCase {
             + " [Gender],"
             + " [Time],"
             + " [Gender])",
-            "Tuple contains more than one member of dimension '[Gender]'.");
+            "Tuple contains more than one member of hierarchy '[Gender]'.");
     }
 
     public void testYtd() {
@@ -8019,7 +8102,9 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisThrows(
             "Ytd([Store])",
             "Argument to function 'Ytd' must belong to Time hierarchy");
-        getTestContext().assertSetExprDependsOn("Ytd()", "{[Time]}");
+        getTestContext().assertSetExprDependsOn(
+            "Ytd()",
+            "{[Time], " + TimeWeekly + "}");
         getTestContext().assertSetExprDependsOn(
             "Ytd([Time].[1997].[Q2])",
             "{}");
@@ -8034,8 +8119,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testGeneratePlusXtd() {
         assertAxisReturns(
             "generate(\n"
-                + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
-                + " {Ytd( [Time].currentMember)})",
+            + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
+            + " {Ytd( [Time].[Time].currentMember)})",
             "[Time].[1997].[Q1].[1]\n"
             + "[Time].[1997].[Q1].[2]\n"
             + "[Time].[1997].[Q1].[3]\n"
@@ -8045,8 +8130,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Time].[1997].[Q3].[7]");
         assertAxisReturns(
             "generate(\n"
-                + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
-                + " {Ytd( [Time].currentMember)}, ALL)",
+            + "  {[Time].[1997].[Q1].[2], [Time].[1997].[Q3].[7]},\n"
+            + " {Ytd( [Time].[Time].currentMember)}, ALL)",
             "[Time].[1997].[Q1].[1]\n"
             + "[Time].[1997].[Q1].[2]\n"
             + "[Time].[1997].[Q1].[1]\n"
@@ -8057,10 +8142,12 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Time].[1997].[Q2].[6]\n"
             + "[Time].[1997].[Q3].[7]");
         assertExprReturns(
-            "count(generate({[Time].[1997].[Q4].[11]}, {Qtd( [Time].currentMember)}))",
+            "count(generate({[Time].[1997].[Q4].[11]},"
+            + " {Qtd( [Time].[Time].currentMember)}))",
             2, 0);
         assertExprReturns(
-            "count(generate({[Time].[1997].[Q4].[11]}, {Mtd( [Time].currentMember)}))",
+            "count(generate({[Time].[1997].[Q4].[11]},"
+            + " {Mtd( [Time].[Time].currentMember)}))",
             1, 0);
     }
 
@@ -8197,7 +8284,10 @@ public class FunctionTest extends FoodMartTestCase {
         // knew its dimension but not its hierarchy.
         assertQueryReturns(
             "with member [Measures].[Position] as\n"
-            + " 'Sum(PeriodsToDate([Time].Levels(0), [Time].CurrentMember), [Measures].[Store Sales])'\n"
+            + " 'Sum("
+            + "PeriodsToDate([Time].[Time].Levels(0),"
+            + " [Time].[Time].CurrentMember), "
+            + "[Measures].[Store Sales])'\n"
             + "select {[Time].[1997],\n"
             + " [Time].[1997].[Q1],\n"
             + " [Time].[1997].[Q1].[1],\n"
@@ -8256,7 +8346,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testSetToStr() {
         assertExprReturns(
-            "SetToStr([Time].children)",
+            "SetToStr([Time].[Time].children)",
             "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], [Time].[1997].[Q4]}");
 
         // Now, applied to tuples
@@ -8273,7 +8363,24 @@ public class FunctionTest extends FoodMartTestCase {
     public void testTupleToStr() {
         // Applied to a dimension (which becomes a member)
         assertExprReturns(
-            "TupleToStr([Time])",
+            "TupleToStr([Product])",
+            "[Product].[All Products]");
+
+        // Applied to a dimension (invalid because has no default hierarchy)
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            assertExprThrows(
+                "TupleToStr([Time])",
+                "The 'Time' dimension contains more than one hierarchy, "
+                + "therefore the hierarchy must be explicitly specified.");
+        } else {
+            assertExprReturns(
+                "TupleToStr([Time])",
+                "[Time].[1997]");
+        }
+
+        // Applied to a hierarchy
+        assertExprReturns(
+            "TupleToStr([Time].[Time])",
             "[Time].[1997]");
 
         // Applied to a member
@@ -8640,10 +8747,10 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Test] as \n"
             + "  'LinRegPoint(\n"
-            + "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members),\n"
+            + "    Rank(Time.[Time].CurrentMember, Time.[Time].CurrentMember.Level.Members),\n"
             + "    Descendants([Time].[1997], [Time].[Quarter]), \n"
             + "[Measures].[Store Sales], \n"
-            + "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members))' \n"
+            + "    Rank(Time.[Time].CurrentMember, Time.[Time].CurrentMember.Level.Members))' \n"
             + "SELECT \n"
             + "{[Measures].[Test],[Measures].[Store Sales]} ON ROWS, \n"
             + "{[Time].[1997].Children} ON COLUMNS \n"
@@ -8744,10 +8851,10 @@ public class FunctionTest extends FoodMartTestCase {
             "WITH MEMBER \n"
             + "[Measures].[Test] as \n"
             + "  'LinRegPoint(\n"
-            + "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members),\n"
+            + "    Rank(Time.[Time].CurrentMember, Time.[Time].CurrentMember.Level.Members),\n"
             + "    Descendants([Time].[1997], [Time].[Month]), \n"
             + "    [Measures].[Store Sales], \n"
-            + "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)\n"
+            + "    Rank(Time.[Time].CurrentMember, Time.[Time].CurrentMember.Level.Members)\n"
             + " )' \n"
             + "SELECT \n"
             + "  {[Measures].[Test],[Measures].[Store Sales]} ON ROWS, \n"
@@ -9929,7 +10036,7 @@ Intel platforms):
             "Filter({}, 1=0)",
             "");
         assertAxisReturns(
-            "Filter({[Time].Children}, 1=0)",
+            "Filter({[Time].[Time].Children}, 1=0)",
             "");
     }
 

@@ -9,11 +9,8 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
@@ -56,8 +53,8 @@ class PercentileFunDef extends AbstractAggregateFunDef {
                     evaluator.push(false), memberList, calc, percent);
             }
 
-            public boolean dependsOn(Dimension dimension) {
-                return anyDependsButFirst(getCalcs(), dimension);
+            public boolean dependsOn(Hierarchy hierarchy) {
+                return anyDependsButFirst(getCalcs(), hierarchy);
             }
         };
     }

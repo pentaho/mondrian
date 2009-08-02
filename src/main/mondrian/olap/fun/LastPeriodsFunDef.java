@@ -19,9 +19,10 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.MemberCalc;
 import mondrian.calc.IntegerCalc;
-import mondrian.calc.impl.DimensionCurrentMemberCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 import java.util.Collections;
@@ -50,14 +51,10 @@ class LastPeriodsFunDef extends FunDefBase {
         if (args.length == 1) {
             // If Member is not specified,
             // it is Time.CurrentMember.
-            Dimension defaultTimeDimension =
-                validator.getQuery().getCube().getTimeDimension();
-            if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+            RolapHierarchy defaultTimeHierarchy =
+                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
                     getName());
-            }
-            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
-            return new SetType(MemberType.forHierarchy(hierarchy));
+            return new SetType(MemberType.forHierarchy(defaultTimeHierarchy));
         } else {
             Type type = args[1].getType();
             Type memberType =
@@ -71,15 +68,12 @@ class LastPeriodsFunDef extends FunDefBase {
         Exp[] args = call.getArgs();
         final MemberCalc memberCalc;
         if (args.length == 1) {
-            Dimension timeDimension =
-                    compiler.getEvaluator().getCube()
-                    .getTimeDimension();
-            if (timeDimension == null) {
-                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
-                    getName());
-            }
-            memberCalc = new DimensionCurrentMemberCalc(
-                    timeDimension);
+            final RolapHierarchy timeHierarchy =
+                ((RolapCube) compiler.getEvaluator().getCube())
+                    .getTimeHierarchy(getName());
+            memberCalc =
+                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
+                    call, timeHierarchy);
         } else {
             memberCalc = compiler.compileMember(args[1]);
         }

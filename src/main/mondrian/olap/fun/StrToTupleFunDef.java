@@ -151,7 +151,7 @@ class StrToTupleFunDef extends FunDefBase {
             }
             final MemberType[] types =
                 list.toArray(new MemberType[list.size()]);
-            TupleType.checkDimensions(types);
+            TupleType.checkHierarchies(types);
             return new TupleType(types);
         }
         }

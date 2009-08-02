@@ -355,12 +355,13 @@ public class RolapResult extends ResultBase {
                                 valueCalc, evaluator, tupleList1);
                         }
                     };
-                final List<Hierarchy> hierarchyList =
-                    new AbstractList<Hierarchy>() {
+                final List<RolapHierarchy> hierarchyList =
+                    new AbstractList<RolapHierarchy>() {
                         final Position pos0 = positionList.get(0);
 
-                        public Hierarchy get(int index) {
-                            return pos0.get(index).getHierarchy();
+                        public RolapHierarchy get(int index) {
+                            return
+                                ((RolapMember) pos0.get(index)).getHierarchy();
                         }
 
                         public int size() {
@@ -940,10 +941,10 @@ public class RolapResult extends ResultBase {
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
                     final RolapCube cube = getCube();
-                    Dimension measuresDim =
-                        cube.getMeasuresHierarchy().getDimension();
+                    Hierarchy measuresHierarchy =
+                        cube.getMeasuresHierarchy();
                     RolapMeasure m =
-                        (RolapMeasure) revaluator.getContext(measuresDim);
+                        (RolapMeasure) revaluator.getContext(measuresHierarchy);
                     CellFormatter cf = m.getFormatter();
                     if (cf != null) {
                         valueFormatter = cellFormatters.get(cf);
@@ -1102,14 +1103,13 @@ public class RolapResult extends ResultBase {
      * @param pos Coordinates of cell
      * @return Members which form the context of the given cell
      */
-    Member[] getCellMembers(int[] pos) {
-        Member[] members = evaluator.getMembers().clone();
-        final Cube cube = getCube();
+    RolapMember[] getCellMembers(int[] pos) {
+        RolapMember[] members = (RolapMember[]) evaluator.getMembers().clone();
         for (int i = 0; i < pos.length; i++) {
             Position position = axes[i].getPositions().get(pos[i]);
             for (Member member : position) {
                 RolapMember m = (RolapMember) member;
-                int ordinal = m.getDimension().getOrdinal(cube);
+                int ordinal = m.getHierarchy().getOrdinalInCube();
                 members[ordinal] = m;
             }
         }
