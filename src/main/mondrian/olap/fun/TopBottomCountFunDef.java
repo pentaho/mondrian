@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -67,48 +67,44 @@ class TopBottomCountFunDef extends FunDefBase {
         final IntegerCalc integerCalc =
                 compiler.compileInteger(call.getArg(1));
         final Calc orderCalc =
-            call.getArgCount() > 2
-            ? compiler.compileScalar(call.getArg(2), true)
-            : null;
+                call.getArgCount() > 2 ?
+                compiler.compileScalar(call.getArg(2), true) :
+                null;
         final int arity = ((SetType) call.getType()).getArity();
-        return new AbstractListCalc(
-            call,
-            new Calc[]{listCalc, integerCalc, orderCalc})
-        {
+        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
                 // TODO: Figure this out at compile time.
                 SchemaReader schemaReader = evaluator.getSchemaReader();
                 NativeEvaluator nativeEvaluator =
-                    schemaReader.getNativeSetEvaluator(
-                        call.getFunDef(), call.getArgs(), evaluator, this);
+                        schemaReader.getNativeSetEvaluator(
+                                call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
                     return (List) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
-                // REVIEW mberkowitz Is it necessary to eval the list when n is
-                // null or zero?
-                List list = listCalc.evaluateList(evaluator);
-                if (list.isEmpty()) {
-                    return list;
-                }
+                 // REVIEW mberkowitz Is it necessary to eval the list when n is null or zero?
+                 List list = listCalc.evaluateList(evaluator);
+                 if (list.isEmpty()) {
+                     return list;
+                 }
 
-                int n = integerCalc.evaluateInteger(evaluator);
-                if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
-                    return new java.util.ArrayList();
-                }
+                 int n = integerCalc.evaluateInteger(evaluator);
+                 if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
+                     return new java.util.ArrayList();
+                 }
 
-                if (orderCalc == null) {
-                    if (list instanceof AbstractList && list.size() < n) {
-                        return list;
-                    } else {
-                        return list.subList(0, n);
-                    }
-                }
+                 if (orderCalc == null) {
+                     if (list instanceof AbstractList && list.size() < n) {
+                         return list;
+                     } else {
+                         return list.subList(0, n);
+                     }
+                 }
 
-                return partiallySortList(
-                    evaluator, list, hasHighCardDimension(list), n, arity);
+                 return partiallySortList(evaluator, list, hasHighCardDimension(list), n, arity);
             }
+
 
             private List partiallySortList(
                 Evaluator evaluator,
@@ -121,40 +117,29 @@ class TopBottomCountFunDef extends FunDefBase {
                     Iterator listIter = list.iterator();
                     while (listIter.hasNext()) {
                         List chunk = new ArrayList();
-                        for (int count = 0;
-                             count < chunkSize
-                                 && listIter.hasNext();
-                             count++)
-                        {
+                        for (int count = 0; count < chunkSize && listIter.hasNext(); count++) {
                             chunk.add(listIter.next());
                         }
-                        List chunkResult =
-                            partiallySortList(
-                                evaluator, chunk, false, n, arity);
+                        List chunkResult = partiallySortList(evaluator, chunk, false, n, arity);
                         allChunkResults.addAll(chunkResult);
                     }
                     // one last sort, to merge and cull
-                    return partiallySortList(
-                        evaluator, allChunkResults, false, n, arity);
+                    return partiallySortList(evaluator, allChunkResults, false, n, arity);
                 }
 
                 // normal case: no need for chunks
                 if (arity == 1) {
                     return partiallySortMembers(
-                        evaluator.push(),
-                        (List<Member>) list,
-                        orderCalc, n, top);
+                        evaluator.push(), (List<Member>) list, orderCalc, n, top);
                 } else {
                     return partiallySortTuples(
-                        evaluator.push(),
-                        (List<Member[]>) list,
-                        orderCalc, n, top, arity);
+                        evaluator.push(), (List<Member[]>) list, orderCalc, n, top, arity);
                 }
             }
 
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                return anyDependsButFirst(getCalcs(), hierarchy);
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
             }
 
             private boolean hasHighCardDimension(List l) {
@@ -164,8 +149,7 @@ class TopBottomCountFunDef extends FunDefBase {
                     return m.getHierarchy().getDimension().isHighCardinality();
                 } else {
                     for (Member m : (Member[]) trial) {
-                        if (m.getHierarchy().getDimension().isHighCardinality())
-                        {
+                        if (m.getHierarchy().getDimension().isHighCardinality()) {
                             return true;
                         }
                     }

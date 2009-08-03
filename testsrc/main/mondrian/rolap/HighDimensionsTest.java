@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -35,6 +35,25 @@ public class HighDimensionsTest extends FoodMartTestCase {
     }
 
     public void testBug1971406() throws Exception {
+        // build up a baseline time value
+        // this is necessary for environments that might
+        // run code coverage / etc
+        // This baseline takes about 1 second on a Dell Latitude D820 Laptop.
+
+        final long nt0 = System.currentTimeMillis();
+        int t = 0;
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            t += i;
+        }
+        final long nt1 = System.currentTimeMillis();
+        long baselineTime = 0;
+
+        // this check is here to make sure the compiler doesn't optimize
+        // out the above loop
+        if (t > 0) {
+            baselineTime = nt1 - nt0;
+        }
+
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
         Query query = connection.parseQuery(
@@ -50,65 +69,18 @@ public class HighDimensionsTest extends FoodMartTestCase {
             assertNotNull(o.get(0));
         }
         final long t1 = System.currentTimeMillis();
-        final long elapsed = t1 - t0;
-
-        // scale up for slower CPUs
-        double scaleFactor = computeCpuScaleFactor();
-        final long target = (long) (60000 * scaleFactor);
-        assertTrue(
-            "Query execution took " + elapsed + " milliseconds, "
-            + "which is outside target of  " + target + " milliseconds",
-            elapsed <= target);
+        assertTrue("Query failed to execute within " + (60 * baselineTime) + " milliseconds", t1 - t0 < 60 * baselineTime);
     }
 
-    /**
-     * Computes a scale factor indicating the relative system speed. This is
-     * necessary for environments that might run code coverage, etc.
-     *
-     * <p>The method performs a benchmark computation, and returns is the ratio
-     * of the elapsed time for the current system versus the baseline. If the
-     * current system takes, say, 2 seconds to perform the benchmark
-     * computation, the method returns 2.0, meaning that the system would be
-     * expected to take twice as long to do a typical CPU-intensive task.
-     *
-     * @return Multiplier for how long this system would require to do a typical
-     * CPU-intensive task versus the baseline system
-     */
-    private static double computeCpuScaleFactor() {
-        final long nt0 = System.currentTimeMillis();
-        int t = 0;
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            t += i;
-        }
-        final long nt1 = System.currentTimeMillis();
-        long benchmarkTime = 0;
-
-        // this check is here to make sure the compiler doesn't optimize
-        // out the above loop
-        if (t > 0) {
-            benchmarkTime = nt1 - nt0;
-        }
-
-        // The benchmark takes takes about 1 second on the baseline system, a
-        // Dell Latitude D820 Laptop.
-        double scaleFactor = (double) benchmarkTime / 1000d;
-        if (false) {
-            System.out.println("scale factor = " + scaleFactor);
-        }
-        return scaleFactor;
-    }
 
     public void testPromotionsTwoDimensions() throws Exception {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "{[Promotions].[Promotion Name].Members} on rows\n"
-            + "from [Sales Ragged]",
-            1,
-            "Promotions",
-            highCardResults, null, true);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "{[Promotions].[Promotion Name].Members} on rows\n"
+                    + "from [Sales Ragged]", 1, "Promotions",
+                    highCardResults, null, true);
     }
 
 
@@ -116,13 +88,10 @@ public class HighDimensionsTest extends FoodMartTestCase {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "head({[Promotions].[Promotion Name].Members},40) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            first40HighCardResults, null, true);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "head({[Promotions].[Promotion Name].Members},40) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    first40HighCardResults, null, true);
     }
 
     // disabled pending fix of bug MONDRIAN-527
@@ -148,30 +117,21 @@ public class HighDimensionsTest extends FoodMartTestCase {
         }
         topcount41HighCardResults = buffer.toString();
 
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "TopCount({[Promotions].[Promotion Name].Members},40, "
-            + "[Measures].[Unit Sales]) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            topcount40HighCardResults, topcount40Cells, false);
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "TopCount({[Promotions].[Promotion Name].Members},41, "
-            + "[Measures].[Unit Sales]) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            topcount41HighCardResults, topcount41Cells, false);
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "TopCount({[Promotions].[Promotion Name].Members},40, "
-            + "[Measures].[Unit Sales]) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            topcount40HighCardResults, topcount40Cells, false);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "TopCount({[Promotions].[Promotion Name].Members},40, "
+                    + "[Measures].[Unit Sales]) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    topcount40HighCardResults, topcount40Cells, false);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "TopCount({[Promotions].[Promotion Name].Members},41, "
+                    + "[Measures].[Unit Sales]) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    topcount41HighCardResults, topcount41Cells, false);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "TopCount({[Promotions].[Promotion Name].Members},40, "
+                    + "[Measures].[Unit Sales]) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    topcount40HighCardResults, topcount40Cells, false);
     }
 
 
@@ -179,36 +139,27 @@ public class HighDimensionsTest extends FoodMartTestCase {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + "non empty {[Promotions].[Promotion Name].Members} "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            nonEmptyHighCardResults, nonEmptyCells, true);
+        execHighCardTest("select {[Measures].[Unit Sales]} on columns,\n"
+                    + "non empty {[Promotions].[Promotion Name].Members} "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    nonEmptyHighCardResults, nonEmptyCells, true);
     }
 
     public void testFilter() throws Exception {
         if (!Bug.BugMondrian486Fixed) {
             return;
         }
-        execHighCardTest(
-            "select [Measures].[Unit Sales] on columns, "
-            + "filter([Promotions].[Promotion Name].Members, "
-            + "[Measures].[Unit Sales]>0) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            nonEmptyHighCardResults, nonEmptyCells, true);
+        execHighCardTest("select [Measures].[Unit Sales] on columns, "
+                    + "filter([Promotions].[Promotion Name].Members, "
+                    + "[Measures].[Unit Sales]>0) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    nonEmptyHighCardResults, nonEmptyCells, true);
 
-        execHighCardTest(
-            "select [Measures].[Unit Sales] on columns, "
-            + "filter([Promotions].[Promotion Name].Members, "
-            + "[Measures].[Unit Sales]>4000) "
-            + "on rows from [Sales Ragged]",
-            1,
-            "Promotions",
-            moreThan4000highCardResults, moreThan4000Cells , true);
+        execHighCardTest("select [Measures].[Unit Sales] on columns, "
+                    + "filter([Promotions].[Promotion Name].Members, "
+                    + "[Measures].[Unit Sales]>4000) "
+                    + "on rows from [Sales Ragged]", 1, "Promotions",
+                    moreThan4000highCardResults, moreThan4000Cells , true);
     }
 
     //
@@ -219,16 +170,12 @@ public class HighDimensionsTest extends FoodMartTestCase {
      * Executes query test trying to [Promotions].[Promotion Name] elements
      * into an axis from the results.
      */
-    private void execHighCardTest(
-        final String queryString,
-        final int axisIndex,
-        final String highDimensionName,
-        final String results,
-        final String results2,
-        final boolean shouldForget)
-        throws Exception
-    {
-        final int old = MondrianProperties.instance().ResultLimit.get();
+    private void execHighCardTest(final String queryString, final int axisIndex,
+            final String highDimensionName, final String results,
+            final String results2, final boolean shouldForget)
+            throws Exception {
+        final int old = MondrianProperties.instance()
+                    .ResultLimit.get();
         try {
             MondrianProperties.instance().ResultLimit.set(40);
             final TestContext testContext = TestContext.createSubstitutingCube(
@@ -256,9 +203,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
                     new ArrayList<SoftReference>();
             // Tests results aren't got from database before this point
             int ii = 0;
-            for (final Position o
-                : result.getAxes()[axisIndex].getPositions())
-            {
+            for (final Position o :
+                result.getAxes()[axisIndex].getPositions()) {
                 assertNotNull(o.get(0));
                 buffer2.append(result.getCell(
                     new int[]{0, ii}).getValue().toString());
@@ -295,7 +241,8 @@ public class HighDimensionsTest extends FoodMartTestCase {
             for (int i = 4; i < ii - 40; i++) {
                 try {
                     result.getAxes()[axisIndex].getPositions().get(i).get(0);
-                    Assert.fail("Expected exception");
+                    Assert.fail("Expected runtime exception of type "
+                            + "RuntimeException");
                 } catch (RuntimeException nsee) {
                     // Everything is ok: RuntimeException of type
                     // RuntimeException is expected.

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -14,6 +14,7 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.Member;
@@ -21,6 +22,7 @@ import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.fun.vba.Excel;
+import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
 
@@ -77,10 +79,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "SetToArray",
                 "SetToArray(<Set>[, <Set>]...[, <Numeric Expression>])",
                 "Converts one or more sets to an array for use in a user-defined function.",
-                "fa*")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fa*") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -90,19 +90,128 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(HierarchyDimensionFunDef.instance);
 
         // "<Dimension>.Dimension"
-        builder.define(DimensionDimensionFunDef.INSTANCE);
+        builder.define(
+            new FunDefBase(
+                "Dimension",
+                "Returns the dimension that contains a specified hierarchy.",
+                "pdd") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                Dimension dimension =
+                        ((DimensionExpr) call.getArg(0)).getDimension();
+                return new ConstantCalc(
+                        DimensionType.forDimension(dimension),
+                        dimension);
+            }
+        });
 
         // "<Level>.Dimension"
-        builder.define(LevelDimensionFunDef.INSTANCE);
+        builder.define(
+            new FunDefBase(
+                "Dimension",
+                "Returns the dimension that contains a specified level.",
+                "pdl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final LevelCalc levelCalc =
+                        compiler.compileLevel(call.getArg(0));
+                return new AbstractDimensionCalc(call, new Calc[] {levelCalc}) {
+                    public Dimension evaluateDimension(Evaluator evaluator) {
+                        Level level =  levelCalc.evaluateLevel(evaluator);
+                        return level.getDimension();
+                    }
+                };
+            }
+        });
 
         // "<Member>.Dimension"
-        builder.define(MemberDimensionFunDef.INSTANCE);
+        builder.define(
+            new FunDefBase(
+                "Dimension",
+                "Returns the dimension that contains a specified member.",
+                "pdm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final MemberCalc memberCalc =
+                        compiler.compileMember(call.getArg(0));
+                return new AbstractDimensionCalc(call, new Calc[] {memberCalc}) {
+                    public Dimension evaluateDimension(Evaluator evaluator) {
+                        Member member = memberCalc.evaluateMember(evaluator);
+                        return member.getDimension();
+                    }
+                };
+            }
+        });
 
         // "Dimensions(<Numeric Expression>)"
-        builder.define(DimensionsNumericFunDef.INSTANCE);
+        builder.define(
+            new FunDefBase(
+                "Dimensions",
+                "Returns the dimension whose zero-based position within the cube is specified by a numeric expression.",
+                "fdn") {
+            public Type getResultType(Validator validator, Exp[] args) {
+                return DimensionType.Unknown;
+            }
+
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final IntegerCalc integerCalc =
+                        compiler.compileInteger(call.getArg(0));
+                return new AbstractDimensionCalc(call, new Calc[] {integerCalc}) {
+                    public Dimension evaluateDimension(Evaluator evaluator) {
+                        int n = integerCalc.evaluateInteger(evaluator);
+                        return nthDimension(evaluator, n);
+                    }
+                };
+            }
+
+            Dimension nthDimension(Evaluator evaluator, int n) {
+                Cube cube = evaluator.getCube();
+                Dimension[] dimensions = cube.getDimensions();
+                if (n >= dimensions.length || n < 0) {
+                    throw newEvalException(
+                            this, "Index '" + n + "' out of bounds");
+                }
+                return dimensions[n];
+            }
+        });
 
         // "Dimensions(<String Expression>)"
-        builder.define(DimensionsStringFunDef.INSTANCE);
+        builder.define(
+            new FunDefBase(
+                "Dimensions",
+                "Returns the dimension whose name is specified by a string.",
+                "fdS") {
+            public Type getResultType(Validator validator, Exp[] args) {
+                return DimensionType.Unknown;
+            }
+
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc =
+                        compiler.compileString(call.getArg(0));
+                return new AbstractDimensionCalc(call, new Calc[] {stringCalc}) {
+                    public Dimension evaluateDimension(Evaluator evaluator) {
+                        String dimensionName =
+                                stringCalc.evaluateString(evaluator);
+                        return findDimension(dimensionName, evaluator);
+                    }
+                };
+            }
+
+            Dimension findDimension(String s, Evaluator evaluator) {
+                if (s.indexOf("[") == -1) {
+                    s = Util.quoteMdxIdentifier(s);
+                }
+                OlapElement o = evaluator.getSchemaReader().lookupCompound(
+                        evaluator.getCube(),
+                        parseIdentifier(s),
+                        false,
+                        Category.Dimension);
+                if (o instanceof Dimension) {
+                    return (Dimension) o;
+                } else if (o == null) {
+                    throw newEvalException(this, "Dimension '" + s + "' not found");
+                } else {
+                    throw newEvalException(this, "Dimensions(" + s + ") found " + o);
+                }
+            }
+        });
 
         //
         // HIERARCHY FUNCTIONS
@@ -118,22 +227,18 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Levels",
                 "Returns the level whose position in a hierarchy is specified by a numeric expression.",
-                "mlhn")
-        {
+                "mlhn") {
             public Type getResultType(Validator validator, Exp[] args) {
                 final Type argType = args[0].getType();
                 return LevelType.forType(argType);
             }
 
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
                 final IntegerCalc ordinalCalc =
                         compiler.compileInteger(call.getArg(1));
-                return new AbstractLevelCalc(
-                    call, new Calc[] {hierarchyCalc, ordinalCalc})
-                {
+                return new AbstractLevelCalc(call, new Calc[] {hierarchyCalc, ordinalCalc}) {
                     public Level evaluateLevel(Evaluator evaluator) {
                         Hierarchy hierarchy =
                                 hierarchyCalc.evaluateHierarchy(evaluator);
@@ -159,8 +264,7 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Levels",
                 "Returns the level whose name is specified by a string expression.",
-                "mlhS")
-        {
+                "mlhS") {
             public Type getResultType(Validator validator, Exp[] args) {
                 final Type argType = args[0].getType();
                 return LevelType.forType(argType);
@@ -198,14 +302,12 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Levels",
                 "Returns the level whose name is specified by a string expression.",
-                "flS")
-        {
+                "flS") {
             public Type getResultType(Validator validator, Exp[] args) {
                 final Type argType = args[0].getType();
                 return LevelType.forType(argType);
             }
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc stringCalc =
                         compiler.compileString(call.getArg(0));
                 return new AbstractLevelCalc(call, new Calc[] {stringCalc}) {
@@ -219,24 +321,22 @@ public class BuiltinFunTable extends FunTableImpl {
 
             Level findLevel(Evaluator evaluator, String s) {
                 Cube cube = evaluator.getCube();
-                OlapElement o =
-                    (s.startsWith("["))
-                    ? evaluator.getSchemaReader().lookupCompound(
-                        cube,
-                        parseIdentifier(s),
-                        false,
-                        Category.Level)
-                    // lookupCompound barfs if "s" doesn't have matching
-                    // brackets, so don't even try
-                    : null;
+                OlapElement o = (s.startsWith("[")) ?
+                        evaluator.getSchemaReader().lookupCompound(
+                                cube,
+                                parseIdentifier(s),
+                                false,
+                                Category.Level) :
+                        // lookupCompound barfs if "s" doesn't have matching
+                        // brackets, so don't even try
+                        null;
 
                 if (o instanceof Level) {
                     return (Level) o;
                 } else if (o == null) {
                     throw newEvalException(this, "Level '" + s + "' not found");
                 } else {
-                    throw newEvalException(
-                        this, "Levels('" + s + "') found " + o);
+                    throw newEvalException(this, "Levels('" + s + "') found " + o);
                 }
             }
         });
@@ -257,30 +357,33 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Cousin",
                 "<Member> Cousin(<Member>, <Ancestor Member>)",
                 "Returns the member with the same relative position under <ancestor member> as the member specified.",
-                "fmmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fmmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 final MemberCalc ancestorMemberCalc =
                         compiler.compileMember(call.getArg(1));
-                return new AbstractMemberCalc(
-                    call, new Calc[] {memberCalc, ancestorMemberCalc})
-                {
+                return new AbstractMemberCalc(call, new Calc[] {memberCalc, ancestorMemberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        Member ancestorMember =
-                            ancestorMemberCalc.evaluateMember(evaluator);
+                        Member ancestorMember = ancestorMemberCalc.evaluateMember(evaluator);
                         return cousin(
-                            evaluator.getSchemaReader(),
-                            member,
-                            ancestorMember);
+                                evaluator.getSchemaReader(),
+                                member,
+                                ancestorMember);
                     }
                 };
             }
         });
 
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // In old mondrian, if a dimension has two hierarchies, only one of
+            // them can have a value at a time. Therefore
+            // <Dimension>.CurrentMember is distinct from
+            // <Hierarchy>.CurrentMember applied to the dimension's default
+            // hierarchy.
+            builder.define(DimensionCurrentMemberFunDef.instance);
+        }
         builder.define(HierarchyCurrentMemberFunDef.instance);
         builder.define(NamedSetCurrentFunDef.instance);
         builder.define(NamedSetCurrentOrdinalFunDef.instance);
@@ -290,10 +393,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "DataMember",
                 "Returns the system-generated data member that is associated with a nonleaf member of a dimension.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
@@ -319,15 +420,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "DefaultMember",
                 "Returns the default member of a hierarchy.",
-                "pmh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractMemberCalc(
-                    call, new Calc[] {hierarchyCalc})
-                {
+                return new AbstractMemberCalc(call, new Calc[] {hierarchyCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Hierarchy hierarchy =
                                 hierarchyCalc.evaluateHierarchy(evaluator);
@@ -343,10 +440,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "FirstChild",
                 "Returns the first child of a member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
@@ -371,10 +466,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "FirstSibling",
                 "Returns the first child of the parent of a member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
@@ -409,10 +502,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "LastChild",
                 "Returns the last child of a member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
@@ -437,10 +528,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "LastSibling",
                 "Returns the last child of the parent of a member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
@@ -475,10 +564,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Members",
                 "Returns the member whose name is specified by a string expression.",
-                "fmS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fmS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -488,17 +575,14 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "NextMember",
                 "Returns the next member in the level that contains a specified member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return evaluator.getSchemaReader().getLeadMember(
-                            member, 1);
+                        return evaluator.getSchemaReader().getLeadMember(member, 1);
                     }
                 };
             }
@@ -516,12 +600,10 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Parent",
                 "Returns the parent of a member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
+                        compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
@@ -531,8 +613,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             Member memberParent(Evaluator evaluator, Member member) {
-                Member parent =
-                    evaluator.getSchemaReader().getMemberParent(member);
+                Member parent = evaluator.getSchemaReader().getMemberParent(member);
                 if (parent == null) {
                     parent = member.getHierarchy().getNullMember();
                 }
@@ -545,17 +626,14 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "PrevMember",
                 "Returns the previous member in the level that contains a specified member.",
-                "pmm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pmm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return evaluator.getSchemaReader().getLeadMember(
-                            member, -1);
+                        return evaluator.getSchemaReader().getLeadMember(member, -1);
                     }
                 };
             }
@@ -566,15 +644,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "StrToMember",
                 "Returns a member from a unique name String in MDX format.",
-                "fmS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fmS") {
+            public Calc compileCall(ResolvedFunCall call,ExpCompiler compiler) {
                 final StringCalc memberNameCalc =
                         compiler.compileString(call.getArg(0));
-                return new AbstractMemberCalc(
-                    call, new Calc[] {memberNameCalc})
-                {
+                return new AbstractMemberCalc(call,new Calc[]{memberNameCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         String memberName =
                                 memberNameCalc.evaluateString(evaluator);
@@ -615,18 +689,15 @@ public class BuiltinFunTable extends FunTableImpl {
                         pw.print(")");
                     }
 
-                    public Calc compileCall(
-                        ResolvedFunCall call, ExpCompiler compiler)
-                    {
+                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                         final HierarchyCalc hierarchyCalc =
-                            compiler.compileHierarchy(call.getArg(0));
+                                compiler.compileHierarchy(call.getArg(0));
                         final Calc valueCalc = new ValueCalc(call);
                         return new GenericCalc(call) {
                             public Object evaluate(Evaluator evaluator) {
                                 Hierarchy hierarchy =
-                                    hierarchyCalc.evaluateHierarchy(evaluator);
-                                return aggregateChildren(
-                                    evaluator, hierarchy, valueCalc);
+                                        hierarchyCalc.evaluateHierarchy(evaluator);
+                                return aggregateChildren(evaluator, hierarchy, valueCalc);
                             }
 
                             public Calc[] getCalcs() {
@@ -636,33 +707,22 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
 
                     Object aggregateChildren(
-                        Evaluator evaluator,
-                        Hierarchy hierarchy,
-                        final Calc valueFunCall)
-                    {
-                        Member member =
-                            evaluator.getParent().getContext(hierarchy);
+                            Evaluator evaluator, Hierarchy hierarchy, final Calc valueFunCall) {
+                        Member member = evaluator.getParent().getContext(hierarchy.getDimension());
                         List members =
-                            (List) member.getPropertyValue(
-                                Property.CONTRIBUTING_CHILDREN.name);
+                                (List) member.getPropertyValue(
+                                        Property.CONTRIBUTING_CHILDREN.name);
                         Aggregator aggregator =
-                            (Aggregator) evaluator.getProperty(
-                                Property.AGGREGATION_TYPE.name, null);
+                                (Aggregator) evaluator.getProperty(
+                                        Property.AGGREGATION_TYPE.name, null);
                         if (aggregator == null) {
-                            throw FunUtil.newEvalException(
-                                null,
-                                "Could not find an aggregator in the current "
-                                + "evaluation context");
+                            throw FunUtil.newEvalException(null, "Could not find an aggregator in the current evaluation context");
                         }
                         Aggregator rollup = aggregator.getRollup();
                         if (rollup == null) {
-                            throw FunUtil.newEvalException(
-                                null,
-                                "Don't know how to rollup aggregator '"
-                                + aggregator + "'");
+                            throw FunUtil.newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
                         }
-                        return rollup.aggregate(
-                            evaluator.push(), members, valueFunCall);
+                        return rollup.aggregate(evaluator.push(), members, valueFunCall);
                     }
                 };
             }
@@ -679,10 +739,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Count",
                 "Returns the number of tuples in a set including empty cells.",
-                "pnx")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pnx") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final ListCalc listCalc =
                         compiler.compileList(call.getArg(0));
                 return new AbstractIntegerCalc(call, new Calc[] {listCalc}) {
@@ -724,10 +782,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Ordinal",
                 "Returns the zero-based ordinal value associated with a level.",
-                "pnl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pnl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
                 return new AbstractIntegerCalc(call, new Calc[] {levelCalc}) {
@@ -756,10 +812,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Value",
                 "Returns the value of a measure.",
-                "pnm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pnm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new GenericCalc(call) {
@@ -771,13 +825,11 @@ public class BuiltinFunTable extends FunTableImpl {
                         return value;
                     }
 
-                    public boolean dependsOn(Hierarchy hierarchy) {
-                        if (super.dependsOn(hierarchy)) {
+                    public boolean dependsOn(Dimension dimension) {
+                        if (super.dependsOn(dimension)) {
                             return true;
                         }
-                        if (memberCalc.getType().usesHierarchy(
-                            hierarchy, true))
-                        {
+                        if (memberCalc.getType().usesDimension(dimension, true)) {
                             return false;
                         }
                         return true;
@@ -805,14 +857,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Ascendants",
                 "Returns the set of the ascendants of a specified member.",
-                "fxm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fxm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {memberCalc})
-                {
+                return new AbstractMemberListCalc(call, new Calc[] {memberCalc}) {
                     public List<Member> evaluateMemberList(
                         Evaluator evaluator)
                     {
@@ -847,15 +896,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Children",
                 "Returns the children of a member.",
-                "pxm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pxm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(
-                    call, new Calc[] {memberCalc}, false)
-                {
+                        compiler.compileMember(call.getArg(0));
+                return new AbstractMemberListCalc(call, new Calc[] {memberCalc}, false) {
                     public List<Member> evaluateMemberList(
                         Evaluator evaluator)
                     {
@@ -877,8 +922,7 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(DrilldownLevelFunDef.Resolver);
 
         builder.define(DrilldownLevelTopBottomFunDef.DrilldownLevelTopResolver);
-        builder.define(
-            DrilldownLevelTopBottomFunDef.DrilldownLevelBottomResolver);
+        builder.define(DrilldownLevelTopBottomFunDef.DrilldownLevelBottomResolver);
         builder.define(DrilldownMemberFunDef.Resolver);
 
         if (false) builder.define(
@@ -886,10 +930,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "DrilldownMemberBottom",
                 "DrilldownMemberBottom(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])",
                 "Like DrilldownMember except that it includes only the bottom N children.",
-                "fx*")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fx*") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -899,10 +941,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "DrilldownMemberTop",
                 "DrilldownMemberTop(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])",
                 "Like DrilldownMember except that it includes only the top N children.",
-                "fx*")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fx*") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -912,10 +952,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "DrillupLevel",
                 "DrillupLevel(<Set>[, <Level>])",
                 "Drills up the members of a set that are below a specified level.",
-                "fx*")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fx*") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -925,10 +963,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "DrillupMember",
                 "DrillupMember(<Set1>, <Set2>)",
                 "Drills up the members in a set that are present in a second specified set.",
-                "fx*")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fx*") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -959,17 +995,12 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Members",
                 "Returns the set of members in a hierarchy.",
-                "pxh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pxh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractMemberListCalc(
-                    call, new Calc[] {hierarchyCalc})
-                {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
-                    {
+                return new AbstractMemberListCalc(call, new Calc[] {hierarchyCalc}) {
+                    public List<Member> evaluateMemberList(Evaluator evaluator) {
                         Hierarchy hierarchy =
                             hierarchyCalc.evaluateHierarchy(evaluator);
                         return hierarchyMembers(hierarchy, evaluator, false);
@@ -983,17 +1014,12 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "AllMembers",
                 "Returns a set that contains all members, including calculated members, of the specified hierarchy.",
-                "pxh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pxh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractMemberListCalc(
-                    call, new Calc[] {hierarchyCalc})
-                {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
-                    {
+                return new AbstractMemberListCalc(call, new Calc[] {hierarchyCalc}) {
+                    public List<Member> evaluateMemberList(Evaluator evaluator) {
                         Hierarchy hierarchy =
                             hierarchyCalc.evaluateHierarchy(evaluator);
                         return hierarchyMembers(hierarchy, evaluator, true);
@@ -1010,16 +1036,12 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "AllMembers",
                 "Returns a set that contains all members, including calculated members, of the specified level.",
-                "pxl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pxl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {levelCalc})
-                {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
-                    {
+                return new AbstractMemberListCalc(call, new Calc[] {levelCalc}) {
+                    public List<Member> evaluateMemberList(Evaluator evaluator) {
                         Level level = levelCalc.evaluateLevel(evaluator);
                         return levelMembers(level, evaluator, true);
                     }
@@ -1038,15 +1060,12 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "StripCalculatedMembers",
                 "Removes calculated members from a set.",
-                "fxx")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "fxx") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberListCalc listCalc =
                     (MemberListCalc) compiler.compileList(call.getArg(0));
                 return new AbstractMemberListCalc(call, new Calc[] {listCalc}) {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
-                    {
+                    public List<Member> evaluateMemberList(Evaluator evaluator) {
                         List<Member> list =
                             listCalc.evaluateMemberList(evaluator);
                         list = removeCalculatedMembers(list);
@@ -1061,15 +1080,13 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Siblings",
                 "Returns the siblings of a specified member, including the member itself.",
-                "pxm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pxm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {memberCalc})
-                {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                return new AbstractMemberListCalc(call, new Calc[] {memberCalc}) {
+                    public List<Member> evaluateMemberList(
+                        Evaluator evaluator)
                     {
                         final Member member =
                             memberCalc.evaluateMember(evaluator);
@@ -1114,14 +1131,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Caption",
                 "Returns the caption of a dimension.",
-                "pSd")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSd") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DimensionCalc dimensionCalc =
                         compiler.compileDimension(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {dimensionCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {dimensionCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Dimension dimension =
                                 dimensionCalc.evaluateDimension(evaluator);
@@ -1136,14 +1150,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Caption",
                 "Returns the caption of a hierarchy.",
-                "pSh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Hierarchy hierarchy =
                                 hierarchyCalc.evaluateHierarchy(evaluator);
@@ -1158,10 +1169,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Caption",
                 "Returns the caption of a level.",
-                "pSl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {levelCalc}) {
@@ -1178,10 +1187,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Caption",
                 "Returns the caption of a member.",
-                "pSm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {memberCalc}) {
@@ -1199,14 +1206,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Name",
                 "Returns the name of a dimension.",
-                "pSd")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSd") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DimensionCalc dimensionCalc =
                         compiler.compileDimension(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {dimensionCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {dimensionCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Dimension dimension =
                                 dimensionCalc.evaluateDimension(evaluator);
@@ -1221,14 +1225,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Name",
                 "Returns the name of a hierarchy.",
-                "pSh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Hierarchy hierarchy =
                                 hierarchyCalc.evaluateHierarchy(evaluator);
@@ -1243,10 +1244,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Name",
                 "Returns the name of a level.",
-                "pSl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {levelCalc}) {
@@ -1263,10 +1262,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Name",
                 "Returns the name of a member.",
-                "pSm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {memberCalc}) {
@@ -1288,14 +1285,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "UniqueName",
                 "Returns the unique name of a dimension.",
-                "pSd")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSd") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DimensionCalc dimensionCalc =
                         compiler.compileDimension(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {dimensionCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {dimensionCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Dimension dimension =
                                 dimensionCalc.evaluateDimension(evaluator);
@@ -1310,14 +1304,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "UniqueName",
                 "Returns the unique name of a hierarchy.",
-                "pSh")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSh") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc})
-                {
+                return new AbstractStringCalc(call, new Calc[] {hierarchyCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         final Hierarchy hierarchy =
                                 hierarchyCalc.evaluateHierarchy(evaluator);
@@ -1332,10 +1323,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "UniqueName",
                 "Returns the unique name of a level.",
-                "pSl")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSl") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {levelCalc}) {
@@ -1352,10 +1341,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "UniqueName",
                 "Returns the unique name of a member.",
-                "pSm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "pSm") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[] {memberCalc}) {
@@ -1376,10 +1363,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Current",
                 "Returns the current tuple from a set during an iteration.",
-                "ptx")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ptx") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -1412,10 +1397,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "+",
                 "Adds two numbers.",
-                "innn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "innn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
                 return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
@@ -1445,10 +1428,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "-",
                 "Subtracts two numbers.",
-                "innn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "innn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
                 return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
@@ -1478,18 +1459,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "*",
                 "Multiplies two numbers.",
-                "innn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "innn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
                 return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
                     public double evaluateDouble(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        // Multiply and divide return null if EITHER arg is
-                        // null.
+                        // Multiply and divide return null if EITHER arg is null.
                         if (v0 == DoubleNull || v1 == DoubleNull) {
                             return DoubleNull;
                         } else {
@@ -1505,15 +1483,13 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "/",
                 "Divides two numbers.",
-                "innn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "innn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
                 final boolean isNullDenominatorProducesNull =
-                    MondrianProperties.instance().NullDenominatorProducesNull
-                        .get();
+                    MondrianProperties.instance().
+                    NullDenominatorProducesNull.get();
 
                 // If the mondrian property
                 //   mondrian.olap.NullOrZeroDenominatorProducesNull
@@ -1524,9 +1500,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 // Null. This is only used by certain applications and does not
                 // conform to MSAS behavior.
                 if (!isNullDenominatorProducesNull) {
-                    return new AbstractDoubleCalc(
-                        call, new Calc[] {calc0, calc1})
-                    {
+                    return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
                         public double evaluateDouble(Evaluator evaluator) {
                             final double v0 = calc0.evaluateDouble(evaluator);
                             final double v1 = calc1.evaluateDouble(evaluator);
@@ -1543,14 +1517,12 @@ public class BuiltinFunTable extends FunTableImpl {
                         }
                     };
                 } else {
-                    return new AbstractDoubleCalc(
-                        call, new Calc[] {calc0, calc1})
-                    {
+                    return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
                         public double evaluateDouble(Evaluator evaluator) {
                             final double v0 = calc0.evaluateDouble(evaluator);
                             final double v1 = calc1.evaluateDouble(evaluator);
-                            // Null in numerator or denominator returns
-                            // DoubleNull.
+                            // Null in numerator or denominator returns DoubleNull.
+                            //
                             if (v0 == DoubleNull || v1 == DoubleNull) {
                                 return DoubleNull;
                             } else {
@@ -1567,10 +1539,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "-",
                 "Returns the negative of a number.",
-                "Pnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "Pnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc = compiler.compileDouble(call.getArg(0));
                 return new AbstractDoubleCalc(call, new Calc[] {calc}) {
                     public double evaluateDouble(Evaluator evaluator) {
@@ -1590,10 +1560,8 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "||",
                 "Concatenates two strings.",
-                "iSSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "iSSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
                 return new AbstractStringCalc(call, new Calc[] {calc0, calc1}) {
@@ -1611,16 +1579,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "AND",
                 "Returns the conjunction of two conditions.",
-                "ibbb")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final BooleanCalc calc0 =
-                    compiler.compileBoolean(call.getArg(0));
-                final BooleanCalc calc1 =
-                    compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                "ibbb") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc calc0 = compiler.compileBoolean(call.getArg(0));
+                final BooleanCalc calc1 = compiler.compileBoolean(call.getArg(1));
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         boolean b0 = calc0.evaluateBoolean(evaluator);
                         // don't short-circuit evaluation if we're evaluating
@@ -1641,16 +1604,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "OR",
                 "Returns the disjunction of two conditions.",
-                "ibbb")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final BooleanCalc calc0 =
-                    compiler.compileBoolean(call.getArg(0));
-                final BooleanCalc calc1 =
-                    compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                "ibbb") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc calc0 = compiler.compileBoolean(call.getArg(0));
+                final BooleanCalc calc1 = compiler.compileBoolean(call.getArg(1));
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         boolean b0 = calc0.evaluateBoolean(evaluator);
                         // don't short-circuit evaluation if we're evaluating
@@ -1671,16 +1629,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "XOR",
                 "Returns whether two conditions are mutually exclusive.",
-                "ibbb")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final BooleanCalc calc0 =
-                    compiler.compileBoolean(call.getArg(0));
-                final BooleanCalc calc1 =
-                    compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                "ibbb") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc calc0 = compiler.compileBoolean(call.getArg(0));
+                final BooleanCalc calc1 = compiler.compileBoolean(call.getArg(1));
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final boolean b0 = calc0.evaluateBoolean(evaluator);
                         final boolean b1 = calc1.evaluateBoolean(evaluator);
@@ -1695,12 +1648,9 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "NOT",
                 "Returns the negation of a condition.",
-                "Pbb")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final BooleanCalc calc =
-                    compiler.compileBoolean(call.getArg(0));
+                "Pbb") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final BooleanCalc calc = compiler.compileBoolean(call.getArg(0));
                 return new AbstractBooleanCalc(call, new Calc[] {calc}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         return !calc.evaluateBoolean(evaluator);
@@ -1714,14 +1664,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "=",
                 "Returns whether two expressions are equal.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -1739,22 +1686,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "=",
                 "Returns whether two expressions are equal.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 == v1;
@@ -1768,14 +1708,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<>",
                 "Returns whether two expressions are not equal.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -1793,22 +1730,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<>",
                 "Returns whether two expressions are not equal.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 != v1;
@@ -1822,22 +1752,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<",
                 "Returns whether an expression is less than another.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 < v1;
@@ -1851,14 +1774,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<",
                 "Returns whether an expression is less than another.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -1876,22 +1796,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<=",
                 "Returns whether an expression is less than or equal to another.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 <= v1;
@@ -1905,14 +1818,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "<=",
                 "Returns whether an expression is less than or equal to another.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -1930,22 +1840,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 ">",
                 "Returns whether an expression is greater than another.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 > v1;
@@ -1959,14 +1862,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 ">",
                 "Returns whether an expression is greater than another.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -1984,22 +1884,15 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 ">=",
                 "Returns whether an expression is greater than or equal to another.",
-                "ibnn")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibnn") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final double v0 = calc0.evaluateDouble(evaluator);
                         final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
+                        if (Double.isNaN(v0) || Double.isNaN(v1) || v0 == DoubleNull || v1 == DoubleNull) {
                             return BooleanNull;
                         }
                         return v0 >= v1;
@@ -2013,14 +1906,11 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 ">=",
                 "Returns whether an expression is greater than or equal to another.",
-                "ibSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+                "ibSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
+                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
                         final String b0 = calc0.evaluateString(evaluator);
                         final String b1 = calc1.evaluateString(evaluator);
@@ -2048,14 +1938,10 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "UCase",
                 "Returns a string that has been converted to uppercase",
-                "fSS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final Locale locale =
-                    compiler.getEvaluator().getConnectionLocale();
-                final StringCalc stringCalc =
-                    compiler.compileString(call.getArg(0));
+                "fSS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final Locale locale = compiler.getEvaluator().getConnectionLocale();
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
                 return new AbstractStringCalc(call, new Calc[]{stringCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         String value = stringCalc.evaluateString(evaluator);
@@ -2070,12 +1956,9 @@ public class BuiltinFunTable extends FunTableImpl {
             new FunDefBase(
                 "Len",
                 "Returns the number of characters in a string",
-                "fnS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final StringCalc stringCalc =
-                    compiler.compileString(call.getArg(0));
+                "fnS") {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                final StringCalc stringCalc = compiler.compileString(call.getArg(0));
                 return new AbstractIntegerCalc(call, new Calc[] {stringCalc}) {
                     public int evaluateInteger(Evaluator evaluator) {
                         String value = stringCalc.evaluateString(evaluator);

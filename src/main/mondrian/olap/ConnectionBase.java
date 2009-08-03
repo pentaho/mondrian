@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -71,19 +71,15 @@ public abstract class ConnectionBase implements Connection {
      * support customized parser behavior. That is why this method is not part
      * of the Connection interface.
      *
-     * <p>See test case mondrian.olap.CustomizedParserTest.
-     *
      * @param query MDX query that requires special parsing
      * @param funTable Customized function table to use in parsing
      * @param strictValidation If true, do not ignore invalid members
      * @return Query the corresponding Query object if parsing is successful
      * @throws MondrianException if parsing fails
+     * @see mondrian.olap.CustomizedParserTest
      */
-    public Query parseQuery(
-        String query,
-        FunTable funTable,
-        boolean strictValidation)
-    {
+    public Query parseQuery(String query, FunTable funTable,
+        boolean strictValidation) {
         return parseQuery(query, funTable, false, strictValidation);
     }
 
@@ -91,27 +87,26 @@ public abstract class ConnectionBase implements Connection {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            getLogger().debug(
-                Util.nl
-                + expr);
+            StringBuilder buf = new StringBuilder(256);
+            buf.append(Util.nl);
+            buf.append(expr);
+            getLogger().debug(buf.toString());
         }
         try {
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
-            return parser.parseExpression(this, expr, debug, funTable);
+            Exp q = parser.parseExpression(this, expr, debug, funTable);
+            return q;
         } catch (Throwable exception) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(
-                expr,
-                exception);
+            throw
+                MondrianResource.instance().FailedToParseQuery.ex(
+                    expr,
+                    exception);
         }
     }
 
-    private Query parseQuery(
-        String query,
-        FunTable cftab,
-        boolean load,
-        boolean strictValidation)
-    {
+    private Query parseQuery(String query, FunTable cftab, boolean load,
+        boolean strictValidation) {
         Parser parser = new Parser();
         boolean debug = false;
         final FunTable funTable;
@@ -124,16 +119,18 @@ public abstract class ConnectionBase implements Connection {
 
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            getLogger().debug(
-                Util.nl
-                + query);
+            StringBuilder buf = new StringBuilder(256);
+            buf.append(Util.nl);
+            buf.append(query);
+            getLogger().debug(buf.toString());
         }
 
         try {
-            return
-                parser.parseInternal(
-                    this, query, debug, funTable, load, strictValidation);
-        } catch (Exception e) {
+            Query q =
+                parser.parseInternal(this, query, debug, funTable, load,
+                    strictValidation);
+            return q;
+        } catch (Throwable e) {
             throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
         }
     }

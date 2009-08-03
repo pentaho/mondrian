@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2009-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -13,8 +13,7 @@ package mondrian.olap.type;
  * The type of a empty expression.
  *
  * <p>An example of an empty expression is the third argument to the call
- * <code>DrilldownLevelTop({[Store].[USA]}, 2, , [Measures].[Unit
- * Sales])</code>.
+ * <code>DrilldownLevelTop({[Store].[USA]}, 2, , [Measures].[Unit Sales])</code>.
  * </p>
  *
  * @author medstat

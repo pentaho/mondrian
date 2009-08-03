@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -104,7 +104,8 @@ public class DefaultRules {
             }
         }
         if (inStream == null) {
-            LOGGER.warn(mres.CouldNotLoadDefaultAggregateRules.str(aggRules));
+            String msg = mres.CouldNotLoadDefaultAggregateRules.str(aggRules);
+            LOGGER.warn(msg);
         }
         return inStream;
     }
@@ -145,8 +146,7 @@ public class DefaultRules {
 
                             String msg =
                                 mres.FailedCreateNewDefaultAggregateRules.str(
-                                    property.getPath(),
-                                    value);
+                                        property.getPath(), value);
                             throw new Trigger.VetoRT(msg);
 
                         } else {
@@ -177,32 +177,30 @@ public class DefaultRules {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex(url.toString(), e);
+            throw mres.AggRuleParse.ex(url.toString(),e);
         }
     }
 
     protected static DefaultDef.AggRules makeAggRules(
-        final InputStream inStream)
-    {
+            final InputStream inStream) {
         DOMWrapper def = makeDOMWrapper(inStream);
         try {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex("InputStream", e);
+            throw mres.AggRuleParse.ex("InputStream",e);
         }
     }
 
     protected static DefaultDef.AggRules makeAggRules(
-        final String text,
-        final String name)
-    {
+            final String text,
+            final String name) {
         DOMWrapper def = makeDOMWrapper(text, name);
         try {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex(name, e);
+            throw mres.AggRuleParse.ex(name,e);
         }
     }
 
@@ -210,7 +208,7 @@ public class DefaultRules {
         try {
             return makeDOMWrapper(file.toURL());
         } catch (MalformedURLException e) {
-            throw mres.AggRuleParse.ex(file.getName(), e);
+            throw mres.AggRuleParse.ex(file.getName(),e);
         }
     }
 
@@ -220,7 +218,7 @@ public class DefaultRules {
             DOMWrapper def = xmlParser.parse(url);
             return def;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex(url.toString(), e);
+            throw mres.AggRuleParse.ex(url.toString(),e);
         }
     }
 
@@ -230,20 +228,19 @@ public class DefaultRules {
             DOMWrapper def = xmlParser.parse(inStream);
             return def;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex("InputStream", e);
+            throw mres.AggRuleParse.ex("InputStream",e);
         }
     }
 
     protected static DOMWrapper makeDOMWrapper(
-        final String text,
-        final String name)
-    {
+            final String text,
+            final String name) {
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             DOMWrapper def = xmlParser.parse(text);
             return def;
         } catch (XOMException e) {
-            throw mres.AggRuleParse.ex(name, e);
+            throw mres.AggRuleParse.ex(name,e);
         }
     }
 
@@ -259,8 +256,8 @@ public class DefaultRules {
         this.rules = rules;
         this.factToPattern = new HashMap<String, Recognizer.Matcher>();
         this.foreignKeyMatcherMap = new HashMap<String, Recognizer.Matcher>();
-        this.tag =
-            MondrianProperties.instance().AggregateRuleTag.getDefaultValue();
+        this.tag = MondrianProperties.instance().AggregateRuleTag.
+                getDefaultValue();
     }
 
     public void validate(MessageRecorder msgRecorder) {
@@ -390,9 +387,8 @@ public class DefaultRules {
      * @param name candidate aggregate table name
      */
     public boolean matchesTableName(
-        final String factTableName,
-        final String name)
-    {
+            final String factTableName,
+            final String name) {
         Recognizer.Matcher matcher = getTableMatcher(factTableName);
         return matcher.matches(name);
     }
@@ -403,16 +399,14 @@ public class DefaultRules {
      * (sum, count, etc.).
      */
     public Recognizer.Matcher getMeasureMatcher(
-        final String measureName,
-        final String measureColumnName,
-        final String aggregateName)
-    {
+            final String measureName,
+            final String measureColumnName,
+            final String aggregateName) {
         DefaultDef.AggRule rule = getAggRule();
         Recognizer.Matcher matcher =
-            rule.getMeasureMap().getMatcher(
-                measureName,
-                measureColumnName,
-                aggregateName);
+            rule.getMeasureMap().getMatcher(measureName,
+                                            measureColumnName,
+                                            aggregateName);
         return matcher;
     }
 
@@ -421,18 +415,16 @@ public class DefaultRules {
      * level's hierarchy's name, level name and column name.
      */
     public Recognizer.Matcher getLevelMatcher(
-        final String usagePrefix,
-        final String hierarchyName,
-        final String levelName,
-        final String levelColumnName)
-    {
+            final String usagePrefix,
+            final String hierarchyName,
+            final String levelName,
+            final String levelColumnName) {
         DefaultDef.AggRule rule = getAggRule();
         Recognizer.Matcher matcher =
-            rule.getLevelMap().getMatcher(
-                usagePrefix,
-                hierarchyName,
-                levelName,
-                levelColumnName);
+            rule.getLevelMap().getMatcher(usagePrefix,
+                                          hierarchyName,
+                                          levelName,
+                                          levelColumnName);
         return matcher;
     }
 
@@ -442,17 +434,16 @@ public class DefaultRules {
      * present) making the column usages as a result.
      */
     public boolean columnsOK(
-        final RolapStar star,
-        final JdbcSchema.Table dbFactTable,
-        final JdbcSchema.Table aggTable,
-        final MessageRecorder msgRecorder)
-    {
+            final RolapStar star,
+            final JdbcSchema.Table dbFactTable,
+            final JdbcSchema.Table aggTable,
+            final MessageRecorder msgRecorder) {
         Recognizer cb = new DefaultRecognizer(
-            this,
-            star,
-            dbFactTable,
-            aggTable,
-            msgRecorder);
+                this,
+                star,
+                dbFactTable,
+                aggTable,
+                msgRecorder);
         return cb.check();
     }
 }

@@ -1,8 +1,8 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2008-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,17 +15,7 @@ import java.util.*;
 /**
  * Iterator over union of several {@link Iterable} collections.
  *
- * <p>Try, for instance, using the {@link #over} helper method:</p>
- *
- * <blockquote>
- * <code>
- * List&lt;String&gt; names;<br/>
- * List&lt;String&gt; addresses;<br/>
- * for (Sstring s : UnionIterator.over(names, addresses)) {
- * &nbsp;&nbsp;print(s);<br/>
- * }
- * </code>
- * </blockquote>
+ * @see mondrian.olap.Util#union(Iterable[])
  *
  * @author jhyde
  * @version $Id$
@@ -58,11 +48,6 @@ public class UnionIterator<T> implements Iterator<T> {
         moveToNext();
     }
 
-    /**
-     * Creates a UnionIterator over a list of collections.
-     *
-     * @param iterables Array of collections
-     */
     public UnionIterator(Collection<? extends T>... iterables) {
         List<Iterable<? extends T>> list =
             new ArrayList<Iterable<? extends T>>(iterables.length);
@@ -103,54 +88,6 @@ public class UnionIterator<T> implements Iterator<T> {
 
     public void remove() {
         iterator.remove();
-    }
-
-    /**
-     * Returns the union of a list of iterables.
-     *
-     * <p>You can use it like this:
-     * <blockquote><pre>
-     * Iterable&lt;String&gt; iter1;
-     * Iterable&lt;String&gt; iter2;
-     * for (String s : union(iter1, iter2)) {
-     *   print(s);
-     * }</pre></blockquote>
-     *
-     * @param iterables Array of one or more iterables
-     * @return iterable over the union of the iterables
-     */
-    public static <T> Iterable<T> over(
-        final Iterable<? extends T>... iterables)
-    {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new UnionIterator<T>(iterables);
-            }
-        };
-    }
-
-    /**
-     * Returns the union of a list of collections.
-     *
-     * <p>This method exists for code that will be retrowoven to run on JDK 1.4.
-     * Retroweaver has its own version of the {@link Iterable} interface, which
-     * is problematic since the {@link java.util.Collection} classes don't
-     * implement it. This method solves some of these problems by working in
-     * terms of collections; retroweaver deals with these correctly.
-     *
-     * @see #over(Iterable[])
-     *
-     * @param collections Array of one or more collections
-     * @return iterable over the union of the collections
-     */
-    public static <T> Iterable<T> over(
-        final Collection<? extends T>... collections)
-    {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new UnionIterator<T>(collections);
-            }
-        };
     }
 
     private static class MyIterable<T> implements Iterable {

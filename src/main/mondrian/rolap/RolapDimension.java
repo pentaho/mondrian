@@ -1,10 +1,10 @@
 /*
  // $Id$
- // This software is subject to the terms of the Eclipse Public License v1.0
+ // This software is subject to the terms of the Common Public License
  // Agreement, available at the following URL:
- // http://www.eclipse.org/legal/epl-v10.html.
+ // http://www.opensource.org/licenses/cpl.html.
  // Copyright (C) 2001-2002 Kana Software, Inc.
- // Copyright (C) 2001-2009 Julian Hyde and others
+ // Copyright (C) 2001-2008 Julian Hyde and others
  // All Rights Reserved.
  // You must accept the terms of that agreement to use this software.
  //
@@ -25,6 +25,12 @@ import mondrian.resource.MondrianResource;
  *
  * {@link RolapEvaluator} needs each dimension to have an ordinal, so that it
  * can store the evaluation context as an array of members.
+ *
+ * <p>
+ * The ordinal of a dimension <em>within a particular cube</em> is found by
+ * calling {@link #getOrdinal(Cube)}. Ordinals
+ * are contiguous and zero-based. Zero is always the <code>[Measures]</code>
+ * dimension.
  *
  * <p>
  * A dimension may be either shared or private to a particular cube. The
@@ -100,10 +106,9 @@ class RolapDimension extends DimensionBase {
             // remaps the xml hierarchy relation to the fact table.
             // moved out of RolapHierarchy constructor
             // this should eventually be phased out completely
-            if (xmlDimension.hierarchies[i].relation == null
-                && xmlDimension.hierarchies[i].memberReaderClass == null
-                && cube != null)
-            {
+            if (xmlDimension.hierarchies[i].relation == null &&
+                    xmlDimension.hierarchies[i].memberReaderClass == null &&
+                    cube != null) {
                 xmlDimension.hierarchies[i].relation = cube.fact;
             }
 
@@ -133,19 +138,15 @@ class RolapDimension extends DimensionBase {
                     } else {
                         // Dimension type was set according to first level.
                         // Make sure that other levels fit to definition.
-                        if (dimensionType == DimensionType.TimeDimension
-                            && !lev.getLevelType().isTime()
-                            && !lev.isAll())
-                        {
-                            throw MondrianResource.instance()
-                                .NonTimeLevelInTimeHierarchy.ex(
+                        if (dimensionType == DimensionType.TimeDimension &&
+                            !lev.getLevelType().isTime() &&
+                            !lev.isAll()) {
+                            throw MondrianResource.instance().NonTimeLevelInTimeHierarchy.ex(
                                     getUniqueName());
                         }
-                        if (dimensionType != DimensionType.TimeDimension
-                            && lev.getLevelType().isTime())
-                        {
-                            throw MondrianResource.instance()
-                                .TimeLevelInNonTimeHierarchy.ex(
+                        if (dimensionType != DimensionType.TimeDimension &&
+                            lev.getLevelType().isTime()) {
+                            throw MondrianResource.instance().TimeLevelInNonTimeHierarchy.ex(
                                     getUniqueName());
                         }
                     }
@@ -169,22 +170,8 @@ class RolapDimension extends DimensionBase {
         }
     }
 
-    /**
-     * Creates a hierarchy.
-     *
-     * @param subName Name of this hierarchy.
-     * @param hasAll Whether hierarchy has an 'all' member
-     * @param closureFor Hierarchy for which the new hierarchy is a closure;
-     *     null for regular hierarchies
-     * @return Hierarchy
-     */
-    RolapHierarchy newHierarchy(
-        String subName,
-        boolean hasAll,
-        RolapHierarchy closureFor)
-    {
-        RolapHierarchy hierarchy =
-            new RolapHierarchy(this, subName, hasAll, closureFor);
+    RolapHierarchy newHierarchy(String subName, boolean hasAll) {
+        RolapHierarchy hierarchy = new RolapHierarchy(this, subName, hasAll);
         this.hierarchies = (RolapHierarchy[])
             RolapUtil.addElement(this.hierarchies, hierarchy);
         return hierarchy;
@@ -198,6 +185,13 @@ class RolapDimension extends DimensionBase {
      */
     public Hierarchy getHierarchy() {
         return hierarchies[0];
+    }
+
+    public int getOrdinal(Cube cube) {
+        // this is temporary to verify that all calls to this method are for
+        // the measures dimension
+        assert isMeasures();
+        return 0;
     }
 
     public Schema getSchema() {

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -16,12 +16,14 @@ import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.util.UnsupportedList;
 import org.apache.log4j.Logger;
-
+import java.util.Collection;
 import java.util.Collections;
 import java.util.ListIterator;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * Derived classes of RolapAxis implements the Axis interface which are
@@ -228,7 +230,7 @@ public abstract class RolapAxis implements Axis {
                     }
 
                     public Position next() {
-                        return new MemberIterPosition(it.next());
+                        return new MemberIterable.MIPosition(it.next());
                     }
 
                     public void remove() {
@@ -242,10 +244,10 @@ public abstract class RolapAxis implements Axis {
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; has only one Member.
          */
-        class MemberIterPosition extends PositionBase {
+        class MIPosition extends PositionBase {
             Member member;
 
-            MemberIterPosition(Member member) {
+            MIPosition(Member member) {
                 this.member = member;
             }
 
@@ -299,17 +301,17 @@ public abstract class RolapAxis implements Axis {
             }
 
             public Position get(int index) {
-                return new MemberListPosition(index);
+                return new MemberIterable.MLPosition(index);
             }
         }
 
         /**
          *  Allows access only the the Member at the given offset.
          */
-        class MemberListPosition extends PositionBase {
+        class MLPosition extends PositionBase {
             protected final int offset;
 
-            MemberListPosition(int offset) {
+            MLPosition(int offset) {
                 this.offset = offset;
             }
 
@@ -359,7 +361,7 @@ public abstract class RolapAxis implements Axis {
             }
 
             public Position get(int index) {
-                return new MemberListPosition(index);
+                return new MemberList.MLPosition(index);
             }
 
             public Iterator<Position> iterator() {
@@ -385,10 +387,10 @@ public abstract class RolapAxis implements Axis {
         /**
          *  Allows access only the the Member at the given offset.
          */
-        class MemberListPosition extends PositionBase {
+        class MLPosition extends PositionBase {
             protected final int offset;
 
-            MemberListPosition(int offset) {
+            MLPosition(int offset) {
                 this.offset = offset;
             }
 
@@ -514,7 +516,7 @@ public abstract class RolapAxis implements Axis {
 
                     public Position next() {
                         nextCnt++;
-                        return new MemberIterPosition(it.next());
+                        return new MemberArrayIterable.MIPosition(it.next());
                     }
 
                     public void remove() {
@@ -528,10 +530,10 @@ public abstract class RolapAxis implements Axis {
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; two or more Members.
          */
-        class MemberIterPosition extends PositionBase  {
+        class MIPosition extends PositionBase  {
             Member[] members;
 
-            MemberIterPosition(Member[] members) {
+            MIPosition(Member[] members) {
                 this.members = members;
             }
 
@@ -579,17 +581,17 @@ public abstract class RolapAxis implements Axis {
             }
 
             public Position get(int index) {
-                return new MemberArrayListPosition(index);
+                return new MemberArrayIterable.MALPosition(index);
             }
         }
 
         /**
          *  Allows access only the the Member at the given offset.
          */
-        class MemberArrayListPosition extends PositionBase {
+        class MALPosition extends PositionBase {
             protected final int offset;
 
-            MemberArrayListPosition(int offset) {
+            MALPosition(int offset) {
                 this.offset = offset;
             }
 
@@ -600,10 +602,10 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index > RolapAxis.MemberArrayIterable.this.len) {
                     throw new IndexOutOfBoundsException(
-                        "Index: "
-                        + index
-                        + ", Size: "
-                        + RolapAxis.MemberArrayIterable.this.len);
+                        "Index: " +
+                        index +
+                        ", Size: " +
+                        RolapAxis.MemberArrayIterable.this.len);
                 }
                 return list.get(offset)[index];
             }
@@ -649,17 +651,17 @@ public abstract class RolapAxis implements Axis {
                 if (index >= list.size()) {
                     throw new IndexOutOfBoundsException();
                 }
-                return new MemberArrayListPosition(index);
+                return new MemberArrayList.MALPosition(index);
             }
         }
 
         /**
          *  Allows access only the the Member at the given offset plus index.
          */
-        class MemberArrayListPosition extends PositionBase {
+        class MALPosition extends PositionBase {
             protected final int offset;
 
-            MemberArrayListPosition(int offset) {
+            MALPosition(int offset) {
                 this.offset = offset;
             }
 
@@ -670,10 +672,10 @@ public abstract class RolapAxis implements Axis {
             public Member get(int index) {
                 if (index > RolapAxis.MemberArrayList.this.len) {
                     throw new IndexOutOfBoundsException(
-                        "Index: "
-                        + index
-                        + ", Size: "
-                        + RolapAxis.MemberArrayList.this.len);
+                        "Index: " +
+                        index +
+                        ", Size: " +
+                        RolapAxis.MemberArrayList.this.len);
                 }
                 return list.get(offset)[index];
             }

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,11 +26,10 @@ public abstract class AbstractRecorder implements MessageRecorder {
      * Helper method to format a message and write to logger.
      */
     public static void logMessage(
-        final String context,
-        final String msg,
-        final MsgType msgType,
-        final org.apache.log4j.Logger logger)
-    {
+            final String context,
+            final String msg,
+            final MsgType msgType,
+            final org.apache.log4j.Logger logger) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(context);
         buf.append(": ");
@@ -48,8 +47,10 @@ public abstract class AbstractRecorder implements MessageRecorder {
             break;
         default:
             logger.warn(
-                "Unknown message type enum \""
-                + msgType + "\" for message: " + buf.toString());
+                "Unknown message type enum \"" +
+                    msgType +
+                    "\" for message: " +
+                    buf.toString());
         }
     }
 
@@ -156,26 +157,21 @@ public abstract class AbstractRecorder implements MessageRecorder {
     }
 
     public void reportError(final Exception ex)
-        throws RecorderException
-    {
+            throws RecorderException {
         reportError(ex, null);
     }
 
     public void reportError(final Exception ex, final Object info)
-        throws RecorderException
-    {
+            throws RecorderException {
         reportError(ex.toString(), info);
     }
 
     public void reportError(final String msg)
-        throws RecorderException
-    {
+            throws RecorderException {
         reportError(msg, null);
     }
-
     public void reportError(final String msg, final Object info)
-        throws RecorderException
-    {
+            throws RecorderException {
         errorMsgCount++;
         recordMessage(msg, info, MsgType.ERROR);
 

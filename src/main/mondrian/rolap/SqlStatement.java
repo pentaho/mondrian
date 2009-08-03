@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -58,8 +58,8 @@ public class SqlStatement {
     private final String component;
     private final int resultSetType;
     private final int resultSetConcurrency;
-    private final RolapUtil.Semaphore querySemaphore =
-        RolapUtil.getQuerySemaphore();
+    private final RolapUtil.Semaphore querySemaphore = RolapUtil
+        .getQuerySemaphore();
     private final String message;
     private boolean haveSemaphore;
     public int rowCount;
@@ -68,17 +68,6 @@ public class SqlStatement {
     // used for SQL logging, allows for a SQL Statement UID
     private static long executeCount = -1;
 
-    /**
-     * Creates a SqlStatement.
-     *
-     * @param dataSource Data source
-     * @param sql SQL
-     * @param maxRows Maximum rows
-     * @param component Description of component/purpose of this statement
-     * @param message Error message
-     * @param resultSetType Result set type
-     * @param resultSetConcurrency Result set concurrency
-     */
     SqlStatement(
         DataSource dataSource,
         String sql,
@@ -97,37 +86,34 @@ public class SqlStatement {
         this.resultSetConcurrency = resultSetConcurrency;
     }
 
-    /**
-     * Executes the current statement, and handles any SQLException.
-     */
-    public void execute() {
-        long currId = 0;
-        String status = "failed";
+    public void execute() throws SQLException {
+        this.jdbcConnection = dataSource.getConnection();
+        querySemaphore.enter();
+        haveSemaphore = true;
         Statement statement = null;
-        try {
-            this.jdbcConnection = dataSource.getConnection();
-            querySemaphore.enter();
-            haveSemaphore = true;
-            // Trace start of execution.
-            if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
-                currId = ++executeCount;
-                StringBuffer sqllog = new StringBuffer();
-                sqllog.append(currId + ": " + component + ": executing sql [");
-                if (sql.indexOf('\n') >= 0) {
-                    // SQL appears to be formatted as multiple lines. Make it
-                    // start on its own line.
-                    sqllog.append("\n");
-                }
-                sqllog.append(sql);
-                sqllog.append(']');
-                RolapUtil.SQL_LOGGER.debug(sqllog.toString());
+        String status = "failed";
+        long currId = 0;
+        // Trace start of execution.
+        if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
+            currId = ++executeCount;
+            StringBuffer sqllog = new StringBuffer();
+            sqllog.append(currId + ": " + component + ": executing sql [");
+            if (sql.indexOf('\n') >= 0) {
+                // SQL appears to be formatted as multiple lines. Make it
+                // start on its own line.
+                sqllog.append("\n");
             }
+            sqllog.append(sql);
+            sqllog.append(']');
+            RolapUtil.SQL_LOGGER.debug(sqllog.toString());
+        }
 
-            // Execute hook.
-            RolapUtil.ExecuteQueryHook hook = RolapUtil.threadHooks.get();
-            if (hook != null) {
-                hook.onExecuteQuery(sql);
-            }
+        // Execute hook.
+        RolapUtil.ExecuteQueryHook hook = RolapUtil.threadHooks.get();
+        if (hook != null) {
+            hook.onExecuteQuery(sql);
+        }
+        try {
             startTime = System.currentTimeMillis();
             if (resultSetType < 0 || resultSetConcurrency < 0) {
                 statement = jdbcConnection.createStatement();
@@ -158,8 +144,8 @@ public class SqlStatement {
             RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
 
             if (RolapUtil.LOGGER.isDebugEnabled()) {
-                RolapUtil.LOGGER.debug(
-                    component + ": executing sql [" + sql + "]" + status);
+                RolapUtil.LOGGER.debug(component + ": executing sql [" +
+                    sql + "]" + status);
             }
         }
     }
@@ -199,14 +185,13 @@ public class SqlStatement {
         }
         long time = System.currentTimeMillis();
         long totalMs = time - startTime;
-        String status =
-            ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
+        String status = ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
 
         RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
 
         if (RolapUtil.LOGGER.isDebugEnabled()) {
-            RolapUtil.LOGGER.debug(
-                component + ": done executing sql [" + sql + "]" + status);
+            RolapUtil.LOGGER.debug(component + ": done executing sql [" +
+                sql + "]" + status);
         }
     }
 

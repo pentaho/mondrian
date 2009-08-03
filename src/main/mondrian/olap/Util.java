@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -18,14 +18,20 @@ import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.math.BigDecimal;
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
@@ -92,7 +98,7 @@ public class Util extends XOMUtil {
      */
     public static final boolean Retrowoven =
         Access.class.getSuperclass().getName().equals(
-            "net.sourceforge.retroweaver.runtime.java.lang.Enum");
+            "com.rc.retroweaver.runtime.Enum_");
 
     private static final UtilCompatible compatible;
 
@@ -129,9 +135,8 @@ public class Util extends XOMUtil {
     public static <T> boolean isSorted(List<T> list) {
         T prev = null;
         for (T t : list) {
-            if (prev != null
-                && ((Comparable<T>) prev).compareTo(t) >= 0)
-            {
+            if (prev != null &&
+                ((Comparable<T>) prev).compareTo(t) >= 0) {
                 return false;
             }
             prev = t;
@@ -146,9 +151,9 @@ public class Util extends XOMUtil {
         StringBuilder retString = new StringBuilder(st.length() + 20);
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
-            if ((c == ']')
-                && ((i + 1) < st.length())
-                && (st.charAt(i + 1) != '.'))
+            if ((c == ']') &&
+                ((i + 1) < st.length()) &&
+                (st.charAt(i + 1) != '.'))
             {
                 retString.append(']'); //escaping character
             }
@@ -220,29 +225,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Returns whether two arrays have equal contents. Elements may be null.
-     *
-     * @param a1 First array
-     * @param a2 Second array
-     * @param <T> Element type
-     * @return Whether arrays are equal
-     */
-    public static <T> boolean equalArray(
-        T[] a1,
-        T[] a2)
-    {
-        if (a1.length != a2.length) {
-            return false;
-        }
-        for (int i = 0; i < a1.length; ++i) {
-            if (!equals(a1[i], a2[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Returns true if two strings are equal, or are both null.
      *
      * <p>The result is not affected by
@@ -263,8 +245,7 @@ public class Util extends XOMUtil {
         if (s == null) {
             return t == null;
         }
-        boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
         return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
     }
 
@@ -288,8 +269,7 @@ public class Util extends XOMUtil {
      * Names must not be null.
      */
     public static int caseSensitiveCompareName(String s, String t) {
-        boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
         if (caseSensitive) {
             return s.compareTo(t);
         } else {
@@ -308,8 +288,7 @@ public class Util extends XOMUtil {
      * Names must not be null.
      */
     public static int compareName(String s, String t) {
-        boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
         return caseSensitive ? s.compareTo(t) : s.compareToIgnoreCase(t);
     }
 
@@ -320,9 +299,9 @@ public class Util extends XOMUtil {
      * otherwise.
      */
     public static String normalizeName(String s) {
-        return MondrianProperties.instance().CaseSensitive.get()
-            ? s
-            : s.toUpperCase();
+        return MondrianProperties.instance().CaseSensitive.get() ?
+                s :
+                s.toUpperCase();
     }
 
     /**
@@ -386,11 +365,9 @@ public class Util extends XOMUtil {
      * @return The string buffer
      */
     public static StringBuilder replace(
-        StringBuilder buf,
-        int start,
-        String find,
-        String replace)
-    {
+            StringBuilder buf,
+            int start,
+            String find, String replace) {
         // Search and replace from the end towards the start, to avoid O(n ^ 2)
         // copying if the string occurs very commonly.
         int findLength = find.length();
@@ -459,8 +436,7 @@ public class Util extends XOMUtil {
         while (i < s.length()) {
             char ch = s.charAt(i);
             if (ch == ']') {
-                if (i + 1 < s.length() && s.charAt(i + 1) == ']') {
-                    // found ]] => skip
+                if (i + 1 < s.length() && s.charAt(i + 1) == ']') { // found ]] => skip
                     i += 2;
                 } else {
                     return i;
@@ -625,12 +601,13 @@ public class Util extends XOMUtil {
             }
             if (child == null) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Util.lookupCompound: "
-                        + "parent.name="
-                        + parent.getName()
-                        + " has no child with name="
-                        + name);
+                    StringBuilder buf = new StringBuilder(64);
+                    buf.append("Util.lookupCompound: ");
+                    buf.append("parent.name=");
+                    buf.append(parent.getName());
+                    buf.append(" has no child with name=");
+                    buf.append(name);
+                    LOGGER.debug(buf.toString());
                 }
 
                 if (!failIfNotFound) {
@@ -646,12 +623,13 @@ public class Util extends XOMUtil {
             parent = child;
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "Util.lookupCompound: "
-                + "found child.name="
-                + parent.getName()
-                + ", child.class="
-                + parent.getClass().getName());
+            StringBuilder buf = new StringBuilder(64);
+            buf.append("Util.lookupCompound: ");
+            buf.append("found child.name=");
+            buf.append(parent.getName());
+            buf.append(", child.class=");
+            buf.append(parent.getClass().getName());
+            LOGGER.debug(buf.toString());
         }
 
         switch (category) {
@@ -661,8 +639,7 @@ public class Util extends XOMUtil {
             } else if (parent instanceof Hierarchy) {
                 return parent.getDimension();
             } else if (failIfNotFound) {
-                throw Util.newError(
-                    "Can not find dimension '" + implode(names) + "'");
+                throw Util.newError("Can not find dimension '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -672,8 +649,7 @@ public class Util extends XOMUtil {
             } else if (parent instanceof Dimension) {
                 return parent.getHierarchy();
             } else if (failIfNotFound) {
-                throw Util.newError(
-                    "Can not find hierarchy '" + implode(names) + "'");
+                throw Util.newError("Can not find hierarchy '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -681,8 +657,7 @@ public class Util extends XOMUtil {
             if (parent instanceof Level) {
                 return parent;
             } else if (failIfNotFound) {
-                throw Util.newError(
-                    "Can not find level '" + implode(names) + "'");
+                throw Util.newError("Can not find level '" + implode(names) + "'");
             } else {
                 return null;
             }
@@ -690,8 +665,7 @@ public class Util extends XOMUtil {
             if (parent instanceof Member) {
                 return parent;
             } else if (failIfNotFound) {
-                throw MondrianResource.instance().MdxCantFindMember.ex(
-                    implode(names));
+                throw MondrianResource.instance().MdxCantFindMember.ex(implode(names));
             } else {
                 return null;
             }
@@ -762,7 +736,8 @@ public class Util extends XOMUtil {
             }
         }
         if (olapElement == null) {
-            if (allowProp && nameParts.size() > 1) {
+            if (allowProp &&
+                    nameParts.size() > 1) {
                 List<Id.Segment> namePartsButOne =
                     nameParts.subList(0, nameParts.size() - 1);
                 final String propertyName =
@@ -770,12 +745,11 @@ public class Util extends XOMUtil {
                 olapElement =
                     schemaReader.lookupCompound(
                         q.getCube(), namePartsButOne, false, Category.Member);
-                if (olapElement != null
-                    && isValidProperty((Member) olapElement, propertyName))
-                {
+                if (olapElement != null &&
+                        isValidProperty((Member) olapElement, propertyName)) {
                     return new UnresolvedFunCall(
-                        propertyName, Syntax.Property, new Exp[] {
-                            createExpr(olapElement)});
+                            propertyName, Syntax.Property, new Exp[] {
+                                createExpr(olapElement)});
                 }
             }
             // if we're in the middle of loading the schema, the property has
@@ -787,8 +761,7 @@ public class Util extends XOMUtil {
                 int nameLen = nameParts.size() - 1;
                 olapElement = null;
                 while (nameLen > 0 && olapElement == null) {
-                    List<Id.Segment> partialName =
-                        nameParts.subList(0, nameLen);
+                    List<Id.Segment> partialName = nameParts.subList(0, nameLen);
                     olapElement = schemaReader.lookupCompound(
                         q.getCube(), partialName, false, Category.Unknown);
                     nameLen--;
@@ -796,8 +769,8 @@ public class Util extends XOMUtil {
                 if (olapElement != null) {
                     olapElement = olapElement.getHierarchy().getNullMember();
                 } else {
-                    throw MondrianResource.instance().MdxChildObjectNotFound
-                        .ex(fullName, q.getCube().getQualifiedName());
+                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
+                        fullName, q.getCube().getQualifiedName());
                 }
             } else {
                 throw MondrianResource.instance().MdxChildObjectNotFound.ex(
@@ -818,11 +791,7 @@ public class Util extends XOMUtil {
      * @param fail Whether to fail if not found.
      * @return Cube, or null if not found
      */
-    static Cube lookupCube(
-        SchemaReader schemaReader,
-        String cubeName,
-        boolean fail)
-    {
+    static Cube lookupCube(SchemaReader schemaReader, String cubeName, boolean fail) {
         for (Cube cube : schemaReader.getCubes()) {
             if (Util.compareName(cube.getName(), cubeName) == 0) {
                 return cube;
@@ -870,8 +839,8 @@ public class Util extends XOMUtil {
     /**
      * Finds a root member of a hierarchy with a given name.
      *
-     * @param hierarchy Hierarchy
-     * @param memberName Name of root member
+     * @param hierarchy
+     * @param memberName
      * @return Member, or null if not found
      */
     public static Member lookupHierarchyRootMember(
@@ -890,9 +859,8 @@ public class Util extends XOMUtil {
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
         Member searchMember = null;
-        if (!matchType.isExact()
-            && !hierarchy.hasAll()
-            && !rootMembers.isEmpty())
+        if (!matchType.isExact() && !hierarchy.hasAll() &&
+            ! rootMembers.isEmpty())
         {
             searchMember =
                 hierarchy.createMember(
@@ -909,7 +877,8 @@ public class Util extends XOMUtil {
             int rc;
             // when searching on the ALL hierarchy, match must be exact
             if (matchType.isExact() || hierarchy.hasAll()) {
-                rc = rootMember.getName().compareToIgnoreCase(memberName.name);
+                rc = rootMember.getName()
+                        .compareToIgnoreCase(memberName.name);
             } else {
                 rc = FunUtil.compareSiblingMembers(
                     rootMember,
@@ -920,20 +889,20 @@ public class Util extends XOMUtil {
             }
             if (!hierarchy.hasAll()) {
                 if (matchType == MatchType.BEFORE) {
-                    if (rc < 0
-                        && (bestMatch == -1
-                            || FunUtil.compareSiblingMembers(
-                                rootMember,
-                                rootMembers.get(bestMatch)) > 0))
+                    if (rc < 0 &&
+                        (bestMatch == -1 ||
+                        FunUtil.compareSiblingMembers(
+                            rootMember,
+                            rootMembers.get(bestMatch)) > 0))
                     {
                         bestMatch = k;
                     }
                 } else if (matchType == MatchType.AFTER) {
-                    if (rc > 0
-                        && (bestMatch == -1
-                            || FunUtil.compareSiblingMembers(
-                                rootMember,
-                                rootMembers.get(bestMatch)) < 0))
+                    if (rc > 0 &&
+                        (bestMatch == -1 ||
+                        FunUtil.compareSiblingMembers(
+                            rootMember,
+                            rootMembers.get(bestMatch)) < 0))
                     {
                         bestMatch = k;
                     }
@@ -1080,9 +1049,7 @@ public class Util extends XOMUtil {
      * @return Whether property is valid
      */
     public static boolean isValidProperty(
-        Member member,
-        String propertyName)
-    {
+            Member member, String propertyName) {
         return lookupProperty(member.getLevel(), propertyName) != null;
     }
 
@@ -1090,10 +1057,7 @@ public class Util extends XOMUtil {
      * Finds a member property called <code>propertyName</code> at, or above,
      * <code>level</code>.
      */
-    protected static Property lookupProperty(
-        Level level,
-        String propertyName)
-    {
+    protected static Property lookupProperty(Level level, String propertyName) {
         do {
             Property[] properties = level.getProperties();
             for (Property property : properties) {
@@ -1107,10 +1071,9 @@ public class Util extends XOMUtil {
         boolean caseSensitive =
             MondrianProperties.instance().CaseSensitive.get();
         final Property property = Property.lookup(propertyName, caseSensitive);
-        if (property != null
-            && property.isMemberProperty()
-            && property.isStandard())
-        {
+        if (property != null &&
+                property.isMemberProperty() &&
+                property.isStandard()) {
             return property;
         }
         return null;
@@ -1164,10 +1127,9 @@ public class Util extends XOMUtil {
     public static <T extends Enum<T>> RuntimeException badValue(
         Enum<T> anEnum)
     {
-        return Util.newInternal(
-            "Was not expecting value '" + anEnum
-            + "' for enumeration '" + anEnum.getDeclaringClass().getName()
-            + "' in this context");
+        return Util.newInternal("Was not expecting value '" + anEnum +
+            "' for enumeration '" + anEnum.getDeclaringClass().getName() +
+            "' in this context");
     }
 
     /**
@@ -1215,9 +1177,7 @@ public class Util extends XOMUtil {
                     }
                     buf.append('.');
                     i = underscore + 1;
-                } else if (percent >= 0
-                    && (percent < underscore || underscore < 0))
-                {
+                } else if (percent >= 0 && (percent < underscore || underscore < 0)) {
                     if (i < percent) {
                     buf.append(
                         quotePattern(value.substring(i, percent)));
@@ -1334,7 +1294,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Converts a list of a string.
+         * Converts a list of a string.
      *
      * For example,
      * <code>commaList("foo", Arrays.asList({"a", "b"}))</code>
@@ -1359,6 +1319,52 @@ public class Util extends XOMUtil {
         }
         buf.append(")");
         return buf.toString();
+    }
+
+    /**
+     * Returns the union of a list of iterables.
+     *
+     * <p>You can use it like this:
+     * <blockquote><pre>
+     * Iterable&lt;String&gt; iter1;
+     * Iterable&lt;String&gt; iter2;
+     * for (String s : union(iter1, iter2)) {
+     *   print(s);
+     * }</pre></blockquote>
+     *
+     * @param iterables Array of one or more iterables
+     * @return iterable over the union of the iterables
+     */
+    public static <T> Iterable<T> union(
+        final Iterable<? extends T>... iterables) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(iterables);
+            }
+        };
+    }
+
+    /**
+     * Returns the union of a list of collections.
+     *
+     * <p>This method exists for code that will be retrowoven to run on JDK 1.4.
+     * Retroweaver has its own version of the {@link Iterable} interface, which
+     * is problematic since the {@link Collection} classes don't implement it.
+     * This method solves some of these problems by working in terms of
+     * collections; retroweaver deals with these correctly.
+     *
+     * @see #union(Iterable[])
+     *
+     * @param collections Array of one or more collections
+     * @return iterable over the union of the collections
+     */
+    public static <T> Iterable<T> union(
+        final Collection<? extends T>... collections) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new UnionIterator<T>(collections);
+            }
+        };
     }
 
     /**
@@ -1490,9 +1496,9 @@ public class Util extends XOMUtil {
      */
     public static RuntimeException unexpected(Enum value) {
         return Util.newInternal(
-            "Was not expecting value '" + value
-            + "' for enumeration '" + value.getClass().getName()
-            + "' in this context");
+            "Was not expecting value '" + value +
+                "' for enumeration '" + value.getClass().getName() +
+                "' in this context");
     }
 
     /**
@@ -1566,8 +1572,8 @@ public class Util extends XOMUtil {
      */
     public static String getErrorMessage(Throwable err) {
         boolean prependClassName =
-            !(err instanceof java.sql.SQLException
-              || err.getClass() == java.lang.Exception.class);
+            !(err instanceof java.sql.SQLException ||
+              err.getClass() == java.lang.Exception.class);
         return getErrorMessage(err, prependClassName);
     }
 
@@ -1644,11 +1650,8 @@ public class Util extends XOMUtil {
      * <code>PropertyList</code> is an order-preserving list of key-value
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
-    public static class PropertyList
-        implements Iterable<Pair<String, String>>
-    {
-        List<Pair<String, String>> list =
-            new ArrayList<Pair<String, String>>();
+    public static class PropertyList implements Iterable<Pair<String, String>> {
+        List<Pair<String, String>> list = new ArrayList<Pair<String, String>>();
 
         public String get(String key) {
             return get(key, null);
@@ -1839,7 +1842,6 @@ public class Util extends XOMUtil {
                 }
             }
         }
-
         /**
          * Reads "value;" or "value<EOF>"
          */
@@ -1865,8 +1867,8 @@ public class Util extends XOMUtil {
                     return value;
                 } else {
                     throw new RuntimeException(
-                        "quoted value ended too soon, at position " + i
-                        + " in '" + s + "'");
+                            "quoted value ended too soon, at position " + i +
+                            " in '" + s + "'");
                 }
             } else {
                 String value;
@@ -1910,9 +1912,9 @@ public class Util extends XOMUtil {
                 }
             }
             throw new RuntimeException(
-                "Connect string '" + s
-                + "' contains unterminated quoted value '" + valueBuf.toString()
-                + "'");
+                    "Connect string '" + s +
+                    "' contains unterminated quoted value '" +
+                    valueBuf.toString() + "'");
         }
     }
 
@@ -2010,14 +2012,9 @@ public class Util extends XOMUtil {
                 final Resolver resolver = resolvers.get(0);
                 final List<Resolver.Conversion> conversionList =
                     new ArrayList<Resolver.Conversion>();
-                final FunDef def =
-                    resolver.resolve(args, this, conversionList);
+                final FunDef def = resolver.resolve(args, this, conversionList);
                 assert conversionList.isEmpty();
                 return def;
-            }
-
-            public boolean alwaysResolveFunDef() {
-                return false;
             }
 
             public boolean canConvert(
@@ -2049,7 +2046,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Reads a Reader until it returns EOF and return the contents as a String.
+     * Read a Reader until EOF and return as String.
+     * Note: this ought to be in a Utility class.
      *
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
@@ -2061,7 +2059,7 @@ public class Util extends XOMUtil {
     {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException(
-                "Buffer size must be greater than 0");
+                    "Buffer size must be greater than 0");
         }
 
         final char[] buffer = new char[bufferSize];
@@ -2087,8 +2085,7 @@ public class Util extends XOMUtil {
      * @throws IOException
      */
     public static String readURL(final String urlStr)
-        throws IOException
-    {
+            throws MalformedURLException, IOException {
         return readURL(urlStr, null);
     }
 
@@ -2103,9 +2100,8 @@ public class Util extends XOMUtil {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static String readURL(final String urlStr, Map<String, String> map)
-        throws IOException
-    {
+    public static String readURL(final String urlStr, Map map)
+            throws MalformedURLException, IOException {
         final URL url = new URL(urlStr);
         return readURL(url, map);
     }
@@ -2131,11 +2127,7 @@ public class Util extends XOMUtil {
      * @return Contents of URL with tokens substituted
      * @throws IOException
      */
-    public static String readURL(
-        final URL url,
-        Map<String, String> map)
-        throws IOException
-    {
+    public static String readURL(final URL url, Map<String, String> map) throws IOException {
         final Reader r =
             new BufferedReader(new InputStreamReader(url.openStream()));
         final int BUF_SIZE = 8096;
@@ -2149,7 +2141,6 @@ public class Util extends XOMUtil {
             r.close();
         }
     }
-
     /**
      * Gets content via Apache VFS. File must exist and have content
      *
@@ -2157,9 +2148,8 @@ public class Util extends XOMUtil {
      * @return Apache VFS FileContent for further processing
      * @throws FileSystemException
      */
-    public static InputStream readVirtualFile(String url)
-        throws FileSystemException
-    {
+    public static FileContent readVirtualFile(String url)
+            throws FileSystemException {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
         // VFS handles all of the usual protocols (http:, file:)
         // and then some.
@@ -2176,68 +2166,34 @@ public class Util extends XOMUtil {
             url = url.substring("file:".length());
         }
 
-        //work around for VFS bug not closing http sockets
-        // (Mondrian-585)
-        if (url.startsWith("http")) {
-            try {
-                return new URL(url).openStream();
-            } catch (IOException e) {
-                throw newError(
-                    "Could not read URL: " + url);
-            }
-        }
-
         File userDir = new File("").getAbsoluteFile();
         FileObject file = fsManager.resolveFile(userDir, url);
-        FileContent fileContent = null;
-        try {
-            // Because of VFS caching, make sure we refresh to get the latest
-            // file content. This refresh may possibly solve the following
-            // workaround for defect MONDRIAN-508, but cannot be tested, so we
-            // will leave the work around for now.
-            file.refresh();
 
-            // Workaround to defect MONDRIAN-508. For HttpFileObjects, verifies
-            // the URL of the file retrieved matches the URL passed in.  A VFS
-            // cache bug can cause it to treat URLs with different parameters
-            // as the same file (e.g. http://blah.com?param=A,
-            // http://blah.com?param=B)
-            if (file instanceof HttpFileObject
-                && !file.getName().getURI().equals(url))
-            {
-                fsManager.getFilesCache().removeFile(
-                    file.getFileSystem(),  file.getName());
-
-                file = fsManager.resolveFile(userDir, url);
-            }
-
-            if (!file.isReadable()) {
-                throw newError(
-                    "Virtual file is not readable: " + url);
-            }
-
-            fileContent = file.getContent();
-        } finally {
-            file.close();
+        // Workaround to defect 2613265.  For HttpFileObjects, verifies the URL
+        // of the file retrieved matches the URL passed in.  A VFS cache bug
+        // can cause it to treat URLs with different parameters as the same
+        // file (e.g. http://blah.com?param=A, http://blah.com?param=B)
+        if (file instanceof HttpFileObject && !file.getName().getURI().equals(url)) {
+            fsManager.getFilesCache().removeFile(file.getFileSystem(),  file.getName());
+            file = fsManager.resolveFile(userDir, url);
         }
 
+        if (!file.isReadable()) {
+            throw newError("Virtual file is not readable: " +
+                url);
+        }
+
+        FileContent fileContent = file.getContent();
         if (fileContent == null) {
-            throw newError(
-                "Cannot get virtual file content: " + url);
+            throw newError("Cannot get virtual file content: " +
+                url);
         }
 
-        return fileContent.getInputStream();
+        return fileContent;
     }
 
-    /**
-     * Converts a {@link Properties} object to a string-to-string {@link Map}.
-     *
-     * @param properties Properties
-     * @return String-to-string map
-     */
     public static Map<String, String> toMap(final Properties properties) {
         return new AbstractMap<String, String>() {
-            @SuppressWarnings({"unchecked"})
             public Set<Entry<String, String>> entrySet() {
                 return (Set) properties.entrySet();
             }
@@ -2336,12 +2292,12 @@ public class Util extends XOMUtil {
     /**
      * Casts a collection to iterable.
      *
-     * Under JDK 1.4, {@link Collection} objects do not implement
+     * <p>Under JDK 1.4, {@link Collection} objects do not implement
      * {@link Iterable}, so this method inserts a casting wrapper. (Since
-     * Iterable does not exist under JDK 1.4, they will have been compiled
-     * under JDK 1.5 or later, then retrowoven to 1.4 class format. References
-     * to Iterable will have been replaced with references to
-     * <code>com.rc.retroweaver.runtime.Retroweaver_</code>.
+     * Iterable does not exist under JDK 1.4, they will have been compiled under
+     * JDK 1.5 or later, then retrowoven to 1.4 class format. References to
+     * Iterable will have been replaced with references to
+     * <code>com.rc.retroweaver.runtime.Retroweaver_</code>.</p>
      *
      * <p>Under later JDKs this method is trivial. This method can be deleted
      * when we discontinue support for JDK 1.4.
@@ -2353,9 +2309,8 @@ public class Util extends XOMUtil {
     public static <T> Iterable<T> castToIterable(
         final Object iterable)
     {
-        if (Util.Retrowoven
-            && !(iterable instanceof Iterable))
-        {
+        if (Util.Retrowoven &&
+            !(iterable instanceof Iterable)) {
             return new Iterable<T>() {
                 public Iterator<T> iterator() {
                     return ((Collection<T>) iterable).iterator();
@@ -2377,8 +2332,7 @@ public class Util extends XOMUtil {
      * valid.
      */
     public static <E extends Enum<E>> E lookup(
-        Class<E> clazz, String name, E defaultValue)
-    {
+        Class<E> clazz, String name, E defaultValue) {
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {
@@ -2401,15 +2355,13 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or
-     * later. Otherwise, returns an ordinary set.
+     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or later.
+     * Otherwise, returns an ordinary set.
      *
      * @param elementType the class object of the element type for this enum
      *     set
      */
-    public static <E extends Enum<E>> Set<E> enumSetNoneOf(
-        Class<E> elementType)
-    {
+    public static <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
         return compatible.enumSetNoneOf(elementType);
     }
 
@@ -2420,9 +2372,7 @@ public class Util extends XOMUtil {
      * @param elementType the class object of the element type for this enum
      *     set
      */
-    public static <E extends Enum<E>> Set<E> enumSetAllOf(
-        Class<E> elementType)
-    {
+    public static <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
         return compatible.enumSetAllOf(elementType);
     }
 
@@ -2455,88 +2405,24 @@ public class Util extends XOMUtil {
      * Creates a new udf instance from the given udf class.
      *
      * @param udfClass the class to create new instance for
-     * @param functionName Function name, or null
      * @return an instance of UserDefinedFunction
      */
-    public static UserDefinedFunction createUdf(
-        Class<? extends UserDefinedFunction> udfClass,
-        String functionName)
-    {
+    public static UserDefinedFunction createUdf(Class<?> udfClass) {
         // Instantiate class with default constructor.
         UserDefinedFunction udf;
         String className = udfClass.getName();
-        String functionNameOrEmpty =
-            functionName == null
-                ? ""
-                : functionName;
 
-        // Find a constructor.
-        Constructor<?> constructor;
-        Object[] args = {};
-
-        // 0. Check that class is public and top-level or static.
-        if (!Modifier.isPublic(udfClass.getModifiers())
-            || (udfClass.getEnclosingClass() != null
-                && !Modifier.isStatic(udfClass.getModifiers())))
-        {
-            throw MondrianResource.instance().UdfClassMustBePublicAndStatic.ex(
-                functionName,
-                className);
-        }
-
-        // 1. Look for a constructor "public Udf(String name)".
         try {
-            constructor = udfClass.getConstructor(String.class);
-            if (Modifier.isPublic(constructor.getModifiers())) {
-                args = new Object[] {functionName};
-            } else {
-                constructor = null;
-            }
-        } catch (NoSuchMethodException e) {
-            constructor = null;
-        }
-        // 2. Otherwise, look for a constructor "public Udf()".
-        if (constructor == null) {
-            try {
-                constructor = udfClass.getConstructor();
-                if (Modifier.isPublic(constructor.getModifiers())) {
-                    args = new Object[] {};
-                } else {
-                    constructor = null;
-                }
-            } catch (NoSuchMethodException e) {
-                constructor = null;
-            }
-        }
-        // 3. Else, no constructor suitable.
-        if (constructor == null) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(
-                functionNameOrEmpty,
-                className,
-                UserDefinedFunction.class.getName());
-        }
-        // Instantiate class.
-        try {
-            udf = (UserDefinedFunction) constructor.newInstance(args);
+            udf = (UserDefinedFunction) udfClass.newInstance();
         } catch (InstantiationException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(
-                functionNameOrEmpty,
-                className, UserDefinedFunction.class.getName());
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
         } catch (IllegalAccessException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(
-                functionName,
-                className,
-                UserDefinedFunction.class.getName());
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
         } catch (ClassCastException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(
-                functionNameOrEmpty,
-                className,
-                UserDefinedFunction.class.getName());
-        } catch (InvocationTargetException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex(
-                functionName,
-                className,
-                UserDefinedFunction.class.getName());
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
+                    className, UserDefinedFunction.class.getName());
         }
 
         return udf;
@@ -2551,7 +2437,7 @@ public class Util extends XOMUtil {
      * will come from the DB(and will be checked against the limit when
      * fetching from the JDBC result set, in SqlTupleReader.prepareTuples())
      *
-     * @param resultSize Result limit
+     * @param resultSize
      * @throws ResourceLimitExceededException
      */
     public static void checkCJResultLimit(long resultSize) {
@@ -2559,6 +2445,7 @@ public class Util extends XOMUtil {
 
         // Throw an exeption, if the size of the crossjoin exceeds the result
         // limit.
+        //
         if (resultLimit > 0 && resultLimit < resultSize) {
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
                 resultSize, resultLimit);

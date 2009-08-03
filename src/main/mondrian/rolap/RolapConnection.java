@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -24,8 +24,27 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import mondrian.olap.*;
-import mondrian.rolap.agg.*;
+import mondrian.olap.CacheControl;
+import mondrian.olap.Cell;
+import mondrian.olap.ConnectionBase;
+import mondrian.olap.Cube;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.QueryAxis;
+import mondrian.olap.QueryCanceledException;
+import mondrian.olap.QueryTimeoutException;
+import mondrian.olap.ResourceLimitExceededException;
+import mondrian.olap.Result;
+import mondrian.olap.ResultBase;
+import mondrian.olap.ResultLimitExceededException;
+import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
+import mondrian.olap.Schema;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
@@ -49,8 +68,7 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class RolapConnection extends ConnectionBase {
-    private static final Logger LOGGER =
-        Logger.getLogger(RolapConnection.class);
+    private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
 
     private final Util.PropertyList connectInfo;
 
@@ -67,7 +85,6 @@ public class RolapConnection extends ConnectionBase {
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
-    private Scenario scenario;
 
     /**
      * Creates a connection.
@@ -85,10 +102,7 @@ public class RolapConnection extends ConnectionBase {
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
      */
-    public RolapConnection(
-        Util.PropertyList connectInfo,
-        DataSource dataSource)
-    {
+    public RolapConnection(Util.PropertyList connectInfo, DataSource dataSource) {
         this(connectInfo, null, dataSource);
     }
 
@@ -153,12 +167,11 @@ public class RolapConnection extends ConnectionBase {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
             if (dataSource == null) {
-                // If there is no external data source is passed in, we expect
-                // the properties Jdbc, JdbcUser, DataSource to be set, as they
-                // are used to generate the schema cache key.
-                final String connectionKey =
-                    jdbcConnectString
-                    + getJdbcProperties(connectInfo).toString();
+                // If there is no external data source is passed in,
+                // we expect the properties Jdbc, JdbcUser, DataSource to be set,
+                // as they are used to generate the schema cache key.
+                final String connectionKey = jdbcConnectString +
+                    getJdbcProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
                     catalogUrl,
@@ -180,8 +193,7 @@ public class RolapConnection extends ConnectionBase {
                 for (String roleName : roleNames) {
                     Role role1 = schema.lookupRole(roleName);
                     if (role1 == null) {
-                        throw Util.newError(
-                            "Role '" + roleName + "' not found");
+                        throw Util.newError("Role '" + roleName + "' not found");
                     }
                     roleList.add(role1);
                 }
@@ -211,25 +223,22 @@ public class RolapConnection extends ConnectionBase {
                 Dialect dialect =
                     DialectManager.createDialect(this.dataSource, conn);
                 if (dialect.getDatabaseProduct()
-                    == Dialect.DatabaseProduct.DERBY)
-                {
+                    == Dialect.DatabaseProduct.DERBY) {
                     // Derby requires a little extra prodding to do the
                     // validation to detect an error.
                     statement = conn.createStatement();
                     statement.executeQuery("select * from bogustable");
                 }
             } catch (SQLException e) {
-                if (e.getMessage().equals(
-                    "Table/View 'BOGUSTABLE' does not exist."))
-                {
+                if (e.getMessage().equals("Table/View 'BOGUSTABLE' does not exist.")) {
                     // Ignore. This exception comes from Derby when the
                     // connection is valid. If the connection were invalid, we
                     // would receive an error such as "Schema 'BOGUSUSER' does
                     // not exist"
                 } else {
-                    throw Util.newError(
-                        e,
-                        "Error while creating SQL connection: " + buf);
+                    final String message =
+                        "Error while creating SQL connection: " + buf.toString();
+                    throw Util.newError(e, message);
                 }
             } finally {
                 try {
@@ -265,8 +274,7 @@ public class RolapConnection extends ConnectionBase {
                 this.locale = new Locale(strings[0], strings[1], strings[2]);
                 break;
             default:
-                throw Util.newInternal(
-                    "bad locale string '" + localeString + "'");
+                throw Util.newInternal("bad locale string '" + localeString + "'");
             }
         }
 
@@ -310,9 +318,7 @@ public class RolapConnection extends ConnectionBase {
             appendKeyValue(
                 buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf,
-                RolapConnectionProperties.JdbcPassword.name(),
-                jdbcPassword);
+                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
             if (jdbcUser != null || jdbcPassword != null) {
                 dataSource =
                     new UserPasswordDataSource(
@@ -327,9 +333,7 @@ public class RolapConnection extends ConnectionBase {
             appendKeyValue(
                 buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf,
-                RolapConnectionProperties.JdbcPassword.name(),
-                jdbcPassword);
+                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
             String jdbcDrivers =
                 connectInfo.get(RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
@@ -376,17 +380,11 @@ public class RolapConnection extends ConnectionBase {
 
         } else if (dataSourceName != null) {
             appendKeyValue(
-                buf,
-                RolapConnectionProperties.DataSource.name(),
-                dataSourceName);
+                buf, RolapConnectionProperties.DataSource.name(), dataSourceName);
             appendKeyValue(
-                buf,
-                RolapConnectionProperties.JdbcUser.name(),
-                jdbcUser);
+                buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);
             appendKeyValue(
-                buf,
-                RolapConnectionProperties.JdbcPassword.name(),
-                jdbcPassword);
+                buf, RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
 
             // Data sources are fairly smart, so we assume they look after
             // their own pooling. Therefore the default is false.
@@ -402,8 +400,8 @@ public class RolapConnection extends ConnectionBase {
             } catch (NamingException e) {
                 throw Util.newInternal(
                     e,
-                    "Error while looking up data source ("
-                    + dataSourceName + ")");
+                    "Error while looking up data source (" +
+                        dataSourceName + ")");
             }
             if (poolNeeded) {
                 dataSource =
@@ -420,9 +418,9 @@ public class RolapConnection extends ConnectionBase {
             return dataSource;
         } else {
             throw Util.newInternal(
-                "Connect string '" + connectInfo.toString()
-                + "' must contain either '" + RolapConnectionProperties.Jdbc
-                + "' or '" + RolapConnectionProperties.DataSource + "'");
+                "Connect string '" + connectInfo.toString() +
+                    "' must contain either '" + RolapConnectionProperties.Jdbc +
+                    "' or '" + RolapConnectionProperties.DataSource + "'");
         }
     }
 
@@ -456,7 +454,7 @@ public class RolapConnection extends ConnectionBase {
      */
     private static Properties getJdbcProperties(Util.PropertyList connectInfo) {
         Properties jdbcProperties = new Properties();
-        for (Pair<String, String> entry : connectInfo) {
+        for (Pair<String,String> entry : connectInfo) {
             if (entry.left.startsWith(
                 RolapConnectionProperties.JdbcPropertyPrefix))
             {
@@ -502,9 +500,8 @@ public class RolapConnection extends ConnectionBase {
 
     public Object getProperty(String name) {
         // Mask out the values of certain properties.
-        if (name.equals(RolapConnectionProperties.JdbcPassword.name())
-            || name.equals(RolapConnectionProperties.CatalogContent.name()))
-        {
+        if (name.equals(RolapConnectionProperties.JdbcPassword.name()) ||
+            name.equals(RolapConnectionProperties.CatalogContent.name())) {
             return "";
         }
         return connectInfo.get(name);
@@ -589,16 +586,14 @@ public class RolapConnection extends ConnectionBase {
             } catch (Exception e1) {
                 queryString = "?";
             }
-            throw Util.newError(
-                e,
-                "Error while executing query [" + queryString + "]");
+            throw Util.newError(e, "Error while executing query [" +
+                    queryString + "]");
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
-                RolapUtil.MDX_LOGGER.debug(
-                    currId + ": exec: "
-                    + (System.currentTimeMillis() - query.getQueryStartTime())
-                    + " ms");
+                RolapUtil.MDX_LOGGER.debug(currId + ": exec: " +
+                    (System.currentTimeMillis() - query.getQueryStartTime()) +
+                    " ms");
             }
         }
     }
@@ -668,8 +663,7 @@ public class RolapConnection extends ConnectionBase {
         }
 
         public Connection getConnection(String username, String password)
-            throws SQLException
-        {
+                throws SQLException {
             if (jdbcProperties == null) {
                 return java.sql.DriverManager.getConnection(
                     jdbcConnectString, username, password);
@@ -711,20 +705,6 @@ public class RolapConnection extends ConnectionBase {
         return dataSource;
     }
 
-    public Scenario createScenario() {
-        final ScenarioImpl scenario = new ScenarioImpl();
-        scenario.register(schema);
-        return scenario;
-    }
-
-    public void setScenario(Scenario scenario) {
-        this.scenario = scenario;
-    }
-
-    public Scenario getScenario() {
-        return scenario;
-    }
-
     /**
      * A <code>NonEmptyResult</code> filters a result by removing empty rows
      * on a particular axis.
@@ -746,23 +726,18 @@ public class RolapConnection extends ConnectionBase {
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
-            List<Position> positions =
-                underlying.getAxes()[axis].getPositions();
+            List<Position> positions = underlying.getAxes()[axis].getPositions();
 
             final List<Position> positionsList;
             try {
-                if (positions.get(0).get(0).getDimension()
-                    .isHighCardinality())
-                {
-                    positionsList =
-                        new FilteredIterableList<Position>(
+                if (positions.get(0).get(0).getDimension().isHighCardinality()) {
+                    positionsList = new FilteredIterableList<Position>(
                             positions,
-                            new FilteredIterableList.Filter<Position>()
-                        {
-                            public boolean accept(final Position p) {
-                                return p.get(0) != null;
+                            new FilteredIterableList.Filter<Position>() {
+                                public boolean accept(final Position p) {
+                                    return p.get(0) != null;
+                                }
                             }
-                        }
                     );
                 } else {
                     positionsList = new ArrayList<Position>();
@@ -825,8 +800,7 @@ public class RolapConnection extends ConnectionBase {
         // synchronized because we use 'pos'
         public synchronized Cell getCell(int[] externalPos) {
             try {
-                System.arraycopy(
-                    externalPos, 0, this.pos, 0, externalPos.length);
+                System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
                 int offset = externalPos[axis];
                 int mappedOffset = mapOffsetToUnderlying(offset);
                 this.pos[axis] = mappedOffset;
@@ -859,11 +833,7 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getConnection();
         }
 
-        public Connection getConnection(
-            String username,
-            String password)
-            throws SQLException
-        {
+        public Connection getConnection(String username, String password) throws SQLException {
             return dataSource.getConnection(username, password);
         }
 
@@ -915,8 +885,7 @@ public class RolapConnection extends ConnectionBase {
                 // via reflection.
                 try {
                     Method method =
-                        DataSource.class.getMethod(
-                            "isWrapperFor", boolean.class);
+                        DataSource.class.getMethod("isWrapperFor", boolean.class);
                     return (Boolean) method.invoke(dataSource, iface);
                 } catch (IllegalAccessException e) {
                     throw Util.newInternal(e, "While invoking isWrapperFor");
@@ -960,7 +929,6 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getConnection(jdbcUser, jdbcPassword);
         }
     }
-
 }
 
 // End RolapConnection.java

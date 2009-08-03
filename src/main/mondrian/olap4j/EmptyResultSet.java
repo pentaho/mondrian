@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -142,8 +142,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public BigDecimal getBigDecimal(
-        int columnIndex, int scale) throws SQLException
-    {
+        int columnIndex, int scale) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -226,8 +225,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public BigDecimal getBigDecimal(
-        String columnLabel, int scale) throws SQLException
-    {
+        String columnLabel, int scale) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -255,8 +253,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
         throw new UnsupportedOperationException();
     }
 
-    public InputStream getUnicodeStream(String columnLabel) throws SQLException
-    {
+    public InputStream getUnicodeStream(String columnLabel) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -452,8 +449,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public void updateBigDecimal(
-        int columnIndex, BigDecimal x) throws SQLException
-    {
+        int columnIndex, BigDecimal x) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -474,32 +470,27 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public void updateTimestamp(
-        int columnIndex, Timestamp x) throws SQLException
-    {
+        int columnIndex, Timestamp x) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateAsciiStream(
-        int columnIndex, InputStream x, int length) throws SQLException
-    {
+        int columnIndex, InputStream x, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateBinaryStream(
-        int columnIndex, InputStream x, int length) throws SQLException
-    {
+        int columnIndex, InputStream x, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateCharacterStream(
-        int columnIndex, Reader x, int length) throws SQLException
-    {
+        int columnIndex, Reader x, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateObject(
-        int columnIndex, Object x, int scaleOrLength) throws SQLException
-    {
+        int columnIndex, Object x, int scaleOrLength) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -512,8 +503,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public void updateBoolean(
-        String columnLabel, boolean x) throws SQLException
-    {
+        String columnLabel, boolean x) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -542,8 +532,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public void updateBigDecimal(
-        String columnLabel, BigDecimal x) throws SQLException
-    {
+        String columnLabel, BigDecimal x) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -564,32 +553,27 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public void updateTimestamp(
-        String columnLabel, Timestamp x) throws SQLException
-    {
+        String columnLabel, Timestamp x) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateAsciiStream(
-        String columnLabel, InputStream x, int length) throws SQLException
-    {
+        String columnLabel, InputStream x, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateBinaryStream(
-        String columnLabel, InputStream x, int length) throws SQLException
-    {
+        String columnLabel, InputStream x, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateCharacterStream(
-        String columnLabel, Reader reader, int length) throws SQLException
-    {
+        String columnLabel, Reader reader, int length) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public void updateObject(
-        String columnLabel, Object x, int scaleOrLength) throws SQLException
-    {
+        String columnLabel, Object x, int scaleOrLength) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -630,8 +614,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public Object getObject(
-        int columnIndex, Map<String, Class<?>> map) throws SQLException
-    {
+        int columnIndex, Map<String, Class<?>> map) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -652,8 +635,7 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public Object getObject(
-        String columnLabel, Map<String, Class<?>> map) throws SQLException
-    {
+        String columnLabel, Map<String, Class<?>> map) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
@@ -690,14 +672,12 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public Timestamp getTimestamp(
-        int columnIndex, Calendar cal) throws SQLException
-    {
+        int columnIndex, Calendar cal) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
     public Timestamp getTimestamp(
-        String columnLabel, Calendar cal) throws SQLException
-    {
+        String columnLabel, Calendar cal) throws SQLException {
         throw new UnsupportedOperationException();
     }
 

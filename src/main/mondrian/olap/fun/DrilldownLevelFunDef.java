@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -58,8 +58,7 @@ class DrilldownLevelFunDef extends FunDefBase {
                 : null;
         final int arity = ((SetType) listCalc.getType()).getArity();
         if (indexCalc == null) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc})
-            {
+            return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -74,8 +73,7 @@ class DrilldownLevelFunDef extends FunDefBase {
                 }
             };
         } else if (arity == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
-            {
+            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -97,8 +95,7 @@ class DrilldownLevelFunDef extends FunDefBase {
                 }
             };
         } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
-            {
+            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     List<Member[]> list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
@@ -126,8 +123,7 @@ class DrilldownLevelFunDef extends FunDefBase {
         }
     }
 
-    List<Member> drill(int searchDepth, List<Member> list, Evaluator evaluator)
-    {
+    List<Member> drill(int searchDepth, List<Member> list, Evaluator evaluator) {
         if (searchDepth == -1) {
             searchDepth = list.get(0).getLevel().getDepth();
 
@@ -147,10 +143,9 @@ class DrilldownLevelFunDef extends FunDefBase {
             Member member = list.get(i);
             drilledSet.add(member);
 
-            Member nextMember =
-                i == (m - 1)
-                ? null
-                : list.get(i + 1);
+            Member nextMember = i == (m - 1) ?
+                null :
+                list.get(i + 1);
 
             //
             // This member is drilled if it's at the correct depth
@@ -159,8 +154,7 @@ class DrilldownLevelFunDef extends FunDefBase {
             // at least one descendant
             //
             if (member.getLevel().getDepth() == searchDepth
-                && !FunUtil.isAncestorOf(member, nextMember, true))
-            {
+                    && !FunUtil.isAncestorOf(member, nextMember, true)) {
                 final List<Member> childMembers =
                     evaluator.getSchemaReader().getMemberChildren(member);
                 for (Member childMember : childMembers) {

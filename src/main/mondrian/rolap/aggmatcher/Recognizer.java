@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -37,8 +37,8 @@ import org.apache.log4j.Logger;
  * while some specific column category matching and column building must be
  * specified in derived classes.
  *
- * <p>A Recognizer is created per candidate aggregate table. The tables columns
- * are then categorized. All errors and warnings are added to a MessageRecorder.
+ * <p>A Recognizer is created per candidate aggregate table. The tables columns are
+ * then categorized. All errors and warnings are added to a MessageRecorder.
  *
  * <p>This class is less about defining a type and more about code sharing.
  *
@@ -110,8 +110,7 @@ abstract class Recognizer {
         generateImpliedMeasures();
 
         // Check levels
-        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys =
-            checkForeignKeys();
+        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys = checkForeignKeys();
 //printNotSeenForeignKeys(notSeenForeignKeys);
         checkLevels(notSeenForeignKeys);
 
@@ -274,8 +273,7 @@ abstract class Recognizer {
 
             for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     factColumn.getUsages(JdbcSchema.UsageType.MEASURE);
-                    mit.hasNext();)
-            {
+                    mit.hasNext();) {
                 JdbcSchema.Table.Column.Usage factUsage = mit.next();
                 if (factUsage.getAggregator() == RolapAggregator.Avg) {
                     avgFactUsage = factUsage;
@@ -487,8 +485,8 @@ abstract class Recognizer {
                         // making sure that this HierarchyUsage's
                         // foreign key is not in the list.
                         String foreignKey = hierarchyUsage.getForeignKey();
-                        boolean b = foreignKey == null
-                            || inNotSeenForeignKeys(
+                        boolean b = foreignKey == null ||
+                            inNotSeenForeignKeys(
                                 foreignKey,
                                 notSeenForeignKeys);
                         if (!b) {
@@ -547,8 +545,7 @@ abstract class Recognizer {
      * @param notSeenForeignKeys
      */
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
-        LOGGER.debug(
-            "Recognizer.printNotSeenForeignKeys: "
+        LOGGER.debug("Recognizer.printNotSeenForeignKeys: "
             + aggTable.getName());
         for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
@@ -617,16 +614,15 @@ abstract class Recognizer {
                 // make sure we are looking at the
                 // same table and column
                 for (Iterator<JdbcSchema.Table.Column.Usage> uit =
-                         aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
-                     uit.hasNext();)
-                {
+                    aggColumn.getUsages(JdbcSchema.UsageType.LEVEL);
+                     uit.hasNext();) {
                     JdbcSchema.Table.Column.Usage aggUsage = uit.next();
 
                     MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
                     String cName = levelColumnName;
 
-                    if (! aggUsage.relation.equals(rel)
-                        || ! aggColumn.column.name.equals(cName))
+                    if (! aggUsage.relation.equals(rel) ||
+                        ! aggColumn.column.name.equals(cName))
                     {
                         // this is an error so return
                         String msg = mres.DoubleMatchForLevel.str(
@@ -927,8 +923,7 @@ abstract class Recognizer {
                 MondrianDef.Column column = (MondrianDef.Column) expr;
                 return column.getColumnName();
             } else if (expr instanceof MondrianDef.KeyExpression) {
-                MondrianDef.KeyExpression key =
-                    (MondrianDef.KeyExpression) expr;
+                MondrianDef.KeyExpression key = (MondrianDef.KeyExpression) expr;
                 return key.toString();
             }
 

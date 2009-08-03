@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,13 +35,13 @@ import javax.servlet.http.Cookie;
  * <p>
  * If you need to add to this implementation, please do so.
  *
- * @author Richard M. Emberson
+ * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public class MockHttpServletResponse implements HttpServletResponse {
 
-    public final static String DATE_FORMAT_HEADER =
-        "EEE, d MMM yyyy HH:mm:ss Z";
+    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
+
 
     static class MockServletOutputStream extends ServletOutputStream {
         private ByteArrayOutputStream buffer;
@@ -334,9 +334,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
      */
     public void addDateHeader(String name, long date) {
         Date dateValue = new Date(date);
-        String dateString =
-            new SimpleDateFormat(
-                DATE_FORMAT_HEADER, Locale.US).format(dateValue);
+        String dateString = new SimpleDateFormat(DATE_FORMAT_HEADER, Locale.US).format(dateValue);
         addHeader(name, dateString);
     }
 

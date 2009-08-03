@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -31,8 +31,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-163">
-     * MONDRIAN-163, "VirtualCube SegmentArrayQuerySpec.addMeasure assert"</a>.
+     * This method demonstrates bug 1449929
      */
     public void testNoTimeDimension() {
         TestContext testContext = TestContext.create(
@@ -396,7 +395,7 @@ public class VirtualCubeTest extends BatchTestCase {
 
     public void testLostData() {
         assertQueryReturns(
-            "select {[Time].[Time].Members} on columns,\n"
+            "select {[Time].Members} on columns,\n"
             + " {[Product].Children} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -823,8 +822,7 @@ public class VirtualCubeTest extends BatchTestCase {
 
     /**
      * Checks that native set caching considers base cubes in the cache key.
-     * Native sets referencing different base cubes do not share the cached
-     * result.
+     * Native sets referencing different base cubes do not share the cached result.
      */
     public void testNativeSetCaching() {
         // Only need to run this against one db to verify caching
@@ -834,9 +832,8 @@ public class VirtualCubeTest extends BatchTestCase {
             return;
         }
 
-        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()
-            && !MondrianProperties.instance().EnableNativeNonEmpty.get())
-        {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get() &&
+            !MondrianProperties.instance().EnableNativeNonEmpty.get()) {
             // Only run the tests if either native CrossJoin or native NonEmpty
             // is enabled.
             return;
@@ -920,15 +917,15 @@ public class VirtualCubeTest extends BatchTestCase {
                 + "order by 1 ASC";
         }
 
-        SqlPattern[] patterns1 = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, derbyNecjSql1, derbyNecjSql1)
-        };
+        SqlPattern[] patterns1 =
+            new SqlPattern[] {
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql1, derbyNecjSql1)
+            };
 
-        SqlPattern[] patterns2 = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, derbyNecjSql2, derbyNecjSql2)
-        };
+        SqlPattern[] patterns2 =
+            new SqlPattern[] {
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbyNecjSql2, derbyNecjSql2)
+            };
 
         // Run query 1 with cleared cache;
         // Make sure NECJ 1 is evaluated natively.
@@ -941,11 +938,10 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-322">
-     * MONDRIAN-322, "cube.getStar() throws NullPointerException"</a>.
+     * Test for bug 1778358, "cube.getStar() throws NullPointerException".
      * Happens when you aggregate distinct-count measures in a virtual cube.
      */
-    public void testBugMondrian322() {
+    public void testBug1778358() {
         final TestContext testContext = TestContext.create(
             null,
             null,
@@ -959,18 +955,15 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null,
             null);
-
         /*
-         * This test case does not actually reject the dimension constraint from
-         * an unrelated base cube. The reason is that the constraint contains an
-         * AllLevel member. Even though semantically constraining Cells using an
-         * non-existent dimension perhaps does not make sense; however, in the
-         * case where the constraint contains AllLevel member, the constraint
-         * can be considered "always true".
+         * This test case does not actually reject the dimension constraint from an
+         * unrelated base cube. The reason is that the constraint contains an AllLevel
+         * member. Even though semantically constraining Cells using an non-existent
+         * dimension perhaps does not make sense; however, in the case where the constraint
+         * contains AllLevel member, the constraint can be considered "always true".
          *
-         * See the next test case for a constraint that does not contain
-         * AllLevel member and hence cannot be satisfied. The cell should be
-         * empty.
+         * See the next test case for a constraint that does not contain AllLevel member
+         * and hence cannot be satisfied. The cell should be empty.
          */
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
@@ -983,7 +976,8 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #0: 5,581\n");
     }
 
-    public void testBugMondrian322a() {
+
+    public void testBug1778358a() {
         final TestContext testContext = TestContext.create(
             null,
             null,
@@ -1009,8 +1003,8 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-352">
-     * MONDRIAN-352, "Caption is not set on RolapVirtualCubeMesure"</a>.
+     * Testcase for bug 1835125, "Caption is not set on
+     * RolapVirtualCubeMesure".
      */
     public void testVirtualCubeMeasureCaption() {
         TestContext testContext = TestContext.create(
@@ -1047,8 +1041,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     /**
-     * Test that RolapCubeLevel is used correctly in the context of virtual
-     * cube.
+     * Test that RolapCubeLevel is used correctly in the context of virtual cube.
      */
     public void testRolapCubeLevelInVirtualCube() {
         String query1 =
@@ -1056,20 +1049,20 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' "
             + "Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' "
-            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
+            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
-            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].[Time].currentMember)}) on rows From [Warehouse and Sales] ";
+            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales] ";
 
         String query2 =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Warehouse],[*BASE_MEMBERS_Time])' "
             + "Set [*NATIVE_MEMBERS_Warehouse] as 'Generate([*NATIVE_CJ_SET], {[Warehouse].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members' "
-            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
-            + "Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].[Time].CurrentMember Not In {[Time].[1997].[Q1].[2]})' "
+            + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].CurrentMember Not In {[Time].[1997].[Q1].[2]})' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Warehouse Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
-            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].[Time].currentMember)}) on rows From [Warehouse and Sales]";
+            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Warehouse].currentMember,[Time].currentMember)}) on rows From [Warehouse and Sales]";
 
         executeQuery(query1);
 
@@ -1106,9 +1099,9 @@ public class VirtualCubeTest extends BatchTestCase {
         assertQueryReturns(query2, result);
     }
 
-    /**
-     * Tests that the logic to apply non empty context constraint in virtual
-     * cube is correct.  The joins shouldn't be cartesian product.
+    /*
+     * Test that the logic to apply non empty context constraint in virtual cube is correct.
+     * The joins shound't be cartesian product.
      */
     public void testNonEmptyCJConstraintOnVirtualCube() {
         String query =
@@ -1120,13 +1113,6 @@ public class VirtualCubeTest extends BatchTestCase {
             + "From [Warehouse and Sales] "
             + "Where ([Product].[All Products].[Food])";
 
-        // Note that for MySQL (because MySQL sorts NULLs first), because there
-        // is a UNION (which prevents us from sorting on column names or
-        // expressions) the ORDER BY clause should be something like
-        //   ORDER BY ISNULL(1), 1 ASC, ISNULL(2), 2 ASC, ISNULL(3), 3 ASC,
-        //   ISNULL(4), 4 ASC
-        // but ISNULL(1) isn't valid SQL, so we forego correct ordering of NULL
-        // values.
         String mysqlSQL =
             "select "
             + "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, `time_by_day`.`month_of_year` as `c2`, `store`.`store_country` as `c3` "
@@ -1152,7 +1138,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "group by "
             + "`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`, `store`.`store_country` "
             + "order by "
-            + "1 ASC, 2 ASC, 3 ASC, 4 ASC";
+            + "ISNULL(1), 1 ASC, ISNULL(2), 2 ASC, ISNULL(3), 3 ASC, ISNULL(4), 4 ASC";
 
         String derbySQL =
             "select "
@@ -1174,7 +1160,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" "
             + "order by 1 ASC, 2 ASC, 3 ASC, 4 ASC";
 
-        SqlPattern[] mysqlPattern = {
+        SqlPattern[] mysqlPattern = new SqlPattern[]{
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
         };
@@ -1227,9 +1213,9 @@ public class VirtualCubeTest extends BatchTestCase {
         assertQueryReturns(query, result);
     }
 
-    /**
-     * Tests that the logic to apply non empty context constraint in virtual
-     * cube is correct.  The joins shouldn't be cartesian product.
+    /*
+     * Test that the logic to apply non empty context constraint in virtual cube is correct.
+     * The joins shound't be cartesian product.
      */
     public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
         String query =
@@ -1242,9 +1228,6 @@ public class VirtualCubeTest extends BatchTestCase {
             + "From [Warehouse and Sales] "
             + "where [bar]";
 
-        // Comments as for testNonEmptyCJConstraintOnVirtualCube. The ORDER BY
-        // clause should be "order by ISNULL(1), 1 ASC" but we will settle for
-        // "order by 1 ASC" and forego correct sorting of NULL values.
         String mysqlSQL =
             "select `product_class`.`product_family` as `c0` "
             + "from `product` as `product`, `product_class` as `product_class`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` "
@@ -1257,7 +1240,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "where `product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and "
             + "`inventory_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_country` = 'USA' "
             + "group by `product_class`.`product_family` "
-            + "order by 1 ASC";
+            + "order by ISNULL(1), 1 ASC";
 
         String derbySQL =
             "select \"product_class\".\"product_family\" "
@@ -1286,12 +1269,11 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #1: 0.345\n"
             + "Row #2: 0.35\n";
 
-        SqlPattern[] mysqlPattern = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
-        };
+        SqlPattern[] mysqlPattern =
+            new SqlPattern[] {
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
+                new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
+            };
 
         assertQuerySql(query, mysqlPattern, true);
         assertQueryReturns(query, result);

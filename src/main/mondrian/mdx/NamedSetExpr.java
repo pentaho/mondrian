@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -82,18 +82,16 @@ public class NamedSetExpr extends ExpBase implements Exp {
         // the caller can handle it, even if it isn't the caller's first choice.
         // This is because the .current and .currentOrdinal functions only
         // work correctly on iterators.
-        final List<ResultStyle> styleList =
-            compiler.getAcceptableResultStyles();
+        final List<ResultStyle> styleList = compiler.getAcceptableResultStyles();
         if (!styleList.contains(ResultStyle.ITERABLE)
-            && !styleList.contains(ResultStyle.ANY))
-        {
+            && !styleList.contains(ResultStyle.ANY)) {
             return null;
         }
 
         if (((SetType) getType()).getArity() != 1) {
             return new AbstractTupleIterCalc(
                 this,
-                new Calc[]{/* todo: compile namedSet.getExp() */})
+                new Calc[]{ /* todo: compile namedSet.getExp() */})
             {
                 public Iterable<Member[]> evaluateTupleIterable(
                     Evaluator evaluator)
@@ -102,7 +100,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
                     return eval.evaluateTupleIterable();
                 }
 
-                public boolean dependsOn(Hierarchy hierarchy) {
+                public boolean dependsOn(Dimension dimension) {
                     // Given that a named set is never re-evaluated within the
                     // scope of a query, effectively it's independent of all
                     // dimensions.
@@ -111,18 +109,17 @@ public class NamedSetExpr extends ExpBase implements Exp {
             };
         } else {
             return new AbstractMemberIterCalc(
-                 this,
-                new Calc[]{/* todo: compile namedSet.getExp() */})
+                this,
+                new Calc[]{ /* todo: compile namedSet.getExp() */})
             {
                 public Iterable<Member> evaluateMemberIterable(
                     Evaluator evaluator)
                 {
-                     final Evaluator.NamedSetEvaluator eval =
-                         getEval(evaluator);
+                    final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
                     return eval.evaluateMemberIterable();
                 }
 
-                public boolean dependsOn(Hierarchy hierarchy) {
+                public boolean dependsOn(Dimension dimension) {
                     // Given that a named set is never re-evaluated within the
                     // scope of a query, effectively it's independent of all
                     // dimensions.

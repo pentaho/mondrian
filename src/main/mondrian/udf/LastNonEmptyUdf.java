@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -111,8 +111,8 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
         // default hierarchy and return it's null member.
         final Hierarchy hierarchy = memberListExp.getType().getHierarchy();
         return (hierarchy == null)
-            ? memberListExp.getType().getDimension()
-                .getHierarchies()[0].getNullMember()
+            ? memberListExp.getType().getDimension().
+                getHierarchies()[0].getNullMember()
             : hierarchy.getNullMember();
     }
 

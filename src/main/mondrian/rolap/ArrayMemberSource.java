@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -54,24 +54,14 @@ abstract class ArrayMemberSource implements MemberSource {
         return Collections.emptyList();
     }
 
-    public void getMemberChildren(
-        RolapMember parentMember,
-        List<RolapMember> children)
-    {
+    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
         // there are no children
     }
-
-    public void getMemberChildren(
-        List<RolapMember> parentMembers,
-        List<RolapMember> children)
-    {
+    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
         // there are no children
     }
-
-    public RolapMember lookupMember(
-        List<Id.Segment> uniqueNameParts,
-        boolean failIfNotFound)
-    {
+    public RolapMember lookupMember(List<Id.Segment> uniqueNameParts,
+                                    boolean failIfNotFound) {
         String uniqueName = Util.implode(uniqueNameParts);
         for (RolapMember member : members) {
             if (member.getUniqueName().equals(uniqueName)) {

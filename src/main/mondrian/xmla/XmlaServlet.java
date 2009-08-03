@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2003-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,10 +37,8 @@ import java.util.*;
  * @since December, 2005
  * @version $Id$
  */
-public abstract class XmlaServlet
-    extends HttpServlet
-    implements XmlaConstants
-{
+public abstract class XmlaServlet extends HttpServlet
+                                  implements XmlaConstants {
 
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
@@ -64,20 +62,19 @@ public abstract class XmlaServlet
     }
 
     /**
-     * Returns true if paramName's value is not null and 'true'.
+     * If paramName's value is not null and 'true', then return true.
+     *
      */
     public static boolean getBooleanInitParameter(
-        ServletConfig servletConfig,
-        String paramName)
-    {
+            ServletConfig servletConfig,
+            String paramName) {
         String paramValue = servletConfig.getInitParameter(paramName);
         return paramValue != null && Boolean.valueOf(paramValue);
     }
 
     public static boolean getParameter(
-        HttpServletRequest req,
-        String paramName)
-    {
+            HttpServletRequest req,
+            String paramName) {
         String paramValue = req.getParameter(paramName);
         return paramValue != null && Boolean.valueOf(paramValue);
     }
@@ -173,10 +170,11 @@ public abstract class XmlaServlet
                     response.setCharacterEncoding(charEncoding);
                 } catch (UnsupportedEncodingException uee) {
                     charEncoding = null;
-                    LOGGER.warn(
-                        "Unsupported character encoding '" + charEncoding
-                        + "': Use default character encoding from HTTP client "
-                        + "for now");
+                    String msg = "Unsupported character encoding '" +
+                        charEncoding +
+                        "': " +
+                        "Use default character encoding from HTTP client for now";
+                    LOGGER.warn(msg);
                 }
             }
 
@@ -192,29 +190,24 @@ public abstract class XmlaServlet
                     if (!callback.processHttpHeader(
                         request,
                         response,
-                        context))
-                    {
+                        context)) {
                         return;
                     }
                 }
             } catch (XmlaException xex) {
-                LOGGER.error(
-                    "Errors when invoking callbacks validateHttpHeader", xex);
+                LOGGER.error("Errors when invoking callbacks validateHttpHeader", xex);
                 handleFault(response, responseSoapParts, phase, xex);
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             } catch (Exception ex) {
-                LOGGER.error(
-                    "Errors when invoking callbacks validateHttpHeader", ex);
-                handleFault(
-                    response, responseSoapParts,
-                    phase,
-                    new XmlaException(
-                        SERVER_FAULT_FC,
-                        CHH_CODE,
-                        CHH_FAULT_FS,
-                        ex));
+                LOGGER.error("Errors when invoking callbacks validateHttpHeader", ex);
+                handleFault(response, responseSoapParts,
+                        phase, new XmlaException(
+                                SERVER_FAULT_FC,
+                                CHH_CODE,
+                                CHH_FAULT_FS,
+                                ex));
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
@@ -230,9 +223,8 @@ public abstract class XmlaServlet
 
                 // check request's content type
                 String contentType = request.getContentType();
-                if (contentType == null
-                    || contentType.indexOf("text/xml") == -1)
-                {
+                if (contentType == null ||
+                    contentType.indexOf("text/xml") == -1) {
                     throw new IllegalArgumentException(
                         "Only accepts content type 'text/xml', not '"
                         + contentType + "'");
@@ -255,11 +247,10 @@ public abstract class XmlaServlet
                 }
 
                 // process application specified SOAP header here
-                handleSoapHeader(
-                    response,
-                    requestSoapParts,
-                    responseSoapParts,
-                    context);
+                handleSoapHeader(response,
+                                 requestSoapParts,
+                                 responseSoapParts,
+                                 context);
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
@@ -287,14 +278,12 @@ public abstract class XmlaServlet
                 return;
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks preaction", ex);
-                handleFault(
-                    response, responseSoapParts,
-                    phase,
-                    new XmlaException(
-                        SERVER_FAULT_FC,
-                        CPREA_CODE,
-                        CPREA_FAULT_FS,
-                        ex));
+                handleFault(response, responseSoapParts,
+                        phase, new XmlaException(
+                                SERVER_FAULT_FC,
+                                CPREA_CODE,
+                                CPREA_FAULT_FS,
+                                ex));
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
@@ -447,16 +436,14 @@ public abstract class XmlaServlet
         // if false, then do not throw exception if the file/url
         // can not be found
         boolean optional =
-            getBooleanInitParameter(
-                servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
+            getBooleanInitParameter(servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
 
         URL dataSourcesConfigUrl = null;
         try {
             if (paramValue == null) {
                 // fallback to default
                 String defaultDS = "WEB-INF/" + DEFAULT_DATASOURCE_FILE;
-                ServletContext servletContext =
-                    servletConfig.getServletContext();
+                ServletContext servletContext = servletConfig.getServletContext();
                 File realPath = new File(servletContext.getRealPath(defaultDS));
                 if (realPath.exists()) {
                     // only if it exists
@@ -467,9 +454,9 @@ public abstract class XmlaServlet
                     paramValue,
                     Util.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "XmlaServlet.makeDataSources: paramValue="
-                        + paramValue);
+                    String msg = "XmlaServlet.makeDataSources: " +
+                            "paramValue=" + paramValue;
+                    LOGGER.debug(msg);
                 }
                 // is the parameter a valid URL
                 MalformedURLException mue = null;
@@ -499,9 +486,9 @@ public abstract class XmlaServlet
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaServlet.makeDataSources: dataSourcesConfigUrl="
-                + dataSourcesConfigUrl);
+            String msg = "XmlaServlet.makeDataSources: " +
+                    "dataSourcesConfigUrl=" + dataSourcesConfigUrl;
+            LOGGER.debug(msg);
         }
         // don't try to parse a null
         return (dataSourcesConfigUrl == null)
@@ -539,8 +526,8 @@ public abstract class XmlaServlet
         } catch (Exception e) {
             throw Util.newError(
                 e,
-                "Failed to parse data sources config '"
-                + dataSourcesConfigUrl.toExternalForm() + "'");
+                "Failed to parse data sources config '" +
+                dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
@@ -566,9 +553,9 @@ public abstract class XmlaServlet
                     Util.toMap(System.getProperties()));
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "XmlaServlet.parseDataSources: dataSources="
-                    + dataSourcesConfigString);
+                String msg = "XmlaServlet.parseDataSources: " +
+                    "dataSources=" + dataSourcesConfigString;
+                LOGGER.debug(msg);
             }
             final Parser parser = XOMUtil.createDefaultParser();
             final DOMWrapper doc = parser.parse(dataSourcesConfigString);
@@ -576,8 +563,8 @@ public abstract class XmlaServlet
         } catch (XOMException e) {
             throw Util.newError(
                 e,
-                "Failed to parse data sources config: "
-                + dataSourcesConfigString);
+                "Failed to parse data sources config: " +
+                dataSourcesConfigString);
         }
     }
 
@@ -617,10 +604,8 @@ public abstract class XmlaServlet
                         try {
                             callback.init(servletConfig);
                         } catch (Exception e) {
-                            LOGGER.warn(
-                                "Failed to initialize callback '"
-                                + className + "'",
-                                e);
+                            LOGGER.warn("Failed to initialize callback '" +
+                                className + "'", e);
                             continue nextCallback;
                         }
 
@@ -628,30 +613,26 @@ public abstract class XmlaServlet
                         count++;
 
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info(
-                                "Register callback '" + className + "'");
+                            LOGGER.info("Register callback '" +
+                                className + "'");
                         }
                     } else {
-                        LOGGER.warn(
-                            "'" + className + "' is not an implementation of '"
-                            + XmlaRequestCallback.class + "'");
+                        LOGGER.warn("'" + className +
+                            "' is not an implementation of '" +
+                            XmlaRequestCallback.class + "'");
                     }
                 } catch (ClassNotFoundException cnfe) {
-                    LOGGER.warn(
-                        "Callback class '" + className + "' not found",
+                    LOGGER.warn("Callback class '" + className + "' not found",
                         cnfe);
                 } catch (InstantiationException ie) {
-                    LOGGER.warn(
-                        "Can't instantiate class '" + className + "'",
+                    LOGGER.warn("Can't instantiate class '" + className + "'",
                         ie);
                 } catch (IllegalAccessException iae) {
-                    LOGGER.warn(
-                        "Can't instantiate class '" + className + "'",
+                    LOGGER.warn("Can't instantiate class '" + className + "'",
                         iae);
                 }
             }
-            LOGGER.debug(
-                "Registered " + count + " callback" + (count > 1 ? "s" : ""));
+            LOGGER.debug("Registered " + count + " callback" + (count > 1 ? "s" : ""));
         }
     }
 

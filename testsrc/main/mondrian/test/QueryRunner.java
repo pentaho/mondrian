@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -98,13 +98,9 @@ public class QueryRunner extends Thread {
 
 //        // #9
 //        "with\n"
-//        + "  member [Product].[Non dairy] as"
-//        + " '[Product].[All Products] - [Product].[Food].[Dairy]'\n"
-//        + "  member [Measures].[Dairy ever] as"
-//        + " 'sum([Time].members, "
-//        + "([Measures].[Unit Sales],[Product].[Food].[Dairy]))'\n"
-//        + "  set [Customers who never bought dairy] as"
-//        + " 'filter([Customers].members, [Measures].[Dairy ever] = 0)'\n"
+//        + "  member [Product].[Non dairy] as '[Product].[All Products] - [Product].[Food].[Dairy]'\n"
+//        + "  member [Measures].[Dairy ever] as 'sum([Time].members, ([Measures].[Unit Sales],[Product].[Food].[Dairy]))'\n"
+//        + "  set [Customers who never bought dairy] as 'filter([Customers].members, [Measures].[Dairy ever] = 0)'\n"
 //        + "select\n"
 //        + " {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns,\n"
 //        + "  [Customers who never bought dairy] on rows\n"
@@ -269,9 +265,7 @@ public class QueryRunner extends Thread {
         }
     }
 
-    private static void runTest(
-        int numThreads, int seconds, boolean randomQueries)
-    {
+    private static void runTest(int numThreads, int seconds, boolean randomQueries) {
         QueryRunner[] runners = new QueryRunner[numThreads];
 
         for (int idx = 0; idx < runners.length; idx++) {
@@ -297,8 +291,9 @@ public class QueryRunner extends Thread {
 
     public static void main(String[] args) {
         if (args.length != 3) {
-            System.err.println(
-                "usage: QueryRunner numThreads seconds randomQueries");
+            System.err.println("usage: QueryRunner numThreads seconds randomQueries");
+
+            return;
         } else {
             runTest(
                 Integer.parseInt(args[0]),

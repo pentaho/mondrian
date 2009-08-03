@@ -1,9 +1,8 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,11 +56,14 @@ public class RolapNativeSql {
     }
 
     private RolapStar getStar(RolapStoredMeasure m) {
-        return ((RolapStar.Measure) m.getStarMeasure()).getStar();
+        return ((RolapStar.Measure)m.getStarMeasure()).getStar();
     }
 
     /**
      * Translates an expression into SQL
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     interface SqlCompiler {
         /**
@@ -77,6 +79,9 @@ public class RolapNativeSql {
     /**
      * Implementation of {@link SqlCompiler} that uses chain of responsibility
      * to find a matching sql compiler.
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     static class CompositeSqlCompiler implements SqlCompiler {
         List<SqlCompiler> compilers = new ArrayList<SqlCompiler>();
@@ -102,6 +107,9 @@ public class RolapNativeSql {
 
     /**
      * Compiles a numeric literal to SQL.
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     class NumberSqlCompiler implements SqlCompiler {
         public String compile(Exp exp) {
@@ -114,8 +122,7 @@ public class RolapNativeSql {
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
             if (dialect.getDatabaseProduct().getFamily()
-                == Dialect.DatabaseProduct.DB2)
-            {
+                == Dialect.DatabaseProduct.DB2) {
                 expr = "FLOAT(" + expr + ")";
             }
             return expr;
@@ -127,7 +134,9 @@ public class RolapNativeSql {
     }
 
     /**
-     * Base class to remove MemberScalarExp.
+     * base class to remove MemberScalarExp
+     * @author av
+     * @since Nov 23, 2005
      */
     abstract class MemberSqlCompiler implements SqlCompiler {
         protected Exp unwind(Exp exp) {
@@ -136,8 +145,10 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles a measure into SQL, the measure will be aggregated
-     * like <code>sum(measure)</code>.
+     * compiles a measure into SQL, the measure will be aggregated like <code>sum(measure)</code>
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     class StoredMeasureSqlCompiler extends MemberSqlCompiler {
 
@@ -160,23 +171,19 @@ public class RolapNativeSql {
 
             String exprInner;
             // Use aggregate table to create condition if available
-            if (aggStar != null
-                && measure.getStarMeasure() instanceof RolapStar.Column)
-            {
-                RolapStar.Column column =
-                    (RolapStar.Column) measure.getStarMeasure();
+            if (aggStar != null &&
+                    measure.getStarMeasure() instanceof RolapStar.Column) {
+                RolapStar.Column column = (RolapStar.Column) measure.getStarMeasure();
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 exprInner = aggColumn.generateExprString(sqlQuery);
             } else {
-                exprInner =
-                    measure.getMondrianDefExpression().getExpression(sqlQuery);
+                exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
             }
 
             String expr = measure.getAggregator().getExpression(exprInner);
             if (dialect.getDatabaseProduct().getFamily()
-                == Dialect.DatabaseProduct.DB2)
-            {
+                == Dialect.DatabaseProduct.DB2) {
                 expr = "FLOAT(" + expr + ")";
             }
             return expr;
@@ -188,7 +195,10 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles the underlying expression of a calculated member.
+     * compiles the underlying expression of a calculated member
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     class CalculatedMemberSqlCompiler extends MemberSqlCompiler {
         SqlCompiler compiler;
@@ -219,7 +229,10 @@ public class RolapNativeSql {
     }
 
     /**
-     * Contains utility methods to compile FunCall expressions into SQL.
+     * contains utility methods to compile FunCall expressions into SQL.
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     abstract class FunCallSqlCompilerBase implements SqlCompiler {
         int category;
@@ -276,16 +289,16 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles a funcall, e.g. foo(a, b, c).
+     * compiles a funcall, e.g. foo(a, b, c)
+     * @author av
+     * @since Nov 23, 2005
      */
     class FunCallSqlCompiler extends FunCallSqlCompilerBase {
         SqlCompiler compiler;
         String sql;
 
-        protected FunCallSqlCompiler(
-            int category, String mdx, String sql,
-            int argCount, SqlCompiler argumentCompiler)
-        {
+        protected FunCallSqlCompiler(int category, String mdx, String sql,
+                int argCount, SqlCompiler argumentCompiler) {
             super(category, mdx, argCount);
             this.sql = sql;
             this.compiler = argumentCompiler;
@@ -315,27 +328,23 @@ public class RolapNativeSql {
     }
 
     /**
-     * Shortcut for an unary operator like NOT(a).
+     * shortcut for an unary operator like NOT(a)
+     * @author av
+     * @since Nov 23, 2005
      */
     class UnaryOpSqlCompiler extends FunCallSqlCompiler {
-        protected UnaryOpSqlCompiler(
-            int category,
-            String mdx,
-            String sql,
-            SqlCompiler argumentCompiler)
-        {
+        protected UnaryOpSqlCompiler(int category, String mdx, String sql, SqlCompiler argumentCompiler) {
             super(category, mdx, sql, 1, argumentCompiler);
         }
     }
 
     /**
-     * Shortcut for ().
+     * shortcut for ()
+     * @author av
+     * @since Nov 23, 2005
      */
     class ParenthesisSqlCompiler extends FunCallSqlCompiler {
-        protected ParenthesisSqlCompiler(
-            int category,
-            SqlCompiler argumentCompiler)
-        {
+        protected ParenthesisSqlCompiler(int category, SqlCompiler argumentCompiler) {
             super(category, "()", "", 1, argumentCompiler);
         }
 
@@ -345,19 +354,17 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles an infix operator like addition into SQL like <code>(a
-     * + b)</code>.
+     * compiles an infix operator like addition into SQL like <code>(a + b)</code>
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     class InfixOpSqlCompiler extends FunCallSqlCompilerBase {
         private final String sql;
         private final SqlCompiler compiler;
 
-        protected InfixOpSqlCompiler(
-            int category,
-            String mdx,
-            String sql,
-            SqlCompiler argumentCompiler)
-        {
+        protected InfixOpSqlCompiler(int category, String mdx, String sql,
+                SqlCompiler argumentCompiler) {
             super(category, mdx, 2);
             this.sql = sql;
             this.compiler = argumentCompiler;
@@ -377,16 +384,15 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles an <code>IsEmpty(measure)</code>
-     * expression into SQL <code>measure is null</code>.
+     * compiles an <code>IsEmpty(measure)</code>
+     * expression into SQL <code>measure is null</code>
+     *
      */
     class IsEmptySqlCompiler extends FunCallSqlCompilerBase {
         private final SqlCompiler compiler;
 
-        protected IsEmptySqlCompiler(
-            int category, String mdx,
-            SqlCompiler argumentCompiler)
-        {
+        protected IsEmptySqlCompiler(int category, String mdx,
+                SqlCompiler argumentCompiler) {
             super(category, mdx, 1);
             this.compiler = argumentCompiler;
         }
@@ -405,8 +411,11 @@ public class RolapNativeSql {
     }
 
     /**
-     * Compiles an <code>IIF(cond, val1, val2)</code> expression into SQL
-     * <code>CASE WHEN cond THEN val1 ELSE val2 END</code>.
+     * compiles an <code>IIF(cond, val1, val2)</code>
+     * expression into SQL <code>CASE WHEN cond THEN val1 ELSE val2 END</code>
+     *
+     * @author av
+     * @since Nov 23, 2005
      */
     class IifSqlCompiler extends FunCallSqlCompilerBase {
 
@@ -433,10 +442,8 @@ public class RolapNativeSql {
     }
 
     /**
-     * Creates a RolapNativeSql.
-     *
-     * @param sqlQuery the query which is needed for different SQL dialects - it
-     * is not modified
+     * creates a new instance
+     * @param sqlQuery the query which is needed for differen SQL dialects - its not modified.
      */
     RolapNativeSql(SqlQuery sqlQuery, AggStar aggStar) {
         this.sqlQuery = sqlQuery;
@@ -449,64 +456,31 @@ public class RolapNativeSql {
         numericCompiler.add(new NumberSqlCompiler());
         numericCompiler.add(new StoredMeasureSqlCompiler());
         numericCompiler.add(new CalculatedMemberSqlCompiler(numericCompiler));
-        numericCompiler.add(
-            new ParenthesisSqlCompiler(Category.Numeric, numericCompiler));
-        numericCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Numeric, "+", "+", numericCompiler));
-        numericCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Numeric, "-", "-", numericCompiler));
-        numericCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Numeric, "/", "/", numericCompiler));
-        numericCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Numeric, "*", "*", numericCompiler));
-        numericCompiler.add(
-            new IifSqlCompiler(Category.Numeric, numericCompiler));
+        numericCompiler.add(new ParenthesisSqlCompiler(Category.Numeric, numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "+", "+", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "-", "-", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "/", "/", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "*", "*", numericCompiler));
+        numericCompiler.add(new IifSqlCompiler(Category.Numeric, numericCompiler));
 
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "<", "<", numericCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "<=", "<=", numericCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, ">", ">", numericCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, ">=", ">=", numericCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "=", "=", numericCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "<>", "<>", numericCompiler));
-        booleanCompiler.add(
-            new IsEmptySqlCompiler(
-                Category.Logical, "IsEmpty", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<", "<", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<=", "<=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, ">", ">", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, ">=", ">=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "=", "=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<>", "<>", numericCompiler));
+        booleanCompiler.add(new IsEmptySqlCompiler(Category.Logical, "IsEmpty", numericCompiler));
 
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "and", "AND", booleanCompiler));
-        booleanCompiler.add(
-            new InfixOpSqlCompiler(
-                Category.Logical, "or", "OR", booleanCompiler));
-        booleanCompiler.add(
-            new UnaryOpSqlCompiler(
-                Category.Logical, "not", "NOT", booleanCompiler));
-        booleanCompiler.add(
-            new ParenthesisSqlCompiler(Category.Logical, booleanCompiler));
-        booleanCompiler.add(
-            new IifSqlCompiler(Category.Logical, booleanCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "and", "AND", booleanCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "or", "OR", booleanCompiler));
+        booleanCompiler.add(new UnaryOpSqlCompiler(Category.Logical, "not", "NOT", booleanCompiler));
+        booleanCompiler.add(new ParenthesisSqlCompiler(Category.Logical, booleanCompiler));
+        booleanCompiler.add(new IifSqlCompiler(Category.Logical, booleanCompiler));
     }
 
     /**
-     * Generates an aggregate of a measure, e.g. "sum(Store_Sales)" for
-     * TopCount. The returned expr will be added to the select list and to the
-     * order by clause.
+     * generates an aggregate of a measure, e.g. "sum(Store_Sales)" for TopCount. The
+     * returned expr will be added to the select list and to the order by clause.
      */
     public String generateTopCountOrderBy(Exp exp) {
         return numericCompiler.compile(exp);

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -81,9 +81,9 @@ public class CacheControlImpl implements CacheControl {
             List<Dimension> dimensionality = region.getDimensionality();
             set.addAll(dimensionality);
             if (set.size() < prevSize + dimensionality.size()) {
-                throw MondrianResource.instance()
-                    .CacheFlushCrossjoinDimensionsInCommon.ex(
-                        getDimensionalityList(regions));
+                throw MondrianResource.instance().
+                    CacheFlushCrossjoinDimensionsInCommon.ex(
+                    getDimensionalityList(regions));
             }
 
             flattenCrossjoin((CellRegionImpl) region, list);
@@ -117,12 +117,11 @@ public class CacheControlImpl implements CacheControl {
         final List<CellRegionImpl> list = new ArrayList<CellRegionImpl>();
         for (CellRegion region : regions) {
             if (!region.getDimensionality().equals(
-                regions[0].getDimensionality()))
-            {
-                throw MondrianResource.instance()
-                    .CacheFlushUnionDimensionalityMismatch.ex(
-                        regions[0].getDimensionality().toString(),
-                        region.getDimensionality().toString());
+                regions[0].getDimensionality())) {
+                throw MondrianResource.instance().
+                    CacheFlushUnionDimensionalityMismatch.ex(
+                    regions[0].getDimensionality().toString(),
+                    region.getDimensionality().toString());
             }
             list.add((CellRegionImpl) region);
         }
@@ -148,8 +147,8 @@ public class CacheControlImpl implements CacheControl {
             }
         }
         if (!found) {
-            throw MondrianResource.instance().CacheFlushRegionMustContainMembers
-                .ex();
+            throw MondrianResource.instance().
+                CacheFlushRegionMustContainMembers.ex();
         }
         final UnionCellRegion union = normalize((CellRegionImpl) region);
         for (CellRegionImpl cellRegion : union.regions) {
@@ -458,7 +457,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void flush(MemberSet memberSet) {
-        // REVIEW How is flush(s) different to executing createDeleteCommand(s)?
+        // REVIEW How is flush(s) different to executing createDeleteCommand(s) ?
         synchronized (MEMBER_CACHE_LOCK) {
             final List<CellRegion> cellRegionList = new ArrayList<CellRegion>();
             ((MemberSetPlus) memberSet).accept(
@@ -535,11 +534,9 @@ public class CacheControlImpl implements CacheControl {
                 "move member not supported for parent-child hierarchy");
         }
         if (loc == null) {
-            throw new IllegalArgumentException(
-                "cannot move member to null location");
+            throw new IllegalArgumentException("cannot move member to null location");
         }
-        // TODO: check that MEMBER and LOC (its new parent) have appropriate
-        // Levels
+        // TODO: check that MEMBER and LOC (its new parent) have appropriate Levels
         return new MoveMemberCommand((RolapMember) member, (RolapMember) loc);
     }
 
@@ -550,8 +547,7 @@ public class CacheControlImpl implements CacheControl {
         throws IllegalArgumentException
     {
         if (member == null) {
-            throw new IllegalArgumentException(
-                "cannot set properties on null member");
+            throw new IllegalArgumentException("cannot set properties on null member");
         }
         if (((RolapLevel) member.getLevel()).isParentChild()) {
             throw new IllegalArgumentException(
@@ -570,8 +566,7 @@ public class CacheControlImpl implements CacheControl {
         Map<String, Object> propertyValues)
         throws IllegalArgumentException
     {
-        // TODO: check that members all at same Level, and validate that props
-        // exist
+        // TODO: check that members all at same Level, and validate that props exist
         validateSameLevel((MemberSetPlus) members);
         return new ChangeMemberPropsCommand(
             (MemberSetPlus) members,
@@ -598,13 +593,11 @@ public class CacheControlImpl implements CacheControl {
                     final String message =
                         "all members in set must belong to same level";
                     if (levelSet.add(member.getLevel())
-                        && levelSet.size() > 1)
-                    {
+                        && levelSet.size() > 1) {
                         throw new IllegalArgumentException(message);
                     }
                     if (descendants
-                        && member.getLevel().getChildLevel() != null)
-                    {
+                        && member.getLevel().getChildLevel() != null) {
                         throw new IllegalArgumentException(message);
                     }
                 }
@@ -727,10 +720,9 @@ public class CacheControlImpl implements CacheControl {
             this.upperMember = upperMember;
             this.upperInclusive = upperInclusive;
             this.descendants = descendants;
-            this.level =
-                lowerMember == null
-                ? upperMember.getLevel()
-                : lowerMember.getLevel();
+            this.level = lowerMember == null ?
+                upperMember.getLevel() :
+                lowerMember.getLevel();
         }
 
         public List<Dimension> getDimensionality() {
@@ -816,8 +808,8 @@ public class CacheControlImpl implements CacheControl {
                     region.getDimensionality();
                 dimensionality.addAll(regionDimensionality);
                 dimensionSet.addAll(regionDimensionality);
-                assert dimensionSet.size() == dimensionality.size()
-                    : "dimensions in common";
+                assert dimensionSet.size() == dimensionality.size() :
+                    "dimensions in common";
             }
         }
 
@@ -1079,8 +1071,7 @@ public class CacheControlImpl implements CacheControl {
      */
     static class SimpleMemberSet implements MemberSetPlus {
         public final List<RolapMember> members;
-        // the set includes the descendants of all members
-        public final boolean descendants;
+        public final boolean descendants; // the set includes the descendants of all members
         public final RolapHierarchy hierarchy;
 
         SimpleMemberSet(List<RolapMember> members, boolean descendants) {
@@ -1201,10 +1192,9 @@ public class CacheControlImpl implements CacheControl {
             this.upperMember = upperMember;
             this.upperInclusive = upperInclusive;
             this.descendants = descendants;
-            this.level =
-                lowerMember == null
-                ? upperMember.getLevel()
-                : lowerMember.getLevel();
+            this.level = lowerMember == null ?
+                upperMember.getLevel() :
+                lowerMember.getLevel();
         }
 
         public String toString() {

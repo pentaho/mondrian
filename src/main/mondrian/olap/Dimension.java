@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -36,6 +36,12 @@ public interface Dimension extends OlapElement {
      * {@link DimensionType#TimeDimension}
      */
     DimensionType getDimensionType();
+
+    /**
+     * Returns dimension's ordinal within a given cube.
+     * The <code>[Measures]</code> always has ordinal 0.
+     */
+    int getOrdinal(Cube cube);
 
     /**
      * Returns the schema this dimension belongs to.

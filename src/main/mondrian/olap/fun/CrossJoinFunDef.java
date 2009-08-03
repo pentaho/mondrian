@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2003-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -29,16 +29,14 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 public class CrossJoinFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver =
-        new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Crossjoin",
             "Crossjoin(<Set1>, <Set2>)",
             "Returns the cross product of two sets.",
             new String[]{"fxxx"},
             CrossJoinFunDef.class);
 
-    static final StarCrossJoinResolver StarResolver =
-        new StarCrossJoinResolver();
+    static final StarCrossJoinResolver StarResolver = new StarCrossJoinResolver();
 
     private static int counterTag = 0;
 
@@ -65,7 +63,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
         }
         final MemberType[] types = list.toArray(new MemberType[list.size()]);
-        TupleType.checkHierarchies(types);
+        TupleType.checkDimensions(types);
         final TupleType tupleType = new TupleType(types);
         return new SetType(tupleType);
     }
@@ -157,19 +155,15 @@ public class CrossJoinFunDef extends FunDefBase {
                 // Member[]
                 if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberIterMemberArrayIterCalc(
-                            call, calcs);
+                        return new IterMemberIterMemberArrayIterCalc(call, calcs);
                     } else {
-                        return new IterMemberListMemberArrayIterCalc(
-                            call, calcs);
+                        return new IterMemberListMemberArrayIterCalc(call, calcs);
                     }
                 } else {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberIterMemberArrayIterCalc(
-                            call, calcs);
+                        return new ListMemberIterMemberArrayIterCalc(call, calcs);
                     } else {
-                        return new ListMemberListMemberArrayIterCalc(
-                            call, calcs);
+                        return new ListMemberListMemberArrayIterCalc(call, calcs);
                     }
                 }
             }
@@ -179,38 +173,30 @@ public class CrossJoinFunDef extends FunDefBase {
                 // Member
                 if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberArrayIterMemberIterCalc(
-                            call, calcs);
+                        return new IterMemberArrayIterMemberIterCalc(call, calcs);
                     } else {
-                        return new IterMemberArrayListMemberIterCalc(
-                            call, calcs);
+                        return new IterMemberArrayListMemberIterCalc(call, calcs);
                     }
                 } else {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberArrayIterMemberIterCalc(
-                            call, calcs);
+                        return new ListMemberArrayIterMemberIterCalc(call, calcs);
                     } else {
-                        return new ListMemberArrayListMemberIterCalc(
-                            call, calcs);
+                        return new ListMemberArrayListMemberIterCalc(call, calcs);
                     }
                 }
             } else {
                 // Member[]
                 if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberArrayIterMemberArrayIterCalc(
-                            call, calcs);
+                        return new IterMemberArrayIterMemberArrayIterCalc(call, calcs);
                     } else {
-                        return new IterMemberArrayListMemberArrayIterCalc(
-                            call, calcs);
+                        return new IterMemberArrayListMemberArrayIterCalc(call, calcs);
                     }
                 } else {
                     if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberArrayIterMemberArrayIterCalc(
-                            call, calcs);
+                        return new ListMemberArrayIterMemberArrayIterCalc(call, calcs);
                     } else {
-                        return new ListMemberArrayListMemberArrayIterCalc(
-                            call, calcs);
+                        return new ListMemberArrayListMemberArrayIterCalc(call, calcs);
                     }
                 }
             }
@@ -307,8 +293,7 @@ public class CrossJoinFunDef extends FunDefBase {
          * @param o2 List or Iterable of Member or Member[]
          * @return Iterable&lt;Member[]&gt; over contents of o1 and o2
          */
-        protected abstract Iterable<Member[]> makeIterable(
-            Object o1, Object o2);
+        protected abstract Iterable<Member[]> makeIterable(Object o1, Object o2);
 
         /**
          * Derived classes implement depending upon the types of parameter
@@ -598,8 +583,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member Member
     abstract class BaseMemberMemberIterCalc
-            extends BaseTupleIterCalc
-    {
+            extends BaseTupleIterCalc {
         BaseMemberMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -610,8 +594,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member Member[]
     abstract class BaseMemberMemberArrayIterCalc
-        extends BaseTupleIterCalc
-    {
+                    extends BaseTupleIterCalc {
         BaseMemberMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -627,8 +610,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member[] Member
     abstract class BaseMemberArrayMemberIterCalc
-        extends BaseTupleIterCalc
-    {
+                    extends BaseTupleIterCalc {
         BaseMemberArrayMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -644,8 +626,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // Member[] Member[]
     abstract class BaseMemberArrayMemberArrayIterCalc
-        extends BaseTupleIterCalc
-    {
+                    extends BaseTupleIterCalc {
         BaseMemberArrayMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -663,8 +644,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member ITERABLE Member
     class IterMemberIterMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
+            extends BaseMemberMemberIterCalc {
         IterMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -679,8 +659,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member LIST Member
     class IterMemberListMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
+            extends BaseMemberMemberIterCalc {
         IterMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -702,8 +681,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member ITERABLE Member
     class ListMemberIterMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
+            extends BaseMemberMemberIterCalc {
         ListMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -725,8 +703,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member LIST Member
     class ListMemberListMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
+            extends BaseMemberMemberIterCalc {
         ListMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -762,8 +739,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member ITERABLE Member[]
     class IterMemberIterMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
+                extends BaseMemberMemberArrayIterCalc {
         IterMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -778,8 +754,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member LIST Member[]
     class IterMemberListMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
+                extends BaseMemberMemberArrayIterCalc {
         IterMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -801,8 +776,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member ITERABLE Member[]
     class ListMemberIterMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
+                extends BaseMemberMemberArrayIterCalc {
         ListMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -824,8 +798,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member LIST Member[]
     class ListMemberListMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
+                extends BaseMemberMemberArrayIterCalc {
         ListMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -861,8 +834,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member[] ITERABLE Member
     class IterMemberArrayIterMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
+                extends BaseMemberArrayMemberIterCalc {
         IterMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -900,8 +872,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] ITERABLE Member
     class ListMemberArrayIterMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
+                extends BaseMemberArrayMemberIterCalc {
         ListMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -923,8 +894,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] LIST Member
     class ListMemberArrayListMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
+                extends BaseMemberArrayMemberIterCalc {
         ListMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
@@ -960,12 +930,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member[] ITERABLE Member[]
     class IterMemberArrayIterMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        IterMemberArrayIterMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+                extends BaseMemberArrayMemberArrayIterCalc {
+        IterMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
@@ -979,12 +945,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // ITERABLE Member[] LIST Member[]
     class IterMemberArrayListMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        IterMemberArrayListMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+                extends BaseMemberArrayMemberArrayIterCalc {
+        IterMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
@@ -1005,12 +967,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] ITERABLE Member[]
     class ListMemberArrayIterMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        ListMemberArrayIterMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+                extends BaseMemberArrayMemberArrayIterCalc {
+        ListMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
@@ -1031,12 +989,8 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] LIST Member[]
     class ListMemberArrayListMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        ListMemberArrayListMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+                extends BaseMemberArrayMemberArrayIterCalc {
+        ListMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
@@ -1073,10 +1027,8 @@ public class CrossJoinFunDef extends FunDefBase {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ListCalc compileCallImmutableList(
-        final ResolvedFunCall call,
-        ExpCompiler compiler)
-    {
+    protected ListCalc compileCallImmutableList(final ResolvedFunCall call,
+            ExpCompiler compiler) {
         final ListCalc listCalc1 = toList(compiler, call.getArg(0));
         final ListCalc listCalc2 = toList(compiler, call.getArg(1));
         Calc[] calcs = new Calc[] {listCalc1, listCalc2};
@@ -1098,19 +1050,16 @@ public class CrossJoinFunDef extends FunDefBase {
                 return new ImmutableListMemberListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-                return new ImmutableListMemberListMemberArrayListCalc(
-                    call, calcs);
+                return new ImmutableListMemberListMemberArrayListCalc(call, calcs);
             }
         } else {
             // Member[]
             if (isMemberType(listCalc2)) {
                 // Member
-                return new ImmutableListMemberArrayListMemberListCalc(
-                    call, calcs);
+                return new ImmutableListMemberArrayListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-                return new ImmutableListMemberArrayListMemberArrayListCalc(
-                    call, calcs);
+                return new ImmutableListMemberArrayListMemberArrayListCalc(call, calcs);
             }
         }
     }
@@ -1197,8 +1146,7 @@ public class CrossJoinFunDef extends FunDefBase {
     }
 
     public abstract class BaseImmutableList
-        extends UnsupportedList<Member[]>
-    {
+                            extends UnsupportedList<Member[]> {
         protected BaseImmutableList() {
         }
         public abstract int size();
@@ -1249,15 +1197,10 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member LIST Member
     class ImmutableListMemberListMemberListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberListMemberListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+            extends BaseListCalc {
+        ImmutableListMemberListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, false);
         }
-
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int size = l1.size() * l2.size();
             // This is the mythical "local class" declaration.
@@ -1303,14 +1246,8 @@ public class CrossJoinFunDef extends FunDefBase {
                         public Member[] get(int index) {
                             return Outer.this.get(index + this.fromIndex);
                         }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1322,15 +1259,10 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member LIST Member[]
     class ImmutableListMemberListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberListMemberArrayListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+            extends BaseListCalc {
+        ImmutableListMemberListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, false);
         }
-
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int len2 = ((Member[])l2.get(0)).length;
             final int size = (l1.size() * l2.size());
@@ -1350,32 +1282,22 @@ public class CrossJoinFunDef extends FunDefBase {
                     System.arraycopy(ma2, 0, ma, 1, len2);
                     return ma;
                 }
-
                 public List<Member[]> subList(int fromIndex, int toIndex) {
                     class Inner extends Outer {
                         int fromIndex;
                         int toIndex;
-
                         Inner(int fromIndex, int toIndex) {
                             this.fromIndex = fromIndex;
                             this.toIndex = toIndex;
                         }
-
                         public int size() {
                             return (this.toIndex - this.fromIndex);
                         }
-
                         public Member[] get(int index) {
                             return Outer.this.get(index + this.fromIndex);
                         }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1384,18 +1306,12 @@ public class CrossJoinFunDef extends FunDefBase {
             return new Outer();
         }
     }
-
     // LIST Member[] LIST Member
     class ImmutableListMemberArrayListMemberListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberArrayListMemberListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+            extends BaseListCalc {
+        ImmutableListMemberArrayListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, false);
         }
-
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int len1 = ((Member[])l1.get(0)).length;
             final int size = (l1.size() * l2.size());
@@ -1419,27 +1335,18 @@ public class CrossJoinFunDef extends FunDefBase {
                     class Inner extends Outer {
                         int fromIndex;
                         int toIndex;
-
                         Inner(int fromIndex, int toIndex) {
                             this.fromIndex = fromIndex;
                             this.toIndex = toIndex;
                         }
-
                         public int size() {
                             return (this.toIndex - this.fromIndex);
                         }
-
                         public Member[] get(int index) {
                             return Outer.this.get(index + this.fromIndex);
                         }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1448,18 +1355,12 @@ public class CrossJoinFunDef extends FunDefBase {
             return new Outer();
         }
     }
-
     // LIST Member[] LIST Member[]
     class ImmutableListMemberArrayListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberArrayListMemberArrayListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
+            extends BaseListCalc {
+        ImmutableListMemberArrayListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs, false);
         }
-
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int len1 = ((Member[])l1.get(0)).length;
             final int len2 = ((Member[])l2.get(0)).length;
@@ -1485,27 +1386,18 @@ public class CrossJoinFunDef extends FunDefBase {
                     class Inner extends Outer {
                         int fromIndex;
                         int toIndex;
-
                         Inner(int fromIndex, int toIndex) {
                             this.fromIndex = fromIndex;
                             this.toIndex = toIndex;
                         }
-
                         public int size() {
                             return (this.toIndex - this.fromIndex);
                         }
-
                         public Member[] get(int index) {
                             return Outer.this.get(index + this.fromIndex);
                         }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex + fromIndex, this.fromIndex + toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1521,10 +1413,8 @@ public class CrossJoinFunDef extends FunDefBase {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ListCalc compileCallMutableList(
-        final ResolvedFunCall call,
-        ExpCompiler compiler)
-    {
+    protected ListCalc compileCallMutableList(final ResolvedFunCall call,
+            ExpCompiler compiler) {
         final ListCalc listCalc1 = toList(compiler, call.getArg(0));
         final ListCalc listCalc2 = toList(compiler, call.getArg(1));
 
@@ -1548,19 +1438,16 @@ public class CrossJoinFunDef extends FunDefBase {
                 return new MutableListMemberListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-                return new MutableListMemberListMemberArrayListCalc(
-                    call, calcs);
+                return new MutableListMemberListMemberArrayListCalc(call, calcs);
             }
         } else {
             // Member[]
             if (isMemberType(listCalc2)) {
                 // Member
-                return new MutableListMemberArrayListMemberListCalc(
-                    call, calcs);
+                return new MutableListMemberArrayListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-                return new MutableListMemberArrayListMemberArrayListCalc(
-                    call, calcs);
+                return new MutableListMemberArrayListMemberArrayListCalc(call, calcs);
             }
         }
     }
@@ -1571,8 +1458,7 @@ public class CrossJoinFunDef extends FunDefBase {
      * supported).
      */
     public abstract class BaseMutableList
-        extends UnsupportedList<Member[]>
-    {
+                            extends UnsupportedList<Member[]> {
         protected final List<Member> members;
         protected BaseMutableList(List<Member> members) {
             this.members = members;
@@ -1728,8 +1614,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member LIST Member[]
     class MutableListMemberListMemberArrayListCalc
-        extends BaseListCalc
-    {
+            extends BaseListCalc {
         MutableListMemberListMemberArrayListCalc(
             ResolvedFunCall call, Calc[] calcs)
         {
@@ -1824,8 +1709,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] LIST Member
     class MutableListMemberArrayListMemberListCalc
-        extends BaseListCalc
-    {
+            extends BaseListCalc {
         MutableListMemberArrayListMemberListCalc(
             final ResolvedFunCall call,
             final Calc[] calcs)
@@ -1927,8 +1811,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
     // LIST Member[] LIST Member[]
     class MutableListMemberArrayListMemberArrayListCalc
-        extends BaseListCalc
-    {
+            extends BaseListCalc {
         MutableListMemberArrayListMemberArrayListCalc(
             ResolvedFunCall call, Calc[] calcs)
         {
@@ -2465,9 +2348,8 @@ public class CrossJoinFunDef extends FunDefBase {
                 //     N      |      N      |      Y if not "All"
                 // -----------------------------------------------
                 //
-                if ((isSlicerMember && !em.isCalculated())
-                    || (!isSlicerMember && em.isCalculated()))
-                {
+                if ((isSlicerMember && !em.isCalculated()) ||
+                    (!isSlicerMember && em.isCalculated())) {
                     continue;
                 }
 
@@ -2525,20 +2407,16 @@ public class CrossJoinFunDef extends FunDefBase {
         if (list.get(0) instanceof Member[]) {
             for (Member[] ms : ((List<Member[]>) list)) {
                 evaluator.setContext(ms);
-                if (checkData(
-                    nonAllMembers, nonAllMembers.length - 1,
-                    measureSet, evaluator))
-                {
+                if (checkData(nonAllMembers, nonAllMembers.length - 1,
+                            measureSet, evaluator)) {
                     result.add((T) ms);
                 }
             }
         } else {
             for (Member m : ((List<Member>) list)) {
                 evaluator.setContext(m);
-                if (checkData(
-                    nonAllMembers, nonAllMembers.length - 1,
-                    measureSet, evaluator))
-                {
+                if (checkData(nonAllMembers, nonAllMembers.length - 1,
+                            measureSet, evaluator)) {
                     result.add((T) m);
                 }
             }

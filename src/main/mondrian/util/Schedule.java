@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2002-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -73,19 +73,17 @@ public class Schedule {
     static final TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");
 
     static final int allDaysOfWeekBitmap =
-        (1 << Calendar.MONDAY)
-        | (1 << Calendar.TUESDAY)
-        | (1 << Calendar.WEDNESDAY)
-        | (1 << Calendar.THURSDAY)
-        | (1 << Calendar.FRIDAY)
-        | (1 << Calendar.SATURDAY)
-        | (1 << Calendar.SUNDAY);
-    static final int allDaysOfMonthBitmap =
-        0xefffFffe // bits 1..31
-        | (1 << LAST_DAY_OF_MONTH);
-    static final int allWeeksOfMonthBitmap =
-        0x0000003e // bits 1..5
-        | (1 << LAST_WEEK_OF_MONTH);
+            (1 << Calendar.MONDAY) |
+            (1 << Calendar.TUESDAY) |
+            (1 << Calendar.WEDNESDAY) |
+            (1 << Calendar.THURSDAY) |
+            (1 << Calendar.FRIDAY) |
+            (1 << Calendar.SATURDAY) |
+            (1 << Calendar.SUNDAY);
+    static final int allDaysOfMonthBitmap = 0xefffFffe | // bits 1..31
+            (1 << LAST_DAY_OF_MONTH);
+    static final int allWeeksOfMonthBitmap = 0x0000003e | // bits 1..5
+            (1 << LAST_WEEK_OF_MONTH);
 
     // constructor(s) and factory methods
 
@@ -94,12 +92,11 @@ public class Schedule {
      * Schedule.
      */
     private Schedule(
-        DateSchedule dateSchedule,
-        TimeSchedule timeSchedule,
-        TimeZone tz,
-        Date begin,
-        Date end)
-    {
+            DateSchedule dateSchedule,
+            TimeSchedule timeSchedule,
+            TimeZone tz,
+            Date begin,
+            Date end) {
         this.dateSchedule = dateSchedule;
         this.timeSchedule = timeSchedule;
         this.tz = tz;
@@ -145,22 +142,16 @@ public class Schedule {
      * @post return != null
      */
     public static Schedule createDaily(
-        Date begin,
-        Date end,
-        TimeZone tz,
-        Time timeOfDay,
-        int period)
-    {
-        DateSchedule dateSchedule =
-            new DailyDateSchedule(
+            Date begin, Date end, TimeZone tz, Time timeOfDay, int period) {
+        DateSchedule dateSchedule = new DailyDateSchedule(
                 begin == null ? null : ScheduleUtil.createCalendar(begin),
                 period);
         return new Schedule(
-            dateSchedule,
-            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
-            tz,
-            begin,
-            end);
+                dateSchedule,
+                new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
+                tz,
+                begin,
+                end);
     }
 
     /**
@@ -184,24 +175,18 @@ public class Schedule {
      * @post return != null
      */
     public static Schedule createWeekly(
-        Date begin,
-        Date end,
-        TimeZone tz,
-        Time timeOfDay,
-        int period,
-        int daysOfWeekBitmap)
-    {
-        DateSchedule dateSchedule =
-            new WeeklyDateSchedule(
+            Date begin, Date end, TimeZone tz,
+            Time timeOfDay, int period, int daysOfWeekBitmap) {
+        DateSchedule dateSchedule = new WeeklyDateSchedule(
                 begin == null ? null : ScheduleUtil.createCalendar(begin),
                 period,
                 daysOfWeekBitmap);
         return new Schedule(
-            dateSchedule,
-            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
-            tz,
-            begin,
-            end);
+                dateSchedule,
+                new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
+                tz,
+                begin,
+                end);
     }
 
     /**
@@ -231,23 +216,17 @@ public class Schedule {
      * @post return != null
      */
     public static Schedule createMonthlyByDay(
-        Date begin,
-        Date end,
-        TimeZone tz,
-        Time timeOfDay,
-        int period,
-        int daysOfMonthBitmap)
-    {
-        DateSchedule dateSchedule =
-            new MonthlyByDayDateSchedule(
+            Date begin, Date end, TimeZone tz, Time timeOfDay, int period,
+            int daysOfMonthBitmap) {
+        DateSchedule dateSchedule = new MonthlyByDayDateSchedule(
                 begin == null ? null : ScheduleUtil.createCalendar(begin),
                 period, daysOfMonthBitmap);
         return new Schedule(
-            dateSchedule,
-            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
-            tz,
-            begin,
-            end);
+                dateSchedule,
+                new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
+                tz,
+                begin,
+                end);
     }
 
     /**
@@ -280,26 +259,20 @@ public class Schedule {
      * @post return != null
      */
     public static Schedule createMonthlyByWeek(
-        Date begin,
-        Date end,
-        TimeZone tz,
-        Time timeOfDay,
-        int period,
-        int daysOfWeekBitmap,
-        int weeksOfMonthBitmap)
-    {
-        DateSchedule dateSchedule =
-            new MonthlyByWeekDateSchedule(
+            Date begin, Date end, TimeZone tz,
+            Time timeOfDay, int period, int daysOfWeekBitmap,
+            int weeksOfMonthBitmap) {
+        DateSchedule dateSchedule = new MonthlyByWeekDateSchedule(
                 begin == null ? null : ScheduleUtil.createCalendar(begin),
                 period,
                 daysOfWeekBitmap,
                 weeksOfMonthBitmap);
         return new Schedule(
-            dateSchedule,
-            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
-            tz,
-            begin,
-            end);
+                dateSchedule,
+                new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),
+                tz,
+                begin,
+                end);
     }
 
     /**
@@ -315,9 +288,8 @@ public class Schedule {
      *     returned is strictly greater than <code>after</code>.
      */
     public Date nextOccurrence(Date after, boolean strict) {
-        if (after == null
-            || begin != null && begin.after(after))
-        {
+        if (after == null ||
+                begin != null && begin.after(after)) {
             after = begin;
             strict = false;
         }
@@ -327,10 +299,9 @@ public class Schedule {
         Date next = nextOccurrence0(after, strict);
         // if there is an upper bound, and this is not STRICTLY before it,
         // there's no next occurrence
-        if (next != null
-            && end != null
-            && !next.before(end))
-        {
+        if (next != null &&
+                end != null &&
+                !next.before(end)) {
             next = null;
         }
         return next;
@@ -375,8 +346,7 @@ public class Schedule {
         if (nextTime == null) {
             // next, try the first time on a later day
             nextDay = dateSchedule.nextOccurrence(earliestDay, true);
-            nextTime =
-                timeSchedule.nextOccurrence(ScheduleUtil.midnightTime, false);
+            nextTime = timeSchedule.nextOccurrence(ScheduleUtil.midnightTime, false);
         }
         if (nextDay == null || nextTime == null) {
             return null;
@@ -414,7 +384,6 @@ class OnceTimeSchedule implements TimeSchedule {
         ScheduleUtil.assertTrue(ScheduleUtil.isTime(time));
         this.time = time;
     }
-
     public Calendar nextOccurrence(Calendar after, boolean strict) {
         if (after == null) {
             return time;
@@ -488,9 +457,8 @@ class WeeklyDateSchedule implements DateSchedule {
                 (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
                 "weekly schedule must have at least one day set");
         ScheduleUtil.assertTrue(
-            (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap)
-            == daysOfWeekBitmap,
-            "weekly schedule has bad bits set: " + daysOfWeekBitmap);
+                (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) == daysOfWeekBitmap,
+                "weekly schedule has bad bits set: " + daysOfWeekBitmap);
     }
 
     public Calendar nextOccurrence(Calendar earliest, boolean strict) {
@@ -510,8 +478,8 @@ class WeeklyDateSchedule implements DateSchedule {
             earliest.add(Calendar.DATE, 1);
         }
         throw ScheduleUtil.newInternal(
-            "weekly date schedule is looping -- maybe the bitmap is empty: "
-            + daysOfWeekBitmap);
+                "weekly date schedule is looping -- maybe the " +
+                "bitmap is empty: " + daysOfWeekBitmap);
     }
 }
 
@@ -525,21 +493,18 @@ class MonthlyByDayDateSchedule implements DateSchedule {
     int daysOfMonthBitmap;
 
     MonthlyByDayDateSchedule(
-        Calendar begin,
-        int period,
-        int daysOfMonthBitmap)
-    {
+            Calendar begin, int period, int daysOfMonthBitmap) {
         this.period = period;
         ScheduleUtil.assertTrue(period > 0, "period must be positive");
         this.beginMonth = begin == null ? 0 : monthOrdinal(begin);
         this.daysOfMonthBitmap = daysOfMonthBitmap;
         ScheduleUtil.assertTrue(
-            (daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap) != 0,
-            "monthly day schedule must have at least one day set");
+                (daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap) != 0,
+                "monthly day schedule must have at least one day set");
         ScheduleUtil.assertTrue(
-            (daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap)
-            == daysOfMonthBitmap,
-            "monthly schedule has bad bits set: " + daysOfMonthBitmap);
+                (daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap) ==
+                daysOfMonthBitmap,
+                "monthly schedule has bad bits set: " + daysOfMonthBitmap);
     }
 
     public Calendar nextOccurrence(Calendar earliest, boolean strict) {
@@ -561,9 +526,8 @@ class MonthlyByDayDateSchedule implements DateSchedule {
                 return earliest;
             }
             earliest.add(Calendar.DATE, 1);
-            if ((daysOfMonthBitmap & (1 << Schedule.LAST_DAY_OF_MONTH)) != 0
-                && earliest.get(Calendar.DAY_OF_MONTH) == 1)
-            {
+            if ((daysOfMonthBitmap & (1 << Schedule.LAST_DAY_OF_MONTH)) != 0 &&
+                    earliest.get(Calendar.DAY_OF_MONTH) == 1) {
                 // They want us to fire on the last day of the month, and
                 // now we're at the first day of the month, so we must have
                 // been at the last. Backtrack and return it.
@@ -572,13 +536,13 @@ class MonthlyByDayDateSchedule implements DateSchedule {
             }
         }
         throw ScheduleUtil.newInternal(
-            "monthly-by-day date schedule is looping -- maybe "
-            + "the bitmap is empty: " + daysOfMonthBitmap);
+                "monthly-by-day date schedule is looping -- maybe " +
+                "the bitmap is empty: " + daysOfMonthBitmap);
     }
 
     private static int monthOrdinal(Calendar earliest) {
-        return earliest.get(Calendar.YEAR) * 12
-            + earliest.get(Calendar.MONTH);
+        return earliest.get(Calendar.YEAR) * 12 +
+            earliest.get(Calendar.MONTH);
     }
 }
 
@@ -593,31 +557,28 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
     int weeksOfMonthBitmap;
 
     MonthlyByWeekDateSchedule(
-        Calendar begin,
-        int period,
-        int daysOfWeekBitmap,
-        int weeksOfMonthBitmap)
-    {
+            Calendar begin, int period, int daysOfWeekBitmap,
+            int weeksOfMonthBitmap) {
         this.period = period;
         ScheduleUtil.assertTrue(period > 0, "period must be positive");
         this.beginMonth = begin == null ? 0 : monthOrdinal(begin);
         this.daysOfWeekBitmap = daysOfWeekBitmap;
         ScheduleUtil.assertTrue(
-            (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
-            "weekly schedule must have at least one day set");
+                (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
+                "weekly schedule must have at least one day set");
         ScheduleUtil.assertTrue(
-            (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap)
-            == daysOfWeekBitmap,
-            "weekly schedule has bad bits set: " + daysOfWeekBitmap);
+                (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) ==
+                daysOfWeekBitmap,
+                "weekly schedule has bad bits set: " + daysOfWeekBitmap);
         this.weeksOfMonthBitmap = weeksOfMonthBitmap;
         ScheduleUtil.assertTrue(
-            (weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap) != 0,
-            "weeks of month schedule must have at least one week set");
+                (weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap) != 0,
+                "weeks of month schedule must have at least one week set");
         ScheduleUtil.assertTrue(
-            (weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap)
-            == weeksOfMonthBitmap,
-            "week of month schedule has bad bits set: "
-            + weeksOfMonthBitmap);
+                (weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap) ==
+                weeksOfMonthBitmap,
+                "week of month schedule has bad bits set: " +
+                weeksOfMonthBitmap);
     }
 
     public Calendar nextOccurrence(Calendar earliest, boolean strict) {
@@ -646,8 +607,7 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
                 }
                 // is it the last occurrence of day X?
                 if ((weeksOfMonthBitmap & (1 << Schedule.LAST_WEEK_OF_MONTH))
-                    != 0)
-                {
+                        != 0) {
                     // we're in the last week of the month iff a week later is
                     // in the first week of the next month
                     earliest.add(Calendar.WEEK_OF_MONTH, 1);
@@ -665,8 +625,8 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
     }
 
     private static int monthOrdinal(Calendar earliest) {
-        return earliest.get(Calendar.YEAR) * 12
-            + earliest.get(Calendar.MONTH);
+        return earliest.get(Calendar.YEAR) * 12 +
+            earliest.get(Calendar.MONTH);
     }
 }
 
@@ -675,33 +635,27 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
  */
 class ScheduleUtil {
     static final Calendar epochDay = ScheduleUtil.createCalendar(new Date(0));
-    static final Calendar midnightTime =
-        ScheduleUtil.createTimeCalendar(0, 0, 0);
+    static final Calendar midnightTime = ScheduleUtil.createTimeCalendar(0,0,0);
 
     public static void assertTrue(boolean b) {
         if (!b) {
             throw new Error("assertion failed");
         }
     }
-
     public static void assertTrue(boolean b, String s) {
         if (!b) {
             throw new Error("assertion failed: " + s);
         }
     }
-
     public static Error newInternal() {
         return new Error("internal error");
     }
-
     public static Error newInternal(Throwable e, String s) {
         return new Error("internal error '" + e + "': " + s);
     }
-
     public static Error newInternal(String s) {
         return new Error("internal error: " + s);
     }
-
     public static boolean lessThan(Time t1, Time t2, boolean strict) {
         if (strict) {
             return t1.getTime() < t2.getTime();
@@ -709,7 +663,6 @@ class ScheduleUtil {
             return t1.getTime() <= t2.getTime();
         }
     }
-
     public static boolean lessThan(Date d1, Date d2, boolean strict) {
         if (strict) {
             return d1.getTime() < d2.getTime();
@@ -717,21 +670,18 @@ class ScheduleUtil {
             return d1.getTime() <= d2.getTime();
         }
     }
-
     public static boolean is0000(Calendar calendar) {
-        return calendar.get(Calendar.HOUR_OF_DAY) == 0
-            && calendar.get(Calendar.MINUTE) == 0
-            && calendar.get(Calendar.SECOND) == 0
-            && calendar.get(Calendar.MILLISECOND) == 0;
+        return calendar.get(Calendar.HOUR_OF_DAY) == 0 &&
+            calendar.get(Calendar.MINUTE) == 0 &&
+            calendar.get(Calendar.SECOND) == 0 &&
+            calendar.get(Calendar.MILLISECOND) == 0;
     }
-
     public static boolean isTime(Calendar calendar) {
-        return calendar.get(Calendar.YEAR)
-            == ScheduleUtil.epochDay.get(Calendar.YEAR)
-            && calendar.get(Calendar.DAY_OF_YEAR)
-            == ScheduleUtil.epochDay.get(Calendar.DAY_OF_YEAR);
+        return calendar.get(Calendar.YEAR) ==
+                ScheduleUtil.epochDay.get(Calendar.YEAR) &&
+            calendar.get(Calendar.DAY_OF_YEAR) ==
+                ScheduleUtil.epochDay.get(Calendar.DAY_OF_YEAR);
     }
-
     /**
      * Returns a calendar rounded down to the previous midnight.
      */
@@ -746,7 +696,6 @@ class ScheduleUtil {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
     }
-
     /**
      * Returns a calendar rounded up to the next midnight, unless it is already
      * midnight.
@@ -771,11 +720,10 @@ class ScheduleUtil {
             return null;
         }
         return createTimeCalendar(
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            calendar.get(Calendar.SECOND));
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND));
     }
-
     /**
      * Creates a calendar in UTC, and initializes it to <code>date</code>.
      *
@@ -788,19 +736,12 @@ class ScheduleUtil {
         calendar.setTime(date);
         return calendar;
     }
-
     /**
      * Creates a calendar in UTC, and initializes it to a given year, month,
      * day, hour, minute, second. <b>NOTE: month is 1-based</b>
      */
     public static Calendar createCalendar(
-        int year,
-        int month,
-        int day,
-        int hour,
-        int minute,
-        int second)
-    {
+            int year, int month, int day, int hour, int minute, int second) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(Schedule.utcTimeZone);
         calendar.toString(); // calls complete()
@@ -813,7 +754,6 @@ class ScheduleUtil {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
     }
-
     /**
      * Creates a calendar from a time. Milliseconds are ignored.
      *
@@ -825,19 +765,15 @@ class ScheduleUtil {
         calendar.setTimeZone(Schedule.utcTimeZone);
         calendar.setTime(time);
         return createTimeCalendar(
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            calendar.get(Calendar.SECOND));
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                calendar.get(Calendar.SECOND));
     }
-
     /**
      * Creates a calendar and sets it to a given hours, minutes, seconds.
      */
     public static Calendar createTimeCalendar(
-        int hours,
-        int minutes,
-        int seconds)
-    {
+            int hours, int minutes, int seconds) {
         Calendar calendar = (Calendar) ScheduleUtil.epochDay.clone();
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, minutes);
@@ -845,13 +781,11 @@ class ScheduleUtil {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
     }
-
     /**
      * Creates a calendar and sets it to a given year, month, date.
      */
     public static Calendar createDateCalendar(
-        int year, int month, int dayOfMonth)
-    {
+            int year, int month, int dayOfMonth) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(Schedule.utcTimeZone);
         calendar.set(Calendar.YEAR, year);
@@ -882,17 +816,17 @@ class ScheduleUtil {
      */
     public static int timezoneOffset(TimeZone tz, Calendar calendar) {
         return tz.getOffset(
-            calendar.get(Calendar.ERA),
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.DAY_OF_WEEK),
-            (1000
-             * (60
-                * (60 * calendar.get(Calendar.HOUR_OF_DAY)
-                   + calendar.get(Calendar.MINUTE))
-                + calendar.get(Calendar.SECOND))
-             + calendar.get(Calendar.MILLISECOND)));
+                calendar.get(Calendar.ERA),
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH),
+                calendar.get(Calendar.DAY_OF_WEEK),
+                (1000 *
+                    (60 *
+                        (60 * calendar.get(Calendar.HOUR_OF_DAY) +
+                            calendar.get(Calendar.MINUTE)) +
+                    calendar.get(Calendar.SECOND)) +
+                calendar.get(Calendar.MILLISECOND)));
     }
 }
 

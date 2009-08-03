@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,8 +15,6 @@ import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
 import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapHierarchy;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -30,20 +28,12 @@ import java.util.Collections;
  * @since Sep 27, 2005
  */
 public abstract class AbstractCalc implements Calc {
-    private final Calc[] calcs;
     protected final Type type;
     protected final Exp exp;
 
-    /**
-     * Creates an AbstractCalc.
-     *
-     * @param exp Source expression
-     * @param calcs Child compiled expressions
-     */
-    protected AbstractCalc(Exp exp, Calc[] calcs) {
+    protected AbstractCalc(Exp exp) {
         assert exp != null;
         this.exp = exp;
-        this.calcs = calcs;
         this.type = exp.getType();
     }
 
@@ -58,7 +48,7 @@ public abstract class AbstractCalc implements Calc {
         final Calc[] calcs = getCalcs();
         final List<Object> argumentList = getArguments();
         if (calcs.length > 0 || !argumentList.isEmpty()) {
-            pw.print("(");
+           pw.print("(");
             int k = 0;
             for (Calc calc : calcs) {
                 if (k++ > 0) {
@@ -80,8 +70,8 @@ public abstract class AbstractCalc implements Calc {
      * Returns the name of this expression type, used when serializing an
      * expression to a string.
      *
-     * <p>The default implementation tries to extract a name from a function
-     * call, if any, then prints the last part of the class name.
+     * <p>The default implementation tries to extract a name from a function call,
+     * if any, then prints the last part of the class name.
      */
     protected String getName() {
         String name;
@@ -103,20 +93,18 @@ public abstract class AbstractCalc implements Calc {
     /**
      * Returns this expression's child expressions.
      */
-    public Calc[] getCalcs() {
-        return calcs;
-    }
+    public abstract Calc[] getCalcs();
 
-    public boolean dependsOn(Hierarchy hierarchy) {
-        return anyDepends(getCalcs(), hierarchy);
+    public boolean dependsOn(Dimension dimension) {
+        return anyDepends(getCalcs(), dimension);
     }
 
     /**
      * Returns true if one of the calcs depends on the given dimension.
      */
-    public static boolean anyDepends(Calc[] calcs, Hierarchy hierarchy) {
+    public static boolean anyDepends(Calc[] calcs, Dimension dimension) {
         for (Calc calc : calcs) {
-            if (calc != null && calc.dependsOn(hierarchy)) {
+            if (calc != null && calc.dependsOn(dimension)) {
                 return true;
             }
         }
@@ -133,20 +121,19 @@ public abstract class AbstractCalc implements Calc {
      * dimensions of {Set}.
      */
     public static boolean anyDependsButFirst(
-        Calc[] calcs, Hierarchy hierarchy)
-    {
+            Calc[] calcs, Dimension dimension) {
         if (calcs.length == 0) {
             return false;
         }
-        if (calcs[0].dependsOn(hierarchy)) {
+        if (calcs[0].dependsOn(dimension)) {
             return true;
         }
-        if (calcs[0].getType().usesHierarchy(hierarchy, true)) {
+        if (calcs[0].getType().usesDimension(dimension, true)) {
             return false;
         }
         for (int i = 1; i < calcs.length; i++) {
             Calc calc = calcs[i];
-            if (calc != null && calc.dependsOn(hierarchy)) {
+            if (calc != null && calc.dependsOn(dimension)) {
                 return true;
             }
         }
@@ -159,15 +146,14 @@ public abstract class AbstractCalc implements Calc {
      * else true.
      */
     public static boolean butDepends(
-        Calc[] calcs, Hierarchy hierarchy)
-    {
+            Calc[] calcs, Dimension dimension) {
         boolean result = true;
         for (Calc calc : calcs) {
             if (calc != null) {
-                if (calc.dependsOn(hierarchy)) {
+                if (calc.dependsOn(dimension)) {
                     return true;
                 }
-                if (calc.getType().usesHierarchy(hierarchy, true)) {
+                if (calc.getType().usesDimension(dimension, true)) {
                     result = false;
                 }
             }
@@ -204,14 +190,13 @@ public abstract class AbstractCalc implements Calc {
         }
         int changeCount = 0;
         Evaluator ev = evaluator;
-        final List<RolapHierarchy> hierarchies =
-            ((RolapEvaluator) evaluator).getCube().getHierarchies();
-        for (RolapHierarchy hierarchy : hierarchies) {
-            final Member member = ev.getContext(hierarchy);
+        final Dimension[] dimensions = evaluator.getCube().getDimensions();
+        for (Dimension dimension : dimensions) {
+            final Member member = ev.getContext(dimension);
             if (member.isAll()) {
                 continue;
             }
-            if (calc.dependsOn(hierarchy)) {
+            if (calc.dependsOn(dimension)) {
                 continue;
             }
             final Member unconstrainedMember =

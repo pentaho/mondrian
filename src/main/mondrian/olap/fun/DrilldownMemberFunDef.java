@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,19 +56,20 @@ class DrilldownMemberFunDef extends FunDefBase {
             /**
              * Drills down an element.
              *
-             * <p>Algorithm: If object is present in a_hsSet1 then adds to
-             * result children of the object. If flag {@code recursive} is set
-             * then this method is called recursively for the children.
+             * Algorithm: If object is present in a_hsSet1 then adds to result children
+             * of the object. If flag a_bRecursive is set then this method is called
+             * recursively for the children.
              *
              * @param element Element of a set, can be either {@link Member} or
              *   {@link Member}[]
+             *
+             *
              */
             protected void drillDownObj(
-                Evaluator evaluator,
-                Object element,
-                Set memberSet,
-                List<Object> resultList)
-            {
+                    Evaluator evaluator,
+                    Object element,
+                    Set memberSet,
+                    List<Object> resultList) {
                 if (null == element) {
                     return;
                 }
@@ -99,8 +100,7 @@ class DrilldownMemberFunDef extends FunDefBase {
                     }
                 }
 
-                List<Member> children =
-                    evaluator.getSchemaReader().getMemberChildren(m);
+                List<Member> children = evaluator.getSchemaReader().getMemberChildren(m);
                 for (Member member : children) {
                     Object objNew;
                     if (tuple == null) {
@@ -118,16 +118,11 @@ class DrilldownMemberFunDef extends FunDefBase {
                 }
             }
 
-            private List drilldownMember(
-                List<?> v0,
-                List<Member> v1,
-                Evaluator evaluator)
-            {
-                if (null == v0
-                    || v0.isEmpty()
-                    || null == v1
-                    || v1.isEmpty())
-                {
+            private List drilldownMember(List<?> v0, List<Member> v1, Evaluator evaluator) {
+                if (null == v0 ||
+                    v0.isEmpty() ||
+                    null == v1 ||
+                    v1.isEmpty()) {
                     return v0;
                 }
 

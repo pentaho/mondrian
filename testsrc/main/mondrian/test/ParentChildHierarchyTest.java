@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -153,8 +153,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     /**
      * Returns a TestContext in which the "HR" cube contains an extra dimension,
      * "EmployeesNonClosure", which is a joined parent child hierarchy with no
-     * closure. this is almost identical to employee, except we removed the
-     * closure to validate that non-closures work
+     * closure. this is almost identical to employee, except we removed the closure
+     * to validate that non-closures work
      */
     private TestContext getEmpNonClosureTestContext() {
         return TestContext.createSubstitutingCube(
@@ -382,8 +382,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testDistinctChildrenOfAllExplicitClosure() {
-        // the children of the closed relation are all the descendants, so limit
-        // results
+        // the children of the closed relation are all the descendants, so limit results
         getEmpClosureTestContext().assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n"
             + "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n"
@@ -706,16 +705,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // Axis #2:
         // {[Time].[1997].[Q2]}
         // Row #0: 62,610
-        // Row #0: #ERR:
-        // mondrian.olap.fun.MondrianEvaluationException: Infinite
-        // loop while evaluating calculated member '[Measures].[Foo]';
-        // context stack is {([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]),
-        // ([Time].[1997].[Q2])}
+        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2])}
         //
         // Axis #0:
         // {}
@@ -725,22 +715,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // Axis #2:
         // {[Time].[1997].[Q2]}
         // Row #0: (null)
-        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite
-        // loop while evaluating calculated member '[Measures].[Foo]'; context
-        // stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
+        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
         //
         // So encapsulate the error string as a pattern.
         final String expectedPattern =
@@ -1128,7 +1103,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Verifies the fix for MONDRIAN-519, a class cast exception when using
+     * This test verifies the fix for MONDRIAN-519, a class cast exception when using
      * non-closure parent child hierarchies.
      */
     public void testClosureVsNoClosure() {

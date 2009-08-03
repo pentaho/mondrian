@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -122,15 +122,14 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
         // Look for hierarchies named '[dimension.hierarchy]'.
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && s.name.contains("."))
-        {
+            && s.name.contains(".")) {
             for (Dimension dimension : dimensions) {
                 if (!s.name.startsWith(dimension.getName())) {
                     // Rough check to save time.
                     continue;
                 }
-                for (Hierarchy hierarchy
-                    : schemaReader.getDimensionHierarchies(dimension))
+                for (Hierarchy hierarchy :
+                    schemaReader.getDimensionHierarchies(dimension))
                 {
                     if (Util.equalName(
                         s.name,
@@ -161,6 +160,17 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
                 return mdxElement;
             }
         }
+        return null;
+    }
+
+    public Dimension getTimeDimension() {
+        for (Dimension dimension : dimensions) {
+            if (dimension.getDimensionType() ==
+                DimensionType.TimeDimension) {
+                return dimension;
+            }
+        }
+
         return null;
     }
 

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,16 +25,14 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class IsEmptyFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver FunctionResolver =
-        new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver FunctionResolver = new ReflectiveMultiResolver(
             "IsEmpty",
             "IsEmpty(<Value Expression>)",
             "Determines if an expression evaluates to the empty cell value.",
             new String[] {"fbS", "fbn"},
             IsEmptyFunDef.class);
 
-    static final ReflectiveMultiResolver PostfixResolver =
-        new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver PostfixResolver = new ReflectiveMultiResolver(
             "IS EMPTY",
             "<Value Expression> IS EMPTY",
             "Determines if an expression evaluates to the empty cell value.",

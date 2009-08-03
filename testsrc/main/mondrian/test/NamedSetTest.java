@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -672,7 +672,7 @@ public class NamedSetTest extends FoodMartTestCase {
         assertQueryReturns(
             "with \n"
             + "  member [Measures].[DateName] as \n"
-            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].[Time].CurrentMember.Name) '\n"
+            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '\n"
             + "select {[Measures].[DateName]} on columns,\n"
             + " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n"
             + "from [Sales]",
@@ -689,7 +689,7 @@ public class NamedSetTest extends FoodMartTestCase {
         assertQueryReturns(
             "with \n"
             + "  member [Measures].[DateName] as \n"
-            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].[Time].CurrentMember.Name, \" and \") '\n"
+            + "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '\n"
             + "select {[Measures].[DateName]} on columns,\n"
             + " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n"
             + "from [Sales]",
@@ -814,7 +814,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
             + "Row #0: 54,545.28\n");
         // Use non-existent set.
-        tc.assertQueryThrows(
+        tc.assertThrows(
             "SELECT {[Measures].[Store Sales]} on columns,\n"
             + " Intersect([Top CA Cities], [Top Ukrainian Cities]) on rows\n"
             + "FROM [Sales]",
@@ -829,7 +829,7 @@ public class NamedSetTest extends FoodMartTestCase {
             "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
             null,
             null);
-        tc.assertQueryThrows(
+        tc.assertThrows(
             "SELECT {[Measures].[Store Sales]} on columns,\n"
             + " {[Bad]} on rows\n"
             + "FROM [Sales]", "Named set 'Bad' has bad formula");
@@ -845,25 +845,25 @@ public class NamedSetTest extends FoodMartTestCase {
             "with set [Foo] as ' [Store].CurrentMember  '"
             + "select {[Foo]} on columns from [Sales]";
         pattern = "Set expression '[Foo]' must be a set";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set must not be a dimension.
         queryString =
             "with set [Foo] as ' [Store] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set must not be a level.
         queryString =
             "with set [Foo] as ' [Store].[Store Country] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set must not be a cube name.
         queryString =
             "with set [Foo] as ' [Sales] '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(
+        assertThrows(
             queryString,
             "MDX object '[Sales]' not found in cube 'Sales'");
 
@@ -871,19 +871,19 @@ public class NamedSetTest extends FoodMartTestCase {
         queryString =
             "with set [Foo] as ' \"foobar\" '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set must not be a number.
         queryString =
             "with set [Foo] as ' -1.45 '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set must not be a tuple.
         queryString =
             "with set [Foo] as ' ([Gender].[M], [Marital Status].[S]) '"
             + "select {[Foo]} on columns from [Sales]";
-        assertQueryThrows(queryString, pattern);
+        assertThrows(queryString, pattern);
 
         // Formula for a named set may be a set of tuples.
         queryString =
@@ -1120,8 +1120,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeProcessor
-        extends FilterDynamicSchemaProcessor
-    {
+        extends FilterDynamicSchemaProcessor {
         public String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1144,8 +1143,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeAndSchemaProcessor
-        extends FilterDynamicSchemaProcessor
-    {
+        extends FilterDynamicSchemaProcessor {
         protected String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1183,8 +1181,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * error.
      */
     public static class MixedNamedSetSchemaProcessor
-        extends FilterDynamicSchemaProcessor
-    {
+        extends FilterDynamicSchemaProcessor {
         protected String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
@@ -1205,9 +1202,9 @@ public class NamedSetTest extends FoodMartTestCase {
                 + "      formula=\"Aggregate([CA Cities], [Measures].[Unit Sales])\">\n"
                 + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.0\"/>\n"
                 + "  </CalculatedMember>\n"
-
+                +
                 // set [Top Products In CA] references member [CA City Sales]
-                + "<NamedSet name=\"Top Products In CA\">\n"
+                "<NamedSet name=\"Top Products In CA\">\n"
                 + "  <Formula>TopCount([Product].[Product Department].MEMBERS, 3, ([Time].[1997].[Q3], [Measures].[CA City Sales]))</Formula>\n"
                 + "</NamedSet>\n"
                 + "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>\n"

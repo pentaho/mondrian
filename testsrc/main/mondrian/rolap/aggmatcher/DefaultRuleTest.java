@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,12 +15,11 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
-
 import junit.framework.TestCase;
-
 import java.util.Iterator;
 import java.io.File;
 import java.io.FileReader;
+import java.io.Reader;
 
 /**
  * Testing the default aggregate table recognizer.
@@ -29,26 +28,21 @@ import java.io.FileReader;
  * @version $Id$
  */
 public class DefaultRuleTest extends TestCase {
-    private static final Logger LOGGER =
-        Logger.getLogger(DefaultRuleTest.class);
+    private static final Logger LOGGER = Logger.getLogger(DefaultRuleTest.class);
     private static final String DIRECTORY =
-        "testsrc/main/mondrian/rolap/aggmatcher";
+                "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String TEST_RULE_XML = "TestRule.xml";
 
     private DefaultDef.AggRules rules;
-
     public DefaultRuleTest() {
         super();
     }
-
     public DefaultRuleTest(String name) {
         super(name);
     }
-
     private DefaultDef.AggRule getAggRule(String tag) {
         return rules.getAggRule(tag);
     }
-
     protected void setUp() throws Exception {
         File file = new File(DIRECTORY, TEST_RULE_XML);
         FileReader reader = new FileReader(file);
@@ -60,14 +54,14 @@ public class DefaultRuleTest extends TestCase {
 
        ListRecorder msgRecorder = new ListRecorder();
        rules.validate(msgRecorder);
-        if (msgRecorder.hasErrors()) {
-            LOGGER.error("HAS ERRORS");
+       if (msgRecorder.hasErrors()) {
+           LOGGER.error("HAS ERRORS");
             for (Iterator it = msgRecorder.getErrorEntries(); it.hasNext();) {
                 ListRecorder.Entry e = (ListRecorder.Entry) it.next();
                 LOGGER.error("context=" + e.getContext());
                 LOGGER.error("message=" + e.getMessage());
             }
-        }
+       }
     }
 
     protected void tearDown() throws Exception {
@@ -164,7 +158,6 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, factTableName + "_agg");
         doNotMatch(matcher, "agg_10_Mytable");
     }
-
     public void testTableNameBBBB() {
         final String tag = "bbbb";
         final String factTableName = "FACT_TABLE";
@@ -180,7 +173,6 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "agg_" + factTableName);
         doNotMatch(matcher, "Mytable_agg_10");
     }
-
     public void testTableNameCCCCBAD() {
         final String tag = "cccc";
         final String basename = "WAREHOUSE";
@@ -200,7 +192,6 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, basename + "_agg");
         doNotMatch(matcher, "agg_10_Mytable");
     }
-
     public void testTableNameCCCCGOOD() {
         final String tag = "cccc";
         final String basename = "WAREHOUSE";
@@ -232,7 +223,6 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "fact_count_my");
         doNotMatch(matcher, "FACT_COUNT_MY");
     }
-
     public void testFactCountBBBB() {
         final String tag = "bbbb";
         Recognizer.Matcher matcher = getFactCountMatcher(tag);
@@ -247,7 +237,6 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "fact_count_my");
         doNotMatch(matcher, "FACT_COUNT_MY");
     }
-
     public void testFactCountCCCC() {
         final String tag = "cccc";
         Recognizer.Matcher matcher = getFactCountMatcher(tag);
@@ -324,8 +313,11 @@ public class DefaultRuleTest extends TestCase {
         final String hierarchyName = "Time";
         final String levelName = "Day in Year";
         final String levelColumnName = "days";
-        Recognizer.Matcher matcher = getLevelMatcher(
-            tag, usagePrefix, hierarchyName, levelName, levelColumnName);
+        Recognizer.Matcher matcher = getLevelMatcher(tag,
+                                              usagePrefix,
+                                              hierarchyName,
+                                              levelName,
+                                              levelColumnName);
 
         doMatch(matcher, "days");
         doMatch(matcher, "time_day_in_year");
@@ -334,15 +326,17 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "DAYS");
         doNotMatch(matcher, "Time Day in Year");
     }
-
     public void testLevelDefaultTwo() {
         final String tag = "default";
         final String usagePrefix = "boo_";
         final String hierarchyName = "Time";
         final String levelName = "Day in Year";
         final String levelColumnName = "days";
-        Recognizer.Matcher matcher = getLevelMatcher(
-            tag, usagePrefix, hierarchyName, levelName, levelColumnName);
+        Recognizer.Matcher matcher = getLevelMatcher(tag,
+                                              usagePrefix,
+                                              hierarchyName,
+                                              levelName,
+                                              levelColumnName);
 
         doMatch(matcher, "days");
         doMatch(matcher, "boo_days");
@@ -354,15 +348,17 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "DAYS");
         doNotMatch(matcher, "Time Day in Year");
     }
-
     public void testLevelBBBB() {
         final String tag = "bbbb";
         final String usagePrefix = "boo_";
         final String hierarchyName = "Time.Period";
         final String levelName = "Day in Year";
         final String levelColumnName = "days";
-        Recognizer.Matcher matcher = getLevelMatcher(
-            tag, usagePrefix, hierarchyName, levelName, levelColumnName);
+        Recognizer.Matcher matcher = getLevelMatcher(tag,
+                                              usagePrefix,
+                                              hierarchyName,
+                                              levelName,
+                                              levelColumnName);
 
         doMatch(matcher, "boo_time_DOT_period_day_SP_in_SP_year_days");
     }
@@ -372,8 +368,10 @@ public class DefaultRuleTest extends TestCase {
         final String measureName = "Total Sales";
         final String measureColumnName = "sales";
         final String aggregateName = "sum";
-        Recognizer.Matcher matcher = getMeasureMatcher(
-            tag, measureName, measureColumnName, aggregateName);
+        Recognizer.Matcher matcher = getMeasureMatcher(tag,
+                                                measureName,
+                                                measureColumnName,
+                                                aggregateName);
 
         doMatch(matcher, "total_sales");
         doMatch(matcher, "sales");
@@ -395,7 +393,6 @@ public class DefaultRuleTest extends TestCase {
     private void doMatch(Recognizer.Matcher matcher, String s) {
         assertTrue("Recognizer.Matcher: " + s, matcher.matches(s));
     }
-
     private void doNotMatch(Recognizer.Matcher matcher, String s) {
         assertTrue("Recognizer.Matcher: " + s, !matcher.matches(s));
     }

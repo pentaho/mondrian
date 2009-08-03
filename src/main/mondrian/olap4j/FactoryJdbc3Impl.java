@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,12 +23,11 @@ import java.util.*;
  */
 class FactoryJdbc3Impl implements Factory {
     public Connection newConnection(
-        MondrianOlap4jDriver driver,
         String url,
         Properties info)
         throws SQLException
     {
-        return new MondrianOlap4jConnectionJdbc3(driver, url, info);
+        return new MondrianOlap4jConnectionJdbc3(url, info);
     }
 
     public EmptyResultSet newEmptyResultSet(
@@ -76,8 +75,7 @@ class FactoryJdbc3Impl implements Factory {
     {
         public MondrianOlap4jPreparedStatementJdbc3(
             MondrianOlap4jConnection olap4jConnection,
-            String mdx)
-        {
+            String mdx) {
             super(olap4jConnection, mdx);
         }
     }
@@ -106,11 +104,10 @@ class FactoryJdbc3Impl implements Factory {
         extends MondrianOlap4jConnection
     {
         public MondrianOlap4jConnectionJdbc3(
-            MondrianOlap4jDriver driver,
             String url,
             Properties info) throws SQLException
         {
-            super(FactoryJdbc3Impl.this, driver, url, info);
+            super(FactoryJdbc3Impl.this, url, info);
         }
     }
 

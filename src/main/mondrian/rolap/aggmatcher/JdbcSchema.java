@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,13 +33,13 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Metadata gleaned from JDBC about the tables and columns in the star schema.
  * This class is used to scrape a database and store information about its
  * tables and columnIter.
  *
- * <p>The structure of this information is as follows: A database has tables. A
- * table has columnIter. A column has one or more usages.  A usage might be a
- * column being used as a foreign key or as part of a measure.
+ * <p>The structure of this information is as follows:
+ * A database has tables. A table has columnIter. A column has one or more usages.
+ * A usage might be a column being used as a foreign key or as part of a
+ * measure.
  *
  * <p> Tables are created when calling code requests the set of available
  * tables. This call <code>getTables()</code> causes all tables to be loaded.
@@ -60,7 +60,7 @@ public class JdbcSchema {
     private static final MondrianResource mres = MondrianResource.instance();
 
     /**
-     * Returns the Logger.
+     * Get the Logger.
      */
     public Logger getLogger() {
         return LOGGER;
@@ -85,7 +85,8 @@ public class JdbcSchema {
         StdFactory() {
         }
         public JdbcSchema makeDB(DataSource dataSource) {
-            return new JdbcSchema(dataSource);
+            JdbcSchema db = new JdbcSchema(dataSource);
+            return db;
         }
         public void clearDB(JdbcSchema db) {
             // NoOp
@@ -100,7 +101,7 @@ public class JdbcSchema {
     private static void makeFactory() {
         if (factory == null) {
             String classname =
-                MondrianProperties.instance().JdbcFactoryClass.get();
+                    MondrianProperties.instance().JdbcFactoryClass.get();
             if (classname == null) {
                 factory = new StdFactory();
             } else {
@@ -242,7 +243,7 @@ public class JdbcSchema {
      * Determine if the parameter represents a single column type, i.e., the
      * column only has one usage.
      *
-     * @param columnType Column types
+     * @param columnType
      * @return true if column has only one usage.
      */
     public static boolean isUniqueColumnType(Set<UsageType> columnType) {
@@ -368,23 +369,18 @@ public class JdbcSchema {
                 public RolapStar.Table rTable;
                 public String rightJoinConditionColumnName;
 
-                /**
-                 * The prefix (possibly null) to use during aggregate table
-                 * generation (See AggGen).
-                 */
+                // It is used to hold the (possible null) prefix to
+                // use during aggregate table generation (See AggGen).
                 public String usagePrefix;
+                //
+                ////////////////////////////////////////////////////
 
-                /**
-                 * Creates a Usage.
-                 *
-                 * @param usageType Usage type
-                 */
                 Usage(UsageType usageType) {
                     this.usageType = usageType;
                 }
 
                 /**
-                 * Returns the column with which this usage is associated.
+                 * This is the column with which this usage is associated.
                  *
                  * @return the usage's column.
                  */
@@ -393,41 +389,41 @@ public class JdbcSchema {
                 }
 
                 /**
-                 * Returns the column usage type.
+                 * The column usage type.
                  */
                 public UsageType getUsageType() {
                     return usageType;
                 }
 
                 /**
-                 * Sets the symbolic (logical) name associated with this usage.
+                 * Set the symbolic (logical) name associated with this usage.
                  * For example, this might be the measure's name.
                  *
-                 * @param symbolicName Symbolic name
+                 * @param symbolicName
                  */
                 public void setSymbolicName(final String symbolicName) {
                     this.symbolicName = symbolicName;
                 }
 
                 /**
-                 * Returns the usage's symbolic name.
+                 * Get usage's symbolic name.
                  */
                 public String getSymbolicName() {
                     return symbolicName;
                 }
 
                 /**
-                 * Sets the aggregator associated with this usage (if it is a
+                 * Set the aggregator associated with this usage (if its a
                  * measure usage).
                  *
-                 * @param aggregator Aggregator
+                 * @param aggregator
                  */
                 public void setAggregator(final RolapAggregator aggregator) {
                     this.aggregator = aggregator;
                 }
 
                 /**
-                 * Returns the aggregator associated with this usage (if its a
+                 * Get the aggregator associated with this usage (if its a
                  * measure usage, otherwise null).
                  */
                 public RolapAggregator getAggregator() {
@@ -503,14 +499,37 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the column's name in the database, not a symbolic name.
+             * For testing ONLY
+            JdbcSchema.Table.Column copy() {
+                Column column = new Column(name);
+                column.type = type;
+                column.typeName = typeName;
+                column.columnSize = columnSize;
+                column.decimalDigits = decimalDigits;
+                column.numPrecRadix = numPrecRadix;
+                column.charOctetLength = charOctetLength;
+                column.isNullable = isNullable;
+
+                return column;
+            }
+             */
+            /**
+             * For testing ONLY
+            void clearUsages() {
+                // empty
+            }
+             */
+
+
+            /**
+             * This is the column's name in the database, not a symbolic name.
              */
             public String getName() {
                 return name;
             }
 
             /**
-             * Sets the columnIter java.sql.Type enun of the column.
+             * Set the columnIter java.sql.Type enun of the column.
              *
              * @param type
              */
@@ -519,14 +538,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the columnIter java.sql.Type enun of the column.
+             * Get the columnIter java.sql.Type enun of the column.
              */
             public int getType() {
                 return type;
             }
 
             /**
-             * Sets the columnIter java.sql.Type name.
+             * Set the columnIter java.sql.Type name.
              *
              * @param typeName
              */
@@ -535,14 +554,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the columnIter java.sql.Type name.
+             * Get the columnIter java.sql.Type name.
              */
             public String getTypeName() {
                 return typeName;
             }
 
             /**
-             * Returns this column's table.
+             * Get this column's table.
              */
             public Table getTable() {
                 return JdbcSchema.Table.this;
@@ -556,7 +575,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Sets the size in bytes of the column in the database.
+             * Set the size in bytes of the column in the database.
              *
              * @param columnSize
              */
@@ -565,7 +584,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the size in bytes of the column in the database.
+             * Get the size in bytes of the column in the database.
              *
              */
             public int getColumnSize() {
@@ -573,7 +592,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Sets number of fractional digits.
+             * Set number of fractional digits.
              *
              * @param decimalDigits
              */
@@ -582,14 +601,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns number of fractional digits.
+             * Get number of fractional digits.
              */
             public int getDecimalDigits() {
                 return decimalDigits;
             }
 
             /**
-             * Sets Radix (typically either 10 or 2).
+             * Set Radix (typically either 10 or 2).
              *
              * @param numPrecRadix
              */
@@ -598,7 +617,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns Radix (typically either 10 or 2).
+             * Get Radix (typically either 10 or 2).
              */
             public int getNumPrecRadix() {
                 return numPrecRadix;
@@ -665,14 +684,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns an iterator over all usages.
+             * Get an iterator over all usages.
              */
             public List<Usage> getUsages() {
                 return usages;
             }
 
             /**
-             * Returns an iterator over all usages of the given column type.
+             * Get an iterator over all usages of the given column type.
              */
             public Iterator<Usage> getUsages(UsageType usageType) {
                 // Yes, this is legal.
@@ -789,15 +808,12 @@ public class JdbcSchema {
 
         /** Name of table. */
         private final String name;
-
         /** Map from column name to column. */
         private Map<String, Column> columnMap;
-
         /** Sum of all of the table's column's column sizes. */
         private int totalColumnSize;
-
         /**
-         * Whether the table is a fact, aggregate or other table type.
+         * Is the table a fact, aggregate or other table type.
          * Note: this assumes that a table has only ONE usage.
          */
         private TableUsageType tableUsageType;
@@ -825,21 +841,49 @@ public class JdbcSchema {
         }
 
         /**
-         * Returns the name of the table.
+         * For testing ONLY
+        JdbcSchema.Table copy() {
+            Table table = new Table(name);
+            table.totalColumnSize = totalColumnSize;
+            table.tableUsage = tableUsage;
+            table.tableType = tableType;
+
+            Map m = table.getColumnMap();
+            for (Iterator usageIter = getColumns(); usageIter.hasNext();) {
+                Column column = (Column) usageIter.next();
+                m.put(column.getName(), column.copy());
+            }
+
+            return table;
+        }
+         */
+        /**
+         * For testing ONLY
+        void clearUsages() {
+            this.tableUsage = UNKNOWN_TABLE_USAGE;
+            for (Iterator usageIter = getColumns(); usageIter.hasNext();) {
+                Column column = (Column) usageIter.next();
+                column.clearUsages();
+            }
+        }
+         */
+
+        /**
+         * Get the name of the table.
          */
         public String getName() {
             return name;
         }
 
         /**
-         * Returns the total size of a row (sum of the column sizes).
+         * Get the total size of a row (sum of the column sizes).
          */
         public int getTotalColumnSize() {
             return totalColumnSize;
         }
 
         /**
-         * Returns the number of rows in the table.
+         * Get the number of rows in the table.
          */
         public int getNumberOfRows() {
             return -1;
@@ -858,9 +902,7 @@ public class JdbcSchema {
         public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(
             final UsageType usageType)
         {
-            class CTIterator
-                implements Iterator<JdbcSchema.Table.Column.Usage>
-            {
+            class CTIterator implements Iterator<JdbcSchema.Table.Column.Usage> {
                 private final Iterator<Column> columnIter;
                 private final UsageType columnType;
                 private Iterator<JdbcSchema.Table.Column.Usage> usageIter;
@@ -899,7 +941,7 @@ public class JdbcSchema {
         }
 
         /**
-         * Returns a column by its name.
+         * Get a column by its name.
          */
         public Column getColumn(final String columnName) {
             return getColumnMap().get(columnName);
@@ -913,15 +955,14 @@ public class JdbcSchema {
         }
 
         /**
-         * Sets the table usage (fact, aggregate or other).
+         * Set the table usage (fact, aggregate or other).
          *
          * @param tableUsageType
          */
         public void setTableUsageType(final TableUsageType tableUsageType) {
-            // if usageIter has already been set, then usageIter can NOT be
-            // reset
-            if ((this.tableUsageType != TableUsageType.UNKNOWN)
-                && (this.tableUsageType != tableUsageType))
+            // if usageIter has already been set, then usageIter can NOT be reset
+            if ((this.tableUsageType != TableUsageType.UNKNOWN) &&
+                    (this.tableUsageType != tableUsageType))
             {
                 throw mres.AttemptToChangeTableUsage.ex(
                     getName(),
@@ -932,14 +973,14 @@ public class JdbcSchema {
         }
 
         /**
-         * Returns the table's usage type.
+         * Get the table's usage type.
          */
         public TableUsageType getTableUsageType() {
             return tableUsageType;
         }
 
         /**
-         * Returns the table's type.
+         * Get the table's type.
          */
         public String getTableType() {
             return tableType;
@@ -981,9 +1022,8 @@ public class JdbcSchema {
         }
 
         /**
-         * Returns all of the columnIter associated with a table and creates
-         * Column objects with the column's name, type, type name and column
-         * size.
+         * Get all of the columnIter associated with a table and create Column
+         * objects with the column's name, type, type name and column size.
          *
          * @throws SQLException
          */
@@ -1001,11 +1041,10 @@ public class JdbcSchema {
                     ResultSet rs = null;
                     try {
                         Map<String, Column> map = getColumnMap();
-                        rs = dmd.getColumns(
-                            catalog,
-                            schema,
-                            tableName,
-                            columnNamePattern);
+                        rs = dmd.getColumns(catalog,
+                                            schema,
+                                            tableName,
+                                            columnNamePattern);
                         while (rs.next()) {
                             String name = rs.getString(4);
                             int type = rs.getInt(5);
@@ -1062,8 +1101,7 @@ public class JdbcSchema {
      * Tables by name. We use a sorted map so {@link #getTables()}'s output
      * is in deterministic order.
      */
-    private final SortedMap<String, Table> tables =
-        new TreeMap<String, Table>();
+    private final SortedMap<String, Table> tables = new TreeMap<String, Table>();
 
     JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;
@@ -1078,6 +1116,33 @@ public class JdbcSchema {
         loadTables();
     }
 
+    /**
+     * For testing ONLY
+    JdbcSchema copy() {
+        JdbcSchema jdbcSchema = new JdbcSchema(dataSource);
+        jdbcSchema.setSchemaName(getSchemaName());
+        jdbcSchema.setCatalogName(getCatalogName());
+
+        Map m = jdbcSchema.getTablesMap();
+        for (Iterator usageIter = getTables(); usageIter.hasNext();) {
+            Table table = (Table) usageIter.next();
+            m.put(table.getName(), table.copy());
+        }
+
+        return jdbcSchema;
+    }
+     */
+
+    /**
+     * For testing ONLY
+    void clearUsages() {
+        for (Iterator usageIter = getTables(); usageIter.hasNext();) {
+            Table table = (Table) usageIter.next();
+            table.clearUsages();
+        }
+    }
+     */
+
     protected void clear() {
         // keep the DataSource, clear/reset everything else
         allTablesLoaded = false;
@@ -1085,7 +1150,6 @@ public class JdbcSchema {
         catalog = null;
         tables.clear();
     }
-
     protected void remove() {
         // set ALL instance variables to null
         clear();
@@ -1093,7 +1157,7 @@ public class JdbcSchema {
     }
 
     /**
-     * Used for testing allowing one to load tables and their columnIter
+     * This is used for testing allowing one to load tables and their columnIter
      * from more than one datasource
      */
     void resetAllTablesLoaded() {
@@ -1109,30 +1173,30 @@ public class JdbcSchema {
     }
 
     /**
-     * Sets the database's schema name.
+     * Set the database's schema name.
      *
-     * @param schema Schema name
+     * @param schema
      */
     public void setSchemaName(final String schema) {
         this.schema = schema;
     }
 
     /**
-     * Returns the database's schema name.
+     * Get the database's schema name.
      */
     public String getSchemaName() {
         return schema;
     }
 
     /**
-     * Sets the database's catalog name.
+     * Set the database's catalog name.
      */
     public void setCatalogName(final String catalog) {
         this.catalog = catalog;
     }
 
     /**
-     * Returns the database's catalog name.
+     * Get the database's catalog name.
      */
     public String getCatalogName() {
         return catalog;
@@ -1159,7 +1223,6 @@ public class JdbcSchema {
         pw.flush();
         return sw.toString();
     }
-
     public void print(final PrintWriter pw, final String prefix) {
         pw.print(prefix);
         pw.println("JdbcSchema:");
@@ -1168,7 +1231,9 @@ public class JdbcSchema {
 
         pw.print(subprefix);
         pw.println("Tables: [");
-        for (Table table : getTablesMap().values()) {
+        Iterator it = getTablesMap().values().iterator();
+        while (it.hasNext()) {
+            Table table = (Table) it.next();
             table.print(pw, subsubprefix);
         }
         pw.print(subprefix);
@@ -1176,75 +1241,54 @@ public class JdbcSchema {
     }
 
     /**
-     * Gets all of the tables (and views) in the database.
+     * This method gets all of the tables (and views) in the database.
      * If called a second time, this method is a no-op.
      *
      * @throws SQLException
      */
     private void loadTables() throws SQLException {
-        if (allTablesLoaded) {
-            return;
-        }
-        Connection conn = null;
-        try {
-            conn = getDataSource().getConnection();
-            final DatabaseMetaData databaseMetaData = conn.getMetaData();
+        if (! allTablesLoaded) {
+            Connection conn = getDataSource().getConnection();
+            DatabaseMetaData dmd = conn.getMetaData();
+
+            String schema = getSchemaName();
+            String catalog = getCatalogName();
             String[] tableTypes = { "TABLE", "VIEW" };
-            if (databaseMetaData.getDatabaseProductName().toUpperCase().indexOf(
-                "VERTICA") >= 0)
-            {
-                for (String tableType : tableTypes) {
-                    loadTablesOfType(databaseMetaData, new String[]{tableType});
+            String tableName = "%";
+
+            ResultSet rs = null;
+            try {
+                rs = dmd.getTables(catalog,
+                                   schema,
+                                   tableName,
+                                   tableTypes);
+                if (rs != null) {
+                    while (rs.next()) {
+                        addTable(rs);
+                    }
+                } else {
+                    getLogger().debug("ERROR: rs == null");
                 }
-            } else {
-                loadTablesOfType(databaseMetaData, tableTypes);
+            } finally {
+                if (rs != null) {
+                    rs.close();
+                }
             }
-            allTablesLoaded = true;
-        } finally {
-            if (conn != null) {
+            try {
                 conn.close();
+            } catch (SQLException e) {
+                //ignore
             }
+
+            allTablesLoaded = true;
         }
     }
 
     /**
-     * Loads definition of tables of a given set of table types ("TABLE", "VIEW"
-     * etc.)
-     */
-    private void loadTablesOfType(
-        DatabaseMetaData databaseMetaData,
-        String[] tableTypes)
-        throws SQLException
-    {
-        final String schema = getSchemaName();
-        final String catalog = getCatalogName();
-        final String tableName = "%";
-        ResultSet rs = null;
-        try {
-            rs = databaseMetaData.getTables(
-                catalog,
-                schema,
-                tableName,
-                tableTypes);
-            if (rs == null) {
-                getLogger().debug("ERROR: rs == null");
-                return;
-            }
-            while (rs.next()) {
-                addTable(rs);
-            }
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-        }
-    }
-
-    /**
-     * Makes a Table from an ResultSet: the table's name is the ResultSet third
+     * Make a Table from an ResultSet - the table's name is the ResultSet third
      * entry.
      *
-     * @param rs Result set
+     * @param rs
      * @throws SQLException
      */
     protected void addTable(final ResultSet rs) throws SQLException {

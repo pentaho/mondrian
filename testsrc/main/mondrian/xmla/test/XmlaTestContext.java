@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -41,14 +41,12 @@ import org.eigenbase.xom.XOMUtil;
 public class XmlaTestContext {
 
     private static final Logger LOGGER =
-        Logger.getLogger(XmlaTestContext.class);
+            Logger.getLogger(XmlaTestContext.class);
 
     public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "MondrianFoodMart";
-    public static final String DATASOURCE_DESCRIPTION =
-        "Mondrian FoodMart Test data source";
-    public static final String DATASOURCE_INFO =
-        "Provider=Mondrian;DataSource=MondrianFoodMart;";
+    public static final String DATASOURCE_DESCRIPTION = "Mondrian FoodMart Test data source";
+    public static final String DATASOURCE_INFO = "Provider=Mondrian;DataSource=MondrianFoodMart;";
     public static final Map<String, String> ENV =
         new HashMap<String, String>() {
             {
@@ -57,8 +55,7 @@ public class XmlaTestContext {
             }
         };
     private static DataSourcesConfig.DataSources DATASOURCES;
-    public static final CatalogLocator CATALOG_LOCATOR =
-        new CatalogLocatorImpl();
+    public static final CatalogLocator CATALOG_LOCATOR = new CatalogLocatorImpl();
     private String connectString;
 
     public XmlaTestContext() {
@@ -92,20 +89,14 @@ public class XmlaTestContext {
             + "<DataSources>"
             + "   <DataSource>"
             + "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>"
-            + "       <DataSourceDescription>"
-            + DATASOURCE_DESCRIPTION
-            + "</DataSourceDescription>"
+            + "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>"
             + "       <URL>http://localhost:8080/mondrian/xmla</URL>"
-            + "       <DataSourceInfo>"
-            + getConnectString()
-            + "</DataSourceInfo>"
+            + "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>"
             + "       <ProviderName>Mondrian</ProviderName>"
             + "       <ProviderType>MDP</ProviderType>"
             + "       <AuthenticationMode>Unauthenticated</AuthenticationMode>"
             + "       <Catalogs>"
-            + "          <Catalog name='FoodMart'><Definition>"
-            + catalogUrl
-            + "</Definition></Catalog>"
+            + "          <Catalog name='FoodMart'><Definition>" + catalogUrl + "</Definition></Catalog>"
             + "       </Catalogs>"
             + "   </DataSource>"
             + "</DataSources>");

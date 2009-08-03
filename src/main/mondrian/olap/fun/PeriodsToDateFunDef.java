@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,14 +11,13 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.LevelCalc;
 import mondrian.calc.MemberCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 
@@ -45,10 +44,14 @@ class PeriodsToDateFunDef extends FunDefBase {
         if (args.length == 0) {
             // With no args, the default implementation cannot
             // guess the hierarchy.
-            RolapHierarchy defaultTimeHierarchy =
-                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
+            Dimension defaultTimeDimension =
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
                     getName());
-            return new SetType(MemberType.forHierarchy(defaultTimeHierarchy));
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
+            return new SetType(MemberType.forHierarchy(hierarchy));
         }
 
         if (args.length >= 2) {
@@ -56,11 +59,10 @@ class PeriodsToDateFunDef extends FunDefBase {
             MemberType memberType = (MemberType) args[1].getType();
             if (memberType.getHierarchy() != null
                 && hierarchyType.getHierarchy() != null
-                && memberType.getHierarchy() != hierarchyType.getHierarchy())
-            {
+                && memberType.getHierarchy() != hierarchyType.getHierarchy()) {
                 throw Util.newError(
-                    "Type mismatch: member must belong to hierarchy "
-                    + hierarchyType.getHierarchy().getUniqueName());
+                    "Type mismatch: member must belong to hierarchy " +
+                        hierarchyType.getHierarchy().getUniqueName());
             }
         }
 
@@ -71,30 +73,32 @@ class PeriodsToDateFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final LevelCalc levelCalc =
-            call.getArgCount() > 0
-            ? compiler.compileLevel(call.getArg(0))
-            : null;
+                call.getArgCount() > 0 ?
+                compiler.compileLevel(call.getArg(0)) :
+                null;
         final MemberCalc memberCalc =
-            call.getArgCount() > 1
-            ? compiler.compileMember(call.getArg(1))
-            : null;
-        final RolapHierarchy timeHierarchy =
-            levelCalc == null
-            ? ((RolapCube) compiler.getEvaluator().getCube()).getTimeHierarchy(
-                getName())
-            : null;
+                call.getArgCount() > 1 ?
+                compiler.compileMember(call.getArg(1)) :
+                null;
+        final Dimension timeDimension = compiler
+                .getEvaluator().getCube().getTimeDimension();
 
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 final Member member;
                 final Level level;
                 if (levelCalc == null) {
-                    member = evaluator.getContext(timeHierarchy);
+                    if (timeDimension == null) {
+                        throw MondrianResource.instance().
+                                    NoTimeDimensionInCube.ex(getName());
+                    }
+                    member = evaluator.getContext(timeDimension);
                     level = member.getLevel().getParentLevel();
                 } else {
                     level = levelCalc.evaluateLevel(evaluator);
                     if (memberCalc == null) {
-                        member = evaluator.getContext(level.getHierarchy());
+                        member = evaluator.getContext(
+                                level.getHierarchy().getDimension());
                     } else {
                         member = memberCalc.evaluateMember(evaluator);
                     }
@@ -102,16 +106,20 @@ class PeriodsToDateFunDef extends FunDefBase {
                 return periodsToDate(evaluator, level, member);
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                if (super.dependsOn(hierarchy)) {
+            public boolean dependsOn(Dimension dimension) {
+                if (super.dependsOn(dimension)) {
                     return true;
                 }
                 if (memberCalc != null) {
                     return false;
                 } else if (levelCalc != null) {
-                    return levelCalc.getType().usesHierarchy(hierarchy, true);
+                    return levelCalc.getType().usesDimension(dimension, true) ;
                 } else {
-                    return hierarchy == timeHierarchy;
+                    if (timeDimension == null) {
+                        throw MondrianResource.instance().
+                                    NoTimeDimensionInCube.ex(getName());
+                    }
+                    return dimension == timeDimension;
                 }
             }
         };

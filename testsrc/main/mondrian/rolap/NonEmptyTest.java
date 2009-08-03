@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -84,7 +84,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testBug1961163() throws Exception {
-        assertQueryReturns(
+        TestContext ctx = TestContext.instance();
+        ctx.assertQueryReturns(
             "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
             + "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, "
             + "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS "
@@ -288,9 +289,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Must not use native sql optimization because it chooses the wrong
-     * RolapStar in SqlContextConstraint/SqlConstraintUtils.  Test ensures that
-     * no exception is thrown.
+     * must not use native sql optimization because it chooses the wrong RolapStar
+     * in SqlContextConstraint/SqlConstraintUtils.
+     * Test ensures that no exception is thrown.
      */
     public void testVirtualCube() throws Exception {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
@@ -319,6 +320,16 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
+    public void testVirtualCubeMembersNonConformingDim() throws Exception {
+        // native sql optimization should not be used when you have a
+        // non-conforming dimensions because it will result in a cartesian
+        // product join
+        checkNotNative(
+            1,
+            "select non empty {[Customers].[Country].members} on columns, "
+            + "{[Measures].[Units Ordered]} on rows from "
+            + "[Warehouse and Sales]");
+    }
 
     public void testNativeFilter() {
         String query =
@@ -551,8 +562,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verifies that CrossJoins with two non native inputs can be natively
-     * evaluated.
+     * Verify that CrossJoins with two non native inputs can be natively evaluated.
      */
     public void testExpandAllNonNativeInputs() {
         // This query will not run natively unless the <Dimension>.Children
@@ -585,8 +595,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verifies that CrossJoins with one non native inputs can be natively
-     * evaluated.
+     * Verify that CrossJoins with one non native inputs can be natively evaluated.
      */
     public void testExpandOneNonNativeInput() {
         // This query will not be evaluated natively unless the Filter
@@ -664,8 +673,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Verifies that the presence of calculated member in all the inputs
-     * disables native evaluation, even when ExpandNonNative is true.
+     * Verify that the presence of calculated member in all the inputs disables native
+     * evaluation, even when ExpandNonNative is true.
      */
     public void testExpandCalcMembersInAllInputs() {
         // This query will not be evaluated natively, even if the Hierarchize
@@ -1031,8 +1040,7 @@ public class NonEmptyTest extends BatchTestCase {
         // non "All" member.
         //
         // It can also be rewritten to use
-        // Filter([Product].[All Products].Children, Is
-        // NotEmpty([Measures].[Unit Sales]))
+        // Filter([Product].[All Products].Children, Is NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
@@ -1077,8 +1085,7 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(
             9,
             9,
-            "select {[Measures].[Unit Sales]} ON COLUMNS, "
-            + "NON EMPTY Crossjoin("
+            "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
             + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
             + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
             + "where ([Promotions].[All Promotions].[Bag Stuffers])");
@@ -1095,8 +1102,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "select {[Measures].[Store Sales]} on columns,"
                         + "  NON EMPTY Order("
                         + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                        + "        [Measures].[Store Sales]) ON ROWS"
-                        + " from [Sales] where ("
+                        + "        [Measures].[Store Sales]) ON ROWS" + " from [Sales] where ("
                         + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                         + "  [Time].[1997].[Q1].[1])");
     }
@@ -1202,44 +1208,37 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Calc Member in TopCount: this topcount can not be calculated native
-     * because its set contains calculated members.
+     * Calc Member in TopCount: this topcount can not be calculated native because
+     * its set contains calculated members.
      */
     public void testCmInTopCount() {
-        checkNotNative(
-            1,
-            "with member [Time].[Jan] as  "
-            + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
-            + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
-            + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
+        checkNotNative(1, "with member [Time].[Jan] as  "
+                + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
+                + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+                + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
     }
 
     /**
      * Calc member in slicer cannot be executed natively.
      */
     public void testCmInSlicer() {
-        checkNotNative(
-            3,
-            "with member [Time].[Jan] as  "
-            + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
-            + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
-            + "NON EMPTY [Product].[All Products].Children ON rows from [Sales] "
-            + "where ([Time].[Jan]) ");
+        checkNotNative(3, "with member [Time].[Jan] as  "
+                + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
+                + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+                + "NON EMPTY [Product].[All Products].Children ON rows from [Sales] "
+                + "where ([Time].[Jan]) ");
     }
 
     public void testCjMembersMembersMembers() {
-        checkNative(
-            67,
-            67,
-            "select {[Measures].[Store Sales]} on columns,"
-            + "  NON EMPTY Crossjoin("
-            + "    Crossjoin("
-            + "        [Customers].[Name].Members,"
-            + "        [Product].[Product Name].Members), "
-            + "    [Promotions].[Promotion Name].Members) ON rows "
-            + " from [Sales] where ("
-            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-            + "  [Time].[1997].[Q1].[1])");
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1248,11 +1247,8 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCjEnumEnum() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get()
-            < minConstraints)
-        {
-            propSaver.set(
-                MondrianProperties.instance().MaxConstraints, minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
+            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
         }
         checkNative(
             4,
@@ -1266,9 +1262,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Set containing only null member should not prevent usage of native.
      */
     public void testCjNullInEnum() {
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
-            true);
+        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
         checkNative(
             20,
             0,
@@ -1295,12 +1289,8 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCjDescendantsEnum() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get()
-            < minConstraints)
-        {
-            propSaver.set(
-                MondrianProperties.instance().MaxConstraints,
-                minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
+            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
         }
         checkNative(
             11,
@@ -1317,12 +1307,8 @@ public class NonEmptyTest extends BatchTestCase {
         // Make sure maxConstraint settting is high enough
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
-        if (MondrianProperties.instance().MaxConstraints.get()
-            < minConstraints)
-        {
-            propSaver.set(
-                MondrianProperties.instance().MaxConstraints,
-                minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get() < minConstraints) {
+            propSaver.set(MondrianProperties.instance().MaxConstraints, minConstraints);
         }
         checkNative(
             3,
@@ -1331,8 +1317,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "NON EMPTY Crossjoin("
             + "  {[Product].[All Products].[Drink].[Beverages], [Product].[All Products].[Drink].[Dairy]}, "
             + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
-            + "from [Sales] "
-            + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+            + "from [Sales] " + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
     /**
@@ -1347,23 +1332,19 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        TestCase c = new TestCase(
-                8, 5, "select {[Measures].[Unit Sales]} ON COLUMNS, "
+        TestCase c = new TestCase(8, 5, "select {[Measures].[Unit Sales]} ON COLUMNS, "
                 + "NON EMPTY Crossjoin("
                 + "  {[Product].[All Products].[Food], [Product].[All Products].[Drink].[Dairy]}, "
-                + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
-                + "from [Sales] "
+                + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS " + "from [Sales] "
                 + "where ([Promotions].[All Promotions].[Bag Stuffers])");
         c.run();
     }
 
     public void testCjDescendantsMembers() {
-        checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + " NON EMPTY Crossjoin("
                 + "   Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]),"
-                + "     [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
+                + "     [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
@@ -1382,18 +1363,15 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjChildrenMembers() {
-        checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
-                + "    [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
+                + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersChildren() {
-        checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
                 + "    [Customers].[All Customers].[USA].[CA].children) ON rows "
                 + " from [Sales] where ("
@@ -1402,11 +1380,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersMembers() {
-        checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
-                + "    [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
+                + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
@@ -1425,8 +1401,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Checks that multi-level member list generates compact form of SQL where
-     * clause:
+     * Check that multi-level member list generates compact form of SQL where clause:
      * (1) Use IN list if possible
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
@@ -1475,34 +1450,27 @@ public class NonEmptyTest extends BatchTestCase {
             + "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, "
             + "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
-        if (MondrianProperties.instance().UseAggregates.get()
-            && MondrianProperties.instance().ReadAggregates.get())
-        {
+        if (MondrianProperties.instance().UseAggregates.get() &&
+            MondrianProperties.instance().ReadAggregates.get()) {
             // slightly different sql expected, uses agg table now for join
-            necjSqlMySql = necjSqlMySql.replaceAll(
-                    "sales_fact_1997", "agg_c_14_sales_fact_1997");
-            necjSqlDerby = necjSqlDerby.replaceAll(
-                    "sales_fact_1997", "agg_c_14_sales_fact_1997");
+            necjSqlMySql = necjSqlMySql.replaceAll("sales_fact_1997", "agg_c_14_sales_fact_1997");
+            necjSqlDerby = necjSqlDerby.replaceAll("sales_fact_1997", "agg_c_14_sales_fact_1997");
         }
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(query, patterns);
     }
 
     /**
-     * Checks that multi-level member list generates compact form of SQL where
-     * clause:
+     * Check that multi-level member list generates compact form of SQL where clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique
-     * level.
+     * (3) If parent levels include NULLs, comparision includes any unique level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
@@ -1569,23 +1537,19 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where
-     * clause:
+     * Check that multi-level member list generates compact form of SQL where clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique
-     *     level.
+     * (3) If parent levels include NULLs, comparision includes any unique level.
      * (4) Can handle predicates correctly if the member list contains both NULL
      * and non NULL parent levels.
      */
@@ -1659,18 +1623,15 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
     }
 
     /**
-     * Check that multi-level member list generates compact form of SQL where
-     * clause:
+     * Check that multi-level member list generates compact form of SQL where clause:
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent
@@ -1746,10 +1707,8 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+            new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
         assertQuerySql(testContext, query, patterns);
@@ -1775,8 +1734,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * when Mondrian parses a string like
-     * "[Store].[All Stores].[USA].[CA].[San Francisco]"
+     * when Mondrian parses a string like "[Store].[All Stores].[USA].[CA].[San Francisco]"
      * it shall not lookup additional members.
      */
     public void testLookupMemberCache() {
@@ -1786,13 +1744,11 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        // there currently isn't a cube member to children cache, only
-        // a shared cache so use the shared smart member reader
+        // there currently isn't a cube member to children cache, only a shared cache
+        // so use the shared smart member reader
         SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = smr.cacheHelper;
-        MemberCacheHelper rcsmrch =
-            ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
-            .getRolapCubeMemberCacheHelper();
+        MemberCacheHelper rcsmrch = ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr).getRolapCubeMemberCacheHelper();
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
@@ -1806,57 +1762,46 @@ public class NonEmptyTest extends BatchTestCase {
             "no additional members should be read:"
             + ssmrch.mapKeyToMember.size(),
             ssmrch.mapKeyToMember.size() <= 5);
-        RolapMember sf =
-            (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
+        RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
 
         // convert back to shared members
         ca = ((RolapCubeMember) ca).getRolapMember();
         sf = ((RolapCubeMember) sf).getRolapMember();
 
-        List list = ssmrch.mapMemberToChildren.get(
-            ca, scf.getMemberChildrenConstraint(null));
+        List list = ssmrch.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
-        list = ssmrch.mapMemberToChildren.get(
-            ca, scf.getChildByNameConstraint(
-                ca,
+        list = ssmrch.mapMemberToChildren.get(ca, scf.getChildByNameConstraint(ca,
                 new Id.Segment("San Francisco", Id.Quoting.QUOTED)));
         assertNotNull("child [San Francisco] of [CA] is in cache", list);
         assertEquals("[San Francisco] expected", sf, list.get(0));
     }
 
     /**
-     * When looking for [Month] Mondrian generates SQL that tries to find
-     * 'Month' as a member of the time dimension. This resulted in an
-     * SQLException because the year level is numeric and the constant 'Month'
-     * in the WHERE condition is not.  Its probably a bug that Mondrian does not
-     * take into account [Time].[1997] when looking up [Month].
+     * When looking for [Month] Mondrian generates SQL that tries to find 'Month'
+     * as a member of the time dimension. This resulted in an SQLException because
+     * the year level is numeric and the constant  'Month' in the WHERE condition is not.
+     * Its probably a bug that Mondrian does not take into account [Time].[1997]
+     * when looking up [Month].
      */
     public void testLookupMember() {
         // ok if no exception occurs
-        executeQuery(
-                "SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
+        executeQuery("SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
     }
 
 
     /**
-     * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non
-     * Empty(B)).  Verify that there is no crash when the length of B could be
-     * non-zero length before the non empty and 0 after the non empty.
+     * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non Empty(B))
+     * Verify that there is no crash when the length of B could be non-zero length before the non emptyy
+     * and 0 after the non empty.
      */
     public void testNonEmptyCrossJoinList() {
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeCrossJoin, false);
-        boolean oldEnableNativeNonEmpty =
-            MondrianProperties.instance().EnableNativeNonEmpty.get();
+        propSaver.set(MondrianProperties.instance().EnableNativeCrossJoin, false);
+        boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
         MondrianProperties.instance().EnableNativeNonEmpty.set(false);
 
-        executeQuery(
-            "select non empty CrossJoin([Customers].[Name].Members, "
-            + "{[Promotions].[All Promotions].[Fantastic Discounts]}) "
-            + "ON COLUMNS FROM [Sales]");
-        MondrianProperties.instance().EnableNativeNonEmpty.set(
-            oldEnableNativeNonEmpty);
+        executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
+        MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
     }
 
     /**
@@ -1864,8 +1809,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testLookupMember2() {
         // ok if no exception occurs
-        executeQuery(
-                "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
+        executeQuery("select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
     }
 
     /**
@@ -1874,8 +1818,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testCalcMemberWithNonEmptyCrossJoin() {
         getConnection().getCacheControl(null).flushSchemaCache();
-        Result result = executeQuery(
-                "with member [Measures].[CustomerCount] as \n"
+        Result result = executeQuery("with member [Measures].[CustomerCount] as \n"
                 + "'Count(CrossJoin({[Product].[All Products]}, [Customers].[Name].Members))'\n"
                 + "select \n"
                 + "NON EMPTY{[Measures].[CustomerCount]} ON columns,\n"
@@ -1889,9 +1832,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * Runs an MDX query with a predefined resultLimit and checks the number of
-     * positions of the row axis. The reduces resultLimit ensures that the
-     * optimization is present.
+     * runs a MDX query with a predefined resultLimit and checks the number of positions
+     * of the row axis. The reduces resultLimit ensures that the optimization is present.
      */
     class TestCase {
         /**
@@ -1919,9 +1861,7 @@ public class NonEmptyTest extends BatchTestCase {
             this.query = query;
         }
 
-        public TestCase(
-            Connection con, int resultLimit, int rowCount, String query)
-        {
+        public TestCase(Connection con, int resultLimit, int rowCount, String query) {
             this.con = con;
             this.resultLimit = resultLimit;
             this.rowCount = rowCount;
@@ -1930,8 +1870,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         private Result run() {
             getConnection().getCacheControl(null).flushSchemaCache();
-            IntegerProperty monLimit =
-                MondrianProperties.instance().ResultLimit;
+            IntegerProperty monLimit = MondrianProperties.instance().ResultLimit;
             int oldLimit = monLimit.get();
             try {
                 monLimit.set(this.resultLimit);
@@ -1955,9 +1894,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
         SmartMemberReader smr = getSmartMemberReader("Customers");
         // use the RolapCubeHierarchy's member cache for levels
-        MemberCacheHelper smrch =
-            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
-            .rolapCubeCacheHelper;
+        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr).rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
         MemberCacheHelper smrich = smr.cacheHelper;
         clearAndHardenCache(smrich);
@@ -1968,13 +1905,13 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         TestCase c = new TestCase(
-            50,
-            21,
-            "select \n"
-            + "{[Measures].[Unit Sales]} ON columns,\n"
-            + "NON EMPTY {[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
-            + "from [Sales]\n"
-            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+                50,
+                21,
+                "select \n"
+                        + "{[Measures].[Unit Sales]} ON columns,\n"
+                        + "NON EMPTY {[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
+                        + "from [Sales]\n"
+                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Result r = c.run();
         Level[] levels = smr.getHierarchy().getLevels();
         Level nameLevel = levels[levels.length - 1];
@@ -2014,9 +1951,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testLevelMembersWithoutNonEmpty() {
         SmartMemberReader smr = getSmartMemberReader("Customers");
 
-        MemberCacheHelper smrch =
-            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
-            .rolapCubeCacheHelper;
+        MemberCacheHelper smrch = ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr).rolapCubeCacheHelper;
         clearAndHardenCache(smrch);
 
         MemberCacheHelper smrich = smr.cacheHelper;
@@ -2026,8 +1961,7 @@ public class NonEmptyTest extends BatchTestCase {
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
 
-        Result r = executeQuery(
-                "select \n"
+        Result r = executeQuery("select \n"
                 + "{[Measures].[Unit Sales]} ON columns,\n"
                 + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
                 + "from [Sales]\n"
@@ -2108,8 +2042,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of All member
      */
     public void testMemberChildrenOfAllMember() {
-        TestCase c = new TestCase(
-                50, 14, "select {[Measures].[Unit Sales]} ON columns,\n"
+        TestCase c = new TestCase(50, 14, "select {[Measures].[Unit Sales]} ON columns,\n"
                 + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n"
                 + "where ([Time].[1997].[Q1].[1])");
         c.run();
@@ -2119,8 +2052,8 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of All member w/o WHERE clause
      */
     public void testMemberChildrenNoWhere() {
-        // The time dimension is joined because there is no (All) level in the
-        // Time hierarchy:
+        // the time dimension is joined because there is no (All) level in the Time
+        // hierarchy:
         //
         //      select
         //        `promotion`.`promotion_name` as `c0`
@@ -2130,20 +2063,14 @@ public class NonEmptyTest extends BatchTestCase {
         //        `promotion` as `promotion`
         //      where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
         //        and `time_by_day`.`the_year` = 1997
-        //        and `sales_fact_1997`.`promotion_id`
-        //                = `promotion`.`promotion_id`
+        //        and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`
         //      group by
         //        `promotion`.`promotion_name`
         //      order by
         //        `promotion`.`promotion_name`
 
-        TestCase c =
-            new TestCase(
-                50,
-                48,
-                "select {[Measures].[Unit Sales]} ON columns,\n"
-                + "NON EMPTY [Promotions].[All Promotions].Children ON rows "
-                + "from [Sales]\n");
+        TestCase c = new TestCase(50, 48, "select {[Measures].[Unit Sales]} ON columns,\n"
+                + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n");
         c.run();
     }
 
@@ -2170,11 +2097,9 @@ public class NonEmptyTest extends BatchTestCase {
     /**
      * When a member is expanded in JPivot with mulitple hierarchies visible it
      * generates a
-     *   <code>CrossJoin({[member from left hierarchy]}, [member to
-     * expand].Children)</code>
-     *
-     * <p>This should behave the same as if <code>[member from left
-     * hierarchy]</code> was put into the slicer.
+     *   <code>CrossJoin({[member from left hierarchy]}, [member to expand].Children)</code>
+     * This should behave the same as if <code>[member from left hierarchy]</code> was
+     * put into the slicer.
      */
     public void testCrossjoin() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
@@ -2183,16 +2108,13 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        TestCase c =
-            new TestCase(
+        TestCase c = new TestCase(
                 45,
                 4,
                 "select \n"
-                + "{[Measures].[Unit Sales]} ON columns,\n"
-                + "NON EMPTY Crossjoin("
-                + "{[Store].[USA].[CA].[San Francisco].[Store 14]},"
-                + " [Customers].[USA].[CA].[Palo Alto].Children) ON rows\n"
-                + "from [Sales] where ([Time].[1997].[Q1].[1])");
+                        + "{[Measures].[Unit Sales]} ON columns,\n"
+                        + "NON EMPTY Crossjoin({[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}, [Customers].[All Customers].[USA].[CA].[Palo Alto].Children) ON rows\n"
+                        + "from [Sales] where ([Time].[1997].[Q1].[1])");
         c.run();
     }
 
@@ -2218,20 +2140,18 @@ public class NonEmptyTest extends BatchTestCase {
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
 
-        TestCase c =
-            new TestCase(
+        TestCase c = new TestCase(
                 con,
                 45,
                 21,
                 "select \n"
-                + "{[Measures].[Unit Sales]} ON columns, "
-                + "NON EMPTY {[Customers].[All Customers], Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])} on rows "
-                + "from [Sales] "
-                + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+                        + "{[Measures].[Unit Sales]} ON columns, "
+                        + "NON EMPTY {[Customers].[All Customers], Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])} on rows "
+                        + "from [Sales] "
+                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Result result = c.run();
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
-        RolapMember peggy =
-            (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
+        RolapMember peggy = (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
         RolapMember burlingame = peggy.getParentMember();
 
         peggy = ((RolapCubeMember) peggy).getRolapMember();
@@ -2247,8 +2167,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertNotNull(list);
         assertTrue(list.contains(peggy));
 
-        // now we run the same query again, this time everything must come out
-        // of the cache
+        // now we run the same query again, this time everything must come out of the cache
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(new Listener() {
             public void foundEvaluator(NativeEvent e) {
@@ -2318,6 +2237,26 @@ public class NonEmptyTest extends BatchTestCase {
             + "nonEmptyCrossJoin([Product].[All Products].children, "
             + "nonEmptyCrossJoin([Customers].[All Customers].children,"
             + "[Store].[All Stores].children)) on rows "
+            + "from [Warehouse and Sales]");
+    }
+
+    public void testVirtualCubeCrossJoinNonConformingDim() {
+        // for this test, verify that no alert is raised even though
+        // native evaluation isn't supported, because lack of
+        // support is intentional
+        propSaver.set(
+            MondrianProperties.instance().AlertNativeEvaluationUnsupported,
+            "ERROR");
+
+        // cross join involves non-conforming dimensions should not use
+        // native cross joins because it will result in a cartesian
+        // product join
+        checkNotNative(
+            0,
+            "select "
+            + "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, "
+            + "NonEmptyCrossJoin([Customers].[All Customers].children, "
+            + "[Warehouse].[All Warehouses].children) on rows "
             + "from [Warehouse and Sales]");
     }
 
@@ -2886,7 +2825,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' "
             + "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' "
             + "Set [*GENERATED_MEMBERS_Dates] as "
-            + "'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
+            + "'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
             + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' "
             + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' "
             + "Set [*GENERATED_MEMBERS_Stores] as "
@@ -2902,7 +2841,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Select Union "
             + "(CrossJoin "
             + "(Filter "
-            + "(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}), "
+            + "(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}), "
             + "Not IsEmpty ([Measures].[Unit Sales])), "
             + "[*GENERATED_MEMBERS_Measures]), "
             + "CrossJoin "
@@ -3345,10 +3284,8 @@ public class NonEmptyTest extends BatchTestCase {
                     + "Row #1: 263,793.22\n");
             }
         } finally {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(
-                currentNativeNonEmpty);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(
-                currentNonEmptyOnAllAxis);
+            MondrianProperties.instance().EnableNativeNonEmpty.set(currentNativeNonEmpty);
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(currentNonEmptyOnAllAxis);
         }
     }
 
@@ -3364,281 +3301,6 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
             + "Axis #2:\n");
-    }
-
-    /**
-     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-412">
-     * MONDRIAN-412, "NON EMPTY and Filter() breaking aggregate
-     * calculations"</a>.
-     */
-    public void testBugMondrian412() throws Exception {
-        TestContext ctx = TestContext.instance();
-        ctx.assertQueryReturns(
-            "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
-            + "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, "
-            + "NON EMPTY Filter([Store].[Store Name].Members, ([Measures].[AvgRevenue] < [Measures].[Store Sales])) ON ROWS "
-            + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Store Sales]}\n"
-            + "{[Measures].[AvgRevenue]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "Row #0: 45,750.24\n"
-            + "Row #0: 43,479.86\n"
-            + "Row #1: 54,545.28\n"
-            + "Row #1: 43,479.86\n"
-            + "Row #2: 54,431.14\n"
-            + "Row #2: 43,479.86\n"
-            + "Row #3: 55,058.79\n"
-            + "Row #3: 43,479.86\n"
-            + "Row #4: 87,218.28\n"
-            + "Row #4: 43,479.86\n"
-            + "Row #5: 52,896.30\n"
-            + "Row #5: 43,479.86\n"
-            + "Row #6: 52,644.07\n"
-            + "Row #6: 43,479.86\n"
-            + "Row #7: 49,634.46\n"
-            + "Row #7: 43,479.86\n"
-            + "Row #8: 74,843.96\n"
-            + "Row #8: 43,479.86\n");
-    }
-
-    public void testNonEmpyOnVirtualCubeWithNonJoiningDimension() {
-        assertQueryReturns(
-            "select non empty {[Warehouse].[Warehouse name].members} on 0,"
-            + "{[Measures].[Units Shipped],[Measures].[Unit Sales]} on 1"
-            + " from [Warehouse and Sales]"
-            ,
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Units Shipped]}\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Row #0: 10759.0\n"
-            + "Row #0: 24587.0\n"
-            + "Row #0: 23835.0\n"
-            + "Row #0: 1696.0\n"
-            + "Row #0: 8515.0\n"
-            + "Row #0: 32393.0\n"
-            + "Row #0: 2348.0\n"
-            + "Row #0: 22734.0\n"
-            + "Row #0: 24110.0\n"
-            + "Row #0: 11889.0\n"
-            + "Row #0: 32411.0\n"
-            + "Row #0: 1860.0\n"
-            + "Row #0: 10589.0\n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #1: \n");
-    }
-
-    public void testNonEmptyOnNonJoiningValidMeasure() {
-        assertQueryReturns(
-            "with member [Measures].[vm] as 'ValidMeasure([Measures].[Unit Sales])'"
-            + "select non empty {[Warehouse].[Warehouse name].members} on 0,"
-            + "{[Measures].[Units Shipped],[Measures].[vm]} on 1"
-            + " from [Warehouse and Sales]"
-            , "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Units Shipped]}\n"
-            + "{[Measures].[vm]}\n"
-            + "Row #0: 10759.0\n"
-            + "Row #0: 24587.0\n"
-            + "Row #0: 23835.0\n"
-            + "Row #0: 1696.0\n"
-            + "Row #0: 8515.0\n"
-            + "Row #0: 32393.0\n"
-            + "Row #0: 2348.0\n"
-            + "Row #0: 22734.0\n"
-            + "Row #0: 24110.0\n"
-            + "Row #0: 11889.0\n"
-            + "Row #0: 32411.0\n"
-            + "Row #0: 1860.0\n"
-            + "Row #0: 10589.0\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n"
-            + "Row #1: 266,773\n");
-    }
-
-    public void testCrossjoinWithTwoDimensionsJoiningToOppositeBaseCubes() {
-        assertQueryReturns(
-            "with member [Measures].[vm] as 'ValidMeasure([Measures].[Unit Sales])'\n"
-            + "select non empty Crossjoin([Warehouse].[Warehouse Name].members, [Gender].[Gender].members) on 0,\n"
-            + "{[Measures].[Units Shipped],[Measures].[vm]} on 1\n"
-            + "from [Warehouse and Sales]"
-            , "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Units Shipped]}\n"
-            + "{[Measures].[vm]}\n");
-    }
-
-    public void testCrossjoinWithOneDimensionThatDoesNotJoinToBothBaseCubes() {
-        assertQueryReturns(
-            "with member [Measures].[vm] as 'ValidMeasure([Measures].[Units Shipped])'"
-            + "select non empty Crossjoin([Store].[Store Name].members, [Gender].[Gender].members) on 0,"
-            + "{[Measures].[Unit Sales],[Measures].[vm]} on 1"
-            + " from [Warehouse and Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23], [Gender].[All Gender].[M]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[vm]}\n"
-            + "Row #0: 10,771\n"
-            + "Row #0: 10,562\n"
-            + "Row #0: 12,089\n"
-            + "Row #0: 13,574\n"
-            + "Row #0: 12,835\n"
-            + "Row #0: 12,800\n"
-            + "Row #0: 1,064\n"
-            + "Row #0: 1,053\n"
-            + "Row #0: 12,488\n"
-            + "Row #0: 13,591\n"
-            + "Row #0: 20,548\n"
-            + "Row #0: 21,032\n"
-            + "Row #0: 1,096\n"
-            + "Row #0: 1,141\n"
-            + "Row #0: 11,640\n"
-            + "Row #0: 12,936\n"
-            + "Row #0: 13,513\n"
-            + "Row #0: 11,498\n"
-            + "Row #0: 12,068\n"
-            + "Row #0: 11,523\n"
-            + "Row #0: 17,420\n"
-            + "Row #0: 17,837\n"
-            + "Row #0: 1,019\n"
-            + "Row #0: 1,184\n"
-            + "Row #0: 5,007\n"
-            + "Row #0: 6,484\n"
-            + "Row #1: 10759.0\n"
-            + "Row #1: 10759.0\n"
-            + "Row #1: 24587.0\n"
-            + "Row #1: 24587.0\n"
-            + "Row #1: 23835.0\n"
-            + "Row #1: 23835.0\n"
-            + "Row #1: 1696.0\n"
-            + "Row #1: 1696.0\n"
-            + "Row #1: 8515.0\n"
-            + "Row #1: 8515.0\n"
-            + "Row #1: 32393.0\n"
-            + "Row #1: 32393.0\n"
-            + "Row #1: 2348.0\n"
-            + "Row #1: 2348.0\n"
-            + "Row #1: 22734.0\n"
-            + "Row #1: 22734.0\n"
-            + "Row #1: 24110.0\n"
-            + "Row #1: 24110.0\n"
-            + "Row #1: 11889.0\n"
-            + "Row #1: 11889.0\n"
-            + "Row #1: 32411.0\n"
-            + "Row #1: 32411.0\n"
-            + "Row #1: 1860.0\n"
-            + "Row #1: 1860.0\n"
-            + "Row #1: 10589.0\n"
-            + "Row #1: 10589.0\n");
-    }
-
-    /**
-     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-321">
-     * MONDRIAN-321, "CrossJoin has no nulls when
-     * EnableNativeNonEmpty=true"</a>.
-     */
-    public void testBugMondrian321() {
-        if (true) {
-            return; // TODO: enable
-        }
-        assertQueryReturns(
-            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, {[Product].[All Products]})' \n"
-            + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
-            + "Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
-            "x");
     }
 
     /**
@@ -3776,9 +3438,7 @@ public class NonEmptyTest extends BatchTestCase {
             if (!listener.isExecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache
-                .get())
-            {
+            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
                 // run once more to make sure that the result comes from cache
                 // now
                 listener.setExecuteSql(false);
@@ -3867,12 +3527,9 @@ public class NonEmptyTest extends BatchTestCase {
 
     SmartMemberReader getSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader =
-            (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy =
-            (RolapHierarchy) cube.lookupHierarchy(
-                new Id.Segment(hierName, Id.Quoting.UNQUOTED),
-                false);
+        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
+        RolapHierarchy hierarchy = (RolapHierarchy) cube.lookupHierarchy(
+                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return (SmartMemberReader)
             hierarchy.createMemberReader(schemaReader.getRole());
@@ -3883,18 +3540,13 @@ public class NonEmptyTest extends BatchTestCase {
         return getSharedSmartMemberReader(con, hierName);
     }
 
-    SmartMemberReader getSharedSmartMemberReader(
-        Connection con, String hierName)
-    {
+    SmartMemberReader getSharedSmartMemberReader(Connection con, String hierName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
-        RolapSchemaReader schemaReader =
-            (RolapSchemaReader) cube.getSchemaReader();
-        RolapCubeHierarchy hierarchy =
-            (RolapCubeHierarchy) cube.lookupHierarchy(
+        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
+        RolapCubeHierarchy hierarchy = (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getRolapHierarchy()
-            .createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) hierarchy.getRolapHierarchy().createMemberReader(schemaReader.getRole());
     }
 
 

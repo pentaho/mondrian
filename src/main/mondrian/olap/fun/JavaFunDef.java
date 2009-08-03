@@ -1,8 +1,8 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -112,13 +112,6 @@ public class JavaFunDef extends FunDefBase {
             getAnnotation(
                 method, className + "$SyntaxDef", Syntax.Function);
 
-        // In JDK 1.4 we don't have annotations, so the function name will be
-        // precisely the method name. In particular, we went the
-        // Vba.int_(Object) method to become the 'Int' function.
-        if (name.endsWith("_") && Util.PreJdk15) {
-            name = name.substring(0, name.length() - 1);
-        }
-
         int returnCategory = getReturnCategory(method);
 
         int paramCategories[] = getParameterCategories(method);
@@ -138,8 +131,8 @@ public class JavaFunDef extends FunDefBase {
         List<FunDef> list = new ArrayList<FunDef>();
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
-            if (Modifier.isStatic(method.getModifiers())
-                && !method.getName().equals("main"))
+            if (Modifier.isStatic(method.getModifiers()) &&
+                !method.getName().equals("main"))
             {
                 list.add(generateFunDef(method));
             }
@@ -311,14 +304,15 @@ public class JavaFunDef extends FunDefBase {
      * type needed.
      */
     private static abstract class AbstractCalc2 extends AbstractCalc {
-        /**
-         * Creates an AbstractCalc2.
-         *
-         * @param exp Source expression
-         * @param calc Child compiled expression
-         */
+        private final Calc[] calcs;
+
         protected AbstractCalc2(Exp exp, Calc calc) {
-            super(exp, new Calc[] {calc});
+            super(exp);
+            this.calcs = new Calc[] {calc};
+        }
+
+        public Calc[] getCalcs() {
+            return calcs;
         }
     }
 
@@ -326,6 +320,7 @@ public class JavaFunDef extends FunDefBase {
      * Calc which calls a Java method.
      */
     private static class JavaMethodCalc extends GenericCalc {
+        private final Calc[] calcs;
         private final Method method;
         private final Object[] args;
 
@@ -339,13 +334,17 @@ public class JavaFunDef extends FunDefBase {
         public JavaMethodCalc(
             ResolvedFunCall call, Calc[] calcs, Method method)
         {
-            super(call, calcs);
+            super(call);
+            this.calcs = calcs;
             this.method = method;
             this.args = new Object[calcs.length];
         }
 
+        public Calc[] getCalcs() {
+            return calcs;
+        }
+
         public Object evaluate(Evaluator evaluator) {
-            final Calc[] calcs = getCalcs();
             for (int i = 0; i < args.length; i++) {
                 args[i] = calcs[i].evaluate(evaluator);
                 if (args[i] == null) {

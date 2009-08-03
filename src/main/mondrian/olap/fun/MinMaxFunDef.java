@@ -1,15 +1,17 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
+import mondrian.olap.FunDef;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Dimension;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
@@ -27,16 +29,14 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class MinMaxFunDef extends AbstractAggregateFunDef {
-    static final ReflectiveMultiResolver MinResolver =
-        new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver MinResolver = new ReflectiveMultiResolver(
             "Min",
             "Min(<Set>[, <Numeric Expression>])",
             "Returns the minimum value of a numeric expression evaluated over a set.",
             new String[]{"fnx", "fnxn"},
             MinMaxFunDef.class);
 
-    static final MultiResolver MaxResolver =
-        new ReflectiveMultiResolver(
+    static final MultiResolver MaxResolver = new ReflectiveMultiResolver(
             "Max",
             "Max(<Set>[, <Numeric Expression>])",
             "Returns the maximum value of a numeric expression evaluated over a set.",
@@ -52,22 +52,20 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-            compiler.compileList(call.getArg(0));
-        final Calc calc =
-            call.getArgCount() > 1
-            ? compiler.compileScalar(call.getArg(1), true)
-            : new ValueCalc(call);
+                compiler.compileList(call.getArg(0));
+        final Calc calc = call.getArgCount() > 1 ?
+                compiler.compileScalar(call.getArg(1), true) :
+                new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double)
-                    (max
-                     ? max(evaluator.push(false), memberList, calc)
-                     : min(evaluator.push(false), memberList, calc));
+                return (Double)(max ?
+                        max(evaluator.push(false), memberList, calc) :
+                        min(evaluator.push(false), memberList, calc));
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                return anyDependsButFirst(getCalcs(), hierarchy);
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }

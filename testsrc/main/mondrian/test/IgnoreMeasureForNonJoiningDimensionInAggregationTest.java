@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -44,8 +44,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends
             originalEliminateUnrelatedDimensions);
     }
 
-    public void testNoTotalsForCompdMeasureWithComponentsHavingNonJoiningDims()
-    {
+    public void testNoTotalsForCompoundMeasureWithComponentsHavingNonJoiningDims() {
         assertQueryReturns(
             "with member [Measures].[Total Sales] as "
             + "'[Measures].[Store Sales] + [Measures].[Warehouse Sales]'"
@@ -232,7 +231,9 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends
             + "'IIF(1=0,\n"
             + "[Warehouse].[All Warehouses],\n"
             + "([Warehouse].[All Warehouses], [Store].[All Stores]))'\n"
-            + "\n"
+            +
+
+            "\n"
             + "SELECT\n"
             + "{[Measures].[Total Sales]} ON AXIS(0),\n"
             + "{[Warehouse].[AggSP1_1],[Warehouse].[AggSP1_2],[Warehouse].[AggSP1_3],"

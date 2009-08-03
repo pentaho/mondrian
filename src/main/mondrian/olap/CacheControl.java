@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,8 +85,7 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, true, member98Q2,
-     * false)</code>
+     * <code>createMemberRegion(true, member97Q3, true, member98Q2, false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, inclusive:<br/>
      * [Time].[1997].[Q3],<br/>
@@ -97,8 +96,7 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, false, member98Q2,
-     * false)</code>
+     * <code>createMemberRegion(true, member97Q3, false, member98Q2, false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, exclusive:<br/>
      * [Time].[1997].[Q4],<br/>
@@ -107,8 +105,7 @@ public interface CacheControl {
      *
      * <tr>
      * <td>
-     * <code>createMemberRegion(true, member97Q3, false, member98Q2,
-     * false)</code>
+     * <code>createMemberRegion(true, member97Q3, false, member98Q2, false)</code>
      * </td>
      * <td>The members between 97Q3 and 98Q2, including their descendants, and
      * including the lower bound but not the upper bound:<br/>
@@ -359,7 +356,7 @@ public interface CacheControl {
      */
     MemberEditCommand createSetPropertyCommand(
         MemberSet set,
-        Map<String, Object> propertyValues)
+        Map<String,Object> propertyValues)
         throws IllegalArgumentException;
 
     // other

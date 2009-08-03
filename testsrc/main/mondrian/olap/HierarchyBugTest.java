@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -37,8 +37,8 @@ public class HierarchyBugTest extends FoodMartTestCase {
     public void testNoHierarchy() {
         String queryString =
             "select NON EMPTY "
-            + "Crossjoin(Hierarchize(Union({[Time].[Time].LastSibling}, "
-            + "[Time].[Time].LastSibling.Children)), "
+            + "Crossjoin(Hierarchize(Union({[Time].LastSibling}, "
+            + "[Time].LastSibling.Children)), "
             + "{[Measures].[Unit Sales],      "
             + "[Measures].[Store Cost]}) ON columns, "
             + "NON EMPTY Hierarchize(Union({[Store].[All Stores]}, "

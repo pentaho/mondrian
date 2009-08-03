@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,6 +16,7 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.IterCalc} interface.
@@ -33,6 +34,7 @@ public abstract class AbstractIterCalc
     extends AbstractCalc
     implements IterCalc
 {
+    private final Calc[] calcs;
     protected final boolean tuple;
 
     /**
@@ -44,7 +46,8 @@ public abstract class AbstractIterCalc
      *   analysis)
      */
     protected AbstractIterCalc(Exp exp, Calc[] calcs) {
-        super(exp, calcs);
+        super(exp);
+        this.calcs = calcs;
         assert getType() instanceof SetType : "expecting a set: " + getType();
         this.tuple = ((SetType) exp.getType()).getArity() != 1;
     }
@@ -67,33 +70,19 @@ public abstract class AbstractIterCalc
             : evaluateMemberIterable(evaluator);
     }
 
+    public Calc[] getCalcs() {
+        return calcs;
+    }
+
     public ResultStyle getResultStyle() {
         return ResultStyle.ITERABLE;
     }
 
-    /**
-     * Available implementation of
-     * {@link mondrian.calc.MemberIterCalc#evaluateMemberIterable(mondrian.olap.Evaluator)}
-     * if the subclass chooses to implement
-     * {@link mondrian.calc.MemberIterCalc}.
-     *
-     * @param evaluator Evaluation context
-     * @return A member iterator, never null
-     */
     @SuppressWarnings({"unchecked"})
     public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
         return (Iterable<Member>) evaluateIterable(evaluator);
     }
 
-    /**
-     * Available implementation of
-     * {@link mondrian.calc.TupleIterCalc#evaluateTupleIterable(mondrian.olap.Evaluator)}
-     * if the subclass chooses to implement
-     * {@link mondrian.calc.TupleIterCalc}.
-     *
-     * @param evaluator Evaluation context
-     * @return A tuple iterator, never null
-     */
     @SuppressWarnings({"unchecked"})
     public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
         return (Iterable<Member[]>) evaluateIterable(evaluator);

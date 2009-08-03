@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
@@ -33,12 +33,6 @@ class DenseSegmentDataset implements SegmentDataset {
     private final Segment segment;
     private final Object[] values; // length == m[0] * ... * m[axes.length-1]
 
-    /**
-     * Creates a DenseSegmentDataset.
-     *
-     * @param segment Segment
-     * @param values Array of values, one for each possible coordinate
-     */
     DenseSegmentDataset(Segment segment, Object[] values) {
         this.segment = segment;
         this.values = values;
@@ -60,22 +54,19 @@ class DenseSegmentDataset implements SegmentDataset {
     }
 
     public Iterator<Map.Entry<CellKey, Object>> iterator() {
-        return new DenseSegmentDatasetIterator();
+        return new Itr();
     }
 
-    // not used
-    private boolean contains(Object[] keys) {
+    boolean contains(Object[] keys) {
         return getOffset(keys) >= 0;
     }
 
-    // not used
-    private Object get(Object[] keys) {
+    Object get(Object[] keys) {
         int offset = getOffset(keys);
         return keys[offset];
     }
 
-    // not used
-    private void put(Object[] keys, Object value) {
+    void put(Object[] keys, Object value) {
         int offset = getOffset(keys);
         keys[offset] = value;
     }
@@ -110,12 +101,6 @@ outer:
         return offset;
     }
 
-    /**
-     * Sets the value a given ordinal.
-     *
-     * @param k Ordinal
-     * @param o Value
-     */
     void set(int k, Object o) {
         values[k] = o;
     }
@@ -128,7 +113,7 @@ outer:
      * The Entry must therefore be used immediately, before calling
      * {@link #next()} again.
      */
-    private class DenseSegmentDatasetIterator implements
+    private class Itr implements
         Iterator<Map.Entry<CellKey, Object>>,
         Map.Entry<CellKey, Object>
     {
@@ -136,7 +121,7 @@ outer:
         private final int[] ordinals;
         private final CellKey key;
 
-        DenseSegmentDatasetIterator() {
+        Itr() {
             ordinals = new int[segment.axes.length];
             ordinals[ordinals.length - 1] = -1;
             key = CellKey.Generator.newRefCellKey(ordinals);
@@ -178,9 +163,7 @@ outer:
 
         // implement Entry
         public Object setValue(Object value) {
-            Object old = values[i];
-            values[i] = value;
-            return old;
+            throw new UnsupportedOperationException();
         }
     }
 }

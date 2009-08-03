@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -78,9 +78,8 @@ public class RolapConnectionTest extends TestCase {
         // test to succeed. So trivially succeed for all other JDBC
         // drivers.
         final String jdbc = properties.get("Jdbc");
-        if (jdbc != null
-            && !jdbc.startsWith("jdbc:odbc:"))
-        {
+        if (jdbc != null &&
+                !jdbc.startsWith("jdbc:odbc:")) {
             return;
         }
 
@@ -89,8 +88,7 @@ public class RolapConnectionTest extends TestCase {
         properties.put("jdbc.charSet", "UTF-16");
 
         final StringBuilder buf = new StringBuilder();
-        DataSource dataSource =
-            RolapConnection.createDataSource(null, properties, buf);
+        DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc.startsWith("Jdbc="));
 
@@ -101,15 +99,13 @@ public class RolapConnectionTest extends TestCase {
             fail("Expected exception");
         } catch (SQLException e) {
             if (e.getClass().getName().equals(
-                "org.apache.commons.dbcp.DbcpException"))
-            {
+                "org.apache.commons.dbcp.DbcpException")) {
                 // This is expected. (We use string-comparison so that the
                 // compiler doesn't warn about using a deprecated class.)
-            } else if (e.getClass() == SQLException.class
-                && e.getCause() == null
-                && e.getMessage() != null
-                && e.getMessage().equals(""))
-            {
+            } else if (e.getClass() == SQLException.class &&
+                e.getCause() == null &&
+                e.getMessage() != null &&
+                e.getMessage().equals("")) {
                 // This is expected, from a later version of Dbcp.
             } else {
                 fail("Expected exception, but got a different one: " + e);
@@ -129,9 +125,8 @@ public class RolapConnectionTest extends TestCase {
         // test to succeed. So trivially succeed for all other JDBC
         // drivers.
         final String jdbc = properties.get("Jdbc");
-        if (jdbc != null
-            && !jdbc.startsWith("jdbc:odbc:"))
-            {
+        if (jdbc != null &&
+                !jdbc.startsWith("jdbc:odbc:")) {
             return;
         }
 
@@ -141,8 +136,7 @@ public class RolapConnectionTest extends TestCase {
         properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
 
         final StringBuilder buf = new StringBuilder();
-        DataSource dataSource =
-            RolapConnection.createDataSource(null, properties, buf);
+        DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc.startsWith("Jdbc="));
 
@@ -175,14 +169,11 @@ public class RolapConnectionTest extends TestCase {
     {
         // Workaround Java bug #6504538 (see http://bugs.sun.com) with synopsis
         // "DriverManager.getConnection throws IllegalArgumentException".
-        if (System.getProperties().getProperty("java.version")
-            .startsWith("1.6."))
-        {
+        if (System.getProperties().getProperty("java.version").startsWith("1.6.")) {
             properties.remove("jdbc.charSet");
 
             final StringBuilder buf = new StringBuilder();
-            DataSource dataSource =
-                RolapConnection.createDataSource(null, properties, buf);
+            DataSource dataSource = RolapConnection.createDataSource(null, properties, buf);
             final String desc = buf.toString();
             assertTrue(desc.startsWith("Jdbc="));
 
@@ -252,9 +243,7 @@ public class RolapConnectionTest extends TestCase {
         properties.remove(RolapConnectionProperties.CatalogContent.name());
 
         if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
-            RolapUtil.SQL_LOGGER.debug(
-                this.getName() + "\n  [Connection Properties | " + properties
-                + "]\n");
+            RolapUtil.SQL_LOGGER.debug(this.getName() + "\n  [Connection Properties | " + properties + "]\n");
         } else {
             System.out.println(properties);
         }
@@ -267,9 +256,8 @@ public class RolapConnectionTest extends TestCase {
         } catch (MondrianException e) {
             assertTrue(
                 e.getMessage().indexOf(
-                    "Connect string must contain property 'Catalog' or "
-                    + "property 'CatalogContent'")
-                >= 0);
+                    "Connect string must contain property 'Catalog' or property 'CatalogContent'")
+                    >= 0);
         }
     }
 
@@ -351,10 +339,7 @@ public class RolapConnectionTest extends TestCase {
             RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc, desc.startsWith("Jdbc="));
-        assertTrue(
-            desc,
-            desc.indexOf("JdbcUser=bogususer; JdbcPassword=boguspassword")
-            >= 0);
+        assertTrue(desc, desc.indexOf("JdbcUser=bogususer; JdbcPassword=boguspassword") >= 0);
         final String jndiName = "jndiDataSource";
         THREAD_INITIAL_CONTEXT.set(
             new InitialContext() {
@@ -410,48 +395,30 @@ public class RolapConnectionTest extends TestCase {
             // Important to test with & without pooling. Connection pools
             // typically do not let you change user, so it's important that
             // mondrian handles these right.
-            properties2.put(
-                RolapConnectionProperties.PoolNeeded.name(), poolNeeded);
+            properties2.put(RolapConnectionProperties.PoolNeeded.name(), poolNeeded);
             try {
                 connection = DriverManager.getConnection(properties2, null);
                 fail("Expected exception");
             } catch (MondrianException e) {
                 final String s = TestContext.getStackTrace(e);
-                assertTrue(
-                    s,
-                    s.indexOf(
-                        "Error while creating SQL connection: "
-                        + "DataSource=jndiDataSource") >= 0);
+                assertTrue(s, s.indexOf(
+                    "Error while creating SQL connection: DataSource=jndiDataSource") >= 0);
                 switch (dialect.getDatabaseProduct()) {
                 case DERBY:
-                    assertTrue(
-                        s,
-                        s.indexOf(
-                            "Caused by: java.sql.SQLException: "
-                            + "Schema 'BOGUSUSER' does not exist") >= 0);
+                    assertTrue(s, s.indexOf(
+                        "Caused by: java.sql.SQLException: Schema 'BOGUSUSER' does not exist") >= 0);
                     break;
                 case ORACLE:
-                    assertTrue(
-                        s,
-                        s.indexOf(
-                            "Caused by: java.sql.SQLException: ORA-01017: "
-                            + "invalid username/password; logon denied") >= 0);
+                    assertTrue(s, s.indexOf(
+                        "Caused by: java.sql.SQLException: ORA-01017: invalid username/password; logon denied") >= 0);
                     break;
                 case MYSQL:
-                    assertTrue(
-                        s,
-                        s.indexOf(
-                            "Caused by: java.sql.SQLException: Access denied "
-                            + "for user 'bogususer'@'localhost' (using "
-                            + "password: YES)") >= 0);
+                    assertTrue(s, s.indexOf(
+                        "Caused by: java.sql.SQLException: Access denied for user 'bogususer'@'localhost' (using password: YES)") >= 0);
                     break;
                 case POSTGRESQL:
-                    assertTrue(
-                        s,
-                        s.indexOf(
-                            "Caused by: org.postgresql.util.PSQLException: "
-                            + "FATAL: password authentication failed for "
-                            + "user \"bogususer\"") >= 0);
+                    assertTrue(s, s.indexOf(
+                        "Caused by: org.postgresql.util.PSQLException: FATAL: password authentication failed for user \"bogususer\"") >= 0);
                     break;
                 }
             } finally {

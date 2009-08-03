@@ -1,16 +1,19 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
+import mondrian.olap.FunDef;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Dimension;
 import mondrian.calc.*;
+import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
@@ -49,12 +52,11 @@ class PercentileFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 double percent = percentCalc.evaluateDouble(evaluator) * 0.01;
-                return percentile(
-                    evaluator.push(false), memberList, calc, percent);
+                return percentile(evaluator.push(false), memberList, calc, percent);
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                return anyDependsButFirst(getCalcs(), hierarchy);
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,7 +16,9 @@ import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.*;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.FunDef;
 import mondrian.olap.fun.AbstractAggregateFunDef;
 import mondrian.olap.fun.MultiResolver;
 import mondrian.olap.fun.ReflectiveMultiResolver;
@@ -24,10 +26,9 @@ import mondrian.olap.fun.ReflectiveMultiResolver;
 import java.util.List;
 
 /**
- * Definition of the <code>FirstQ</code> and <code>ThirdQ</code> MDX extension
- * functions.
+ * Definition of the <code>FirstQ</code> and <code>ThirdQ</code> MDX extension functions.
  *
- * <p>These functions are not standard MDX.
+ * <p>These functions are not standard.
  *
  * @author jhyde
  * @version $Id$
@@ -36,16 +37,14 @@ import java.util.List;
 public class NthQuartileFunDef extends AbstractAggregateFunDef {
     private final int range;
 
-    public static final MultiResolver ThirdQResolver =
-        new ReflectiveMultiResolver(
+    public static final MultiResolver ThirdQResolver = new ReflectiveMultiResolver(
             "ThirdQ",
             "ThirdQ(<Set>[, <Numeric Expression>])",
             "Returns the 3rd quartile value of a numeric expression evaluated over a set.",
             new String[]{"fnx", "fnxn"},
         NthQuartileFunDef.class);
 
-    public static final MultiResolver FirstQResolver =
-        new ReflectiveMultiResolver(
+    public static final MultiResolver FirstQResolver = new ReflectiveMultiResolver(
             "FirstQ",
             "FirstQ(<Set>[, <Numeric Expression>])",
             "Returns the 1st quartile value of a numeric expression evaluated over a set.",
@@ -61,18 +60,17 @@ public class NthQuartileFunDef extends AbstractAggregateFunDef {
         final ListCalc listCalc =
                 compiler.compileList(call.getArg(0));
         final DoubleCalc doubleCalc =
-            call.getArgCount() > 1
-            ? compiler.compileDouble(call.getArg(1))
-            : new ValueCalc(call);
+                call.getArgCount() > 1 ?
+                compiler.compileDouble(call.getArg(1)) :
+                new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List members = evaluateCurrentList(listCalc, evaluator);
-                return quartile(
-                    evaluator.push(false), members, doubleCalc, range);
+                return quartile(evaluator.push(false), members, doubleCalc, range);
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                return anyDependsButFirst(getCalcs(), hierarchy);
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }

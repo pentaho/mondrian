@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -93,143 +93,143 @@ public class XmlaSupport {
      */
     public static String getXmlaTransform(String xmlaPrefix) {
         return
-        "<?xml version='1.0'?>"
-        + "<xsl:stylesheet "
-        + "  xmlns:xsl='http://www.w3.org/1999/XSL/Transform' "
-        + "  xmlns:xalan='http://xml.apache.org/xslt'"
-        + "  xmlns:xsd='http://www.w3.org/2001/XMLSchema'"
-        + "  xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset'"
-        + "  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' "
-        + "  xmlns:" + xmlaPrefix + "='urn:schemas-microsoft-com:xml-analysis'"
-        + "  version='1.0'"
-        + ">"
-        + "<xsl:output method='xml' "
-        + "  encoding='UTF-8'"
-        + "  indent='yes' "
-        + "  xalan:indent-amount='2'/>"
-        + "<xsl:param name='content'/>"
-        + "<xsl:param name='soap'/>"
-        + "<!-- consume '/' and apply -->"
-        + "<xsl:template match='/'>"
-        + "  <xsl:apply-templates/>"
-        + "</xsl:template>"
-        + "<!-- copy 'Envelope' unless soap==none --> "
-        + "<xsl:template match='SOAP-ENV:Envelope'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'Header' unless soap==none --> "
-        + "<xsl:template match='SOAP-ENV:Header'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise>  "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'Body' unless soap==none --> "
-        + "<xsl:template match='SOAP-ENV:Body'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise>  "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'DiscoverResponse' unless soap==none --> "
-        + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'return' unless soap==none --> "
-        + "<xsl:template match='" + xmlaPrefix + ":return'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'root' unless soap==none --> "
-        + "<xsl:template match='ROW:root'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$soap='none'\"> "
-        + "      <xsl:apply-templates/> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:otherwise > "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'schema' if content==schema or schemadata --> "
-        + "<xsl:template match='xsd:schema'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$content='schemadata'\"> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:when> "
-        + "    <xsl:when test=\"$content='schema'\"> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:when> "
-        + "  <xsl:otherwise/>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy 'row' if content==data or schemadata --> "
-        + "<xsl:template match='ROW:row'> "
-        + "  <xsl:choose> "
-        + "    <xsl:when test=\"$content='schemadata'\"> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:when> "
-        + "    <xsl:when test=\"$content='data'\"> "
-        + "      <xsl:copy> "
-        + "        <xsl:apply-templates select='@*|node()'/> "
-        + "      </xsl:copy> "
-        + "    </xsl:when> "
-        + "    <xsl:otherwise/>  "
-        + "  </xsl:choose> "
-        + "</xsl:template> "
-        + "<!-- copy everything else --> "
-        + "<xsl:template match='*|@*'> "
-        + "  <xsl:copy> "
-        + "    <xsl:apply-templates select='@*|node()'/> "
-        + "  </xsl:copy> "
-        + "</xsl:template> "
-        + "</xsl:stylesheet>";
+        "<?xml version='1.0'?>" +
+        "<xsl:stylesheet " +
+        "  xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " +
+        "  xmlns:xalan='http://xml.apache.org/xslt'" +
+        "  xmlns:xsd='http://www.w3.org/2001/XMLSchema'" +
+        "  xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset'" +
+        "  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' " +
+        "  xmlns:" + xmlaPrefix + "='urn:schemas-microsoft-com:xml-analysis'" +
+        "  version='1.0'" +
+        ">" +
+        "<xsl:output method='xml' " +
+        "  encoding='UTF-8'" +
+        "  indent='yes' " +
+        "  xalan:indent-amount='2'/>" +
+        "<xsl:param name='content'/>" +
+        "<xsl:param name='soap'/>" +
+        "<!-- consume '/' and apply -->" +
+        "<xsl:template match='/'>" +
+        "  <xsl:apply-templates/>" +
+        "</xsl:template>" +
+        "<!-- copy 'Envelope' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Envelope'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'Header' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Header'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise>  " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'Body' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Body'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise>  " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'DiscoverResponse' unless soap==none --> " +
+        "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'return' unless soap==none --> " +
+        "<xsl:template match='" + xmlaPrefix + ":return'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'root' unless soap==none --> " +
+        "<xsl:template match='ROW:root'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise > " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'schema' if content==schema or schemadata --> " +
+        "<xsl:template match='xsd:schema'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$content='schemadata'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:when test=\"$content='schema'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "  <xsl:otherwise/>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'row' if content==data or schemadata --> " +
+        "<xsl:template match='ROW:row'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$content='schemadata'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:when test=\"$content='data'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise/>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy everything else --> " +
+        "<xsl:template match='*|@*'> " +
+        "  <xsl:copy> " +
+        "    <xsl:apply-templates select='@*|node()'/> " +
+        "  </xsl:copy> " +
+        "</xsl:template> " +
+        "</xsl:stylesheet>";
     }
 
     /**
@@ -283,9 +283,8 @@ public class XmlaSupport {
      * @param catalogNameUrls array of catalog names, catalog url pairs
      */
     public static String getDataSourcesText(
-        String connectString,
-        Map<String, String> catalogNameUrls)
-    {
+            String connectString,
+            Map<String, String> catalogNameUrls) {
         StringBuilder buf = new StringBuilder(500);
         buf.append("<?xml version=\"1.0\"?>");
         buf.append(nl);
@@ -312,14 +311,11 @@ public class XmlaSupport {
         buf.append(nl);
         buf.append("       <ProviderType>MDP</ProviderType>");
         buf.append(nl);
-        buf.append(
-            "       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
+        buf.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
         buf.append(nl);
         buf.append("       <Catalogs>");
         buf.append(nl);
-        for (Map.Entry<String, String> catalogNameUrl
-            : catalogNameUrls.entrySet())
-        {
+        for (Map.Entry<String,String> catalogNameUrl : catalogNameUrls.entrySet()) {
             String name = catalogNameUrl.getKey();
             String url = catalogNameUrl.getValue();
             buf.append("           <Catalog name='");
@@ -336,8 +332,8 @@ public class XmlaSupport {
         buf.append(nl);
         String datasources = buf.toString();
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaSupport.getDataSources: datasources=" + datasources);
+            LOGGER.debug("XmlaSupport.getDataSources: datasources="+
+                    datasources);
         }
         return datasources;
     }
@@ -643,16 +639,13 @@ public class XmlaSupport {
 
             // process
             MockServletContext servletContext = new MockServletContext();
-            MockServletConfig servletConfig =
-                new MockServletConfig(servletContext);
+            MockServletConfig servletConfig = new MockServletConfig(servletContext);
 
-            servletConfig.addInitParameter(
-                XmlaServlet.PARAM_CALLBACKS, cbClassName);
+            servletConfig.addInitParameter(XmlaServlet.PARAM_CALLBACKS, cbClassName);
             servletConfig.addInitParameter(
                 XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
             servletConfig.addInitParameter(
-                XmlaServlet.PARAM_DATASOURCES_CONFIG,
-                dsFile.toURL().toString());
+                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsFile.toURL().toString());
 
             Servlet servlet = new DefaultXmlaServlet();
             servlet.init(servletConfig);
@@ -692,8 +685,7 @@ public class XmlaSupport {
         // process
         MockServletContext servletContext = new MockServletContext();
         MockServletConfig servletConfig = new MockServletConfig(servletContext);
-        servletConfig.addInitParameter(
-            XmlaServlet.PARAM_CALLBACKS, cbClassName);
+        servletConfig.addInitParameter(XmlaServlet.PARAM_CALLBACKS, cbClassName);
         servletConfig.addInitParameter(
             XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
         servletConfig.addInitParameter(
@@ -1021,53 +1013,42 @@ public class XmlaSupport {
             return false;
         }
 
-        Node dataDoc = XmlUtil.transform(
-            doc,
+        Node dataDoc = XmlUtil.transform(doc,
             new BufferedReader(new StringReader(dataTransform)));
         if (dataDoc == null) {
             LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc is null");
             return false;
         }
         if (! dataDoc.hasChildNodes()) {
-            LOGGER.debug(
-                "XmlaSupport.validateEmbeddedSchema: dataDoc has no children");
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc has no children");
             return false;
         }
         String dataStr = XmlUtil.toString(dataDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaSupport.validateEmbeddedSchema: dataDoc:\n=" + dataStr);
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc:\n=" + dataStr);
         }
         if (! (dataDoc instanceof Document)) {
-            LOGGER.warn(
-                "XmlaSupport.validateEmbeddedSchema: dataDoc not Document");
+            LOGGER.warn("XmlaSupport.validateEmbeddedSchema: dataDoc not Document");
             return false;
         }
 
 
-        Node schemaDoc = XmlUtil.transform(
-            doc,
+        Node schemaDoc = XmlUtil.transform(doc,
             new BufferedReader(new StringReader(schemaTransform)));
         if (schemaDoc == null) {
-            LOGGER.debug(
-                "XmlaSupport.validateEmbeddedSchema: schemaDoc is null");
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc is null");
             return false;
         }
         if (! schemaDoc.hasChildNodes()) {
-            LOGGER.debug(
-                "XmlaSupport.validateEmbeddedSchema: "
-                + "schemaDoc has no children");
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc has no children");
             return false;
         }
         String schemaStr = XmlUtil.toString(schemaDoc, false);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaSupport.validateEmbeddedSchema: schemaDoc:\n="
-                + schemaStr);
+            LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc:\n=" + schemaStr);
         }
         if (! (schemaDoc instanceof Document)) {
-            LOGGER.warn(
-                "XmlaSupport.validateEmbeddedSchema: schemaDoc not Document");
+            LOGGER.warn("XmlaSupport.validateEmbeddedSchema: schemaDoc not Document");
             return false;
         }
 

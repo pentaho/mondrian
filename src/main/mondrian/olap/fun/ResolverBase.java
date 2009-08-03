@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
@@ -29,12 +29,10 @@ abstract class ResolverBase extends FunUtil implements Resolver {
     private final String description;
     private final Syntax syntax;
 
-    ResolverBase(
-        String name,
-        String signature,
-        String description,
-        Syntax syntax)
-    {
+    ResolverBase(String name,
+                 String signature,
+                 String description,
+                 Syntax syntax) {
         this.name = name;
         this.signature = signature;
         this.description = description;

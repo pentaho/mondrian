@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -56,11 +56,8 @@ public class FormatTest extends TestCase {
 
     final Double d = new Double(3141592.653589793);
 
-    // note that month #3 == April
-    final Date date = makeCalendar(1969, 4, 29, 20, 9, 6);
-
-    // 06:05:04 am, 7th sep 2010
-    final Date date2 = makeCalendar(2010, 9, 7, 6, 5, 4);
+    final Date date = makeCalendar(1969, 4, 29, 20, 9, 6); // note that month #3 == April
+    final Date date2 = makeCalendar(2010, 9, 7, 6, 5, 4); // 06:05:04 am, 7th sep 2010
 
     /**
      * Exhaustive tests on various numbers.
@@ -74,85 +71,40 @@ public class FormatTest extends TestCase {
     }
 
     private void checkNumbersInLocale(Format.FormatLocale locale) {
-        //  format         +6          -6           0           .6          null
-        //  ============== =========== ============ =========== =========== ====
-        checkNumbers(
-            "",            "6",        "-6",        "0",        "0.6",      "",
-            locale);
-        checkNumbers(
-            "0",           "6",        "-6",        "0",        "1",        "",
-            locale);
-        checkNumbers(
-            "0.00",        "6.00",     "-6.00",     "0.00",     "0.60",     "",
-            locale);
-        checkNumbers(
-            "#,##0",       "6",        "-6",        "0",        "1",        "",
-            locale);
-        checkNumbers(
-            "#,##0.00;;;N", "6.00",    "-6.00",     "0.00",     "0.60",     "N",
-            locale);
-        checkNumbers(
-            "$#,##0;($#,##0)", "$6",   "($6)",      "$0",       "$1",       "",
-            locale);
-        checkNumbers(
-            "$#,##0.00;($#,##0.00)", "$6.00", "($6.00)", "$0.00", "$0.60",  "",
-            locale);
-        checkNumbers(
-            "0%",          "600%",     "-600%",     "0%",       "60%",      "",
-            locale);
-        checkNumbers(
-            "0.00%",       "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "",
-            locale);
-        checkNumbers(
-            "0.00E+00",    "6.00E+00", "-6.00E+00", "0.00E+00", "6.00E-01", "",
-            locale);
-        checkNumbers(
-            "0.00E-00",    "6.00E00",  "-6.00E00",  "0.00E00",  "6.00E-01", "",
-            locale);
-        checkNumbers(
-            "$#,##0;;\\Z\\e\\r\\o", "$6", "$-6",    "Zero",     "$1",       "",
-            locale);
-        checkNumbers(
-            "#,##0.0 USD", "6.0 USD",  "-6.0 USD",  "0.0 USD",  "0.6 USD",  "",
-            locale);
-        checkNumbers(
-            "General Number", "6",     "-6",        "0",        "0.6",      "",
-            locale);
-        checkNumbers(
-            "Currency",    "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "",
-            locale);
-        checkNumbers(
-            "Fixed",       "6",        "-6",        "0",        "1",        "",
-            locale);
-        checkNumbers(
-            "Standard",    "6",        "-6",        "0",        "1",        "",
-            locale);
-        checkNumbers(
-            "Percent",     "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "",
-            locale);
-        checkNumbers(
-            "Scientific",  "6.00e+00", "-6.00e+00", "0.00e+00", "6.00e-01", "",
-            locale);
-        checkNumbers(
-            "True/False",  "True",     "True",      "False",    "True", "False",
-            locale);
-        checkNumbers(
-            "On/Off",      "On",       "On",        "Off",      "On",     "Off",
-            locale);
-        checkNumbers(
-            "Yes/No",      "Yes",      "Yes",       "No",       "Yes",     "No",
-            locale);
+        //                   format                   +6          -6           0           .6          null
+        //                   ======================== =========== ============ =========== =========== =========
+        checkNumbers(locale, "",                      "6",        "-6",        "0",        "0.6",      "");
+        checkNumbers(locale, "0",                     "6",        "-6",        "0",        "1",        "");
+        checkNumbers(locale, "0.00",                  "6.00",     "-6.00",     "0.00",     "0.60",     "");
+        checkNumbers(locale, "#,##0",                 "6",        "-6",        "0",        "1",        "");
+        checkNumbers(locale, "#,##0.00;;;Nil",        "6.00",     "-6.00",     "0.00",     "0.60",     "Nil");
+        checkNumbers(locale, "$#,##0;($#,##0)",       "$6",       "($6)",      "$0",       "$1",       "");
+        checkNumbers(locale, "$#,##0.00;($#,##0.00)", "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "");
+        checkNumbers(locale, "0%",                    "600%",     "-600%",     "0%",       "60%",      "");
+        checkNumbers(locale, "0.00%",                 "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "");
+        checkNumbers(locale, "0.00E+00",              "6.00E+00", "-6.00E+00", "0.00E+00", "6.00E-01", "");
+        checkNumbers(locale, "0.00E-00",              "6.00E00",  "-6.00E00",  "0.00E00",  "6.00E-01", "");
+        checkNumbers(locale, "$#,##0;;\\Z\\e\\r\\o",  "$6",       "$-6",       "Zero",     "$1",       "");
+        checkNumbers(locale, "#,##0.0 USD",           "6.0 USD",  "-6.0 USD",  "0.0 USD",  "0.6 USD",  "");
+        checkNumbers(locale, "General Number",        "6",        "-6",        "0",        "0.6",      "");
+        checkNumbers(locale, "Currency",              "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "");
+        checkNumbers(locale, "Fixed",                 "6",        "-6",        "0",        "1",        "");
+        checkNumbers(locale, "Standard",              "6",        "-6",        "0",        "1",        "");
+        checkNumbers(locale, "Percent",               "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "");
+        checkNumbers(locale, "Scientific",            "6.00e+00", "-6.00e+00", "0.00e+00", "6.00e-01", "");
+        checkNumbers(locale, "True/False",            "True",     "True",      "False",    "True",     "False");
+        checkNumbers(locale, "On/Off",                "On",       "On",        "Off",      "On",       "Off");
+        checkNumbers(locale, "Yes/No",                "Yes",      "Yes",       "No",       "Yes",      "No");
     }
 
     private void checkNumbers(
-        String format,
-        String result6,
-        String resultNeg6,
-        String result0,
-        String resultPoint6,
-        String resultEmpty,
-        Format.FormatLocale locale)
-    {
+            Format.FormatLocale locale,
+            String format,
+            String result6,
+            String resultNeg6,
+            String result0,
+            String resultPoint6,
+            String resultEmpty) {
         checkNumber(locale, format, new Double(6), result6);
         checkNumber(locale, format, new Double(-6), resultNeg6);
         checkNumber(locale, format, new Double(0), result0);
@@ -164,11 +116,8 @@ public class FormatTest extends TestCase {
     }
 
     private void checkNumber(
-        Format.FormatLocale locale,
-        String format,
-        Number number,
-        String expectedResult)
-    {
+            Format.FormatLocale locale, String format,
+            Number number, String expectedResult) {
         if (locale == localeFra) {
             expectedResult = convertToFrench(expectedResult, format);
         }
@@ -272,13 +221,12 @@ public class FormatTest extends TestCase {
     }
 
     private static Date makeCalendar(
-        final int year,
-        final int month,
-        final int date,
-        final int hourOfDay,
-        final int minute,
-        final int second)
-    {
+            final int year,
+            final int month,
+            final int date,
+            final int hourOfDay,
+            final int minute,
+            final int second) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month - 1, date, hourOfDay, minute, second);
         return calendar.getTime();
@@ -288,9 +236,9 @@ public class FormatTest extends TestCase {
         checkDate("dd-mmm-yy",     "29-Apr-69",  "29-Avr-69",  "29-Apr-69");
         checkDate("h:mm:ss AM/PM", "8:09:06 PM", "8#09#06 PM", "8:09:06 PM");
         checkDate("hh:mm",         "20:09",      "20#09",      "20:09");
-        checkDate(
-            "Long Date",     "Tuesday, April 29, 1969",
-            "Mardi, Avril 29, 1969", "Dienstag, April 29, 1969");
+        checkDate("Long Date",     "Tuesday, April 29, 1969",
+                                   "Mardi, Avril 29, 1969",
+                                   "Dienstag, April 29, 1969");
         checkDate("Medium Date",   "29-Apr-69",  "29-Avr-69",  "29-Apr-69");
         checkDate("Short Date",    "4/29/69",    "4-29-69",    "4.29.69");
         checkDate("Long Time",     "8:09:06 PM", "8#09#06 PM", "8:09:06 PM");
@@ -358,8 +306,7 @@ public class FormatTest extends TestCase {
         checkFormat(null, date2, "Long Date", "Tuesday, September 07, 2010");
 
         // international currency symbol
-        checkFormat(
-            null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
+        checkFormat(null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
     }
 
     public void testFrenchLocale() {
@@ -375,8 +322,7 @@ public class FormatTest extends TestCase {
             Arrays.asList(fr.daysOfWeekShort).toString());
         assertEquals(
             "[janvier, f" + I18nTest.EA + "vrier, mars, avril, mai, juin,"
-            + " juillet, ao" + I18nTest.UC
-            + "t, septembre, octobre, novembre, d"
+            + " juillet, ao" + I18nTest.UC + "t, septembre, octobre, novembre, d"
             + I18nTest.EA + "cembre, ]",
             Arrays.asList(fr.monthsLong).toString());
         assertEquals(

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -73,9 +73,8 @@ public class Walker implements Enumeration {
         // Unwind stack until we find a level we have not completed.
         do {
             Frame frame = (Frame) stack.peek();
-            if (frame.children != null
-                && ++frame.childIndex < frame.children.length)
-            {
+            if (frame.children != null &&
+                ++frame.childIndex < frame.children.length) {
                 // Here is an unvisited child.  Visit it.
                 visit(frame, frame.children[frame.childIndex]);
                 return;
@@ -182,9 +181,8 @@ public class Walker implements Enumeration {
     {
         // We can't use currentFrame.parent.iChild because moveToNext() may
         // have changed it.
-        return currentFrame.parent == null
-            ? 0
-            : arrayFind(currentFrame.parent.children, currentFrame.node);
+        return currentFrame.parent == null ? 0 :
+            arrayFind(currentFrame.parent.children, currentFrame.node);
     }
 
     /** get the ordinal within its parent node of the <code>iDepth</code>th
@@ -192,11 +190,9 @@ public class Walker implements Enumeration {
     public int getAncestorOrdinal(int iDepth)
     {
         Frame f = getAncestorFrame(iDepth);
-        return f == null
-            ? -1
-            : f.parent == null
-            ? 0
-            : arrayFind(f.parent.children, f.node);
+        return f == null ? -1 :
+            f.parent == null ? 0 :
+            arrayFind(f.parent.children, f.node);
     }
 
     /** Override this function to prune the tree, or to allow objects which are
@@ -250,20 +246,15 @@ public class Walker implements Enumeration {
         PrintWriter pw = new PrintWriter(System.out);
         Region usa = new Region(
             "USA", new Region[] {
-            new Region(
-                "CA", new Region[] {
-                    new Region(
-                        "San Francisco", new Region[] {
-            new Region(
-                "WesternAddition", new Region[] {
-                    new Region("Haight", null)}),
+            new Region("CA", new Region[] {
+                new Region("San Francisco", new Region[]{
+            new Region("WesternAddition", new Region[]{ new Region("Haight", null)}),
                     new Region("Soma", null)
                 }),
                 new Region("Los Angeles", null)}),
-            new Region(
-                "WA", new Region[] {
-                    new Region("Seattle", null),
-                    new Region("Tacoma", null)})});
+            new Region("WA", new Region[] {
+                new Region("Seattle", null),
+                new Region("Tacoma", null)})});
 
         Walker walker = new Walker(usa);
         if (false) {

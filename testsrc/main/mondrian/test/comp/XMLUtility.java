@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -31,21 +31,17 @@ import mondrian.olap.Util;
 /**
  * XML utility methods.
  */
-class XmlUtility {
+class XMLUtility {
     static final Pattern WhitespacePattern = Pattern.compile("\\s*");
 
-    public static DocumentBuilder createDomParser(
-        boolean validate,
-        boolean ignoreIgnorableWhitespace,
-        boolean usingSchema,
-        ErrorHandler handler)
-    {
+    public static DocumentBuilder createDomParser(boolean validate,
+            boolean ignoreIgnorableWhitespace, boolean usingSchema,
+            ErrorHandler handler) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
             factory.setNamespaceAware(true);
-            factory.setIgnoringElementContentWhitespace(
-                ignoreIgnorableWhitespace);
+            factory.setIgnoringElementContentWhitespace(ignoreIgnorableWhitespace);
             factory.setValidating(validate);
 
             // if this is true we are using XML Schema validation and not a DTD
@@ -74,10 +70,9 @@ class XmlUtility {
     }
 
     public static Document getDocument(File file)
-        throws IOException, SAXException
-    {
-        DocumentBuilder builder = createDomParser(
-            true, true, true, new UtilityErrorHandler());
+            throws IOException, SAXException {
+        DocumentBuilder builder = createDomParser(true, true, true,
+            new UtilityErrorHandler());
 
         Document result = builder.parse(file);
 
@@ -85,8 +80,7 @@ class XmlUtility {
     }
 
     public static void save(Writer writer, Document document)
-        throws IOException
-    {
+            throws IOException {
         OutputFormat outputFormat = new OutputFormat(document);
 
         outputFormat.setIndenting(true);
@@ -117,18 +111,14 @@ class XmlUtility {
         for (int idx = 0; idx < len; idx++) {
             char ch = enc.charAt(idx);
 
-            if (ch == '&'
-                && enc.charAt(idx + 1) == 'l'
-                && enc.charAt(idx + 2) == 't'
-                && enc.charAt(idx + 3) == ';')
-            {
+            if (ch == '&' && enc.charAt(idx + 1) == 'l' &&
+                    enc.charAt(idx + 2) == 't' &&
+                    enc.charAt(idx + 3) == ';') {
                 result.append('<');
                 idx += 3;
-            } else if (ch == '&'
-                       && enc.charAt(idx + 1) == 'g'
-                       && enc.charAt(idx + 2) == 't'
-                       && enc.charAt(idx + 3) == ';')
-            {
+            } else if (ch == '&' && enc.charAt(idx + 1) == 'g' &&
+                    enc.charAt(idx + 2) == 't' &&
+                    enc.charAt(idx + 3) == ';') {
                 result.append('>');
                 idx += 3;
             } else {
@@ -182,4 +172,4 @@ class XmlUtility {
     }
 }
 
-// End XmlUtility.java
+// End XMLUtility.java

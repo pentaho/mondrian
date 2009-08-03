@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2009-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -65,8 +65,8 @@ abstract class ValidatorImpl implements Validator {
             // not occur for any query, valid or invalid.
             throw Util.newInternal(
                 e,
-                "Infinite recursion encountered while validating '"
-                + Util.unparse(exp) + "'");
+                "Infinite recursion encountered while validating '" +
+                    Util.unparse(exp) + "'");
         }
         if (resolved == null) {
             try {
@@ -86,8 +86,7 @@ abstract class ValidatorImpl implements Validator {
             final Type type = resolved.getType();
             if (!TypeUtil.canEvaluate(type)) {
                 String exprString = Util.unparse(resolved);
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(
-                    exprString);
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
             }
         }
 
@@ -226,10 +225,6 @@ abstract class ValidatorImpl implements Validator {
         return matchDef;
     }
 
-    public boolean alwaysResolveFunDef() {
-        return false;
-    }
-
     private int sumConversionCost(
         List<Resolver.Conversion> conversionList)
     {
@@ -245,27 +240,6 @@ abstract class ValidatorImpl implements Validator {
         int to,
         List<Resolver.Conversion> conversions)
     {
-        if (false)
-        if (fromExp instanceof DimensionExpr) {
-            switch (to) {
-            case Category.Hierarchy:
-            case Category.Member:
-            case Category.Tuple:
-            case Category.Level:
-                Dimension dimension = ((DimensionExpr) fromExp).getDimension();
-                if (dimension.getHierarchies().length == 1) {
-                    fromExp =
-                        new HierarchyExpr(
-                            dimension.getHierarchies()[0]);
-                    return TypeUtil.canConvert(
-                        fromExp.getType(),
-                        to,
-                        conversions);
-                }
-            default:
-                return false;
-            }
-        }
         return TypeUtil.canConvert(
             fromExp.getType(),
             to,
@@ -302,9 +276,8 @@ abstract class ValidatorImpl implements Validator {
             }
         } else if (parent instanceof UnresolvedFunCall) {
             final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-            if (funCall.getSyntax() == Syntax.Parentheses
-                || funCall.getFunName().equals("*"))
-            {
+            if (funCall.getSyntax() == Syntax.Parentheses ||
+                funCall.getFunName() == "*") {
                 return requiresExpression(n - 1);
             } else {
                 int k = whichArg(funCall, (Exp) stack.get(n));

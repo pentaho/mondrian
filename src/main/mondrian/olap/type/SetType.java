@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -31,8 +31,8 @@ public class SetType implements Type {
      */
     public SetType(Type elementType) {
         if (elementType != null) {
-            assert elementType instanceof MemberType
-                || elementType instanceof TupleType;
+            assert elementType instanceof MemberType ||
+                    elementType instanceof TupleType;
         }
         this.elementType = elementType;
         this.digest = "SetType<" + elementType + ">";
@@ -71,29 +71,19 @@ public class SetType implements Type {
         return elementType.usesDimension(dimension, definitely);
     }
 
-    public boolean usesHierarchy(Hierarchy hierarchy, boolean definitely) {
-        if (elementType == null) {
-            return definitely;
-        }
-        return elementType.usesHierarchy(hierarchy, definitely);
-    }
-
     public Dimension getDimension() {
-        return elementType == null
-            ? null
-            : elementType.getDimension();
+        return elementType == null ? null :
+                elementType.getDimension();
     }
 
     public Hierarchy getHierarchy() {
-        return elementType == null
-            ? null
-            : elementType.getHierarchy();
+        return elementType == null ? null :
+                elementType.getHierarchy();
     }
 
     public Level getLevel() {
-        return elementType == null
-            ? null
-            : elementType.getLevel();
+        return elementType == null ? null :
+                elementType.getLevel();
     }
 
     /**
@@ -103,9 +93,9 @@ public class SetType implements Type {
      * @return Dimensionality of this SetType
      */
     public int getArity() {
-        return elementType instanceof TupleType
-            ? ((TupleType) elementType).elementTypes.length
-            : 1;
+        return elementType instanceof TupleType ?
+            ((TupleType) elementType).elementTypes.length :
+            1;
     }
 
     public Type computeCommonType(Type type, int[] conversionCount) {

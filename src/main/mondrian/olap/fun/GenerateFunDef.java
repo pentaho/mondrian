@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -68,8 +68,7 @@ class GenerateFunDef extends FunDefBase {
         final IterCalc iterCalc = compiler.compileIter(call.getArg(0));
         final boolean tupleIn = ((SetType) iterCalc.getType()).getArity() != 1;
         if (call.getArg(1).getType() instanceof StringType) {
-            final StringCalc stringCalc =
-                compiler.compileString(call.getArg(1));
+            final StringCalc stringCalc = compiler.compileString(call.getArg(1));
             final StringCalc delimCalc;
             if (call.getArgCount() == 3) {
                 delimCalc = compiler.compileString(call.getArg(2));
@@ -240,8 +239,8 @@ class GenerateFunDef extends FunDefBase {
             }
         }
 
-        public boolean dependsOn(Hierarchy hierarchy) {
-            return anyDependsButFirst(getCalcs(), hierarchy);
+        public boolean dependsOn(Dimension dimension) {
+            return anyDependsButFirst(getCalcs(), dimension);
         }
     }
 
@@ -307,8 +306,8 @@ class GenerateFunDef extends FunDefBase {
             return buf.toString();
         }
 
-        public boolean dependsOn(Hierarchy hierarchy) {
-            return anyDependsButFirst(getCalcs(), hierarchy);
+        public boolean dependsOn(Dimension dimension) {
+            return anyDependsButFirst(getCalcs(), dimension);
         }
     }
 }

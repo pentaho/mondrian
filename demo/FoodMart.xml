@@ -2,11 +2,11 @@
 <Schema name="FoodMart">
 <!--
   == $Id$
-  == This software is subject to the terms of the Eclipse Public License v1.0
+  == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
-  == http://www.eclipse.org/legal/epl-v10.html.
+  == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2000-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2009 Julian Hyde and others
+  == Copyright (C) 2002-2007 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -320,7 +320,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <CalculatedMember
       name="Profit last Period"
       dimension="Measures"
-      formula="COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])"
+      formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
       visible="false">
     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="18"/>
@@ -709,7 +709,7 @@ fullname
    <CalculatedMember
        name="Profit last Period"
        dimension="Measures"
-       formula="COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])"
+       formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
        visible="false">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="5"/>
    </CalculatedMember>

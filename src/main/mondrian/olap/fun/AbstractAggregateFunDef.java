@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,8 +33,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     protected Exp validateArg(
-        Validator validator, Exp[] args, int i, int category)
-    {
+            Validator validator, Exp[] args, int i, int category) {
         // If expression cache is enabled, wrap first expression (the set)
         // in a function which will use the expression cache.
         if (i == 0) {
@@ -101,8 +100,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
                 parent = parent.getParent();
             }
             if (productLen > iterationLimit) {
-                throw MondrianResource.instance()
-                    .IterationLimitExceeded.ex(iterationLimit);
+                throw MondrianResource.instance().
+                    IterationLimitExceeded.ex(iterationLimit);
             }
         }
         evaluator.setIterationLength(currLen);
@@ -140,15 +139,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
         RolapCube virtualCube = (RolapCube) evaluator.getCube();
         RolapCube baseCube = (RolapCube) evaluator.getMeasureCube();
         if (virtualCube.isVirtual() && baseCube != null) {
-            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
-            {
-                return ignoreUnrelatedDimensions(
-                    tuplesForAggregation, baseCube);
+            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName())) {
+                return ignoreUnrelatedDimensions(tuplesForAggregation, baseCube);
             } else if (MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get())
-            {
+                .IgnoreMeasureForNonJoiningDimension.get()) {
                 return ignoreMeasureForNonJoiningDimension(
-                    tuplesForAggregation, baseCube);
+                        tuplesForAggregation, baseCube);
             }
         }
         return tuplesForAggregation;
@@ -194,7 +190,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
         for (int i = 0; i < tuplesForAggregation.size(); i++) {
             Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
             for (int j = 0; j < tuples.length; j++) {
-                if (nonJoiningDimensions.contains(tuples[j].getDimension())) {
+                if (nonJoiningDimensions.contains(
+                    tuples[j].getDimension())) {
                     final Hierarchy hierarchy =
                         tuples[j].getDimension().getHierarchy();
                     if (hierarchy.hasAll()) {

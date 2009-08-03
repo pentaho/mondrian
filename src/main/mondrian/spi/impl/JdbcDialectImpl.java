@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -9,7 +9,6 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-import mondrian.olap.MondrianDef;
 import mondrian.spi.*;
 
 import java.util.*;
@@ -65,12 +64,6 @@ public class JdbcDialectImpl implements Dialect {
     private final int maxColumnNameLength;
 
     /**
-     * Indicates whether the database allows selection of columns
-     * not listed in the group by clause.
-     */
-    protected boolean permitsSelectNotInGroupBy;
-
-    /**
      * Major database product (or null if product is not a common one)
      */
     protected final DatabaseProduct databaseProduct;
@@ -117,19 +110,10 @@ public class JdbcDialectImpl implements Dialect {
         this.maxColumnNameLength = deduceMaxColumnNameLength(metaData);
         this.databaseProduct =
             getProduct(this.productName, this.productVersion);
-        this.permitsSelectNotInGroupBy =
-            deduceSupportsSelectNotInGroupBy(connection);
     }
 
     public DatabaseProduct getDatabaseProduct() {
         return databaseProduct;
-    }
-
-    public void appendHintsAfterFromClause(
-        StringBuilder buf,
-        Map<String, String> hints)
-    {
-        // Hints are always dialect-specific, so the default is a no-op
     }
 
     public boolean allowsDialectSharing() {
@@ -140,8 +124,7 @@ public class JdbcDialectImpl implements Dialect {
         try {
             return databaseMetaData.getMaxColumnNameLength();
         } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
+            throw Util.newInternal(e,
                 "while detecting maxColumnNameLength");
         }
     }
@@ -150,8 +133,7 @@ public class JdbcDialectImpl implements Dialect {
         try {
             return databaseMetaData.isReadOnly();
         } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
+            throw Util.newInternal(e,
                 "while detecting isReadOnly");
         }
     }
@@ -170,10 +152,10 @@ public class JdbcDialectImpl implements Dialect {
         try {
             final String quoteIdentifierString =
                 databaseMetaData.getIdentifierQuoteString();
-            return "".equals(quoteIdentifierString)
+            return "".equals(quoteIdentifierString) ?
                 // quoting not supported
-                ? null
-                : quoteIdentifierString;
+                null :
+                quoteIdentifierString;
         } catch (SQLException e) {
             throw Util.newInternal(e, "while quoting identifier");
         }
@@ -192,19 +174,17 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
-        DatabaseMetaData databaseMetaData)
-    {
+        DatabaseMetaData databaseMetaData) {
         Set<List<Integer>> supports = new HashSet<List<Integer>>();
         try {
             for (int type : RESULT_SET_TYPE_VALUES) {
                 for (int concurrency : CONCURRENCY_VALUES) {
                     if (databaseMetaData.supportsResultSetConcurrency(
-                            type, concurrency))
-                    {
+                            type, concurrency)) {
                         String driverName =
                             databaseMetaData.getDriverName();
-                        if (type != ResultSet.TYPE_FORWARD_ONLY
-                            && driverName.equals(
+                        if (type != ResultSet.TYPE_FORWARD_ONLY &&
+                            driverName.equals(
                                 "JDBC-ODBC Bridge (odbcjt32.dll)"))
                         {
                             // In JDK 1.6, the Jdbc-Odbc bridge announces
@@ -222,30 +202,10 @@ public class JdbcDialectImpl implements Dialect {
                 }
             }
         } catch (SQLException e11) {
-            throw Util.newInternal(
-                e11,
+            throw Util.newInternal(e11,
                 "while detecting result set concurrency");
         }
         return supports;
-    }
-
-     /**
-      * <p>Detects whether the database is configured to permit queries
-      * that include columns in the SELECT that are not also in the GROUP BY.
-      * MySQL is an example of one that does, though this is configurable.</p>
-      *
-      * <p>The expectation is that this will not change while Mondrian is
-      * running, though some databases (MySQL) allow changing it on the fly.</p>
-      *
-      * @param conn The database connection
-      * @return Whether the feature is enabled.
-      * @throws SQLException
-      */
-    protected boolean deduceSupportsSelectNotInGroupBy(Connection conn)
-        throws SQLException
-    {
-        // Most simply don't support it
-        return false;
     }
 
     public String toUpper(String expr) {
@@ -253,8 +213,8 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
-        return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr
-            + " END";
+        return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr +
+            " END";
     }
 
     public String quoteIdentifier(final String val) {
@@ -286,7 +246,7 @@ public class JdbcDialectImpl implements Dialect {
         int k = val.indexOf('.');
         if (k > 0) {
             // qualified
-            String val1 = Util.replace(val.substring(0, k), q, q + q);
+            String val1 = Util.replace(val.substring(0,k), q, q + q);
             String val2 = Util.replace(val.substring(k + 1), q, q + q);
             buf.append(q);
             buf.append(val1);
@@ -362,8 +322,7 @@ public class JdbcDialectImpl implements Dialect {
         // it is a valid SQL:2003 literal) because it's really
         // NULL in disguise, and NULL is always treated specially.
         if (!value.equalsIgnoreCase("TRUE")
-            && !(value.equalsIgnoreCase("FALSE")))
-        {
+            && !(value.equalsIgnoreCase("FALSE"))) {
             throw new NumberFormatException(
                 "Illegal BOOLEAN literal:  " + value);
         }
@@ -503,8 +462,7 @@ public class JdbcDialectImpl implements Dialect {
                     int maxLen = -1;
                     for (String[] strings : valueList) {
                         if (strings[i] != null
-                            && strings[i].length() > maxLen)
-                        {
+                            && strings[i].length() > maxLen) {
                             maxLen = strings[i].length();
                         }
                     }
@@ -738,10 +696,6 @@ public class JdbcDialectImpl implements Dialect {
         return true;
     }
 
-    public boolean allowsSelectNotInGroupBy() {
-        return permitsSelectNotInGroupBy;
-    }
-
     public boolean supportsGroupingSets() {
         return false;
     }
@@ -760,14 +714,6 @@ public class JdbcDialectImpl implements Dialect {
 
     public boolean allowsOrderByAlias() {
         return requiresOrderByAlias();
-    }
-
-    public boolean requiresUnionOrderByOrdinal() {
-        return false;
-    }
-
-    public boolean requiresUnionOrderByExprToBeInSelectClause() {
-        return true;
     }
 
     public boolean supportsMultiValueInExpr() {
@@ -811,7 +757,7 @@ public class JdbcDialectImpl implements Dialect {
         } else if (productName.startsWith("DB2")) {
             if (productName.startsWith("DB2 UDB for AS/400")) {
                 // TB "04.03.0000 V4R3m0"
-                // this version cannot handle subqueries and is considered "old"
+                //  this version cannot handle subqueries and is considered "old"
                 // DEUKA "05.01.0000 V5R1m0" is ok
                 String[] version_release = productVersion.split("\\.", 3);
                 /*

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,6 +16,8 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.Member;
 import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.Type;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
@@ -32,6 +34,7 @@ public abstract class AbstractListCalc
     extends AbstractCalc
     implements ListCalc, MemberListCalc, TupleListCalc
 {
+    private final Calc[] calcs;
     private final boolean mutable;
     protected final boolean tuple;
 
@@ -57,7 +60,8 @@ public abstract class AbstractListCalc
      * @param mutable Whether the list is mutable
      */
     protected AbstractListCalc(Exp exp, Calc[] calcs, boolean mutable) {
-        super(exp, calcs);
+        super(exp);
+        this.calcs = calcs;
         this.mutable = mutable;
         assert type instanceof SetType : "expecting a set: " + getType();
         this.tuple = getType().getArity() != 1;
@@ -73,10 +77,14 @@ public abstract class AbstractListCalc
         return list;
     }
 
+    public Calc[] getCalcs() {
+        return calcs;
+    }
+
     public ResultStyle getResultStyle() {
-        return mutable
-            ? ResultStyle.MUTABLE_LIST
-            : ResultStyle.LIST;
+        return mutable ?
+            ResultStyle.MUTABLE_LIST :
+            ResultStyle.LIST;
     }
 
     @SuppressWarnings({"unchecked"})

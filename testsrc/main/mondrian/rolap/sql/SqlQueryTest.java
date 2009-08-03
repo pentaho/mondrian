@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -10,17 +10,12 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.spi.Dialect;
-import mondrian.util.Pair;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * <p>Test for <code>SqlQuery</code></p>
@@ -38,16 +33,24 @@ public class SqlQueryTest extends BatchTestCase {
         super.setUp();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
 
-        // This test warns of missing sql patterns for MYSQL.
+        /*
+         * This test warns of missing sql patterns for
+         *
+         * ACCESS
+         * MYSQL
+         *
+         */
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
-        {
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL) {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
-            // Do not warn unless the dialect is "MYSQL", or
-            // if the test chooses to warn regardless of the dialect.
+            /*
+             * Do not warn unless the dialect is "ACCESS" or "MYSQL", or
+             * if the test chooses to warn regardless of the dialect.
+             */
             prop.WarnIfNoPatternForDialect.set("NONE");
         }
     }
@@ -67,7 +70,7 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addGroupingFunction("gf0");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
             sqlQuery.addWhere("a=b");
             ArrayList<String> groupingsetsList = new ArrayList<String>();
             groupingsetsList.add("gs1");
@@ -77,123 +80,29 @@ public class SqlQueryTest extends BatchTestCase {
             String expected;
             String lineSep = System.getProperty("line.separator");
             if (!b) {
-                expected =
-                    "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
+                expected = "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
                     + "from \"s\".\"t1\" =as= \"t1alias\" where a=b "
                     + "group by grouping sets ((gs1,gs2,gs3))";
             } else {
-                expected =
-                    "select " + lineSep
-                    + "    c1 as \"c0\", " + lineSep
-                    + "    c2 as \"c1\"" + lineSep
-                    + "    , grouping(gf0) as \"g0\"" + lineSep
-                    + "from " + lineSep
-                    + "    \"s\".\"t1\" =as= \"t1alias\"" + lineSep
-                    + "where " + lineSep
-                    + "    a=b" + lineSep
-                    + " group by grouping sets ((" + lineSep
-                    + "    gs1," + lineSep
-                    + "    gs2," + lineSep
-                    + "    gs3" + lineSep
-                    + "))";
+                expected = "select " + lineSep +
+                    "    c1 as \"c0\", " + lineSep  +
+                    "    c2 as \"c1\"" + lineSep  +
+                    "    , grouping(gf0) as \"g0\"" + lineSep  +
+                    "from " + lineSep  +
+                    "    \"s\".\"t1\" =as= \"t1alias\"" + lineSep  +
+                    "where " + lineSep  +
+                    "    a=b" + lineSep  +
+                    " group by grouping sets ((" + lineSep  +
+                    "    gs1," + lineSep  +
+                    "    gs2," + lineSep  +
+                    "    gs3" + lineSep  +
+                    "))";
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
                 sqlQuery.toString());
         }
     }
-
-
-    public void testToStringForForcedIndexHint() {
-        Map<String, String> hints = new HashMap();
-        hints.put("force_index", "myIndex");
-
-        String unformattedMysql =
-            "select c1 as `c0`, c2 as `c1` "
-            + "from `s`.`t1` as `t1alias`"
-            + " FORCE INDEX (myIndex)"
-            + " where a=b";
-        String formattedMysql =
-            "select " + "\n"
-            + "    c1 as `c0`, " + "\n"
-            + "    c2 as `c1`" + "\n"
-            + "from " + "\n"
-            + "    `s`.`t1` as `t1alias`"
-            + " FORCE INDEX (myIndex)" + "\n"
-            + "where " + "\n"
-            + "    a=b" + "\n";
-
-        SqlPattern[] unformattedSqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
-                unformattedMysql,
-                null)};
-        SqlPattern[] formattedSqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
-                formattedMysql,
-                null)};
-
-        for (boolean formatted : new boolean[]{false, true}) {
-            Dialect dialect = getTestContext().getDialect();
-            SqlQuery sqlQuery = new SqlQuery(dialect, formatted);
-            sqlQuery.setAllowHints(true);
-            sqlQuery.addSelect("c1");
-            sqlQuery.addSelect("c2");
-            sqlQuery.addGroupingFunction("gf0");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, hints, true);
-            sqlQuery.addWhere("a=b");
-            SqlPattern[] expected;
-            if (!formatted) {
-                expected = unformattedSqlPatterns;
-            } else {
-                expected = formattedSqlPatterns;
-            }
-            assertSqlQueryToStringMatches(sqlQuery, expected);
-        }
-    }
-
-    private void assertSqlQueryToStringMatches(
-        SqlQuery query,
-        SqlPattern[] patterns)
-    {
-        Dialect dialect = getTestContext().getDialect();
-        Dialect.DatabaseProduct d = dialect.getDatabaseProduct();
-        boolean patternFound = false;
-        for (SqlPattern sqlPattern : patterns) {
-            if (!sqlPattern.hasDatabaseProduct(d)) {
-                // If the dialect is not one in the pattern set, skip the
-                // test. If in the end no pattern is located, print a warning
-                // message if required.
-                continue;
-            }
-
-            patternFound = true;
-
-            String trigger = sqlPattern.getTriggerSql();
-
-            trigger = dialectize(d, trigger);
-
-            assertEquals(
-                dialectize(dialect.getDatabaseProduct(), trigger),
-                query.toString());
-        }
-
-        // Print warning message that no pattern was specified for the current
-        // dialect.
-        if (!patternFound) {
-            String warnDialect =
-                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
-
-            if (warnDialect.equals(d.toString())) {
-                System.out.println(
-                    "[No expected SQL statements found for dialect \""
-                    + dialect.toString()
-                    + "\" and test not run]");
-            }
-        }
-    }
-
 
     public void testPredicatesAreOptimizedWhenPropertyIsTrue() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
@@ -229,10 +138,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year` = 1997 "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns =
+            new SqlPattern[]{
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
@@ -272,10 +181,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns =
+            new SqlPattern[]{
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
     }
@@ -313,10 +222,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year` = 1997 "
             + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
-        SqlPattern[] sqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+        SqlPattern[] sqlPatterns =
+            new SqlPattern[]{
+                new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
@@ -347,7 +256,7 @@ public class SqlQueryTest extends BatchTestCase {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("g1");
             sqlQuery.addGroupingFunction("g2");
@@ -397,7 +306,7 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1");
             sqlQuery.addSelect("c2");
             sqlQuery.addSelect("m1", "m1");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable("s", "t1", "t1alias", null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("c0");
             sqlQuery.addGroupingFunction("c1");
@@ -526,10 +435,7 @@ public class SqlQueryTest extends BatchTestCase {
             + "group by cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double)";
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.LUCIDDB,
-                loadSqlLucidDB,
-                loadSqlLucidDB)
+            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, loadSqlLucidDB, loadSqlLucidDB)
         };
 
         TestContext testContext =

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -100,8 +100,7 @@ public class CubeAccess {
     public void addGrantCubeSlicer(
         String sHierarchy,
         String sMember,
-        boolean bMember)
-    {
+        boolean bMember) {
         if (bMember) {
             boolean fail = false;
             List<Id.Segment> sMembers = Util.parseIdentifier(sMember);
@@ -146,15 +145,14 @@ public class CubeAccess {
 
     public boolean equals(Object object) {
         if (!(object instanceof CubeAccess)) {
-            return false;
+           return false;
         }
         CubeAccess cubeAccess = (CubeAccess) object;
         List<Hierarchy> hierarchyList = cubeAccess.getNoAccessHierarchyList();
         List<Member> limitedMemberList = cubeAccess.getLimitedMemberList();
 
-        if ((this.hierarchyList.size() != hierarchyList.size())
-            || (this.memberList.size() != limitedMemberList.size()))
-        {
+        if ((this.hierarchyList.size() != hierarchyList.size()) ||
+            (this.memberList.size() != limitedMemberList.size())) {
             return false;
         }
         for (Hierarchy o : hierarchyList) {

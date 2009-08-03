@@ -1,9 +1,8 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,8 +22,7 @@ import mondrian.rolap.aggmatcher.AggStar;
  * @version $Id$
  */
 public class DefaultMemberChildrenConstraint
-    implements MemberChildrenConstraint
-{
+    implements MemberChildrenConstraint {
 
     private static final MemberChildrenConstraint instance
         = new DefaultMemberChildrenConstraint();
@@ -59,8 +57,7 @@ public class DefaultMemberChildrenConstraint
         SqlQuery query,
         RolapCube baseCube,
         AggStar aggStar,
-        RolapLevel level)
-    {
+        RolapLevel level) {
     }
 
     public String toString() {

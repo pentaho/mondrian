@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.*;
+import java.util.Stack;
 
 import mondrian.xmla.SaxWriter;
 
@@ -42,20 +42,18 @@ public class DefaultSaxWriter implements SaxWriter {
     private final PrintWriter writer;
     private int indent;
     private String indentStr = "  ";
-    private final ArrayStack<String> stack = new ArrayStack<String>();
+    private final Stack stack = new Stack();
     private int state = STATE_END_ELEMENT;
 
 
     /**
-     * Creates a DefaultSaxWriter writing to an {@link java.io.OutputStream}.
+     * Creates a <code>SAXWriter</code> writing to an {@link java.io.OutputStream}.
      */
     public DefaultSaxWriter(OutputStream stream) {
         this(new OutputStreamWriter(stream));
     }
-
     public DefaultSaxWriter(OutputStream stream, String xmlEncoding)
-        throws UnsupportedEncodingException
-    {
+        throws UnsupportedEncodingException {
         this(new OutputStreamWriter(stream, xmlEncoding));
     }
 
@@ -70,8 +68,7 @@ public class DefaultSaxWriter implements SaxWriter {
     }
 
     /**
-     * Creates a DefaultSaxWriter writing to a {@link java.io.PrintWriter}.
-     *
+     * Creates a <code>SAXWriter</code> writing to a {@link java.io.PrintWriter}.
      * @param writer
      * @param initialIndent
      */
@@ -81,11 +78,8 @@ public class DefaultSaxWriter implements SaxWriter {
     }
 
     private void _startElement(
-        String namespaceURI,
-        String localName,
-        String qName,
-        Attributes atts)
-    {
+            String namespaceURI, String localName,
+            String qName, Attributes atts) {
         _checkTag();
         if (indent > 0) {
             writer.println();
@@ -110,10 +104,7 @@ public class DefaultSaxWriter implements SaxWriter {
     }
 
     private void _endElement(
-        String namespaceURI,
-        String localName,
-        String qName)
-    {
+            String namespaceURI, String localName, String qName) {
         indent--;
         if (state == STATE_IN_TAG) {
             writer.write("/>");
@@ -165,19 +156,19 @@ public class DefaultSaxWriter implements SaxWriter {
         }
     }
 
-    public void element(String tagName, String... attributes) {
+    public void element(String tagName, String[] attributes) {
         startElement(tagName, attributes);
         endElement();
     }
 
     public void startElement(String tagName) {
         _startElement(null, null, tagName, EmptyAttributes);
-        stack.add(tagName);
+        stack.push(tagName);
     }
 
-    public void startElement(String tagName, String... attributes) {
+    public void startElement(String tagName, String[] attributes) {
         _startElement(null, null, tagName, new StringAttributes(attributes));
-        stack.add(tagName);
+        stack.push(tagName);
     }
 
     public void endElement() {
@@ -193,8 +184,7 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public void endDocument() {
         if (stack.size() != 0) {
-            throw new IllegalStateException(
-                "Document may have unbalanced elements");
+            throw new IllegalStateException("Document may have unbalanced elements");
         }
         writer.flush();
     }
@@ -339,42 +329,6 @@ public class DefaultSaxWriter implements SaxWriter {
             } else {
                 return strings[index * 2 + 1];
             }
-        }
-    }
-
-    /**
-     * Stack implementation based on {@link ArrayList}.
-     *
-     * <p>More efficient than {@link Stack}, which extends {@link Vector} and is
-     * therefore synchronized whether you like it or not.
-     *
-     * @param <E> Element type
-     */
-    private static class ArrayStack<E> extends ArrayList<E> {
-        /**
-         * Analogous to {@link Stack#push}.
-         */
-        public E push(E item) {
-            add(item);
-            return item;
-        }
-
-        /**
-         * Analogous to {@link Stack#pop}.
-         */
-        public E pop() {
-            int len = size();
-            E obj = peek();
-            remove(len - 1);
-            return obj;
-        }
-
-        /**
-         * Analogous to {@link Stack#peek}.
-         */
-        public E peek() {
-            int len = size();
-            return get(len - 1);
         }
     }
 }

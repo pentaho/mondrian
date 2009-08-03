@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,8 +22,8 @@ import java.io.PrintWriter;
  */
 public abstract class ExpBase
     extends QueryPart
-    implements Exp
-{
+    implements Exp {
+
 
     protected static Exp[] cloneArray(Exp[] a) {
         Exp[] a2 = new Exp[a.length];

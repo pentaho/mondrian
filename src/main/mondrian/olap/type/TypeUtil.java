@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -28,8 +28,7 @@ public class TypeUtil {
         if (type instanceof MemberType
             || type instanceof LevelType
             || type instanceof HierarchyType
-            || type instanceof DimensionType)
-        {
+            || type instanceof DimensionType) {
             return type.getHierarchy();
         } else {
             throw Util.newInternal("not an mdx object");
@@ -81,10 +80,9 @@ public class TypeUtil {
         type = stripSetType(type);
         if (type instanceof MemberType) {
             return (MemberType) type;
-        } else if (type instanceof DimensionType
-            || type instanceof HierarchyType
-            || type instanceof LevelType)
-        {
+        } else if (type instanceof DimensionType ||
+                type instanceof HierarchyType ||
+                type instanceof LevelType) {
             return MemberType.forType(type);
         } else {
             return null;
@@ -105,14 +103,12 @@ public class TypeUtil {
             TupleType tupleType1 = (TupleType) type1;
             if (type2 instanceof TupleType) {
                 TupleType tupleType2 = (TupleType) type2;
-                if (tupleType1.elementTypes.length
-                    == tupleType2.elementTypes.length)
-                {
+                if (tupleType1.elementTypes.length ==
+                        tupleType2.elementTypes.length) {
                     for (int i = 0; i < tupleType1.elementTypes.length; i++) {
                         if (!isUnionCompatible(
                                 tupleType1.elementTypes[i],
-                                tupleType2.elementTypes[i]))
-                        {
+                                tupleType2.elementTypes[i])) {
                             return false;
                         }
                     }
@@ -146,9 +142,9 @@ public class TypeUtil {
         final Hierarchy hierarchy1,
         final Hierarchy hierarchy2)
     {
-        return hierarchy1 == null
-            || hierarchy2 == null
-            || hierarchy2.getUniqueName().equals(
+        return hierarchy1 == null ||
+            hierarchy2 == null ||
+            hierarchy2.getUniqueName().equals(
                 hierarchy1.getUniqueName());
     }
 
@@ -172,9 +168,9 @@ public class TypeUtil {
      *   scalar value.
      */
     public static boolean canEvaluate(Type type) {
-        return ! (type instanceof SetType
-                  || type instanceof CubeType
-                  || type instanceof LevelType);
+        return ! (type instanceof SetType ||
+                type instanceof CubeType ||
+                type instanceof LevelType);
     }
 
     /**
@@ -188,9 +184,9 @@ public class TypeUtil {
     }
 
     public static boolean couldBeMember(Type type) {
-        return type instanceof MemberType
-            || type instanceof HierarchyType
-            || type instanceof DimensionType;
+        return type instanceof MemberType ||
+                type instanceof HierarchyType ||
+                type instanceof DimensionType;
     }
 
     /**
@@ -285,16 +281,24 @@ public class TypeUtil {
         case Category.Array:
             return false;
         case Category.Dimension:
-            // We can go from Dimension to Hierarchy if the dimension has a
-            // default hierarchy. From there, we can go to Member or Tuple.
-            // Even if the dimension does not have a default hierarchy, we claim
-            // now that we can do the conversion, to prevent other overloads
-            // from being chosen; we will hit an error either at compile time or
-            // at run time.
+            // Seems funny that you can 'downcast' from a dimension, doesn't
+            // it? But we add an implicit 'CurrentMember', for example,
+            // '[Time].PrevMember' actually means
+            // '[Time].CurrentMember.PrevMember'.
             switch (to) {
             case Category.Member:
             case Category.Tuple:
             case Category.Hierarchy:
+                final Dimension dimension = fromType.getDimension();
+                if (dimension != null) {
+                    final Hierarchy hierarchy =
+                        FunUtil.getDimensionDefaultHierarchy(dimension);
+                    if (hierarchy == null) {
+                        e = MondrianResource.instance()
+                            .CannotImplicitlyConvertDimensionToHierarchy.ex(
+                                dimension.getName());
+                    }
+                }
                 // It is more difficult to convert dimension->hierarchy than
                 // hierarchy->dimension
                 conversions.add(new ConversionImpl(from, to, 0, 2, e));
@@ -308,10 +312,6 @@ public class TypeUtil {
                 return false;
             }
         case Category.Hierarchy:
-            // Seems funny that you can 'downcast' from a hierarchy, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Product].PrevMember' actually means
-            // '[Product].CurrentMember.PrevMember'.
             switch (to) {
             case Category.Dimension:
             case Category.Member:

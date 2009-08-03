@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -69,19 +69,16 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
             // each dimension not already in the slicer or in another axes.
             Set<Dimension> dimensionSet = new HashSet<Dimension>();
             for (CellSetAxisMetaData cellSetAxisMetaData
-                : cellSetMetaData.getAxesMetaData())
-            {
+                : cellSetMetaData.getAxesMetaData()) {
                 for (Hierarchy hierarchy
-                    : cellSetAxisMetaData.getHierarchies())
-                {
+                    : cellSetAxisMetaData.getHierarchies()) {
                     dimensionSet.add(hierarchy.getDimension());
                 }
             }
             List<Hierarchy> hierarchyList =
                 new ArrayList<Hierarchy>();
             for (Dimension dimension
-                : cellSetMetaData.getCube().getDimensions())
-            {
+                : cellSetMetaData.getCube().getDimensions()) {
                 if (dimensionSet.add(dimension)) {
                     hierarchyList.add(dimension.getDefaultHierarchy());
                 }

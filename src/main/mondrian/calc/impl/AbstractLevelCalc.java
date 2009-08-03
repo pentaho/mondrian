@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,6 +12,7 @@ package mondrian.calc.impl;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.type.LevelType;
+import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.LevelCalc;
 import mondrian.calc.Calc;
 
@@ -27,22 +28,22 @@ import mondrian.calc.Calc;
  * @since Sep 26, 2005
  */
 public abstract class AbstractLevelCalc
-    extends AbstractCalc
-    implements LevelCalc
-{
-    /**
-     * Creates an AbstractLevelCalc.
-     *
-     * @param exp Source expression
-     * @param calcs Child compiled expressions
-     */
+        extends AbstractCalc
+        implements LevelCalc {
+    private final Calc[] calcs;
+
     protected AbstractLevelCalc(Exp exp, Calc[] calcs) {
-        super(exp, calcs);
+        super(exp);
+        this.calcs = calcs;
         assert getType() instanceof LevelType;
     }
 
     public Object evaluate(Evaluator evaluator) {
         return evaluateLevel(evaluator);
+    }
+
+    public Calc[] getCalcs() {
+        return calcs;
     }
 }
 

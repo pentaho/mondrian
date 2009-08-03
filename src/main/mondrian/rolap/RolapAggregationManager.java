@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,9 +33,6 @@ import java.io.PrintWriter;
  */
 public abstract class RolapAggregationManager {
 
-    /**
-     * Creates the RolapAggregationManager.
-     */
     protected RolapAggregationManager() {
     }
 
@@ -82,8 +79,8 @@ public abstract class RolapAggregationManager {
     }
 
     /**
-     * Creates a request to evaluate the cell identified by the context
-     * specified in <code>evaluator</code>.
+     * Creates a request to evaluate the cell identified by the context specified
+     * in <code>evaluator</code>.
      *
      * <p>If any of the members from the context is the null member, returns
      * null, since there is no cell. If the measure is calculated, returns
@@ -93,8 +90,7 @@ public abstract class RolapAggregationManager {
      * @return Cell request, or null if the requst is unsatisfiable
      */
     public static CellRequest makeRequest(
-        RolapEvaluator evaluator)
-    {
+        RolapEvaluator evaluator) {
         final Member[] currentMembers = evaluator.getMembers();
         final List<List<Member[]>> aggregationLists =
             evaluator.getAggregationLists();
@@ -124,15 +120,14 @@ public abstract class RolapAggregationManager {
         boolean unsatisfiable;
 
         /*
-         * For each aggregationList, generate the optimal form of
-         * compoundPredicate.  These compoundPredicates are AND'ed together when
-         * sql is generated for them.
+         * For each aggregationList, generate the optimal form of compoundPredicate.
+         * These compoundPredicates are AND'ed together when sql is generated for
+         * them.
          */
         for (List<Member[]> aggregationList : aggregationLists) {
             compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             compoundBitKey.clear();
-            compoundGroupMap =
-                new LinkedHashMap<BitKey, List<RolapCubeMember[]>>();
+            compoundGroupMap = new LinkedHashMap<BitKey, List<RolapCubeMember[]>>();
 
             // Go through the compound members(tuples) once and separete them
             // into groups.
@@ -215,11 +210,6 @@ public abstract class RolapAggregationManager {
         if (extendedContext) {
             for (int i = 1; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
-                if (member.getHierarchy().getRolapHierarchy().closureFor
-                    != null)
-                {
-                    continue;
-                }
                 addNonConstrainingColumns(member, measure.getCube(), request);
 
                 final RolapCubeLevel level = member.getLevel();
@@ -282,15 +272,13 @@ public abstract class RolapAggregationManager {
         final RolapCubeHierarchy hierarchy = member.getHierarchy();
         final Level[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
-             j > depth; j--)
-        {
-            final RolapCubeLevel level = (RolapCubeLevel) levels[j];
+             j > depth; j--) {
+            final RolapCubeLevel level = (RolapCubeLevel)levels[j];
             RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
             if (column != null) {
                 request.addConstrainedColumn(column, null);
-                if (request.extendedContext
-                    && level.getNameExp() != null)
-                {
+                if (request.extendedContext &&
+                        level.getNameExp() != null) {
                     final RolapStar.Column nameColumn = column.getNameColumn();
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
@@ -299,48 +287,45 @@ public abstract class RolapAggregationManager {
         }
     }
 
-    /**
-     * Groups members (or tuples) from the same compound (i.e. hierarchy) into
-     * groups that are constrained by the same set of columns.
+    /*
+     * Group members(or tuples) from the same compound(i.e. hierarchy) into groups
+     * that are constrained by the same set of columns.
      *
-     * <p>E.g.
+     * E.g.
      *
-     * <pre>Members
+     * Members
      *     [USA].[CA],
      *     [Canada].[BC],
      *     [USA].[CA].[San Francisco],
-     *     [USA].[OR].[Portland]</pre>
+     *     [USA].[OR].[Portland]
      *
      * will be grouped into
-     *
-     * <pre>Group 1:
+     * Group 1:
      *     {[USA].[CA], [Canada].[BC]}
      * Group 2:
-     *     {[USA].[CA].[San Francisco], [USA].[OR].[Portland]}</pre>
+     *     {[USA].[CA].[San Francisco], [USA].[OR].[Portland]}
      *
-     * <p>This helps with generating optimal form of sql.
+     * This helps with generating optimal form of sql.
      *
-     * <p>In case of aggregating over a list of tuples, similar logic also
+     * In case of aggregating over a list of tuples, similar logic also
      * applies.
      *
-     * <p>For example:
-     *
-     * <pre>Tuples:
+     * For example:
+     * Tuples:
      *     ([Gender].[M], [Store].[All Stores].[USA].[CA])
      *     ([Gender].[F], [Store].[All Stores].[USA].[CA])
      *     ([Gender].[M], [Store].[All Stores].[USA])
-     *     ([Gender].[F], [Store].[All Stores].[Canada])</pre>
+     *     ([Gender].[F], [Store].[All Stores].[Canada])
      *
      * will be grouped into
-     *
-     * <pre>Group 1:
+     * Group 1:
      *     {([Gender].[M], [Store].[All Stores].[USA].[CA]),
      *      ([Gender].[F], [Store].[All Stores].[USA].[CA])}
      * Group 2:
      *     {([Gender].[M], [Store].[All Stores].[USA]),
-     *      ([Gender].[F], [Store].[All Stores].[Canada])}</pre>
+     *      ([Gender].[F], [Store].[All Stores].[Canada])}
      *
-     * <p>This function returns a boolean value indicating if any constraint
+     * This function returns a boolean value indicating if any constraint
      * can be created from the aggregationList. It is possible that only part
      * of the aggregationList can be applied, which still leads to a (partial)
      * constraint that is represented by the compoundGroupMap.
@@ -356,8 +341,8 @@ public abstract class RolapAggregationManager {
         int unsatisfiableTupleCount = 0;
         for (RolapMember[] aggregation : aggregationList) {
             boolean isTuple;
-            if (aggregation.length > 0
-                && aggregation[0] instanceof RolapCubeMember)
+            if (aggregation.length > 0 &&
+                    aggregation[0] instanceof RolapCubeMember)
             {
                 isTuple = true;
             } else {
@@ -374,6 +359,7 @@ public abstract class RolapAggregationManager {
                 tuple[i] = (RolapCubeMember)member;
                 i++;
             }
+
 
             boolean tupleUnsatisfiable = false;
             for (RolapCubeMember member : tuple) {
@@ -439,69 +425,54 @@ public abstract class RolapAggregationManager {
     }
 
     /**
-     * Translates a Map&lt;BitKey, List&lt;RolapMember&gt;&gt; of the same
-     * compound member into {@link ListPredicate} by traversing a list of
-     * members or tuples.
-     *
+     * Translate Map<BitKey, List<RolapMember>> of the same compound member into
+     * ListPredicate by traversing list of members or tuples.
      * <p>1. The example below is for list of tuples
      *
      * <blockquote>
-     * group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]<br/>
+     * <p>group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]
      * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
      * </blockquote>
-     *
      * is translated into
-     *
      * <blockquote>
-     * (Gender=M AND Store_State=CA AND Store_Country=USA)<br/>
-     * OR<br/>
+     * <p>(Gender=M AND Store_State=CA AND Store_Country=USA)
+     * OR
      * (Gender=F AND Store_State=CA AND Store_Country=USA)
      * </blockquote>
-     *
      * <p>The caller of this method will translate this representation into
      * appropriate SQL form as
      * <blockquote>
-     * where (gender = 'M'<br/>
-     *        and Store_State = 'CA'<br/>
-     *        AND Store_Country = 'USA')<br/>
-     *     OR (Gender = 'F'<br/>
-     *         and Store_State = 'CA'<br/>
-     *         AND Store_Country = 'USA')
+     *  <p>where (gender = 'M' and Store_State = 'CA' AND Store_Country = 'USA')
+     *     OR (Gender = 'F' and Store_State = 'CA' AND Store_Country = 'USA')
      * </blockquote>
-     *
      * <p>2. The example below for a list of members
      * <blockquote>
-     * group 1: [USA].[CA], [Canada].[BC]<br/>
+     * <p>group 1: [USA].[CA], [Canada].[BC]
      * group 2: [USA].[CA].[San Francisco], [USA].[OR].[Portland]
      * </blockquote>
-     *
      * is translated into:
-     *
      * <blockquote>
-     * (Country=USA AND State=CA)<br/>
-     * OR (Country=Canada AND State=BC)<br/>
-     * OR (Country=USA AND State=CA AND City=San Francisco)<br/>
-     * OR (Country=USA AND State=OR AND City=Portland)
+     * <p>(Country=USA AND State=CA)
+     *     OR (Country=Canada AND State=BC)
+     * OR
+     * (Country=USA AND State=CA AND City=San Francisco)
+     *     OR (Country=USA AND State=OR AND City=Portland)
      * </blockquote>
-     *
      * <p>The caller of this method will translate this representation into
-     * appropriate SQL form. For exmaple, if the underlying DB supports multi
-     * value IN-list, the second group will turn into this predicate:
-     *
+     * appropriate SQL form. For exmaple, if the underlying DB supports multi value
+     * IN-list, the second group will turn into this predicate:
      * <blockquote>
-     * where (country, state, city) IN ((USA, CA, San Francisco),
+     * <p>    where (country, state, city) IN ((USA, CA, San Francisco),
      *                                      (USA, OR, Portland))
      * </blockquote>
-     *
      * or, if the DB does not support multi-value IN list:
-     *
      * <blockquote>
-     * where country=USA AND
+     * <p>    where country=USA AND
      *           ((state=CA AND city = San Francisco) OR
      *            (state=OR AND city=Portland))
      * </blockquote>
      *
-     * @param compoundGroupMap Map from dimensionality to groups
+     * @param compoundGroupMap
      * @param baseCube base cube if virtual
      * @return compound predicate for a tuple or a member
      */
@@ -526,7 +497,7 @@ public abstract class RolapAggregationManager {
                 StarPredicate tuplePredicate = null;
 
                 for (RolapCubeMember member : tuple) {
-                    tuplePredicate = makeCompoundPredicateForMember(
+                tuplePredicate = makeCompoundPredicateForMember(
                         member, baseCube, tuplePredicate);
                 }
                 if (tuplePredicate != null) {
@@ -683,9 +654,7 @@ public abstract class RolapAggregationManager {
         if (region instanceof CacheControlImpl.CrossjoinCellRegion) {
             final CacheControlImpl.CrossjoinCellRegion crossjoin =
                 (CacheControlImpl.CrossjoinCellRegion) region;
-            for (CacheControl.CellRegion component
-                : crossjoin.getComponents())
-            {
+            for (CacheControl.CellRegion component : crossjoin.getComponents()) {
                 constrainCacheRegion(cacheRegion, baseCube, component);
             }
         } else {
@@ -726,15 +695,15 @@ public abstract class RolapAggregationManager {
                 new RangeColumnPredicate(
                     column,
                     rangeRegion.getLowerInclusive(),
-                    (rangeRegion.getLowerBound() == null
-                     ? null
-                     : new MemberColumnPredicate(
-                        column, rangeRegion.getLowerBound())),
+                    (rangeRegion.getLowerBound() == null ?
+                        null :
+                        new MemberColumnPredicate(
+                            column, rangeRegion.getLowerBound())),
                     rangeRegion.getUpperInclusive(),
-                    (rangeRegion.getUpperBound() == null
-                     ? null
-                     : new MemberColumnPredicate(
-                        column, rangeRegion.getUpperBound()))),
+                    (rangeRegion.getUpperBound() == null ?
+                        null :
+                        new MemberColumnPredicate(
+                            column, rangeRegion.getUpperBound()))),
                 baseCube,
                 cacheRegion);
         } else {
@@ -775,8 +744,8 @@ public abstract class RolapAggregationManager {
     public abstract PinSet createPinSet();
 
     /**
-     * A set of segments which are pinned (prevented from garbage collection)
-     * for a short duration as a result of a cache inquiry.
+     * A set of segments which are pinned for a short duration as a result of a
+     * cache inquiry.
      */
     public interface PinSet {
     }

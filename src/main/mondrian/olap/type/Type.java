@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,38 +50,6 @@ public interface Type {
      * @return whether this Type uses the given Dimension
      */
     boolean usesDimension(Dimension dimension, boolean definitely);
-
-    /**
-     * Returns whether this type contains a given hierarchy.<p/>
-     *
-     * For example:
-     * <ul>
-     * <li><code>HierarchyType([Customer].[Gender])</code> uses only the
-     *     <code>[Customer].[Gender]</code> hierarchy.</li>
-     * <li><code>TupleType(MemberType([Customer].[Gender]),
-     *           MemberType([Store].[Store]))</code>
-     *     uses <code>[Gender]</code>  and <code>[Store]</code>
-     *     dimensions.</li>
-     * </ul><p/>
-     *
-     * The <code>definitely</code> parameter comes into play when the
-     * dimensional information is incomplete. For example, when applied to
-     * <code>TupleType(MemberType([Customer]), MemberType([Store]))</code>,
-     * <code>usesDimension([Customer].[Gender], false)</code> returns true
-     * because the expression returns a member of one hierarchy of the
-     * <code>[Customer]</code> dimension and that might be a member of the
-     * <code>[Customer].[Gender]</code> hierarchy; but
-     * <code>usesDimension([Customer].[Gender], true)</code> returns false
-     * because might return a member of a different hierarchy, such as
-     * <code>[Customer].[State]</code>.
-     *
-     * @param hierarchy Hierarchy
-     * @param definitely If true, returns true only if this type definitely
-     *    uses the hierarchy
-     *
-     * @return whether this Type uses the given Hierarchy
-     */
-    boolean usesHierarchy(Hierarchy hierarchy, boolean definitely);
 
     /**
      * Returns the Dimension of this Type, or null if not known.
@@ -132,8 +100,7 @@ public interface Type {
      * <p>One use of common types is to determine the types of the arguments
      * to the <code>Iif</code> function. For example, the call
      *
-     * <blockquote><code>Iif(1 &gt; 2, [Measures].[Unit Sales],
-     * 5)</code></blockquote>
+     * <blockquote><code>Iif(1 > 2, [Measures].[Unit Sales], 5)</code></blockquote>
      *
      * has type ScalarType, because DecimalType(-1, 0) is a subtype of
      * ScalarType, and MeasureType can be converted implicitly to ScalarType.

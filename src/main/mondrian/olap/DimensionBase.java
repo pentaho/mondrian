@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,8 +24,8 @@ import mondrian.resource.MondrianResource;
  */
 public abstract class DimensionBase
     extends OlapElementBase
-    implements Dimension
-{
+    implements Dimension {
+
     protected final String name;
     protected final String uniqueName;
     protected final String description;
@@ -33,17 +33,10 @@ public abstract class DimensionBase
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
-    /**
-     * Creates a DimensionBase.
-     *
-     * @param name Name
-     * @param dimensionType Type
-     * @param highCardinality Whether high-cardinality
-     */
     protected DimensionBase(
-        String name,
-        DimensionType dimensionType,
-        final boolean highCardinality)
+            String name,
+            DimensionType dimensionType,
+            final boolean highCardinality)
     {
         this.name = name;
         this.uniqueName = Util.makeFqName(name);
@@ -81,12 +74,15 @@ public abstract class DimensionBase
     }
 
     public String getQualifiedName() {
-        return MondrianResource.instance().MdxDimensionName.str(
-            getUniqueName());
+        return MondrianResource.instance().MdxDimensionName.str(getUniqueName());
     }
 
     public boolean isMeasures() {
         return getUniqueName().equals(MEASURES_UNIQUE_NAME);
+    }
+
+    public boolean usesDimension(Dimension dimension) {
+        return dimension == this;
     }
 
     public OlapElement lookupChild(
@@ -112,8 +108,8 @@ public abstract class DimensionBase
             // New (SSAS-compatible) behavior. If there is no matching
             // hierarchy, find the first level with the given name.
             if (oe == null) {
-                for (Hierarchy hierarchy
-                    : schemaReader.getDimensionHierarchies(this))
+                for (Hierarchy hierarchy :
+                    schemaReader.getDimensionHierarchies(this))
                 {
                     oe = hierarchy.lookupChild(schemaReader, s, matchType);
                     if (oe != null) {
@@ -147,12 +143,13 @@ public abstract class DimensionBase
 
     private Hierarchy lookupHierarchy(Id.Segment s) {
         for (Hierarchy hierarchy : hierarchies) {
-            if (Util.equalName(hierarchy.getName(), s.name)) {
+            if (hierarchy.getName().equalsIgnoreCase(s.name)) {
                 return hierarchy;
             }
         }
         return null;
     }
 }
+
 
 // End DimensionBase.java

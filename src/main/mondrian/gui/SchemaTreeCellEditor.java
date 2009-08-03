@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -12,7 +12,8 @@ package mondrian.gui;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EventObject;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JTree;
@@ -27,47 +28,31 @@ import javax.swing.tree.TreePath;
  * @author sarora
  * @version $Id$
  */
-public class SchemaTreeCellEditor
-    extends javax.swing.tree.DefaultTreeCellEditor
-{
+public class SchemaTreeCellEditor extends javax.swing.tree.DefaultTreeCellEditor {
+
     private final ClassLoader myClassLoader;
     JComboBox listEditor;
-    final List<CellEditorListener> listeners =
-        new ArrayList<CellEditorListener>();
+    ArrayList listeners;
 
     /** Creates a new instance of SchemaTreeCellEditor */
-    public SchemaTreeCellEditor(
-        Workbench workbench,
-        JTree tree,
-        DefaultTreeCellRenderer renderer,
-        TreeCellEditor editor)
-    {
+    public SchemaTreeCellEditor(Workbench workbench, JTree tree, DefaultTreeCellRenderer renderer, TreeCellEditor editor) {
         super(tree, renderer, editor);
+        listeners = new ArrayList();
         myClassLoader = this.getClass().getClassLoader();
     }
 
-    public Component getTreeCellEditorComponent(
-        JTree tree,
-        Object value,
-        boolean isSelected,
-        boolean expanded,
-        boolean leaf,
-        int row)
-    {
+    public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
+        Component retValue = null;
+
+
         if (value instanceof MondrianGuiDef.RelationOrJoin) {
             String valueClass = value.getClass().getName();
-            String simpleName[] = valueClass.split("[$.]", 0);
+            String simpleName[] = valueClass.split("[$.]",0);
 
-            return super.getTreeCellEditorComponent(
-                tree,
-                simpleName[simpleName.length - 1],
-                isSelected,
-                expanded,
-                leaf,
-                row);
-        } else {
-            return null;
+            retValue = super.getTreeCellEditorComponent(tree, simpleName[simpleName.length - 1], isSelected, expanded, leaf, row);
         }
+
+        return retValue;
     }
 
     public boolean isCellEditable(EventObject event) {
@@ -77,7 +62,7 @@ public class SchemaTreeCellEditor
     protected void fireEditingStopped() {
         ChangeEvent ce = new ChangeEvent(this);
         for (int i = listeners.size() - 1; i >= 0; i--) {
-            listeners.get(i).editingStopped(ce);
+            ((CellEditorListener)listeners.get(i)).editingStopped(ce);
         }
     }
 
@@ -95,16 +80,9 @@ public class SchemaTreeCellEditor
 
         retValue = (String) getCellEditorValue();
         if (retValue.equals("Join")) {
-            relationObj =
-                new MondrianGuiDef.Join(
-                    "", "",
-                    new MondrianGuiDef.Table(
-                        "", "Table 1", "", null),
-                    "", "",
-                    new MondrianGuiDef.Table(
-                        "", "Table 2", "", null));
+            relationObj = new MondrianGuiDef.Join("","",new MondrianGuiDef.Table("","Table 1",""), "", "", new MondrianGuiDef.Table("","Table 2",""));
         } else if (retValue.equals("Table")) {
-            relationObj = new MondrianGuiDef.Table("", "Table", "", null);
+            relationObj = new MondrianGuiDef.Table("","Table","");
         }
 
         TreePath tpath = tree.getSelectionPath();
@@ -116,11 +94,9 @@ public class SchemaTreeCellEditor
                 if (parent instanceof MondrianGuiDef.Hierarchy) {
                     ((MondrianGuiDef.Hierarchy) parent).relation = relationObj;
                 } else if (parent instanceof MondrianGuiDef.Closure) {
-                    ((MondrianGuiDef.Closure) parent).table =
-                        (MondrianGuiDef.Table)relationObj;
+                    ((MondrianGuiDef.Closure) parent).table = (MondrianGuiDef.Table)relationObj;
                 } else if (parent instanceof MondrianGuiDef.Join) {
-                    int indexOfChild =
-                        tree.getModel().getIndexOfChild(parent, value);
+                    int indexOfChild = tree.getModel().getIndexOfChild(parent, value);
                     switch (indexOfChild) {
                     case 0:
                         ((MondrianGuiDef.Join) parent).left = relationObj;
@@ -130,8 +106,7 @@ public class SchemaTreeCellEditor
                         break;
                     }
                 }
-                tree.setSelectionPath(
-                    parentpath.pathByAddingChild(relationObj));
+                tree.setSelectionPath(parentpath.pathByAddingChild(relationObj));
             }
         }
     }
@@ -144,5 +119,4 @@ public class SchemaTreeCellEditor
         return retValue;
     }
 }
-
 // End SchemaTreeCellEditor.java

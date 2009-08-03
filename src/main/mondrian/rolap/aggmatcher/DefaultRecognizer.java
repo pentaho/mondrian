@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -32,13 +32,11 @@ class DefaultRecognizer extends Recognizer {
 
     private final DefaultRules aggDefault;
 
-    DefaultRecognizer(
-        final DefaultRules aggDefault,
-        final RolapStar star,
-        final JdbcSchema.Table dbFactTable,
-        final JdbcSchema.Table aggTable,
-        final MessageRecorder msgRecorder)
-    {
+    DefaultRecognizer(final DefaultRules aggDefault,
+                      final RolapStar star,
+                      final JdbcSchema.Table dbFactTable,
+                      final JdbcSchema.Table aggTable,
+                      final MessageRecorder msgRecorder) {
         super(star, dbFactTable, aggTable, msgRecorder);
         this.aggDefault = aggDefault;
     }
@@ -101,17 +99,14 @@ class DefaultRecognizer extends Recognizer {
             int measureCountCount = 0;
 
             for (Iterator<JdbcSchema.Table.Column.Usage> it =
-                     dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
-                it.hasNext();)
-            {
+                    dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
+                    it.hasNext();) {
                 JdbcSchema.Table.Column.Usage factUsage = it.next();
 
                 Matcher matcher = getMeasureMatcher(factUsage);
 
                 int matchCount = 0;
-                for (JdbcSchema.Table.Column aggColumn
-                    : aggTable.getColumns())
-                {
+                for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                     // if marked as ignore, then do not consider
                     if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {
                         continue;

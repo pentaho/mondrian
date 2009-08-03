@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
@@ -24,8 +24,7 @@ import org.apache.log4j.Logger;
  * @since 6 August, 2001
  */
 public abstract class OlapElementBase
-    implements OlapElement
-{
+        implements OlapElement {
 
     protected String caption = null;
 
@@ -38,22 +37,21 @@ public abstract class OlapElementBase
     protected abstract Logger getLogger();
 
     public boolean equals(Object o) {
-        return (o == this)
-           || ((o instanceof OlapElement)
-               && equals((OlapElement) o));
+        return (o == this) ||
+            ((o instanceof OlapElement) && equals((OlapElement) o));
     }
 
     public boolean equals(OlapElement mdxElement) {
-        return mdxElement != null
-           && getClass() == mdxElement.getClass()
-           && getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
+        return mdxElement != null &&
+                getClass() == mdxElement.getClass() &&
+                getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
     }
 
     public int hashCode() {
-        if (hash == 0) {
-            hash = computeHashCode();
-        }
-        return hash;
+       if (hash == 0) {
+           hash = computeHashCode();
+       }
+       return hash;
     }
 
     /**

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -31,17 +31,13 @@ class ListRenderer implements ListCellRenderer {
 
     // Override of getListCellRendererComponent.
     // This is called by the AWT event thread to paint components.
-    public Component getListCellRendererComponent(
-        JList list,
-        Object value,
-        int index,
-        boolean isSelected,
-        boolean cellHasFocus)
-    {
+    public Component getListCellRendererComponent(JList list,
+            Object value,
+            int index,
+            boolean isSelected,
+            boolean cellHasFocus) {
         // Ask the standard renderer for what it thinks is right
-        Component c =
-            std.getListCellRendererComponent(
-                list,
+        Component c = std.getListCellRendererComponent(list,
                 value,
                 index,
                 isSelected,

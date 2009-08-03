@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2008-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,26 +28,8 @@ public abstract class GenericIterCalc
     implements ListCalc, MemberListCalc, TupleListCalc,
     IterCalc, TupleIterCalc, MemberIterCalc
 {
-    /**
-     * Creates a GenericIterCalc without specifying child calculated
-     * expressions.
-     *
-     * <p>Subclass should override {@link #getCalcs()}.
-     *
-     * @param exp Source expression
-     */
     protected GenericIterCalc(Exp exp) {
-        super(exp, null);
-    }
-
-    /**
-     * Creates an GenericIterCalc.
-     *
-     * @param exp Source expression
-     * @param calcs Child compiled expressions
-     */
-    protected GenericIterCalc(Exp exp, Calc[] calcs) {
-        super(exp, calcs);
+        super(exp);
     }
 
     public SetType getType() {

@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -49,11 +49,9 @@ public interface TupleReader {
          * Creates a new member (together with its properties).
          * @see SqlMemberSource#makeMember(RolapMember, RolapLevel, Object, Object, boolean, ResultSet, Object, int)
          */
-        RolapMember makeMember(
-            RolapMember parentMember, RolapLevel childLevel,
-            Object value, Object captionValue, boolean parentChild,
-            ResultSet resultSet, Object key, int column)
-            throws SQLException;
+        RolapMember makeMember(RolapMember parentMember, RolapLevel childLevel,
+                Object value, Object captionValue, boolean parentChild,
+                ResultSet resultSet, Object key, int column) throws SQLException;
     }
 
     /**

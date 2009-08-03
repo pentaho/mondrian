@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -58,9 +58,9 @@ public class CastFunDef extends FunDefBase {
         final Type targetType)
     {
         return Util.newInternal(
-            "cannot convert value '" + o
-            + "' to targetType '" + targetType
-            + "'");
+            "cannot convert value '" + o +
+            "' to targetType '" + targetType +
+            "'");
     }
 
     public static int toInt(
@@ -114,14 +114,12 @@ public class CastFunDef extends FunDefBase {
     private static class ResolverImpl extends ResolverBase {
 
         public ResolverImpl() {
-            super(
-                "Cast", "Cast(<Expression> AS <Type>)",
+            super("Cast", "Cast(<Expression> AS <Type>)",
                 "Converts values to another type.", Syntax.Cast);
         }
 
         public FunDef resolve(
-            Exp[] args, Validator validator, List<Conversion> conversions)
-        {
+            Exp[] args, Validator validator, List<Conversion> conversions) {
             if (args.length != 2) {
                 return null;
             }

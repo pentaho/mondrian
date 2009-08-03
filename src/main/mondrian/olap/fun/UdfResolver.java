@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,6 @@ import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
-import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
@@ -70,9 +69,9 @@ public class UdfResolver implements Resolver {
     }
 
     public FunDef resolve(
-        Exp[] args,
-        Validator validator,
-        List<Conversion> conversions)
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
     {
         final Type[] parameterTypes = udf.getParameterTypes();
         if (args.length != parameterTypes.length) {
@@ -84,11 +83,9 @@ public class UdfResolver implements Resolver {
             Type parameterType = parameterTypes[i];
             final Exp arg = args[i];
             final Type argType = arg.getType();
-            final int parameterCategory =
-                TypeUtil.typeToCategory(parameterType);
+            final int parameterCategory = TypeUtil.typeToCategory(parameterType);
             if (!validator.canConvert(
-                arg, parameterCategory, conversions))
-            {
+                    arg, parameterCategory, conversions)) {
                 return null;
             }
             parameterCategories[i] = parameterCategory;
@@ -144,35 +141,26 @@ public class UdfResolver implements Resolver {
                 expCalcs[i] = new CalcExp(calc, scalarCalc);
             }
 
-            // Clone the UDF, because some UDFs use member variables as state.
-            UserDefinedFunction udf2 =
-                Util.createUdf(
-                    udf.getClass(), udf.getName());
-            if (call.getType() instanceof SetType) {
-                return new ListCalcImpl(call, calcs, udf2, expCalcs);
-            } else {
-                return new ScalarCalcImpl(call, calcs, udf2, expCalcs);
-            }
+            return new CalcImpl(call, calcs, udf, expCalcs);
         }
     }
 
     /**
-     * Expression that evaluates a scalar user-defined function.
+     * Expression which evaluates a user-defined function.
      */
-    private static class ScalarCalcImpl extends GenericCalc {
+    private static class CalcImpl extends GenericCalc {
         private final Calc[] calcs;
         private final UserDefinedFunction udf;
         private final UserDefinedFunction.Argument[] args;
 
-        public ScalarCalcImpl(
-            ResolvedFunCall call,
-            Calc[] calcs,
-            UserDefinedFunction udf,
-            UserDefinedFunction.Argument[] args)
-        {
+        public CalcImpl(
+                ResolvedFunCall call,
+                Calc[] calcs,
+                UserDefinedFunction udf,
+                UserDefinedFunction.Argument[] args) {
             super(call);
             this.calcs = calcs;
-            this.udf = udf;
+            this.udf = Util.createUdf(udf.getClass());
             this.args = args;
         }
 
@@ -182,34 +170,6 @@ public class UdfResolver implements Resolver {
 
         public Object evaluate(Evaluator evaluator) {
             return udf.execute(evaluator, args);
-        }
-
-        public boolean dependsOn(Hierarchy hierarchy) {
-            // Be pessimistic. This effectively disables expression caching.
-            return true;
-        }
-    }
-
-    /**
-     * Expression that evaluates a list user-defined function.
-     */
-    private static class ListCalcImpl extends AbstractListCalc {
-        private final UserDefinedFunction udf;
-        private final UserDefinedFunction.Argument[] args;
-
-        public ListCalcImpl(
-            ResolvedFunCall call,
-            Calc[] calcs,
-            UserDefinedFunction udf,
-            UserDefinedFunction.Argument[] args)
-        {
-            super(call, calcs);
-            this.udf = udf;
-            this.args = args;
-        }
-
-        public List evaluateList(Evaluator evaluator) {
-            return (List) udf.execute(evaluator, args);
         }
 
         public boolean dependsOn(Dimension dimension) {

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,8 +35,7 @@ class StrToTupleFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     private StrToTupleFunDef(int[] parameterTypes) {
-        super(
-            "StrToTuple",
+        super("StrToTuple",
             null,
             "Constructs a tuple from a string.",
             Syntax.Function, Category.Tuple, parameterTypes);
@@ -89,8 +88,7 @@ class StrToTupleFunDef extends FunDefBase {
     }
 
     private Member parseMember(
-        Evaluator evaluator, String string, Hierarchy hierarchy)
-    {
+        Evaluator evaluator, String string, Hierarchy hierarchy) {
         Member[] members = {null};
         int i = StrToSetFunDef.parseMember(
             evaluator, string, 0, members, new Hierarchy[] {hierarchy}, 0);
@@ -149,9 +147,8 @@ class StrToTupleFunDef extends FunDefBase {
                 final Type type = arg.getType();
                 list.add(TypeUtil.toMemberType(type));
             }
-            final MemberType[] types =
-                list.toArray(new MemberType[list.size()]);
-            TupleType.checkHierarchies(types);
+            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            TupleType.checkDimensions(types);
             return new TupleType(types);
         }
         }
@@ -159,11 +156,10 @@ class StrToTupleFunDef extends FunDefBase {
 
     private static class ResolverImpl extends ResolverBase {
         ResolverImpl() {
-            super(
-                "StrToTuple",
-                "StrToTuple(<String Expression>)",
-                "Constructs a tuple from a string.",
-                Syntax.Function);
+            super("StrToTuple",
+                    "StrToTuple(<String Expression>)",
+                    "Constructs a tuple from a string.",
+                    Syntax.Function);
         }
 
         public FunDef resolve(
@@ -181,8 +177,7 @@ class StrToTupleFunDef extends FunDefBase {
             for (int i = 1; i < args.length; i++) {
                 Exp exp = args[i];
                 if (!(exp instanceof DimensionExpr
-                    || exp instanceof HierarchyExpr))
-                {
+                    || exp instanceof HierarchyExpr)) {
                     return null;
                 }
             }

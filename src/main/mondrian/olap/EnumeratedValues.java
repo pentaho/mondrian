@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -86,8 +86,7 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
      * Create an enumeration, initializes it with arrays of code/name pairs,
      * and freezes it.
      */
-    public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
-    {
+    public EnumeratedValues(String[] names, int[] codes, String[] descriptions) {
         for (int i = 0; i < names.length; i++) {
             register((V) new BasicValue(names[i], codes[i], descriptions[i]));
         }
@@ -132,13 +131,11 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
         Util.assertPrecondition(name != null, "value.getName() != null");
         Value old = valuesByName.put(name, value);
         if (old != null) {
-            throw Util.newInternal(
-                "Enumeration already contained a value '" + old.getName()
-                + "'");
+            throw Util.newInternal("Enumeration already contained a value '" + old.getName() + "'");
         }
         final int ordinal = value.getOrdinal();
-        min = Math.min(min, ordinal);
-        max = Math.max(max, ordinal);
+        min = Math.min(min,ordinal);
+        max = Math.max(max,ordinal);
     }
 
     /**
@@ -150,8 +147,8 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
             final int index = value.getOrdinal() - min;
             if (ordinalToValueMap[index] != null) {
                 throw Util.newInternal(
-                    "Enumeration has more than one value with ordinal "
-                    + value.getOrdinal());
+                    "Enumeration has more than one value with ordinal " +
+                        value.getOrdinal());
             }
             ordinalToValueMap[index] = value;
         }
@@ -286,10 +283,9 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
      * to throw the error.)
      */
     public RuntimeException badValue(int ordinal) {
-        return Util.newInternal(
-            "bad value " + ordinal + "("
-            + getName(ordinal) + ") for enumeration '"
-            + getClass().getName() + "'");
+        return Util.newInternal("bad value " + ordinal + "(" +
+                getName(ordinal) + ") for enumeration '" +
+                getClass().getName() + "'");
     }
 
     /**
@@ -297,10 +293,9 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
      * here.
      */
     public RuntimeException unexpected(V value) {
-        return Util.newInternal(
-            "Was not expecting value '" + value
-            + "' for enumeration '" + getClass().getName()
-            + "' in this context");
+        return Util.newInternal("Was not expecting value '" + value +
+                "' for enumeration '" + getClass().getName() +
+                "' in this context");
     }
 
     /**
@@ -379,9 +374,8 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
          * }</pre></blockquote>
          */
         public RuntimeException unexpected() {
-            return Util.newInternal(
-                "Value " + name + " of class "
-                + getClass() + " unexpected here");
+            return Util.newInternal("Value " + name + " of class " +
+                    getClass() + " unexpected here");
         }
     }
 

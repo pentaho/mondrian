@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -349,38 +349,6 @@ public class DialectTest extends TestCase {
         }
     }
 
-    public void testRequiresUnionOrderByExprToBeInSelectClause() {
-        String sql =
-            dialectize(
-                "SELECT [unit_sales], [store_sales]\n"
-                + "FROM [sales_fact_1997]\n"
-                + "UNION ALL\n"
-                + "SELECT [unit_sales], [store_sales]\n"
-                + "FROM [sales_fact_1997]\n"
-                + "ORDER BY [unit_sales] + [store_sales]");
-
-        if (!getDialect().requiresUnionOrderByExprToBeInSelectClause()) {
-            assertQuerySucceeds(sql);
-        } else {
-            String[] errs = {
-                // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] The ORDER "
-                + "BY expression \\(\\[unit_sales\\]\\+\\[store_sales\\]\\) "
-                + "includes fields that are not selected by the query\\.  "
-                + "Only those fields requested in the first query can be "
-                + "included in an ORDER BY expression\\.",
-                // derby (yes, lame message)
-                "Java exception: ': java.lang.NullPointerException'.",
-                // oracle
-                "ORA-01785: ORDER BY item must be the number of a SELECT-list "
-                + "expression\n",
-                // teradata
-                ".*The ORDER BY clause must contain only integer constants.",
-            };
-            assertQueryFails(sql, errs);
-        }
-    }
-
     public void testSupportsGroupByExpressions() {
         String sql =
             dialectize(
@@ -390,11 +358,11 @@ public class DialectTest extends TestCase {
         if (getDialect().supportsGroupByExpressions()) {
             assertQuerySucceeds(sql);
         } else {
-            final String[] errs = {
-                // mysql
-                "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY",
-            };
-            assertQueryFails(sql, errs);
+            assertQueryFails(
+                sql,
+                new String[] {
+                    "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY"
+                });
         }
     }
 
@@ -489,14 +457,13 @@ public class DialectTest extends TestCase {
                         // but allowed the statement to be executed anyway.
                         // But don't fail.
                         Util.discard(
-                            "expected to fail for type=" + type
-                            + ", concur=" + concur);
+                            "expected to fail for type=" + type +
+                            ", concur=" + concur);
                     }
                 } catch (SQLException e) {
                     if (b) {
-                        fail(
-                            "expected to succeed for type=" + type
-                            + ", concur=" + concur);
+                        fail("expected to succeed for type=" + type +
+                            ", concur=" + concur);
                         throw Util.newInternal(e, "query [" + sql + "] failed");
                     }
                 } finally {
@@ -538,79 +505,44 @@ public class DialectTest extends TestCase {
         Dialect dialect = getDialect();
         String ascQuery =
             "select "
-            + dialect.quoteIdentifier("store_manager")
+            + dialect.quoteIdentifier("grocery_sqft")
             + " from "
             + dialect.quoteIdentifier("store")
             + " order by "
-            + dialect.quoteIdentifier("store_manager");
+            + dialect.quoteIdentifier("grocery_sqft");
         String descQuery = ascQuery + " DESC";
         Dialect.NullCollation nullCollation = getDialect().getNullCollation();
         switch (nullCollation) {
         case NEGINF:
-            assertFirstLast(ascQuery, null, "Williams");
-            assertFirstLast(descQuery, "Williams", null);
+            assertFirstLast(ascQuery, null, 30351);
+            assertFirstLast(descQuery, 30351, null);
             break;
         case POSINF:
-            assertFirstLast(ascQuery, "Brown", null);
-            assertFirstLast(descQuery, null, "Brown");
+            assertFirstLast(ascQuery, 13305, null);
+            assertFirstLast(descQuery, null, 13305);
             break;
         default:
             fail("unexpected value " + nullCollation);
         }
     }
 
-    /**
-     * Tests that the dialect can generate a valid query to sort ascending and
-     * descending, with NULL values appearing last in both cases.
-     */
-    public void testForceNullCollation() throws SQLException {
-        checkForceNullCollation(true);
-        checkForceNullCollation(false);
-    }
-
-    /**
-     * Checks that the dialect can generate a valid query to sort in a given
-     * direction, with NULL values appearing last.
-     *
-     * @param ascending Whether ascending
-     */
-    private void checkForceNullCollation(boolean ascending) throws SQLException
-    {
-        Dialect dialect = getDialect();
-        String query =
-            "select "
-            + dialect.quoteIdentifier("store_manager")
-            + " from "
-            + dialect.quoteIdentifier("store")
-            + " order by "
-            + dialect.generateOrderItem(
-                dialect.quoteIdentifier("store_manager"), true, ascending);
-        if (ascending) {
-            // Lowest value comes first, null comes last.
-            assertFirstLast(query, "Brown", null);
-        } else {
-            // Largest value comes first, null comes last.
-            assertFirstLast(query, "Williams", null);
-        }
-    }
-
     private void assertFirstLast(
         String query,
-        String expectedFirst,
-        String expectedLast) throws SQLException
+        Integer expectedFirst,
+        Integer expectedLast) throws SQLException
     {
         ResultSet resultSet =
             getConnection().createStatement().executeQuery(query);
-        List<String> values = new ArrayList<String>();
+        List<Integer> values = new ArrayList<Integer>();
         while (resultSet.next()) {
-            values.add(resultSet.getString(1));
+            values.add(resultSet.getInt(1));
             if (resultSet.wasNull()) {
                 values.set(values.size() - 1, null);
             }
         }
         resultSet.close();
-        String actualFirst = values.get(0);
-        String actualLast = values.get(values.size() - 1);
+        Integer actualFirst = values.get(0);
+        Integer actualLast = values.get(values.size() - 1);
         assertEquals(expectedFirst, actualFirst);
         assertEquals(expectedLast, actualLast);
     }
@@ -618,8 +550,7 @@ public class DialectTest extends TestCase {
     private void assertInline(
         List<String> nameList,
         List<String> typeList,
-        String[]... valueList) throws SQLException
-    {
+        String[]... valueList) throws SQLException {
         String sql =
             getDialect().generateInline(
                 nameList,
@@ -746,7 +677,7 @@ public class DialectTest extends TestCase {
                 }
                 throw new AssertionFailedError(
                     "error [" + message
-                    + "] did not match any of the supplied patterns");
+                        + "] did not match any of the supplied patterns");
             }
             assertTrue(resultSet.next());
             Object col1 = resultSet.getObject(1);
@@ -761,49 +692,6 @@ public class DialectTest extends TestCase {
                     // ignore
                 }
             }
-        }
-    }
-
-    /**
-     * Unit test for {@link Dialect#allowsSelectNotInGroupBy}.
-     */
-    public void testAllowsSelectNotInGroupBy() throws SQLException {
-        Dialect dialect = getDialect();
-        String sql =
-            "select "
-            + dialect.quoteIdentifier("time_id")
-            + ", "
-            + dialect.quoteIdentifier("the_month")
-            + " from "
-            + dialect.quoteIdentifier("time_by_day")
-            + " group by "
-            + dialect.quoteIdentifier("time_id");
-        if (dialect.allowsSelectNotInGroupBy()) {
-            final ResultSet resultSet =
-                getConnection().createStatement().executeQuery(sql);
-            assertTrue(resultSet.next());
-            resultSet.close();
-        } else {
-            String[] errs = {
-                // oracle
-                "ORA-00979: not a GROUP BY expression\n",
-                // derby
-                "The SELECT list of a grouped query contains at least one "
-                + "invalid expression. If a SELECT list has a GROUP BY, the "
-                + "list may only contain valid grouping expressions and valid "
-                + "aggregate expressions.  ",
-                // mysql (if sql_mode contains ONLY_FULL_GROUP_BY)
-                "ERROR 1055 (42000): 'foodmart.time_by_day.the_month' isn't in "
-                + "GROUP BY",
-                // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] You tried "
-                + "to execute a query that does not include the specified "
-                + "expression 'the_month' as part of an aggregate function.",
-                // teradata
-                ".*Selected non-aggregate values must be part of the "
-                + "associated group.",
-            };
-            assertQueryFails(sql, errs);
         }
     }
 }

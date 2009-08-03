@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -42,8 +42,7 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx =
-            "select {[Measures].[Store Count]} on columns from Cheques";
+        String mdx = "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
@@ -65,8 +64,7 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx =
-            "select {[Measures].[Sales Count]} on columns from Cheques";
+        String mdx = "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
@@ -88,8 +86,7 @@ public class BUG_1541077 extends AggTableTestCase {
         // get value without aggregates
         props.UseAggregates.setString("false");
 
-        String mdx =
-            "select {[Measures].[Total Amount]} on columns from Cheques";
+        String mdx = "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 

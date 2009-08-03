@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -152,8 +152,7 @@ public class TestMember implements Member {
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
-    {
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
         throw new UnsupportedOperationException();
     }
 
@@ -182,6 +181,10 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
+        public int getOrdinal(Cube cube) {
+            throw new UnsupportedOperationException();
+        }
+
         public Schema getSchema() {
             throw new UnsupportedOperationException();
         }
@@ -202,10 +205,8 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
-        public OlapElement lookupChild(
-            SchemaReader schemaReader,
-            Id.Segment s, MatchType matchType)
-        {
+        public OlapElement lookupChild(SchemaReader schemaReader,
+                Id.Segment s, MatchType matchType) {
             throw new UnsupportedOperationException();
         }
 

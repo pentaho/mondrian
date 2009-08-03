@@ -1,15 +1,17 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
+import mondrian.olap.FunDef;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Dimension;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
@@ -41,17 +43,17 @@ class MedianFunDef extends AbstractAggregateFunDef {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
                 compiler.compileList(call.getArg(0));
-        final Calc calc = call.getArgCount() > 1
-            ? compiler.compileScalar(call.getArg(1), true)
-            : new ValueCalc(call);
+        final Calc calc = call.getArgCount() > 1 ?
+                compiler.compileScalar(call.getArg(1), true) :
+                new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 return percentile(evaluator.push(false), memberList, calc, 0.5);
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
-                return anyDependsButFirst(getCalcs(), hierarchy);
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }

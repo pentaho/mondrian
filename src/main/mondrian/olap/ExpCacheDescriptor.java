@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,16 +25,9 @@ import java.util.List;
  */
 public class ExpCacheDescriptor {
     private final Exp exp;
-    private int[] dependentHierarchyOrdinals;
+    private int[] dependentDimensionOrdinals;
     private final Calc calc;
 
-    /**
-     * Creates a descriptor with a given compiled expression.
-     *
-     * @param exp Expression
-     * @param calc Compiled expression
-     * @param evaluator Evaluator
-     */
     public ExpCacheDescriptor(Exp exp, Calc calc, Evaluator evaluator) {
         this.calc = calc;
         this.exp = exp;
@@ -43,9 +36,6 @@ public class ExpCacheDescriptor {
 
     /**
      * Creates a descriptor.
-     *
-     * @param exp Expression
-     * @param evaluator Evaluator
      */
     public ExpCacheDescriptor(Exp exp, Evaluator evaluator) {
         this(exp, new BetterExpCompiler(evaluator, null));
@@ -53,9 +43,6 @@ public class ExpCacheDescriptor {
 
     /**
      * Creates a descriptor.
-     *
-     * @param exp Expression
-     * @param compiler Compiler
      */
     public ExpCacheDescriptor(Exp exp, ExpCompiler compiler) {
         this.exp = exp;
@@ -76,14 +63,14 @@ public class ExpCacheDescriptor {
         final List<Integer> ordinalList = new ArrayList<Integer>();
         final Member[] members = evaluator.getMembers();
         for (int i = 0; i < members.length; i++) {
-            Hierarchy hierarchy = members[i].getHierarchy();
-            if (calc.dependsOn(hierarchy)) {
+            Dimension dimension = members[i].getDimension();
+            if (calc.dependsOn(dimension)) {
                 ordinalList.add(i);
             }
         }
-        dependentHierarchyOrdinals = new int[ordinalList.size()];
-        for (int i = 0; i < dependentHierarchyOrdinals.length; i++) {
-            dependentHierarchyOrdinals[i] = ordinalList.get(i);
+        dependentDimensionOrdinals = new int[ordinalList.size()];
+        for (int i = 0; i < dependentDimensionOrdinals.length; i++) {
+            dependentDimensionOrdinals[i] = ordinalList.get(i);
         }
     }
 
@@ -100,12 +87,12 @@ public class ExpCacheDescriptor {
     }
 
     /**
-     * Returns the ordinals of the hierarchies which this expression is
+     * Returns the ordinals of the dimensions which this expression is
      * dependent upon. When the cache descriptor is used to generate a cache
-     * key, the key will consist of a member from each of these hierarchies.
+     * key, the key will consist of a member from each of these dimensions.
      */
-    public int[] getDependentHierarchyOrdinals() {
-        return dependentHierarchyOrdinals;
+    public int[] getDependentDimensionOrdinals() {
+        return dependentDimensionOrdinals;
     }
 
 }

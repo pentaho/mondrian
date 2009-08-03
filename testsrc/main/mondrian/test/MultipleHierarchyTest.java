@@ -1,15 +1,13 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test;
-
-import mondrian.olap.MondrianProperties;
 
 /**
  * Tests multiple hierarchies within the same dimension.
@@ -19,33 +17,14 @@ import mondrian.olap.MondrianProperties;
  * @since Dec 15, 2005
  */
 public class MultipleHierarchyTest extends FoodMartTestCase {
-    private static final String timeWeekly =
-        TestContext.hierarchyName("Time", "Weekly");
-    private static final String timeTime =
-        TestContext.hierarchyName("Time", "Time");
-
     public MultipleHierarchyTest(String name) {
         super(name);
     }
 
     public void testWeekly() {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // [Time.Weekly] has an 'all' member, but [Time] does not.
-            assertAxisReturns(
-                "{[Time].[Time].CurrentMember}",
-                "[Time].[1997]");
-            assertAxisReturns(
-                "{[Time].[Weekly].CurrentMember}",
-                "[Time].[Weekly].[All Weeklys]");
-        } else {
-            // [Time.Weekly] has an 'all' member, but [Time] does not.
-            assertAxisReturns(
-                "{[Time].CurrentMember}",
-                "[Time].[1997]");
-            assertAxisReturns(
-                "{[Time.Weekly].CurrentMember}",
-                "[Time].[Weekly].[All Weeklys]");
-        }
+        // [Time.Weekly] has an 'all' member, but [Time] does not.
+        assertAxisReturns("{[Time].CurrentMember}", "[Time].[1997]");
+        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time].[Weekly].[All Weeklys]");
     }
 
     public void testWeekly2() {
@@ -53,13 +32,11 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
         // the current member of other hierarchy must be its default member.
         assertQueryReturns(
             "with\n"
-            + "  member [Measures].[Foo] as ' "
-            + timeWeekly + ".CurrentMember.UniqueName '\n"
-            + "  member [Measures].[Foo2] as ' "
-            + timeTime + ".CurrentMember.UniqueName '\n"
+            + "  member [Measures].[Foo] as ' [Time.Weekly].CurrentMember.UniqueName '\n"
+            + "  member [Measures].[Foo2] as ' [Time].CurrentMember.UniqueName '\n"
             + "select\n"
             + "  {[Measures].[Unit Sales], [Measures].[Foo], [Measures].[Foo2]} on columns,\n"
-            + "  {" + timeTime + ".children} on rows\n"
+            + "  {[Time].children} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -86,40 +63,19 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "Row #3: [Time].[1997].[Q4]\n");
     }
 
-    public void testMultipleMembersOfSameDimensionInSlicerFails() {
-        assertQueryThrows(
+    public void testMultipleSlicersFails() {
+        assertThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Store].children} on rows\n"
             + "from [Sales]\n"
-            + "where ([Gender].[M], [Time].[1997], [Time].[1997].[Q1])",
-            "Tuple contains more than one member of hierarchy '[Time]'.");
-    }
-
-    public void testMembersOfHierarchiesInSameDimensionInSlicer() {
-        assertQueryReturns(
-            "select {[Measures].[Unit Sales]} on columns,\n"
-            + " {[Store].children} on rows\n"
-            + "from [Sales]\n"
-            + "where ([Gender].[M], "
-            + TestContext.hierarchyName("Time", "Weekly")
-            + ".[1997], [Time].[1997].[Q1])",
-            "Axis #0:\n"
-            + "{[Gender].[All Gender].[M], [Time].[Weekly].[All Weeklys].[1997], [Time].[1997].[Q1]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[All Stores].[Canada]}\n"
-            + "{[Store].[All Stores].[Mexico]}\n"
-            + "{[Store].[All Stores].[USA]}\n"
-            + "Row #0: \n"
-            + "Row #1: \n"
-            + "Row #2: 33,381\n");
+            + "where ([Gender].[M], [Time.Weekly].[1997], [Time].[1997])",
+            "Tuple contains more than one member of dimension '[Time]'.");
     }
 
     public void testCalcMember() {
         assertQueryReturns(
             "with member [Measures].[Sales to Date] as \n"
-            + " ' Sum(PeriodsToDate([Time].[Year], [Time].[Time].CurrentMember), [Measures].[Unit Sales])'\n"
+            + " ' Sum(PeriodsToDate([Time].[Year], [Time].CurrentMember), [Measures].[Unit Sales])'\n"
             + "select {[Measures].[Sales to Date]} on columns,\n"
             + " {[Time].[1997].[Q2].[4],"
             + "  [Time].[1997].[Q2].[5]} on rows\n"
@@ -137,11 +93,9 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
 
         assertQueryReturns(
             "with member [Measures].[Sales to Date] as \n"
-            + " ' Sum(PeriodsToDate(" + timeWeekly + ".[Year], "
-            + timeWeekly + ".CurrentMember), [Measures].[Unit Sales])'\n"
+            + " ' Sum(PeriodsToDate([Time.Weekly].[Year], [Time.Weekly].CurrentMember), [Measures].[Unit Sales])'\n"
             + "select {[Measures].[Sales to Date]} on columns,\n"
-            + " {" + timeWeekly + ".[1997].[14] : "
-            + timeWeekly + ".[1997].[16]} on rows\n"
+            + " {[Time.Weekly].[1997].[14] : [Time.Weekly].[1997].[16]} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -195,33 +149,12 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "  </Level>\n"
             + "</Hierarchy>\n"
             + "</Dimension>");
-        final String nuStore = TestContext.hierarchyName("NuStore", "NuStore");
         testContext.assertQueryReturns(
-            "with member [Measures].[Store level] as '" + nuStore
-            + ".CurrentMember.Level.Name'\n"
-            + "member [Measures].[Store type] as 'IIf((" + nuStore
-            + ".CurrentMember.Level.Name = \"NuStore Name\"), CAST(" + nuStore
-            + ".CurrentMember.Properties(\"NuStore Type\") AS STRING), \"No type\")'\n"
-            + "member [Measures].[Store Sqft] as 'IIf((" + nuStore
-            + ".CurrentMember.Level.Name = \"NuStore Name\"), CAST(" + nuStore
-            + ".CurrentMember.Properties(\"NuStore Sqft\") AS INTEGER), 0.0)'\n"
-            + "select {"
-            + "[Measures].[Unit Sales], "
-            + "[Measures].[Store Cost], "
-            + "[Measures].[Store Sales], "
-            + "[Measures].[Store level], "
-            + "[Measures].[Store type], "
-            + "[Measures].[Store Sqft]"
-            + "} ON COLUMNS,\n"
-            + "{" + nuStore + ".[All NuStores], "
-            + nuStore + ".[All NuStores].[Canada], "
-            + nuStore + ".[All NuStores].[Canada].[BC], "
-            + nuStore + ".[All NuStores].[Canada].[BC].[Vancouver], "
-            + nuStore + ".[All NuStores].[Canada].[BC].[Vancouver].[Store 19], "
-            + nuStore + ".[All NuStores].[Canada].[BC].[Victoria], " + nuStore
-            + ".[All NuStores].[Mexico], "
-            + nuStore + ".[All NuStores].[USA]"
-            + "} ON ROWS\n"
+            "with member [Measures].[Store level] as '[NuStore].CurrentMember.Level.Name'\n"
+            + "member [Measures].[Store type] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Type\") AS STRING), \"No type\")'\n"
+            + "member [Measures].[Store Sqft] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Sqft\") AS INTEGER), 0.0)'\n"
+            + "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Store level], [Measures].[Store type], [Measures].[Store Sqft]} ON COLUMNS,\n"
+            + "{[NuStore].[All NuStores], [NuStore].[All NuStores].[Canada], [NuStore].[All NuStores].[Canada].[BC], [NuStore].[All NuStores].[Canada].[BC].[Vancouver], [NuStore].[All NuStores].[Canada].[BC].[Vancouver].[Store 19], [NuStore].[All NuStores].[Canada].[BC].[Victoria], [NuStore].[All NuStores].[Mexico], [NuStore].[All NuStores].[USA]} ON ROWS\n"
             + "from [Sales]\n"
             + "where [Time].[1997] ",
             "Axis #0:\n"
@@ -290,33 +223,6 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "Row #7: NuStore Country\n"
             + "Row #7: No type\n"
             + "Row #7: 0\n");
-    }
-
-    /**
-     * Tests that mondrian detects an ambiguous hierarchy in a calculated member
-     * at compile time. (SSAS detects at run time, and generates a cell error,
-     * but this is better.)
-     */
-    public void testAmbiguousHierarchyInCalcMember() {
-        final String query =
-            "with member [Measures].[Time Child Count] as\n"
-            + "  [Time].Children.Count\n"
-            + "select [Measures].[Time Child Count] on 0\n"
-            + "from [Sales]";
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            assertQueryThrows(
-                query,
-                "The 'Time' dimension contains more than one hierarchy, "
-                + "therefore the hierarchy must be explicitly specified.");
-        } else {
-            assertQueryReturns(
-                query,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Time Child Count]}\n"
-                + "Row #0: 4\n");
-        }
     }
 }
 

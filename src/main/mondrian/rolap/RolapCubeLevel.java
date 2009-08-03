@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,23 +33,13 @@ public class RolapCubeLevel extends RolapLevel {
     protected LevelReader levelReader;
 
     public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy hierarchy) {
-        super(
-            hierarchy,
-            level.getDepth(),
-            level.getName(),
-            level.getKeyExp(),
-            level.getNameExp(),
-            level.getCaptionExp(),
-            level.getOrdinalExp(),
-            level.getParentExp(),
-            level.getNullParentValue(),
-            null,
-            level.getProperties(),
-            level.getFlags(),
-            level.getDatatype(),
-            level.getHideMemberCondition(),
-            level.getLevelType(),
-            "" + level.getApproxRowCount());
+        super(hierarchy, level.getDepth(), level.getName(), level.getKeyExp(),
+                level.getNameExp(), level.getCaptionExp(),
+                level.getOrdinalExp(), level.getParentExp(),
+                level.getNullParentValue(), null, level.getProperties(),
+                level.getFlags(), level.getDatatype(),
+                level.getHideMemberCondition(),
+                level.getLevelType(), "" + level.getApproxRowCount());
 
         this.rolapLevel = level;
         MondrianDef.RelationOrJoin hierarchyRel = hierarchy.getRelation();
@@ -67,16 +57,15 @@ public class RolapCubeLevel extends RolapLevel {
             this.levelReader = new NullLevelReader();
         } else if (rolapLevel.xmlClosure != null) {
             RolapDimension dimension =
-                (RolapDimension)
-                    rolapLevel.getClosedPeer().getHierarchy().getDimension();
+                (RolapDimension)rolapLevel.getClosedPeer()
+                                    .getHierarchy().getDimension();
 
             RolapCubeDimension cubeDimension =
                 new RolapCubeDimension(
-                    getCube(), dimension, xmlDimension,
-                    getDimension().getName() + "$Closure",
-                    -1,
-                    getCube().hierarchyList,
-                    getHierarchy().getDimension().isHighCardinality());
+                        getCube(), dimension, xmlDimension,
+                        getDimension().getName() + "$Closure",
+                        getHierarchy().getDimension().getOrdinal(),
+                        getHierarchy().getDimension().isHighCardinality());
 
             /*
             RME HACK
@@ -92,8 +81,8 @@ public class RolapCubeLevel extends RolapLevel {
             }
             cubeDimension.init(xmlDimension);
             getCube().registerDimension(cubeDimension);
-            closedPeer = (RolapCubeLevel)
-                cubeDimension.getHierarchies()[0].getLevels()[1];
+            closedPeer =
+                (RolapCubeLevel) cubeDimension.getHierarchies()[0].getLevels()[1];
 
             this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
         } else {
@@ -124,8 +113,7 @@ public class RolapCubeLevel extends RolapLevel {
                     ((MondrianDef.Table) rel).getAlias(),
                     col.getColumnName());
             } else if (rel instanceof MondrianDef.Join
-                || rel instanceof MondrianDef.Relation)
-            {
+                        || rel instanceof MondrianDef.Relation) {
                 // need to determine correct name of alias for this level.
                 // this may be defined in level
                 // col.table
@@ -138,9 +126,8 @@ public class RolapCubeLevel extends RolapLevel {
             // with the new aliased name
             return exp;
         }
-        throw new RuntimeException(
-            "conversion of Class " + exp.getClass()
-            + " unsupported at this time");
+        throw new RuntimeException("conversion of Class " + exp.getClass() +
+                                    " unsupported at this time");
     }
 
     public void setStarKeyColumn(RolapStar.Column column) {
@@ -290,26 +277,24 @@ public class RolapCubeLevel extends RolapLevel {
                 // (this happens in virtual cubes). The starMeasure only has
                 // a value for the 'all' member of the hierarchy (or for the
                 // default member if the hierarchy has no 'all' member)
-                return member != hierarchy.getDefaultMember()
-                    || hierarchy.hasAll();
+                return member != hierarchy.getDefaultMember() ||
+                    hierarchy.hasAll();
             }
 
             final StarColumnPredicate predicate;
             if (member.isCalculated()) {
                 predicate = null;
             } else {
-                predicate =
-                    false
-                    ? new MemberColumnPredicate(column, member)
-                    : new ValueColumnPredicate(column, member.getKey());
+                predicate = false ? new MemberColumnPredicate(column, member) :
+                    new ValueColumnPredicate(column, member.getKey());
             }
 
             // use the member as constraint; this will give us some
             //  optimization potential
             request.addConstrainedColumn(column, predicate);
 
-            if (request.extendedContext
-                && getNameExp() != null)
+            if (request.extendedContext &&
+                getNameExp() != null)
             {
                 final RolapStar.Column nameColumn = column.getNameColumn();
 

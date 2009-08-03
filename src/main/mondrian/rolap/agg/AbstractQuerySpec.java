@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -68,10 +68,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
 
-        String exprInner =
-            measure.getExpression() == null
-                ? "*"
-                : measure.generateExprString(sqlQuery);
+        String exprInner = measure.generateExprString(sqlQuery);
         String exprOuter = measure.getAggregator().getExpression(exprInner);
         sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
     }
@@ -114,17 +111,21 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
             final Dialect dialect = sqlQuery.getDialect();
-            final String alias;
+            final String c;
             final Dialect.DatabaseProduct databaseProduct =
                 dialect.getDatabaseProduct();
             if (databaseProduct == Dialect.DatabaseProduct.DB2_AS400) {
-                alias = sqlQuery.addSelect(expr, null);
+                c = sqlQuery.addSelect(expr, null);
             } else {
-                alias = sqlQuery.addSelect(expr, getColumnAlias(i));
+                c = sqlQuery.addSelect(expr, getColumnAlias(i));
             }
 
             if (isAggregate()) {
-                sqlQuery.addGroupBy(expr, alias);
+                if (dialect.requiresGroupByAlias()) {
+                    sqlQuery.addGroupBy(c);
+                } else {
+                    sqlQuery.addGroupBy(expr);
+                }
             }
 
             // Add ORDER BY clause to make the results deterministic.
@@ -161,9 +162,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
         int k = getDistinctMeasureCount();
         final Dialect dialect = sqlQuery.getDialect();
-        if (!dialect.allowsCountDistinct() && k > 0
-            || !dialect.allowsMultipleCountDistinct() && k > 1)
-        {
+        if (!dialect.allowsCountDistinct() && k > 0 ||
+            !dialect.allowsMultipleCountDistinct() && k > 1) {
             distinctGenerateSql(sqlQuery, countOnly);
         } else {
             nonDistinctGenerateSql(sqlQuery);
@@ -282,8 +282,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             innerSqlQuery.addSelect(expr, alias);
 
             outerSqlQuery.addSelect(
-                measure.getAggregator().getNonDistinctAggregator()
-                    .getExpression(
+                measure.getAggregator().getNonDistinctAggregator().getExpression(
                     dialect.quoteIdentifier(alias)));
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
@@ -297,9 +296,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
     protected void extraPredicates(SqlQuery sqlQuery) {
         List<StarPredicate> predicateList = getPredicateList();
         for (StarPredicate predicate : predicateList) {
-            for (RolapStar.Column column
-                : predicate.getConstrainedColumnList())
-            {
+            for (RolapStar.Column column :
+                predicate.getConstrainedColumnList()) {
                 final RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
             }

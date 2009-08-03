@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -32,23 +32,20 @@ public class ParameterFunDef extends FunDefBase {
     public final String parameterDescription;
 
     ParameterFunDef(
-        FunDef funDef,
-        String parameterName,
-        Type type,
-        int returnCategory,
-        Exp exp,
-        String description)
-    {
-        super(
-            funDef.getName(),
-            funDef.getSignature(),
-            funDef.getDescription(),
-            funDef.getSyntax(),
-            returnCategory,
-            funDef.getParameterCategories());
-        assertPrecondition(
-            getName().equals("Parameter")
-            || getName().equals("ParamRef"));
+            FunDef funDef,
+            String parameterName,
+            Type type,
+            int returnCategory,
+            Exp exp,
+            String description) {
+        super(funDef.getName(),
+                funDef.getSignature(),
+                funDef.getDescription(),
+                funDef.getSyntax(),
+                returnCategory,
+                funDef.getParameterCategories());
+        assertPrecondition(getName().equals("Parameter") ||
+                getName().equals("ParamRef"));
         this.parameterName = parameterName;
         this.type = type;
         this.exp = exp;
@@ -83,15 +80,13 @@ public class ParameterFunDef extends FunDefBase {
             // e.g. "[Time].CurrentMember.Hierarchy". They probably wrote
             // "[Time]", and the automatic type conversion did the rest.
             FunCall hierarchyCall = (FunCall) typeArg;
-            if (hierarchyCall.getFunName().equals("Hierarchy")
-                && hierarchyCall.getArgCount() > 0
-                && hierarchyCall.getArg(0) instanceof FunCall)
-            {
+            if (hierarchyCall.getFunName().equals("Hierarchy") &&
+                    hierarchyCall.getArgCount() > 0 &&
+                    hierarchyCall.getArg(0) instanceof FunCall) {
                 FunCall currentMemberCall = (FunCall) hierarchyCall.getArg(0);
-                if (currentMemberCall.getFunName().equals("CurrentMember")
-                    && currentMemberCall.getArgCount() > 0
-                    && currentMemberCall.getArg(0) instanceof DimensionExpr)
-                {
+                if (currentMemberCall.getFunName().equals("CurrentMember") &&
+                        currentMemberCall.getArgCount() > 0 &&
+                        currentMemberCall.getArg(0) instanceof DimensionExpr) {
                     return true;
                 }
             }
@@ -100,9 +95,8 @@ public class ParameterFunDef extends FunDefBase {
     }
 
     public static String getParameterName(Exp[] args) {
-        if (args[0] instanceof Literal
-            && args[0].getCategory() == Category.String)
-        {
+        if (args[0] instanceof Literal &&
+                args[0].getCategory() == Category.String) {
             return (String) ((Literal) args[0]).getValue();
         } else {
             throw Util.newInternal("Parameter name must be a string constant");
@@ -135,7 +129,7 @@ public class ParameterFunDef extends FunDefBase {
                 return new StringType();
             }
         } else if (args[1] instanceof MemberExpr) {
-            return new MemberType(null, null, null, null);
+            return new MemberType(null,null,null,null);
         }
         return new StringType();
     }
@@ -144,22 +138,20 @@ public class ParameterFunDef extends FunDefBase {
      * Resolves calls to the <code>Parameter</code> MDX function.
      */
     public static class ParameterResolver extends MultiResolver {
-        private static final String[] SIGNATURES = {
-            // Parameter(string const, symbol, string[, string const]): string
-            "fS#yS#", "fS#yS",
-            // Parameter(string const, symbol, numeric[, string const]): numeric
-            "fn#yn#", "fn#yn",
-            // Parameter(string const, hierarchy constant, member[, string
-            // const]): member
-            "fm#hm#", "fm#hm",
-        };
+        private static final String[] SIGNATURES =
+                new String[]{
+                    // Parameter(string const, symbol, string[, string const]): string
+                    "fS#yS#", "fS#yS",
+                    // Parameter(string const, symbol, numeric[, string const]): numeric
+                    "fn#yn#", "fn#yn",
+                    // Parameter(string const, hierarchy constant, member[, string const]): member
+                    "fm#hm#", "fm#hm",
+                };
 
         public ParameterResolver() {
-            super(
-                "Parameter",
-                "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
-                "Returns default value of parameter.",
-                SIGNATURES);
+            super("Parameter",
+                    "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
+                    "Returns default value of parameter.", SIGNATURES);
         }
 
         public String[] getReservedWords() {
@@ -178,16 +170,15 @@ public class ParameterFunDef extends FunDefBase {
                 Dimension dimension = type.getDimension();
                 if (!isConstant(typeArg)) {
                     throw newEvalException(
-                        dummyFunDef,
-                        "Invalid parameter '" + parameterName
-                        + "'. Type must be a NUMERIC, STRING, or a dimension, "
-                        + "hierarchy or level");
+                            dummyFunDef,
+                            "Invalid parameter '" + parameterName +
+                            "'. Type must be a NUMERIC, STRING, or a dimension, hierarchy or level");
                 }
                 if (dimension == null) {
                     throw newEvalException(
-                        dummyFunDef,
-                        "Invalid dimension for parameter '"
-                        + parameterName + "'");
+                            dummyFunDef,
+                            "Invalid dimension for parameter '" +
+                            parameterName + "'");
                 }
                 type = new MemberType(
                         type.getDimension(),
@@ -213,47 +204,45 @@ public class ParameterFunDef extends FunDefBase {
                 // Error is internal because the function call has already been
                 // type-checked.
                 throw newEvalException(
-                    dummyFunDef,
-                    "Invalid type for parameter '" + parameterName
-                    + "'; expecting NUMERIC, STRING or a hierarchy");
+                        dummyFunDef,
+                        "Invalid type for parameter '" + parameterName +
+                        "'; expecting NUMERIC, STRING or a hierarchy");
             }
             Exp exp = args[2];
             if (exp.getCategory() != category) {
                 String typeName =
-                    Category.instance.getName(category).toUpperCase();
+                        Category.instance.getName(category).toUpperCase();
                 throw newEvalException(
-                    dummyFunDef,
-                    "Default value of parameter '" + parameterName
-                    + "' is inconsistent with its type, " + typeName);
+                        dummyFunDef,
+                        "Default value of parameter '" + parameterName +
+                        "' is inconsistent with its type, " + typeName);
             }
             if (category == Category.Member) {
                 final Type expType = exp.getType();
-                if (type.getDimension() != null
-                    && expType.getDimension() != type.getDimension()
-                    || type.getHierarchy() != null
-                    && expType.getHierarchy() != type.getHierarchy()
-                    || type.getLevel() != null
-                    && expType.getLevel() != type.getLevel())
-                {
+                if (type.getDimension() != null &&
+                        expType.getDimension() != type.getDimension() ||
+                        type.getHierarchy() != null &&
+                        expType.getHierarchy() != type.getHierarchy() ||
+                        type.getLevel() != null &&
+                        expType.getLevel() != type.getLevel()) {
                     throw newEvalException(
-                        dummyFunDef,
-                        "Default value of parameter '" + parameterName
-                        + "' is not consistent with the parameter type '"
-                        + type);
+                            dummyFunDef,
+                            "Default value of parameter '" + parameterName +
+                            "' is not consistent with the parameter type '" +
+                            type);
                 }
             }
             String parameterDescription = null;
             if (args.length > 3) {
-                if (args[3] instanceof Literal
-                    && args[3].getCategory() == Category.String)
-                {
+                if (args[3] instanceof Literal &&
+                        args[3].getCategory() == Category.String) {
                     parameterDescription =
-                        (String) ((Literal) args[3]).getValue();
+                            (String) ((Literal) args[3]).getValue();
                 } else {
                     throw newEvalException(
-                        dummyFunDef,
-                        "Description of parameter '" + parameterName
-                        + "' must be a string constant");
+                            dummyFunDef,
+                            "Description of parameter '" + parameterName +
+                            "' must be a string constant");
                 }
             }
 

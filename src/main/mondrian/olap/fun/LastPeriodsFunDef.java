@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -19,10 +19,9 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.MemberCalc;
 import mondrian.calc.IntegerCalc;
+import mondrian.calc.impl.DimensionCurrentMemberCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 import java.util.Collections;
@@ -51,10 +50,14 @@ class LastPeriodsFunDef extends FunDefBase {
         if (args.length == 1) {
             // If Member is not specified,
             // it is Time.CurrentMember.
-            RolapHierarchy defaultTimeHierarchy =
-                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
-                    getName());
-            return new SetType(MemberType.forHierarchy(defaultTimeHierarchy));
+            Dimension defaultTimeDimension =
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
+            return new SetType(MemberType.forHierarchy(hierarchy));
         } else {
             Type type = args[1].getType();
             Type memberType =
@@ -68,12 +71,15 @@ class LastPeriodsFunDef extends FunDefBase {
         Exp[] args = call.getArgs();
         final MemberCalc memberCalc;
         if (args.length == 1) {
-            final RolapHierarchy timeHierarchy =
-                ((RolapCube) compiler.getEvaluator().getCube())
-                    .getTimeHierarchy(getName());
-            memberCalc =
-                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
-                    call, timeHierarchy);
+            Dimension timeDimension =
+                    compiler.getEvaluator().getCube()
+                    .getTimeDimension();
+            if (timeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            memberCalc = new DimensionCurrentMemberCalc(
+                    timeDimension);
         } else {
             memberCalc = compiler.compileMember(args[1]);
         }
@@ -82,9 +88,7 @@ class LastPeriodsFunDef extends FunDefBase {
         final IntegerCalc indexValueCalc =
                 compiler.compileInteger(args[0]);
 
-        return new AbstractListCalc(
-            call, new Calc[] {memberCalc, indexValueCalc})
-        {
+        return new AbstractListCalc(call, new Calc[] {memberCalc, indexValueCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 int indexValue = indexValueCalc.evaluateInteger(evaluator);
@@ -94,22 +98,21 @@ class LastPeriodsFunDef extends FunDefBase {
         };
     }
 
-    /**
-     * If Index is positive, returns the set of Index
-     * members ending with Member and starting with the
-     * member lagging Index - 1 from Member.
-     *
-     * <p>If Index is negative, returns the set of (- Index)
-     * members starting with Member and ending with the
-     * member leading (- Index - 1) from Member.
-     *
-     * <p>If Index is zero, the empty set is returned.
+    /*
+        If Index is positive, returns the set of Index
+        members ending with Member and starting with the
+        member lagging Index - 1 from Member.
+
+        If Index is negative, returns the set of (- Index)
+        members starting with Member and ending with the
+        member leading (- Index - 1) from Member.
+
+        If Index is zero, the empty set is returned.
     */
     List<Member> lastPeriods(
-        Member member,
-        Evaluator evaluator,
-        int indexValue)
-    {
+            Member member,
+            Evaluator evaluator,
+            int indexValue) {
         // empty set
         if ((indexValue == 0) || member.isNull()) {
             return Collections.emptyList();
@@ -147,11 +150,11 @@ class LastPeriodsFunDef extends FunDefBase {
             }
         }
 
-        evaluator.getSchemaReader().getMemberRange(
-            member.getLevel(),
-            startMember,
-            endMember,
-            list);
+        evaluator.getSchemaReader().
+            getMemberRange(member.getLevel(),
+               startMember,
+               endMember,
+               list);
         return list;
     }
 }

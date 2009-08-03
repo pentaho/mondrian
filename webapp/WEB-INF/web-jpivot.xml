@@ -2,10 +2,10 @@
 <!--
 $Id$
 
-This software is subject to the terms of the Eclipse Public License v1.0
+This software is subject to the terms of the Common Public License
 Agreement, available at the following URL:
-http://www.eclipse.org/legal/epl-v10.html.
-(C) Copyright 2003-2009 Julian Hyde and others
+http://www.opensource.org/licenses/cpl.html.
+(C) Copyright 2003-2007 Julian Hyde and others.
 All Rights Reserved.
 You must accept the terms of that agreement to use this software.
 -->
@@ -76,7 +76,7 @@ You must accept the terms of that agreement to use this software.
 
   <servlet>
     <servlet-name>MDXQueryServlet</servlet-name>
-    <servlet-class>mondrian.web.servlet.MdxQueryServlet</servlet-class>
+    <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
       <param-value>@mondrian.webapp.connectString@</param-value>

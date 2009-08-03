@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -93,9 +93,8 @@ public class ParameterExpr extends ExpBase {
         // we will generate a call to the Parameter() function, to define
         // the parameter.
         final boolean def;
-        if (pw instanceof QueryPrintWriter
-            && parameter.getScope() == Parameter.Scope.Statement)
-        {
+        if (pw instanceof QueryPrintWriter &&
+            parameter.getScope() == Parameter.Scope.Statement) {
             def = ((QueryPrintWriter) pw).parameters.add(parameter);
         } else {
             def = false;
@@ -112,11 +111,11 @@ public class ParameterExpr extends ExpBase {
                 break;
             case Category.Member:
                 String memberName =
-                    type.getLevel() != null
-                    ? type.getLevel().getUniqueName()
-                    : type.getHierarchy() != null
-                    ? type.getHierarchy().getUniqueName()
-                    : type.getDimension().getUniqueName();
+                        type.getLevel() != null ?
+                        type.getLevel().getUniqueName() :
+                        type.getHierarchy() != null ?
+                        type.getHierarchy().getUniqueName() :
+                        type.getDimension().getUniqueName();
                 pw.print(memberName);
                 break;
             default:

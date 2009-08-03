@@ -1,15 +1,18 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
+import mondrian.olap.FunDef;
+import mondrian.olap.Literal;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Dimension;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -24,8 +27,7 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class CountFunDef extends AbstractAggregateFunDef {
-    static final String[] ReservedWords =
-        new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
+    static final String[] ReservedWords = new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
 
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Count",
@@ -44,12 +46,25 @@ class CountFunDef extends AbstractAggregateFunDef {
             compiler.compileAs(
                 call.getArg(0), null, ResultStyle.ITERABLE_ANY);
         final boolean includeEmpty =
-            call.getArgCount() < 2
-            || ((Literal) call.getArg(1)).getValue().equals(
-                "INCLUDEEMPTY");
+                call.getArgCount() < 2 ||
+                ((Literal) call.getArg(1)).getValue().equals(
+                        "INCLUDEEMPTY");
         return new AbstractIntegerCalc(
                 call, new Calc[] {calc}) {
             public int evaluateInteger(Evaluator evaluator) {
+/*
+                if (calc instanceof ListCalc) {
+                    ListCalc listCalc = (ListCalc) calc;
+                    List memberList = evaluateCurrentList(listCalc, evaluator);
+                    return count(evaluator, memberList, includeEmpty);
+                } else {
+                    // must be IterCalc
+                    IterCalc iterCalc = (IterCalc) calc;
+                    Iterable iterable =
+                        evaluateCurrentIterable(iterCalc, evaluator);
+                    return count(evaluator, iterable, includeEmpty);
+                }
+*/
                 evaluator = evaluator.push(false);
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;
@@ -64,11 +79,11 @@ class CountFunDef extends AbstractAggregateFunDef {
                 }
             }
 
-            public boolean dependsOn(Hierarchy hierarchy) {
+            public boolean dependsOn(Dimension dimension) {
                 // COUNT(<set>, INCLUDEEMPTY) is straightforward -- it
                 // depends only on the dimensions that <Set> depends
                 // on.
-                if (super.dependsOn(hierarchy)) {
+                if (super.dependsOn(dimension)) {
                     return true;
                 }
                 if (includeEmpty) {
@@ -77,7 +92,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                 // COUNT(<set>, EXCLUDEEMPTY) depends only on the
                 // dimensions that <Set> depends on, plus all
                 // dimensions not masked by the set.
-                return ! calc.getType().usesHierarchy(hierarchy, true);
+                return ! calc.getType().usesDimension(dimension, true);
             }
         };
 

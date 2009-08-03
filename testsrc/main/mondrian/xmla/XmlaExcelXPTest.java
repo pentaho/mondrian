@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,8 +41,7 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     }
 
     protected String generateExpectedString(String nos, Properties props)
-        throws Exception
-    {
+            throws Exception {
         String expectedFileName = getOutFileName(nos);
 
         String expectedStr = fileToString(expectedFileName);
@@ -70,13 +69,11 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         public boolean processHttpHeader(
             HttpServletRequest request,
             HttpServletResponse response,
-            Map<String, Object> context)
-            throws Exception
+            Map<String, Object> context) throws Exception
         {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
-            if ((expect != null)
-                && expect.equalsIgnoreCase(
-                    XmlaRequestCallback.EXPECT_100_CONTINUE))
+            if ((expect != null) &&
+                expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE))
             {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
@@ -89,15 +86,11 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         public void preAction(
             HttpServletRequest request,
             Element[] requestSoapParts,
-            Map<String, Object> context)
-            throws Exception
-        {
+            Map<String, Object> context) throws Exception {
         }
 
         private void setSessionId(Map<String, Object> context) {
-            context.put(
-                MY_SESSION_ID,
-                getSessionId("XmlaExcel2000Test", Action.CREATE));
+            context.put(MY_SESSION_ID, getSessionId("XmlaExcel2000Test", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, Object> context) {
@@ -109,9 +102,7 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
             HttpServletRequest request,
             HttpServletResponse response,
             byte[][] responseSoapParts,
-            Map<String, Object> context)
-            throws Exception
-        {
+            Map<String, Object> context) throws Exception {
         }
     }
 
@@ -233,10 +224,8 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     public void test24() throws Exception {
         helperTest("24", true);
     }
-
     protected void helperTest(String nos, boolean doSessionId)
-        throws Exception
-    {
+            throws Exception {
         if (doSessionId) {
             getSessionId(Action.CREATE);
         }
@@ -265,10 +254,8 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     public void testExpect06() throws Exception {
         helperTestExpect("06", true);
     }
-
     protected void helperTestExpect(String nos, boolean doSessionId)
-        throws Exception
-    {
+            throws Exception {
         if (doSessionId) {
             getSessionId(Action.CREATE);
         }
@@ -282,17 +269,13 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         Properties props = new Properties();
         doTest(req, nos, props);
     }
-
     /////////////////////////////////////////////////////////////////////////
     // helper
     /////////////////////////////////////////////////////////////////////////
-
     public void doTest(
-        MockHttpServletRequest req,
-        String nos,
-        Properties props)
-        throws Exception
-    {
+            MockHttpServletRequest req,
+            String nos,
+            Properties props) throws Exception {
         String requestText = generateRequestString(nos, props);
 
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -346,10 +329,8 @@ System.out.println("Got CONTINUE");
         Document expectedDoc = XmlUtil.parseString(expectedStr);
         validate(bytes, expectedDoc);
     }
-
     protected void validate(byte[] bytes, Document expectedDoc)
-        throws Exception
-    {
+            throws Exception {
 if (DEBUG) {
         String response = new String(bytes);
         System.out.println("response=" + response);
@@ -363,10 +344,8 @@ if (DEBUG) {
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        String gotStr =
-            XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
-        String expectedStr =
-            XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
+        String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 
 if (DEBUG) {
 System.out.println("GOT:\n" + gotStr);
@@ -379,8 +358,7 @@ System.out.println("XXXXXXX");
     }
 
     protected String generateRequestString(String nos, Properties props)
-        throws Exception
-    {
+            throws Exception {
         String reqFileName = "excel_XP_" + nos + "_in.xml";
 if (DEBUG) {
 System.out.println("reqFileName=" + reqFileName);
@@ -391,8 +369,7 @@ System.out.println("reqFileName=" + reqFileName);
             if (sessionId != null) {
                 props.put(SESSION_ID_PROP, sessionId);
             }
-            requestText =
-                Util.replaceProperties(requestText, Util.toMap(props));
+            requestText = Util.replaceProperties(requestText, Util.toMap(props));
         }
 if (DEBUG) {
 System.out.println("requestText=" + requestText);

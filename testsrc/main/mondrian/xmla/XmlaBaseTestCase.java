@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,22 +41,19 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class XmlaBaseTestCase extends FoodMartTestCase {
-    protected static final String LAST_SCHEMA_UPDATE_DATE_PROP =
-        "last.schema.update.date";
+    protected static final String LAST_SCHEMA_UPDATE_DATE_PROP = "last.schema.update.date";
     protected static final String LAST_SCHEMA_UPDATE_DATE = "somedate";
-    private static final String LAST_SCHEMA_UPDATE_NODE_NAME =
-        "LAST_SCHEMA_UPDATE";
+    private static final String LAST_SCHEMA_UPDATE_NODE_NAME = "LAST_SCHEMA_UPDATE";
     protected SortedMap<String, String> catalogNameUrls = null;
     private Servlet servlet;
 
     private static int sessionIdCounter = 1000;
-    private static Map<String, String> sessionIdMap =
+    private static Map<String,String> sessionIdMap =
         new HashMap<String, String>();
     // session id property
     public static final String SESSION_ID_PROP     = "session.id";
     // request.type
-    public static final String REQUEST_TYPE_PROP =
-        "request.type";// data.source.info
+    public static final String REQUEST_TYPE_PROP = "request.type";// data.source.info
     public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
     public static final String DATA_SOURCE_INFO = "MondrianFoodMart";// catalog
     public static final String CATALOG_PROP     = "catalog";
@@ -80,12 +77,17 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         }
 
         public boolean processHttpHeader(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Map<String, Object> context) throws Exception
-        {
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Map<String, Object> context) throws Exception {
+if (DEBUG) {
+System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader");
+}
             Role role = roles.get();
             if (role != null) {
+if (DEBUG) {
+System.out.println("XmlaBaseTestCase.CallBack.processHttpHeader: has Role");
+}
                 context.put(XmlaConstants.CONTEXT_ROLE, role);
             }
             return true;
@@ -94,8 +96,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         public void preAction(
             HttpServletRequest request,
             Element[] requestSoapParts,
-            Map<String, Object> context) throws Exception
-        {
+            Map<String, Object> context) throws Exception {
         }
 
         public String generateSessionId(Map<String, Object> context) {
@@ -106,8 +107,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             HttpServletRequest request,
             HttpServletResponse response,
             byte[][] responseSoapParts,
-            Map<String, Object> context) throws Exception
-        {
+            Map<String, Object> context) throws Exception {
         }
     }
 
@@ -130,15 +130,13 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     }
 
     protected Document replaceLastSchemaUpdateDate(Document doc) {
-        NodeList elements =
-            doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
+        NodeList elements = doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
         if (elements.getLength() == 0) {
             return doc;
         }
 
         Node lastSchemaUpdateNode = elements.item(0);
-        lastSchemaUpdateNode.getFirstChild().setNodeValue(
-            LAST_SCHEMA_UPDATE_DATE);
+        lastSchemaUpdateNode.getFirstChild().setNodeValue(LAST_SCHEMA_UPDATE_DATE);
         return doc;
     }
 
@@ -191,8 +189,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     }
 
     protected Document fileToDocument(String filename)
-        throws IOException , SAXException
-    {
+                throws IOException , SAXException {
         String s = getDiffRepos().expand(null, filename);
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
@@ -279,7 +276,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             : null;
 
         String connectString = testContext.getConnectString();
-        Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
+        Map<String,String> catalogNameUrls = getCatalogNameUrls(testContext);
 
         Document expectedDoc;
 
@@ -345,20 +342,25 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         soapRequestText = Util.replaceProperties(
             soapRequestText, Util.toMap(props));
 
+if (DEBUG) {
+System.out.println("XmlaBaseTestCase.doTests: soapRequestText=" + soapRequestText);
+}
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
+
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
 
         // do XMLA
         byte[] bytes =
-            XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role);
+            XmlaSupport.processXmla(xmlaReqDoc, connectString, catalogNameUrls, role);
         String response = new String(bytes);
+if (DEBUG) {
+System.out.println("XmlaBaseTestCase.doTests: xmla response=" + response);
+}
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
+if (DEBUG) {
+                System.out.println("XmlaBaseTestCase.doTests: XML Data is Valid");
+}
             }
         }
 
@@ -381,16 +383,14 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             }
         }
         response = new String(bytes);
-        if (DEBUG) {
-            System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + response);
-        }
+if (DEBUG) {
+System.out.println("XmlaBaseTestCase.doTests: soap response=" + response);
+}
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
+if (DEBUG) {
+                System.out.println("XmlaBaseTestCase.doTests: XML Data is Valid");
+}
             }
         }
 

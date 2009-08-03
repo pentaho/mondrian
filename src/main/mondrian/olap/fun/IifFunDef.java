@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -131,8 +131,7 @@ public class IifFunDef extends FunDefBase {
             "Returns one of two numeric values determined by a logical test.",
             "fnbnn")
         {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final BooleanCalc booleanCalc =
                     compiler.compileBoolean(call.getArg(0));
                 final Calc calc1 = compiler.compileScalar(call.getArg(1), true);
@@ -159,8 +158,7 @@ public class IifFunDef extends FunDefBase {
             "Returns one of two tuples determined by a logical test.",
             "ftbtt")
         {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final BooleanCalc booleanCalc =
                     compiler.compileBoolean(call.getArg(0));
                 final Calc calc1 = compiler.compileTuple(call.getArg(1));

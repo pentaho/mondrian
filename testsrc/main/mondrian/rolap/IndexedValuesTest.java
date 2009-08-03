@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,12 +49,10 @@ public class IndexedValuesTest extends FoodMartTestCase {
         final Result result2 = conn.execute(query2);
 
         // Results of two previous queries must be the same
-        assertEquals(
-            result2.getCell(new int[] {0, 0}).getValue(),
-            result1.getCell(new int[] {0, 0}).getValue());
-        assertEquals(
-            result2.getCell(new int[] {1, 0}).getValue(),
-            result1.getCell(new int[] {1, 0}).getValue());
+        assertEquals(result2.getCell(new int[] {0,0}).getValue(),
+                     result1.getCell(new int[] {0,0}).getValue());
+        assertEquals(result2.getCell(new int[] {1,0}).getValue(),
+                     result1.getCell(new int[] {1,0}).getValue());
     }
 
 }

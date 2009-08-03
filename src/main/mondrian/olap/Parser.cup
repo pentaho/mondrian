@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -67,8 +67,7 @@ parser code {:
             return (Query) parse_tree.value;
         } catch (Exception e) {
             // "Error while parsing MDX statement '%1'"
-            throw MondrianResource.instance().WhileParsingMdx.ex(
-                queryString, e);
+            throw MondrianResource.instance().WhileParsingMdx.ex(queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -104,8 +103,7 @@ parser code {:
             return (Exp) parse_tree.value;
         } catch (Exception e) {
             // "Syntax error while parsing MDX expression '%1'"
-            throw MondrianResource.instance().WhileParsingMdxExpression.ex(
-                queryString, e);
+            throw MondrianResource.instance().WhileParsingMdxExpression.ex(queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -155,14 +153,13 @@ parser code {:
         String cube, Exp slicer, QueryPart[] cellProps)
     {
         final QueryAxis slicerAxis =
-            slicer == null
-                ? null
-                : new QueryAxis(
+            slicer == null ?
+                null :
+                new QueryAxis(
                     false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
-            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load,
-            strictValidation);
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load, strictValidation);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,
@@ -208,8 +205,7 @@ parser code {:
         throws java.lang.Exception
     {
         // "Couldn't repair and continue parse"
-        String sFatalSyntaxError =
-            MondrianResource.instance().MdxFatalSyntaxError.str();
+        String sFatalSyntaxError = MondrianResource.instance().MdxFatalSyntaxError.str();
         report_fatal_error(sFatalSyntaxError, cur_token);
     }
 
@@ -221,59 +217,58 @@ parser code {:
      * returns true because there is a "&lt;Level&gt;.Ordinal" property.</p>
      */
     protected boolean isFunCall(String s) {
-        return funTable.isProperty(s);
+       return funTable.isProperty(s);
     }
 
-    static Id[] toIdArray(List<Id> idList) {
+    static Id[] toIdArray(List idList) {
         if (idList == null || idList.size() == 0) {
             return EmptyIdArray;
         } else {
-            return idList.toArray(new Id[idList.size()]);
+            return (Id []) idList.toArray(new Id[idList.size()]);
         }
     }
 
-    static Exp[] toExpArray(List<Exp> expList) {
+    static Exp[] toExpArray(List expList) {
         if (expList == null || expList.size() == 0) {
             return EmptyExpArray;
         } else {
-            return expList.toArray(new Exp[expList.size()]);
+            return (Exp []) expList.toArray(new Exp[expList.size()]);
         }
     }
 
-    static Formula[] toFormulaArray(List<Formula> formulaList) {
+    static Formula[] toFormulaArray(List formulaList) {
         if (formulaList == null || formulaList.size() == 0) {
             return EmptyFormulaArray;
         } else {
-            return formulaList.toArray(new Formula[formulaList.size()]);
+            return (Formula []) formulaList.toArray(new Formula[formulaList.size()]);
         }
     }
 
-    static MemberProperty[] toMemberPropertyArray(List<MemberProperty> mpList) {
+    static MemberProperty[] toMemberPropertyArray(List mpList) {
         if (mpList == null || mpList.size() == 0) {
             return EmptyMemberPropertyArray;
         } else {
-            return mpList.toArray(new MemberProperty[mpList.size()]);
+            return (MemberProperty []) mpList.toArray(new MemberProperty[mpList.size()]);
         }
     }
 
-    static QueryPart[] toQueryPartArray(List<QueryPart> qpList) {
+    static QueryPart[] toQueryPartArray(List qpList) {
         if (qpList == null || qpList.size() == 0) {
             return EmptyQueryPartArray;
         } else {
-            return qpList.toArray(new QueryPart[qpList.size()]);
+            return (QueryPart []) qpList.toArray(new QueryPart[qpList.size()]);
         }
     }
 
-    static QueryAxis[] toQueryAxisArray(List<QueryAxis> qpList) {
+    static QueryAxis[] toQueryAxisArray(List qpList) {
         if (qpList == null || qpList.size() == 0) {
             return EmptyQueryAxisArray;
         } else {
-            return qpList.toArray(new QueryAxis[qpList.size()]);
+            return (QueryAxis []) qpList.toArray(new QueryAxis[qpList.size()]);
         }
     }
 
-    private static final MemberProperty[] EmptyMemberPropertyArray =
-        new MemberProperty[0];
+    private static final MemberProperty[] EmptyMemberPropertyArray = new MemberProperty[0];
     private static final Exp[] EmptyExpArray = new Exp[0];
     private static final Formula[] EmptyFormulaArray = new Formula[0];
     private static final Id[] EmptyIdArray = new Id[0];
@@ -527,9 +522,7 @@ cube_name ::= compound_id ;
 //
 // <dim_hier> ::= [<cube_name>.]<dimension_name>
 //             | [[<cube_name>.]< dimension_name>.]<hierarchy_name>
-//
-// jhyde: Need more lookahead for this to work... just use id in place of
-// dim_hier.
+// jhyde: Need more lookahead for this to work... just use id in place of dim_hier.
 //   dim_hier ::= id;
 //
 // <dimension_name> ::= <identifier>
@@ -703,20 +696,17 @@ cube_name ::= compound_id ;
 value_expression ::=
         term5
     |   value_expression:x OR term5:y {:
-            RESULT =
-                new UnresolvedFunCall("OR", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("OR", Syntax.Infix, new Exp[] {x, y});
         :}
     |   value_expression:x XOR term5:y {:
-            RESULT =
-                new UnresolvedFunCall("XOR", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("XOR", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
 term5 ::=
         term4
     |   term5:x AND term4:y {:
-            RESULT =
-                new UnresolvedFunCall("AND", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("AND", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
@@ -738,39 +728,29 @@ term3 ::=
         // conflict by shifting, which is what we want. Compile with expect=61
         // to ignore the conflicts and continue.
         term3:x IS NULL {:
-            RESULT =
-                new UnresolvedFunCall("IS NULL", Syntax.Postfix, new Exp[] {x});
+            RESULT = new UnresolvedFunCall("IS NULL", Syntax.Postfix, new Exp[] {x});
         :}
-    |   term3:x IS term2:y {:
-            // e.g. "x IS y"; but "x IS NULL" is handled elsewhere
-            RESULT =
-                new UnresolvedFunCall("IS", Syntax.Infix, new Exp[] {x, y});
+    |   term3:x IS term2:y {: // e.g. "x IS y"; but "x IS NULL" is handled elsewhere
+            RESULT = new UnresolvedFunCall("IS", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x IS EMPTY {:
-            RESULT =
-                new UnresolvedFunCall(
-                    "IS EMPTY", Syntax.Postfix, new Exp[] {x});
+            RESULT = new UnresolvedFunCall("IS EMPTY", Syntax.Postfix, new Exp[] {x});
         :}
     |   term3:x MATCHES term2:y {:
-            RESULT =
-                new UnresolvedFunCall(
-                    "MATCHES", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x NOT MATCHES term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[] {
-                    new UnresolvedFunCall(
-                        "MATCHES", Syntax.Infix, new Exp[] {x, y})});
+                "NOT", Syntax.Prefix, new Exp[]
+                {new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y})});
         :}
     |   term3:x IN term2:y {:
-            RESULT =
-                new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term3:x NOT IN term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[] {
-                    new UnresolvedFunCall(
-                        "IN", Syntax.Infix, new Exp[] {x, y})});
+                "NOT", Syntax.Prefix, new Exp[]
+                {new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y})});
         :}
     ;
 
@@ -783,8 +763,7 @@ term2 ::=
             RESULT = new UnresolvedFunCall("-", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term2:x CONCAT term:y {:
-            RESULT =
-                 new UnresolvedFunCall("||", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("||", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
@@ -849,9 +828,7 @@ value_expression_primary ::=
             if (i instanceof Id && !parser.isFunCall(j.name)) {
                 RESULT = ((Id) i).append(j);
             } else {
-                RESULT =
-                    new UnresolvedFunCall(
-                        j.name, Syntax.Property, new Exp[] {i});
+                RESULT = new UnresolvedFunCall(j.name, Syntax.Property, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT quoted_identifier:j {:
@@ -870,8 +847,7 @@ value_expression_primary ::=
                     j.name, Syntax.AmpersandQuotedProperty, new Exp[] {i});
             }
         :}
-    |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis
-        RPAREN {:
+    |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
             lis.add(0, i);
             RESULT = new UnresolvedFunCall(
                 j.name, Syntax.Method, Parser.toExpArray(lis));
@@ -883,9 +859,7 @@ value_expression_primary ::=
         :}
     |   CAST LPAREN expression:e AS identifier:t RPAREN {:
             RESULT = new UnresolvedFunCall(
-                "CAST", Syntax.Cast, new Exp[] {
-                    e,
-                    Literal.createSymbol(t.name)});
+                "CAST", Syntax.Cast, new Exp[] {e, Literal.createSymbol(t.name)});
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
@@ -948,7 +922,7 @@ when_list ::=
 
 when_clause ::=
         WHEN value_expression:x THEN value_expression:y {:
-            RESULT = new Exp[] {x, y};
+            RESULT = new Exp[] {x,y};
         :}
     ;
 
@@ -1369,8 +1343,7 @@ formula_specification ::=
             RESULT.add(e);
         :}
     |   single_formula_specification:hd formula_specification:tl {:
-            tl.add(0, hd);
-            RESULT = tl;
+            tl.add(0,hd); RESULT = tl;
         :}
     ;
 
@@ -1417,7 +1390,7 @@ member_property_def_list ::=
         :}
     |   member_property_definition:hd COMMA member_property_def_list:tl {:
             RESULT = tl;
-            RESULT.add(0, hd);
+            RESULT.add(0,hd);
         :}
     ;
 //
@@ -1492,9 +1465,7 @@ axis_specification ::=
 
             AxisOrdinal axis =
                 AxisOrdinal.StandardAxisOrdinal.forLogicalOrdinal(index);
-            RESULT =
-                new QueryAxis(
-                    b.booleanValue(), s, axis,
+            RESULT = new QueryAxis(b.booleanValue(), s, axis,
                     QueryAxis.SubtotalVisibility.Undefined,
                     Parser.toIdArray(dp));
         :}

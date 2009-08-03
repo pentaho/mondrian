@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -74,8 +74,7 @@ class ExistsFunDef extends FunDefBase
                 }
 
                 for (Object  leftObject : left) {
-                    if (leftObject instanceof Object[]) {
-                        // leftObject is a tuple
+                    if (leftObject instanceof Object[]) { // leftObject is a tuple
                         boolean exist = true;
                         for (Object rightObject : right) {
                             for (int i = 0; i < rightSize; i++) {
@@ -89,8 +88,8 @@ class ExistsFunDef extends FunDefBase
                                         (Object []) rightObject;
                                     rightMem = (Member) (rightObjs[i]);
                                 }
-                                if (!isOnSameHierarchyChain(leftMem, rightMem))
-                                {
+                                if (! isOnSameHierarchyChain(
+                                        leftMem, rightMem)) {
                                     exist = false;
                                     break;
                                 }
@@ -100,13 +99,11 @@ class ExistsFunDef extends FunDefBase
                                 break;
                             }
                         }
-                    } else {
-                        // leftObject is a member
+                    } else { // leftObject is a member
                         for (Object rightObject : right) {
                             if (isOnSameHierarchyChain(
-                                (Member) leftObject,
-                                (Member) rightObject))
-                            {
+                                    (Member) leftObject,
+                                    (Member) rightObject)) {
                                 result.add(leftObject);
                                 break;
                             }

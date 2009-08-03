@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -75,19 +75,14 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         if (arg0 instanceof Hierarchy) {
             resultDateMember = ((Hierarchy) arg0).getNullMember();
         } else {
-            resultDateMember =
-                ((Dimension) arg0).getHierarchy().getNullMember();
+            resultDateMember = ((Dimension) arg0).getHierarchy().getNullMember();
         }
         return resultDateMember;
     }
 
     public String getDescription() {
-        return "Returns the closest or exact member within the specified "
-            + "dimension corresponding to the current date, in the format "
-            + "specified by the format parameter. "
-            + "Format strings are the same as used by the MDX Format function, "
-            + "namely the Visual Basic format strings. "
-            + "See http://www.apostate.com/programming/vb-format.html.";
+        return "Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter. "
+            + "Format strings are the same as used by the MDX Format function, namely the Visual Basic format strings. See http://www.apostate.com/programming/vb-format.html.";
     }
 
     public String getName() {

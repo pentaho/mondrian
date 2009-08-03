@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -49,6 +49,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
      * Keys as part of member names.
      */
     public static final boolean KEY_IMPL = false;
+
+    /**
+     * Whether hierarchies from same dimension allowed on independent axes.
+     */
+    public static final boolean ALLOW_HIERS_ON_INDEP_AXES = false;
 
     /**
      * Catch-all for tests that depend on something that hasn't been
@@ -153,15 +158,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"Currency\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>"
-            /*
-            + "  <Dimension name=\"Customer2\" foreignKey=\"promotion_id\">\n"
-            + "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n"
-            + "      <Table name=\"promotion\"/>\n"
-            + "      <Level name=\"Customer\" column=\"media_type\" "
-            + "uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>"
-            */
+            //              + "  <Dimension name=\"Customer2\" foreignKey=\"promotion_id\">\n"
+            //              + "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n"
+            //              + "      <Table name=\"promotion\"/>\n"
+            //              + "      <Level name=\"Customer\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            //              + "    </Hierarchy>\n"
+            //              + "  </Dimension>"
             + "  <Dimension name=\"Customer\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n"
             + "      <Table name=\"customer\"/>\n"
@@ -170,14 +172,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n"
             + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
-            /*
-            + "    <Hierarchy name=\"Gender\" hasAll=\"true\" "
-            + "primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" "
-            + "uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>\n"
-            */
+            //              + "    <Hierarchy name=\"Gender\" hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            //              + "      <Table name=\"customer\"/>\n"
+            //              + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+            //              + "    </Hierarchy>\n"
             + "  </Dimension>"
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\"/>\n"
@@ -203,8 +201,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS resolves to hierarchy, old mondrian resolves to level.
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
             // SSAS gives error with the <Level>.Ordinal function:
-            //   The ORDINAL function expects a level expression for
-            //   the  argument. A hierarchy expression was used.
+            //   The ORDINAL function expects a level expression for the  argument.
+            //   A hierarchy expression was used.
             getTestContext().assertExprThrows(
                 "[Currency].[Currency].Ordinal",
                 "No function matches signature '<Hierarchy>.Ordinal'");
@@ -427,10 +425,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // [dimension].members for a dimension with one hierarchy
         // (and some attributes)
         // SSAS2005 gives error:
-        //   Query (1, 8) The 'Product' dimension contains more than
-        //   one hierarchy, therefore the hierarchy must be explicitly
-        //   specified.
-        assertQueryThrows(
+        //   Query (1, 8) The 'Product' dimension contains more than one hierarchy,
+        //   therefore the hierarchy must be explicitly specified.
+        assertThrows(
             "select [Product].Members on 0\n"
             + "from [Warehouse and Sales]",
             "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
@@ -480,13 +477,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "  {Ytd()}) on 0,\n"
             + " [Products].Children on 1\n"
             + "from [Warehouse and Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "Axis #2:\n"
-            + "{[Product].[Products].[All Productss].[Drink]}\n"
-            + "{[Product].[Products].[All Productss].[Food]}\n"
-            + "{[Product].[Products].[All Productss].[Non-Consumable]}\n");
+            "xxx");
     }
 
     public void testAxesOutOfOrder() {
@@ -518,10 +509,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // [dimension].members for a dimension with multiple hierarchies
         // SSAS2005 gives error:
-        //    Query (1, 8) The 'Time' dimension contains more than one
-        //    hierarchy, therefore the hierarchy must be explicitly
-        //    specified.
-        assertQueryThrows(
+        //    Query (1, 8) The 'Time' dimension contains more than one hierarchy,
+        //    therefore the hierarchy must be explicitly specified.
+        assertThrows(
             "select [Time].Members on 0\n"
             + "from [Warehouse and Sales]",
             "The 'Time' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
@@ -533,9 +523,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // [dimension].CurrentMember
         // SSAS2005 gives error:
-        //   Query (1, 8) The 'Product' dimension contains more than
-        //   one hierarchy, therefore the hierarchy must be explicitly
-        //   specified.
+        //   Query (1, 8) The 'Product' dimension contains more than one hierarchy,
+        //   therefore the hierarchy must be explicitly specified.
         final String[] exprs = {
             "[Product].CurrentMember",
             // TODO: Verify that this does indeed fail on SSAS
@@ -546,49 +535,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Dimensions(3).DefaultMember",
             "Dimensions(3).AllMembers",
         };
-        final String expectedException =
-            "The 'Product' dimension contains more than one hierarchy, "
-            + "therefore the hierarchy must be explicitly specified.";
-        assertQueryThrows(
-            "select [Product].CurrentMember on 0\n"
-            + "from [Warehouse and Sales]",
-            expectedException);
-        assertQueryThrows(
-            "select [Product].DefaultMember on 0\n"
-            + "from [Warehouse and Sales]",
-            expectedException);
-        assertQueryThrows(
-            "select [Product].AllMembers on 0\n"
-            + "from [Warehouse and Sales]",
-            expectedException);
-
-        // The following are OK because Dimensions(<n>) returns a hierarchy.
-        final String expectedResult =
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Time2].[1997]}\n"
-            + "Row #0: 266,773\n";
-        assertQueryReturns(
-            "select Dimensions(3).CurrentMember on 0\n"
-            + "from [Warehouse and Sales]",
-            expectedResult);
-        assertQueryReturns(
-            "select Dimensions(3).DefaultMember on 0\n"
-            + "from [Warehouse and Sales]",
-            expectedResult);
-        assertQueryReturns(
-            "select Head(Dimensions(7).AllMembers, 3) on 0\n"
-            + "from [Warehouse and Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Currency].[All Currencys]}\n"
-            + "{[Currency].[All Currencys].[Bulk Mail]}\n"
-            + "{[Currency].[All Currencys].[Cash Register Handout]}\n"
-            + "Row #0: 266,773\n"
-            + "Row #0: 4,320\n"
-            + "Row #0: 6,697\n");
+        for (String s : exprs) {
+            assertThrows(
+                "select " + s + " on 0\n"
+                + "from [Warehouse and Sales]",
+                "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
+        }
     }
 
     public void testImplicitCurrentMemberRequiresHierarchyQualification() {
@@ -597,10 +549,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // a function that causes an implicit call to CurrentMember
         // SSAS2005 gives error:
-        //   Query (1, 8) The 'Product' dimension contains more than
-        //   one hierarchy, therefore the hierarchy must be explicitly
-        //   specified.
-        assertQueryThrows(
+        //   Query (1, 8) The 'Product' dimension contains more than one hierarchy,
+        //   therefore the hierarchy must be explicitly specified.
+        assertThrows(
             "select Ascendants([Product]) on 0\n"
             + "from [Warehouse and Sales]",
             "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
@@ -630,9 +581,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     public void testCannotDistinguishMdxFromSql() {
         // Cannot tell whether statement is MDX or SQL
         // SSAS2005 gives error:
-        //   Parser: The statement dialect could not be resolved due
-        //   to ambiguity.
-        assertQueryThrows(
+        //   Parser: The statement dialect could not be resolved due to ambiguity.
+        assertThrows(
             "select [Time].Members\n"
             + "from [Warehouse and Sales]",
             "Syntax error at line 2, column 2, token 'FROM'");
@@ -850,8 +800,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // Dimension used as scalar expression fails.
         // SSAS2005 gives error:
-        //   The function expects a string or numeric expression for
-        //    the argument.  A level expression was used.
+        //   The  function expects a string or numeric expression for the  argument.
+        //    A level expression was used.
         runQ(
             "with member [Measures].[Foo] as [Date2]\n"
             + "select [Measures].[Foo] on 0\n"
@@ -864,12 +814,14 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // [Dimension].Parent
         // SSAS2005 returns error:
-        //   The 'Product' dimension contains more than one hierarchy,
-        //   therefore the hierarchy must be explicitly specified.
-        assertExprThrows(
-            "[Time].Parent.UniqueName",
-            "The 'Time' dimension contains more than one hierarchy, "
-            + "therefore the hierarchy must be explicitly specified.");
+        //   The 'Product' dimension contains more than one hierarchy, therefore the
+        //   hierarchy must be explicitly specified.
+        assertThrows(
+            "with member [Measures].[Foo] as ' [Product].Parent.UniqueName '\n"
+            + "select [Measures].[Foo] on 0\n"
+            + "from [Warehouse and Sales]\n"
+            + "where [Product].[Drink].[Beverages]",
+            "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
     }
 
     public void testDimensionDotHierarchyInBrackets() {
@@ -918,10 +870,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     public void testDimensionDotLevelDotHierarchyInBrackets() {
         // [dimension.hierarchy.level]
         // SSAS2005 gives error:
-        //   Query (1, 8) The dimension '[Time.Time2.Quarter]' was not
-        //   found in the cube when the string, [Time.Time2.Quarter],
-        //   was parsed.
-        assertQueryThrows(
+        //   Query (1, 8) The dimension '[Time.Time2.Quarter]' was not found in the
+        //   cube when the string, [Time.Time2.Quarter], was parsed.
+        assertThrows(
             "select [Time.Time2.Quarter].Members on 0\n"
             + "from [Warehouse and Sales]",
             "MDX object '[Time.Time2.Quarter]' not found in cube 'Warehouse and Sales'");
@@ -930,20 +881,19 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     public void testDimensionDotInvalidHierarchyInBrackets() {
         // invalid hierarchy name
         // SSAS2005 gives error:
-        //  Query (1, 9) The dimension '[Time.Time By Week55]' was not
-        //  found in the cube when the string, [Time.Time By Week55],
-        //  was parsed.
-        assertQueryThrows(
+        //  Query (1, 9) The dimension '[Time.Time By Week55]' was not found in the
+        //  cube when the string, [Time.Time By Week55], was parsed.
+        assertThrows(
             "select {[Time.Time By Week55].Members} on 0\n"
             + "from [Warehouse and Sales]",
             "MDX object '[Time.Time By Week55]' not found in cube 'Warehouse and Sales'");
     }
 
     public void testDimensionDotDimensionInBrackets() {
-        // [dimension.dimension] is invalid.  SSAS2005 gives similar
-        // error to above.  (The Time dimension has hierarchies called
-        // [Time2] and [Time By Day]. but no hierarchy [Time].)
-        assertQueryThrows(
+        // [dimension.dimension] is invalid
+        // SSAS2005 gives similar error to above
+        // (The Time dimension has hierarchies called [Time2] and [Time By Day]. but no hierarchy [Time].)
+        assertThrows(
             "select {[Time.Time].Members} on 0\n"
             + "from [Warehouse and Sales]",
             "MDX object '[Time.Time]' not found in cube 'Warehouse and Sales'");
@@ -955,12 +905,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // Non-existent level of hierarchy.
         // SSAS2005 gives error:
-        //  Query (1, 8) The MEMBERS function expects a hierarchy
-        //  expression for the argument. A member expression was used.
+        //  Query (1, 8) The MEMBERS function expects a hierarchy expression for the
+        //  argument. A member expression was used.
         //
         // Mondrian currently gives
-        //  MDX object '[Time].[Time By Week].[Month]' not found in
-        //  cube 'Warehouse and Sales'
+        //  MDX object '[Time].[Time By Week].[Month]' not found in cube 'Warehouse and Sales'
         // which is not good enough.
         runQ(
             "select [Time].[Time By Week].[Month].Members on 0\n"
@@ -988,11 +937,11 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         //   select [Products] on 0,
         //     [Products] on 1
         //   from [Warehouse and Sales]
-        assertQueryThrows(
+        assertThrows(
             "select {[Products]} on 0,\n"
             + "  {[Products]} on 1\n"
             + "from [Warehouse and Sales]",
-            "Hierarchy '[Product].[Products]' appears in more than one independent axis.");
+            "Dimension '[Product]' appears in more than one independent axis.");
     }
 
     public void testDimensionOnAxis() {
@@ -1060,8 +1009,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             return;
         }
         // SSAS2005 gives error:
-        //   Query (2, 4) The Time By Week hierarchy is used more than
-        //   once in the Crossjoin function.
+        //   Query (2, 4) The Time By Week hierarchy is used more than once in the
+        //   Crossjoin function.
         runQ(
             "select \n"
             + "   [Time].[Time By Week].Children\n"
@@ -1076,8 +1025,8 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
         // Attribute hierarchy used more than once in Crossjoin.
         // SSAS2005 gives error:
-        //   Query (2, 4) The SKU hierarchy is used more than once in
-        //   the Crossjoin function.
+        //   Query (2, 4) The SKU hierarchy is used more than once in the Crossjoin
+        //   function.
         runQ(
             "select \n"
             + "   [Product].[SKU].Children\n"
@@ -1234,7 +1183,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS gives error:
         //   Query (1, 8) Axis numbers specified in a query must be sequentially
         //   specified, and cannot contain gaps.
-        assertQueryThrows(
+        assertThrows(
             "select [Measures].[Unit Sales] on 1,\n"
             + "[Product].[Products].Children on 2\n"
             + "from [Warehouse and Sales]",
@@ -1244,6 +1193,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
 
     public void testLotsOfAxes() {
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        if (!ALLOW_HIERS_ON_INDEP_AXES) {
             return;
         }
         // lots of axes, mixed ways of specifying axes
@@ -1264,7 +1216,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // axes(n) is not an acceptable alternative to axis(n)
         // SSAS gives:
         //   Query (1, 35) Parser: The syntax for 'axes' is incorrect.
-        assertQueryThrows(
+        assertThrows(
             "select [Measures].[Unit Sales] on axes(0)\n"
             + "from [Warehouse and Sales]",
             "Syntax error at line 1, column 35, token 'axes'");
@@ -1272,7 +1224,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
 
     public void testOnExpression() {
         // SSAS gives syntax error
-        assertQueryThrows(
+        assertThrows(
             "select [Measures].[Unit Sales] on 0 + 1\n"
             + "from [Warehouse and Sales]",
             "Syntax error at line 1, column 37, token '+'");
@@ -1280,7 +1232,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
 
     public void testOnFractionFails() {
         // SSAS gives syntax error
-        assertQueryThrows(
+        assertThrows(
             "select [Measures].[Unit Sales] on 0.4\n"
             + "from [Warehouse and Sales]",
             "Invalid axis specification. The axis number must be non-negative"
@@ -1341,7 +1293,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         if (!AXIS_IMPL) {
             return;
         }
-        assertQueryThrows(
+        assertThrows(
             "WITH MEMBER MEASURES.AXISDEMO AS\n"
             + "  SUM(AXIS(1), [Measures].CurrentMember)\n"
             + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 0,\n"
@@ -1358,7 +1310,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         if (!AXIS_IMPL) {
             return;
         }
-        assertQueryThrows(
+        assertThrows(
             "WITH MEMBER MEASURES.AXISDEMO AS\n"
             + "  SUM(AXIS(0), [Measures].CurrentMember)\n"
             + "SELECT {[Measures].[Store Sales],MEASURES.AXISDEMO} ON 1,\n"
@@ -1395,7 +1347,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         if (!AXIS_IMPL) {
             return;
         }
-        assertQueryThrows(
+        assertThrows(
             "SELECT [Measures].[Store Sales] ON 1,\n"
             + "{Filter([Time].[Time by Week].Members, SUM(AXIS(0), [Measures].CurrentMember) > 0)} ON 0\n"
             + "FROM [Warehouse and Sales]",

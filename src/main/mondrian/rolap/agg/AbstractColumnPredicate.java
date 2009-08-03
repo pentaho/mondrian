@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,9 +85,8 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         if (predicate instanceof StarColumnPredicate) {
             StarColumnPredicate starColumnPredicate =
                 (StarColumnPredicate) predicate;
-            if (starColumnPredicate.getConstrainedColumn()
-                == getConstrainedColumn())
-            {
+            if (starColumnPredicate.getConstrainedColumn() ==
+                getConstrainedColumn()) {
                 return orColumn(starColumnPredicate);
             }
         }
@@ -194,9 +193,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
          * @return Predicate which tests whether the column's value is equal
          *   to a column predicate's value
          */
-        public static StarColumnPredicate equal(
-            ValueColumnPredicate predicate)
-        {
+        public static StarColumnPredicate equal(ValueColumnPredicate predicate) {
             return equal(
                 predicate.getConstrainedColumn(),
                 predicate.getValue());

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,7 +85,7 @@ public class ConstantCalc extends GenericCalc {
         return d;
     }
 
-    public boolean dependsOn(Hierarchy hierarchy) {
+    public boolean dependsOn(Dimension dimension) {
         // A constant -- including a catalog element -- will evaluate to the
         // same result regardless of the evaluation context. For example, the
         // member [Gender].[M] does not 'depend on' the [Gender] dimension.

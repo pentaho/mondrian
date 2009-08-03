@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -54,9 +54,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * @param list List of child predicates
      */
     public ListColumnPredicate(
-        RolapStar.Column column,
-        List<StarColumnPredicate> list)
-    {
+        RolapStar.Column column, List<StarColumnPredicate> list) {
         super(column);
         this.children = list;
         childrenHashMap = null;
@@ -118,8 +116,8 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
 
     public boolean equalConstraint(StarPredicate that) {
         boolean isEqual =
-            that instanceof ListColumnPredicate
-            && getConstrainedColumnBitKey().equals(
+            that instanceof ListColumnPredicate &&
+            getConstrainedColumnBitKey().equals(
                 that.getConstrainedColumnBitKey());
 
         if (isEqual) {
@@ -202,8 +200,8 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             return new Overlap(false, null, 0f);
         } else {
             float selectivity =
-                (float) matchCount
-                / (float) children.size();
+                (float) matchCount /
+                    (float) children.size();
             return new Overlap(true, predicate, selectivity);
         }
     }

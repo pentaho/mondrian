@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,16 +39,14 @@ class RangeFunDef extends FunDefBase {
     static final RangeFunDef instance = new RangeFunDef();
 
     private RangeFunDef() {
-        super(
-            ":",
-            "<Member> : <Member>",
-            "Infix colon operator returns the set of members between a given pair of members.",
-            "ixmm");
+        super(":", "<Member> : <Member>",
+                "Infix colon operator returns the set of members between a given pair of members.",
+                "ixmm");
     }
 
 
     /**
-     * Returns two membercalc objects, substituting nulls with the hierarchy
+     * return two membercalc objects, substituting null's with the hierarchy
      * null member of the other expression.
      *
      * @param exp0 first expression
@@ -56,9 +54,7 @@ class RangeFunDef extends FunDefBase {
      *
      * @return two member calcs
      */
-    private MemberCalc[] compileMembers(
-        Exp exp0, Exp exp1, ExpCompiler compiler)
-    {
+    private MemberCalc[] compileMembers(Exp exp0, Exp exp1, ExpCompiler compiler) {
         MemberCalc[] members = new MemberCalc[2];
 
         if (exp0.getType() instanceof NullType) {
@@ -79,14 +75,10 @@ class RangeFunDef extends FunDefBase {
         if (members[0] == null && members[1] == null) {
             throw MondrianResource.instance().TwoNullsNotSupported.ex();
         } else if (members[0] == null) {
-            Member nullMember =
-                ((RolapMember) members[1].evaluate(null)).getHierarchy()
-                .getNullMember();
+            Member nullMember = ((RolapMember)members[1].evaluate(null)).getHierarchy().getNullMember();
             members[0] = (MemberCalc)ConstantCalc.constantMember(nullMember);
         } else if (members[1] == null) {
-            Member nullMember =
-                ((RolapMember) members[0].evaluate(null)).getHierarchy()
-                .getNullMember();
+            Member nullMember = ((RolapMember)members[0].evaluate(null)).getHierarchy().getNullMember();
             members[1] = (MemberCalc)ConstantCalc.constantMember(nullMember);
         }
 
@@ -94,11 +86,8 @@ class RangeFunDef extends FunDefBase {
     }
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-        final MemberCalc[] memberCalcs =
-            compileMembers(call.getArg(0), call.getArg(1), compiler);
-        return new AbstractListCalc(
-            call, new Calc[] {memberCalcs[0], memberCalcs[1]})
-            {
+        final MemberCalc[] memberCalcs = compileMembers(call.getArg(0), call.getArg(1), compiler);
+        return new AbstractListCalc(call, new Calc[] {memberCalcs[0], memberCalcs[1]}) {
             public List evaluateList(Evaluator evaluator) {
                 final Member member0 = memberCalcs[0].evaluateMember(evaluator);
                 final Member member1 = memberCalcs[1].evaluateMember(evaluator);
@@ -107,8 +96,8 @@ class RangeFunDef extends FunDefBase {
                 }
                 if (member0.getLevel() != member1.getLevel()) {
                     throw evaluator.newEvalException(
-                        call.getFunDef(),
-                        "Members must belong to the same level");
+                            call.getFunDef(),
+                            "Members must belong to the same level");
                 }
                 return FunUtil.memberRange(evaluator, member0, member1);
             }

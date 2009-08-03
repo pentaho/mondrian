@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,8 +49,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class MockHttpServletRequest implements HttpServletRequest {
     public static String AUTHORIZATION = "Authorization";
-    public final static String DATE_FORMAT_HEADER =
-        "EEE, d MMM yyyy HH:mm:ss Z";
+    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
 
     public static class MockRequestDispatcher implements RequestDispatcher {
         private ServletRequest forwardedRequest;
@@ -61,25 +60,19 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
         MockRequestDispatcher() {
         }
-
         public void setPath(String path) {
             this.path = path;
         }
-
         public String getPath() {
             return this.path;
         }
-
         public void forward(ServletRequest request, ServletResponse response)
-            throws ServletException, IOException
-        {
+            throws ServletException, IOException {
             this.forwardedRequest = request;
             this.forwardedResponse = response;
         }
-
         public void include(ServletRequest request, ServletResponse response)
-            throws ServletException, IOException
-        {
+                throws ServletException, IOException {
             this.includedRequest = request;
             this.includedResponse = response;
         }
@@ -213,8 +206,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *
      */
     public void setCharacterEncoding(String charEncoding)
-        throws UnsupportedEncodingException
-    {
+            throws UnsupportedEncodingException {
         this.charEncoding = charEncoding;
     }
 
@@ -482,9 +474,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
             return -1;
         }
         try {
-            Date dateValue =
-                new SimpleDateFormat(
-                    DATE_FORMAT_HEADER, Locale.US).parse(header);
+            Date dateValue = new SimpleDateFormat(DATE_FORMAT_HEADER, Locale.US).parse(header);
             return dateValue.getTime();
         } catch (ParseException exc) {
             throw new IllegalArgumentException(exc.getMessage());
@@ -815,10 +805,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return Collections.unmodifiableMap(requestDispatchers);
     }
 
-    public void setRequestDispatcher(
-        String path,
-        RequestDispatcher dispatcher)
-    {
+    public void setRequestDispatcher(String path, RequestDispatcher dispatcher) {
         if (dispatcher instanceof MockRequestDispatcher) {
             ((MockRequestDispatcher)dispatcher).setPath(path);
         }
@@ -848,21 +835,16 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public void setRequestURL(String requestUrl) {
         this.requestUrl = new StringBuffer(requestUrl);
     }
-
     public void setUserPrincipal(Principal principal) {
         this.principal = principal;
     }
-
     public void addCookie(Cookie cookie) {
         cookies.add(cookie);
     }
 
-    public void setRequestedSessionIdFromCookie(
-        boolean requestedSessionIdIsFromCookie)
-    {
+    public void setRequestedSessionIdFromCookie(boolean requestedSessionIdIsFromCookie) {
         this.requestedSessionIdIsFromCookie = requestedSessionIdIsFromCookie;
     }
-
     public void setUserInRole(String role, boolean isInRole) {
         roles.put(role, isInRole);
     }

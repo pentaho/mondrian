@@ -2,11 +2,11 @@
 <?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
 <!--
   == $Id$
-  == This software is subject to the terms of the Eclipse Public License v1.0
+  == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
-  == http://www.eclipse.org/legal/epl-v10.html.
+  == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2009 Julian Hyde and others
+  == Copyright (C) 2001-2008 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -521,13 +521,6 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        <Attribute name="uniqueKeyLevelName" required="false">
-            <Doc>
-		        Should be set to the level (if such a level exists) at which depth it is known
-		        that all members have entirely unique rows, allowing SQL GROUP BY clauses to
-                be completely eliminated from the query.
-            </Doc>
-        </Attribute>
 
         <Object name="relation" type="RelationOrJoin">
             <Doc>
@@ -640,15 +633,10 @@
             </Doc>
             <Value>Regular</Value>
             <Value>TimeYears</Value>
-            <Value>TimeHalfYear</Value>
             <Value>TimeQuarters</Value>
             <Value>TimeMonths</Value>
             <Value>TimeWeeks</Value>
             <Value>TimeDays</Value>
-            <Value>TimeHours</Value>
-            <Value>TimeMinutes</Value>
-            <Value>TimeSeconds</Value>
-            <Value>TimeUndefined</Value>
         </Attribute>
         <Attribute name="hideMemberIf" default="Never">
             <Doc>
@@ -814,15 +802,6 @@
             <Doc>
                 A string being displayed instead of the name.
                 Can be localized from Properties file using #{propertyname}.
-            </Doc>
-        </Attribute>
-        <Attribute name="dependsOnLevelValue" required="false" type="Boolean">
-            <Doc>
-		        Should be set to true if the value of the property is functionally dependent on
-		        the level value.  This permits the associated property column to be omitted from
-		        the GROUP BY clause (if the database permits columns in the SELECT that are not
-                in the GROUP BY).  This can be a significant performance enhancement on some
-                databases, such as MySQL.
             </Doc>
         </Attribute>
     </Element>
@@ -1312,34 +1291,17 @@
         </Object>
         <Array name="aggExcludes" type="AggExclude" required="false"/>
         <Array name="aggTables" type="AggTable" required="false"/>
-        <Array name="tableHints" type="Hint" required="false">
-            <Doc>
-                Table optimization hints; may be ignored by dialect.
-            </Doc>
-        </Array>
 
         <Code><![CDATA[
-            private java.util.Map<String,String> hintMap;
             /** Convenience constructor. */
             public Table(Table table) {
-                this(table.schema, table.name, table.alias, table.tableHints);
+                this(table.schema, table.name, table.alias);
             }
-            public Table(String schema, String name, String alias, Hint[] tablehints) {
+            public Table(String schema, String name, String alias) {
                 this();
                 this.schema = schema;
                 this.name = name;
                 this.alias = alias;
-                this.hintMap = buildHintMap(tablehints);
-            }
-            private java.util.Map<String,String> buildHintMap(Hint[] th) {
-                java.util.Map<String,String> h =
-                    new java.util.HashMap<String,String>();
-                if (th != null) {
-                    for (int i = 0; i < th.length; i++) {
-                        h.put(th[i].type, th[i].cdata);
-                    }
-                }
-                return h;
             }
             /** Returns the alias or, if it is null, the table name. */
             public String getAlias() {
@@ -1380,26 +1342,8 @@
             public AggTable[] getAggTables() {
                 return aggTables;
             }
-            public java.util.Map<String,String> getHintMap() {
-                if (hintMap == null) {
-                    hintMap = buildHintMap(this.tableHints);
-                }
-                return hintMap;
-            }
             ]]>
         </Code>
-    </Element>
-
-    <Element type="Hint">
-        <Doc>
-            Dialect-specific table optimization hints
-        </Doc>
-        <Attribute name="type" required="true">
-            <Doc>
-                Type of hint, interpreted and applied on a per-dialect basis
-            </Doc>
-        </Attribute>
-        <CData/>
     </Element>
 
     <Element type="InlineTable" class="Relation">

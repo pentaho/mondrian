@@ -3,9 +3,9 @@
 // Modified from junit's ResultPrinter class. Original code is covered by
 // the junit license and modifications are covered as follows:
 //
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -77,16 +77,14 @@ public class MondrianResultPrinter implements TestListener {
         }
     }
 
-    // only public for testing purposes
-    public void printDefect(TestFailure booBoo, int count) {
+    public void printDefect(TestFailure booBoo, int count) { // only public for testing purposes
         printDefectHeader(booBoo, count);
         printDefectTrace(booBoo);
     }
 
     protected void printDefectHeader(TestFailure booBoo, int count) {
-        // I feel like making this a println, then adding a line
-        // giving the throwable a chance to print something before we
-        // get to the stack trace.
+        // I feel like making this a println, then adding a line giving the throwable a chance to print something
+        // before we get to the stack trace.
         getWriter().print(count + ") " + booBoo.failedTest());
     }
 
@@ -98,16 +96,14 @@ public class MondrianResultPrinter implements TestListener {
         if (result.wasSuccessful()) {
             getWriter().println();
             getWriter().print("OK");
-            getWriter().println(
-                " (" + result.runCount() + " test"
-                + (result.runCount() == 1 ? "" : "s") + ")");
+            getWriter().println (" (" + result.runCount() + " test" + (result.runCount() == 1 ? "" : "s") + ")");
+
         } else {
             getWriter().println();
             getWriter().println("FAILURES!!!");
-            getWriter().println(
-                "Tests run: " + result.runCount()
-                + ",  Failures: " + result.failureCount()
-                + ",  Errors: " + result.errorCount());
+            getWriter().println("Tests run: " + result.runCount() +
+                         ",  Failures: " + result.failureCount() +
+                         ",  Errors: " + result.errorCount());
         }
         getWriter().println();
         getWriter().println("Time: " + elapsedTimeAsString(runTime));

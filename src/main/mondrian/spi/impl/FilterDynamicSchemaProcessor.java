@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -58,8 +58,8 @@ public class FilterDynamicSchemaProcessor implements DynamicSchemaProcessor {
         String schemaUrl,
         Util.PropertyList connectInfo) throws Exception
     {
-        InputStream in = Util.readVirtualFile(schemaUrl);
-        return filter(schemaUrl, connectInfo, in);
+        FileContent fileContent = Util.readVirtualFile(schemaUrl);
+        return filter(schemaUrl, connectInfo, fileContent.getInputStream());
     }
 
     /**

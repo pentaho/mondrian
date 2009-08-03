@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -50,7 +50,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " AS '[Measures].[Twice Unit Sales] + [Measures].[Store Sales]',"
             + "  FOMRAT_STRING='#'\n"
             + "MEMBER [Measures].[Foo] "
-            + " AS '[Measures].[Unit Sales] + ([Measures].[Unit Sales], [Time].[Time].PrevMember)'\n"
+            + " AS '[Measures].[Unit Sales] + ([Measures].[Unit Sales], [Time].PrevMember)'\n"
             + "MEMBER [Measures].[Unit Sales Percentage] "
             + " AS '[Measures].[Unit Sales] / [Measures].[Twice Unit Sales]'\n"
             + "SELECT {[Measures].[Unit Sales],\n"
@@ -129,7 +129,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough() throws Exception {
         Result result = executeQuery(
-            "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Store Sales], [Time].[Time].PrevMember)'\n"
+            "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Store Sales], [Time].PrevMember)'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns,\n"
             + " {[Product].Children} on rows\n"
             + "from Sales");
@@ -189,7 +189,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough2() throws Exception {
         Result result = executeQuery(
-            "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Unit Sales], [Time].[Time].PrevMember)'\n"
+            "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Unit Sales], [Time].PrevMember)'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns,\n"
             + " {[Product].Children} on rows\n"
             + "from Sales");
@@ -207,8 +207,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
             + " `product_class`.`product_family` as `Product Family`,"
             + " `product_class`.`product_department` as `Product Department`,"
             + " `product_class`.`product_category` as `Product Category`,"
@@ -252,8 +250,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
             + " `product_class`.`product_family` ASC,"
             + " `product_class`.`product_department` ASC,"
             + " `product_class`.`product_category` ASC,"
@@ -287,8 +283,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].Children)), Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].[Drink].Children))) ON ROWS \n"
             + "from [Sales] where [Time].[1997].[Q4].[12]");
 
-        // [Promotion Media].[All Media], [Product].[All
-        // Products].[Drink].[Dairy], [Measures].[Store Cost]
+        // [Promotion Media].[All Media], [Product].[All Products].[Drink].[Dairy], [Measures].[Store Cost]
         Cell cell = result.getCell(new int[]{0, 4});
 
         String sql = cell.getDrillThroughSQL(true);
@@ -296,36 +291,19 @@ public class DrillThroughTest extends FoodMartTestCase {
         String nameExpStr = getNameExp(result, "Customers", "Name");
 
         String expectedSql =
-            "select"
-            + " `store`.`store_country` as `Store Country`,"
-            + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
-            + " `product_class`.`product_family` as `Product Family`,"
-            + " `product_class`.`product_department` as `Product Department`,"
-            + " `product_class`.`product_category` as `Product Category`,"
-            + " `product_class`.`product_subcategory` as `Product Subcategory`,"
-            + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
-            + " `customer`.`marital_status` as `Marital Status`,"
-            + " `customer`.`yearly_income` as `Yearly Income`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
+            "select "
+            + "`store`.`store_country` as `Store Country`, `store`.`store_state` as `Store State`, `store`.`store_city` as `Store City`, `store`.`store_name` as `Store Name`, "
+            + "`store`.`store_sqft` as `Store Sqft`, `store`.`store_type` as `Store Type`, "
+            + "`time_by_day`.`the_year` as `Year`, `time_by_day`.`quarter` as `Quarter`, `time_by_day`.`month_of_year` as `Month`, "
+            + "`product_class`.`product_family` as `Product Family`, `product_class`.`product_department` as `Product Department`, "
+            + "`product_class`.`product_category` as `Product Category`, `product_class`.`product_subcategory` as `Product Subcategory`, "
+            + "`product`.`brand_name` as `Brand Name`, `product`.`product_name` as `Product Name`, "
+            + "`promotion`.`media_type` as `Media Type`, `promotion`.`promotion_name` as `Promotion Name`, "
+            + "`customer`.`country` as `Country`, `customer`.`state_province` as `State Province`, `customer`.`city` as `City`, "
+            + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`, "
+            + "`customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`, `customer`.`marital_status` as `Marital Status`, "
+            + "`customer`.`yearly_income` as `Yearly Income`, "
+            + "`sales_fact_1997`.`unit_sales` as `Unit Sales` "
             + "from `store =as= `store`, "
             + "`sales_fact_1997` =as= `sales_fact_1997`, "
             + "`time_by_day` =as= `time_by_day`, "
@@ -344,34 +322,13 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "`product_class`.`product_department` = 'Dairy' and "
             + "`sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and "
             + "`sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "order by `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
-            + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `promotion.media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " " + nameExpStr + " ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
-            + " `customer`.`yearly_income` ASC";
+            + "order by `store`.`store_country` ASC, `store`.`store_state` ASC, `store`.`store_city` ASC, `store`.`store_name` ASC, `store`.`store_sqft` ASC, "
+            + "`store`.`store_type` ASC, `time_by_day`.`the_year` ASC, `time_by_day`.`quarter` ASC, `time_by_day`.`month_of_year` ASC, "
+            + "`product_class`.`product_family` ASC, `product_class`.`product_department` ASC, `product_class`.`product_category` ASC, "
+            + "`product_class`.`product_subcategory` ASC, `product`.`brand_name` ASC, `product`.`product_name` ASC, "
+            + "`promotion.media_type` ASC, `promotion`.`promotion_name` ASC, "
+            + "`customer`.`country` ASC, `customer`.`state_province` ASC, `customer`.`city` ASC, " + nameExpStr + " ASC, "
+            + "`customer`.`customer_id` ASC, `customer`.`education` ASC, `customer`.gender` ASC, `customer`.`marital_status` ASC, `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 141);
     }
@@ -402,6 +359,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[Date Range]");
 
+        //String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
         String sql = result.getCell(new int[] {0, 6}).getDrillThroughSQL(true);
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
@@ -417,8 +375,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
             + " `product_class`.`product_family` as `Product Family`,"
             + " `product_class`.`product_department` as `Product Department`,"
             + " `product_class`.`product_category` as `Product Category`,"
@@ -463,8 +419,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
             + " `product_class`.`product_family` ASC,"
             + " `product_class`.`product_department` ASC,"
             + " `product_class`.`product_category` ASC,"
@@ -498,8 +452,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
 
         String expectedSql =
-            "select"
-            + " `time_by_day`.`the_year` as `Year`,"
+            "select `time_by_day`.`the_year` as `Year`,"
             + " `product_class`.`product_family` as `Product Family`,"
             + " (case when `sales_fact_1997`.`promotion_id` = 0 then 0"
             + " else `sales_fact_1997`.`store_sales` end)"
@@ -546,11 +499,9 @@ public class DrillThroughTest extends FoodMartTestCase {
      */
     public void testDrillThroughDupKeys() throws Exception {
         /*
-         * Note here that the type on the Store Id level is Integer or
-         * Numeric. The default, of course, would be String.
+         * Note here that the type on the Store Id level is Integer or Numeric. The default, of course, would be String.
          *
-         * For DB2 and Derby, we need the Integer type, otherwise the
-         * generated SQL will be something like:
+         * For DB2 and Derby, we need the Integer type, otherwise the generated SQL will be something like:
          *
          *      `store_ragged`.`store_id` = '19'
          *
@@ -673,46 +624,30 @@ public class DrillThroughTest extends FoodMartTestCase {
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
         String nameExpStr = getNameExp(result, "Customers", "Name");
         String expectedSql =
-            "select "
-            + "`store`.`store_country` as `Store Country`,"
+            "select `store`.`store_country` as `Store Country`,"
             + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
+            + " `store`.`store_city` as `Store City`, `store`.`store_name` as `Store Name`,"
+            + " `store`.`store_sqft` as `Store Sqft`, `store`.`store_type` as `Store Type`,"
+            + " `time_by_day`.`the_year` as `Year`, `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
             + " `product_class`.`product_family` as `Product Family`,"
             + " `product_class`.`product_department` as `Product Department`,"
             + " `product_class`.`product_category` as `Product Category`,"
             + " `product_class`.`product_subcategory` as `Product Subcategory`,"
             + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `store_ragged`.`store_id` as `Store Id`,"
-            + " `store_ragged`.`store_id` as `Store Id (Key)`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
+            + " `product`.`product_name` as `Product Name`, `store_ragged`.`store_id` as `Store Id`,"
+            + " `store_ragged`.`store_id` as `Store Id (Key)`, `promotion`.`media_type` as `Media Type`,"
+            + " `promotion`.`promotion_name` as `Promotion Name`, `customer`.`country` as `Country`,"
+            + " `customer`.`state_province` as `State Province`, `customer`.`city` as `City`,"
+            + " " + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`,"
+            + " `customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`,"
             + " `customer`.`marital_status` as `Marital Status`,"
             + " `customer`.`yearly_income` as `Yearly Income`,"
             + " `sales_fact_1997`.`unit_sales` as `Unit Sales`"
-            + " from `store` =as= `store`,"
-            + " `sales_fact_1997` =as= `sales_fact_1997`,"
-            + " `time_by_day` =as= `time_by_day`,"
-            + " `product_class` =as= `product_class`,"
-            + " `product` =as= `product`,"
-            + " `store_ragged` =as= `store_ragged`,"
-            + " `promotion` =as= `promotion`,"
-            + " `customer` =as= `customer`"
+            + " from `store` =as= `store`, `sales_fact_1997` =as= `sales_fact_1997`,"
+            + " `time_by_day` =as= `time_by_day`, `product_class` =as= `product_class`,"
+            + " `product` =as= `product`, `store_ragged` =as= `store_ragged`,"
+            + " `promotion` =as= `promotion`, `customer` =as= `customer`"
             + " where `sales_fact_1997`.`store_id` = `store`.`store_id`"
             + " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
             + " and `time_by_day`.`the_year` = 1997"
@@ -721,34 +656,19 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`"
             + " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`"
             + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`"
-            + " order by `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
+            + " order by `store`.`store_country` ASC, `store`.`store_state` ASC,"
+            + " `store`.`store_city` ASC, `store`.`store_name` ASC, `store`.`store_sqft` ASC,"
+            + " `store`.`store_type` ASC, `time_by_day`.`the_year` ASC,"
+            + " `time_by_day`.`quarter` ASC, `time_by_day`.`month_of_year` ASC,"
+            + " `product_class`.`product_family` ASC, `product_class`.`product_department` ASC,"
             + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `store_ragged`.`store_id` ASC,"
-            + " `promotion`.`media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " " + nameExpStr + " ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.`gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
+            + " `product_class`.`product_subcategory` ASC, `product`.`brand_name` ASC,"
+            + " `product`.`product_name` ASC, `store_ragged`.`store_id` ASC,"
+            + " `promotion`.`media_type` ASC, `promotion`.`promotion_name` ASC,"
+            + " `customer`.`country` ASC, `customer`.`state_province` ASC,"
+            + " `customer`.`city` ASC, " + nameExpStr + " ASC,"
+            + " `customer`.`customer_id` ASC, `customer`.`education` ASC,"
+            + " `customer`.`gender` ASC, `customer`.`marital_status` ASC,"
             + " `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 86837);

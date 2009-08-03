@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -30,34 +30,26 @@ import java.util.ArrayList;
 public class RolapCubeTest extends FoodMartTestCase {
 
     public void testProcessFormatStringAttributeToIgnoreNullFormatString() {
-        RolapCube cube =
-            (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+        RolapCube cube = (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
         StringBuilder builder = new StringBuilder();
-        cube.processFormatStringAttribute(
-            new MondrianDef.CalculatedMember(), builder);
+        cube.processFormatStringAttribute(new MondrianDef.CalculatedMember(), builder);
         assertEquals(0, builder.length());
     }
 
     public void testProcessFormatStringAttribute() {
-        RolapCube cube =
-            (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+        RolapCube cube = (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
         StringBuilder builder = new StringBuilder();
-        MondrianDef.CalculatedMember xmlCalcMember =
-            new MondrianDef.CalculatedMember();
+        MondrianDef.CalculatedMember xmlCalcMember = new MondrianDef.CalculatedMember();
         String format = "FORMAT";
         xmlCalcMember.formatString = format;
         cube.processFormatStringAttribute(xmlCalcMember, builder);
-        assertEquals(
-            "," + Util.nl + "FORMAT_STRING = \"" + format + "\"",
-            builder.toString());
+        assertEquals("," + Util.nl + "FORMAT_STRING = \"" + format + "\"", builder.toString());
     }
 
     public void testGetCalculatedMembersWithNoRole() {
-        String[] expectedCalculatedMembers = {
-            "[Measures].[Profit]",
-            "[Measures].[Average Warehouse Sale]",
-            "[Measures].[Profit Growth]",
-            "[Measures].[Profit Per Unit Shipped]"
+        String[] expectedCalculatedMembers = new String[] {
+                "[Measures].[Profit]", "[Measures].[Average Warehouse Sale]",
+                "[Measures].[Profit Growth]", "[Measures].[Profit Per Unit Shipped]"
         };
         Connection connection = getTestContext().getConnection();
         try {
@@ -66,13 +58,12 @@ public class RolapCubeTest extends FoodMartTestCase {
             SchemaReader schemaReader =
                 warehouseAndSalesCube.getSchemaReader(null);
 
-            List<Member> calculatedMembers =
-                schemaReader.getCalculatedMembers();
-            assertEquals(
-                expectedCalculatedMembers.length,
+            List<Member> calculatedMembers = schemaReader.getCalculatedMembers();
+
+            assertEquals(expectedCalculatedMembers.length,
                 calculatedMembers.size());
-            assertCalculatedMemberExists(
-                expectedCalculatedMembers,
+
+            assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
         } finally {
             connection.close();
@@ -93,13 +84,11 @@ public class RolapCubeTest extends FoodMartTestCase {
             SchemaReader schemaReader = salesCube
                 .getSchemaReader(connection.getRole());
 
-            List<Member> calculatedMembers =
-                schemaReader.getCalculatedMembers();
-            assertEquals(
-                expectedCalculatedMembers.length,
-                calculatedMembers.size());
-            assertCalculatedMemberExists(
-                expectedCalculatedMembers,
+            List<Member> calculatedMembers = schemaReader.getCalculatedMembers();
+
+            assertEquals(expectedCalculatedMembers.length, calculatedMembers.size());
+
+            assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
         } finally {
             connection.close();
@@ -107,15 +96,12 @@ public class RolapCubeTest extends FoodMartTestCase {
     }
 
     public void testGetCalculatedMembersReturnsOnlyAccessibleMembers() {
-        String[] expectedCalculatedMembers = {
-            "[Measures].[Profit]",
-            "[Measures].[Profit last Period]",
-            "[Measures].[Profit Growth]",
-            "[Product].[~Missing]"
+        String[] expectedCalculatedMembers = new String[]{
+            "[Measures].[Profit]", "[Measures].[Profit last Period]",
+            "[Measures].[Profit Growth]", "[Product].[~Missing]"
         };
 
-        TestContext testContext =
-            createTestContextWithAdditionalMembersAndARole();
+        TestContext testContext = createTestContextWithAdditionalMembersAndARole();
 
         Connection connection = testContext.getConnection();
 
@@ -123,54 +109,50 @@ public class RolapCubeTest extends FoodMartTestCase {
             Cube salesCube = cubeByName(connection, "Sales");
             SchemaReader schemaReader =
                 salesCube.getSchemaReader(connection.getRole());
-            List<Member> calculatedMembers =
-                schemaReader.getCalculatedMembers();
-            assertEquals(
-                expectedCalculatedMembers.length,
+
+            List<Member> calculatedMembers = schemaReader.getCalculatedMembers();
+
+            assertEquals(expectedCalculatedMembers.length,
                 calculatedMembers.size());
-            assertCalculatedMemberExists(
-                expectedCalculatedMembers,
+
+            assertCalculatedMemberExists(expectedCalculatedMembers,
                 calculatedMembers);
         } finally {
             connection.close();
         }
     }
 
-    public void
-        testGetCalculatedMembersReturnsOnlyAccessibleMembersForHierarchy()
-    {
-        String[] expectedCalculatedMembersFromProduct = {
+    public void testGetCalculatedMembersReturnsOnlyAccessibleMembersForHierarchy() {
+        String[] expectedCalculatedMembersFromProduct = new String[]{
             "[Product].[~Missing]"
         };
-        TestContext testContext =
-            createTestContextWithAdditionalMembersAndARole();
+
+        TestContext testContext = createTestContextWithAdditionalMembersAndARole();
+
         Connection connection = testContext.getConnection();
 
         try {
             Cube salesCube = cubeByName(connection, "Sales");
             SchemaReader schemaReader =
-                salesCube.getSchemaReader(connection.getRole());
+                salesCube.
+                    getSchemaReader(connection.getRole());
 
             // Product.~Missing accessible
             List<Member> calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName(
-                        "Product",
+                    getDimensionWithName("Product",
                         salesCube.getDimensions()).getHierarchy());
 
-            assertEquals(
-                expectedCalculatedMembersFromProduct.length,
+            assertEquals(expectedCalculatedMembersFromProduct.length,
                 calculatedMembers.size());
 
-            assertCalculatedMemberExists(
-                expectedCalculatedMembersFromProduct,
+            assertCalculatedMemberExists(expectedCalculatedMembersFromProduct,
                 calculatedMembers);
 
             // Gender.~Missing not accessible
             calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName(
-                        "Gender",
+                    getDimensionWithName("Gender",
                         salesCube.getDimensions()).getHierarchy());
             assertEquals(0, calculatedMembers.size());
         } finally {
@@ -183,37 +165,35 @@ public class RolapCubeTest extends FoodMartTestCase {
             "[Product].[~Missing]"
         };
 
-        TestContext testContext =
-            createTestContextWithAdditionalMembersAndARole();
+        TestContext testContext = createTestContextWithAdditionalMembersAndARole();
+
         Connection connection = testContext.getConnection();
 
         try {
             Cube salesCube = cubeByName(connection, "Sales");
             SchemaReader schemaReader =
-                salesCube.getSchemaReader(connection.getRole());
+                salesCube.
+                    getSchemaReader(connection.getRole());
 
             // Product.~Missing accessible
             List<Member> calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName(
-                        "Product",
-                        salesCube.getDimensions())
-                    .getHierarchy().getLevels()[0]);
+                    getDimensionWithName("Product",
+                        salesCube.getDimensions()).
+                            getHierarchy().getLevels()[0]);
 
-            assertEquals(
-                expectedCalculatedMembersFromProduct.length,
+            assertEquals(expectedCalculatedMembersFromProduct.length,
                 calculatedMembers.size());
-            assertCalculatedMemberExists(
-                expectedCalculatedMembersFromProduct,
+
+            assertCalculatedMemberExists(expectedCalculatedMembersFromProduct,
                 calculatedMembers);
 
             // Gender.~Missing not accessible
             calculatedMembers =
                 schemaReader.getCalculatedMembers(
-                    getDimensionWithName(
-                        "Gender",
-                        salesCube.getDimensions())
-                    .getHierarchy().getLevels()[0]);
+                    getDimensionWithName("Gender",
+                        salesCube.getDimensions()).
+                            getHierarchy().getLevels()[0]);
             assertEquals(0, calculatedMembers.size());
         } finally {
             connection.close();
@@ -231,16 +211,15 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube warehouseAndSalesCube =
                 (RolapCube) cubeByName(connection, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
-                warehouseAndSalesCube.getSchemaReader();
+                warehouseAndSalesCube.
+                    getSchemaReader();
 
             List<Member> members = new ArrayList<Member>();
-            List<Member> warehouseMembers =
-                warehouseMembersCanadaMexicoUsa(readerWarehouseAndSales);
+            List<Member> warehouseMembers = warehouseMembersCanadaMexicoUsa(readerWarehouseAndSales);
             Dimension warehouseDim = warehouseMembers.get(0).getDimension();
             members.addAll(warehouseMembers);
 
-            List<Member> storeMembers =
-                storeMembersCAAndOR(readerWarehouseAndSales);
+            List<Member> storeMembers = storeMembersCAAndOR(readerWarehouseAndSales);
             Dimension storeDim = storeMembers.get(0).getDimension();
             members.addAll(storeMembers);
 
@@ -269,7 +248,9 @@ public class RolapCubeTest extends FoodMartTestCase {
             assertEquals(storeDim1, storeDim1);
 
             RolapCube salesCube2 = (RolapCube) cubeByName(connection2, "Sales");
-            SchemaReader readerSales2 = salesCube2.getSchemaReader();
+            SchemaReader readerSales2 =
+                salesCube2.
+                    getSchemaReader();
             List<Member> storeMembersSales2 = storeMembersCAAndOR(readerSales2);
             Dimension storeDim2 = storeMembersSales2.get(0).getDimension();
             assertEquals(storeDim1, storeDim2);
@@ -278,7 +259,8 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube warehouseAndSalesCube =
                 (RolapCube) cubeByName(connection1, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
-                warehouseAndSalesCube.getSchemaReader();
+                warehouseAndSalesCube.
+                    getSchemaReader();
             List<Member> storeMembersWarehouseAndSales =
                 storeMembersCAAndOR(readerWarehouseAndSales);
             Dimension storeDim3 =
@@ -307,8 +289,8 @@ public class RolapCubeTest extends FoodMartTestCase {
         TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             null,
-            nonAccessibleMember
-            + accessibleMember);
+            nonAccessibleMember +
+            accessibleMember);
         return testContext.withRole("California manager");
     }
 
@@ -316,8 +298,7 @@ public class RolapCubeTest extends FoodMartTestCase {
         String[] expectedCalculatedMembers,
         List<Member> calculatedMembers)
     {
-        List expectedCalculatedMemberNames =
-            Arrays.asList(expectedCalculatedMembers);
+        List expectedCalculatedMemberNames = Arrays.asList(expectedCalculatedMembers);
         for (Member calculatedMember : calculatedMembers) {
             String calculatedMemberName = calculatedMember.getUniqueName();
             assertTrue(

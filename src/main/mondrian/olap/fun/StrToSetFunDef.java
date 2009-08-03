@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,11 +34,9 @@ class StrToSetFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     private StrToSetFunDef(int[] parameterTypes) {
-        super(
-            "StrToSet",
-            "<Set> StrToSet(<String>[, <Hierarchy>...])",
-            "Constructs a set from a string expression.",
-            Syntax.Function, Category.Set, parameterTypes);
+        super("StrToSet", "<Set> StrToSet(<String>[, <Dimension>...])",
+                "Constructs a set from a string expression.",
+                Syntax.Function, Category.Set, parameterTypes);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -306,14 +304,8 @@ class StrToSetFunDef extends FunDefBase {
         return i;
     }
 
-    private static RuntimeException fail(
-        String string,
-        int i,
-        String expecting)
-    {
-        throw Util.newInternal(
-            "expected '" + expecting + "' at position " + i + " in '"
-            + string + "'");
+    private static RuntimeException fail(String string, int i, String expecting) {
+        throw Util.newInternal("expected '" + expecting + "' at position " + i + " in '" + string + "'");
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
@@ -371,9 +363,8 @@ class StrToSetFunDef extends FunDefBase {
                 final Type argType = arg.getType();
                 list.add(TypeUtil.toMemberType(argType));
             }
-            final MemberType[] types =
-                list.toArray(new MemberType[list.size()]);
-            TupleType.checkHierarchies(types);
+            final MemberType[] types = list.toArray(new MemberType[list.size()]);
+            TupleType.checkDimensions(types);
             return new SetType(new TupleType(types));
         }
         }
@@ -402,9 +393,7 @@ class StrToSetFunDef extends FunDefBase {
             }
             for (int i = 1; i < args.length; i++) {
                 Exp exp = args[i];
-                if (!(exp instanceof DimensionExpr
-                      || exp instanceof HierarchyExpr))
-                {
+                if (!(exp instanceof DimensionExpr)) {
                     return null;
                 }
             }

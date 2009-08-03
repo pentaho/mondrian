@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -539,14 +539,13 @@ public abstract class DBLoader {
          * @return Physical type the dialect uses to represent this type
          */
         public String toPhysical(Dialect dialect) {
-            if (this == Integer
-                || this == Decimal
-                || this == Smallint
-                || this == Varchar30
-                || this == Varchar60
-                || this == Varchar255
-                || this == Real)
-            {
+            if (this == Integer ||
+                    this == Decimal ||
+                    this == Smallint ||
+                    this == Varchar30 ||
+                    this == Varchar60 ||
+                    this == Varchar255 ||
+                    this == Real) {
                 return name;
             }
             if (this == Boolean) {
@@ -839,8 +838,7 @@ public abstract class DBLoader {
     }
 
     protected boolean makeFileWriter(Table table, String suffix)
-        throws Exception
-    {
+            throws Exception {
         if (this.outputDirectory != null) {
             String fileName = table.getName() + suffix;
             File file = new File(outputDirectory, fileName);
@@ -932,9 +930,8 @@ public abstract class DBLoader {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.debug(
-                "Before Table actions of " + table.getName()
-                + " failed. Ignored");
+            LOGGER.debug("Before Table actions of " + table.getName() +
+                    " failed. Ignored");
         } finally {
             closeFileWriter();
         }
@@ -960,9 +957,8 @@ public abstract class DBLoader {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.debug(
-                "After Table actions of " + table.getName()
-                + " failed. Ignored");
+            LOGGER.debug("After Table actions of " + table.getName() +
+                    " failed. Ignored");
         } finally {
             closeFileWriter();
         }
@@ -985,9 +981,8 @@ public abstract class DBLoader {
             }
             return true;
         } catch (SQLException e) {
-            LOGGER.debug(
-                "Drop Table row of " + table.getName()
-                + " failed. Ignored");
+            LOGGER.debug("Drop Table row of " + table.getName() +
+                    " failed. Ignored");
         } finally {
             closeFileWriter();
         }
@@ -1036,8 +1031,8 @@ public abstract class DBLoader {
             }
             return true;
         } catch (Exception e) {
-            throw MondrianResource.instance().CreateTableFailed.ex(
-                table.getName(), e);
+            throw MondrianResource.instance().
+                CreateTableFailed.ex(table.getName(), e);
         } finally {
             closeFileWriter();
         }
@@ -1178,9 +1173,8 @@ e.printStackTrace();
 
         if (value == null) {
             return "NULL";
-        } else if ((value instanceof String)
-                && (((String)value).length() == 0))
-        {
+        } else if ((value instanceof String) &&
+                (((String)value).length() == 0)) {
             return "NULL";
         }
 
@@ -1232,11 +1226,10 @@ e.printStackTrace();
         /*
          * Output for a String, managing embedded quotes
          */
-        } else if ((type == Type.Varchar30)
-                   || (type == Type.Varchar255)
-                   || (type == Type.Varchar60)
-                   || typeName.startsWith("VARCHAR("))
-        {
+        } else if ((type == Type.Varchar30) ||
+                (type == Type.Varchar255) ||
+                (type == Type.Varchar60) ||
+                typeName.startsWith("VARCHAR(")) {
             if (value instanceof String) {
                 return embedQuotes((String) value);
             }
@@ -1372,8 +1365,8 @@ e.printStackTrace();
          */
         }
         throw new RuntimeException(
-            "Unknown column type: " + typeName
-            + " for column: " + column.getName());
+            "Unknown column type: " + typeName +
+            " for column: " + column.getName());
     }
 
     /**
@@ -1415,8 +1408,7 @@ e.printStackTrace();
      * @return              # SQL statements executed
      */
     protected int writeBatch(String[] batch, int batchSize)
-        throws IOException, SQLException
-    {
+            throws IOException, SQLException {
         if (this.fileWriter != null) {
             for (int i = 0; i < batchSize; i++) {
                 this.fileWriter.write(batch[i]);
@@ -1446,18 +1438,13 @@ e.printStackTrace();
                     throw e;
                 }
                 int updates = 0;
-                for (int i = 0;
-                    i < updateCounts.length;
-                    updates += updateCounts[i], i++)
-                {
+                for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
                     if (updateCounts[i] == 0) {
                         LOGGER.error("Error in SQL: " + batch[i]);
                     }
                 }
                 if (updates < batchSize) {
-                    throw new RuntimeException(
-                        "Failed to execute batch: " + batchSize
-                        + " versus " + updates);
+                    throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
                 }
             }
             connection.commit();

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,7 +11,10 @@ package mondrian.calc.impl;
 
 import mondrian.calc.Calc;
 import mondrian.calc.MemberCalc;
-import mondrian.olap.*;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Member;
 import mondrian.olap.type.ScalarType;
 import mondrian.olap.type.Type;
 
@@ -47,9 +50,8 @@ public class MemberValueCalc extends GenericCalc {
         for (int i = 0; i < memberCalcs.length; i++) {
             MemberCalc memberCalc = memberCalcs[i];
             final Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null
-                || member.isNull())
-            {
+            if (member == null ||
+                    member.isNull()) {
                 // This method needs to leave the evaluator in the same state
                 // it found it.
                 for (int j = 0; j < i; j++) {
@@ -76,8 +78,8 @@ public class MemberValueCalc extends GenericCalc {
         return memberCalcs;
     }
 
-    public boolean dependsOn(Hierarchy hierarchy) {
-        if (super.dependsOn(hierarchy)) {
+    public boolean dependsOn(Dimension dimension) {
+        if (super.dependsOn(dimension)) {
             return true;
         }
         for (MemberCalc memberCalc : memberCalcs) {
@@ -92,7 +94,7 @@ public class MemberValueCalc extends GenericCalc {
             // say that it depends on the given dimension. For example,
             //   Dimensions(3).CurrentMember.Parent
             // may depend on [Store].
-            if (memberCalc.getType().usesHierarchy(hierarchy, true)) {
+            if (memberCalc.getType().usesDimension(dimension, true)) {
                 return false;
             }
         }

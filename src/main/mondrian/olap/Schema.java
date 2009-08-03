@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,13 +26,12 @@ public interface Schema {
      * @post return.length() > 0
      */
     String getName();
-
     /**
      * Finds a cube called <code>cube</code> in this schema; if no cube
      * exists, <code>failIfNotFound</code> controls whether to raise an error
      * or return <code>null</code>.
      */
-    Cube lookupCube(String cube, boolean failIfNotFound);
+    Cube lookupCube(String cube,boolean failIfNotFound);
 
     /**
      * Returns a list of all cubes in this schema.

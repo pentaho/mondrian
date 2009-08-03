@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -31,25 +31,8 @@ public abstract class GenericCalc
     StringCalc, IntegerCalc, DoubleCalc, BooleanCalc, DateTimeCalc,
     VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
-    /**
-     * Creates a GenericCalc without specifying child calculated expressions.
-     *
-     * <p>Subclass should override {@link #getCalcs()}.
-     *
-     * @param exp Source expression
-     */
     protected GenericCalc(Exp exp) {
-        super(exp, null);
-    }
-
-    /**
-     * Creates an GenericCalc.
-     *
-     * @param exp Source expression
-     * @param calcs Child compiled expressions
-     */
-    protected GenericCalc(Exp exp, Calc[] calcs) {
-        super(exp, calcs);
+        super(exp);
     }
 
     public Member[] evaluateTuple(Evaluator evaluator) {
@@ -63,9 +46,9 @@ public abstract class GenericCalc
     public int evaluateInteger(Evaluator evaluator) {
         Object o = evaluate(evaluator);
         final Number number = (Number) o;
-        return number == null
-            ? FunUtil.IntegerNull
-            : number.intValue();
+        return number == null ?
+                FunUtil.IntegerNull :
+                number.intValue();
     }
 
     public double evaluateDouble(Evaluator evaluator) {
@@ -75,9 +58,9 @@ public abstract class GenericCalc
     }
 
     public static double numberToDouble(Number number) {
-        return number == null
-            ? FunUtil.DoubleNull
-            : number.doubleValue();
+        return number == null ?
+                FunUtil.DoubleNull :
+                number.doubleValue();
     }
 
     public boolean evaluateBoolean(Evaluator evaluator) {

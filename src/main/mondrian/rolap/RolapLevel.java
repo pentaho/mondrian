@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class RolapLevel extends LevelBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapLevel.class);
+    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
     /**
      * The column or expression which yields the level's key.
@@ -107,8 +107,7 @@ public class RolapLevel extends LevelBase {
     {
         super(hierarchy, name, depth, levelType);
         Util.assertPrecondition(properties != null, "properties != null");
-        Util.assertPrecondition(
-            hideMemberCondition != null,
+        Util.assertPrecondition(hideMemberCondition != null,
             "hideMemberCondition != null");
         Util.assertPrecondition(levelType != null, "levelType != null");
 
@@ -162,21 +161,19 @@ public class RolapLevel extends LevelBase {
         this.properties = properties;
         List<Property> list = new ArrayList<Property>();
         for (Level level = this; level != null;
-             level = level.getParentLevel())
-        {
+             level = level.getParentLevel()) {
             final Property[] levelProperties = level.getProperties();
             for (final Property levelProperty : levelProperties) {
                 Property existingProperty = lookupProperty(
                     list, levelProperty.getName());
                 if (existingProperty == null) {
                     list.add(levelProperty);
-                } else if (existingProperty.getType()
-                    != levelProperty.getType())
-                {
+                } else if (existingProperty.getType() !=
+                    levelProperty.getType()) {
                     throw Util.newError(
-                        "Property " + this.getName() + "."
-                        + levelProperty.getName() + " overrides a "
-                        + "property with the same name but different type");
+                        "Property " + this.getName() + "." +
+                            levelProperty.getName() + " overrides a " +
+                            "property with the same name but different type");
                 }
             }
         }
@@ -293,16 +290,10 @@ public class RolapLevel extends LevelBase {
         return null;
     }
 
-    RolapLevel(
-        RolapHierarchy hierarchy,
-        int depth,
-        MondrianDef.Level xmlLevel)
-    {
+    RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel) {
         this(
             hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
-            xmlLevel.getNameExp(),
-            xmlLevel.getCaptionExp(),
-            xmlLevel.getOrdinalExp(),
+            xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.uniqueMembers ? FLAG_UNIQUE : 0),
@@ -338,7 +329,7 @@ public class RolapLevel extends LevelBase {
             list.add(
                 new RolapProperty(
                     Property.NAME.name, Property.Datatype.TYPE_STRING,
-                    nameExp, null, null, null, true));
+                    nameExp, null, null, true));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
             MondrianDef.Property property = xmlLevel.properties[i];
@@ -347,17 +338,12 @@ public class RolapLevel extends LevelBase {
                     property.name,
                     convertPropertyTypeNameToCode(property.type),
                     xmlLevel.getPropertyExp(i),
-                    property.formatter,
-                    property.caption,
-                    xmlLevel.properties[i].dependsOnLevelValue,
-                    false));
+                    property.formatter, property.caption,  false));
         }
         return list.toArray(new RolapProperty[list.size()]);
     }
 
-    private static Property.Datatype convertPropertyTypeNameToCode(
-        String type)
-    {
+    private static Property.Datatype convertPropertyTypeNameToCode(String type) {
         if (type.equals("String")) {
             return Property.Datatype.TYPE_STRING;
         } else if (type.equals("Numeric")) {
@@ -375,8 +361,9 @@ public class RolapLevel extends LevelBase {
             final MondrianDef.Relation table = rolapHierarchy.getUniqueTable();
             if (table == null) {
                 throw Util.newError(
-                    "must specify a table for level " + getUniqueName()
-                    + " because hierarchy has more than one table");
+                        "must specify a table for level " +
+                        getUniqueName() +
+                        " because hierarchy has more than one table");
             }
             nameColumn.table = table.getAlias();
         } else {

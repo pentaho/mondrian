@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2008 TASecurity Group Spain
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -70,28 +70,24 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     public void putLevelMembersInCache(
         RolapLevel level,
         TupleConstraint constraint,
-        List<RolapMember> members)
-    {
+        List<RolapMember> members) {
     }
 
     public List<RolapMember> getChildrenFromCache(
         RolapMember member,
-        MemberChildrenConstraint constraint)
-    {
+        MemberChildrenConstraint constraint) {
         return null;
     }
 
     public void putChildren(
         RolapMember member,
         MemberChildrenConstraint constraint,
-        List<RolapMember> children)
-    {
+        List<RolapMember> children) {
     }
 
     public List<RolapMember> getLevelMembersFromCache(
         RolapLevel level,
-        TupleConstraint constraint)
-    {
+        TupleConstraint constraint) {
         return null;
     }
 

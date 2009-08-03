@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -20,8 +20,7 @@ package mondrian.test;
  */
 public class RaggedHierarchyTest extends FoodMartTestCase {
     private void assertRaggedReturns(String expression, String expected) {
-        getTestContext().withCube("[Sales Ragged]")
-            .assertAxisReturns(expression, expected);
+        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(expression, expected);
     }
 
     // ~ The tests ------------------------------------------------------------
@@ -115,8 +114,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             "[Store].[All Stores].[Mexico].[DF].Lead(-543)", "");
     }
 
-    // disabled: (1) does not work with SmartMemberReader and (2) test returns
-    // [null] member
+    // disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member
     public void dont_testDescendantsOfVatican() {
         assertRaggedReturns(
             "Descendants([Store].[Vatican])",
@@ -220,8 +218,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
      * because one of the columns is null, so the SQL generator might get
      * confused.
      */
-    // disabled: (1) does not work with SmartMemberReader and (2) test returns
-    // [null] member
+    // disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member
     public void dont_testMeasuresVatican() {
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -239,10 +236,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     }
 
     // Make sure that the numbers are right!
-    /**
-     * disabled: (1) does not work with SmartMemberReader and (2) test returns
-     * [null] member?
-     */
+    /** disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member ? */
     public void dont_testMeasures() {
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"

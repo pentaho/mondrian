@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,8 +24,7 @@ import java.util.ListIterator;
  * @version $Id$
  */
 public abstract class AbstractMemoryMonitor
-    implements MemoryMonitor, MemoryMonitor.Test
-{
+        implements MemoryMonitor, MemoryMonitor.Test {
 
     /**
      * Basically, 100 percent.
@@ -50,8 +49,8 @@ public abstract class AbstractMemoryMonitor
             this.threshold = threshold;
         }
         public boolean equals(final Object other) {
-            return (other instanceof Entry)
-                && (listener == ((Entry) other).listener);
+            return (other instanceof Entry) &&
+                   (listener == ((Entry) other).listener);
         }
         public int hashCode() {
             return listener.hashCode();
@@ -154,8 +153,7 @@ public abstract class AbstractMemoryMonitor
             }
 /*
             if (notifyNow) {
-                listener.memoryUsageNotification(
-                    getUsedMemory(), getMaxMemory());
+                listener.memoryUsageNotification(getUsedMemory(), getMaxMemory());
             }
 */
             return true;
@@ -212,8 +210,7 @@ public abstract class AbstractMemoryMonitor
 
 /*
             if (notifyNow) {
-                listener.memoryUsageNotification(
-                    getUsedMemory(), getMaxMemory());
+                listener.memoryUsageNotification(getUsedMemory(), getMaxMemory());
             }
 */
         } finally {
@@ -283,16 +280,13 @@ public abstract class AbstractMemoryMonitor
      * @param usedMemory the current memory used.
      * @param maxMemory the maximum memory.
      */
-    protected void notifyListeners(
-        final long usedMemory,
-        final long maxMemory)
-    {
+    protected void notifyListeners(final long usedMemory,
+                                   final long maxMemory) {
         synchronized (listeners) {
             for (Entry e : listeners) {
                 if (usedMemory >= e.threshold) {
-                    e.listener.memoryUsageNotification(
-                        usedMemory,
-                        maxMemory);
+                    e.listener.memoryUsageNotification(usedMemory,
+                                                       maxMemory);
                 }
             }
         }

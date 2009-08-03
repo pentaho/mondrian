@@ -5,9 +5,7 @@
 
 package mondrian.gui;
 
-import java.awt.event.*;
-import java.awt.*;
-
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JDialog;
@@ -20,7 +18,7 @@ import javax.swing.table.TableModel;
 public class PreferencesSchemasDialog extends JDialog {
 
     PreferencesDialog preferences = null;
-    JdbcMetaData jdbcMetadata = null;
+    JDBCMetaData jdbcMetadata = null;
     String selectedSchemaString = null;
     boolean accepted = false;
 
@@ -28,10 +26,8 @@ public class PreferencesSchemasDialog extends JDialog {
         initComponents();
     }
 
-    public PreferencesSchemasDialog(
-        PreferencesDialog preferences,
-        JdbcMetaData jdbcMetadata)
-    {
+    public PreferencesSchemasDialog(PreferencesDialog preferences,
+            JDBCMetaData jdbcMetadata) {
         this.preferences = preferences;
         this.jdbcMetadata = jdbcMetadata;
         initComponents();
@@ -44,18 +40,17 @@ public class PreferencesSchemasDialog extends JDialog {
         okButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
-        addWindowListener(
-            new WindowAdapter() {
-                public void windowClosing(WindowEvent evt) {
-                    closeDialog(evt);
-                }
-            });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                closeDialog(evt);
+            }
+        });
 
         jTable1.setModel(getSchemaTableModel());
         jTable1.setRowSelectionAllowed(false);
         jScrollPane1.setViewportView(jTable1);
 
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -64,15 +59,14 @@ public class PreferencesSchemasDialog extends JDialog {
         add(jScrollPane1, gridBagConstraints);
 
         cancelButton.setText(
-            getResourceConverter().getString(
-                "preferences.cancelButton.title",
+                getResourceConverter()
+                .getString("preferences.cancelButton.title",
                 "Cancel"));
-        cancelButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    closeDialog(evt);
-                }
-            });
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeDialog(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -83,15 +77,14 @@ public class PreferencesSchemasDialog extends JDialog {
         add(cancelButton, gridBagConstraints);
 
         cancelButton.setText(
-            getResourceConverter().getString(
-                "preferences.okButton.title",
+                getResourceConverter()
+                .getString("preferences.okButton.title",
                 "OK"));
-        okButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    acceptButtonActionPerformed(evt);
-                }
-            });
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                acceptButtonActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -126,7 +119,7 @@ public class PreferencesSchemasDialog extends JDialog {
         dispose();
     }
 
-    private void closeDialog(WindowEvent evt) {
+    private void closeDialog(java.awt.event.WindowEvent evt) {
         setVisible(false);
         dispose();
     }
@@ -160,9 +153,7 @@ public class PreferencesSchemasDialog extends JDialog {
                 if (enteredSchemaName.length() > 0) {
                     for (int j = 0; j < allSchemaNames.size(); j++) {
                         String actualSchemaName = allSchemaNames.get(j);
-                        if (actualSchemaName.equalsIgnoreCase(
-                            enteredSchemaName))
-                        {
+                        if (actualSchemaName.equalsIgnoreCase(enteredSchemaName)) {
                             selectedSchemas[j] = true;
                             break;
                         }
@@ -182,17 +173,21 @@ public class PreferencesSchemasDialog extends JDialog {
             table,
             new String [] {
                 "Select", "Schema"
-            })
-        {
-            Class[] types = {Boolean.class, String.class};
-            boolean[] canEdit = {true, false};
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Boolean.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                true, false
+            };
 
             public Class getColumnClass(int columnIndex) {
-                return types[columnIndex];
+                return types [columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit[columnIndex];
+                return canEdit [columnIndex];
             }
         };
     }

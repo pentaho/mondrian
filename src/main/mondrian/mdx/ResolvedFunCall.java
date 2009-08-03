@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
 // Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
@@ -65,10 +65,8 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         return Util.unparse(this);
     }
 
-    @SuppressWarnings({"CloneDoesntCallSuperClone"})
     public ResolvedFunCall clone() {
-        return new ResolvedFunCall(
-            funDef, ExpBase.cloneArray(args), returnType);
+        return new ResolvedFunCall(funDef, ExpBase.cloneArray(args), returnType);
     }
 
     /**
@@ -139,7 +137,7 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         // referenced
         Exp[] newArgs = new Exp[args.length];
         FunUtil.resolveFunArgs(
-            validator, funDef, args, newArgs, getFunName(), getSyntax());
+            validator, args, newArgs, getFunName(), getSyntax());
 
         return this;
     }

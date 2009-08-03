@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -60,8 +60,8 @@ class DescendantsFunDef extends FunDefBase {
             }
 
             MemberType memberType = (MemberType) setType.getElementType();
-            final Hierarchy hierarchy = memberType.getHierarchy();
-            if (hierarchy == null) {
+            final Dimension dimension = memberType.getDimension();
+            if (dimension == null) {
                 throw MondrianResource.instance().CannotDeduceTypeOfSet.ex();
             }
             // Convert
@@ -74,7 +74,7 @@ class DescendantsFunDef extends FunDefBase {
                     "CurrentMember",
                     Syntax.Property,
                     new Exp[] {
-                        new HierarchyExpr(hierarchy)
+                        new DimensionExpr(dimension)
                     });
             final ResolvedFunCall generateCall =
                 (ResolvedFunCall) compiler.getValidator().validate(
@@ -95,12 +95,10 @@ class DescendantsFunDef extends FunDefBase {
         if (call.getArgCount() == 1) {
             flag = Flag.SELF_BEFORE_AFTER;
         }
-        final boolean depthSpecified =
-            call.getArgCount() >= 2
-            && call.getArg(1).getType() instanceof NumericType;
-        final boolean depthEmpty =
-            call.getArgCount() >= 2
-            && call.getArg(1).getType() instanceof EmptyType;
+        final boolean depthSpecified = call.getArgCount() >= 2 &&
+            call.getArg(1).getType() instanceof NumericType;
+        final boolean depthEmpty = call.getArgCount() >= 2 &&
+            call.getArg(1).getType() instanceof EmptyType;
         if (call.getArgCount() >= 3) {
             flag = FunUtil.getLiteralArg(call, 2, Flag.SELF, Flag.class);
         }
@@ -112,13 +110,10 @@ class DescendantsFunDef extends FunDefBase {
             }
         }
         if ((depthSpecified || depthEmpty) && flag.leaves) {
-            final IntegerCalc depthCalc =
-                depthSpecified
-                ? compiler.compileInteger(call.getArg(1))
-                : null;
-            return new AbstractMemberListCalc(
-                call, new Calc[] {memberCalc, depthCalc})
-            {
+            final IntegerCalc depthCalc = depthSpecified ?
+                compiler.compileInteger(call.getArg(1)) :
+                null;
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, depthCalc}) {
                 public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
@@ -138,20 +133,16 @@ class DescendantsFunDef extends FunDefBase {
                 }
             };
         } else if (depthSpecified) {
-            final IntegerCalc depthCalc =
-                call.getArgCount() > 1
-                ? compiler.compileInteger(call.getArg(1))
-                : null;
+            final IntegerCalc depthCalc = call.getArgCount() > 1 ?
+                    compiler.compileInteger(call.getArg(1)) :
+                    null;
             final Flag flag1 = flag;
-            return new AbstractMemberListCalc(
-                call, new Calc[] {memberCalc, depthCalc})
-            {
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, depthCalc}) {
                 public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
                     final int depth = depthCalc.evaluateInteger(evaluator);
-                    final SchemaReader schemaReader =
-                        evaluator.getSchemaReader();
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
                     descendantsByDepth(
                         member, result, schemaReader,
                         depth, flag1.before, flag1.self, flag1.after,
@@ -161,25 +152,20 @@ class DescendantsFunDef extends FunDefBase {
                 }
             };
         } else {
-            final LevelCalc levelCalc =
-                call.getArgCount() > 1
-                ? compiler.compileLevel(call.getArg(1))
-                : null;
+            final LevelCalc levelCalc = call.getArgCount() > 1 ?
+                    compiler.compileLevel(call.getArg(1)) :
+                    null;
             final Flag flag2 = flag;
-            return new AbstractMemberListCalc(
-                call, new Calc[] {memberCalc, levelCalc})
-            {
+            return new AbstractMemberListCalc(call, new Calc[] {memberCalc, levelCalc}) {
                 public List<Member> evaluateMemberList(Evaluator evaluator) {
                     final Evaluator context =
                             evaluator.isNonEmpty() ? evaluator : null;
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
-                    final SchemaReader schemaReader =
-                        evaluator.getSchemaReader();
-                    final Level level =
-                        levelCalc != null
-                        ? levelCalc.evaluateLevel(evaluator)
-                        : member.getLevel();
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
+                    final Level level = levelCalc != null ?
+                            levelCalc.evaluateLevel(evaluator) :
+                            member.getLevel();
                     descendantsByLevel(
                             schemaReader, member, level, result,
                         flag2.before, flag2.self,
@@ -236,11 +222,10 @@ class DescendantsFunDef extends FunDefBase {
      * constraint.
      */
     private static void descendantsLeavesByDepth(
-        final Member member,
-        final List<Member> result,
-        final SchemaReader schemaReader,
-        final int depthLimit)
-    {
+            final Member member,
+            final List<Member> result,
+            final SchemaReader schemaReader,
+            final int depthLimit) {
         if (!schemaReader.isDrillable(member)) {
             if (depthLimit >= 0) {
                 result.add(member);
@@ -289,16 +274,15 @@ class DescendantsFunDef extends FunDefBase {
      *    result set should be filtered
      */
     static void descendantsByLevel(
-        SchemaReader schemaReader,
-        Member ancestor,
-        Level level,
-        List<Member> result,
-        boolean before,
-        boolean self,
-        boolean after,
-        boolean leaves,
-        Evaluator context)
-    {
+            SchemaReader schemaReader,
+            Member ancestor,
+            Level level,
+            List<Member> result,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves,
+            Evaluator context) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
         // Then we find its children. We add those children to the result if

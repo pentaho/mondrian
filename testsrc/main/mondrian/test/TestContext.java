@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -21,11 +21,13 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapUtil;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.CoordinateIterator;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -38,7 +40,6 @@ import java.lang.reflect.*;
 
 import org.olap4j.OlapWrapper;
 import org.olap4j.OlapConnection;
-import org.olap4j.impl.CoordinateIterator;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -71,18 +72,16 @@ public class TestContext {
     private static final String indent = "                ";
     private static final String lineBreak = "\"," + nl + "\"";
     private static final String lineBreak2 = "\\\\n\"" + nl + indent + "+ \"";
+    private static final String lineBreak3 = "\\n\"" + nl + indent + "+ \"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
-    private static final String[] AllHiers = {
+    private static final String[] AllDims = {
         "[Measures]",
         "[Store]",
         "[Store Size in SQFT]",
         "[Store Type]",
         "[Time]",
-        MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[Time].[Weekly]"
-            : "[Time.Weekly]",
         "[Product]",
         "[Promotion Media]",
         "[Promotions]",
@@ -120,7 +119,7 @@ public class TestContext {
      * FoodMart database.
      *
      * <p>In the base class, the result is the same as the static method
-     * {@link #getDefaultConnectString}. If a derived class overrides
+     * {@link #getConnectString}. If a derived class overrides
      * {@link #getFoodMartConnectionProperties()}, the result of this method
      * will change also.
      */
@@ -148,7 +147,7 @@ public class TestContext {
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             connectProperties = new Util.PropertyList();
-            connectProperties.put("Provider", "mondrian");
+            connectProperties.put("Provider","mondrian");
         } else {
              connectProperties = Util.parseConnectString(connectString);
         }
@@ -251,8 +250,7 @@ public class TestContext {
         if (MondrianProperties.instance().TestHighCardinalityDimensionList
             .get() != null
             && propertyList.get(
-            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null)
-        {
+            RolapConnectionProperties.DynamicSchemaProcessor.name()) == null) {
             propertyList.put(
                 RolapConnectionProperties.DynamicSchemaProcessor.name(),
                 HighCardDynamicSchemaProcessor.class.getName());
@@ -327,19 +325,17 @@ public class TestContext {
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
             int i = s.indexOf("<Dimension name=\"Store\">");
-            s = s.substring(0, i)
-                + parameterDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                parameterDefs +
+                s.substring(i);
         }
 
         // Add cube definitions, if specified.
         if (cubeDefs != null) {
-            int i =
-                s.indexOf(
-                    "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
-            s = s.substring(0, i)
-                + cubeDefs
-                + s.substring(i);
+            int i = s.indexOf("<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
+            s = s.substring(0, i) +
+                cubeDefs +
+                s.substring(i);
         }
 
         // Add virtual cube definitions, if specified.
@@ -347,9 +343,9 @@ public class TestContext {
             int i = s.indexOf(
                 "<VirtualCube name=\"Warehouse and Sales\" "
                 + "defaultMeasure=\"Store Sales\">");
-            s = s.substring(0, i)
-                + virtualCubeDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                virtualCubeDefs +
+                s.substring(i);
         }
 
         // Add named set definitions, if specified. Schema-level named sets
@@ -359,9 +355,9 @@ public class TestContext {
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i)
-                + namedSetDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                namedSetDefs +
+                s.substring(i);
         }
 
         // Add definitions of roles, if specified.
@@ -370,17 +366,17 @@ public class TestContext {
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i)
-                + roleDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                roleDefs +
+                s.substring(i);
         }
 
         // Add definitions of user-defined functions, if specified.
         if (udfDefs != null) {
             int i = s.indexOf("</Schema>");
-            s = s.substring(0, i)
-                + udfDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                udfDefs +
+                s.substring(i);
         }
         return s;
     }
@@ -396,8 +392,7 @@ public class TestContext {
             if (unadulteratedFoodMartSchema == null) {
                 instance().getFoodMartConnection(
                     SnoopingSchemaProcessor.class);
-                unadulteratedFoodMartSchema =
-                    SnoopingSchemaProcessor.catalogContent;
+                unadulteratedFoodMartSchema = SnoopingSchemaProcessor.catalogContent;
             }
         }
 
@@ -411,10 +406,8 @@ public class TestContext {
     public String getFoodMartSchemaSubstitutingCube(
         String cubeName,
         String dimensionDefs,
-        String memberDefs)
-    {
-        return getFoodMartSchemaSubstitutingCube(
-            cubeName, dimensionDefs, memberDefs, null);
+        String memberDefs) {
+        return getFoodMartSchemaSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
     }
 
     /**
@@ -447,9 +440,9 @@ public class TestContext {
         // Add dimension definitions, if specified.
         if (dimensionDefs != null) {
             int i = s.indexOf("<Dimension ", h);
-            s = s.substring(0, i)
-                + dimensionDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                dimensionDefs +
+                s.substring(i);
         }
 
         // Add calculated member definitions, if specified.
@@ -458,9 +451,9 @@ public class TestContext {
             if (i < 0 || i > end) {
                 i = end;
             }
-            s = s.substring(0, i)
-                + memberDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                memberDefs +
+                s.substring(i);
         }
 
         if (namedSetDefs != null) {
@@ -468,9 +461,9 @@ public class TestContext {
             if (i < 0 || i > end) {
                 i = end;
             }
-            s = s.substring(0, i)
-                + namedSetDefs
-                + s.substring(i);
+            s = s.substring(0, i) +
+                namedSetDefs +
+                s.substring(i);
         }
 
         return s;
@@ -575,7 +568,7 @@ public class TestContext {
      * @param queryString Query string
      * @param pattern Pattern which exception must match
      */
-    public void assertQueryThrows(String queryString, String pattern) {
+    public void assertThrows(String queryString, String pattern) {
         Throwable throwable;
         try {
             Result result = executeQuery(queryString);
@@ -801,8 +794,7 @@ public class TestContext {
                 + Util.singleQuoteString(expression)
                 + " select {[Measures].[Foo]} on columns from " + cubeName;
         } else {
-            queryString =
-                "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
+            queryString = "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
         }
         Connection connection = getConnection();
         Query query = connection.parseQuery(queryString);
@@ -895,9 +887,8 @@ public class TestContext {
         }
         String stackTrace = getStackTrace(throwable);
         if (stackTrace.indexOf(pattern) < 0) {
-            Assert.fail(
-                "query's error does not match pattern '" + pattern
-                + "'; error is [" + stackTrace + "]");
+            Assert.fail("query's error does not match pattern '" + pattern +
+                    "'; error is [" + stackTrace + "]");
         }
     }
 
@@ -1006,8 +997,8 @@ public class TestContext {
             message += nl;
         }
         message +=
-            "Expected:" + nl + expected + nl
-            + "Actual:" + nl + actual + nl;
+                "Expected:" + nl + expected + nl +
+                "Actual:" + nl + actual + nl;
         if (java) {
             message += "Actual java:" + nl + toJavaString(actual) + nl;
         }
@@ -1027,6 +1018,9 @@ public class TestContext {
         String spurious = nl + indent + "+ \"\"";
         if (s.endsWith(spurious)) {
             s = s.substring(0, s.length() - spurious.length());
+        }
+        if (s.indexOf(lineBreak3) >= 0) {
+            s = "fold(" + nl + indent + s + ")";
         }
         return s;
     }
@@ -1061,9 +1055,9 @@ public class TestContext {
             s = s.substring(0, s.length() - spurious.length());
         }
         String message =
-            "Expected pattern:" + nl + expected + nl
-            + "Actual: " + nl + actual + nl
-            + "Actual java: " + nl + s + nl;
+                "Expected pattern:" + nl + expected + nl +
+                "Actual: " + nl + actual + nl +
+                "Actual java: " + nl + s + nl;
         throw new ComparisonFailure(message, expected.pattern(), actual);
     }
 
@@ -1081,42 +1075,55 @@ public class TestContext {
     /**
      * Converts a {@link mondrian.olap.Result} to text in traditional format.
      *
-     * <p>For more exotic formats, see
-     * {@link org.olap4j.query.CellSetFormatter}.
-     *
      * @param result Query result
      * @return Result as text
      */
     public static String toString(Result result) {
+        return toString(result, Format.TRADITIONAL);
+    }
+
+    /**
+     * Converts a {@link mondrian.olap.Result} to text.
+     *
+     * @param result Query result
+     * @param format Format
+     * @return Result as text
+     */
+    public static String toString(Result result, Format format) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        result.print(pw);
+        switch (format) {
+        case TRADITIONAL:
+            result.print(pw);
+            break;
+        case COMPACT_RECTANGULAR:
+        case RECTANGULAR:
+            new RectangularResultFormatter(
+                result,
+                format == Format.COMPACT_RECTANGULAR).format(pw);
+            break;
+        }
         pw.flush();
         return sw.toString();
     }
 
-    /**
-     * Returns a test context whose {@link #getConnection()} methods always
-     * returns the same connection object, and which has an active
-     * {@link mondrian.olap.Scenario}, thus enabling writeback.
-     *
-     * @return Test context with active scenario
-     */
-    public TestContext withScenario() {
-        return new DelegatingTestContext(this)
-        {
-            Connection connection;
+    public enum Format {
+        /**
+         * Traditional format, one row per cell.
+         */
+        TRADITIONAL,
 
-            public Connection getConnection() {
-                if (connection == null) {
-                    connection = super.getConnection();
-                    connection.setScenario(
-                        connection.createScenario());
-                }
-                return connection;
-            }
-        };
-    }
+        /**
+         * Rectangular format that is similar to {@link #RECTANGULAR} but omits
+         * vertical bars and is therefore more compact.
+         */
+        COMPACT_RECTANGULAR,
+
+        /**
+         * Rectangular format that uses vertical bars and hyphens to draw a grid.
+         */
+        RECTANGULAR
+    };
 
     /**
      * Converts a set of positions into a string. Useful if you want to check
@@ -1353,8 +1360,7 @@ public class TestContext {
 
         try {
             String jdbcDrivers =
-                connectProperties.get(
-                    RolapConnectionProperties.JdbcDrivers.name());
+                connectProperties.get(RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
@@ -1364,10 +1370,8 @@ public class TestContext {
 
             jdbcConn = java.sql.DriverManager.getConnection(
                 connectProperties.get(RolapConnectionProperties.Jdbc.name()),
-                connectProperties.get(
-                    RolapConnectionProperties.JdbcUser.name()),
-                connectProperties.get(
-                    RolapConnectionProperties.JdbcPassword.name()));
+                connectProperties.get(RolapConnectionProperties.JdbcUser.name()),
+                connectProperties.get(RolapConnectionProperties.JdbcPassword.name()));
             stmt = jdbcConn.createStatement();
 
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
@@ -1388,8 +1392,9 @@ public class TestContext {
             long time = System.currentTimeMillis();
             final long execMs = time - startTime;
             Util.addDatabaseTime(execMs);
+            String status = ", exec " + execMs + " ms";
 
-            RolapUtil.SQL_LOGGER.debug(", exec " + execMs + " ms");
+            RolapUtil.SQL_LOGGER.debug(status);
 
             int rows = 0;
             while (rs.next()) {
@@ -1398,8 +1403,7 @@ public class TestContext {
 
             Assert.assertEquals("row count", expectedRows, rows);
         } catch (SQLException e) {
-            throw new Exception(
-                "ERROR in SQL - invalid for database: "
+            throw new Exception("ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
                 + "\n" + actualSql,
                 e);
@@ -1458,7 +1462,7 @@ public class TestContext {
     /**
      * Asserts that an MDX expression depends upon a given list of dimensions.
      */
-    public void assertExprDependsOn(String expr, String hierList) {
+    public void assertExprDependsOn(String expr, String dimList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getFoodMartConnection();
@@ -1473,13 +1477,13 @@ public class TestContext {
 
         // Build a list of the dimensions which the expression depends upon,
         // and check that it is as expected.
-        checkDependsOn(query, expression, hierList, true);
+        checkDependsOn(query, expression, dimList, true);
     }
 
     private void checkDependsOn(
         final Query query,
         final Exp expression,
-        String expectedHierList,
+        String expectedDimList,
         final boolean scalar)
     {
         final Calc calc =
@@ -1487,21 +1491,20 @@ public class TestContext {
                 expression,
                 scalar,
                 scalar ? null : ResultStyle.ITERABLE);
-        final List<RolapHierarchy> hierarchies =
-            ((RolapCube) query.getCube()).getHierarchies();
+        final Dimension[] dimensions = query.getCube().getDimensions();
         StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;
-        for (Hierarchy hierarchy : hierarchies) {
-            if (calc.dependsOn(hierarchy)) {
+        for (Dimension dimension : dimensions) {
+            if (calc.dependsOn(dimension)) {
                 if (dependCount++ > 0) {
                     buf.append(", ");
                 }
-                buf.append(hierarchy.getUniqueName());
+                buf.append(dimension.getUniqueName());
             }
         }
         buf.append("}");
-        String actualHierList = buf.toString();
-        Assert.assertEquals(expectedHierList, actualHierList);
+        String actualDimList = buf.toString();
+        Assert.assertEquals(expectedDimList, actualDimList);
     }
 
     /**
@@ -1596,8 +1599,7 @@ public class TestContext {
         final String dimensionDefs,
         final String memberDefs)
     {
-        return createSubstitutingCube(
-            cubeName, dimensionDefs, memberDefs, null);
+        return createSubstitutingCube(cubeName, dimensionDefs, memberDefs, null);
     }
 
 
@@ -1672,18 +1674,18 @@ public class TestContext {
      *
      * @return string containing all dimensions except those given
      */
-    public static String allHiersExcept(String ... hiers) {
-        for (String hier : hiers) {
-            assert contains(AllHiers, hier) : "unknown hierarchy " + hier;
+    public static String allDimsExcept(String ... dims) {
+        for (String dim : dims) {
+            assert contains(AllDims, dim) : "unknown dimension " + dim;
         }
         StringBuilder buf = new StringBuilder("{");
         int j = 0;
-        for (String hier : AllHiers) {
-            if (!contains(hiers, hier)) {
+        for (String dim : AllDims) {
+            if (!contains(dims, dim)) {
                 if (j++ > 0) {
                     buf.append(", ");
                 }
-                buf.append(hier);
+                buf.append(dim);
             }
         }
         buf.append("}");
@@ -1699,8 +1701,8 @@ public class TestContext {
         return false;
     }
 
-    public static String allHiers() {
-        return allHiersExcept();
+    public static String allDims() {
+        return allDimsExcept();
     }
 
     /**
@@ -1733,8 +1735,7 @@ public class TestContext {
         }
         String connectString = getConnectString();
         if (connectString.startsWith("Provider=mondrian; ")) {
-            connectString =
-                connectString.substring("Provider=mondrian; ".length());
+            connectString = connectString.substring("Provider=mondrian; ".length());
         }
         final java.sql.Connection connection =
             java.sql.DriverManager.getConnection(
@@ -1765,16 +1766,6 @@ public class TestContext {
             return false;
         }
     }
-
-    public static String hierarchyName(String dimension, String hierarchy) {
-        return MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[" + dimension + "].[" + hierarchy + "]"
-            : (hierarchy.equals(dimension)
-                ? "[" + dimension + "]"
-                : "[" + dimension + "." + hierarchy + "]");
-    }
-
-    //~ Inner classes ----------------------------------------------------------
 
     public static class SnoopingSchemaProcessor
         extends FilterDynamicSchemaProcessor
@@ -1820,6 +1811,250 @@ public class TestContext {
                 }
             }
             return s;
+        }
+    }
+
+    public static class RectangularResultFormatter
+    {
+        private final Result result;
+        private final boolean compact;
+        private final Matrix matrix;
+        private final AxisInfo[] axisInfos;
+
+//                          | 1997                                                |
+//                          | Q1                       | Q2                       |
+//                          |                          | 4                        |
+//                          | Unit Sales | Store Sales | Unit Sales | Store Sales |
+// ----+----+---------------+------------+-------------+------------+-------------+
+// USA | CA | Los Angeles   |            |             |            |             |
+//     | WA | Seattle       |            |             |            |             |
+//     | CA | San Francisco |            |             |            |             |
+//
+//                      1997
+//                      Q1                     Q2
+//                                             4
+//                      Unit Sales Store Sales Unit Sales Store Sales
+// === == ============= ========== =========== ========== ===========
+// USA CA Los Angeles           12        34.5         13       35.60
+//     WA Seattle               12        34.5         13       35.60
+//     CA San Francisco         12        34.5         13       35.60
+
+        public RectangularResultFormatter(Result result, boolean compact) {
+            this.result = result;
+            this.compact = compact;
+
+            if (result.getAxes().length != 2) {
+                throw new InvalidArgumentException(
+                    "Only 2 dimensional results are currently supported");
+            }
+
+            // Compute how many columns are required to display the rows axis.
+            // In the example, this is 3 (the width of USA, CA, Los Angeles)
+            final Axis rowsAxis = result.getAxes()[1];
+            AxisInfo rowsAxisInfo = computeAxisInfo(rowsAxis);
+
+            // Compute how many rows are required to display the columns axis.
+            // In the example, this is 4 (1997, Q1, space, Unit Sales)
+            final Axis columnsAxis = result.getAxes()[0];
+            AxisInfo columnsAxisInfo  = computeAxisInfo(columnsAxis);
+
+            // Figure out the dimensions of the blank rectangle in the top left
+            // corner.
+
+            // Populate a string matrix
+            final int yOffset = rowsAxisInfo.getWidth();
+            final int xOffset = columnsAxisInfo.getWidth();
+            matrix =
+                new Matrix(
+                    yOffset
+                    + columnsAxis.getPositions().size(),
+                    xOffset
+                    + rowsAxis.getPositions().size());
+
+            // Populate matrix with cells representing axes
+            populateAxis(
+                columnsAxis, columnsAxisInfo, true, yOffset);
+            populateAxis(
+                rowsAxis, rowsAxisInfo, false, xOffset);
+
+            // Populate cell values
+            for (Cell cell : cellIter(result)) {
+                final List<Integer> coordList = cell.getCoordinateList();
+                matrix.set(
+                    yOffset + coordList.get(0),
+                    xOffset + coordList.get(1),
+                    cell.getFormattedValue());
+            }
+            this.axisInfos = new AxisInfo[] {
+                columnsAxisInfo,
+                rowsAxisInfo
+            };
+        }
+
+        private void populateAxis(
+            Axis axis, AxisInfo axisInfo, boolean reverse, int xOffset)
+        {
+            for (int i = 0; i < axis.getPositions().size(); i++) {
+                final int x = xOffset + i;
+                Position position = axis.getPositions().get(i);
+                int yOffset = 0;
+                for (int j = 0; j < position.size(); j++) {
+                    Member member = position.get(j);
+                    final AxisOrdinalInfo ordinalInfo =
+                        axisInfo.ordinalInfos.get(j);
+                    while (member != null) {
+                        if (member.getDepth() < ordinalInfo.minDepth) {
+                            break;
+                        }
+                        final int y =
+                            yOffset
+                            + member.getDepth()
+                            - ordinalInfo.minDepth;
+                        if (reverse) {
+                            matrix.set(x, y, member.getCaption());
+                        } else {
+                            //noinspection SuspiciousNameCombination
+                            matrix.set(y, x, member.getCaption());
+                        }
+                        member = member.getParentMember();
+                    }
+                    yOffset += ordinalInfo.getWidth();
+                }
+            }
+        }
+
+        private AxisInfo computeAxisInfo(Axis axis)
+        {
+            if (axis.getPositions().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Empty axis not currently supported");
+            }
+            final AxisInfo axisInfo =
+                new AxisInfo(axis.getPositions().get(0).size());
+            for (Position position : axis.getPositions()) {
+                int k = -1;
+                for (Member member : position) {
+                    ++k;
+                    final AxisOrdinalInfo axisOrdinalInfo =
+                        axisInfo.ordinalInfos.get(k);
+                    axisOrdinalInfo.minDepth =
+                        Math.min(
+                            axisOrdinalInfo.minDepth,
+                            member.isAll()
+                            ? member.getDepth()
+                                : member.getHierarchy().hasAll()
+                                    ? 1
+                                    : 0);
+                    axisOrdinalInfo.maxDepth =
+                        Math.max(
+                            axisOrdinalInfo.maxDepth,
+                            member.getDepth());
+                }
+            }
+            return axisInfo;
+        }
+
+        void format(PrintWriter pw) {
+            int[] columnWidths = new int[matrix.width];
+            int widestWidth = 0;
+            for (int x = 0; x < matrix.width; x++) {
+                int columnWidth = 0;
+                for (int y = 0; y < matrix.height; y++) {
+                    String val = matrix.get(x, y);
+                    if (val != null) {
+                        columnWidth = Math.max(columnWidth, val.length());
+                    }
+                }
+                columnWidths[x] = columnWidth;
+                widestWidth = Math.max(columnWidth, widestWidth);
+            }
+
+            // Create a large array of spaces, for efficient printing.
+            char[] spaces = new char[widestWidth + 1];
+            Arrays.fill(spaces, ' ');
+            char[] equals = new char[widestWidth + 1];
+            Arrays.fill(equals, '=');
+
+            final int yOffset = this.axisInfos[0].getWidth();
+            for (int y = 0; y < matrix.height; y++) {
+                if (compact && y == yOffset) {
+                    for (int x = 0; x < matrix.width; x++) {
+                        if (x > 0) {
+                            pw.write(' ');
+                        }
+                        pw.write(equals, 0, columnWidths[x]);
+                    }
+                    pw.println();
+                }
+                for (int x = 0; x < matrix.width; x++) {
+                    final String val = matrix.get(x, y);
+                    final int len;
+                    if (val != null) {
+                        pw.print(val);
+                        len = val.length();
+                    } else {
+                        len = 0;
+                    }
+                    if (x == matrix.width - 1) {
+                        // at last column; don't bother to print padding
+                        break;
+                    }
+                    int padding = columnWidths[x] - len;
+                    ++padding; // space between the columns
+                    pw.write(spaces, 0, padding);
+                }
+                pw.println();
+            }
+        }
+
+        private static class AxisOrdinalInfo {
+            int minDepth = Integer.MAX_VALUE;
+            int maxDepth = 0;
+
+            public int getWidth() {
+                return maxDepth - minDepth + 1;
+            }
+        }
+
+        private static class AxisInfo {
+            final List<AxisOrdinalInfo> ordinalInfos;
+
+            public AxisInfo(int ordinalCount) {
+                ordinalInfos = new ArrayList<AxisOrdinalInfo>(ordinalCount);
+                for (int i = 0; i < ordinalCount; i++) {
+                    ordinalInfos.add(new AxisOrdinalInfo());
+                }
+            }
+
+            public int getWidth() {
+                int width = 0;
+                for (AxisOrdinalInfo info : ordinalInfos) {
+                    width += info.getWidth();
+                }
+                return width;
+            }
+        }
+
+        private class Matrix {
+            private final Map<List<Integer>, String> map =
+                new HashMap<List<Integer>, String>();
+            private final int width;
+            private final int height;
+
+            public Matrix(int width, int height) {
+                this.width = width;
+                this.height = height;
+            }
+
+            void set(int x, int y, String value) {
+                map.put(Arrays.asList(x, y), value);
+                assert x >= 0 && x < width : x;
+                assert y >= 0 && y < height : y;
+            }
+
+            public String get(int x, int y) {
+                return map.get(Arrays.asList(x, y));
+            }
         }
     }
 }

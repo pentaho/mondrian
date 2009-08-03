@@ -1,9 +1,9 @@
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2007 JasperSoft
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 
@@ -28,12 +28,13 @@ public class I18n {
 
     private static String defaultIcon = "nopic";
 
-    private static List<LanguageChangedListener> languageChangedListeners =
-        new ArrayList<LanguageChangedListener>();
+    public static Vector<LanguageChangedListener> languageChangedListeners = null;
 
-    public static void addOnLanguageChangedListener(
-        LanguageChangedListener listener)
-    {
+    static {
+        languageChangedListeners = new Vector<LanguageChangedListener>();
+    }
+
+    public static void addOnLanguageChangedListener(LanguageChangedListener listener) {
         languageChangedListeners.add(listener);
     }
 
@@ -42,12 +43,17 @@ public class I18n {
         this.languageBundle = languageBundle;
     }
 
-    public static List<Locale> getListOfAvailableLanguages(Class cl) {
-        List<Locale> supportedLocales = new ArrayList<Locale>();
+
+    public static List getListOfAvailableLanguages(Class cl) {
+        java.util.List<Locale> supportedLocales = new ArrayList<Locale>();
 
         try {
-            Set<String> names = getResourcesInPackage(cl, cl.getName());
-            for (String name : names) {
+            Set names = getResourcesInPackage(cl, cl.getName());
+            Iterator it = names.iterator();
+
+            while (it.hasNext()) {
+                String n = (String) it.next();
+
                 // From
                 //    '../../<application>_en.properties'
                 //   or
@@ -55,7 +61,7 @@ public class I18n {
                 // To
                 // 'en' OR 'en_UK_' OR even en_UK_Brighton dialect
 
-                String lang = name.substring(name.lastIndexOf('/') + 1);
+                String lang = n.substring(n.lastIndexOf('/') + 1);
 
                 // only accept resources with extension '.properties'
                 if (lang.indexOf(".properties") < 0) {
@@ -65,13 +71,13 @@ public class I18n {
                 lang = lang.substring(0, lang.indexOf(".properties"));
 
                 StringTokenizer tokenizer = new StringTokenizer(lang, "_");
-                if (tokenizer.countTokens() <= 1) {
+                if (tokenizer.countTokens() <=  1) {
                     continue;
                 }
 
                 String language = "";
-                String country = "";
-                String variant = "";
+                String country  = "";
+                String variant  = "";
 
                 int i = 0;
                 while (tokenizer.hasMoreTokens()) {
@@ -103,18 +109,17 @@ public class I18n {
             LOGGER.error("getListOfAvailableLanguages", e);
         }
 
-        // Sort the list. Probably should use the current locale when getting
-        // the DisplayLanguage so the sort order is correct for the user.
+        // Sort the list. Probably should use the current locale when getting the
+        // DisplayLanguage so the sort order is correct for the user.
 
         Collections.sort(
             supportedLocales,
             new Comparator<Object>() {
                 public int compare(Object lhs, Object rhs) {
-                    String ls = ((Locale) lhs).getDisplayLanguage();
-                    String rs = ((Locale) rhs).getDisplayLanguage();
+                    String ls = ((Locale)lhs).getDisplayLanguage();
+                    String rs = ((Locale)rhs).getDisplayLanguage();
 
-                    // TODO: this is not very nice - We should introduce a
-                    // MyLocale
+                    // TODO this is not very nice - We should introduce a MyLocale
                     if (ls.equals("pap")) {
                         ls = "Papiamentu";
                     }
@@ -124,7 +129,8 @@ public class I18n {
 
                     return ls.compareTo(rs);
                 }
-            });
+            }
+        );
 
         return supportedLocales;
     }
@@ -133,21 +139,15 @@ public class I18n {
      * Enumerates the resouces in a give package name.
      * This works even if the resources are loaded from a jar file!
      *
-     * <p/>Adapted from code by mikewse
+     * Adapted from code by mikewse
      * on the java.sun.com message boards.
      * http://forum.java.sun.com/thread.jsp?forum=22&thread=30984
      *
-     * <p>The resulting set is deterministically ordered.
-     *
-     * @param coreClass   Class for class loader to find the resources
+     * @param coreClass Class for class loader to find the resources
      * @param packageName The package to enumerate
      * @return A Set of Strings for each resouce in the package.
      */
-    public static Set<String> getResourcesInPackage(
-        Class coreClass,
-        String packageName)
-        throws IOException
-    {
+    public static Set getResourcesInPackage(Class coreClass, String packageName) throws IOException {
         String localPackageName;
         if (packageName.endsWith("/")) {
             localPackageName = packageName;
@@ -156,10 +156,14 @@ public class I18n {
         }
 
         ClassLoader cl = coreClass.getClassLoader();
-        Enumeration<URL> dirEnum = cl.getResources(localPackageName);
-        Set<String> names = new LinkedHashSet<String>(); // deterministic
+
+        Enumeration dirEnum = cl.getResources(localPackageName);
+
+        Set<String> names = new HashSet<String>();
+
+        // Loop CLASSPATH directories
         while (dirEnum.hasMoreElements()) {
-            URL resUrl = dirEnum.nextElement();
+            URL resUrl = (URL) dirEnum.nextElement();
 
             // Pointing to filesystem directory
             if (resUrl.getProtocol().equals("file")) {
@@ -181,8 +185,7 @@ public class I18n {
 
                 // Pointing to Jar file
             } else if (resUrl.getProtocol().equals("jar")) {
-                JarURLConnection jconn =
-                    (JarURLConnection) resUrl.openConnection();
+                JarURLConnection jconn = (JarURLConnection) resUrl.openConnection();
                 JarFile jfile = jconn.getJarFile();
                 Enumeration entryEnum = jfile.entries();
                 while (entryEnum.hasMoreElements()) {
@@ -192,9 +195,8 @@ public class I18n {
                     if (entryName.equals(localPackageName)) {
                         continue;
                     }
-                    String parentDirName =
-                        entryName.substring(0, entryName.lastIndexOf('/') + 1);
-                    if (!parentDirName.equals(localPackageName)) {
+                    String parentDirName = entryName.substring(0, entryName.lastIndexOf('/') + 1);
+                    if (! parentDirName.equals(localPackageName)) {
                         continue;
                     }
                     names.add(entryName);
@@ -228,9 +230,10 @@ public class I18n {
         currentLocale = locale;
         languageBundle = null;
 
-        for (LanguageChangedListener listener : languageChangedListeners) {
+        Enumeration enum_listeners = languageChangedListeners.elements();
+        while (enum_listeners.hasMoreElements()) {
             try {
-                listener.languageChanged(new LanguageChangedEvent(locale));
+                ((LanguageChangedListener)(enum_listeners.nextElement())).languageChanged(new LanguageChangedEvent(locale));
             } catch (Exception ex) {
                 LOGGER.error("setCurrentLocale", ex);
             }
@@ -251,8 +254,7 @@ public class I18n {
             }
             return guiBundle.getString(reference);
         } catch (MissingResourceException ex) {
-            LOGGER.error(
-                "Can't find the translation for key = " + reference, ex);
+            LOGGER.error("Can't find the translation for key = " + reference, ex);
             throw ex;
         } catch (Exception ex) {
             LOGGER.error("Exception loading reference = " + reference, ex);
@@ -261,86 +263,66 @@ public class I18n {
     }
 
     /**
-     * Retreives a resource string using the current locale.
-     *
-     * @param stringId The resource string identifier
+     * Retreive a resource string using the current locale.
+     * @param stringID The resource string identifier
      * @return The locale specific string
      */
-    public String getString(String stringId) {
-        return getString(stringId, getCurrentLocale());
+    public String getString(String stringID) {
+        return getString(stringID, getCurrentLocale());
     }
 
     /**
-     * Retreives a resource string using the current locale, with a default.
-     *
-     * @param stringId     The resource string identifier
-     * @param defaultValue If no resource for the stringID is specified, use
-     *                     this default value
+     * Retreive a resource string using the current locale, with a default.
+     * @param stringID The resource string identifier
+     * @param defaultValue if no resource for the stringID is specified, use this default value
      * @return The locale specific string
      */
-    public String getString(String stringId, String defaultValue) {
-        return getString(stringId, getCurrentLocale(), defaultValue);
+    public String getString(String stringID, String defaultValue) {
+        return getString(stringID, getCurrentLocale(), defaultValue);
     }
 
     /**
-     * Retrieves a resource string using the current locale.
-     *
-     * @param stringId     The resource string identifier
+     * Retreive a resource string using the current locale.
+     * @param stringID The resource string identifier
      * @param defaultValue The default value for the resource string
-     * @param args         arguments to be inserted into the resource string
+     * @param args arguments to be inserted into the resource string
      * @return The locale specific string
      */
-    public String getFormattedString(
-        String stringId,
-        String defaultValue,
-        Object... args)
+    public String getFormattedString(String stringID, String defaultValue, Object[] args)
     {
-        String pattern = getString(stringId, getCurrentLocale(), defaultValue);
-        MessageFormat mf =
-            new java.text.MessageFormat(pattern, getCurrentLocale());
+        String pattern = getString(stringID, getCurrentLocale(), defaultValue);
+        MessageFormat mf = new java.text.MessageFormat(pattern, getCurrentLocale());
         return mf.format(args);
     }
 
+
     /**
-     * Retreive a resource string using the given locale. The stringID is the
-     * default.
-     *
-     * @param stringId      The resource string identifier
+     * Retreive a resource string using the given locale. The stringID is the default.
+     * @param stringID The resource string identifier
      * @param currentLocale required Locale for resource
      * @return The locale specific string
      */
-    private String getString(String stringId, Locale currentLocale) {
-        return getString(stringId, currentLocale, stringId);
+    private String getString(String stringID, Locale currentLocale) {
+        return getString(stringID, currentLocale, stringID);
     }
 
     /**
-     * Retreive a resource string using the given locale. Use the default if
-     * there is nothing for the given Locale.
-     *
-     * @param stringId      The resource string identifier
+     * Retreive a resource string using the given locale. Use the default if there is nothing for the given Locale.
+     * @param stringID The resource string identifier
      * @param currentLocale required Locale for resource
-     * @param defaultValue  The default value for the resource string
+     * @param defaultValue The default value for the resource string
      * @return The locale specific string
      */
-    public String getString(
-        String stringId,
-        Locale currentLocale,
-        String defaultValue)
-    {
+    public String getString(String stringID, Locale currentLocale, String defaultValue) {
         try {
             if (languageBundle == null) {
                 throw new Exception("No language bundle");
             }
-            return languageBundle.getString(stringId);
+            return languageBundle.getString(stringID);
         } catch (MissingResourceException ex) {
-            LOGGER.error(
-                "Can't find the translation for key = "
-                + stringId
-                + ": using default ("
-                + defaultValue
-                + ")", ex);
+            LOGGER.error("Can't find the translation for key = " + stringID + ": using default (" + defaultValue + ")", ex);
         } catch (Exception ex) {
-            LOGGER.error("Exception loading stringID = " + stringId, ex);
+            LOGGER.error("Exception loading stringID = " + stringID, ex);
         }
         return defaultValue;
     }

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -97,7 +97,7 @@ public class UdfTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Last Unit Sales] AS \n"
             + " '([Measures].[Unit Sales], \n"
-            + "   LastNonEmpty(Descendants([Time].[Time]), [Measures].[Unit Sales]))'\n"
+            + "   LastNonEmpty(Descendants([Time]), [Measures].[Unit Sales]))'\n"
             + "SELECT {[Measures].[Last Unit Sales]} ON COLUMNS,\n"
             + " CrossJoin(\n"
             + "  {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].Children},\n"
@@ -173,14 +173,14 @@ public class UdfTest extends FoodMartTestCase {
             "with\n"
             + "     member\n"
             + "     [Measures].[Last Sale] as ([Measures].[Unit Sales],\n"
-            + "         LastNonEmpty(Descendants([Time].[Time].CurrentMember, [Time].[Month]),\n"
+            + "         LastNonEmpty(Descendants([Time].CurrentMember, [Time].[Month]),\n"
             + "         [Measures].[Unit Sales]))\n"
             + "select\n"
             + "     NON EMPTY {[Measures].[Last Sale]} ON columns,\n"
             + "     NON EMPTY Order([Store].[All Stores].Children,\n"
             + "         [Measures].[Last Sale], DESC) ON rows\n"
             + "from [Sales]\n"
-            + "where [Time].[Time].LastSibling",
+            + "where [Time].LastSibling",
             "Axis #0:\n"
             + "{[Time].[1998]}\n"
             + "Axis #1:\n"
@@ -206,23 +206,6 @@ public class UdfTest extends FoodMartTestCase {
                 "Mondrian Error:Internal error: Invalid "
                 + "user-defined function 'BadPlusOne': return type is null", s);
         }
-    }
-
-    public void testGenericFun() {
-        final TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
-            "<UserDefinedFunction name=\"GenericPlusOne\" className=\""
-            + PlusOrMinusOneUdf.class.getName()
-            + "\"/>\n"
-            + "<UserDefinedFunction name=\"GenericMinusOne\" className=\""
-            + PlusOrMinusOneUdf.class.getName()
-            + "\"/>\n",
-            null);
-        tc.assertExprReturns("GenericPlusOne(3)", "4");
-        tc.assertExprReturns("GenericMinusOne(3)", "2");
     }
 
     public void testComplexFun() {
@@ -283,14 +266,14 @@ public class UdfTest extends FoodMartTestCase {
         Date currDate = new Date();
         String dateString = currDate.toString();
         String expected =
-            dateString.substring(0, 11)
-            + dateString.substring(dateString.length() - 4);
+            dateString.substring(0, 11) +
+            dateString.substring(dateString.length() - 4);
         assertEquals(expected, actual);
     }
 
     public void testCurrentDateMemberBefore() {
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE)} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -303,11 +286,7 @@ public class UdfTest extends FoodMartTestCase {
     public void testCurrentDateMemberBeforeUsingQuotes()
     {
         assertAxisReturns(
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "CurrentDateMember([Time].[Time], "
-            + "'\"[Time].[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)"
-            : "CurrentDateMember([Time], "
-            + "'\"[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)",
+            "CurrentDateMember([Time], '\"[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)",
             "[Time].[1998].[Q4].[12]");
     }
 
@@ -316,7 +295,7 @@ public class UdfTest extends FoodMartTestCase {
         // CurrentDateMember will return null member since the latest date in
         // FoodMart is from '98
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", AFTER)} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -330,7 +309,7 @@ public class UdfTest extends FoodMartTestCase {
         // FoodMart is from '98; apply a function on the return value to
         // ensure null member instead of null is returned
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", EXACT).lag(1)} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -343,7 +322,7 @@ public class UdfTest extends FoodMartTestCase {
         // CurrentDateMember will return null member since the latest date in
         // FoodMart is from '98
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\")} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -387,7 +366,7 @@ public class UdfTest extends FoodMartTestCase {
         // is hard-coded to actual value in the database so we can test the
         // after logic
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[1996]\\.[Q4]\", after)} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -402,7 +381,7 @@ public class UdfTest extends FoodMartTestCase {
         // is hard-coded to actual value in the database so we can test the
         // exact logic
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[1997]\")} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -417,7 +396,7 @@ public class UdfTest extends FoodMartTestCase {
         // is hard-coded to actual value in the database so we can test the
         // exact logic
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[1997]\\.[Q2]\\.[5]\")} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -430,7 +409,7 @@ public class UdfTest extends FoodMartTestCase {
     public void testCurrentDateMemberPrev() {
         // apply a function on the result of the UDF
         assertQueryReturns(
-            "SELECT { CurrentDateMember([Time].[Time], "
+            "SELECT { CurrentDateMember([Time], "
             + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE).PrevMember} "
             + "ON COLUMNS FROM [Sales]",
             "Axis #0:\n"
@@ -446,8 +425,8 @@ public class UdfTest extends FoodMartTestCase {
         assertQueryReturns(
             "SELECT\n"
             + "    { [Measures].[Unit Sales] } ON COLUMNS,\n"
-            + "    { CurrentDateMember([Time].[Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE).Lag(3) : "
-            + "      CurrentDateMember([Time].[Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE) } ON ROWS\n"
+            + "    { CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE).Lag(3) : "
+            + "      CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE) } ON ROWS\n"
             + "FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -651,36 +630,6 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for the problem where a string expression gave a
-     * ClassCastException because it was evaluating to a member, whereas the
-     * member should have been evaluated to a scalar.
-     */
-    public void testUdfToString() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
-            "<UserDefinedFunction name=\"StringMult\" className=\""
-            + StringMultUdf.class.getName()
-            + "\"/>\n",
-            null);
-        tc.assertQueryReturns(
-            "with member [Measures].[ABC] as StringMult(1, 'A')\n"
-            + "member [Measures].[Unit Sales Formatted] as\n"
-            + "  [Measures].[Unit Sales],\n"
-            + "  FORMAT_STRING = '#,###|color=' ||\n"
-            + "      Iif([Measures].[ABC] = 'A', 'red', 'green')\n"
-            + "select [Measures].[Unit Sales Formatted] on 0\n"
-            + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales Formatted]}\n"
-            + "Row #0: 266,773|color=red\n");
-    }
-
-    /**
      * Tests a UDF whose return type is not the same as its first
      * parameter. The return type needs to have full dimensional information;
      * in this case, HierarchyType(dimension=Time, hierarchy=unknown).
@@ -702,7 +651,7 @@ public class UdfTest extends FoodMartTestCase {
 
         tc.assertQueryReturns(
             "WITH MEMBER [Measures].[Test] AS "
-            + "'([Measures].[Store Sales],[Product].[Food],AnotherMemberError([Product].[Drink],[Time].[Time]))'\n"
+            + "'([Measures].[Store Sales],[Product].[Food],AnotherMemberError([Product].[Drink],[Time]))'\n"
             + "SELECT {[Measures].[Test]} ON COLUMNS, \n"
             + "  {[Customers].DefaultMember} ON ROWS \n"
             + "FROM [Sales]",
@@ -720,85 +669,13 @@ public class UdfTest extends FoodMartTestCase {
     public void testCachingCurrentDate() {
         assertQueryReturns(
             "SELECT {filter([Time].[Month].Members, "
-            + "[Time].[Time].CurrentMember in {CurrentDateMember([Time].[Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON COLUMNS "
+            + "[Time].CurrentMember in {CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON COLUMNS "
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Time].[1998].[Q4].[12]}\n"
             + "Row #0: \n");
-    }
-
-    /**
-     * Test case for a UDF that returns a list.
-     *
-     * <p>Test case for bug
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-588">MONDRIAN-588,
-     * "UDF returning List works under 2.4, fails under 3.1.1"</a>.
-     */
-    public void testListUdf() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
-            "<UserDefinedFunction name=\"Reverse\" className=\""
-            + ReverseFunction.class.getName()
-            + "\"/>\n",
-            null);
-        tc.assertQueryReturns(
-            "select Reverse([Gender].Members) on 0\n"
-            + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Gender].[All Gender].[M]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender]}\n"
-            + "Row #0: 135,215\n"
-            + "Row #0: 131,558\n"
-            + "Row #0: 266,773\n");
-    }
-
-    /**
-     * Tests that a non-static function gives an error.
-     */
-    public void testNonStaticUdfFails() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
-            "<UserDefinedFunction name=\"Reverse2\" className=\""
-            + ReverseFunctionNotStatic.class.getName()
-            + "\"/>\n",
-            null);
-        tc.assertQueryThrows(
-            "select Reverse2([Gender].Members) on 0\n"
-            + "from [Sales]",
-            "Failed to load user-defined function 'Reverse2': class "
-            + "'mondrian.test.UdfTest$ReverseFunctionNotStatic' must be public "
-            + "and static");
-    }
-
-    /**
-     * Tests a function that takes a member as argument. Want to make sure that
-     * Mondrian leaves it as a member, does not try to evaluate it to a scalar
-     * value.
-     */
-    public void testMemberUdfDoesNotEvaluateToScalar() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
-            "<UserDefinedFunction name=\"MemberName\" className=\""
-            + MemberNameFunction.class.getName()
-            + "\"/>\n",
-            null);
-        tc.assertExprReturns(
-            "MemberName([Gender].[F])",
-            "F");
     }
 
     // ~ Inner classes --------------------------------------------------------
@@ -862,62 +739,6 @@ public class UdfTest extends FoodMartTestCase {
         public Type getReturnType(Type[] parameterTypes) {
             // Will cause error.
             return null;
-        }
-    }
-
-    /**
-     * A user-defined function which, depending on its given name, either adds
-     * one to, or subtracts one from, its argument.
-     */
-    public static class PlusOrMinusOneUdf implements UserDefinedFunction {
-        private final String name;
-
-        public PlusOrMinusOneUdf(String name) {
-            if (!(name.equals("GenericPlusOne")
-                  || name.equals("GenericMinusOne")))
-            {
-                throw new IllegalArgumentException();
-            }
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return
-                "A user-defined function which, depending on its given name, "
-                + "either addsone to, or subtracts one from, its argument";
-        }
-
-        public Syntax getSyntax() {
-            return Syntax.Function;
-        }
-
-        public Type getReturnType(Type[] parameterTypes) {
-            return new NumericType();
-        }
-
-        public String[] getReservedWords() {
-            return null;
-        }
-
-        public Type[] getParameterTypes() {
-            return new Type[] {new NumericType()};
-        }
-
-        public Object execute(Evaluator evaluator, Argument[] arguments) {
-            final Object argValue = arguments[0].evaluateScalar(evaluator);
-            if (argValue instanceof Number) {
-                return ((Number) argValue).doubleValue()
-                   + (name.equals("GenericPlusOne") ? 1.0 : -1.0);
-            } else {
-                // Argument might be a RuntimeException indicating that
-                // the cache does not yet have the required cell value. The
-                // function will be called again when the cache is loaded.
-                return null;
-            }
         }
     }
 
@@ -993,9 +814,8 @@ public class UdfTest extends FoodMartTestCase {
         }
 
         public String getDescription() {
-            return "Returns default member from hierarchy, "
-                + "specified as a second parameter. "
-                + "First parameter - any member from any hierarchy";
+            return "Returns default member from hierarchy, specified as a second parameter. "+
+                "First parameter - any member from any hierarchy";
         }
 
         public Syntax getSyntax() {
@@ -1026,81 +846,6 @@ public class UdfTest extends FoodMartTestCase {
 
         public String[] getReservedWords() {
             return null;
-        }
-    }
-
-    /**
-     * Function that reverses a list of members.
-     */
-    public static class ReverseFunction implements UserDefinedFunction {
-        public Object execute(Evaluator eval, Argument[] args) {
-            List memberList = (List) args[0].evaluate(eval);
-            Collections.reverse(memberList);
-            return memberList;
-        }
-
-        public String getDescription() {
-            return "Reverses the order of a set";
-        }
-
-        public String getName() {
-            return "Reverse";
-        }
-
-        public Type[] getParameterTypes() {
-            return new Type[] {new SetType(MemberType.Unknown)};
-        }
-
-        public String[] getReservedWords() {
-            return null;
-        }
-
-        public Type getReturnType(Type[] arg0) {
-            return arg0[0];
-        }
-
-        public Syntax getSyntax() {
-            return Syntax.Function;
-        }
-    }
-
-    /**
-     * Function that is non-static.
-     */
-    public class ReverseFunctionNotStatic extends ReverseFunction {
-    }
-
-    /**
-     * Function that takes a member and returns a name.
-     */
-    public static class MemberNameFunction implements UserDefinedFunction {
-        public Object execute(Evaluator eval, Argument[] args) {
-            Member member = (Member) args[0].evaluate(eval);
-            return member.getName();
-        }
-
-        public String getDescription() {
-            return "Returns the name of a member";
-        }
-
-        public String getName() {
-            return "MemberName";
-        }
-
-        public Type[] getParameterTypes() {
-            return new Type[] {MemberType.Unknown};
-        }
-
-        public String[] getReservedWords() {
-            return null;
-        }
-
-        public Type getReturnType(Type[] arg0) {
-            return new StringType();
-        }
-
-        public Syntax getSyntax() {
-            return Syntax.Function;
         }
     }
 }

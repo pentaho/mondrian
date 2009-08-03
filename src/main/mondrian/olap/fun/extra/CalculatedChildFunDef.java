@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -21,20 +21,17 @@ import java.util.List;
  * Definition of the <code>CalculatedChild</code> MDX function.
  *
  * <p>Syntax:
- * <blockquote><code>&lt;Member&gt;
- * CalculatedChild(&lt;String&gt;)</code></blockquote>
+ * <blockquote><code>&lt;Member&gt;CalculatedChild(&lt;String&gt;)</code></blockquote>
  *
  * @author bchow
  * @version $Id$
  * @since 2006/4/12
  */
 public class CalculatedChildFunDef extends FunDefBase {
-    public static final CalculatedChildFunDef instance =
-        new CalculatedChildFunDef();
+    public static final CalculatedChildFunDef instance = new CalculatedChildFunDef();
 
     CalculatedChildFunDef() {
-        super(
-            "CalculatedChild",
+        super("CalculatedChild",
             "Returns an existing calculated child member with name <String> from the specified <Member>.",
             "mmmS");
     }
@@ -43,16 +40,13 @@ public class CalculatedChildFunDef extends FunDefBase {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         final StringCalc stringCalc = compiler.compileString(call.getArg(1));
 
-        return new AbstractMemberCalc(
-            call,
-            new Calc[] {memberCalc, stringCalc})
-        {
+        return new AbstractMemberCalc(call,  new Calc[] {memberCalc, stringCalc}) {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 String name = stringCalc.evaluateString(evaluator);
                 return getCalculatedChild(member, name, evaluator);
             }
-        };
+         };
     }
 
     private Member getCalculatedChild(
@@ -72,9 +66,8 @@ public class CalculatedChildFunDef extends FunDefBase {
         for (Member child : calcMemberList) {
             // the parent check is required in case there are parallel children
             // with the same names
-            if (child.getParentMember().equals(parent)
-                && child.getName().equals(childName))
-            {
+            if (child.getParentMember().equals(parent) &&
+                child.getName().equals(childName)) {
                 return child;
             }
         }

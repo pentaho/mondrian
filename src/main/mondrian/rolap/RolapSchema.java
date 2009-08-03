@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -153,14 +153,12 @@ public class RolapSchema implements Schema {
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
-     * Map containing column cardinality. The combination of
+     * HashMap containing column cardinality. The combination of
      * Mondrianef.Relation and MondrianDef.Expression uniquely
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
-    private final Map<
-        MondrianDef.Relation,
-        Map<MondrianDef.Expression, Integer>>
+    private final Map<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>
         relationExprCardinalityMap;
 
     /**
@@ -180,11 +178,10 @@ public class RolapSchema implements Schema {
      * @param md5Bytes MD5 hash
      */
     private RolapSchema(
-        final String key,
-        final Util.PropertyList connectInfo,
-        final DataSource dataSource,
-        final String md5Bytes)
-    {
+            final String key,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource,
+            final String md5Bytes) {
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
@@ -201,9 +198,7 @@ public class RolapSchema implements Schema {
         this.dataSourceChangeListener =
             createDataSourceChangeListener(connectInfo);
         this.relationExprCardinalityMap =
-            new HashMap<
-                MondrianDef.Relation,
-                Map<MondrianDef.Expression, Integer>>();
+            new HashMap<MondrianDef.Relation, Map<MondrianDef.Expression, Integer>>();
     }
 
     /**
@@ -278,22 +273,14 @@ public class RolapSchema implements Schema {
 
             final DOMWrapper def;
             if (catalogStr == null) {
-                InputStream in = null;
-                try {
-                    in = Util.readVirtualFile(catalogUrl);
-                    def = xmlParser.parse(in);
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
-                }
+                FileContent fileContent = Util.readVirtualFile(catalogUrl);
 
                 if (getLogger().isDebugEnabled()) {
                     try {
                         StringBuilder buf = new StringBuilder(1000);
-                        InputStream debugIn = Util.readVirtualFile(catalogUrl);
+                        InputStream in = fileContent.getInputStream();
                         int n;
-                        while ((n = debugIn.read()) != -1) {
+                        while ((n = in.read()) != -1) {
                             buf.append((char) n);
                         }
                         getLogger().debug(
@@ -303,6 +290,7 @@ public class RolapSchema implements Schema {
                     }
                 }
 
+                def = xmlParser.parse(fileContent.getInputStream());
             } else {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
@@ -327,8 +315,6 @@ public class RolapSchema implements Schema {
         } catch (XOMException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (FileSystemException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogUrl);
-        } catch (IOException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         }
 
@@ -386,9 +372,7 @@ public class RolapSchema implements Schema {
         // function table.
         final Map<String, UserDefinedFunction> mapNameToUdf =
             new HashMap<String, UserDefinedFunction>();
-        for (MondrianDef.UserDefinedFunction udf
-            : xmlSchema.userDefinedFunctions)
-        {
+        for (MondrianDef.UserDefinedFunction udf : xmlSchema.userDefinedFunctions) {
             defineFunction(mapNameToUdf, udf.name, udf.className);
         }
         final RolapSchemaFunctionTable funTable =
@@ -534,8 +518,7 @@ public class RolapSchema implements Schema {
     private Role createRole(MondrianDef.Role xmlRole) {
         if (xmlRole.union != null) {
             if (xmlRole.schemaGrants != null
-                && xmlRole.schemaGrants.length > 0)
-            {
+                && xmlRole.schemaGrants.length > 0) {
                 throw MondrianResource.instance().RoleUnionGrants.ex();
             }
             List<Role> roleList = new ArrayList<Role>();
@@ -555,32 +538,23 @@ public class RolapSchema implements Schema {
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
                 RolapCube cube = lookupCube(cubeGrant.cube);
                 if (cube == null) {
-                    throw Util.newError(
-                        "Unknown cube '" + cubeGrant.cube + "'");
+                    throw Util.newError("Unknown cube '" + cubeGrant.cube + "'");
                 }
                 role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
                 final SchemaReader schemaReader = cube.getSchemaReader(null);
-                for (MondrianDef.DimensionGrant dimensionGrant
-                    : cubeGrant.dimensionGrants)
-                {
+                for (MondrianDef.DimensionGrant dimensionGrant : cubeGrant.dimensionGrants) {
                     Dimension dimension = (Dimension)
                         schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(dimensionGrant.dimension),
-                            true,
+                            cube, Util.parseIdentifier(dimensionGrant.dimension), true,
                             Category.Dimension);
                     role.grant(
                         dimension,
                         getAccess(dimensionGrant.access, dimensionAllowed));
                 }
-                for (MondrianDef.HierarchyGrant hierarchyGrant
-                    : cubeGrant.hierarchyGrants)
-                {
+                for (MondrianDef.HierarchyGrant hierarchyGrant : cubeGrant.hierarchyGrants) {
                     Hierarchy hierarchy = (Hierarchy)
                         schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.hierarchy),
-                            true,
+                            cube, Util.parseIdentifier(hierarchyGrant.hierarchy), true,
                             Category.Hierarchy);
                     final Access hierarchyAccess =
                         getAccess(hierarchyGrant.access, hierarchyAllowed);
@@ -588,27 +562,21 @@ public class RolapSchema implements Schema {
                     if (hierarchyGrant.topLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify 'topLevel' if "
-                                + "access='custom'");
+                                "You may only specify 'topLevel' if access='custom'");
                         }
                         topLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.topLevel),
-                            true,
+                            cube, Util.parseIdentifier(hierarchyGrant.topLevel), true,
                             Category.Level);
                     }
                     Level bottomLevel = null;
                     if (hierarchyGrant.bottomLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify 'bottomLevel' if "
-                                + "access='custom'");
+                                "You may only specify 'bottomLevel' if access='custom'");
                         }
                         bottomLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.bottomLevel),
-                            true,
-                            Category.Level);
+                            cube, Util.parseIdentifier(hierarchyGrant.bottomLevel),
+                            true, Category.Level);
                     }
                     Role.RollupPolicy rollupPolicy;
                     if (hierarchyGrant.rollupPolicy != null) {
@@ -617,8 +585,7 @@ public class RolapSchema implements Schema {
                                 Role.RollupPolicy.valueOf(
                                     hierarchyGrant.rollupPolicy.toUpperCase());
                         } catch (IllegalArgumentException e) {
-                            throw Util.newError(
-                                "Illegal rollupPolicy value '"
+                            throw Util.newError("Illegal rollupPolicy value '"
                                 + hierarchyGrant.rollupPolicy
                                 + "'");
                         }
@@ -628,25 +595,25 @@ public class RolapSchema implements Schema {
                     role.grant(
                         hierarchy, hierarchyAccess, topLevel, bottomLevel,
                         rollupPolicy);
-                    for (MondrianDef.MemberGrant memberGrant
-                        : hierarchyGrant.memberGrants)
-                    {
+                    for (MondrianDef.MemberGrant memberGrant : hierarchyGrant.memberGrants) {
                         if (hierarchyAccess != Access.CUSTOM) {
                             throw Util.newError(
-                                "You may only specify <MemberGrant> if "
-                                + "<Hierarchy> has access='custom'");
+                                "You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
                         }
                         Member member = schemaReader.getMemberByUniqueName(
                             Util.parseIdentifier(memberGrant.member), true);
                         assert member != null;
                         if (member.getHierarchy() != hierarchy) {
                             throw Util.newError(
-                                "Member '" + member
-                                + "' is not in hierarchy '" + hierarchy + "'");
+                                "Member '" +
+                                    member +
+                                    "' is not in hierarchy '" +
+                                    hierarchy +
+                                    "'");
                         }
                         role.grant(
-                            member,
-                            getAccess(memberGrant.access, memberAllowed));
+                                member,
+                                getAccess(memberGrant.access, memberAllowed));
                     }
                 }
             }
@@ -674,15 +641,12 @@ public class RolapSchema implements Schema {
             } else if (tagName.equals("DimensionUsage")) {
                 xmlDimension = new MondrianDef.DimensionUsage(def);
             } else {
-                throw new XOMException(
-                    "Got <" + tagName
-                    + "> when expecting <Dimension> or <DimensionUsage>");
+                throw new XOMException("Got <" + tagName +
+                        "> when expecting <Dimension> or <DimensionUsage>");
             }
         } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Error while adding dimension to cube '" + cube
-                + "' from XML [" + xml + "]");
+            throw Util.newError(e, "Error while adding dimension to cube '" +
+                    cube + "' from XML [" + xml + "]");
         }
         return ((RolapCube) cube).createDimension(xmlDimension, xmlSchema);
     }
@@ -706,22 +670,46 @@ public class RolapSchema implements Schema {
                         new MondrianDef.VirtualCube(def);
                 cube = new RolapCube(this, xmlSchema, xmlDimension, false);
             } else {
-                throw new XOMException(
-                    "Got <" + tagName + "> when expecting <Cube>");
+                throw new XOMException("Got <" + tagName +
+                    "> when expecting <Cube>");
             }
         } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Error while creating cube from XML [" + xml + "]");
+            throw Util.newError(e, "Error while creating cube from XML [" +
+                xml + "]");
         }
         return cube;
     }
+
+/*
+    public Cube createCube(String xml) {
+        MondrianDef.Cube xmlDimension;
+        try {
+            final Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(xml);
+            final String tagName = def.getTagName();
+            if (tagName.equals("Cube")) {
+                xmlDimension = new MondrianDef.Cube(def);
+            } else {
+                throw new XOMException("Got <" + tagName +
+                    "> when expecting <Cube>");
+            }
+        } catch (XOMException e) {
+            throw Util.newError(e, "Error while creating cube from XML [" +
+                xml + "]");
+        }
+        // Create empty XML schema, to keep the method happy. This is okay,
+        // because there are no forward-references to resolve.
+        final MondrianDef.Schema xmlSchema = new MondrianDef.Schema();
+        RolapCube cube = new RolapCube(this, xmlSchema, xmlDimension);
+        return cube;
+    }
+*/
 
     /**
      * A collection of schemas, identified by their connection properties
      * (catalog name, JDBC URL, and so forth).
      *
-     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
+     * <p>To lookup a schema, call <code>Pool.instance().{@link #get(String, DataSource, Util.PropertyList)}</code>.
      */
     static class Pool {
         private final MessageDigest md;
@@ -795,10 +783,9 @@ public class RolapSchema implements Schema {
             final DataSource dataSource,
             final Util.PropertyList connectInfo)
         {
-            String key =
-                (dataSource == null)
-                ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-                : makeKey(catalogUrl, dataSource);
+            String key = (dataSource == null) ?
+                makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr) :
+                makeKey(catalogUrl, dataSource);
 
             RolapSchema schema = null;
 
@@ -853,15 +840,15 @@ public class RolapSchema implements Schema {
                     final DynamicSchemaProcessor dynProc = ctor.newInstance();
                     catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
                 } catch (Exception e) {
-                    throw Util.newError(
-                        e,
-                        "loading DynamicSchemaProcessor " + dynProcName);
+                    throw Util.newError(e, "loading DynamicSchemaProcessor "
+                        + dynProcName);
                 }
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: create schema \"" + catalogUrl
-                        + "\" using dynamic processor");
+                    String msg = "Pool.get: create schema \"" +
+                        catalogUrl +
+                        "\" using dynamic processor";
+                    LOGGER.debug(msg);
                 }
             }
 
@@ -885,20 +872,14 @@ public class RolapSchema implements Schema {
                 try {
                     if (catalogStr == null) {
                         // Use VFS to get the content
-                        InputStream in = null;
-                        try {
-                            in = Util.readVirtualFile(catalogUrl);
-                            StringBuilder buf = new StringBuilder(1000);
-                            int n;
-                            while ((n = in.read()) != -1) {
-                                buf.append((char) n);
-                            }
-                            catalogStr = buf.toString();
-                        } finally {
-                            if (in != null) {
-                                in.close();
-                            }
+                        FileContent fileContent = Util.readVirtualFile(catalogUrl);
+                        StringBuilder buf = new StringBuilder(1000);
+                        InputStream in = fileContent.getInputStream();
+                        int n;
+                        while ((n = in.read()) != -1) {
+                            buf.append((char) n);
                         }
+                        catalogStr = buf.toString();
                     }
 
                     md5Bytes = encodeMD5(catalogStr);
@@ -923,10 +904,10 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                if (schema == null
-                    || md5Bytes == null
-                    || schema.md5Bytes == null
-                    || ! schema.md5Bytes.equals(md5Bytes))
+                if (schema == null ||
+                    md5Bytes == null ||
+                    schema.md5Bytes == null ||
+                    ! schema.md5Bytes.equals(md5Bytes))
                 {
                     schema = new RolapSchema(
                         key,
@@ -944,15 +925,17 @@ public class RolapSchema implements Schema {
                     mapUrlToSchema.put(key, ref);
 
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl
-                            + "\" with MD5");
+                        String msg = "Pool.get: create schema \"" +
+                            catalogUrl +
+                            "\" with MD5";
+                        LOGGER.debug(msg);
                     }
 
                 } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already with MD5");
+                    String msg = "Pool.get: schema \"" +
+                        catalogUrl +
+                        "\" exists already with MD5";
+                    LOGGER.debug(msg);
                 }
 
             } else {
@@ -982,21 +965,23 @@ public class RolapSchema implements Schema {
                             dataSource);
                     }
 
-                    mapUrlToSchema.put(
-                        key,
-                        new SoftReference<RolapSchema>(schema));
+                    mapUrlToSchema.put(key, new SoftReference<RolapSchema>(schema));
 
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl + "\"");
+                        String msg = "Pool.get: create schema \"" +
+                            catalogUrl +
+                            "\"";
+                        LOGGER.debug(msg);
                     }
 
                 } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already ");
+                    String msg = "Pool.get: schema \"" +
+                        catalogUrl +
+                        "\" exists already ";
+                    LOGGER.debug(msg);
                 }
             }
+
             return schema;
         }
 
@@ -1012,10 +997,14 @@ public class RolapSchema implements Schema {
                 jdbcUser,
                 dataSourceStr);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource string \"" + dataSourceStr + "\"");
+                String msg = "Pool.remove: schema \"" +
+                     catalogUrl +
+                    "\" and datasource string \"" +
+                    dataSourceStr +
+                    "\"";
+                LOGGER.debug(msg);
             }
+
             remove(key);
         }
 
@@ -1025,19 +1014,22 @@ public class RolapSchema implements Schema {
         {
             final String key = makeKey(catalogUrl, dataSource);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource object");
+                String msg = "Pool.remove: schema \"" +
+                    catalogUrl +
+                    "\" and datasource object";
+                LOGGER.debug(msg);
             }
+
             remove(key);
         }
 
         synchronized void remove(RolapSchema schema) {
             if (schema != null) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.remove: schema \"" + schema.name
-                        + "\" and datasource object");
+                    String msg = "Pool.remove: schema \"" +
+                        schema.name +
+                        "\" and datasource object";
+                    LOGGER.debug(msg);
                 }
                 remove(schema.key);
             }
@@ -1059,7 +1051,8 @@ public class RolapSchema implements Schema {
 
         synchronized void clear() {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Pool.clear: clearing all RolapSchemas");
+                String msg = "Pool.clear: clearing all RolapSchemas";
+                LOGGER.debug(msg);
             }
 
             for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
@@ -1184,21 +1177,18 @@ public class RolapSchema implements Schema {
      * xmlCube by those name exists.
      */
     protected MondrianDef.CalculatedMember lookupXmlCalculatedMember(
-        final String calcMemberName,
-        final String cubeName)
-    {
+            final String calcMemberName,
+            final String cubeName) {
         List<Id.Segment> nameParts = Util.parseIdentifier(calcMemberName);
         for (final MondrianDef.Cube cube : xmlSchema.cubes) {
             if (Util.equalName(cube.name, cubeName)) {
                 for (final MondrianDef.CalculatedMember calculatedMember
-                        : cube.calculatedMembers)
-                {
+                        : cube.calculatedMembers) {
                     if (Util.equalName(
-                            calculatedMember.dimension, nameParts.get(0).name)
-                        && Util.equalName(
+                        calculatedMember.dimension, nameParts.get(0).name) &&
+                        Util.equalName(
                             calculatedMember.name,
-                            nameParts.get(nameParts.size() - 1).name))
-                    {
+                            nameParts.get(nameParts.size() - 1).name)) {
                         return calculatedMember;
                     }
                 }
@@ -1249,6 +1239,21 @@ public class RolapSchema implements Schema {
     }
 
     RolapHierarchy getSharedHierarchy(final String name) {
+/*
+        RolapHierarchy rh = (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
+        if (rh == null) {
+System.out.println("RolapSchema.getSharedHierarchy: "+
+" name=" + name +
+", hierarchy is NULL"
+);
+        } else {
+System.out.println("RolapSchema.getSharedHierarchy: "+
+" name=" + name +
+", hierarchy=" +  rh.getName()
+);
+        }
+        return rh;
+*/
         return mapSharedHierarchyNameToHierarchy.get(name);
     }
 
@@ -1284,21 +1289,66 @@ public class RolapSchema implements Schema {
      *   (otherwise it is a user-error).
      */
     private void defineFunction(
-        Map<String, UserDefinedFunction> mapNameToUdf,
-        String name,
-        String className)
-    {
+            Map<String, UserDefinedFunction> mapNameToUdf,
+            String name,
+            String className) {
         // Lookup class.
-        final Class<UserDefinedFunction> klass;
+        final Class<?> klass;
         try {
-            klass = (Class<UserDefinedFunction>) Class.forName(className);
+            klass = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().UdfClassNotFound.ex(
-                name,
-                className);
+            throw MondrianResource.instance().UdfClassNotFound.ex(name,
+                    className);
         }
-        // Instantiate UDF by calling correct constructor.
-        final UserDefinedFunction udf = Util.createUdf(klass, name);
+        // Find a constructor.
+        Constructor<?> constructor;
+        Object[] args = {};
+        // 1. Look for a constructor "public Udf(String name)".
+        try {
+            constructor = klass.getConstructor(String.class);
+            if (Modifier.isPublic(constructor.getModifiers())) {
+                args = new Object[] {name};
+            } else {
+                constructor = null;
+            }
+        } catch (NoSuchMethodException e) {
+            constructor = null;
+        }
+        // 2. Otherwise, look for a constructor "public Udf()".
+        if (constructor == null) {
+            try {
+                constructor = klass.getConstructor();
+                if (Modifier.isPublic(constructor.getModifiers())) {
+                    args = new Object[] {};
+                } else {
+                    constructor = null;
+                }
+            } catch (NoSuchMethodException e) {
+                constructor = null;
+            }
+        }
+        // 3. Else, no constructor suitable.
+        if (constructor == null) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
+                    className, UserDefinedFunction.class.getName());
+        }
+        // Instantiate class.
+        final UserDefinedFunction udf;
+        try {
+            udf = (UserDefinedFunction) constructor.newInstance(args);
+        } catch (InstantiationException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (IllegalAccessException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (ClassCastException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (InvocationTargetException e) {
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
+                    className, UserDefinedFunction.class.getName());
+        }
         // Validate function.
         validateFunction(udf);
         // Check for duplicate.
@@ -1317,9 +1367,8 @@ public class RolapSchema implements Schema {
         // Check that the name is not null or empty.
         final String udfName = udf.getName();
         if (udfName == null || udfName.equals("")) {
-            throw Util.newInternal(
-                "User-defined function defined by class '"
-                + udf.getClass() + "' has empty name");
+            throw Util.newInternal("User-defined function defined by class '" +
+                    udf.getClass() + "' has empty name");
         }
         // It's OK for the description to be null.
         final String description = udf.getDescription();
@@ -1328,9 +1377,9 @@ public class RolapSchema implements Schema {
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             if (parameterType == null) {
-                throw Util.newInternal(
-                    "Invalid user-defined function '"
-                    + udfName + "': parameter type #" + i + " is null");
+                throw Util.newInternal("Invalid user-defined function '" +
+                        udfName + "': parameter type #" + i +
+                        " is null");
             }
         }
         // It's OK for the reserved words to be null or empty.
@@ -1341,15 +1390,13 @@ public class RolapSchema implements Schema {
         // impossible to check that now.
         final Type returnType = udf.getReturnType(parameterTypes);
         if (returnType == null) {
-            throw Util.newInternal(
-                "Invalid user-defined function '"
-                + udfName + "': return type is null");
+            throw Util.newInternal("Invalid user-defined function '" +
+                    udfName + "': return type is null");
         }
         final Syntax syntax = udf.getSyntax();
         if (syntax == null) {
-            throw Util.newInternal(
-                "Invalid user-defined function '"
-                + udfName + "': syntax is null");
+            throw Util.newInternal("Invalid user-defined function '" +
+                    udfName + "': syntax is null");
         }
     }
 
@@ -1387,11 +1434,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
 }
 */
-                if (! mapSharedHierarchyNameToHierarchy.containsKey(
-                    sharedName))
-                {
-                    mapSharedHierarchyNameToHierarchy.put(
-                        sharedName, hierarchy);
+                if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
+                    mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
                 }
                 //mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
             } else {
@@ -1432,9 +1476,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 } else if (o instanceof MemberSource) {
                     return new CacheMemberReader((MemberSource) o);
                 } else {
-                    throw Util.newInternal(
-                        "member reader class " + clazz
-                        + " does not implement " + MemberSource.class);
+                    throw Util.newInternal("member reader class " + clazz +
+                                                    " does not implement " + MemberSource.class);
                 }
             } catch (ClassNotFoundException e) {
                 e2 = e;
@@ -1447,18 +1490,17 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             } catch (InvocationTargetException e) {
                 e2 = e;
             }
-            throw Util.newInternal(
-                e2,
-                "while instantiating member reader '" + memberReaderClass);
+            throw Util.newInternal(e2,
+                    "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
             if (hierarchy.getDimension().isHighCardinality()) {
-                LOGGER.debug(
-                    "High cardinality for " + hierarchy.getDimension());
+                LOGGER.debug("High cardinality for "
+                        + hierarchy.getDimension());
                 return new NoCacheMemberReader(source);
             } else {
-                LOGGER.debug(
-                    "Normal cardinality for " + hierarchy.getDimension());
+                LOGGER.debug("Normal cardinality for "
+                        + hierarchy.getDimension());
                 return new SmartMemberReader(source);
             }
         }
@@ -1490,31 +1532,24 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
+                changeListener = (DataSourceChangeListener)constructor.newInstance();
 
-/*
-                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>)
-                        Class.forName(dataSourceChangeListenerStr);
+/*                final Class<DataSourceChangeListener> clazz =
+                    (Class<DataSourceChangeListener>) Class.forName(dataSourceChangeListenerStr);
                 final Constructor<DataSourceChangeListener> ctor =
                     clazz.getConstructor();
-                changeListener = ctor.newInstance();
-*/
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
+                changeListener = ctor.newInstance(); */
+                changeListener = (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
-                throw Util.newError(
-                    e,
-                    "loading DataSourceChangeListener "
+                throw Util.newError(e, "loading DataSourceChangeListener "
                     + dataSourceChangeListenerStr);
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "RolapSchema.createDataSourceChangeListener: "
-                    + "create datasource change listener \""
-                    + dataSourceChangeListenerStr);
+                String msg = "RolapSchema.createDataSourceChangeListener: create datasource change listener \"" +
+                dataSourceChangeListenerStr;
+
+                LOGGER.debug(msg);
             }
         }
         return changeListener;
@@ -1537,8 +1572,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      */
     Integer getCachedRelationExprCardinality(
         MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr)
-    {
+        MondrianDef.Expression columnExpr) {
         Integer card = null;
         synchronized (relationExprCardinalityMap) {
             Map<MondrianDef.Expression, Integer> exprCardinalityMap =

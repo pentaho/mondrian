@@ -1,35 +1,37 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.gui;
 
-import mondrian.gui.JdbcMetaData.DbColumn;
-
-import org.apache.log4j.Logger;
-
+import java.util.Enumeration;
+import java.util.Vector;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.*;
-import java.util.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.MutableTreeNode;
+import mondrian.gui.JDBCMetaData.DbColumn;
+import org.apache.log4j.Logger;
 
 /**
- * @author sean
+ *
+ * @author  sean
  * @version $Id$
  */
-public class JdbcExplorer
-    extends javax.swing.JPanel
-    implements TreeWillExpandListener
-{
-    private static final Logger LOGGER = Logger.getLogger(JdbcExplorer.class);
+public class JDBCExplorer extends javax.swing.JPanel
+        implements TreeWillExpandListener {
 
-    JdbcMetaData jdbcMetaData;
-    JdbcTreeModel model;
+    private static final Logger LOGGER = Logger.getLogger(JDBCExplorer.class);
+
+    JDBCMetaData jdbcMetaData;
+    JDBCTreeModel model;
 
     Workbench workbench;
 
@@ -37,13 +39,19 @@ public class JdbcExplorer
 
     DefaultTreeModel treeModel;
 
-    public JdbcExplorer(JdbcMetaData jdbcMetaData, Workbench wb) {
+    /** Creates new form JDBCExplorer
+    public JDBCExplorer() {
+        initComponents();
+    }
+     */
+
+    public JDBCExplorer(JDBCMetaData jdbcMetaData, Workbench wb) {
         workbench = wb;
         initComponents();
         setMetaData(jdbcMetaData);
     }
 
-    public void setMetaData(JdbcMetaData jdbcMetaData) {
+    public void setMetaData(JDBCMetaData jdbcMetaData) {
         try {
             this.jdbcMetaData = jdbcMetaData;
 
@@ -53,16 +61,14 @@ public class JdbcExplorer
             for (String schemaName : jdbcMetaData.getAllSchemas()) {
                 Node cat = new Node(schemaName, NodeType.CATALOG, null);
 
-                DefaultMutableTreeNode catTreeNode =
-                    new DefaultMutableTreeNode(cat);
+                DefaultMutableTreeNode catTreeNode = new DefaultMutableTreeNode(cat);
                 cat.treeNode = catTreeNode;
                 root.add(catTreeNode);
 
-                List<String> tables = jdbcMetaData.getAllTables(schemaName);
+                Vector<String> tables = jdbcMetaData.getAllTables(schemaName);
                 for (String tableName : tables) {
                     Node table = new Node(tableName, NodeType.TABLE, null);
-                    DefaultMutableTreeNode tableTreeNode =
-                        new DefaultMutableTreeNode(table);
+                    DefaultMutableTreeNode tableTreeNode = new DefaultMutableTreeNode(table);
                     table.treeNode = tableTreeNode;
                     catTreeNode.add(tableTreeNode);
                 }
@@ -81,7 +87,7 @@ public class JdbcExplorer
         }
     }
 
-    public void resetMetaData(JdbcMetaData jdbcMetaData) {
+    public void resetMetaData(JDBCMetaData jdbcMetaData) {
         setMetaData(jdbcMetaData);
     }
 
@@ -89,16 +95,14 @@ public class JdbcExplorer
         return updater;
     }
 
-    public void treeWillExpand(TreeExpansionEvent event)
-        throws ExpandVetoException
-    {
+    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
         // The children are lazy loaded
-        LOGGER.debug(
-            "path = " + event.getPath() + ", last object is a "
-            + event.getPath().getLastPathComponent().getClass().getName());
+        LOGGER.debug("path = " + event.getPath()
+                + ", last object is a "
+                + event.getPath().getLastPathComponent().getClass().getName());
 
         DefaultMutableTreeNode theTreeNode =
-            (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
+                (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
         Node theNode = (Node) theTreeNode.getUserObject();
         theNode.setChildren();
 
@@ -110,35 +114,25 @@ public class JdbcExplorer
             return;
         }
 
-        DefaultMutableTreeNode parentNode =
-            (DefaultMutableTreeNode) theTreeNode.getParent();
+        DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) theTreeNode.getParent();
 
         Node theNode = (Node) theTreeNode.getUserObject();
-        Node theParentNode =
-            parentNode == null
-                ? null
-                : (Node) parentNode.getUserObject();
+        Node theParentNode = parentNode == null ? null : (Node) parentNode.getUserObject();
 
-        @SuppressWarnings({"unchecked"})
-        Enumeration<DefaultMutableTreeNode> children = theTreeNode.children();
+        Enumeration children = theTreeNode.children();
 
-        LOGGER.debug(
-            message + ": " + theNode + ", " + theNode.type
-            + ", parent " + theParentNode
-            + (theParentNode == null
-                ? ""
-                : ", " + theParentNode.type));
+        LOGGER.debug(message + ": " + theNode + ", " + theNode.type
+                + ", parent " + theParentNode +
+                (theParentNode == null ? "" : ", " + theParentNode.type));
         while (children.hasMoreElements()) {
-            DefaultMutableTreeNode treeNode = children.nextElement();
-            Node child = (Node) treeNode.getUserObject();
+            Object o = children.nextElement();
+            Node child = (Node) ((DefaultMutableTreeNode) o).getUserObject();
             LOGGER.debug("\t" + child.toString() + ", " + child.type);
         }
     }
 
     public void treeWillCollapse(TreeExpansionEvent arg0)
-        throws ExpandVetoException
-    {
-    }
+            throws ExpandVetoException {}
 
     enum NodeType {
         CATALOG,
@@ -148,58 +142,63 @@ public class JdbcExplorer
     }
 
     class Node {
-        final String name;
-        final NodeType type;
+        String name;
+        NodeType type;
         boolean gotChildren = false;
         DefaultMutableTreeNode treeNode;
-        final JdbcMetaData.DbColumn columnInfo;
+        JDBCMetaData.DbColumn columnInfo;
 
-        public Node(
-            String name,
-            NodeType type,
-            DefaultMutableTreeNode treeNode)
-        {
-            this(name, type, treeNode, null);
+        public Node(String n,
+                NodeType t,
+                DefaultMutableTreeNode tn) {
+            name = n;
+            type = t;
+            treeNode = tn;
         }
 
-        public Node(
-            String name,
-            NodeType type,
-            DefaultMutableTreeNode treeNode,
-            JdbcMetaData.DbColumn columnInfo)
-        {
-            this.name = name;
-            this.type = type;
-            this.treeNode = treeNode;
-            this.columnInfo = columnInfo;
+        public Node(String n,
+                NodeType t,
+                DefaultMutableTreeNode tn,
+                JDBCMetaData.DbColumn ci) {
+            name = n;
+            type = t;
+            treeNode = tn;
+            columnInfo = ci;
         }
 
         public String toString() {
             if (type == NodeType.ROOT) {
                 return workbench.getResourceConverter().getFormattedString(
-                    "jdbcExplorer.root.name",
-                    "All Schemas");
+                        "jdbcExplorer.root.name", "All Schemas",  null);
             }
 
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
+
             if (name == null || name.trim().length() == 0) {
                 switch (type) {
                 case CATALOG:
-                    sb.append(
-                        workbench.getResourceConverter().getFormattedString(
-                            "jdbcExplorer.default.name.catalog",
-                            "Default Schema"));
+                    sb.append(workbench
+                            .getResourceConverter()
+                            .getFormattedString(
+                                "jdbcExplorer.default.name.catalog",
+                                "Default Schema",
+                                null));
                     break;
                 case TABLE:
-                    sb.append(
-                        workbench.getResourceConverter().getFormattedString(
-                            "jdbcExplorer.default.name.table", "Table"));
+                    sb.append(workbench
+                            .getResourceConverter()
+                            .getFormattedString(
+                                "jdbcExplorer.default.name.table",
+                                "Table",
+                                null));
                     break;
                 case COLUMN:
-                    sb.append(
-                        workbench.getResourceConverter().getFormattedString(
-                            "jdbcExplorer.default.name.column",
-                            "Column"));
+                    sb.append(workbench
+                            .getResourceConverter()
+                            .getFormattedString(
+                                "jdbcExplorer.default.name.column",
+                                "Column",
+                                null));
                     break;
                 }
             } else {
@@ -212,7 +211,8 @@ public class JdbcExplorer
 
             // now for columns
 
-            sb.append(" - ").append(columnInfo.displayType());
+            sb.append(" - ")
+                .append(columnInfo.displayType());
 
             return sb.toString();
         }
@@ -220,22 +220,16 @@ public class JdbcExplorer
         public void setChildren() {
             if (!gotChildren) {
                 if (type == NodeType.TABLE) {
-                    DefaultMutableTreeNode theParentTreeNode =
-                        (DefaultMutableTreeNode) treeNode.getParent();
+                    DefaultMutableTreeNode theParentTreeNode = (DefaultMutableTreeNode) treeNode.getParent();
 
-                    Node theParentNode =
-                        (Node) theParentTreeNode.getUserObject();
+                    Node theParentNode = (Node) theParentTreeNode.getUserObject();
 
                     // This is a table, parent is a schema
 
-                    List<DbColumn> columns =
-                        jdbcMetaData.getAllDbColumns(
-                            theParentNode.name, name);
+                    Vector<DbColumn> columns = jdbcMetaData.getAllDbColumns(theParentNode.name, name);
                     for (DbColumn column : columns) {
-                        Node columnNode = new Node(
-                            column.name, NodeType.COLUMN, treeNode, column);
-                        MutableTreeNode columnTreeNode =
-                            new DefaultMutableTreeNode(columnNode, false);
+                        Node columnNode = new Node(column.name, NodeType.COLUMN, treeNode, column);
+                        MutableTreeNode columnTreeNode = new DefaultMutableTreeNode(columnNode, false);
                         treeNode.add(columnTreeNode);
                     }
                 }
@@ -244,8 +238,7 @@ public class JdbcExplorer
         }
     }
 
-    /**
-     * This method is called from within the constructor to
+    /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
@@ -278,5 +271,4 @@ public class JdbcExplorer
 
     private JTreeUpdater updater;
 }
-
-// End JdbcExplorer.java
+// End JDBCExplorer.java

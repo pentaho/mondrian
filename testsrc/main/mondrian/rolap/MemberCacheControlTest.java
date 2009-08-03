@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2009 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,13 +34,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         MondrianProperties.instance().EnableRolapCubeMemberCache.get();
 
     // TODO: add multi-thread tests.
-    // TODO: test moveMember (execute source.children and target.children before
-    //       and after)
+    // TODO: test moveMember (execute source.children and target.children before and after)
     // TODO: test moveMember negaitve case previous parent not in correct level
     // TODO: test set properties negative: refer to invalid property
     // TODO: test set properties negative: set prop to invalid value
-    // TODO: edit a different member not known to be in cache -- will it be
-    //       fetched?
+    // TODO: edit a different member not known to be in cache -- will it be fetched?
 
     public MemberCacheControlTest() {
     }
@@ -212,24 +210,20 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     {
         return cc.createUnionSet(
             // all stores in OR
-            cc.createMemberSet(findMember(tc, "Sales", "Retail", "OR"), true),
+            cc.createMemberSet(findMember(tc, "Sales", "Retail","OR"), true),
             // all stores in Hidalgo, Zacatecas
-            cc.createMemberSet(
-                findMember(tc, "Sales", "Retail", "Zacatecas", "Hidalgo"),
-                true),
+            cc.createMemberSet(findMember(tc, "Sales", "Retail","Zacatecas","Hidalgo"), true),
             // a single store
-            cc.createMemberSet(
-                findMember(tc, "Sales", "Retail", "CA", "Alameda", "HQ"),
-                false),
+            cc.createMemberSet(findMember(tc, "Sales", "Retail","CA","Alameda","HQ"), false),
             // a range of stores
             cc.createMemberSet(
-                true, findMember(tc, "Sales", "Retail", "WA", "Bremerton"),
-                true, findMember(tc, "Sales", "Retail", "Yucatan", "Merida"),
+                true, findMember(tc, "Sales", "Retail","WA","Bremerton"),
+                true, findMember(tc, "Sales", "Retail","Yucatan","Merida"),
                 false),
             // all stores in a range of states
             cc.createMemberSet(
-                true, findMember(tc, "Sales", "Retail", "DF"),
-                true, findMember(tc, "Sales", "Retail", "Jalisco"),
+                true, findMember(tc, "Sales", "Retail","DF"),
+                true, findMember(tc, "Sales", "Retail","Jalisco"),
                 true));
     }
 
@@ -310,18 +304,14 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             resultString);
 
         // Change properties
-        Member m =
-            findMember(
-                tc, "Sales", "Store", "USA", "CA", "San Francisco", "Store 14");
+        Member m = findMember(tc, "Sales", "Store","USA","CA","San Francisco","Store 14");
         cc.execute(cc.createSetPropertyCommand(m, "Store Manager", "Higgins"));
         cc.execute(
             cc.createCompoundCommand(
                 Arrays.asList(
-                    cc.createSetPropertyCommand(
-                        m, "Street address", "770 Mission St"),
+                    cc.createSetPropertyCommand(m, "Street address", "770 Mission St"),
                     cc.createSetPropertyCommand(m, "Store Sqft", 6000),
-                    cc.createSetPropertyCommand(
-                        m, "Has coffee bar", "false"))));
+                    cc.createSetPropertyCommand(m, "Has coffee bar", "false"))));
 
         // Repeat same query; verify properties are changed.
         // Changing properties does not affect measures, so results unchanged.
@@ -388,7 +378,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // after we filter set to just members of store level we're ok
         final Member hqMember =
-            findMember(tc, "Sales", "Retail", "CA", "Alameda", "HQ");
+            findMember(tc, "Sales", "Retail","CA","Alameda","HQ");
         final CacheControl.MemberSet filteredMemberSet =
             cc.filter(hqMember.getLevel(), memberSet);
         command =
@@ -481,8 +471,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
         final RolapCubeMember alamedaCubeMember =
-            (RolapCubeMember) findMember(
-                tc, "Sales", "Retail", "CA", "Alameda");
+            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA", "Alameda");
         final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
         final RolapMember caMember = alamedaMember.getParentMember();
         final RolapMember rootMember = caMember.getParentMember();
@@ -546,14 +535,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         }
 
         final RolapCubeMember alamedaCubeMember =
-            (RolapCubeMember) findMember(
-                tc, "Sales", "Retail", "CA", "Alameda");
+            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA", "Alameda");
         final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
         final RolapMember caMember = alamedaMember.getParentMember();
 
         final RolapCubeMember empCubeMember =
-            (RolapCubeMember) findMember(
-                tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
+            (RolapCubeMember) findMember(tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
         final RolapMember empMember = empCubeMember.rolapMember;
 
         try {
@@ -581,9 +568,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             command = cc.createSetPropertyCommand(null, "foo", 1);
             fail("expected exception, got " + command);
         } catch (IllegalArgumentException e) {
-            assertEquals(
-                "cannot set properties on null member",
-                e.getMessage());
+            assertEquals("cannot set properties on null member", e.getMessage());
         }
 
         try {

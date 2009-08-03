@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2008-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -27,8 +27,10 @@ import java.util.*;
  * @version $Id$
  */
 class RolapEvaluatorRoot {
-    final Map<Object, Object> expResultCache = new HashMap<Object, Object>();
-    final Map<Object, Object> tmpExpResultCache = new HashMap<Object, Object>();
+    final Map<Object, Object> expResultCache =
+        new HashMap<Object, Object>();
+    final Map<Object, Object> tmpExpResultCache =
+        new HashMap<Object, Object>();
     final RolapCube cube;
     final RolapConnection connection;
     final SchemaReader schemaReader;
@@ -45,12 +47,6 @@ class RolapEvaluatorRoot {
      */
     final RolapMember[] defaultMembers;
 
-    final MondrianProperties.SolveOrderModeEnum solveOrderMode =
-        Util.lookup(
-            MondrianProperties.SolveOrderModeEnum.class,
-            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
-            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
-
     /**
      * Creates a RolapEvaluatorRoot.
      *
@@ -63,10 +59,10 @@ class RolapEvaluatorRoot {
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
-        for (RolapHierarchy hierarchy : cube.getHierarchies()) {
+        for (Dimension dimension : cube.getDimensions()) {
             list.add(
                 (RolapMember) schemaReader.getHierarchyDefaultMember(
-                    hierarchy));
+                    dimension.getHierarchy()));
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =
@@ -105,10 +101,7 @@ class RolapEvaluatorRoot {
      * <p>The default implementation throws
      * {@link UnsupportedOperationException}.
      */
-    protected Evaluator.NamedSetEvaluator evaluateNamedSet(
-        String name,
-        Exp exp)
-    {
+    protected Evaluator.NamedSetEvaluator evaluateNamedSet(String name, Exp exp) {
         throw new UnsupportedOperationException();
     }
 

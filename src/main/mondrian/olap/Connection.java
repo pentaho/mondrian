@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -123,44 +123,6 @@ public interface Connection {
      * @return Data source
      */
     DataSource getDataSource();
-
-    /**
-     * Creates a Scenario.
-     *
-     * <p>It does not become the active scenario for the current connection.
-     * To do this, call {@link #setScenario(Scenario)}.
-     *
-     * @see #setScenario
-     *
-     * @return a new Scenario
-     */
-    Scenario createScenario();
-
-    /**
-     * Sets the active Scenario of this connection.
-     *
-     * <p>After setting a scenario, the client may call
-     * {@link Cell#setValue} to change the value of cells returned
-     * from queries. The value of those cells is changed. This operation is
-     * referred to as 'writeback', and is used to perform 'what if' analysis,
-     * such as budgeting. See {@link mondrian.olap.Scenario} for more details.
-     *
-     * <p>If {@code scenario} is null, the connection will have no active
-     * scenario, and writeback is not allowed.
-     *
-     * <p>Scenarios are created using {@link #createScenario()}.
-     *
-     * @param scenario Scenario
-     */
-    void setScenario(Scenario scenario);
-
-    /**
-     * Returns this connection's active Scenario, or null if there is no
-     * active Scenario.
-     *
-     * @return Active scenario, or null
-     */
-    Scenario getScenario();
 }
 
 // End Connection.java

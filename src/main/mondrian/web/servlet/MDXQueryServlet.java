@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,19 +31,18 @@ import mondrian.web.taglib.ResultCache;
 import org.eigenbase.xom.StringEscaper;
 
 /**
- * <code>MdxQueryServlet</code> is a servlet which receives MDX queries,
+ * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,
  * executes them, and formats the results in an HTML table.
  *
  * @author  Sean McCullough
  * @since 13 February, 2002
  * @version $Id$
  */
-public class MdxQueryServlet extends HttpServlet {
+public class MDXQueryServlet extends HttpServlet {
     private String connectString;
     private CatalogLocator locator;
 
-    /**
-     * Initializes the servlet.
+    /** Initializes the servlet.
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -57,27 +56,21 @@ public class MdxQueryServlet extends HttpServlet {
         locator = new ServletContextCatalogLocator(config.getServletContext());
     }
 
-    /**
-     * Destroys the servlet.
+    /** Destroys the servlet.
      */
     public void destroy() {
     }
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
+    /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
      * @param response servlet response
      */
-    protected void processRequest(
-        HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, java.io.IOException
-    {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, java.io.IOException {
         String queryName = request.getParameter("query");
         request.setAttribute("query", queryName);
         if (queryName != null) {
-            processTransform(request, response);
+            processTransform(request,response);
             return;
         }
         String queryString = request.getParameter("queryString");
@@ -110,10 +103,8 @@ public class MdxQueryServlet extends HttpServlet {
                 // if it has more than 1 dimension
                 if (j == 0 && result.getAxes().length > 1) {
                     // Print the top-left cell, and fill it with slicer members.
-                    html.append("<td nowrap class='slicer' rowspan='")
-                        .append(columnWidth)
-                        .append("' colspan='")
-                        .append(rowWidth)
+                    html.append("<td nowrap class='slicer' rowspan='").append(
+                        columnWidth).append("' colspan='").append(rowWidth)
                         .append("'>");
                     for (Position position : slicers) {
                         int k = 0;
@@ -124,6 +115,15 @@ public class MdxQueryServlet extends HttpServlet {
                             html.append(member.getUniqueName());
                             k++;
                         }
+/*
+                        for (int k = 0; k < position.size(); k++) {
+                            if (k > 0) {
+                                html.append("<br/>");
+                            }
+                            Member member = position.getMember(k);
+                            html.append(member.getUniqueName());
+                        }
+*/
                     }
                     html.append("&nbsp;</td>").append(Util.nl);
                 }
@@ -134,9 +134,8 @@ public class MdxQueryServlet extends HttpServlet {
                     //Member member = columns[i].getMember(j);
                     Member member = position.get(j);
                     int width = 1;
-                    while ((i + 1) < columns.size()
-                        && columns.get(i + 1).get(j) == member)
-                    {
+                    while ((i + 1) < columns.size() &&
+                            columns.get(i + 1).get(j) == member) {
                         i++;
                         width++;
                     }
@@ -152,9 +151,8 @@ public class MdxQueryServlet extends HttpServlet {
                     html.append("<tr>");
                     final Position row = rows.get(i);
                     for (Member member : row) {
-                        html.append("<td nowrap class='rowheading'>")
-                            .append(member.getUniqueName())
-                            .append("</td>");
+                        html.append("<td nowrap class='rowheading'>").append(
+                            member.getUniqueName()).append("</td>");
                     }
                     for (int j = 0; j < columns.size(); j++) {
                         showCell(html, result.getCell(new int[] {j, i}));
@@ -164,7 +162,7 @@ public class MdxQueryServlet extends HttpServlet {
             } else {
                 html.append("<tr>");
                 for (int i = 0; i < columns.size(); i++) {
-                    showCell(html, result.getCell(new int[] {i}));
+                    showCell(html,result.getCell(new int[]{i}));
                 }
                 html.append("</tr>");
             }
@@ -184,36 +182,30 @@ public class MdxQueryServlet extends HttpServlet {
 
         request.setAttribute("result", html.toString());
         response.setHeader("Content-Type", "text/html");
-        getServletContext().getRequestDispatcher("/adhoc.jsp").include(
-            request, response);
+        getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
     }
 
     private void showCell(StringBuilder out, Cell cell) {
-        out.append("<td class='cell'>")
-            .append(cell.getFormattedValue())
-            .append("</td>");
+        out.append("<td class='cell'>").append(cell.getFormattedValue()).append(
+            "</td>");
     }
 
-    private void processTransform(
-        HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException
-    {
+    private void processTransform(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String queryName = request.getParameter("query");
-        ResultCache rc =
-            ResultCache.getInstance(
-                request.getSession(), getServletContext(), queryName);
+        ResultCache rc = ResultCache.getInstance(request.getSession(), getServletContext(), queryName);
         Query query = rc.getQuery();
-        query = query.clone();
+        query = query.safeClone();
         rc.setDirty();
         String operation = request.getParameter("operation");
         if (operation.equals("expand")) {
             String memberName = request.getParameter("member");
             boolean fail = true;
             Member member = query.getSchemaReader(true).getMemberByUniqueName(
-                Util.parseIdentifier(memberName), fail);
+                    Util.parseIdentifier(memberName), fail);
             if (true) {
                 throw new UnsupportedOperationException(
-                    "query.toggleDrillState(member) has been de-supported");
+                        "query.toggleDrillState(member) has been de-supported");
             }
         } else {
             throw Util.newInternal("unkown operation '" + operation + "'");
@@ -224,44 +216,33 @@ public class MdxQueryServlet extends HttpServlet {
             redirect = "/adhoc.jsp";
         }
         response.setHeader("Content-Type", "text/html");
-        getServletContext().getRequestDispatcher(redirect).include(
-            request, response);
+        getServletContext().getRequestDispatcher(redirect).include(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
+    /** Handles the HTTP <code>GET</code> method.
      * @param request servlet request
      * @param response servlet response
      */
-    protected void doGet(
-        HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, java.io.IOException
-    {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, java.io.IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
+    /** Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
      */
-    protected void doPost(
-        HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, java.io.IOException
-    {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, java.io.IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
+    /** Returns a short description of the servlet.
      */
     public String getServletInfo() {
-        return "Process an MDX query and return the result formatted as an "
-            + "HTML table";
+        return "Process an MDX query and return the result formatted as an HTML table";
     }
 
 }
 
-// End MdxQueryServlet.java
+// End MDXQueryServlet.java

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -107,23 +107,17 @@ public class CsvLoader {
     private String[] columns;
 
     public CsvLoader(InputStream in, String charset)
-        throws UnsupportedEncodingException
-    {
+            throws UnsupportedEncodingException {
         this(new InputStreamReader(in, charset));
     }
-
-    public CsvLoader(
-        InputStream in, char separator,
-        boolean includesHeader, String charset)
-        throws UnsupportedEncodingException
-    {
+    public CsvLoader(InputStream in, char separator,
+                boolean includesHeader, String charset)
+            throws UnsupportedEncodingException {
         this(new InputStreamReader(in, charset), separator, includesHeader);
     }
-
     public CsvLoader(InputStream in) {
         this(new InputStreamReader(in));
     }
-
     public CsvLoader(InputStream in, char separator, boolean includesHeader) {
         this(new InputStreamReader(in), separator, includesHeader);
     }
@@ -131,27 +125,22 @@ public class CsvLoader {
     public CsvLoader(String filename) throws FileNotFoundException {
         this(new FileReader(filename));
     }
-
     public CsvLoader(String filename, char separator, boolean includesHeader)
-        throws FileNotFoundException
-    {
+                throws FileNotFoundException {
         this(new FileReader(filename), separator, includesHeader);
     }
 
     public CsvLoader(File file) throws FileNotFoundException {
         this(new FileReader(file));
     }
-
     public CsvLoader(File file, char separator, boolean includesHeader)
-        throws FileNotFoundException
-    {
+                throws FileNotFoundException {
         this(new FileReader(file), separator, includesHeader);
     }
 
     public CsvLoader(Reader reader) {
         this(reader, DEFAULT_SEPARATOR, false);
     }
-
     public CsvLoader(Reader reader, char separator, boolean includesHeader) {
         this.bufReader = (reader instanceof BufferedReader)
             ? (BufferedReader) reader
@@ -160,7 +149,6 @@ public class CsvLoader {
         this.separator = separator;
         this.includesHeader = includesHeader;
     }
-
     protected void initialize() throws IOException {
         if (this.columnNames == null) {
             if (this.columns == null) {
@@ -309,9 +297,8 @@ public class CsvLoader {
                 } else if (c == CHEVRON_START) {
                     inChevrons = true;
                 }
-                if (inDoubleQuote || inSingleQuote
-                    || inParen || inBracket || inBraces || inChevrons)
-                {
+                if (inDoubleQuote || inSingleQuote ||
+                        inParen || inBracket || inBraces || inChevrons) {
                     buf.append(c);
                 } else if (c == this.separator) {
                     String data  = buf.toString();

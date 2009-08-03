@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -73,10 +73,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals(
-                "Mondrian Error:Calculated member '[Measures].[Profit2]' "
-                + "already exists in cube 'Sales'"))
-            {
+            if (!msg.equals("Mondrian Error:Calculated member '[Measures].[Profit2]' already exists in cube 'Sales'")) {
                 throw e;
             }
         }
@@ -127,11 +124,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals(
-                "Mondrian Error:Member property must have a value or an "
-                + "expression. (Property 'FORMAT_STRING' of member 'Profit4' "
-                + "of cube 'Sales'.)"))
-            {
+            if (!msg.equals("Mondrian Error:Member property must have a value or an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
                 throw e;
             }
         }
@@ -147,11 +140,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals(
-                "Mondrian Error:Member property must not have both a value and "
-                + "an expression. (Property 'FORMAT_STRING' of member "
-                + "'Profit4' of cube 'Sales'.)"))
-            {
+            if (!msg.equals("Mondrian Error:Member property must not have both a value and an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
                 throw e;
             }
         }
@@ -167,9 +156,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals(
-                "Mondrian Error:Named set in cube 'Sales' has bad formula"))
-            {
+            if (!msg.equals("Mondrian Error:Named set in cube 'Sales' has bad formula")) {
                 throw e;
             }
         }
@@ -206,7 +193,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Profit Change is defined in the query.
         assertQueryReturns(
             "WITH MEMBER [Measures].[Profit Change]\n"
-            + " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].[Time].PrevMember)'\n"
+            + " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].PrevMember)'\n"
             + "SELECT {[Measures].[Profit], [Measures].[Profit Change]} ON COLUMNS,\n"
             + " {[Time].[1997].[Q2].children} ON ROWS\n"
             + "FROM [Sales]",
@@ -372,8 +359,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalculatedMemberCaption() {
-        String mdx =
-            "select {[Measures].[Profit Growth]} on columns from Sales";
+        String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
         Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.getPositions().get(0);
@@ -388,10 +374,8 @@ public class TestCalculatedMembers extends BatchTestCase {
         String queryString =
             "with member [Measures].[Foo] as ' Filter([Product].members, 1 <> 0) '"
             + "select {[Measures].[Foo]} on columns from [Sales]";
-        String pattern =
-            "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must "
-            + "not be a set";
-        assertQueryThrows(queryString, pattern);
+        String pattern = "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must not be a set";
+        assertThrows(queryString, pattern);
 
         // A tuple is OK, because it can be converted to a scalar expression.
         queryString =
@@ -405,25 +389,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             "[Customers].[Country]",
             "Member expression '[Customers].[Country]' must not be a set");
 
-        // Hierarchy can be converted.
-        assertExprReturns("[Customers].[Customers]", "266,773");
-
-        // Dimension can be converted, if unambiguous.
+        // Dimension can be converted.
         assertExprReturns("[Customers]", "266,773");
-
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // SSAS 2005 does not have default hierarchies.
-            assertExprThrows(
-                "[Time]",
-                "The 'Time' dimension contains more than one hierarchy, "
-                + "therefore the hierarchy must be explicitly specified.");
-        } else {
-            // Default to first hierarchy.
-            assertExprReturns("[Time]", "266,773");
-        }
-
-        // Explicit hierarchy OK.
-        assertExprReturns("[Time].[Time]", "266,773");
 
         // Member can be converted.
         assertExprReturns("[Customers].[USA]", "266,773");
@@ -525,16 +492,20 @@ public class TestCalculatedMembers extends BatchTestCase {
 
         TestContext testContext = TestContext.create(
             null, s, null, null, null, null);
-        testContext.assertQueryThrows(
+        testContext.assertThrows(
             "select {[Measures].[With a [bracket] inside it]} on columns,\n"
             + " {[Gender].Members} on rows\n"
-            + "from [" + cubeName + "]",
-            "Syntax error at line 1, column 38, token 'inside'");
+            + "from ["
+            + cubeName
+            + "]",
+                "Syntax error at line 1, column 38, token 'inside'");
 
         testContext.assertQueryReturns(
             "select {[Measures].[With a [bracket]] inside it]} on columns,\n"
             + " {[Gender].Members} on rows\n"
-            + "from [" + cubeName + "]",
+            + "from ["
+            + cubeName
+            + "]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -563,7 +534,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     public void testCalcMemberWithQuote() {
         // single-quote inside double-quoted string literal
         // MSAS does not allow this
-        assertQueryThrows(
+        assertThrows(
             "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' "
             + "select {[Measures].[Foo]} on columns "
             + "from [Sales]",
@@ -671,8 +642,7 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     /**
      * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-137">
-     * MONDRIAN-137, "error if calc member in schema file contains single
-     * quotes"</a>.
+     * MONDRIAN-137, "error if calc member in schema file contains single quotes"</a>.
      */
     public void testQuoteInCalcMember() {
         final String cubeName = "Sales_Bug1410383";
@@ -749,7 +719,7 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testChildrenOfCalcMembers() {
         assertQueryReturns(
-            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].[Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
+            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
             + "select Crossjoin([Time].[# Months Product Sold].Children,\n"
             + "     [Store].[All Stores].Children) ON COLUMNS,\n"
             + "   [Product].[All Products].Children ON ROWS from [Sales] where [Measures].[Unit Sales]",
@@ -889,31 +859,31 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberCustomFormatterInQueryNegative() {
-        assertQueryThrows(
+        assertThrows(
             "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
-            + " CELL_FORMATTER='mondrian.test.NonExistentCellFormatter' \n"
-            + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
-            + " {[Store].Children} on rows\n"
-            + "from [Sales]",
+                + " CELL_FORMATTER='mondrian.test.NonExistentCellFormatter' \n"
+                + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
+                + " {[Store].Children} on rows\n"
+                + "from [Sales]",
             "Failed to load formatter class 'mondrian.test.NonExistentCellFormatter' for member '[Measures].[Foo]'.");
     }
 
     public void testCalcMemberCustomFormatterInQueryNegative2() {
-        String query =
-            "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
+        String query = "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
             + " CELL_FORMATTER='java.lang.String' \n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
             + " {[Store].Children} on rows\n"
             + "from [Sales]";
-        assertQueryThrows(
+        assertThrows(
             query,
             "Failed to load formatter class 'java.lang.String' for member '[Measures].[Foo]'.");
-        assertQueryThrows(
+        assertThrows(
             query,
             "java.lang.ClassCastException: java.lang.String");
     }
 
     public void testCalcMemberCustomFormatterInNonMeasureInQuery() {
+
         // CELL_FORMATTER is ignored for calc members which are not measures.
         //
         // We could change this behavior if it makes sense. In fact, we would
@@ -984,7 +954,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
                 + "  <CalculatedMemberProperty name=\"CELL_FORMATTER\" value=\"mondrian.test.NonExistentCellFormatter\"/>\n"
                 + "</CalculatedMember>\n");
-        testContext.assertQueryThrows(
+        testContext.assertThrows(
             "select {[Measures].[Unit Sales], [Measures].[Profit Formatted]} on 0,\n"
                 + " {[Store].Children} on rows\n"
                 + "from [Sales]",
@@ -995,6 +965,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * Testcase for bug 1784617, "Using StrToTuple() in schema errors out".
      */
     public void testStrToSetInCubeCalcMember() {
+
         // calc member defined in schema
         String cubeName = "Sales";
         TestContext testContext =
@@ -1026,8 +997,7 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testCreateCalculatedMember() {
         // REVIEW: What is the purpose of this test?
-        String query =
-            "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
+        String query = "WITH MEMBER [Product].[Calculated Member] as 'AGGREGATE({})'\n"
             + "SELECT {[Measures].[Unit Sales]} on 0\n"
             + "FROM [Sales]\n"
             + "WHERE ([Product].[Calculated Member])";
@@ -1043,8 +1013,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL)
         };
 
-        assertQuerySqlOrNot(
-            this.getTestContext(), query, patterns, true, true, true);
+        assertQuerySqlOrNot(this.getTestContext(), query, patterns, true, true, true);
     }
 
     /**
@@ -1052,33 +1021,32 @@ public class TestCalculatedMembers extends BatchTestCase {
      * to include the calculated member (but does not).
      */
     public void testSetIncludesSelf() {
-        assertQueryReturns(
-            "with set [Top Products] as ' [Product].Children '\n"
+        assertQueryReturns("with set [Top Products] as ' [Product].Children '\n"
             + "member [Product].[Top Product Total] as ' Aggregate([Top Products]) '\n"
             + "select {[Product].[Food], [Product].[Top Product Total]} on 0,"
             + " [Gender].Members on 1\n"
             + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[Top Product Total]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
-            + "Row #0: 191,940\n"
-            + "Row #0: 266,773\n"
-            + "Row #1: 94,814\n"
-            + "Row #1: 131,558\n"
-            + "Row #2: 97,126\n"
-            + "Row #2: 135,215\n");
+                           "Axis #0:\n"
+                           + "{}\n"
+                           + "Axis #1:\n"
+                           + "{[Product].[All Products].[Food]}\n"
+                           + "{[Product].[Top Product Total]}\n"
+                           + "Axis #2:\n"
+                           + "{[Gender].[All Gender]}\n"
+                           + "{[Gender].[All Gender].[F]}\n"
+                           + "{[Gender].[All Gender].[M]}\n"
+                           + "Row #0: 191,940\n"
+                           + "Row #0: 266,773\n"
+                           + "Row #1: 94,814\n"
+                           + "Row #1: 131,558\n"
+                           + "Row #2: 97,126\n"
+                           + "Row #2: 135,215\n");
     }
 
     /**
-     * Tests that if a filter is associated with input to a cal member with
-     * lower solve order; the filter computation uses the context that contains
-     * the other cal members(those with higher solve order).
+     * Test that if a filter is associated with input to a cal member with lower solve order;
+     * the filter computation uses the context that contains the other cal members(those with
+     * higher solve order).
      */
     public void testNegativeSolveOrderForCalMemberWithFilter() {
         assertQueryReturns(
@@ -1118,8 +1086,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * Tests that if a filter is associated with input to a cal member with
-     * higher solve order; the filter computation ignores the other cal members.
+     * Test that if a filter is associated with input to a cal member with higher solve order;
+     * the filter computation ignores the other cal members.
      */
     public void testNegativeSolveOrderForCalMemberWithFilters2() {
         assertQueryReturns(
@@ -1260,162 +1228,6 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Row #0: true\n"
             + "Row #0: 0\n"
             + "Row #0: 2\n");
-    }
-
-    /**
-     * Query that simulates a compound slicer by creating a calculated member
-     * that aggregates over a set and places it in the WHERE clause.
-     */
-    public void testSimulatedCompoundSlicer() {
-        assertQueryReturns(
-            "with\n"
-            + "  member [Measures].[Price per Unit] as\n"
-            + "    [Measures].[Store Sales] / [Measures].[Unit Sales]\n"
-            + "  set [Top Products] as\n"
-            + "    TopCount(\n"
-            + "      [Product].[Brand Name].Members,\n"
-            + "      3,\n"
-            + "      ([Measures].[Unit Sales], [Time].[1997].[Q3]))\n"
-            + "  member [Product].[Top] as\n"
-            + "    Aggregate([Top Products])\n"
-            + "select {\n"
-            + "  [Measures].[Unit Sales],\n"
-            + "  [Measures].[Price per Unit]} on 0,\n"
-            + " [Gender].Children * [Marital Status].Children on 1\n"
-            + "from [Sales]\n"
-            + "where ([Product].[Top], [Time].[1997].[Q3])",
-            "Axis #0:\n"
-            + "{[Product].[Top], [Time].[1997].[Q3]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Price per Unit]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
-            + "Row #0: 779\n"
-            + "Row #0: 2.40\n"
-            + "Row #1: 811\n"
-            + "Row #1: 2.24\n"
-            + "Row #2: 829\n"
-            + "Row #2: 2.23\n"
-            + "Row #3: 886\n"
-            + "Row #3: 2.25\n");
-
-        // Now the equivalent query, using a set in the slicer.
-        assertQueryReturns(
-            "with\n"
-            + "  member [Measures].[Price per Unit] as\n"
-            + "    [Measures].[Store Sales] / [Measures].[Unit Sales]\n"
-            + "  set [Top Products] as\n"
-            + "    TopCount(\n"
-            + "      [Product].[Brand Name].Members,\n"
-            + "      3,\n"
-            + "      ([Measures].[Unit Sales], [Time].[1997].[Q3]))\n"
-            + "select {\n"
-            + "  [Measures].[Unit Sales],\n"
-            + "  [Measures].[Price per Unit]} on 0,\n"
-            + " [Gender].Children * [Marital Status].Children on 1\n"
-            + "from [Sales]\n"
-            + "where [Top Products] * [Time].[1997].[Q3]",
-            "Axis #0:\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony], [Time].[1997].[Q3]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Price per Unit]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
-            + "Row #0: 779\n"
-            + "Row #0: 2.40\n"
-            + "Row #1: 811\n"
-            + "Row #1: 2.24\n"
-            + "Row #2: 829\n"
-            + "Row #2: 2.23\n"
-            + "Row #3: 886\n"
-            + "Row #3: 2.25\n");
-    }
-
-    public void testCompoundSlicerOverTuples() {
-        // reference query
-        assertQueryReturns(
-            "select [Measures].[Unit Sales] on 0,\n"
-            + "    TopCount(\n"
-            + "      [Product].[Product Category].Members\n"
-            + "      * [Customers].[City].Members,\n"
-            + "      10) on 1\n"
-            + "from [Sales]\n"
-            + "where [Time].[1997].[Q3]",
-            "Axis #0:\n"
-            + "{[Time].[1997].[Q3]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Burnaby]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Cliffside]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Haney]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Ladner]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Langford]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Langley]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Metchosin]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[N. Vancouver]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Newton]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Oak Bay]}\n"
-            + "Row #0: \n"
-            + "Row #1: \n"
-            + "Row #2: \n"
-            + "Row #3: \n"
-            + "Row #4: \n"
-            + "Row #5: \n"
-            + "Row #6: \n"
-            + "Row #7: \n"
-            + "Row #8: \n"
-            + "Row #9: \n");
-
-        // The actual query. Note that the set in the slicer has two dimensions.
-        // This could not be expressed using calculated members and the
-        // Aggregate function.
-        assertQueryReturns(
-            "with\n"
-            + "  member [Measures].[Price per Unit] as\n"
-            + "    [Measures].[Store Sales] / [Measures].[Unit Sales]\n"
-            + "  set [Top Product Cities] as\n"
-            + "    TopCount(\n"
-            + "      [Product].[Product Category].Members\n"
-            + "      * [Customers].[City].Members,\n"
-            + "      3,\n"
-            + "      ([Measures].[Unit Sales], [Time].[1997].[Q3]))\n"
-            + "select {\n"
-            + "  [Measures].[Unit Sales],\n"
-            + "  [Measures].[Price per Unit]} on 0,\n"
-            + " [Gender].Children * [Marital Status].Children on 1\n"
-            + "from [Sales]\n"
-            + "where [Top Product Cities] * [Time].[1997].[Q3]",
-            "Axis #0:\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods], [Customers].[All Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables], [Customers].[All Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods], [Customers].[All Customers].[USA].[WA].[Puyallup], [Time].[1997].[Q3]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Price per Unit]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
-            + "Row #0: 483\n"
-            + "Row #0: 2.21\n"
-            + "Row #1: 419\n"
-            + "Row #1: 2.21\n"
-            + "Row #2: 422\n"
-            + "Row #2: 2.22\n"
-            + "Row #3: 332\n"
-            + "Row #3: 2.20\n");
     }
 }
 

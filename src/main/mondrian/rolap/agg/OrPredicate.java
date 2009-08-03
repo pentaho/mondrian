@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,10 +45,8 @@ public class OrPredicate extends ListPredicate {
     }
 
     public StarPredicate or(StarPredicate predicate) {
-        if (predicate instanceof OrPredicate
-            && predicate.getConstrainedColumnBitKey().equals(
-                getConstrainedColumnBitKey()))
-        {
+        if (predicate instanceof OrPredicate &&
+            predicate.getConstrainedColumnBitKey().equals(getConstrainedColumnBitKey())) {
             // Do not collapse OrPredicates with different number of columns.
             // Keeping them separate helps the SQL translation to IN-list.
             ListPredicate that = (ListPredicate) predicate;
@@ -86,8 +84,7 @@ public class OrPredicate extends ListPredicate {
     private void checkInListForPredicate(
         StarPredicate predicate,
         SqlQuery sqlQuery,
-        Map<BitKey, List<StarPredicate>> predicateMap)
-    {
+        Map<BitKey, List<StarPredicate>> predicateMap) {
         BitKey inListRHSBitKey;
 
         if (predicate instanceof ValueColumnPredicate) {
@@ -97,7 +94,7 @@ public class OrPredicate extends ListPredicate {
         } else if (predicate instanceof AndPredicate) {
             // OR of ANDs over a set of values over the same column set
             inListRHSBitKey =
-                ((AndPredicate) predicate).checkInList(sqlQuery, columnBitKey);
+                  ((AndPredicate) predicate).checkInList(sqlQuery, columnBitKey);
         } else {
             inListRHSBitKey = columnBitKey.emptyCopy();
         }
@@ -125,9 +122,8 @@ public class OrPredicate extends ListPredicate {
      *
      * @param sqlQuery Query
      * @param buf buffer to build sql
-     * @param inListRHSBitKey which column positions are included in
-     *     the IN predicate; the non included positions corresponde to
-     *     columns that are nulls
+     * @param inListRHSBitKey which column positions are included in the IN predicate
+     * The non included positions corresponde to columns that are nulls.
      * @param predicateList the list of predicates to translate.
      */
     private void toInListSql(
@@ -203,11 +199,10 @@ public class OrPredicate extends ListPredicate {
             }
 
             if (predicate instanceof AndPredicate) {
-                ((AndPredicate) predicate).toInListSql(
-                    sqlQuery, buf, inListRHSBitKey);
+                ((AndPredicate)predicate).toInListSql(sqlQuery, buf, inListRHSBitKey);
             } else {
-                assert predicate instanceof ValueColumnPredicate;
-                ((ValueColumnPredicate) predicate).toInListSql(sqlQuery, buf);
+                assert (predicate instanceof ValueColumnPredicate);
+                ((ValueColumnPredicate)predicate).toInListSql(sqlQuery, buf);
             }
         }
         buf.append(")");

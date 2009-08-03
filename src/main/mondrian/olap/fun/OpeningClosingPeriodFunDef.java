@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2008 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,13 +13,13 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.*;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
+import mondrian.calc.impl.DimensionCurrentMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapHierarchy;
 
 import java.util.List;
 
@@ -34,34 +34,33 @@ import java.util.List;
 class OpeningClosingPeriodFunDef extends FunDefBase {
     private final boolean opening;
 
-    static final Resolver OpeningPeriodResolver =
-        new MultiResolver(
+    static final Resolver OpeningPeriodResolver = new MultiResolver(
             "OpeningPeriod",
             "OpeningPeriod([<Level>[, <Member>]])",
             "Returns the first descendant of a member at a level.",
-            new String[] {"fm", "fml", "fmlm"})
-    {
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            return new OpeningClosingPeriodFunDef(dummyFunDef, true);
+            new String[] {"fm", "fml", "fmlm"}) {
+        protected FunDef createFunDef(
+                Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(
+                    dummyFunDef, true);
         }
     };
 
-    static final Resolver ClosingPeriodResolver =
-        new MultiResolver(
+    static final Resolver ClosingPeriodResolver = new MultiResolver(
             "ClosingPeriod",
             "ClosingPeriod([<Level>[, <Member>]])",
             "Returns the last descendant of a member at a level.",
-            new String[] {"fm", "fml", "fmlm", "fmm"})
-    {
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            return new OpeningClosingPeriodFunDef(dummyFunDef, false);
+            new String[] {"fm", "fml", "fmlm", "fmm"}) {
+        protected FunDef createFunDef(
+                Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(
+                    dummyFunDef, false);
         }
     };
 
     public OpeningClosingPeriodFunDef(
-        FunDef dummyFunDef,
-        boolean opening)
-    {
+            FunDef dummyFunDef,
+            boolean opening) {
         super(dummyFunDef);
         this.opening = opening;
     }
@@ -71,10 +70,15 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             // With no args, the default implementation cannot
             // guess the hierarchy, so we supply the Time
             // dimension.
-            RolapHierarchy defaultTimeHierarchy =
-                ((RolapCube) validator.getQuery().getCube()).getTimeHierarchy(
-                    getName());
-            return MemberType.forHierarchy(defaultTimeHierarchy);
+            Dimension defaultTimeDimension =
+                validator.getQuery().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            Hierarchy hierarchy = defaultTimeDimension
+                    .getHierarchy();
+            return MemberType.forHierarchy(hierarchy);
         }
         return super.getResultType(validator, args);
     }
@@ -83,29 +87,27 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         final Exp[] args = call.getArgs();
         final LevelCalc levelCalc;
         final MemberCalc memberCalc;
-        RolapHierarchy defaultTimeHierarchy = null;
+        Dimension defaultTimeDimension = null;
         switch (args.length) {
         case 0:
-            defaultTimeHierarchy =
-                ((RolapCube) compiler.getEvaluator().getCube())
-                    .getTimeHierarchy(getName());
-            memberCalc =
-                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
-                    new DummyExp(
-                        MemberType.forHierarchy(defaultTimeHierarchy)),
-                    defaultTimeHierarchy);
+            defaultTimeDimension =
+                compiler.getEvaluator().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
+            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
             levelCalc = null;
             break;
         case 1:
-            defaultTimeHierarchy =
-                ((RolapCube) compiler.getEvaluator().getCube())
-                    .getTimeHierarchy(getName());
+            defaultTimeDimension =
+                compiler.getEvaluator().getCube().getTimeDimension();
+            if (defaultTimeDimension == null) {
+                throw MondrianResource.instance().
+                            NoTimeDimensionInCube.ex(getName());
+            }
             levelCalc = compiler.compileLevel(call.getArg(0));
-            memberCalc =
-                new HierarchyCurrentMemberFunDef.FixedCalcImpl(
-                    new DummyExp(
-                        MemberType.forHierarchy(defaultTimeHierarchy)),
-                    defaultTimeHierarchy);
+            memberCalc = new DimensionCurrentMemberCalc(defaultTimeDimension);
             break;
         default:
             levelCalc = compiler.compileLevel(call.getArg(0));
@@ -115,20 +117,17 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
 
         // Make sure the member and the level come from the same dimension.
         if (levelCalc != null) {
-            final Dimension memberDimension =
-                memberCalc.getType().getDimension();
+            final Dimension memberDimension = memberCalc.getType().getDimension();
             final Dimension levelDimension = levelCalc.getType().getDimension();
             if (!memberDimension.equals(levelDimension)) {
-                throw MondrianResource.instance()
-                    .FunctionMbrAndLevelHierarchyMismatch.ex(
-                        opening ? "OpeningPeriod" : "ClosingPeriod",
-                        levelDimension.getUniqueName(),
-                        memberDimension.getUniqueName());
+                throw MondrianResource.instance().
+                    FunctionMbrAndLevelHierarchyMismatch.ex(
+                    opening ? "OpeningPeriod" : "ClosingPeriod",
+                    levelDimension.getUniqueName(),
+                    memberDimension.getUniqueName());
             }
         }
-        return new AbstractMemberCalc(
-            call, new Calc[] {levelCalc, memberCalc})
-        {
+        return new AbstractMemberCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
 
@@ -157,18 +156,15 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                     return member;
                 }
 
-                return getDescendant(
-                    evaluator.getSchemaReader(), member,
-                    level, opening);
+                return getDescendant(evaluator.getSchemaReader(), member,
+                        level, opening);
             }
         };
     }
 
     /**
      * Returns the first or last descendant of the member at the target level.
-     * This method is the implementation of both OpeningPeriod and
-     * ClosingPeriod.
-     *
+     * This method is the implementation of both OpeningPeriod and ClosingPeriod.
      * @param schemaReader The schema reader to use to evaluate the function.
      * @param member The member from which the descendant is to be found.
      * @param targetLevel The level to stop at.

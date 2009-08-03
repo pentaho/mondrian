@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
+// http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -77,11 +77,7 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query, and asserts that the result has a given number of columns
      * and rows.
      */
-    protected void assertSize(
-        String queryString,
-        int columnCount,
-        int rowCount)
-    {
+    protected void assertSize(String queryString, int columnCount, int rowCount) {
         Result result = executeQuery(queryString);
         Axis[] axes = result.getAxes();
         Assert.assertTrue(axes.length == 2);
@@ -93,8 +89,8 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query, and asserts that it throws an exception which contains
      * the given pattern.
      */
-    public void assertQueryThrows(String queryString, String pattern) {
-        getTestContext().assertQueryThrows(queryString, pattern);
+    public void assertThrows(String queryString, String pattern) {
+        getTestContext().assertThrows(queryString, pattern);
     }
 
     /**
@@ -163,8 +159,7 @@ public class FoodMartTestCase extends TestCase {
      * the result is the expected one.
      */
     public void assertBooleanExprReturns(String expression, boolean expected) {
-        final String iifExpression =
-            "Iif (" + expression + ",\"true\",\"false\")";
+        final String iifExpression = "Iif (" + expression + ",\"true\",\"false\")";
         final String actual = executeExpr(iifExpression);
         final String expectedString = expected ? "true" : "false";
         assertEquals(expectedString, actual);
@@ -195,12 +190,10 @@ public class FoodMartTestCase extends TestCase {
         TestContext testContext)
     {
         String resultString1 =
-            TestContext.toString(testContext.executeQuery(query1));
+                TestContext.toString(testContext.executeQuery(query1));
         String resultString2 =
-            TestContext.toString(testContext.executeQuery(query2));
-        assertEquals(
-            measureValues(resultString1),
-            measureValues(resultString2));
+                TestContext.toString(testContext.executeQuery(query2));
+        assertEquals(measureValues(resultString1), measureValues(resultString2));
     }
 
     /**
@@ -212,8 +205,8 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected boolean isGroupingSetsSupported() {
-        return MondrianProperties.instance().EnableGroupingSets.get()
-            && getTestContext().getDialect().supportsGroupingSets();
+        return MondrianProperties.instance().EnableGroupingSets.get() &&
+                getTestContext().getDialect().supportsGroupingSets();
     }
 
     protected boolean isDefaultNullMemberRepresentation() {
@@ -228,92 +221,55 @@ public class FoodMartTestCase extends TestCase {
         return salesCubeSchemaReader.getMemberByUniqueName(segmentList, true);
     }
 
-    protected List<Member> storeMembersCAAndOR(
-        SchemaReader salesCubeSchemaReader)
-    {
+    protected List<Member> storeMembersCAAndOR(SchemaReader salesCubeSchemaReader) {
         return Arrays.asList(
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "CA", "Alameda"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "CA", "Alameda", "HQ"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "CA", "Beverly Hills"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "CA", "Beverly Hills",
-                    "Store 6"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "CA", "Los Angeles"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "OR", "Portland"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "OR", "Portland", "Store 11"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "OR", "Salem"),
-                salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Store", "All Stores", "USA", "OR", "Salem", "Store 13"),
-                salesCubeSchemaReader));
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Alameda"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Alameda", "HQ"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Beverly Hills"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Beverly Hills", "Store 6"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "CA",
+                "Los Angeles"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Portland"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Portland", "Store 11"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Salem"), salesCubeSchemaReader),
+            member(Id.Segment.toList("Store", "All Stores", "USA", "OR",
+                "Salem", "Store 13"), salesCubeSchemaReader));
     }
 
     protected List<Member> productMembersPotScrubbersPotsAndPans(
         SchemaReader salesCubeSchemaReader)
     {
         return Arrays.asList(
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pot Scrubbers", "Cormorant"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pot Scrubbers", "Denny"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Denny"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pot Scrubbers", "Red Wing"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pot Scrubbers", "Red Wing"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pots and Pans", "Cormorant"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Cormorant"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pots and Pans", "Denny"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Denny"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pots and Pans", "High Quality"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "High Quality"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pots and Pans", "Red Wing"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Red Wing"),
                 salesCubeSchemaReader),
-            member(
-                Id.Segment.toList(
-                    "Product", "All Products", "Non-Consumable", "Household",
-                    "Kitchen Products", "Pots and Pans", "Sunset"),
+            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
+                "Household", "Kitchen Products", "Pots and Pans", "Sunset"),
                 salesCubeSchemaReader));
     }
 
@@ -322,19 +278,13 @@ public class FoodMartTestCase extends TestCase {
         SchemaReader salesCubeSchemaReader,
         Cube salesCube)
     {
-        Member maleMember =
-            member(
-                Id.Segment.toList("Gender", "All Gender", "M"),
-                salesCubeSchemaReader);
-        Member femaleMember =
-            member(
-                Id.Segment.toList("Gender", "All Gender", "F"),
-                salesCubeSchemaReader);
+        Member maleMember = member(
+            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+        Member femaleMember = member(
+            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
         Member [] members;
         if (includeAllMember) {
-            members = new Member[] {
-                allMember("Gender", salesCube),
-                maleMember,
+            members = new Member[] {allMember("Gender", salesCube), maleMember,
                 femaleMember};
         } else {
             members = new Member[] {maleMember, femaleMember};
@@ -365,8 +315,7 @@ public class FoodMartTestCase extends TestCase {
         return resultDimension;
     }
 
-    protected List<Member> warehouseMembersCanadaMexicoUsa(SchemaReader reader)
-    {
+    protected List<Member> warehouseMembersCanadaMexicoUsa(SchemaReader reader) {
         return Arrays.asList(
             member(Id.Segment.toList(
                 "Warehouse", "All Warehouses", "Canada"), reader),
@@ -395,18 +344,12 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected List<Member> storeMembersUsaAndCanada(
-        boolean includeAllMember,
-        SchemaReader salesCubeSchemaReader,
-        Cube salesCube)
+        boolean includeAllMember, SchemaReader salesCubeSchemaReader, Cube salesCube)
     {
-        Member usaMember =
-            member(
-                Id.Segment.toList("Store", "All Stores", "USA"),
-                salesCubeSchemaReader);
-        Member canadaMember =
-            member(
-                Id.Segment.toList("Store", "All Stores", "CANADA"),
-                salesCubeSchemaReader);
+        Member usaMember = member(Id.Segment.toList("Store", "All Stores", "USA"),
+            salesCubeSchemaReader);
+        Member canadaMember = member(Id.Segment.toList("Store", "All Stores",
+            "CANADA"), salesCubeSchemaReader);
         Member [] members;
         if (includeAllMember) {
             members = new Member[]{
@@ -449,11 +392,8 @@ class TestCaseForker {
     ChooseRunnable chooseRunnable;
 
     public TestCaseForker(
-        BasicQueryTest testCase,
-        long timeoutMs,
-        int threadCount,
-        ChooseRunnable chooseRunnable)
-    {
+            BasicQueryTest testCase, long timeoutMs, int threadCount,
+            ChooseRunnable chooseRunnable) {
         this.testCase = testCase;
         this.timeoutMs = timeoutMs;
         this.threads = new Thread[threadCount];
@@ -461,10 +401,10 @@ class TestCaseForker {
     }
 
     public void run() {
-        ThreadGroup threadGroup = null;
+        ThreadGroup threadGroup = null;//new ThreadGroup("TestCaseForker thread group");
         for (int i = 0; i < threads.length; i++) {
             final int threadIndex = i;
-            threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
+            this.threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
                 public void run() {
                     try {
                         chooseRunnable.run(threadIndex);

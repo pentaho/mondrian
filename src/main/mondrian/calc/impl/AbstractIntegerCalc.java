@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Eclipse Public License v1.0
+// This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2008 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,17 +28,13 @@ import mondrian.calc.Calc;
  * @since Sep 26, 2005
  */
 public abstract class AbstractIntegerCalc
-    extends AbstractCalc
-    implements IntegerCalc
-{
-    /**
-     * Creates an AbstractIntegerCalc.
-     *
-     * @param exp Source expression
-     * @param calcs Child compiled expressions
-     */
+        extends AbstractCalc
+        implements IntegerCalc {
+    private final Calc[] calcs;
+
     protected AbstractIntegerCalc(Exp exp, Calc[] calcs) {
-        super(exp, calcs);
+        super(exp);
+        this.calcs = calcs;
         assert getType() instanceof NumericType;
     }
 
@@ -49,6 +45,10 @@ public abstract class AbstractIntegerCalc
         } else {
             return i;
         }
+    }
+
+    public Calc[] getCalcs() {
+        return calcs;
     }
 }
 
