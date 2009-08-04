@@ -35,7 +35,7 @@
         <dependency org="commons-io" name="commons-io" rev="1.3.1"/>
         <dependency org="commons-logging" name="commons-logging" rev="1.0.4"/>
         <dependency org="commons-math" name="commons-math" rev="1.0"/>
-        <dependency org="commons-pool" name="commons-pool" rev="1.3"/>
+        <dependency org="commons-pool" name="commons-pool" rev="1.2"/>
         <!-- version in commons-vfs.jar is 1.1-SNAPSHOT -->
         <dependency org="commons-vfs" name="commons-vfs" rev="1.0"/>
         <dependency org="javacup" name="javacup" rev="10k"/>
