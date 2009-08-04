@@ -141,7 +141,16 @@ public class UdfResolver implements Resolver {
                     castType(arg.getType(), parameterCategories[i]),
                     ResultStyle.ANY_LIST);
                 final Calc scalarCalc = compiler.compileScalar(arg, true);
-                expCalcs[i] = new CalcExp(calc, scalarCalc);
+                final ListCalc listCalc;
+                final IterCalc iterCalc;
+                if (arg.getType() instanceof SetType) {
+                    listCalc = compiler.compileList(arg, true);
+                    iterCalc = compiler.compileIter(arg);
+                } else {
+                    listCalc = null;
+                    iterCalc = null;
+                }
+                expCalcs[i] = new CalcExp(calc, scalarCalc, listCalc, iterCalc);
             }
 
             // Clone the UDF, because some UDFs use member variables as state.
@@ -227,10 +236,29 @@ public class UdfResolver implements Resolver {
     private static class CalcExp implements UserDefinedFunction.Argument {
         private final Calc calc;
         private final Calc scalarCalc;
+        private final IterCalc iterCalc;
+        private final ListCalc listCalc;
 
-        public CalcExp(Calc calc, Calc scalarCalc) {
+        /**
+         * Creates a CalcExp.
+         *
+         * @param calc Compiled expression
+         * @param scalarCalc Compiled expression that evaluates to a scalar
+         * @param listCalc Compiled expression that evaluates an MDX set to
+         *     a java list
+         * @param iterCalc Compiled expression that evaluates an MDX set to
+         *     a java iterable
+         */
+        public CalcExp(
+            Calc calc,
+            Calc scalarCalc,
+            ListCalc listCalc,
+            IterCalc iterCalc)
+        {
             this.calc = calc;
             this.scalarCalc = scalarCalc;
+            this.listCalc = listCalc;
+            this.iterCalc = iterCalc;
         }
 
         public Type getType() {
@@ -244,8 +272,21 @@ public class UdfResolver implements Resolver {
         public Object evaluateScalar(Evaluator evaluator) {
             return scalarCalc.evaluate(evaluator);
         }
-    }
 
+        public List evaluateList(Evaluator eval) {
+            if (listCalc == null) {
+                throw new RuntimeException("Expression is not a set");
+            }
+            return listCalc.evaluateList(eval);
+        }
+
+        public Iterable evaluateIterable(Evaluator eval) {
+            if (iterCalc == null) {
+                throw new RuntimeException("Expression is not a set");
+            }
+            return iterCalc.evaluateIterable(eval);
+        }
+    }
 }
 
 // End UdfResolver.java
