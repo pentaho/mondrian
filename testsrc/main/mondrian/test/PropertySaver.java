@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -118,11 +118,11 @@ public class PropertySaver {
      * Sets all properties back to their original values.
      */
     public void reset() {
-        for (Map.Entry<Property,String> entry : originalValues.entrySet()) {
+        for (Map.Entry<Property, String> entry : originalValues.entrySet()) {
             final String value = entry.getValue();
             //noinspection StringEquality
             if (value == NOT_SET) {
-                properties.remove(entry.getKey());
+                properties.remove(entry.getKey().getPath());
             } else {
                 properties.setProperty(entry.getKey().getPath(), value);
             }

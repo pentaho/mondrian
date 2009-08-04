@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -50,8 +50,8 @@ public class GlobalFunTable extends FunTableImpl {
             builder.define(resolver);
         }
 
-        for (Class<UserDefinedFunction> className : lookupUdfImplClasses()) {
-            defineUdf(builder, className);
+        for (Class<UserDefinedFunction> udfClass : lookupUdfImplClasses()) {
+            defineUdf(builder, udfClass);
         }
     }
 
@@ -74,7 +74,7 @@ public class GlobalFunTable extends FunTableImpl {
         Class<UserDefinedFunction> udfClass)
     {
         // Instantiate class with default constructor.
-        final UserDefinedFunction udf = Util.createUdf(udfClass);
+        final UserDefinedFunction udf = Util.createUdf(udfClass, null);
 
         // Validate function.
         validateFunction(udf);
@@ -93,8 +93,9 @@ public class GlobalFunTable extends FunTableImpl {
         // Check that the name is not null or empty.
         final String udfName = udf.getName();
         if (udfName == null || udfName.equals("")) {
-            throw Util.newInternal("User-defined function defined by class '" +
-                    udf.getClass() + "' has empty name");
+            throw Util.newInternal(
+                "User-defined function defined by class '"
+                + udf.getClass() + "' has empty name");
         }
         // It's OK for the description to be null.
         //final String description = udf.getDescription();
@@ -103,9 +104,9 @@ public class GlobalFunTable extends FunTableImpl {
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             if (parameterType == null) {
-                throw Util.newInternal("Invalid user-defined function '" +
-                        udfName + "': parameter type #" + i +
-                        " is null");
+                throw Util.newInternal(
+                    "Invalid user-defined function '" + udfName
+                    + "': parameter type #" + i + " is null");
             }
         }
 
@@ -117,13 +118,15 @@ public class GlobalFunTable extends FunTableImpl {
         // impossible to check that now.
         final Type returnType = udf.getReturnType(parameterTypes);
         if (returnType == null) {
-            throw Util.newInternal("Invalid user-defined function '" +
-                    udfName + "': return type is null");
+            throw Util.newInternal(
+                "Invalid user-defined function '" + udfName
+                + "': return type is null");
         }
         final Syntax syntax = udf.getSyntax();
         if (syntax == null) {
-            throw Util.newInternal("Invalid user-defined function '" +
-                    udfName + "': syntax is null");
+            throw Util.newInternal(
+                "Invalid user-defined function '" + udfName
+                + "': syntax is null");
         }
     }
 

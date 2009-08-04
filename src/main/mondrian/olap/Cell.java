@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -51,7 +51,8 @@ public interface Cell {
     Object getValue();
 
     /**
-     * Return the cached formatted string, that survives an aggregate cache clear
+     * Return the cached formatted string, that survives an aggregate cache
+     * clear.
      */
     String getCachedFormatString();
 
@@ -76,20 +77,23 @@ public interface Cell {
     /**
      * Returns a SQL query that, when executed, returns drill through data
      * for this Cell.
-     * If the parameter extendedContext is true, then the
-     * query will include all the levels (i.e. columns) of non-constraining members
-     * (i.e. members which are at the "All" level).
-     * If the parameter extendedContext is false, the query will exclude
-     * the levels (coulmns) of non-constraining members.
-     * The result is null if the cell is based upon a calculated member.
      *
+     * <p>If the parameter {@code extendedContext} is true, then the query will
+     * include all the levels (i.e. columns) of non-constraining members
+     * (i.e. members which are at the "All" level).
+     *
+     * <p>If the parameter {@code extendedContext} is false, the query will
+     * exclude the levels (coulmns) of non-constraining members.
+     *
+     * <p>The result is null if the cell is based upon a calculated member.
      */
     String getDrillThroughSQL(boolean extendedContext);
 
     /**
      * Returns true if drill through is possible for this Cell.
      * Returns false if the Cell is based on a calculated measure.
-     * @return true if can drill through on this cell
+     *
+     * @return Whether can drill through on this cell
      */
     boolean canDrillThrough();
 
@@ -122,6 +126,104 @@ public interface Cell {
      * dimension (usually the 'all' member).</ul>
      */
     Member getContextMember(Dimension dimension);
+
+    /**
+     * Sets the value of a cell.
+     *
+     * <p>The connection must have an active scenario; see
+     * {@link Connection#setScenario(Scenario)}.
+     *
+     * @param value Cell value
+     * @param allocationPolicy Allocation policy
+     * @param allocationArgs Allocation policy arguments
+     */
+    void setValue(
+        Object value,
+        AllocationPolicy allocationPolicy,
+        Object... allocationArgs);
+
+    /**
+     * TODO: document; move to olap4j
+     */
+    enum AllocationPolicy {
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * assigned an equal value that is:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; =
+         * &lt;value&gt; / Count(atomic cells contained in &lt;tuple&gt;)
+         * </blockquote>
+         */
+        EQUAL_ALLOCATION,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * changed according to:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; = &lt;atomic cell value&gt; +
+         * (&lt;value&gt; - &lt;existing value&gt;)  /
+         * Count(atomic cells contained in &lt;tuple&gt;)
+         * </blockquote>
+         */
+        EQUAL_INCREMENT,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * assigned an equal value that is:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; =
+         * &lt;value&gt; * &lt;weight value expression&gt;
+         * </blockquote>
+         *
+         * <p>Takes an optional argument, {@code weight_value_expression}.
+         * If {@code weight_value_expression} is not provided, the following
+         * expression is assigned to it by default:
+         *
+         * <blockquote>
+         * &lt;weight value expression&gt; =
+         * &lt;atomic cell value&gt; / &lt;existing value&gt;
+         * <blockquote>
+         *
+         * <p>The value of {@code weight value expression} should be expressed
+         * as a value between 0 and 1. This value specifies the ratio of the
+         * allocated value you want to assign to the atomic cells that are
+         * affected by the allocation. It is the client application programmer's
+         * responsibilffity to create expressions whose rollup aggregate values
+         * will equal the allocated value of the expression.
+         */
+        WEIGHTED_ALLOCATION,
+
+        /**
+         * Every atomic cell that contributes to the updated cell will be
+         * changed according to:
+         *
+         * <blockquote>
+         * &lt;atomic cell value&gt; = &lt;atomic cell value&gt; +
+         * (&lt;value&gt; - &lt;existing value&gt;)  *
+         * &lt;weight value expression&gt;
+         * </blockquote>
+         *
+         * <p>Takes an optional argument, {@code weight_value_expression}.
+         * If {@code weight_value_expression} is not provided, the following
+         * expression is assigned to it by default:
+         *
+         * <blockquote>
+         * &lt;weight value expression&gt; =
+         * &lt;atomic cell value&gt; / &lt;existing value&gt;
+         * <blockquote>
+         *
+         * <p>The value of {@code weight value expression} should be expressed
+         * as a value between 0 and 1. This value specifies the ratio of the
+         * allocated value you want to assign to the atomic cells that are
+         * affected by the allocation. It is the client application programmer's
+         * responsibility to create expressions whose rollup aggregate values
+         * will equal the allocated value of the expression.
+         */
+        WEIGHTED_INCREMENT,
+    }
 }
 
 // End Cell.java

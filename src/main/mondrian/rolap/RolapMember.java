@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,8 +14,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.util.ObjectFactory;
+import mondrian.util.CreationException;
 
+import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
+import org.eigenbase.util.property.StringProperty;
+
 import java.util.*;
 
 /**
@@ -63,7 +68,8 @@ public class RolapMember extends MemberBase {
             List<List<Member>> list = new ArrayList<List<Member>>();
             Level[] levels = hierarchy.getLevels();
             for (Level level : levels) {
-                List<Member> members = schemaReader.getLevelMembers(level, true);
+                List<Member> members =
+                    schemaReader.getLevelMembers(level, true);
                 if (members != null) {
                     list.add(members);
                 }
@@ -72,7 +78,8 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.getAllMembers: time=" + (end - start));
+                LOGGER.debug(
+                    "RolapMember.getAllMembers: time=" + (end - start));
             }
         }
     }
@@ -138,7 +145,8 @@ public class RolapMember extends MemberBase {
             int ordinal = hierarchy.hasAll() ? 1 : 0;
             List<List<Member>> levelMembers =
                 getAllMembers(schemaReader, hierarchy);
-            List<Member> leafMembers = levelMembers.get(levelMembers.size() - 1);
+            List<Member> leafMembers =
+                levelMembers.get(levelMembers.size() - 1);
             levelMembers = levelMembers.subList(0, levelMembers.size() - 1);
 
             // Set all ordinals
@@ -218,10 +226,11 @@ public class RolapMember extends MemberBase {
             ((RolapMember) member).setOrdinal(ordinal++);
         } else {
             // TODO
-            LOGGER.warn("RolapMember.setAllChildren: NOT RolapMember " +
-                "member.name=" + member.getName() +
-                ", member.class=" + member.getClass().getName() +
-                ", ordinal=" + ordinal);
+            LOGGER.warn(
+                "RolapMember.setAllChildren: NOT RolapMember "
+                + "member.name=" + member.getName()
+                + ", member.class=" + member.getClass().getName()
+                + ", ordinal=" + ordinal);
             ordinal++;
         }
         return ordinal;
@@ -264,7 +273,8 @@ public class RolapMember extends MemberBase {
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
-                LOGGER.debug("RolapMember.setOrdinalsTopDown: time=" + (end - start));
+                LOGGER.debug(
+                    "RolapMember.setOrdinalsTopDown: time=" + (end - start));
             }
         }
     }
@@ -337,6 +347,7 @@ public class RolapMember extends MemberBase {
      * -1. */
     private int ordinal;
     private final Object key;
+
     /**
      * Maps property name to property value.
      *
@@ -373,8 +384,9 @@ public class RolapMember extends MemberBase {
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
 
-        if (name != null &&
-                !(key != null && name.equals(key.toString()))) {
+        if (name != null
+            && !(key != null && name.equals(key.toString())))
+        {
             // Save memory by only saving the name as a property if it's
             // different from the key.
             setProperty(Property.NAME.name, name);
@@ -417,13 +429,13 @@ public class RolapMember extends MemberBase {
     }
 
     public boolean equals(Object o) {
-        return (o == this) ||
-                ((o instanceof RolapMember) && equals((RolapMember) o));
+        return (o == this)
+            || ((o instanceof RolapMember) && equals((RolapMember) o));
     }
 
     public boolean equals(OlapElement o) {
-        return (o instanceof RolapMember) &&
-                equals((RolapMember) o);
+        return (o instanceof RolapMember)
+            && equals((RolapMember) o);
     }
 
     private boolean equals(RolapMember that) {
@@ -499,7 +511,9 @@ public class RolapMember extends MemberBase {
 
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
-            mapPropertyNameToValue = new HashMap<String, Object>();
+            PropertyValueMapFactory factory =
+                PropertyValueMapFactoryFactory.getPropertyValueMapFactory();
+            mapPropertyNameToValue = factory.create(this);
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
@@ -591,23 +605,27 @@ public class RolapMember extends MemberBase {
                 Integer cardinality;
 
                 if (isAll() && childLevelHasApproxRowCount()) {
-                    cardinality = getLevel().getChildLevel().getApproxRowCount();
+                    cardinality =
+                        getLevel().getChildLevel().getApproxRowCount();
                 } else {
                     list = new ArrayList<RolapMember>();
-                    getHierarchy().getMemberReader().getMemberChildren(this, list);
+                    getHierarchy().getMemberReader().getMemberChildren(
+                        this, list);
                     cardinality = list.size();
                 }
                 return cardinality;
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();
-                return parentMember == null ? 0 :
-                    parentMember.getLevel().getDepth();
+                return parentMember == null
+                    ? 0
+                    : parentMember.getLevel().getDepth();
 
             case Property.PARENT_UNIQUE_NAME_ORDINAL:
                 parentMember = getParentMember();
-                return parentMember == null ? null :
-                        parentMember.getUniqueName();
+                return parentMember == null
+                    ? null
+                    : parentMember.getUniqueName();
 
             case Property.PARENT_COUNT_ORDINAL:
                 parentMember = getParentMember();
@@ -620,7 +638,12 @@ public class RolapMember extends MemberBase {
                 break;
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
-                return this == this.getHierarchy().getAllMember() ? 0 : getKey();
+                return this == this.getHierarchy().getAllMember()
+                    ? 0
+                    : getKey();
+
+            case Property.SCENARIO_ORDINAL:
+                return ScenarioImpl.forMember(this);
 
             default:
                 break;
@@ -637,7 +660,10 @@ public class RolapMember extends MemberBase {
      * @param matchCase Whether to match name case-sensitive
      * @return Property value
      */
-    protected Object getPropertyFromMap(String propertyName, boolean matchCase) {
+    protected Object getPropertyFromMap(
+        String propertyName,
+        boolean matchCase)
+    {
         synchronized (this) {
             if (matchCase) {
                 return mapPropertyNameToValue.get(propertyName);
@@ -653,7 +679,8 @@ public class RolapMember extends MemberBase {
     }
 
     protected boolean childLevelHasApproxRowCount() {
-        return getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE;
+        return getLevel().getChildLevel().getApproxRowCount()
+            > Integer.MIN_VALUE;
     }
 
     protected boolean isAllMember() {
@@ -717,8 +744,9 @@ public class RolapMember extends MemberBase {
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // compare by unique name, if one ore both members are null
-        if (this.key == RolapUtil.sqlNullValue ||
-            other.key == RolapUtil.sqlNullValue) {
+        if (this.key == RolapUtil.sqlNullValue
+            || other.key == RolapUtil.sqlNullValue)
+        {
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // as both keys are not null, compare by key
@@ -789,7 +817,8 @@ public class RolapMember extends MemberBase {
         }
         PropertyFormatter pf;
         if (prop != null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(this, propertyName,
+            return pf.formatProperty(
+                this, propertyName,
                 getPropertyValue(propertyName));
         }
 
@@ -799,6 +828,122 @@ public class RolapMember extends MemberBase {
             : val.toString();
     }
 
+    /**
+     * <p>Interface definition for the pluggable factory used to decide
+     * which implementation of {@link java.util.Map} to use to store
+     * property string/value pairs for member properties.</p>
+     *
+     * <p>This permits tuning for performance, memory allocation, etcetera.
+     * For example, if a member belongs to a level which has 10 member
+     * properties a HashMap may be preferred, while if the level has
+     * only two member properties a Flat3Map may make more sense.</p>
+     */
+    public interface PropertyValueMapFactory {
+        /**
+         * <p>Create a new {@link java.util.Map} to be used for storing
+         * property string/value pairs for the specified
+         * {@link mondrian.olap.Member}.</p>
+         * @param member
+         * @return the Map instance to store property/value pairs
+         */
+        Map<String, Object> create(Member member);
+    }
+
+    /**
+     * Default {@link mondrian.rolap.RolapMember.PropertyValueMapFactory}
+     * implementation, used if
+     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
+     * is not set.
+     */
+    public static final class DefaultPropertyValueMapFactory
+        implements PropertyValueMapFactory
+    {
+        /**
+         * {@inheritDoc}
+         * <p>This factory creates an
+         * {@link org.apache.commons.collections.map.Flat3Map} if
+         * it appears that the provided member has less than 3 properties,
+         * and a {@link java.util.HashMap} if it appears
+         * that it has more than 3.</p>
+         *
+         * <p>Guessing the number of properties
+         * can be tricky since some subclasses of
+         * {@link mondrian.olap.Member}</p> have additional properties
+         * that aren't explicitly declared.  The most common offenders
+         * are the (@link mondrian.olap.Measure} implementations, which
+         * often have 4 or more undeclared properties, so if the member
+         * is a measure, the factory will create a {@link java.util.HashMap}.
+         * </p>
+         *
+         * @param member {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        @SuppressWarnings({"unchecked"})
+        public Map<String, Object> create(Member member) {
+            assert member != null;
+            Property[] props = member.getProperties();
+            if ((member instanceof RolapMeasure)
+                || (props == null)
+                || (props.length > 3))
+            {
+                return new HashMap<String, Object>();
+            } else {
+                return new Flat3Map();
+            }
+        }
+    }
+
+    /**
+     * <p>Creates the PropertyValueMapFactory which is in turn used
+     * to create property-value maps for member properties.</p>
+     *
+     * <p>The name of the PropertyValueMapFactory is drawn from
+     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
+     * in mondrian.properties.  If unset, it defaults to
+     * {@link mondrian.rolap.RolapMember.DefaultPropertyValueMapFactory}. </p>
+     */
+    public static final class PropertyValueMapFactoryFactory
+        extends ObjectFactory.Singleton<PropertyValueMapFactory>
+    {
+        /**
+         * Single instance of the <code>PropertyValueMapFactory</code>.
+         */
+        private static final PropertyValueMapFactoryFactory factory;
+        static {
+            factory = new PropertyValueMapFactoryFactory();
+        }
+
+        /**
+         * Access the <code>PropertyValueMapFactory</code> instance.
+         *
+         * @return the <code>Map</code>.
+         */
+        public static PropertyValueMapFactory getPropertyValueMapFactory() {
+            return factory.getObject();
+        }
+
+        /**
+         * The constructor for the <code>PropertyValueMapFactoryFactory</code>.
+         * This passes the <code>PropertyValueMapFactory</code> class to the
+         * <code>ObjectFactory</code> base class.
+         */
+        @SuppressWarnings({"unchecked"})
+        private PropertyValueMapFactoryFactory() {
+            super((Class) PropertyValueMapFactory.class);
+        }
+
+        protected StringProperty getStringProperty() {
+            return MondrianProperties.instance().PropertyValueMapFactoryClass;
+        }
+
+        protected PropertyValueMapFactory getDefault(
+            Class[] parameterTypes,
+            Object[] parameterValues)
+            throws CreationException
+        {
+            return new DefaultPropertyValueMapFactory();
+        }
+    }
 }
 
 // End RolapMember.java

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -21,16 +21,16 @@ import mondrian.rolap.RolapHierarchy;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.ConcatenableList;
 import mondrian.util.Pair;
+
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.log4j.Logger;
 import org.apache.commons.collections.comparators.*;
 
 import java.util.*;
-import java.io.PrintWriter;
 
 /**
- * <code>FunUtil</code> contains a set of methods useful within the
- * <code>mondrian.olap.fun</code> package.
+ * {@code FunUtil} contains a set of methods useful within the {@code
+ * mondrian.olap.fun} package.
  *
  * @author jhyde
  * @version $Id$
@@ -43,19 +43,19 @@ public class FunUtil extends Util {
     public static final NullMember NullMember = new NullMember();
 
     /**
-     * Special value which indicates that a <code>double</code> computation
+     * Special value which indicates that a {@code double} computation
      * has returned the MDX null value. See {@link DoubleCalc}.
      */
     public static final double DoubleNull = 0.000000012345;
 
     /**
-     * Special value which indicates that a <code>double</code> computation
+     * Special value which indicates that a {@code double} computation
      * has returned the MDX EMPTY value. See {@link DoubleCalc}.
      */
     public static final double DoubleEmpty = -0.000000012345;
 
     /**
-     * Special value which indicates that an <code>int</code> computation
+     * Special value which indicates that an {@code int} computation
      * has returned the MDX null value. See {@link mondrian.calc.IntegerCalc}.
      */
     public static final int IntegerNull = Integer.MIN_VALUE + 1;
@@ -71,8 +71,9 @@ public class FunUtil extends Util {
      * executing a given function.
      */
     public static RuntimeException newEvalException(
-            FunDef funDef,
-            String message) {
+        FunDef funDef,
+        String message)
+    {
         Util.discard(funDef); // TODO: use this
         return new MondrianEvaluationException(message);
     }
@@ -88,8 +89,8 @@ public class FunUtil extends Util {
 
     public static boolean isMemberType(Calc calc) {
         Type type = calc.getType();
-        return (type instanceof SetType) &&
-          (((SetType) type).getArity() == 1);
+        return (type instanceof SetType)
+            && (((SetType) type).getArity() == 1);
     }
 
     public static void checkIterListResultStyles(Calc calc) {
@@ -121,23 +122,27 @@ public class FunUtil extends Util {
      * Returns an argument whose value is a literal.
      */
     static String getLiteralArg(
-            ResolvedFunCall call,
-            int i,
-            String defaultValue,
-            String[] allowedValues) {
+        ResolvedFunCall call,
+        int i,
+        String defaultValue,
+        String[] allowedValues)
+    {
         if (i >= call.getArgCount()) {
             if (defaultValue == null) {
-                throw newEvalException(call.getFunDef(),
-                        "Required argument is missing");
+                throw newEvalException(
+                    call.getFunDef(),
+                    "Required argument is missing");
             } else {
                 return defaultValue;
             }
         }
         Exp arg = call.getArg(i);
-        if (!(arg instanceof Literal) ||
-                arg.getCategory() != Category.Symbol) {
-            throw newEvalException(call.getFunDef(),
-                    "Expected a symbol, found '" + arg + "'");
+        if (!(arg instanceof Literal)
+            || arg.getCategory() != Category.Symbol)
+        {
+            throw newEvalException(
+                call.getFunDef(),
+                "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
         StringBuilder sb = new StringBuilder(64);
@@ -151,8 +156,9 @@ public class FunUtil extends Util {
             }
             sb.append(allowedValue);
         }
-        throw newEvalException(call.getFunDef(),
-                "Allowed values are: {" + sb + "}");
+        throw newEvalException(
+            call.getFunDef(),
+            "Allowed values are: {" + sb + "}");
     }
 
     /**
@@ -160,23 +166,27 @@ public class FunUtil extends Util {
      * belong to the supplied enumeration, returns -1.
      */
     static <E extends Enum<E>> E getLiteralArg(
-            ResolvedFunCall call,
-            int i,
-            E defaultValue,
-            Class<E> allowedValues) {
+        ResolvedFunCall call,
+        int i,
+        E defaultValue,
+        Class<E> allowedValues)
+    {
         if (i >= call.getArgCount()) {
             if (defaultValue == null) {
-                throw newEvalException(call.getFunDef(),
-                        "Required argument is missing");
+                throw newEvalException(
+                    call.getFunDef(),
+                    "Required argument is missing");
             } else {
                 return defaultValue;
             }
         }
         Exp arg = call.getArg(i);
-        if (!(arg instanceof Literal) ||
-                arg.getCategory() != Category.Symbol) {
-            throw newEvalException(call.getFunDef(),
-                    "Expected a symbol, found '" + arg + "'");
+        if (!(arg instanceof Literal)
+            || arg.getCategory() != Category.Symbol)
+        {
+            throw newEvalException(
+                call.getFunDef(),
+                "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
         for (E e : allowedValues.getEnumConstants()) {
@@ -192,8 +202,9 @@ public class FunUtil extends Util {
             }
             buf.append(e.name());
         }
-        throw newEvalException(call.getFunDef(),
-                "Allowed values are: {" + buf + "}");
+        throw newEvalException(
+            call.getFunDef(),
+            "Allowed values are: {" + buf + "}");
     }
 
     /**
@@ -207,18 +218,20 @@ public class FunUtil extends Util {
         final Type leftType = TypeUtil.stripSetType(left.getType());
         final Type rightType = TypeUtil.stripSetType(right.getType());
         if (!TypeUtil.isUnionCompatible(leftType, rightType)) {
-            throw newEvalException(funDef, "Expressions must have the same hierarchy");
+            throw newEvalException(
+                funDef, "Expressions must have the same hierarchy");
         }
     }
 
     /**
-     * Returns <code>true</code> if the mask in <code>flag</code> is set.
+     * Returns {@code true} if the mask in {@code flag} is set.
+     *
      * @param value The value to check.
      * @param mask The mask within value to look for.
-     * @param strict If <code>true</code> all the bits in mask must be set. If
-     * <code>false</code> the method will return <code>true</code> if any of the
-     * bits in <code>mask</code> are set.
-     * @return <code>true</code> if the correct bits in <code>mask</code> are set.
+     * @param strict If {@code true} all the bits in mask must be set. If
+     * {@code false} the method will return {@code true} if any of the
+     * bits in {@code mask} are set.
+     * @return whether if the correct bits in {@code mask} are set.
      */
     static boolean checkFlag(int value, int mask, boolean strict) {
         return (strict)
@@ -227,8 +240,8 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Adds every element of <code>right</code> which is not in <code>set</code>
-     * to both <code>set</code> and <code>left</code>.
+     * Adds every element of {@code right} which is not in {@code set}
+     * to both {@code set} and {@code left}.
      */
     static <T> void addUnique(List<T> left, List<T> right, Set<Object> set) {
         assert left != null;
@@ -265,8 +278,8 @@ public class FunUtil extends Util {
         }
         for (Hierarchy hierarchy : hierarchies) {
             if (hierarchy.getName() == null
-                || hierarchy.getName().equals(
-                dimension.getName())) {
+                || hierarchy.getName().equals(dimension.getName()))
+            {
                 return hierarchy;
             }
         }
@@ -286,9 +299,10 @@ public class FunUtil extends Util {
     }
 
     static List<Member> addMembers(
-            SchemaReader schemaReader,
-            List<Member> members,
-            Level level) {
+        SchemaReader schemaReader,
+        List<Member> members,
+        Level level)
+    {
         List<Member> levelMembers = schemaReader.getLevelMembers(level, true);
         members.addAll(levelMembers);
         return members;
@@ -314,7 +328,7 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Returns whether <code>m0</code> is an ancestor of <code>m1</code>.
+     * Returns whether {@code m0} is an ancestor of {@code m1}.
      *
      * @param strict if true, a member is not an ancestor of itself
      */
@@ -401,10 +415,10 @@ public class FunUtil extends Util {
      * @pre exp.getType() instanceof ScalarType
      */
     static Map<Object, Object> evaluateTuples(
-            Evaluator evaluator,
-            Calc exp,
-            List<Member[]> members) {
-        // RME
+        Evaluator evaluator,
+        Calc exp,
+        List<Member[]> members)
+    {
         evaluator = evaluator.push();
 
         assert exp.getType() instanceof ScalarType;
@@ -523,9 +537,11 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Sorts a list of Tuples by the value of an applied expression. Stable sort.
-     * Helper function for MDX functions TopCount, TopSum, TopPercent, BottomCount,
-     * BottomSum, BottomPercent, but not the MDX function Order.
+     * Sorts a list of Tuples by the value of an applied expression. Stable
+     * sort.
+     *
+     * <p>Helper function for MDX functions TopCount, TopSum, TopPercent,
+     * BottomCount, BottomSum, BottomPercent, but not the MDX function Order.
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
      *
@@ -566,7 +582,8 @@ public class FunUtil extends Util {
 
         Comparator<Member[]> comparator;
         if (brk) {
-            BreakArrayComparator c = new BreakArrayComparator(evaluator, exp, arity);
+            BreakArrayComparator c =
+                new BreakArrayComparator(evaluator, exp, arity);
             c.preloadValues(tupleList);
             comparator = c.wrap();
             if (desc) {
@@ -584,9 +601,10 @@ public class FunUtil extends Util {
 
     /**
      * Partially sorts a list of Members by the value of an applied expression.
-     * Avoids sorting the whole list, finds only the <i>n</i>top (or bottom) valued
-     * Members, and returns them as a new List. Helper function for MDX functions
-     * TopCount and BottomCount.
+     *
+     * <p>Avoids sorting the whole list, finds only the <i>n</i>top (or bottom)
+     * valued Members, and returns them as a new List. Helper function for MDX
+     * functions TopCount and BottomCount.
      *
      * @param list a list of members
      * @param exp a Calc applied to each member to find its sort-key
@@ -637,7 +655,8 @@ public class FunUtil extends Util {
         ComparatorChain chain = new ComparatorChain();
         for (SortKeySpec key : keySpecList) {
             boolean brk = key.direction.brk;
-            boolean orderByKey = key.key instanceof MemberOrderKeyFunDef.CalcImpl;
+            boolean orderByKey =
+                key.key instanceof MemberOrderKeyFunDef.CalcImpl;
             if (brk) {
                 ArrayExpMemoComparator comp =
                     new BreakArrayComparator(evaluator, key.key, arity);
@@ -645,7 +664,8 @@ public class FunUtil extends Util {
                 chain.addComparator(comp.wrap(), key.direction.descending);
             } else if (orderByKey) {
                 ArrayExpMemoComparator comp =
-                    new HierarchicalArrayKeyComparator(evaluator, key.key, arity);
+                    new HierarchicalArrayKeyComparator(
+                        evaluator, key.key, arity);
                 comp.preloadValues(tupleList);
                 chain.addComparator(comp.wrap(), key.direction.descending);
             } else {
@@ -661,10 +681,11 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Partially sorts a list of Tuples by the value of an applied expression. Avoids
-     * sorting the whole list, finds only the <i>n</i> top (or bottom) valued Tuples,
-     * and returns them as a new List. Helper function for MDX functions TopCount and
-     * BottomCount.
+     * Partially sorts a list of Tuples by the value of an applied expression.
+     *
+     * <p>Avoids sorting the whole list, finds only the <i>n</i> top (or bottom)
+     * valued Tuples, and returns them as a new List. Helper function for MDX
+     * functions TopCount and BottomCount.
      *
      * @param list a list of tuples
      * @param exp a Calc applied to each tple to find its sort-key
@@ -683,7 +704,8 @@ public class FunUtil extends Util {
         boolean desc,
         int arity)
     {
-        Comparator<Member[]> comp = new BreakArrayComparator(evaluator, exp, arity).wrap();
+        Comparator<Member[]> comp =
+            new BreakArrayComparator(evaluator, exp, arity).wrap();
         if (desc) {
             comp = new ReverseComparator<Member[]>(comp);
         }
@@ -699,7 +721,9 @@ public class FunUtil extends Util {
      *
      * @see #hierarchizeTupleList(java.util.List, boolean, int)
      */
-    public static void hierarchizeMemberList(List<Member> memberList, boolean post)
+    public static void hierarchizeMemberList(
+        List<Member> memberList,
+        boolean post)
     {
         if (memberList.isEmpty()) {
             return;
@@ -745,9 +769,10 @@ public class FunUtil extends Util {
      * Compares double-precision values according to MDX semantics.
      *
      * <p>MDX requires a total order:
-     * <pre>
-     *    -inf &lt; NULL &lt; ... &lt; -1 &lt; ... &lt; 0 &lt; ... &lt; NaN &lt; +inf
-     * </pre>
+     * <blockquote>
+     *    -inf &lt; NULL &lt; ... &lt; -1 &lt; ... &lt; 0 &lt; ... &lt; NaN &lt;
+     * +inf
+     * </blockquote>
      * but this is different than Java semantics, specifically with regard
      * to {@link Double#NaN}.
      */
@@ -818,8 +843,9 @@ public class FunUtil extends Util {
         if (value1 == null) {
             return 1;
         }
-        if (value0 instanceof RuntimeException ||
-            value1 instanceof RuntimeException) {
+        if (value0 instanceof RuntimeException
+            || value1 instanceof RuntimeException)
+        {
             // one of the values is not in cache; continue as best as we can
             return 0;
         } else if (value0 == Util.nullValue) {
@@ -844,7 +870,11 @@ public class FunUtil extends Util {
      * use by the general topOrBottom function. This might also be a useful
      * function in itself.
      */
-    static void toPercent(List members, Map mapMemberToValue, boolean isMember) {
+    static void toPercent(
+        List members,
+        Map mapMemberToValue,
+        boolean isMember)
+    {
         double total = 0;
         int memberCount = members.size();
         for (int i = 0; i < memberCount; i++) {
@@ -858,9 +888,10 @@ public class FunUtil extends Util {
         }
         for (int i = 0; i < memberCount; i++) {
             Object mo = members.get(i);
-            Object o = (isMember) ?
-                mapMemberToValue.get(mo) :
-                mapMemberToValue.get(new ArrayHolder<Member>((Member []) mo));
+            Object o =
+                (isMember)
+                ? mapMemberToValue.get(mo)
+                : mapMemberToValue.get(new ArrayHolder<Member>((Member []) mo));
             if (o instanceof Number) {
                 double d = ((Number) o).doubleValue();
                 if (isMember) {
@@ -881,7 +912,7 @@ public class FunUtil extends Util {
      * Decodes the syntactic type of an operator.
      *
      * @param flags A encoded string which represents an operator signature,
-     *   as used by the <code>flags</code> parameter used to construct a
+     *   as used by the {@code flags} parameter used to construct a
      *   {@link FunDefBase}.
      *
      * @return A {@link Syntax}
@@ -905,7 +936,7 @@ public class FunUtil extends Util {
             return Syntax.Internal;
         default:
             throw newInternal(
-                    "unknown syntax code '" + c + "' in string '" + flags + "'");
+                "unknown syntax code '" + c + "' in string '" + flags + "'");
         }
     }
 
@@ -918,7 +949,7 @@ public class FunUtil extends Util {
      * numeric return value.
      *
      * @param flags The signature of an operator,
-     *   as used by the <code>flags</code> parameter used to construct a
+     *   as used by the {@code flags} parameter used to construct a
      *   {@link FunDefBase}.
      *
      * @return An array {@link Category} codes.
@@ -932,7 +963,7 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Decodes the <code>offset</code>th character of an encoded method
+     * Decodes the {@code offset}th character of an encoded method
      * signature into a type category.
      *
      * <p>The codes are:
@@ -1027,7 +1058,7 @@ public class FunUtil extends Util {
      * <code>{{@link Category#Numeric}, {@link Category#Set}}</code>.
      *
      * @param flags The signature of an operator,
-     *   as used by the <code>flags</code> parameter used to construct a
+     *   as used by the {@code flags} parameter used to construct a
      *   {@link FunDefBase}.
      *
      * @return An array {@link Category} codes.
@@ -1121,11 +1152,12 @@ public class FunUtil extends Util {
      * @pre range >= 1 && range <= 3
      */
     protected static double quartile(
-            Evaluator evaluator,
-            List members,
-            Calc exp,
-            int range) {
-        Util.assertPrecondition(range >= 1 && range <= 3, "range >= 1 && range <= 3");
+        Evaluator evaluator,
+        List members,
+        Calc exp,
+        int range)
+    {
+        assert range >= 1 && range <= 3;
 
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
@@ -1143,9 +1175,9 @@ public class FunUtil extends Util {
         // get a quartile, median is a second q
         double dm = 0.25 * asArray.length * range;
         int median = (int) Math.floor(dm);
-        return dm == median && median < asArray.length - 1 ?
-                (asArray[median] + asArray[median + 1]) / 2 :
-                asArray[median];
+        return dm == median && median < asArray.length - 1
+            ? (asArray[median] + asArray[median + 1]) / 2
+            : asArray[median];
     }
 
     public static Object min(Evaluator evaluator, List members, Calc calc) {
@@ -1191,10 +1223,11 @@ public class FunUtil extends Util {
     }
 
     static Object var(
-            Evaluator evaluator,
-            List members,
-            Calc exp,
-            boolean biased) {
+        Evaluator evaluator,
+        List members,
+        Calc exp,
+        boolean biased)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         return _var(sw, biased);
     }
@@ -1208,7 +1241,8 @@ public class FunUtil extends Util {
             double stdev = 0.0;
             double avg = _avg(sw);
             for (int i = 0; i < sw.v.size(); i++) {
-                stdev += Math.pow((((Double) sw.v.get(i)).doubleValue() - avg),2);
+                stdev +=
+                    Math.pow((((Double) sw.v.get(i)).doubleValue() - avg), 2);
             }
             int n = sw.v.size();
             if (!biased) {
@@ -1219,28 +1253,36 @@ public class FunUtil extends Util {
     }
 
     static double correlation(
-            Evaluator evaluator,
-            List memberList,
-            Calc exp1,
-            Calc exp2) {
+        Evaluator evaluator,
+        List memberList,
+        Calc exp1,
+        Calc exp2)
+    {
         SetWrapper sw1 = evaluateSet(evaluator, memberList, exp1);
         SetWrapper sw2 = evaluateSet(evaluator, memberList, exp2);
         Object covar = _covariance(sw1, sw2, false);
         Object var1 = _var(sw1, false); //this should be false, yes?
         Object var2 = _var(sw2, false);
-        if ((covar instanceof Double) &&
-            (var1 instanceof Double) &&
-            (var2 instanceof Double)) {
-            return ((Double) covar).doubleValue() /
-                    Math.sqrt(((Double) var1).doubleValue() *
-                    ((Double) var2).doubleValue());
+        if ((covar instanceof Double)
+            && (var1 instanceof Double)
+            && (var2 instanceof Double))
+        {
+            return ((Double) covar).doubleValue()
+                / Math.sqrt(
+                    ((Double) var1).doubleValue()
+                    * ((Double) var2).doubleValue());
         } else {
             return DoubleNull;
         }
     }
 
-    static Object covariance(Evaluator evaluator, List members,
-            Calc exp1, Calc exp2, boolean biased) {
+    static Object covariance(
+        Evaluator evaluator,
+        List members,
+        Calc exp1,
+        Calc exp2,
+        boolean biased)
+    {
         SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
         SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
         // todo: because evaluateSet does not add nulls to the SetWrapper, this
@@ -1249,9 +1291,11 @@ public class FunUtil extends Util {
     }
 
 
-    private static Object _covariance(SetWrapper sw1,
-                                      SetWrapper sw2,
-                                      boolean biased) {
+    private static Object _covariance(
+        SetWrapper sw1,
+        SetWrapper sw2,
+        boolean biased)
+    {
         if (sw1.v.size() != sw2.v.size()) {
             return Util.nullValue;
         }
@@ -1273,27 +1317,32 @@ public class FunUtil extends Util {
     }
 
     static Object stdev(
-            Evaluator evaluator,
-            List members,
-            Calc exp,
-            boolean biased) {
+        Evaluator evaluator,
+        List members,
+        Calc exp,
+        boolean biased)
+    {
         Object o = var(evaluator, members, exp, biased);
         return (o instanceof Double)
             ? new Double(Math.sqrt(((Double) o).doubleValue()))
             : o;
     }
 
-    public static Object avg(Evaluator evaluator, List members, Calc calc) {
+    public static Object avg(
+        Evaluator evaluator,
+        List members,
+        Calc calc)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, calc);
-        return (sw.errorCount > 0) ?
-                new Double(Double.NaN) :
-                (sw.v.size() == 0) ?
-                Util.nullValue :
-                new Double(_avg(sw));
+        return (sw.errorCount > 0)
+            ? new Double(Double.NaN)
+            : (sw.v.size() == 0)
+            ? Util.nullValue
+            : new Double(_avg(sw));
     }
 
-    //todo: parameterize inclusion of nulls
-    //also, maybe make _avg a method of setwrapper, so we can cache the result (i.e. for correl)
+    // TODO: parameterize inclusion of nulls; also, maybe make _avg a method of
+    // setwrapper, so we can cache the result (i.e. for correl)
     private static double _avg(SetWrapper sw) {
         double sum = 0.0;
         for (int i = 0; i < sw.v.size(); i++) {
@@ -1308,7 +1357,11 @@ public class FunUtil extends Util {
         return d == DoubleNull ? Util.nullValue : new Double(d);
     }
 
-    public static double sumDouble(Evaluator evaluator, List members, Calc exp) {
+    public static double sumDouble(
+        Evaluator evaluator,
+        List members,
+        Calc exp)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
             return Double.NaN;
@@ -1322,7 +1375,12 @@ public class FunUtil extends Util {
             return sum;
         }
     }
-    public static double sumDouble(Evaluator evaluator, Iterable iterable, Calc exp) {
+
+    public static double sumDouble(
+        Evaluator evaluator,
+        Iterable iterable,
+        Calc exp)
+    {
         SetWrapper sw = evaluateSet(evaluator, iterable, exp);
         if (sw.errorCount > 0) {
             return Double.NaN;
@@ -1336,10 +1394,12 @@ public class FunUtil extends Util {
             return sum;
         }
     }
+
     public static int count(
-            Evaluator evaluator,
-            Iterable iterable,
-            boolean includeEmpty) {
+        Evaluator evaluator,
+        Iterable iterable,
+        boolean includeEmpty)
+    {
         if (iterable == null) {
             return 0;
         }
@@ -1374,7 +1434,7 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Evaluates <code>exp</code> (if defined) over <code>members</code> to
+     * Evaluates {@code exp} (if defined) over {@code members} to
      * generate a {@link List} of {@link SetWrapper} objects, which contains
      * a {@link Double} value and meta information, unlike
      * {@link #evaluateMembers}, which only produces values.
@@ -1382,9 +1442,10 @@ public class FunUtil extends Util {
      * @pre exp != null
      */
     static SetWrapper evaluateSet(
-            Evaluator evaluator,
-            Iterable members,
-            Calc calc) {
+        Evaluator evaluator,
+        Iterable members,
+        Calc calc)
+    {
         Util.assertPrecondition(members != null, "members != null");
         Util.assertPrecondition(calc != null, "calc != null");
         Util.assertPrecondition(calc.getType() instanceof ScalarType);
@@ -1429,10 +1490,11 @@ public class FunUtil extends Util {
      * have the same number and know where a potential gap is the data is.
      */
     static SetWrapper[] evaluateSet(
-            Evaluator evaluator,
-            List members,
-            DoubleCalc[] calcs,
-            boolean isTuples) {
+        Evaluator evaluator,
+        List members,
+        DoubleCalc[] calcs,
+        boolean isTuples)
+    {
         Util.assertPrecondition(calcs != null, "calcs != null");
 
         // todo: treat constant exps as evaluateMembers() does
@@ -1466,9 +1528,10 @@ public class FunUtil extends Util {
     }
 
     static List<Member> periodsToDate(
-            Evaluator evaluator,
-            Level level,
-            Member member) {
+        Evaluator evaluator,
+        Level level,
+        Member member)
+    {
         if (member == null) {
             member = evaluator.getContext(level.getHierarchy().getDimension());
         }
@@ -1521,12 +1584,16 @@ public class FunUtil extends Util {
      * @param schemaReader The reader to use
      * @param member The member for which we'll find the cousin.
      * @param ancestorMember The cousin's ancestor.
-     * @return The child of <code>ancestorMember</code> in the same position under
-     * <code>ancestorMember</code> as <code>member</code> is under its parent.
+     *
+     * @return The child of {@code ancestorMember} in the same position
+     * under {@code ancestorMember} as {@code member} is under its
+     * parent.
      */
-    static Member cousin(SchemaReader schemaReader,
-                         Member member,
-                         Member ancestorMember) {
+    static Member cousin(
+        SchemaReader schemaReader,
+        Member member,
+        Member ancestorMember)
+    {
         if (ancestorMember.isNull()) {
             return ancestorMember;
         }
@@ -1534,7 +1601,9 @@ public class FunUtil extends Util {
             throw MondrianResource.instance().CousinHierarchyMismatch.ex(
                 member.getUniqueName(), ancestorMember.getUniqueName());
         }
-        if (member.getLevel().getDepth() < ancestorMember.getLevel().getDepth()) {
+        if (member.getLevel().getDepth()
+            < ancestorMember.getLevel().getDepth())
+        {
             return member.getHierarchy().getNullMember();
         }
 
@@ -1546,13 +1615,16 @@ public class FunUtil extends Util {
         return cousin;
     }
 
-    static private Member cousin2(SchemaReader schemaReader,
-                                  Member member1,
-                                  Member member2) {
+    static private Member cousin2(
+        SchemaReader schemaReader,
+        Member member1,
+        Member member2)
+    {
         if (member1.getLevel() == member2.getLevel()) {
             return member2;
         }
-        Member uncle = cousin2(schemaReader, member1.getParentMember(), member2);
+        Member uncle =
+            cousin2(schemaReader, member1.getParentMember(), member2);
         if (uncle == null) {
             return null;
         }
@@ -1565,30 +1637,38 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Returns the ancestor of <code>member</code> at the given level
+     * Returns the ancestor of {@code member} at the given level
      * or distance. It is assumed that any error checking required
      * has been done prior to calling this function.
+     *
      * <p>This method takes into consideration the fact that there
-     * may be intervening hidden members between <code>member</code>
-     * and the ancestor. If <code>targetLevel</code> is not null, then
+     * may be intervening hidden members between {@code member}
+     * and the ancestor. If {@code targetLevel} is not null, then
      * the method will only return a member if the level at
-     * <code>distance</code> from the member is actually the
-     * <code>targetLevel</code> specified.
+     * {@code distance} from the member is actually the
+     * {@code targetLevel} specified.
+     *
      * @param evaluator The evaluation context
      * @param member The member for which the ancestor is to be found
      * @param distance The distance up the chain the ancestor is to
      * be found.
-     * @param targetLevel The desired targetLevel of the ancestor. If <code>null</code>,
-     * then the distance completely determines the desired ancestor.
-     * @return The ancestor member, or <code>null</code> if no such
+     *
+     * @param targetLevel The desired targetLevel of the ancestor. If
+     * {@code null}, then the distance completely determines the desired
+     * ancestor.
+     *
+     * @return The ancestor member, or {@code null} if no such
      * ancestor exists.
      */
-    static Member ancestor(Evaluator evaluator,
-                           Member member,
-                           int distance,
-                           Level targetLevel) {
-        if ((targetLevel != null) &&
-            (member.getHierarchy() != targetLevel.getHierarchy())) {
+    static Member ancestor(
+        Evaluator evaluator,
+        Member member,
+        int distance,
+        Level targetLevel)
+    {
+        if ((targetLevel != null)
+            && (member.getHierarchy() != targetLevel.getHierarchy()))
+        {
             throw MondrianResource.instance().MemberNotInLevelHierarchy.ex(
                 member.getUniqueName(), targetLevel.getUniqueName());
         }
@@ -1628,7 +1708,6 @@ public class FunUtil extends Util {
                 if (schemaReader.isVisible(ancestorMember)) {
                     distance--;
 
-                    //
                     // Make sure that this ancestor is really on the right
                     // targetLevel. If a targetLevel was specified and at least
                     // one of the ancestors was hidden, this this algorithm goes
@@ -1637,11 +1716,10 @@ public class FunUtil extends Util {
                     // hierarchy's null member instead.
                     //
                     // For example, consider what happens with
-                    // Ancestor([Store].[Israel].[Haifa], [Store].[Store State]).
-                    // The distance from [Haifa] to [Store State] is 1, but that
-                    // lands us at the country targetLevel, which is clearly
-                    // wrong.
-                    //
+                    // Ancestor([Store].[Israel].[Haifa], [Store].[Store
+                    // State]).  The distance from [Haifa] to [Store State] is
+                    // 1, but that lands us at the country targetLevel, which is
+                    // clearly wrong.
                     if (distance == 0) {
                         result = ancestorMember;
                         break;
@@ -1655,14 +1733,16 @@ public class FunUtil extends Util {
 
     /**
      * Compares a pair of members according to their positions in a
-     * prefix-order (or postfix-order, if <code>post</code> is true) walk
+     * prefix-order (or postfix-order, if {@code post} is true) walk
      * over a hierarchy.
      *
      * @param m1 First member
      * @param m2 Second member
-     * @param post Whether to sortMembers in postfix order. If true, a parent will
-     *   sortMembers immediately after its last child. If false, a parent will sortMembers
-     *   immediately before its first child.
+     *
+     * @param post Whether to sortMembers in postfix order. If true, a parent
+     *   will sortMembers immediately after its last child. If false, a parent
+     *   will sortMembers immediately before its first child.
+     *
      * @return -1 if m1 collates before m2,
      *   0 if m1 equals m2,
      *   1 if m1 collates after m2
@@ -1706,9 +1786,9 @@ public class FunUtil extends Util {
                     final int c = compareSiblingMembers(prev1, prev2);
                     // compareHierarchically needs to impose a total order;
                     // cannot return 0 for non-equal members
-                    assert c != 0 :
-                        "Members " + prev1 + ", " + prev2 +
-                            " are not equal, but compare returned 0.";
+                    assert c != 0
+                        : "Members " + prev1 + ", " + prev2
+                        + " are not equal, but compare returned 0.";
                     return c;
                 }
             }
@@ -1753,11 +1833,11 @@ public class FunUtil extends Util {
         } else {
             final int ordinal1 = m1.getOrdinal();
             final int ordinal2 = m2.getOrdinal();
-            return (ordinal1 == ordinal2) ?
-                m1.compareTo(m2) :
-                (ordinal1 < ordinal2) ?
-                -1 :
-                1;
+            return (ordinal1 == ordinal2)
+                ? m1.compareTo(m2)
+                : (ordinal1 < ordinal2)
+                ? -1
+                : 1;
         }
     }
 
@@ -1782,8 +1862,7 @@ public class FunUtil extends Util {
         return members;
     }
 
-    static Member makeNullMember(
-            MemberType memberType) {
+    static Member makeNullMember(MemberType memberType) {
         Hierarchy hierarchy = memberType.getHierarchy();
         if (hierarchy == null) {
             return NullMember;
@@ -1794,17 +1873,19 @@ public class FunUtil extends Util {
     /**
      * Validates the arguments to a function and resolves the function.
      *
-     * @param validator validator used to validate function arguments and
-     * resolve the function
-     * @param args arguments to the function
-     * @param newArgs returns the resolved arguments to the function
-     * @param name function name
-     * @param syntax syntax style used to invoke function
-     *
+     * @param validator Validator used to validate function arguments and
+     *           resolve the function
+     * @param funDef Function definition, or null to deduce definition from
+     *           name, syntax and argument types
+     * @param args    Arguments to the function
+     * @param newArgs Output parameter for the resolved arguments
+     * @param name    Function name
+     * @param syntax Syntax style used to invoke function
      * @return resolved function definition
      */
     public static FunDef resolveFunArgs(
         Validator validator,
+        FunDef funDef,
         Exp[] args,
         Exp[] newArgs,
         String name,
@@ -1818,8 +1899,9 @@ public class FunUtil extends Util {
         for (int i = 0; i < args.length; i++) {
             newArgs[i] = validator.validate(args[i], false);
         }
-        FunDef funDef = validator.getDef(newArgs, name, syntax);
-
+        if (funDef == null || validator.alwaysResolveFunDef()) {
+            funDef = validator.getDef(newArgs, name, syntax);
+        }
         // If the first argument to a function is either:
         // 1) the measures dimension or
         // 2) a measures member where the function returns another member or
@@ -1835,9 +1917,9 @@ public class FunUtil extends Util {
         // However, we do allow functions like isEmpty, rank, and topPercent.
         // Also, the set function is ok since it just enumerates its
         // arguments.
-        if (!(funDef instanceof SetFunDef) &&
-            query != null &&
-            query.nativeCrossJoinVirtualCube())
+        if (!(funDef instanceof SetFunDef)
+            && query != null
+            && query.nativeCrossJoinVirtualCube())
         {
             int[] paramCategories = funDef.getParameterCategories();
             if (paramCategories.length > 0) {
@@ -1846,18 +1928,20 @@ public class FunUtil extends Util {
                 switch (cat0) {
                 case Category.Dimension:
                 case Category.Hierarchy:
-                    if (arg0 instanceof DimensionExpr &&
-                        ((DimensionExpr) arg0).getDimension().
-                            getOrdinal(cube) == 0) {
+                    if (arg0 instanceof DimensionExpr
+                        && ((DimensionExpr) arg0).getDimension()
+                        .getOrdinal(cube) == 0)
+                    {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
                     break;
                 case Category.Member:
-                    if (arg0 instanceof MemberExpr &&
-                        ((MemberExpr) arg0).getMember().getDimension().
-                            getOrdinal(cube) == 0 &&
-                        (funDef.getReturnCategory() == Category.Member ||
-                            funDef.getReturnCategory() == Category.Set)) {
+                    if (arg0 instanceof MemberExpr
+                        && ((MemberExpr) arg0).getMember().getDimension()
+                        .getOrdinal(cube) == 0
+                        && (funDef.getReturnCategory() == Category.Member
+                            || funDef.getReturnCategory() == Category.Set))
+                    {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
                     break;
@@ -1884,10 +1968,8 @@ public class FunUtil extends Util {
      * Returns whether two tuples are equal.
      *
      * <p>The members are allowed to be in different positions. For example,
-     * <blockquote>
-     * <code>([Gender].[M], [Store].[USA]) IS ([Store].[USA], [Gender].[M])</code>
-     * </blockquote>
-     * returns <code>true</code>.
+     * <code>([Gender].[M], [Store].[USA]) IS ([Store].[USA],
+     * [Gender].[M])</code> returns {@code true}.
      */
     static boolean equalTuple(Member[] members0, Member[] members1) {
         final int count = members0.length;
@@ -2015,9 +2097,9 @@ public class FunUtil extends Util {
     }
 
    /**
-    * Partial Sort: sorts in place an array of Objects using a given Comparator, but
-    * only enough so that the N biggest (or smallest) items are at the start of the
-    * array. Not a stable sort, unless the Comparator is so contrived.
+    * Partial Sort: sorts in place an array of Objects using a given Comparator,
+    * but only enough so that the N biggest (or smallest) items are at the start
+    * of the array. Not a stable sort, unless the Comparator is so contrived.
     *
     * @param items will be partially-sorted in place
     * @param comp a Comparator; null means use natural comparison
@@ -2042,11 +2124,10 @@ public class FunUtil extends Util {
         // Load an array of pairs {list-item, list-index}.
         // List-index is a secondary sort key, to give a stable sort.
         // REVIEW Can we use a simple T[], with the index implied?
-        // REVIEW When limit is big relative to list size, faster to mergesort. Test
-        // for this.
-
+        // REVIEW When limit is big relative to list size, faster to
+        // mergesort. Test for this.
         int n = list.size();            // O(n) to scan list
-        Pair<T,Integer>[] pairs = new Pair[n];
+        Pair<T, Integer>[] pairs = new Pair[n];
 
         int i = 0;
         for (T item : list) {           // O(n) to scan list
@@ -2054,8 +2135,10 @@ public class FunUtil extends Util {
             ++i;
         }
 
-        Comparator<Pair<T,Integer>> pairComp = new Comparator<Pair<T,Integer>>() {
-            public int compare(Pair<T,Integer> x, Pair<T,Integer> y) {
+        Comparator<Pair<T, Integer>> pairComp =
+            new Comparator<Pair<T, Integer>>()
+        {
+            public int compare(Pair<T, Integer> x, Pair<T, Integer> y) {
                 int val = comp.compare(x.left, y.left);
                 if (val == 0) {
                     val = x.right.compareTo(y.right);
@@ -2065,7 +2148,8 @@ public class FunUtil extends Util {
         };
 
         limit = Math.min(limit, n);
-        partialSort(pairs, pairComp, limit); // O(n + limit * log(limit)) to quicksort
+        // O(n + limit * log(limit)) to quicksort
+        partialSort(pairs, pairComp, limit);
 
         List<T> result = new ArrayList<T>();
         for (i = 0; i < limit; ++i) {
@@ -2080,26 +2164,33 @@ public class FunUtil extends Util {
      * A functional for {@link FunUtil#partialSort}.
      * Sorts or partially sorts an array in ascending order, using a Comparator.
      *
-     * Algorithm: quicksort, or partial quicksort (alias "quickselect"), Hoare/Singleton.
-     * Partial quicksort is quicksort that recurs only on one side, which is thus tail-recursion.
-     * Picks pivot as median of three; falls back on insertion sort for small "subfiles".
-     * Partial quicksort is O(n + m log m), instead of O(n log n), where n is the
-     * input size, and m is the desired output size.
+     * <p>Algorithm: quicksort, or partial quicksort (alias
+     * "quickselect"), Hoare/Singleton.  Partial quicksort is
+     * quicksort that recurs only on one side, which is thus
+     * tail-recursion.  Picks pivot as median of three; falls back on
+     * insertion sort for small "subfiles".  Partial quicksort is O(n
+     * + m log m), instead of O(n log n), where n is the input size,
+     * and m is the desired output size.
      *
-     * See D Knuth, Art of Computer Programming, 5.2.2 (Algorithm Q); R. Sedgewick, Algorithms in C, ch 5.
-     * Good summary in http://en.wikipedia.org/wiki/Selection_algorithm
+     * <p>See D Knuth, Art of Computer Programming, 5.2.2 (Algorithm
+     * Q); R. Sedgewick, Algorithms in C, ch 5.  Good summary in
+     * http://en.wikipedia.org/wiki/Selection_algorithm
      *
-     * TODO: What is the time-cost of this functor and of the nested Comparators?
+     * TODO: What is the time-cost of this functor and of the nested
+     * Comparators?
      */
-    static class Quicksorter {
-        public final int TOO_SMALL = 8; // size of smallest set worth a quicksort
-        private static final Logger LOGGER = Logger.getLogger(Quicksorter.class);
-        private final Object[] vec;
-        private final Comparator comp;
+    static class Quicksorter<T> {
+        // size of smallest set worth a quicksort
+        public final int TOO_SMALL = 8;
+
+        private static final Logger LOGGER =
+            Logger.getLogger(Quicksorter.class);
+        private final T[] vec;
+        private final Comparator<T> comp;
         private final boolean traced;
         private long partitions, comparisons, exchanges; // stats
 
-        public Quicksorter(Object[] vec, Comparator comp) {
+        public Quicksorter(T[] vec, Comparator<T> comp) {
             this.vec = vec;
             this.comp = comp;
             partitions = comparisons = exchanges = 0;
@@ -2116,26 +2207,26 @@ public class FunUtil extends Util {
         }
 
         // equivalent to operator <
-        private boolean less(Object x, Object y) {
+        private boolean less(T x, T y) {
             comparisons++;
-            return (comp.compare(x, y) < 0);
+            return comp.compare(x, y) < 0;
         }
 
         // equivalent to operator >
-        private boolean more(Object x, Object y) {
+        private boolean more(T x, T y) {
             comparisons++;
-            return (comp.compare(x, y) > 0);
+            return comp.compare(x, y) > 0;
         }
         // equivalent to operator >
-        private boolean equal(Object x, Object y) {
+        private boolean equal(T x, T y) {
             comparisons++;
-            return (comp.compare(x, y) == 0);
+            return comp.compare(x, y) == 0;
         }
 
         // swaps two items (identified by index in vec[])
         private void swap(int i, int j) {
             exchanges++;
-            Object temp = vec[i];
+            T temp = vec[i];
             vec[i] = vec[j];
             vec[j] = temp;
         }
@@ -2145,13 +2236,13 @@ public class FunUtil extends Util {
         // REVIEW: use only 2 comparisons??
         private void order3(int i, int j, int k) {
             if (more(vec[i], vec[j])) {
-                swap(i,j);
+                swap(i, j);
             }
             if (more(vec[i], vec[k])) {
-                swap(i,k);
+                swap(i, k);
             }
             if (more(vec[j], vec[k])) {
-                swap(j,k);
+                swap(j, k);
             }
         }
 
@@ -2171,10 +2262,13 @@ public class FunUtil extends Util {
             }
         }
 
-        // Runs one pass of quicksort on array segment VEC[START .. END], dividing it
-        // into two parts, the left side VEC[START .. P] none greater than the pivot
-        // value VEC[P], and the right side VEC[P+1 .. END] none less than the
-        // pivot value. Returns P, the index of the pivot element in VEC[].
+        /**
+         * Runs one pass of quicksort on array segment VEC[START .. END],
+         * dividing it into two parts, the left side VEC[START .. P] none
+         * greater than the pivot value VEC[P], and the right side VEC[P+1
+         * .. END] none less than the pivot value. Returns P, the index of the
+         * pivot element in VEC[].
+         */
         private int partition(int start, int end) {
             partitions++;
             assert start <= end;
@@ -2188,9 +2282,9 @@ public class FunUtil extends Util {
             }
 
             // Now the left and right ends are in place (ie in the correct
-            // partition), and will serve as sentinels for scanning. Pick middle as
-            // pivot and set it aside, in penultimate position.
-            final Object pivot = vec[mid];
+            // partition), and will serve as sentinels for scanning. Pick middle
+            // as pivot and set it aside, in penultimate position.
+            final T pivot = vec[mid];
             swap(mid, end - 1);
 
             // Scan inward from both ends, swapping misplaced items.
@@ -2291,8 +2385,9 @@ public class FunUtil extends Util {
             int n = vec.length - 1;
             select(limit, 0, n);
             if (traced) {
-                traceStats("partial sort: quickselect phase for " +
-                    limit + "from " + n + "items");
+                traceStats(
+                    "partial sort: quickselect phase for "
+                    + limit + "from " + n + "items");
             }
             sort(0, limit - 1);
             if (traced) {
@@ -2301,13 +2396,17 @@ public class FunUtil extends Util {
         }
     }
 
-    // Could generalize this to
-    // class<T> MemorizingComparator implements Comparator<T>,
-    // but not if it adds a run time cost, since the comparitor is at the heart of
-    // the sort algorithms.
+    /**
+     * Comparator for members.
+     *
+     * <p>Could genericize this to <code>class&lt;T&gt; MemorizingComparator
+     * implements Comparator&lt;T&gt;</code>, but not if it adds a run time
+     * cost, since the comparator is at the heart of the sort algorithms.
+     */
     private static abstract class MemberComparator implements Comparator<Member>
     {
-        private static final Logger LOGGER = Logger.getLogger(MemberComparator.class);
+        private static final Logger LOGGER =
+            Logger.getLogger(MemberComparator.class);
         final Evaluator evaluator;
         final Calc exp;
         final private boolean desc;
@@ -2318,7 +2417,7 @@ public class FunUtil extends Util {
             this.evaluator = evaluator;
             this.exp = exp;
             this.desc = desc;
-            this.valueMap = new HashMap<Member,Object>();
+            this.valueMap = new HashMap<Member, Object>();
         }
 
         // applies the Calc to a member, memorizing results
@@ -2345,10 +2444,10 @@ public class FunUtil extends Util {
                         final int c = comparator.compare(m1, m2);
                         // here guaranteed that eval(m) finds a memorized value
                         LOGGER.debug(
-                                "compare " +
-                                m1.getUniqueName() + "(" + eval(m1) + "), " +
-                                m2.getUniqueName() + "(" + eval(m2) + ")" +
-                                " yields " + c);
+                            "compare "
+                            + m1.getUniqueName() + "(" + eval(m1) + "), "
+                            + m2.getUniqueName() + "(" + eval(m2) + ")"
+                            + " yields " + c);
                         return c;
                     }
                 };
@@ -2358,11 +2457,12 @@ public class FunUtil extends Util {
         }
 
         // Preloads the value map with precomputed members (supplied as a map).
-        void preloadValues(Map<Member,Object> map) {
+        void preloadValues(Map<Member, Object> map) {
             valueMap.putAll(map);
         }
 
-        // Preloads the value map by applying the expression to a Collection of members.
+        // Preloads the value map by applying the expression to a Collection of
+        // members.
         void preloadValues(Collection<Member> members) {
             for (Member m : members) {
                 eval(m);
@@ -2403,10 +2503,10 @@ public class FunUtil extends Util {
                         if (c != 0) {
                             return c;
                         }
-                        // prev1 and prev2 are siblings.
-                        // Order according to hierarchy, if the values do not differ.
-                        // Needed to have a consistent sortMembers if members with equal (null!)
-                        //  values are compared.
+                        // prev1 and prev2 are siblings.  Order according to
+                        // hierarchy, if the values do not differ.  Needed to
+                        // have a consistent sortMembers if members with equal
+                        // (null!)  values are compared.
                         c = FunUtil.compareSiblingMembers(prev1, prev2);
                         return c;
                     }
@@ -2416,9 +2516,10 @@ public class FunUtil extends Util {
     }
 
     private static class HierarchicalMemberComparator
-            extends MemberComparator
+        extends MemberComparator
     {
-        HierarchicalMemberComparator(Evaluator evaluator, Calc exp, boolean desc)
+        HierarchicalMemberComparator(
+            Evaluator evaluator, Calc exp, boolean desc)
         {
             super(evaluator, exp, desc);
         }
@@ -2459,8 +2560,9 @@ public class FunUtil extends Util {
                 return new Comparator<Member[]>() {
                     public int compare(Member[] a1, Member[] a2) {
                         int c = base.compare(a1, a2);
-                        LOGGER.debug("compare {" + toString(a1) + "}, {" +
-                                     toString(a2) + "} yields " + c);
+                        LOGGER.debug(
+                            "compare {" + toString(a1) + "}, {"
+                            + toString(a2) + "} yields " + c);
                         return c;
                     }
 
@@ -2498,7 +2600,8 @@ public class FunUtil extends Util {
     }
 
     private static class HierarchicalArrayComparator
-            extends ArrayExpComparator {
+        extends ArrayExpComparator
+    {
         private final boolean desc;
 
         HierarchicalArrayComparator(
@@ -2526,7 +2629,9 @@ public class FunUtil extends Util {
         }
 
         protected int compareHierarchicallyButSiblingsByValue(
-                Member m1, Member m2) {
+            Member m1,
+            Member m2)
+        {
             if (FunUtil.equals(m1, m2)) {
                 return 0;
             }
@@ -2580,7 +2685,7 @@ public class FunUtil extends Util {
         ArrayExpMemoComparator(Evaluator e, Calc calc, int arity)
         {
             super(e, calc, arity);
-            this.valueMap = new HashMap<Object,Object>();
+            this.valueMap = new HashMap<Object, Object>();
         }
 
         // applies the Calc to a tuple, memorizing results
@@ -2599,11 +2704,12 @@ public class FunUtil extends Util {
         }
 
         // Preloads the value map with precomputed members (supplied as a map).
-        void preloadValues(Map<Member[],Object> map) {
+        void preloadValues(Map<Member[], Object> map) {
             valueMap.putAll(map);
         }
 
-        // Preloads the value map by applying the expression to a Collection of members.
+        // Preloads the value map by applying the expression to a Collection of
+        // members.
         void preloadValues(Collection<Member[]> tuples) {
             for (Member[] t : tuples) {
                 eval(t);
@@ -2622,7 +2728,8 @@ public class FunUtil extends Util {
     }
 
     private static class HierarchicalArrayKeyComparator
-        extends ArrayExpMemoComparator {
+        extends ArrayExpMemoComparator
+    {
 
         HierarchicalArrayKeyComparator(Evaluator e, Calc calc, int arity) {
             super(e, calc, arity);
@@ -2891,7 +2998,8 @@ public class FunUtil extends Util {
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, Id.Segment s, MatchType matchType) {
+            SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+        {
             throw new UnsupportedOperationException();
         }
 
@@ -2921,7 +3029,7 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Enumeration of the flags allowed to the <code>ORDER</code> MDX function.
+     * Enumeration of the flags allowed to the {@code ORDER} MDX function.
      */
     enum Flag {
         ASC(false, false),

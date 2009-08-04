@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -102,7 +102,9 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
             bais = new ByteArrayInputStream(source.getBytes());
         }
 
-        public int readLine(byte[] arg0, int arg1, int arg2) throws IOException {
+        public int readLine(byte[] arg0, int arg1, int arg2)
+            throws IOException
+        {
             return bais.read(arg0, arg1, arg2);
         }
 

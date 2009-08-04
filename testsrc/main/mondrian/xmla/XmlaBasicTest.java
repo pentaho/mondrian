@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -440,7 +440,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testApproxRowCountOverridesCountCallsToDatabase() throws Exception {
+    public void testApproxRowCountOverridesCountCallsToDatabase()
+        throws Exception
+    {
         String requestType = "MDSCHEMA_LEVELS";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -455,7 +457,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase() throws Exception {
+    public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase()
+        throws Exception
+    {
         String requestType = "MDSCHEMA_HIERARCHIES";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -522,7 +526,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         String content)
     {
         if (testCaseName.startsWith("testDrillThrough")
-            && filename.equals("${response}")) {
+            && filename.equals("${response}"))
+        {
             // Different databases have slightly different column types, which
             // results in slightly different inferred xml schema for the drill-
             // through result.
@@ -633,7 +638,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
     // Testcase for bug 1653587.
     public void testExecuteCrossjoin() throws Exception {
        String requestType = "EXECUTE";
-        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String query =
+            "SELECT CrossJoin({[Product].[All Products].children}, "
+            + "{[Customers].[All Customers].children}) ON columns FROM Sales";
         String request =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<soapenv:Envelope\n"
@@ -670,7 +677,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      */
     public void testExecuteCrossjoinRole() throws Exception {
         String requestType = "EXECUTE";
-        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String query =
+            "SELECT CrossJoin({[Product].[All Products].children}, "
+            + "{[Customers].[All Customers].children}) ON columns FROM Sales";
         String request =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<soapenv:Envelope\n"
@@ -734,7 +743,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                 if (hierarchy.getUniqueName().equals(hname)) {
                     return new HierarchyAccess() {
                         public Access getAccess(Member member) {
-                            String mname = "[Customers].[All Customers].[Mexico]";
+                            String mname =
+                                "[Customers].[All Customers].[Mexico]";
                             if (member.getUniqueName().equals(mname)) {
                                 return Access.NONE;
                             } else {
@@ -754,7 +764,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                             return RollupPolicy.FULL;
                         }
 
-                        public boolean hasInaccessibleDescendants(Member member) {
+                        public boolean hasInaccessibleDescendants(
+                            Member member)
+                        {
                             return false;
                         }
                     };
@@ -781,7 +793,8 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         Role role = new RR();
 
         Properties props = getDefaultRequestProperties(requestType);
-        doTestInline(requestType, request, "${response}",
+        doTestInline(
+            requestType, request, "${response}",
             props, TestContext.instance(), role);
     }
 
@@ -789,7 +802,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
 
-    public void doTestRT(String requestType, TestContext testContext) throws Exception {
+    public void doTestRT(String requestType, TestContext testContext)
+        throws Exception
+    {
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);

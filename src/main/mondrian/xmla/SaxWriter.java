@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -26,11 +26,11 @@ public interface SaxWriter {
 
     public void startElement(String name);
 
-    public void startElement(String name, String[] attrs);
+    public void startElement(String name, String... attrs);
 
     public void endElement();
 
-    public void element(String name, String[] attrs);
+    public void element(String name, String... attrs);
 
     public void characters(String data);
 

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,7 +16,6 @@ import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
-import java.util.Collections;
 
 /**
  * Definition of the <code>Sum</code> MDX function.
@@ -82,9 +81,9 @@ class SumFunDef extends AbstractAggregateFunDef {
         if (ncalc == null) {
             return null;
         }
-        final Calc calc = call.getArgCount() > 1 ?
-            compiler.compileScalar(call.getArg(1), true) :
-            new ValueCalc(call);
+        final Calc calc = call.getArgCount() > 1
+            ? compiler.compileScalar(call.getArg(1), true)
+            : new ValueCalc(call);
         // we may have asked for one sort of Calc, but here's what we got.
         if (ncalc instanceof ListCalc) {
             return genListCalc(call, ncalc, calc);
@@ -92,8 +91,10 @@ class SumFunDef extends AbstractAggregateFunDef {
             return genIterCalc(call, ncalc, calc);
         }
     }
-    protected Calc genIterCalc(final ResolvedFunCall call,
-            final Calc ncalc, final Calc calc) {
+
+    protected Calc genIterCalc(
+        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+    {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 IterCalc iterCalc = (IterCalc) ncalc;
@@ -102,27 +103,20 @@ class SumFunDef extends AbstractAggregateFunDef {
                 return sumDouble(evaluator.push(), iterable, calc);
             }
 
-            public Calc[] getCalcs() {
-                return new Calc[] {ncalc, calc};
-            }
-
             public boolean dependsOn(Dimension dimension) {
                 return anyDependsButFirst(getCalcs(), dimension);
             }
         };
     }
 
-    protected Calc genListCalc(final ResolvedFunCall call,
-            final Calc ncalc, final Calc calc) {
+    protected Calc genListCalc(
+        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+    {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 ListCalc listCalc = (ListCalc) ncalc;
                 List memberList = evaluateCurrentList(listCalc, evaluator);
                 return sumDouble(evaluator.push(false), memberList, calc);
-            }
-
-            public Calc[] getCalcs() {
-                return new Calc[] {ncalc, calc};
             }
 
             public boolean dependsOn(Dimension dimension) {

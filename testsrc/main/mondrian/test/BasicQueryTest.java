@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -471,8 +471,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSample8() {
-        if (TestContext.instance().getDialect().getDatabaseProduct() ==
-            Dialect.DatabaseProduct.INFOBRIGHT)
+        if (TestContext.instance().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.INFOBRIGHT)
         {
             // Skip this test on Infobright, because [Promotion Sales] is
             // defined wrong.
@@ -723,7 +723,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testBadComments() {
         // Comments cannot appear inside identifiers.
-        assertThrows(
+        assertQueryThrows(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
@@ -731,20 +731,20 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Failed to parse query");
 
         // Nested comments must be closed.
-        assertThrows(
+        assertQueryThrows(
             "/* a simple /* nested * comment */\n"
             + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
             "Failed to parse query");
 
         // We do NOT support \r as a line-end delimiter. (Too bad, Mac users.)
-        assertThrows(
+        assertQueryThrows(
             "SELECT {} ON COLUMNS -- comment terminated by CR only\r, {} ON ROWS FROM [Sales]",
             "Failed to parse query");
     }
 
     /**
-     * Tests that a query whose axes are empty works.
-     * (Bug 1220787.)
+     * Tests that a query whose axes are empty works; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-52">MONDRIAN-52</a>.
      */
     public void testBothAxesEmpty() {
         assertQueryReturns(
@@ -769,21 +769,32 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that a slicer with multiple values gives an error.
-     * (Bug 828411.)
+     * Tests that a slicer with multiple values gives an error; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-96">MONDRIAN-96</a>.
      */
     public void testCompoundSlicerFails() {
         // two tuples
-        assertThrows(
+        assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
             + "WHERE {([Marital Status].[S]),\n"
             + "       ([Marital Status].[M])}",
-            "WHERE clause expression returned set with more than one element.");
+            "Axis #0:\n"
+            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "{[Marital Status].[All Marital Status].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 131,558\n"
+            + "Row #2: 135,215\n");
 
         // set with incompatible members
-        assertThrows(
+        assertQueryThrows(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
@@ -791,13 +802,24 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "       [Product]}",
             "All arguments to function '{}' must have same hierarchy.");
 
-        // expression which evaluates to a set with zero members is not ok
-        assertThrows(
+        // expression which evaluates to a set with zero members used to be an
+        // error - now it's ok; cells are null because they are aggregating over
+        // nothing
+        assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
             + "WHERE Filter({[Marital Status].MEMBERS}, 1 = 0)",
-            "WHERE clause expression returned NULL or empty set.");
+            "Axis #0:\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #2: \n");
 
         // expression which evaluates to a not-null member is ok
         assertQueryReturns(
@@ -817,13 +839,24 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 131,558\n"
             + "Row #2: 135,215\n");
 
-        // expression which evaluates to a null member is not ok
-        assertThrows(
+        // Expression which evaluates to a null member used to be an error; now
+        // it is an unsatisfiable condition, so cells come out empty.
+        // Confirmed with SSAS 2005.
+        assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
             + "WHERE [Marital Status].Parent",
-            "WHERE clause expression returned NULL or empty set.");
+            "Axis #0:\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #2: \n");
 
         // expression which evaluates to a set with one member is ok
         assertQueryReturns(
@@ -843,16 +876,28 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 131,558\n"
             + "Row #2: 135,215\n");
 
-        // expression which evaluates to three tuples is not ok
-        assertThrows(
+        // slicer expression which evaluates to three tuples is not ok
+        assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
             + "WHERE Filter({[Marital Status].MEMBERS}, [Measures].[Unit Sales] <= 266773)",
-            "WHERE clause expression returned set with more than one element.");
+            "Axis #0:\n"
+            + "{[Marital Status].[All Marital Status]}\n"
+            + "{[Marital Status].[All Marital Status].[M]}\n"
+            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 131,558\n"
+            + "Row #2: 135,215\n");
 
         // set with incompatible members
-        assertThrows(
+        assertQueryThrows(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]\n"
@@ -861,7 +906,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "All arguments to function '{}' must have same hierarchy.");
 
         // two members of same dimension in columns and rows
-        assertThrows(
+        assertQueryThrows(
             "SELECT CrossJoin(\n"
             + "  {[Measures].[Unit Sales]},\n"
             + "  {[Gender].[M]}) ON COLUMNS,\n"
@@ -869,8 +914,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "FROM [Sales]",
             "Dimension '[Gender]' appears in more than one independent axis.");
 
-        // two members of same dimension in rows and slicer
-        assertThrows(
+        // two members of same dimension in rows and filter
+        assertQueryThrows(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]"
@@ -878,21 +923,31 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Dimension '[Gender]' appears in more than one independent axis.");
 
         // two members of same dimension in slicer tuple
-        assertThrows(
+        assertQueryThrows(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]"
             + "WHERE ([Marital Status].[S], [Marital Status].[M])",
             "Tuple contains more than one member of dimension '[Marital Status]'.");
 
-        // testcase for bug 996088
-        assertThrows(
+        // testcase for bug MONDRIAN-68, "Member appears in slicer and other
+        // axis should be illegal"
+        assertQueryThrows(
             "select\n"
             + "{[Measures].[Unit Sales]} on columns,\n"
             + "{([Product].[All Products], [Time].[1997])} ON rows\n"
             + "from Sales\n"
             + "where ([Time].[1997])",
             "Dimension '[Time]' appears in more than one independent axis.");
+    }
+
+    public void testEmptyTupleSlicerFails() {
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].Children on 1\n"
+            + "from [Warehouse and Sales]\n"
+            + "where ()",
+            "Syntax error at line 4, column 10, token ')'");
     }
 
     /**
@@ -950,7 +1005,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             2, 2);
     }
 
-    public void testOneDimensionalQueryWithCompoundSlicer() {
+    public void testOneDimensionalQueryWithTupleAsSlicer() {
         Result result = executeQuery(
             "select\n"
             + "  [Product].[All Products].[Drink].children on columns\n"
@@ -1139,12 +1194,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * Test what happens when the solve orders are the same. According to
-     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
-     * and http://dev.hyperion.com/download_files/resource_library/white_papers/mdx.pdf,
-     * if solve orders are the same then the dimension specified first when defining the cube wins.
+     * http://msdn.microsoft.com/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
+     * if solve orders are the same then the dimension specified first
+     * when defining the cube wins.
      *
-     * In the first test, the answer should be 1 because Promotions comes before
-     * Customers in the FoodMart.xml schema.
+     * <p>In the first test, the answer should be 1 because Promotions
+     * comes before Customers in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
         assertQueryReturns(
@@ -2235,27 +2290,33 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "7,786.21"));
 
     public void testTaglib0() {
-        assertQueryReturns(taglibQueries.get(0).query, taglibQueries.get(0).result);
+        assertQueryReturns(
+            taglibQueries.get(0).query, taglibQueries.get(0).result);
     }
 
     public void testTaglib1() {
-        assertQueryReturns(taglibQueries.get(1).query, taglibQueries.get(1).result);
+        assertQueryReturns(
+            taglibQueries.get(1).query, taglibQueries.get(1).result);
     }
 
     public void testTaglib2() {
-        assertQueryReturns(taglibQueries.get(2).query, taglibQueries.get(2).result);
+        assertQueryReturns(
+            taglibQueries.get(2).query, taglibQueries.get(2).result);
     }
 
     public void testTaglib3() {
-        assertQueryReturns(taglibQueries.get(3).query, taglibQueries.get(3).result);
+        assertQueryReturns(
+            taglibQueries.get(3).query, taglibQueries.get(3).result);
     }
 
     public void testTaglib4() {
-        assertQueryReturns(taglibQueries.get(4).query, taglibQueries.get(4).result);
+        assertQueryReturns(
+            taglibQueries.get(4).query, taglibQueries.get(4).result);
     }
 
     public void testTaglib5() {
-        assertQueryReturns(taglibQueries.get(5).query, taglibQueries.get(5).result);
+        assertQueryReturns(
+            taglibQueries.get(5).query, taglibQueries.get(5).result);
     }
 
     public void testCellValue() {
@@ -2327,11 +2388,13 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * If a measure (in this case, <code>[Measures].[Sales Count]</code>)
-     * occurs only within a format expression, bug 684593 causes an internal
+     * occurs only within a format expression, bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-14">MONDRIAN-14</a>.
+     * causes an internal
      * error ("value not found") when the cell's formatted value is retrieved.
      */
-    public void testBug684593(FoodMartTestCase test) {
-        test.assertQueryReturns(
+    public void testBugMondrian14() {
+        assertQueryReturns(
             "with member [Measures].[USales] as '[Measures].[Unit Sales]',\n"
             + " format_string = iif([Measures].[Sales Count] > 30, \"#.00 good\",\"#.00 bad\")\n"
             + "select {[Measures].[USales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns,\n"
@@ -2397,9 +2460,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * This bug causes all of the format strings to be the same, because the
-     * required expression [Measures].[Unit Sales] is not in the cache.
+     * required expression [Measures].[Unit Sales] is not in the cache; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-34">MONDRIAN-34</a>.
      */
-    public void testBug761196() {
+    public void testBugMondrian34() {
         assertQueryReturns(
             "with member [Measures].[xxx] as '[Measures].[Store Sales]',\n"
             + " format_string = IIf([Measures].[Unit Sales] > 100000, \"AAA######.00\",\"BBB###.00\")\n"
@@ -2421,9 +2485,10 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Compound slicer causes {@link ClassCastException}
+     * Tuple as slicer causes {@link ClassCastException}; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-36">MONDRIAN-36</a>.
      */
-    public void testBug761952() {
+    public void testBugMondrian36() {
         assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON columns,\n"
             + " {[Gender].Children} ON rows\n"
@@ -2442,9 +2507,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * Query with distinct-count measure and no other measures gives
-     * {@link ArrayIndexOutOfBoundsException}
+     * {@link ArrayIndexOutOfBoundsException};
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-46">MONDRIAN-46</a>.
      */
-    public void testBug804903() {
+    public void testBugMondrian46() {
         getConnection().getCacheControl(null).flushSchemaCache();
         assertQueryReturns(
             "select {[Measures].[Customer Count]} ON columns,\n"
@@ -2505,7 +2571,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         // todo:
         // <Cube>
         // <Hierarchy name="h1"><Table name="t1"/></Hierarchy>
-        // <Hierarchy name="h2"><Table name="t2"/><Level tableName="t1"/></Hierarchy>
+        // <Hierarchy name="h2">
+        //   <Table name="t2"/>
+        //   <Level tableName="t1"/>
+        // </Hierarchy>
         // </Cube>
     }
 
@@ -3036,15 +3105,18 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      * [Store Size in SQFT].[All Store Size in SQFTs]
      * [Store Size in SQFT].[All Store Size in SQFTs].[null]
-     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store
+     * size>]
      *
      * Postgres shows:
      *
      * [Store Size in SQFT].[All Store Size in SQFTs]
-     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+     * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store
+     * size>]
      * [Store Size in SQFT].[All Store Size in SQFTs].[null]
      *
-     * The test failure is due to some inherent differences in the way Postgres orders NULLs in a result set,
+     * The test failure is due to some inherent differences in the way
+     * Postgres orders NULLs in a result set,
      * compared with MySQL and Access.
      *
      * From the MySQL 4.X manual:
@@ -3116,7 +3188,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}\n"
 
             // null is at the end in order for DBMSs that sort nulls high
-            + (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n" : "")
+            + (nullsSortHigh
+               ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n"
+               : "")
             + "Row #" + row++ + ": 266,773\n"
             + (!nullsSortHigh ? "Row #" + row++ + ": 39,329\n" : "")
             + "Row #" + row++ + ": 26,079\n"
@@ -3269,9 +3343,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * <p>Basket analysis is a topic better suited to data mining discussions, but
-     * some basic forms of basket analysis can be handled through the use of MDX
-     * queries.
+     * <p>Basket analysis is a topic better suited to data mining discussions,
+     * but some basic forms of basket analysis can be handled through the use of
+     * MDX queries.
      *
      * <p>For example, one method of basket analysis groups customers based on
      * qualification. In the following example, a qualified customer is one who
@@ -3288,10 +3362,10 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Count column, while the second calculated member uses the MDX Sum,
      * Filter, and Descendants functions to create the Qualified Sales column.
      *
-     * <p>The key to this MDX query is the use of Filter and Descendants together
-     * to screen out non-qualified customers. Once screened out, the Sum and
-     * Count MDX functions can then be used to provide aggregation data only on
-     * qualified customers.
+     * <p>The key to this MDX query is the use of Filter and Descendants
+     * together to screen out non-qualified customers. Once screened out, the
+     * Sum and Count MDX functions can then be used to provide aggregation data
+     * only on qualified customers.
      */
     public void testBasketAnalysis() {
         assertQueryReturns(
@@ -3628,7 +3702,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * above example using the Aggregate function, replace the definition for
      * the calculated member with this definition:
      *
-     * <blockquote><pre>'Aggregate({[Product].[Food], [Product].[Drink]})'</pre></blockquote>
+     * <blockquote>
+     * <code>'Aggregate({[Product].[Food], [Product].[Drink]})'</code>
+     * </blockquote>
      */
     public void testLogicalOps() {
         assertQueryReturns(
@@ -4127,7 +4203,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testDifferentCalculations2() {
         assertQueryReturns(
             // todo: "[Store].[USA].[CA]" should be "[Store].CA",
-            //  "[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]" should be "[Product].[Beer]"
+            //  "[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+            // should be "[Product].[Beer]"
             "WITH MEMBER Measures.[Average Units Ordered] AS\n"
             + "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'\n"
             + "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS,\n"
@@ -4167,7 +4244,8 @@ public class BasicQueryTest extends FoodMartTestCase {
      * basic cases involve aggregating a single dimension using a different
      * aggregation function than the one used for other dimensions.<ul>
      *
-     * <li>Aggregating minimums, maximums, or averages along a time dimension</li>
+     * <li>Aggregating minimums, maximums, or averages along a time
+     * dimension</li>
      *
      * <li>Aggregating opening and closing period values along a time
      * dimension</li></ul>
@@ -4335,8 +4413,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * forecast of warehouse sales, from the Warehouse cube in the FoodMart 2000
      * database, for drink products. The standard forecast is double the
      * warehouse sales of the previous year, while the dynamic forecast varies
-     * from month to month -- the forecast for January is 120 percent of previous
-     * sales, while the forecast for July is 260 percent of previous sales.
+     * from month to month -- the forecast for January is 120 percent of
+     * previous sales, while the forecast for July is 260 percent of previous
+     * sales.
      *
      * <p>The most flexible way of handling this type of report is the use of
      * nested MDX IIf functions to return a multiplier to be used on the members
@@ -4345,7 +4424,8 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testDifferentCalcsForDifferentTimePeriods() {
         assertQueryReturns(
-            // note: "[Product].[Drink Forecast - Standard]" was "[Drink Forecast - Standard]"
+            // note: "[Product].[Drink Forecast - Standard]"
+            // was "[Drink Forecast - Standard]"
             "WITH MEMBER [Product].[Drink Forecast - Standard] AS\n"
             + "  '[Product].[All Products].[Drink] * 2'\n"
             + "MEMBER [Product].[Drink Forecast - Dynamic] AS \n"
@@ -4519,12 +4599,12 @@ public class BasicQueryTest extends FoodMartTestCase {
      * takes quite long
      */
     public void dont_testParallelMutliple() {
-      for (int i = 0; i < 5; i++) {
-        runParallelQueries(1, 1, false);
-        runParallelQueries(3, 2, false);
-        runParallelQueries(4, 6, true);
-        runParallelQueries(6, 10, false);
-      }
+        for (int i = 0; i < 5; i++) {
+            runParallelQueries(1, 1, false);
+            runParallelQueries(3, 2, false);
+            runParallelQueries(4, 6, true);
+            runParallelQueries(6, 10, false);
+        }
     }
 
     public void dont_testParallelNot() {
@@ -4548,7 +4628,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         final int iterationCount,
         final boolean flush)
     {
-        long timeoutMs = (long) threadCount * iterationCount * 600 * 1000; // 10 minute per query
+        // 10 minute per query
+        long timeoutMs = (long) threadCount * iterationCount * 600 * 1000;
         final int[] executeCount = new int[] {0};
         final List<QueryAndResult> queries = new ArrayList<QueryAndResult>();
         queries.addAll(Arrays.asList(sampleQueries));
@@ -4592,7 +4673,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     /**
      * Makes sure that the expression <code>
      *
-     * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])
+     * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All
+     * Products])
      *
      * </code> depends on the current member of the Product dimension, although
      * [Product].[All Products] is referenced from the expression.
@@ -5160,7 +5242,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         // evaluated at in the context: [Product].[Drink], [Gender].[M]
         testContext.assertExprReturns(
             "([Gender].[M], [Measures].[Unit Sales])", "12,395");
-        // evaluated at in the context: [Product].[Food].[Canned Foods], [Gender].[F]
+        // evaluated in the context:
+        // [Product].[Food].[Canned Foods], [Gender].[F]
         testContext.assertExprReturns(
             "([Product].[Food].[Canned Foods], [Measures].[Unit Sales])",
             "9,407");
@@ -5190,7 +5273,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testScalarOnAxisFails() {
-        assertThrows(
+        assertQueryThrows(
             "select [Measures].[Sales Count] + 1 on 0, non empty [Store].[Store State].members on 1 from [Sales]",
             "Axis 'COLUMNS' expression is not a set");
     }
@@ -5200,14 +5283,14 @@ public class BasicQueryTest extends FoodMartTestCase {
      * one axis.
      */
     public void testSameDimOnTwoAxesFails() {
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Measures].[Store Sales]} on rows\n"
             + "from [Sales]",
             "Dimension '[Measures]' appears in more than one independent axis");
 
         // as part of a crossjoin
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " CrossJoin({[Product].members},"
             + "           {[Measures].[Store Sales]}) on rows\n"
@@ -5215,7 +5298,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Dimension '[Measures]' appears in more than one independent axis");
 
         // as part of a tuple
-        assertThrows(
+        assertQueryThrows(
             "select CrossJoin(\n"
             + "    {[Product].children},\n"
             + "    {[Measures].[Unit Sales]}) on columns,\n"
@@ -5225,7 +5308,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Dimension '[Product]' appears in more than one independent axis");
 
         // clash between columns and slicer
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Store].Members} on rows\n"
             + "from [Sales]\n"
@@ -5246,7 +5329,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void _testSetArgToTupleFails() {
-        assertThrows(
+        assertQueryThrows(
             "select CrossJoin(\n"
             + "    {[Product].children},\n"
             + "    {[Measures].[Unit Sales]}) on columns,\n"
@@ -5258,7 +5341,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void _badArgsToTupleFails() {
         // clash within slicer
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Store].Members} on rows\n"
             + "from [Sales]\n"
@@ -5266,7 +5349,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Dimension '[Time]' more than once in same tuple");
 
         // ditto
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " CrossJoin({[Time].[1997].[Q1],\n"
             + "           {[Product]},\n"
@@ -5486,14 +5569,18 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "from [Sales]";
 
         String mdx3 =
-          "select {[Measures].[Unit Sales]} on columns\n" +
-          "from [Sales]\n" +
-          "where ([Time].[1997].[QTOO])";
+            "select {[Measures].[Unit Sales]} on columns\n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[QTOO])";
 
         // By default, reference to invalid member should cause
         // query failure.
-        assertThrows(
+        assertQueryThrows(
             mdx, "MDX object '[Time].[1997].[QTOO]' not found in cube 'Sales'");
+
+        assertQueryThrows(
+            mdx3,
+            "MDX object '[Time].[1997].[QTOO]' not found in cube 'Sales'");
 
         // Now set property
 
@@ -5514,10 +5601,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             // Illegal member in slicer
             assertQueryReturns(
                 mdx3,
-                    "Axis #0:\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Row #0: \n");
+                "Axis #0:\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: \n");
 
             // Verify that invalid members in query do NOT prevent
             // usage of native NECJ (LER-5165).
@@ -5742,9 +5829,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * For a calulated member picks up the format of first member that has a format.
-     * in this particular case foo will use profit's format,
-     * i.e neither [unit sales] nor [customer count] format is used.
+     * For a calulated member picks up the format of first member that has a
+     * format.  In this particular case foo will use profit's format, i.e
+     * neither [unit sales] nor [customer count] format is used.
      */
     public void testFormatInheritanceWorksWithFirstFormatItFinds() {
         assertQueryReturns(
@@ -5800,7 +5887,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: $958.00\n");
     }
 
-    public void testFormatInheritanceToPickupFormatFromSecondMeasureWhenTheFirstDoesNotHaveOne() {
+    /**
+     * Test format inheritance to pickup format from second measure when the
+     * first does not have one.
+     */
+    public void testFormatInheritanceUseSecondIfFirstHasNoFormat() {
         assertQueryReturns(
             "with member measures.foo as 'measures.bar+measures.blah'"
             + " member measures.bar as '10'"
@@ -5811,8 +5902,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "$30.00");
     }
 
-
-    public void testFormatInheritanceWithComplexExpressionToAssertThatTheFormatOfTheFisrtMemberThatHasAValidFormatIsUsed() {
+    /**
+     * Tests format inheritance with complex expression to assert that the
+     * format of the first member that has a valid format is used.
+     */
+    public void testFormatInheritanceUseFirstValid() {
         assertQueryReturns(
             "with member measures.foo as '13+31*measures.[Unit Sales]/"
             + "iif(measures.profit>0,measures.profit,measures.[Customer Count])'"
@@ -6158,15 +6252,15 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This tests for bug #1630754. In Mondrian 2.2.2 the SqlTupleReader.readTuples
-     * method would create a SQL having an in-clause with more that 1000 entities
-     * under some circumstances. This exceeded the limit for Oracle resulting in an
-     * ORA-01795 error.
+     * Tests for bug #1630754. In Mondrian 2.2.2 the SqlTupleReader.readTuples
+     * method would create a SQL having an in-clause with more that 1000
+     * entities under some circumstances. This exceeded the limit for Oracle
+     * resulting in an ORA-01795 error.
      */
     public void testBug1630754() {
         // In order to reproduce this bug a dimension with 2 levels with more
-        // than 1000 member each was necessary. The customer_id column has more than
-        // 1000 distinct members so it was used for this test.
+        // than 1000 member each was necessary. The customer_id column has more
+        // than 1000 distinct members so it was used for this test.
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Customer_2\" foreignKey=\"customer_id\">\n"
@@ -6229,7 +6323,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDuplicateAxisFails() {
-        assertThrows(
+        assertQueryThrows(
             "select [Gender].Members on columns,"
             + " [Measures].Members on columns "
             + "from [Sales]",
@@ -6237,26 +6331,26 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testInvalidAxisFails() {
-        assertThrows(
+        assertQueryThrows(
             "select [Gender].Members on 0,"
             + " [Measures].Members on 10 "
             + "from [Sales]",
             "Axis numbers specified in a query must be sequentially specified,"
             + " and cannot contain gaps. Axis 1 (ROWS) is missing.");
 
-        assertThrows(
+        assertQueryThrows(
             "select [Gender].Members on columns,"
             + " [Measures].Members on foobar\n"
             + "from [Sales]",
             "Syntax error at line 1, column 59, token 'foobar'");
 
-        assertThrows(
+        assertQueryThrows(
             "select [Gender].Members on columns,"
             + " [Measures].Members on slicer\n"
             + "from [Sales]",
             "Syntax error at line 1, column 59, token 'slicer'");
 
-        assertThrows(
+        assertQueryThrows(
             "select [Gender].Members on columns,"
             + " [Measures].Members on filter\n"
             + "from [Sales]",
@@ -6480,8 +6574,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "{[Gender].[AGG]}\n"
                 + "Row #0: \n");
         } finally {
-            props.IgnoreMeasureForNonJoiningDimension.
-                set(ignoreMeasureForNonJoiningDimension);
+            props.IgnoreMeasureForNonJoiningDimension.set(
+                ignoreMeasureForNonJoiningDimension);
         }
     }
 
@@ -6570,12 +6664,12 @@ public class BasicQueryTest extends FoodMartTestCase {
         // SSAS2005 gives error:
         //   Query (1, 8) Two sets specified in the  function have different
         //   dimensionality.
-        assertThrows(
+        assertQueryThrows(
             "select {[Measures].[Unit Sales], [Gender].Members} on 0,\n"
             + " [Store].[USA].Children on 1\n"
             + "from [Sales]",
             "All arguments to function '{}' must have same hierarchy.");
-        assertThrows(
+        assertQueryThrows(
             "select {[Marital Status].Members, [Gender].Members} on 0,\n"
             + " [Store].[USA].Children on 1\n"
             + "from [Sales]",

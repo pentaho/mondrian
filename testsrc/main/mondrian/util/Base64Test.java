@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -47,7 +47,8 @@ public class Base64Test extends TestCase
         byte[] decoded = Base64.decode(encoded, 0, encoded.length);
         assertTrue(Arrays.equals(data, decoded));
 
-        Base64.InputStream in = new Base64.InputStream(new ByteArrayInputStream(encoded));
+        Base64.InputStream in =
+            new Base64.InputStream(new ByteArrayInputStream(encoded));
         out_bytes = new ByteArrayOutputStream();
         byte[] buffer = new byte[3];
         for (int n = in.read(buffer); n > 0; n = in.read(buffer)) {
@@ -74,13 +75,24 @@ public class Base64Test extends TestCase
 
     public void testSimple()
     {
-        String s = "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.";
+        String s =
+            "Man is distinguished, not only by his reason, but by this "
+            + "singular passion from other animals, which is a lust of the "
+            + "mind, that by a perseverance of delight in the continued and "
+            + "indefatigable generation of knowledge, exceeds the short "
+            + "vehemence of any carnal pleasure.";
         String encoded = Base64.encodeBytes(s.getBytes());
-        String expected = "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz\n"
-            + "IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg\n"
-            + "dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu\n"
-            + "dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo\n"
-            + "ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=";
+        String expected =
+            "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvb"
+            + "mx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz\n"
+            + "IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlc"
+            + "iBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg\n"
+            + "dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlc"
+            + "mFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu\n"
+            + "dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyY"
+            + "XRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo\n"
+            + "ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhc"
+            + "m5hbCBwbGVhc3VyZS4=";
         assertEquals(expected, encoded);
         byte[] s1 = Base64.decode(encoded);
         assertEqualsByteArray(s.getBytes(), s1);

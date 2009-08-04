@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -283,7 +283,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].Children)), Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].[Drink].Children))) ON ROWS \n"
             + "from [Sales] where [Time].[1997].[Q4].[12]");
 
-        // [Promotion Media].[All Media], [Product].[All Products].[Drink].[Dairy], [Measures].[Store Cost]
+        // [Promotion Media].[All Media], [Product].[All
+        // Products].[Drink].[Dairy], [Measures].[Store Cost]
         Cell cell = result.getCell(new int[]{0, 4});
 
         String sql = cell.getDrillThroughSQL(true);
@@ -300,7 +301,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "`product`.`brand_name` as `Brand Name`, `product`.`product_name` as `Product Name`, "
             + "`promotion`.`media_type` as `Media Type`, `promotion`.`promotion_name` as `Promotion Name`, "
             + "`customer`.`country` as `Country`, `customer`.`state_province` as `State Province`, `customer`.`city` as `City`, "
-            + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`, "
+            + nameExpStr + " as `Name`, "
+            + "`customer`.`customer_id` as `Name (Key)`, "
             + "`customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`, `customer`.`marital_status` as `Marital Status`, "
             + "`customer`.`yearly_income` as `Yearly Income`, "
             + "`sales_fact_1997`.`unit_sales` as `Unit Sales` "
@@ -327,7 +329,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "`product_class`.`product_family` ASC, `product_class`.`product_department` ASC, `product_class`.`product_category` ASC, "
             + "`product_class`.`product_subcategory` ASC, `product`.`brand_name` ASC, `product`.`product_name` ASC, "
             + "`promotion.media_type` ASC, `promotion`.`promotion_name` ASC, "
-            + "`customer`.`country` ASC, `customer`.`state_province` ASC, `customer`.`city` ASC, " + nameExpStr + " ASC, "
+            + "`customer`.`country` ASC, "
+            + "`customer`.`state_province` ASC, `customer`.`city` ASC, "
+            + nameExpStr + " ASC, "
             + "`customer`.`customer_id` ASC, `customer`.`education` ASC, `customer`.gender` ASC, `customer`.`marital_status` ASC, `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 141);
@@ -359,7 +363,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[Date Range]");
 
-        //String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
         String sql = result.getCell(new int[] {0, 6}).getDrillThroughSQL(true);
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
@@ -499,9 +502,11 @@ public class DrillThroughTest extends FoodMartTestCase {
      */
     public void testDrillThroughDupKeys() throws Exception {
         /*
-         * Note here that the type on the Store Id level is Integer or Numeric. The default, of course, would be String.
+         * Note here that the type on the Store Id level is Integer or
+         * Numeric. The default, of course, would be String.
          *
-         * For DB2 and Derby, we need the Integer type, otherwise the generated SQL will be something like:
+         * For DB2 and Derby, we need the Integer type, otherwise the
+         * generated SQL will be something like:
          *
          *      `store_ragged`.`store_id` = '19'
          *
@@ -639,7 +644,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store_ragged`.`store_id` as `Store Id (Key)`, `promotion`.`media_type` as `Media Type`,"
             + " `promotion`.`promotion_name` as `Promotion Name`, `customer`.`country` as `Country`,"
             + " `customer`.`state_province` as `State Province`, `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`, `customer`.`customer_id` as `Name (Key)`,"
+            + " " + nameExpStr + " as `Name`,"
+            + " `customer`.`customer_id` as `Name (Key)`,"
             + " `customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`,"
             + " `customer`.`marital_status` as `Marital Status`,"
             + " `customer`.`yearly_income` as `Yearly Income`,"

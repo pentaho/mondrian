@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -106,7 +106,8 @@ public class Main extends TestSuite {
             MondrianTestRunner runner = new MondrianTestRunner();
             TestResult tres = runner.doRun(test);
             if (!tres.wasSuccessful()) {
-                System.out.println("Warmup run failed. Regular tests will not be run.");
+                System.out.println(
+                    "Warmup run failed. Regular tests will not be run.");
                 System.exit(1);
             }
             System.out.println("Warmup run complete. Starting regular run...");
@@ -137,7 +138,8 @@ public class Main extends TestSuite {
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
-        System.out.println("java.version: " + System.getProperty("java.version"));
+        System.out.println(
+            "java.version: " + System.getProperty("java.version"));
 
         TestSuite suite = new TestSuite();
         if (testClass != null && !testClass.equals("")) {
@@ -187,6 +189,7 @@ public class Main extends TestSuite {
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);
+            addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
@@ -216,6 +219,7 @@ public class Main extends TestSuite {
             addTest(suite, AccessControlTest.class);
             addTest(suite, ParserTest.class);
             addTest(suite, CustomizedParserTest.class);
+            addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);
@@ -229,6 +233,7 @@ public class Main extends TestSuite {
             if (isRunOnce()) {
                 addTest(suite, TestCalculatedMembers.class);
             }
+            addTest(suite, CompoundSlicerTest.class);
             addTest(suite, RaggedHierarchyTest.class);
             addTest(suite, NonEmptyPropertyForAllAxisTest.class);
             addTest(suite, InlineTableTest.class);
@@ -266,7 +271,9 @@ public class Main extends TestSuite {
             addTest(suite, RolapCubeTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
-            addTest(suite, IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
+            addTest(
+                suite,
+                IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
             addTest(suite, SetFunDefTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
@@ -308,7 +315,8 @@ public class Main extends TestSuite {
         if (testInfo != null && testInfo.length() > 0) {
             System.out.println(testInfo);
         } else {
-            System.out.println("No tests to run. Check mondrian.properties setting.");
+            System.out.println(
+                "No tests to run. Check mondrian.properties setting.");
         }
 
         System.out.flush();
@@ -323,9 +331,9 @@ public class Main extends TestSuite {
      */
     private static boolean isRunOnce() {
         final MondrianProperties properties = MondrianProperties.instance();
-        return !properties.Warmup.get() &&
-                properties.VUsers.get() == 1 &&
-                properties.Iterations.get() == 1;
+        return !properties.Warmup.get()
+            && properties.VUsers.get() == 1
+            && properties.Iterations.get() == 1;
     }
 
     /**
@@ -346,7 +354,9 @@ public class Main extends TestSuite {
             if (test instanceof TestCase) {
                 TestCase testCase = (TestCase) test;
                 final String testName = testCase.getName();
-                if (testPattern == null || testPattern.matcher(testName).matches()) {
+                if (testPattern == null
+                    || testPattern.matcher(testName).matches())
+                {
                     addTest(newSuite, test, suite.getName() + testName);
                 }
             } else if (test instanceof TestSuite) {
@@ -397,7 +407,8 @@ public class Main extends TestSuite {
     }
 
     private static void printTestInfo(
-        TestSuite suite, String testClassName, int startCount, int endCount) {
+        TestSuite suite, String testClassName, int startCount, int endCount)
+    {
         String testInfo = testSuiteInfo.get(suite);
         String newTestInfo =
             "[" + startCount + " - " + endCount + "] : " + testClassName + "\n";

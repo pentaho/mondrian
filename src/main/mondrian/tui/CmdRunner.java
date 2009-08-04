@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -136,14 +136,14 @@ public class CmdRunner {
     }
 
     private String formatError(Throwable mex) {
-            String message = mex.getMessage();
-            if (message == null) {
-                message = mex.toString();
-            }
-            if (mex.getCause() != null && mex.getCause() != mex) {
-                    message = message + nl + formatError(mex.getCause());
-            }
-            return message;
+        String message = mex.getMessage();
+        if (message == null) {
+            message = mex.toString();
+        }
+        if (mex.getCause() != null && mex.getCause() != mex) {
+            message = message + nl + formatError(mex.getCause());
+        }
+        return message;
     }
 
     public static void listPropertyNames(StringBuilder buf) {
@@ -173,11 +173,11 @@ public class CmdRunner {
      */
     private static String getPropertyValue(String propertyName) {
         final Property property = PropertyInfo.lookupProperty(
-                MondrianProperties.instance(),
-                propertyName);
-        return property.isSet() ?
-                property.getString() :
-                null;
+            MondrianProperties.instance(),
+            propertyName);
+        return property.isSet()
+            ? property.getString()
+            : null;
     }
 
     public static void listProperty(String propertyName, StringBuilder buf) {
@@ -222,10 +222,11 @@ public class CmdRunner {
             final Class<? extends Object> clazz = properties.getClass();
             final Field[] fields = clazz.getFields();
             for (Field field : fields) {
-                if (!Modifier.isPublic(field.getModifiers()) ||
-                    Modifier.isStatic(field.getModifiers()) ||
-                    !Property.class.isAssignableFrom(
-                        field.getType())) {
+                if (!Modifier.isPublic(field.getModifiers())
+                    || Modifier.isStatic(field.getModifiers())
+                    || !Property.class.isAssignableFrom(
+                        field.getType()))
+                {
                     continue;
                 }
                 final Property property;
@@ -265,9 +266,10 @@ public class CmdRunner {
             } catch (NoSuchFieldException e) {
                 return null;
             }
-            if (!Modifier.isPublic(field.getModifiers()) ||
-                    Modifier.isStatic(field.getModifiers()) ||
-                    !Property.class.isAssignableFrom(field.getType())) {
+            if (!Modifier.isPublic(field.getModifiers())
+                || Modifier.isStatic(field.getModifiers())
+                || !Property.class.isAssignableFrom(field.getType()))
+            {
                 return null;
             }
             try {
@@ -310,23 +312,25 @@ public class CmdRunner {
         switch (category) {
         case Category.Numeric:
             if (type != Expr.Type.NUMERIC) {
-                String msg = "For parameter named \""
-                        + name
-                        + "\" of Catetory.Numeric, "
-                        + "the value was type \""
-                        + type
-                        + "\"";
+                String msg =
+                    "For parameter named \""
+                    + name
+                    + "\" of Catetory.Numeric, "
+                    + "the value was type \""
+                    + type
+                    + "\"";
                 throw new IllegalArgumentException(msg);
             }
             break;
         case Category.String:
             if (type != Expr.Type.STRING) {
-                String msg = "For parameter named \""
-                        + name
-                        + "\" of Catetory.String, "
-                        + "the value was type \""
-                        + type
-                        + "\"";
+                String msg =
+                    "For parameter named \""
+                    + name
+                    + "\" of Catetory.String, "
+                    + "the value was type \""
+                    + type
+                    + "\"";
                 throw new IllegalArgumentException(msg);
             }
             break;
@@ -389,7 +393,8 @@ public class CmdRunner {
         // assume member, dimension, hierarchy, level
         OlapElement element = Util.lookup(query, Util.parseIdentifier(trimmed));
 
-        debug("parseParameter. exp="
+        debug(
+            "parseParameter. exp="
             + ((element == null) ? "null" : element.getClass().getName()));
 
         if (element instanceof Member) {
@@ -409,7 +414,9 @@ public class CmdRunner {
     }
 
     public static void listParameterNameValues(StringBuilder buf) {
-        for (Map.Entry<Object, String> e : CmdRunner.paraNameValues.entrySet()) {
+        for (Map.Entry<Object, String> e
+            : CmdRunner.paraNameValues.entrySet())
+        {
             buf.append(e.getKey());
             buf.append('=');
             buf.append(e.getValue());
@@ -484,9 +491,10 @@ public class CmdRunner {
     }
 
     public void executeCubeCommand(
-            String cubename,
-            String command,
-            StringBuilder buf) {
+        String cubename,
+        String command,
+        StringBuilder buf)
+    {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -507,10 +515,11 @@ public class CmdRunner {
     }
 
     public void setCubeAttribute(
-            String cubename,
-            String name,
-            String value,
-            StringBuilder buf) {
+        String cubename,
+        String name,
+        String value,
+        StringBuilder buf)
+    {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -609,7 +618,9 @@ public class CmdRunner {
         if (connectString == null || connectString.equals("")) {
             // create new and add provider
             connectProperties = new Util.PropertyList();
-            connectProperties.put(RolapConnectionProperties.Provider.name(),"mondrian");
+            connectProperties.put(
+                RolapConnectionProperties.Provider.name(),
+                "mondrian");
         } else {
             // load with existing connect string
             connectProperties = Util.parseConnectString(connectString);
@@ -622,7 +633,9 @@ public class CmdRunner {
 
         if (jdbcURL != null) {
             // add jdbc url to connect string
-            connectProperties.put(RolapConnectionProperties.Jdbc.name(), jdbcURL);
+            connectProperties.put(
+                RolapConnectionProperties.Jdbc.name(),
+                jdbcURL);
         }
 
         // override jdbc drivers
@@ -631,7 +644,9 @@ public class CmdRunner {
         debug("CmdRunner.makeConnectString: jdbcDrivers=" + jdbcDrivers);
         if (jdbcDrivers != null) {
             // add jdbc drivers to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcDrivers.name(), jdbcDrivers);
+            connectProperties.put(
+                RolapConnectionProperties.JdbcDrivers.name(),
+                jdbcDrivers);
         }
 
         // override catalog url
@@ -641,7 +656,9 @@ public class CmdRunner {
 
         if (catalogURL != null) {
             // add catalog url to connect string
-            connectProperties.put(RolapConnectionProperties.Catalog.name(), catalogURL);
+            connectProperties.put(
+                RolapConnectionProperties.Catalog.name(),
+                catalogURL);
         }
 
         // override JDBC user
@@ -651,7 +668,9 @@ public class CmdRunner {
 
         if (jdbcUser != null) {
             // add user to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcUser.name(), jdbcUser);
+            connectProperties.put(
+                RolapConnectionProperties.JdbcUser.name(),
+                jdbcUser);
         }
 
         // override JDBC password
@@ -661,14 +680,20 @@ public class CmdRunner {
 
         if (jdbcPassword != null) {
             // add password to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
+            connectProperties.put(
+                RolapConnectionProperties.JdbcPassword.name(),
+                jdbcPassword);
         }
 
         if (options.roleName != null) {
-            connectProperties.put(RolapConnectionProperties.Role.name(), options.roleName);
+            connectProperties.put(
+                RolapConnectionProperties.Role.name(),
+                options.roleName);
         }
 
-        debug("CmdRunner.makeConnectString: connectProperties=" + connectProperties);
+        debug(
+            "CmdRunner.makeConnectString: connectProperties="
+            + connectProperties);
 
         this.connectString = connectProperties.toString();
     }
@@ -874,10 +899,10 @@ public class CmdRunner {
             }
 
             // Are we ready to execute an mdx query.
-            if ((line == null) ||
-                    ((line.length() == 1) &&
-                    ((line.charAt(0) == EXECUTE_CHAR) ||
-                        (line.charAt(0) == CANCEL_CHAR))))
+            if ((line == null)
+                || ((line.length() == 1)
+                    && ((line.charAt(0) == EXECUTE_CHAR)
+                        || (line.charAt(0) == CANCEL_CHAR))))
             {
                 // If EXECUTE_CHAR, then execute, otherwise its the
                 // CANCEL_CHAR and simply empty buffer.
@@ -955,8 +980,9 @@ public class CmdRunner {
             if (c == ESCAPE_CHAR) {
                 buf.append(ESCAPE_CHAR);
                 buf.append(line.charAt(++offset));
-            } else if (!inName &&
-                    ((c == STRING_CHAR_1) || (c == STRING_CHAR_2))) {
+            } else if (!inName
+                       && ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)))
+            {
                 i = readString(reader, line, offset, buf, i);
                 offset = 0;
             } else {
@@ -976,9 +1002,13 @@ public class CmdRunner {
                         String startComment = commentDelim[x][0];
                         boolean foundCommentStart = true;
                         for (int j = 1;
-                            j + offset < line.length() && j < startComment.length();
-                                j++) {
-                            if (line.charAt(j + offset) != startComment.charAt(j)) {
+                            j + offset < line.length()
+                            && j < startComment.length();
+                            j++)
+                        {
+                            if (line.charAt(j + offset)
+                                != startComment.charAt(j))
+                            {
                                 foundCommentStart = false;
                             }
                         }
@@ -1007,10 +1037,11 @@ public class CmdRunner {
                         break;
                     } else {
                         // handle delimited comment block
-                        i = readBlock(reader, line, offset,
-                                commentDelim[commentType][0],
-                                commentDelim[commentType][1],
-                                false, false, buf, i);
+                        i = readBlock(
+                            reader, line, offset,
+                            commentDelim[commentType][0],
+                            commentDelim[commentType][1],
+                            false, false, buf, i);
                         offset = 0;
                     }
                 }
@@ -1064,7 +1095,8 @@ public class CmdRunner {
         throws IOException
     {
         String delim = line.substring(offset, offset + 1);
-        return readBlock(reader, line, offset, delim, delim, true, true, buf, i);
+        return readBlock(
+            reader, line, offset, delim, delim, true, true, buf, i);
     }
 
     /**
@@ -1103,8 +1135,9 @@ public class CmdRunner {
                      break;
                 }
             // check for nested block
-            } else if (allowNestedComments &&
-                     line.substring(offset).startsWith(startDelim)) {
+            } else if (allowNestedComments
+                       && line.substring(offset).startsWith(startDelim))
+            {
                 if (addToBuf) {
                     buf.append(startDelim);
                 }
@@ -1136,7 +1169,7 @@ public class CmdRunner {
 
                 // line will always contain EOL marker at least, unless at EOF
                 offset = 0;
-               if (line.length() == 0) {
+                if (line.length() == 0) {
                     break;
                 }
             }
@@ -1549,13 +1582,16 @@ public class CmdRunner {
         buf.append("log [ classname[=level ] ] <cr>");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With no args, prints the current log level of all classes.");
+        buf.append(
+            "With no args, prints the current log level of all classes.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"classname\" prints the current log level of the class.");
+        buf.append(
+            "With \"classname\" prints the current log level of the class.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"classname=level\" set log level to new value.");
+        buf.append(
+            "With \"classname=level\" set log level to new value.");
     }
 
     protected String executeLog(String mdxCmd) {
@@ -1636,7 +1672,8 @@ public class CmdRunner {
         buf.append("With \"filename\", read and execute filename .");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"=\" character, re-read and re-execute previous filename .");
+        buf.append(
+            "With \"=\" character, re-read and re-execute previous filename .");
     }
 
     protected String executeFile(String mdxCmd) {
@@ -1881,19 +1918,24 @@ public class CmdRunner {
         buf.append("param [ name[=value ] ] <cr>");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With no argumnts, all param name/value pairs are printed.");
+        buf.append(
+            "With no argumnts, all param name/value pairs are printed.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"name\" argument, the value of the param is printed.");
+        buf.append(
+            "With \"name\" argument, the value of the param is printed.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"name=value\" sets the parameter with name to value.");
+        buf.append(
+            "With \"name=value\" sets the parameter with name to value.");
         buf.append(nl);
         appendIndent(buf, 3);
         buf.append(" If name is null, then unsets all parameters");
         buf.append(nl);
         appendIndent(buf, 3);
-        buf.append(" If value is null, then unsets the parameter associated with value");
+        buf.append(
+            " If value is null, then unsets the parameter associated with "
+            + "value");
     }
     protected String executeParam(String mdxCmd) {
         StringBuilder buf = new StringBuilder(200);
@@ -1943,7 +1985,8 @@ public class CmdRunner {
         buf.append("With no argumnts, all cubes are listed by name.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"cubename\" argument, cube attribute name/values for:");
+        buf.append(
+            "With \"cubename\" argument, cube attribute name/values for:");
         buf.append(nl);
         appendIndent(buf, 3);
         buf.append("fact table (readonly)");
@@ -1955,7 +1998,9 @@ public class CmdRunner {
         buf.append("are printed");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"cubename name=value\" sets the readwrite attribute with name to value.");
+        buf.append(
+            "With \"cubename name=value\" sets the readwrite attribute with "
+            + "name to value.");
         buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"cubename command\" executes the commands:");
@@ -2014,7 +2059,8 @@ public class CmdRunner {
         buf.append("With \"msg\" argument, the Error message is printed.");
         buf.append(nl);
         appendIndent(buf, 2);
-        buf.append("With \"stack\" argument, the Error stack trace is printed.");
+        buf.append(
+            "With \"stack\" argument, the Error stack trace is printed.");
     }
 
     protected String executeError(String mdxCmd) {
@@ -2206,7 +2252,8 @@ public class CmdRunner {
                     queryStringBuf.append(c);
                     queryStringBuf.append(expression);
                     queryStringBuf.append(c);
-                    queryStringBuf.append(" select {[Measures].[Foo]} on columns from ");
+                    queryStringBuf.append(
+                        " select {[Measures].[Foo]} on columns from ");
                     queryStringBuf.append(cubeName);
 
                     String queryString = queryStringBuf.toString();
@@ -2286,51 +2333,52 @@ public class CmdRunner {
             buf.append(msg);
             buf.append(nl);
         }
-        buf.append("Usage: mondrian.tui.CmdRunner args");
-        buf.append(nl);
-        buf.append("  args:");
-        buf.append(nl);
-        buf.append("  -h               : print this usage text");
-        buf.append(nl);
-        buf.append("  -H               : ready to print out high cardinality");
-        buf.append(nl);
-        buf.append("                     dimensions");
-        buf.append(nl);
-        buf.append("  -d               : enable local debugging");
-        buf.append(nl);
-        buf.append("  -t               : time each mdx query");
-        buf.append(nl);
-        buf.append("  -nocache         : turn off in-memory aggregate caching");
-        buf.append(nl);
-        buf.append("                     for all cubes regardless of setting");
-        buf.append(nl);
-        buf.append("                     in schema");
-        buf.append(nl);
-        buf.append("  -rc              : do NOT reload connections each query");
-        buf.append(nl);
-        buf.append("                     (default is to reload connections)");
-        buf.append(nl);
-        buf.append("  -p propertyfile  : load mondrian properties");
-        buf.append(nl);
-        buf.append("  -r role_name     : set the connections role name");
-        buf.append(nl);
-        buf.append("  -f mdx_filename+ : execute mdx in one or more files");
-        buf.append(nl);
-        buf.append("  -x xmla_filename+: execute XMLA in one or more files");
-        buf.append("                     the XMLA request has no SOAP wrapper");
-        buf.append(nl);
-        buf.append("  -xs soap_xmla_filename+ ");
-        buf.append("                   : execute Soap XMLA in one or more files");
-        buf.append("                     the XMLA request has a SOAP wrapper");
-        buf.append(nl);
-        buf.append("  -vt              : validate xmla response using transforms");
-        buf.append("                     only used with -x or -xs flags");
-        buf.append(nl);
-        buf.append("  -vx              : validate xmla response using xpaths");
-        buf.append("                     only used with -x or -xs flags");
-        buf.append(nl);
-        buf.append("  mdx_cmd          : execute mdx_cmd");
-        buf.append(nl);
+        buf.append(
+            "Usage: mondrian.tui.CmdRunner args"
+            + nl
+            + "  args:"
+            + nl
+            + "  -h               : print this usage text"
+            + nl
+            + "  -H               : ready to print out high cardinality"
+            + nl
+            + "                     dimensions"
+            + nl
+            + "  -d               : enable local debugging"
+            + nl
+            + "  -t               : time each mdx query"
+            + nl
+            + "  -nocache         : turn off in-memory aggregate caching"
+            + nl
+            + "                     for all cubes regardless of setting"
+            + nl
+            + "                     in schema"
+            + nl
+            + "  -rc              : do NOT reload connections each query"
+            + nl
+            + "                     (default is to reload connections)"
+            + nl
+            + "  -p propertyfile  : load mondrian properties"
+            + nl
+            + "  -r role_name     : set the connections role name"
+            + nl
+            + "  -f mdx_filename+ : execute mdx in one or more files"
+            + nl
+            + "  -x xmla_filename+: execute XMLA in one or more files"
+            + "                     the XMLA request has no SOAP wrapper"
+            + nl
+            + "  -xs soap_xmla_filename+ "
+            + "                   : execute Soap XMLA in one or more files"
+            + "                     the XMLA request has a SOAP wrapper"
+            + nl
+            + "  -vt              : validate xmla response using transforms"
+            + "                     only used with -x or -xs flags"
+            + nl
+            + "  -vx              : validate xmla response using xpaths"
+            + "                     only used with -x or -xs flags"
+            + nl
+            + "  mdx_cmd          : execute mdx_cmd"
+            + nl);
 
         out.println(buf.toString());
     }
@@ -2342,7 +2390,8 @@ public class CmdRunner {
      */
     private static void setDefaultCommentState() {
         allowNestedComments = mondrian.olap.Scanner.getNestedCommentsState();
-        String[][] scannerCommentsDelimiters = mondrian.olap.Scanner.getCommentDelimiters();
+        String[][] scannerCommentsDelimiters =
+            mondrian.olap.Scanner.getCommentDelimiters();
         commentDelim = new String[scannerCommentsDelimiters.length + 1][2];
         commentStartChars = new char[scannerCommentsDelimiters.length + 1];
 
@@ -2457,7 +2506,8 @@ public class CmdRunner {
     }
 
     private static Options parseOptions(String[] args)
-            throws BadOption, IOException {
+        throws BadOption, IOException
+    {
         final Options options = new Options();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];

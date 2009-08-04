@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
  * @author  sean
  * @version $Id$
  */
-public class JDBCTreeModel implements javax.swing.tree.TreeModel {
+public class JdbcTreeModel implements javax.swing.tree.TreeModel {
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCTreeModel.class);
+    private static final Logger LOGGER = Logger.getLogger(JdbcTreeModel.class);
 
     private Vector treeModelListeners = new Vector();
     Connection connection;
@@ -36,7 +36,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     Node root;
 
     /** Creates a new instance of JDBCTreeModel */
-    public JDBCTreeModel(Connection c) {
+    public JdbcTreeModel(Connection c) {
         connection = c;
         try {
             metadata = connection.getMetaData();
@@ -57,10 +57,12 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
                     Node table = new Node(trs.getString(3), Node.TABLE);
                     cat.children.add(table);
                     //get the tables for each catalog.
-                    ResultSet crs = metadata.getColumns(cat.name, null, table.name, null);
+                    ResultSet crs =
+                        metadata.getColumns(cat.name, null, table.name, null);
                     try {
                         while (crs.next()) {
-                            Node column = new Node(crs.getString(4), Node.COLUMN);
+                            Node column =
+                                new Node(crs.getString(4), Node.COLUMN);
                             table.children.add(column);
                         }
                     } finally {
@@ -84,7 +86,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
             }
             root = cat;
         } catch (Exception ex) {
-            LOGGER.error("JDBCTreeModel", ex);
+            LOGGER.error("JdbcTreeModel", ex);
         }
     }
 
@@ -147,11 +149,11 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
      *
      */
     public int getIndexOfChild(Object parent, Object child) {
-       if (parent instanceof Node) {
+        if (parent instanceof Node) {
             return ((Node)parent).children.indexOf(child);
-       }
+        }
 
-       return -1;
+        return -1;
     }
 
     /** Returns the root of the tree.  Returns <code>null</code>
@@ -222,4 +224,4 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     }
 }
 
-// End JDBCTreeModel.java
+// End JdbcTreeModel.java

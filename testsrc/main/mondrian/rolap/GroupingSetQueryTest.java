@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -34,7 +34,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private static final String cubeNameSales2 = "Sales 2";
     private static final String measureStoreSales = "[Measures].[Store Sales]";
     private static final String fieldNameMaritalStatus = "marital_status";
-    private static final String measureCustomerCount = "[Measures].[Customer Count]";
+    private static final String measureCustomerCount =
+        "[Measures].[Customer Count]";
 
     private boolean useGroupingSets;
     private boolean formattedSql;
@@ -60,7 +61,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE)
+        {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
@@ -159,18 +161,22 @@ public class GroupingSetQueryTest extends BatchTestCase {
         }
     }
     public void testNotUsingGroupingSetWhenGroupUsesDifferentAggregateTable() {
-        if (!(prop.UseAggregates.get() &&
-            prop.ReadAggregates.get())) {
+        if (!(prop.UseAggregates.get()
+              && prop.ReadAggregates.get()))
+        {
             return;
         }
 
-        CellRequest request1 = createRequest(cubeNameSales,
+        CellRequest request1 = createRequest(
+            cubeNameSales,
             measureUnitSales, tableCustomer, fieldGender, "M");
 
-        CellRequest request2 = createRequest(cubeNameSales,
+        CellRequest request2 = createRequest(
+            cubeNameSales,
             measureUnitSales, tableCustomer, fieldGender, "F");
 
-        CellRequest request3 = createRequest(cubeNameSales,
+        CellRequest request3 = createRequest(
+            cubeNameSales,
             measureUnitSales, null, "", "");
 
         prop.EnableGroupingSets.set(true);
@@ -201,10 +207,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
             return;
         }
         prop.EnableGroupingSets.set(true);
-        CellRequest request1 = createRequest(cubeNameSales2,
+        CellRequest request1 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
 
-        CellRequest request2 = createRequest(cubeNameSales2,
+        CellRequest request2 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "F");
 
         SqlPattern[] patternsWithGsets = {
@@ -246,17 +254,23 @@ public class GroupingSetQueryTest extends BatchTestCase {
         }
         prop.EnableGroupingSets.set(true);
 
-        CellRequest request1 = createRequest(cubeNameSales2,
+        CellRequest request1 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
-        CellRequest request2 = createRequest(cubeNameSales2,
+        CellRequest request2 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "F");
-        CellRequest request3 = createRequest(cubeNameSales2,
+        CellRequest request3 = createRequest(
+            cubeNameSales2,
             measureUnitSales, null, "", "");
-        CellRequest request4 = createRequest(cubeNameSales2,
+        CellRequest request4 = createRequest(
+            cubeNameSales2,
             measureStoreSales, tableCustomer, fieldGender, "M");
-        CellRequest request5 = createRequest(cubeNameSales2,
+        CellRequest request5 = createRequest(
+            cubeNameSales2,
             measureStoreSales, tableCustomer, fieldGender, "F");
-        CellRequest request6 = createRequest(cubeNameSales2,
+        CellRequest request6 = createRequest(
+            cubeNameSales2,
             measureStoreSales, null, "", "");
 
         SqlPattern[] patternsWithGsets = {
@@ -303,17 +317,23 @@ public class GroupingSetQueryTest extends BatchTestCase {
             return;
         }
         prop.EnableGroupingSets.set(true);
-        CellRequest request1 = createRequest(cubeNameSales2,
+        CellRequest request1 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
-        CellRequest request2 = createRequest(cubeNameSales2,
+        CellRequest request2 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "F");
-        CellRequest request3 = createRequest(cubeNameSales2,
+        CellRequest request3 = createRequest(
+            cubeNameSales2,
             measureUnitSales, null, "", "");
-        CellRequest request4 = createRequest(cubeNameSales2,
+        CellRequest request4 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldNameMaritalStatus, "M");
-        CellRequest request5 = createRequest(cubeNameSales2,
+        CellRequest request5 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableCustomer, fieldNameMaritalStatus, "S");
-        CellRequest request6 = createRequest(cubeNameSales2,
+        CellRequest request6 = createRequest(
+            cubeNameSales2,
             measureUnitSales, null, "", "");
 
         SqlPattern[] patternWithGsets = {
@@ -366,17 +386,20 @@ public class GroupingSetQueryTest extends BatchTestCase {
             return;
         }
         prop.EnableGroupingSets.set(true);
-        CellRequest request1 = createRequest(cubeNameSales2,
+        CellRequest request1 = createRequest(
+            cubeNameSales2,
             measureUnitSales, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[]{"M", "1997"});
 
-        CellRequest request2 = createRequest(cubeNameSales2,
+        CellRequest request2 = createRequest(
+            cubeNameSales2,
             measureUnitSales, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[]{"F", "1997"});
 
-        CellRequest request3 = createRequest(cubeNameSales2,
+        CellRequest request3 = createRequest(
+            cubeNameSales2,
             measureUnitSales, tableTime, fieldYear, "1997");
 
         SqlPattern[] patternsWithGsets = {
@@ -435,7 +458,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
             patternsWithoutGsets);
     }
 
-    public void testGroupingSetForMultipleColumnConstraintAndCompoundConstraint() {
+    public void
+        testGroupingSetForMultipleColumnConstraintAndCompoundConstraint()
+    {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
@@ -445,17 +470,20 @@ public class GroupingSetQueryTest extends BatchTestCase {
         CellRequestConstraint constraint =
             makeConstraintCountryState(compoundMembers);
 
-        CellRequest request1 = createRequest(cubeNameSales2,
+        CellRequest request1 = createRequest(
+            cubeNameSales2,
             measureCustomerCount, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[]{"M", "1997"}, constraint);
 
-        CellRequest request2 = createRequest(cubeNameSales2,
+        CellRequest request2 = createRequest(
+            cubeNameSales2,
             measureCustomerCount, new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[]{"F", "1997"}, constraint);
 
-        CellRequest request3 = createRequest(cubeNameSales2,
+        CellRequest request3 = createRequest(
+            cubeNameSales2,
             measureCustomerCount, tableTime, fieldYear, "1997", constraint);
 
         String sqlWithoutGS =
@@ -472,19 +500,22 @@ public class GroupingSetQueryTest extends BatchTestCase {
         SqlPattern[] patternsGSDisabled = {
             new SqlPattern(ORACLE_TERADATA, sqlWithoutGS, sqlWithoutGS)
         };
-        // as of change 12310 GS has been removed from distinct count queries, since there is
-        // little or no performance benefit and there is a bug related to it (2207515)
+        // as of change 12310 GS has been removed from distinct count queries,
+        // since there is little or no performance benefit and there is a bug
+        // related to it (2207515)
         SqlPattern[] patternsGSEnabled = patternsGSDisabled;
 
         prop.EnableGroupingSets.set(true);
 
         assertRequestSql(
-            new CellRequest[] {request3, request1, request2}, patternsGSEnabled);
+            new CellRequest[] {request3, request1, request2},
+            patternsGSEnabled);
 
         prop.EnableGroupingSets.set(false);
 
         assertRequestSql(
-            new CellRequest[]{request3, request1, request2}, patternsGSDisabled);
+            new CellRequest[]{request3, request1, request2},
+            patternsGSDisabled);
     }
 
     /**

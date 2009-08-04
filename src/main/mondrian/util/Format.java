@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -324,13 +324,15 @@ public class Format {
                 buf.append(n);
             } else {
                 int i;
-                if (n == 0 &&
-                    formats.length >= 3 &&
-                    formats[2] != null) {
+                if (n == 0
+                    && formats.length >= 3
+                    && formats[2] != null)
+                {
                     i = 2;
-                } else if (n < 0 &&
-                           formats.length >= 2 &&
-                           formats[1] != null) {
+                } else if (n < 0
+                    && formats.length >= 2
+                    && formats[1] != null)
+                {
                     if (formats[1].isApplicableTo(n)) {
                         n = -n;
                         i = 1;
@@ -352,14 +354,16 @@ public class Format {
                 buf.append(n);
             } else {
                 int i;
-                if (n == 0 &&
-                    formats.length >= 3 &&
-                    formats[2] != null) {
+                if (n == 0
+                    && formats.length >= 3
+                    && formats[2] != null)
+                {
                     i = 2;
-                } else if (n < 0 &&
-                           formats.length >= 2 &&
-                           formats[1] != null &&
-                           formats[1].isApplicableTo(n)) {
+                } else if (n < 0
+                    && formats.length >= 2
+                    && formats[1] != null
+                    && formats[1].isApplicableTo(n))
+                {
                     n = -n;
                     i = 1;
                 } else {
@@ -668,7 +672,9 @@ public class Format {
         }
 
         private static boolean shows(
-                FloatingDecimal fd, int formatDigitsRightOfPoint) {
+            FloatingDecimal fd,
+            int formatDigitsRightOfPoint)
+        {
             final int i0 = - fd.decExponent - formatDigitsRightOfPoint;
             if (i0 < 0) {
                 return true;
@@ -717,7 +723,8 @@ public class Format {
         FormatLocale locale;
         boolean twelveHourClock;
 
-        DateFormat(int code, String s, FormatLocale locale, boolean twelveHourClock)
+        DateFormat(
+            int code, String s, FormatLocale locale, boolean twelveHourClock)
         {
             super(code, s);
             this.locale = locale;
@@ -740,12 +747,12 @@ public class Format {
             case FORMAT_C:
             {
                 boolean dateSet = !(
-                    calendar.get(Calendar.DAY_OF_YEAR) == 0 &&
-                    calendar.get(Calendar.YEAR) == 0);
+                    calendar.get(Calendar.DAY_OF_YEAR) == 0
+                    && calendar.get(Calendar.YEAR) == 0);
                 boolean timeSet = !(
-                    calendar.get(Calendar.SECOND) == 0 &&
-                    calendar.get(Calendar.MINUTE) == 0 &&
-                    calendar.get(Calendar.HOUR) == 0);
+                    calendar.get(Calendar.SECOND) == 0
+                    &&  calendar.get(Calendar.MINUTE) == 0
+                    && calendar.get(Calendar.HOUR) == 0);
                 if (dateSet) {
                     format(FORMAT_DDDDD, calendar, buf);
                 }
@@ -789,11 +796,11 @@ public class Format {
                 // Officially, we should use the system's short date
                 // format. But for now, we always print using the default
                 // format, m/d/yy.
-                format(FORMAT_M, calendar,buf);
+                format(FORMAT_M, calendar, buf);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_D, calendar,buf);
+                format(FORMAT_D, calendar, buf);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_YY, calendar,buf);
+                format(FORMAT_YY, calendar, buf);
                 break;
             }
             case FORMAT_DDDDDD:
@@ -926,11 +933,11 @@ public class Format {
             {
                 // Officially, we should use the system's time format. But
                 // for now, we always print using the default format, h:mm:ss.
-                format(FORMAT_H, calendar,buf);
+                format(FORMAT_H, calendar, buf);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_NN, calendar,buf);
+                format(FORMAT_NN, calendar, buf);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_SS, calendar,buf);
+                format(FORMAT_SS, calendar, buf);
                 break;
             }
             case FORMAT_AMPM:
@@ -1037,96 +1044,15 @@ public class Format {
                 monthsLong = monthsLong_en;
             }
             this.monthsLong = monthsLong;
-            if (daysOfWeekShort.length != 8 ||
-                daysOfWeekLong.length != 8 ||
-                monthsShort.length != 13 ||
-                monthsLong.length != 13) {
+            if (daysOfWeekShort.length != 8
+                || daysOfWeekLong.length != 8
+                || monthsShort.length != 13
+                || monthsLong.length != 13)
+            {
                 throw new IllegalArgumentException(
                     "Format: day or month array has incorrect length");
             }
         }
-
-//          /**
-//           * Get the localized string for day of week, given
-//           * an <CODE>int</CODE> day value, with 0 = SUNDAY.
-//           */
-//          public static String getDayOfWeek(int day)
-//          {
-//              LocaleResource localeResource = FormatLocale.getResource();
-//              switch (day)
-//              {
-//              case 0: return localeResource.getsunday();
-//              case 1: return localeResource.getmonday();
-//              case 2: return localeResource.gettuesday();
-//              case 3: return localeResource.getwednesday();
-//              case 4: return localeResource.getthursday();
-//              case 5: return localeResource.getfriday();
-//              case 6: return localeResource.getsaturday();
-//              default: throw new IllegalArgumentException();
-//              }
-//          }
-
-//          /**
-//           * Get the localized string for month of year, given
-//           * an <CODE>int</CODE> month value, with 0 = JANUARY.
-//           */
-//          public static String getMonthOfYear(int month)
-//          {
-//              LocaleResource localeResource = FormatLocale.getResource();
-//              switch (month)
-//              {
-//              case 0: return localeResource.getjanuary();
-//              case 1: return localeResource.getfebruary();
-//              case 2: return localeResource.getmarch();
-//              case 3: return localeResource.getapril();
-//              case 4: return localeResource.getmay();
-//              case 5: return localeResource.getjune();
-//              case 6: return localeResource.getjuly();
-//              case 7: return localeResource.getaugust();
-//              case 8: return localeResource.getseptember();
-//              case 9: return localeResource.getoctober();
-//              case 10: return localeResource.getnovember();
-//              case 11: return localeResource.getdecember();
-//              default: throw new IllegalArgumentException();
-//              }
-//          }
-
-//          /**
-//           * Get the string representation of the calendar
-//           * quarter for a given quarter and year.  Subclasses
-//           * should override this method.
-//           */
-//          public static String getCalendarQuarter(int quarterIn, int yearIn)
-//          {
-//              Integer year = new Integer (yearIn % 100);
-//              Integer quarter = new Integer(quarterIn);
-
-//              String strYear = (year.intValue() < 10)
-//                  ? "0" + year.toString() : year.toString();
-//              LocaleResource localeResource = FormatLocale.getResource();
-//              String ret = localeResource.getcalendarQuarter(quarter.toString(), strYear);
-
-//              return ret;
-//          }
-
-//          /**
-//           * Get the string representation of the fiscal
-//           * quarter for a given quarter and year.  Subclasses
-//           * should override this method.
-//           */
-//          public static String getFiscalQuarter(int quarterIn, int yearIn)
-//          {
-//              Integer year = new Integer (yearIn % 100);
-//              Integer quarter = new Integer(quarterIn);
-
-//              String strYear = (year.intValue() < 10)
-//                  ? "0" + year.toString() : year.toString();
-
-//              LocaleResource localeResource = FormatLocale.getResource();
-//              String ret = localeResource.getfiscalQuarter(quarter.toString(),
-//                                                            strYear);
-//              return ret;
-//          }
     }
 
     private static class StringFormat extends BasicFormat
@@ -1148,6 +1074,7 @@ public class Format {
     private static final int DATE = 3;
     private static final int NUMERIC = 4;
     private static final int STRING = 5;
+
     /** A Format is flagged SPECIAL if it needs special processing
      * during parsing. */
     private static final int SPECIAL = 8;
@@ -1215,7 +1142,7 @@ public class Format {
     {
         Util.discard(purpose);
         Util.discard(description);
-        return new Token(code,flags,token);
+        return new Token(code, flags, token);
     }
 
     public static final List<Token> getTokenList()
@@ -1224,67 +1151,493 @@ public class Format {
     }
 
     static final Token[] tokens = {
-        nfe(FORMAT_NULL                , NUMERIC, null, "No formatting", "Display the number with no formatting."),
-        nfe(FORMAT_C                   , DATE, "C", null, "Display the date as ddddd and display the time as t t t t t, in that order. Display only date information if there is no fractional part to the date serial number; display only time information if there is no integer portion."),
-        nfe(FORMAT_D                   , DATE, "d", null, "Display the day as a number without a leading zero (1 - 31)."),
-        nfe(FORMAT_DD                  , DATE, "dd", null, "Display the day as a number with a leading zero (01 - 31)."),
-        nfe(FORMAT_DDD                 , DATE, "Ddd", null, "Display the day as an abbreviation (Sun - Sat)."),
-        nfe(FORMAT_DDDD                , DATE, "dddd", null, "Display the day as a full name (Sunday - Saturday)."),
-        nfe(FORMAT_DDDDD               , DATE, "ddddd", null, "Display the date as a complete date (including day, month, and year), formatted according to your system's short date format setting. The default short date format is m/d/yy."),
-        nfe(FORMAT_DDDDDD              , DATE, "dddddd", null, "Display a date serial number as a complete date (including day, month, and year) formatted according to the long date setting recognized by your system. The default long date format is mmmm dd, yyyy."),
-        nfe(FORMAT_W                   , DATE, "w", null, "Display the day of the week as a number (1 for Sunday through 7 for Saturday)."),
-        nfe(FORMAT_WW                  , DATE, "ww", null, "Display the week of the year as a number (1 - 53)."),
-        nfe(FORMAT_M                   , DATE | SPECIAL, "m", null, "Display the month as a number without a leading zero (1 - 12). If m immediately follows h or hh, the minute rather than the month is displayed."),
-        nfe(FORMAT_MM                  , DATE | SPECIAL, "mm", null, "Display the month as a number with a leading zero (01 - 12). If m immediately follows h or hh, the minute rather than the month is displayed."),
-        nfe(FORMAT_MMM_LOWER           , DATE, "mmm", null, "Display the month as an abbreviation (Jan - Dec)."),
-        nfe(FORMAT_MMMM_LOWER          , DATE, "mmmm", null, "Display the month as a full month name (January - December)."),
-        nfe(FORMAT_MMM_UPPER           , DATE, "MMM", null, "Display the month as an abbreviation (Jan - Dec)."),
-        nfe(FORMAT_MMMM_UPPER          , DATE, "MMMM", null, "Display the month as a full month name (January - December)."),
-        nfe(FORMAT_Q                   , DATE, "q", null, "Display the quarter of the year as a number (1 - 4)."),
-        nfe(FORMAT_Y                   , DATE, "y", null, "Display the day of the year as a number (1 - 366)."),
-        nfe(FORMAT_YY                  , DATE, "yy", null, "Display the year as a 2-digit number (00 - 99)."),
-        nfe(FORMAT_YYYY                , DATE, "yyyy", null, "Display the year as a 4-digit number (100 - 9999)."),
-        nfe(FORMAT_H                   , DATE, "h", null, "Display the hour as a number without leading zeros (0 - 23)."),
-        nfe(FORMAT_HH                  , DATE, "hh", null, "Display the hour as a number with leading zeros (00 - 23)."),
-        nfe(FORMAT_N                   , DATE, "n", null, "Display the minute as a number without leading zeros (0 - 59)."),
-        nfe(FORMAT_NN                  , DATE, "nn", null, "Display the minute as a number with leading zeros (00 - 59)."),
-        nfe(FORMAT_S                   , DATE, "s", null, "Display the second as a number without leading zeros (0 - 59)."),
-        nfe(FORMAT_SS                  , DATE, "ss", null, "Display the second as a number with leading zeros (00 - 59)."),
-        nfe(FORMAT_TTTTT               , DATE, "ttttt", null, "Display a time as a complete time (including hour, minute, and second), formatted using the time separator defined by the time format recognized by your system. A leading zero is displayed if the leading zero option is selected and the time is before 10:00 A.M. or P.M. The default time format is h:mm:ss."),
-        nfe(FORMAT_UPPER_AM_SOLIDUS_PM , DATE, "AM/PM", null, "Use the 12-hour clock and display an uppercase AM with any hour before noon; display an uppercase PM with any hour between noon and 11:59 P.M."),
-        nfe(FORMAT_LOWER_AM_SOLIDUS_PM , DATE, "am/pm", null, "Use the 12-hour clock and display a lowercase AM with any hour before noon; display a lowercase PM with any hour between noon and 11:59 P.M."),
-        nfe(FORMAT_UPPER_A_SOLIDUS_P   , DATE, "A/P", null, "Use the 12-hour clock and display an uppercase A with any hour before noon; display an uppercase P with any hour between noon and 11:59 P.M."),
-        nfe(FORMAT_LOWER_A_SOLIDUS_P   , DATE, "a/p", null, "Use the 12-hour clock and display a lowercase A with any hour before noon; display a lowercase P with any hour between noon and 11:59 P.M."),
-        nfe(FORMAT_AMPM                , DATE, "AMPM", null, "Use the 12-hour clock and display the AM string literal as defined by your system with any hour before noon; display the PM string literal as defined by your system with any hour between noon and 11:59 P.M. AMPM can be either uppercase or lowercase, but the case of the string displayed matches the string as defined by your system settings. The default format is AM/PM."),
-        nfe(FORMAT_0                   , NUMERIC | SPECIAL, "0", "Digit placeholder", "Display a digit or a zero. If the expression has a digit in the position where the 0 appears in the format string, display it; otherwise, display a zero in that position. If the number has fewer digits than there are zeros (on either side of the decimal) in the format expression, display leading or trailing zeros. If the number has more digits to the right of the decimal separator than there are zeros to the right of the decimal separator in the format expression, round the number to as many decimal places as there are zeros. If the number has more digits to the left of the decimal separator than there are zeros to the left of the decimal separator in the format expression, display the extra digits without modification."),
-        nfe(FORMAT_POUND               , NUMERIC | SPECIAL, "#", "Digit placeholder", "Display a digit or nothing. If the expression has a digit in the position where the # appears in the format string, display it; otherwise, display nothing in that position.  This symbol works like the 0 digit placeholder, except that leading and trailing zeros aren't displayed if the number has the same or fewer digits than there are # characters on either side of the decimal separator in the format expression."),
-        nfe(FORMAT_DECIMAL             , NUMERIC | SPECIAL, ".", "Decimal placeholder", "In some locales, a comma is used as the decimal separator. The decimal placeholder determines how many digits are displayed to the left and right of the decimal separator. If the format expression contains only number signs to the left of this symbol, numbers smaller than 1 begin with a decimal separator. If you always want a leading zero displayed with fractional numbers, use 0 as the first digit placeholder to the left of the decimal separator instead. The actual character used as a decimal placeholder in the formatted output depends on the Number Format recognized by your system."),
-        nfe(FORMAT_PERCENT             , NUMERIC, "%", "Percent placeholder", "The expression is multiplied by 100. The percent character (%) is inserted in the position where it appears in the format string."),
-        nfe(FORMAT_THOUSEP             , NUMERIC | SPECIAL, ",", "Thousand separator", "In some locales, a period is used as a thousand separator. The thousand separator separates thousands from hundreds within a number that has four or more places to the left of the decimal separator. Standard use of the thousand separator is specified if the format contains a thousand separator surrounded by digit placeholders (0 or #). Two adjacent thousand separators or a thousand separator immediately to the left of the decimal separator (whether or not a decimal is specified) means \"scale the number by dividing it by 1000, rounding as needed.\"  You can scale large numbers using this technique. For example, you can use the format string \"##0,,\" to represent 100 million as 100. Numbers smaller than 1 million are displayed as 0. Two adjacent thousand separators in any position other than immediately to the left of the decimal separator are treated simply as specifying the use of a thousand separator. The actual character used as the thousand separator in the formatted output depends on the Number Format recognized by your system."),
-        nfe(FORMAT_TIMESEP             , DATE | SPECIAL, ":", "Time separator", "In some locales, other characters may be used to represent the time separator. The time separator separates hours, minutes, and seconds when time values are formatted. The actual character used as the time separator in formatted output is determined by your system settings."),
-        nfe(FORMAT_DATESEP             , DATE | SPECIAL, "/", "Date separator", "In some locales, other characters may be used to represent the date separator. The date separator separates the day, month, and year when date values are formatted. The actual character used as the date separator in formatted output is determined by your system settings."),
-        nfe(FORMAT_E_MINUS_UPPER       , NUMERIC | SPECIAL, "E-", "Scientific format", "If the format expression contains at least one digit placeholder (0 or #) to the right of E-, E+, e-, or e+, the number is displayed in scientific format and E or e is inserted between the number and its exponent. The number of digit placeholders to the right determines the number of digits in the exponent. Use E- or e- to place a minus sign next to negative exponents. Use E+ or e+ to place a minus sign next to negative exponents and a plus sign next to positive exponents."),
-        nfe(FORMAT_E_PLUS_UPPER        , NUMERIC | SPECIAL, "E+", "Scientific format", "See E-."),
-        nfe(FORMAT_E_MINUS_LOWER       , NUMERIC | SPECIAL, "e-", "Scientific format", "See E-."),
-        nfe(FORMAT_E_PLUS_LOWER        , NUMERIC | SPECIAL, "e+", "Scientific format", "See E-."),
-        nfe(FORMAT_LITERAL             , GENERAL, "-", "Display a literal character", "To display a character other than one of those listed, precede it with a backslash (\\) or enclose it in double quotation marks (\" \")."),
-        nfe(FORMAT_LITERAL             , GENERAL, "+", "Display a literal character", "See -."),
-        nfe(FORMAT_LITERAL             , GENERAL, "$", "Display a literal character", "See -."),
-        nfe(FORMAT_LITERAL             , GENERAL, "(", "Display a literal character", "See -."),
-        nfe(FORMAT_LITERAL             , GENERAL, ")", "Display a literal character", "See -."),
-        nfe(FORMAT_LITERAL             , GENERAL, " ", "Display a literal character", "See -."),
-        nfe(FORMAT_BACKSLASH           , GENERAL | SPECIAL, "\\", "Display the next character in the format string", "Many characters in the format expression have a special meaning and can't be displayed as literal characters unless they are preceded by a backslash. The backslash itself isn't displayed. Using a backslash is the same as enclosing the next character in double quotation marks. To display a backslash, use two backslashes (\\).  Examples of characters that can't be displayed as literal characters are the date- and time-formatting characters (a, c, d, h, m, n, p, q, s, t, w, y, and /:), the numeric-formatting characters (#, 0, %, E, e, comma, and period), and the string-formatting characters (@, &, <, >, and !)."),
-        nfe(FORMAT_QUOTE               , GENERAL | SPECIAL, "\"", "Display the string inside the double quotation marks", "To include a string in format from within code, you must use Chr(34) to enclose the text (34 is the character code for a double quotation mark)."),
-        nfe(FORMAT_CHARACTER_OR_SPACE  , STRING, "@", "Character placeholder", "Display a character or a space. If the string has a character in the position where the @ appears in the format string, display it; otherwise, display a space in that position. Placeholders are filled from right to left unless there is an ! character in the format string. See below."),
-        nfe(FORMAT_CHARACTER_OR_NOTHING, STRING, "&", "Character placeholder", "Display a character or nothing. If the string has a character in the position where the & appears, display it; otherwise, display nothing. Placeholders are filled from right to left unless there is an ! character in the format string. See below."),
-        nfe(FORMAT_LOWER               , STRING | SPECIAL, "<", "Force lowercase", "Display all characters in lowercase format."),
-        nfe(FORMAT_UPPER               , STRING | SPECIAL, ">", "Force uppercase", "Display all characters in uppercase format."),
-        nfe(FORMAT_FILL_FROM_LEFT      , STRING | SPECIAL, "!", "Force left to right fill of placeholders", "The default is to fill from right to left."),
-        nfe(FORMAT_SEMI                , GENERAL | SPECIAL, ";", "Separates format strings for different kinds of values", "If there is one section, the format expression applies to all values. If there are two sections, the first section applies to positive values and zeros, the second to negative values. If there are three sections, the first section applies to positive values, the second to negative values, and the third to zeros. If there are four sections, the first section applies to positive values, the second to negative values, the third to zeros, and the fourth to Null values."),
-        nfe(FORMAT_INTL_CURRENCY       , NUMERIC | SPECIAL, intlCurrencySymbol + "", null, "Display the locale's currency symbol."),
-        nfe(FORMAT_USD                 , GENERAL, "USD", null, "Display USD (U.S. Dollars)."),
-        nfe(FORMAT_GENERAL_NUMBER      , NUMERIC | SPECIAL, "General Number", null, "Shows numbers as entered."),
-        nfe(FORMAT_GENERAL_DATE        , DATE | SPECIAL, "General Date", null, "Shows date and time if expression contains both. If expression is only a date or a time, the missing information is not displayed."),
+        nfe(
+            FORMAT_NULL,
+            NUMERIC,
+            null,
+            "No formatting",
+            "Display the number with no formatting."),
+        nfe(
+            FORMAT_C,
+            DATE,
+            "C",
+            null,
+            "Display the date as ddddd and display the time as t t t t t, in "
+            + "that order. Display only date information if there is no "
+            + "fractional part to the date serial number; display only time "
+            + "information if there is no integer portion."),
+        nfe(
+            FORMAT_D,
+            DATE,
+            "d",
+            null,
+            "Display the day as a number without a leading zero (1 - 31)."),
+        nfe(
+            FORMAT_DD,
+            DATE,
+            "dd",
+            null,
+            "Display the day as a number with a leading zero (01 - 31)."),
+        nfe(
+            FORMAT_DDD,
+            DATE,
+            "Ddd",
+            null,
+            "Display the day as an abbreviation (Sun - Sat)."),
+        nfe(
+            FORMAT_DDDD,
+            DATE,
+            "dddd",
+            null,
+            "Display the day as a full name (Sunday - Saturday)."),
+        nfe(
+            FORMAT_DDDDD,
+            DATE,
+            "ddddd",
+            null,
+            "Display the date as a complete date (including day, month, and "
+            + "year), formatted according to your system's short date format "
+            + "setting. The default short date format is m/d/yy."),
+        nfe(
+            FORMAT_DDDDDD,
+            DATE,
+            "dddddd",
+            null,
+            "Display a date serial number as a complete date (including day, "
+            + "month, and year) formatted according to the long date setting "
+            + "recognized by your system. The default long date format is mmmm "
+            + "dd, yyyy."),
+        nfe(
+            FORMAT_W,
+            DATE,
+            "w",
+            null,
+            "Display the day of the week as a number (1 for Sunday through 7 "
+            + "for Saturday)."),
+        nfe(
+            FORMAT_WW,
+            DATE,
+            "ww",
+            null,
+            "Display the week of the year as a number (1 - 53)."),
+        nfe(
+            FORMAT_M,
+            DATE | SPECIAL,
+            "m",
+            null,
+            "Display the month as a number without a leading zero (1 - 12). If "
+            + "m immediately follows h or hh, the minute rather than the month "
+            + "is displayed."),
+        nfe(
+            FORMAT_MM,
+            DATE | SPECIAL,
+            "mm",
+            null,
+            "Display the month as a number with a leading zero (01 - 12). If m "
+            + "immediately follows h or hh, the minute rather than the month "
+            + "is displayed."),
+        nfe(
+            FORMAT_MMM_LOWER,
+            DATE,
+            "mmm",
+            null,
+            "Display the month as an abbreviation (Jan - Dec)."),
+        nfe(
+            FORMAT_MMMM_LOWER,
+            DATE,
+            "mmmm",
+            null,
+            "Display the month as a full month name (January - December)."),
+        nfe(
+            FORMAT_MMM_UPPER,
+            DATE,
+            "MMM",
+            null,
+            "Display the month as an abbreviation (Jan - Dec)."),
+        nfe(
+            FORMAT_MMMM_UPPER,
+            DATE,
+            "MMMM",
+            null,
+            "Display the month as a full month name (January - December)."),
+        nfe(
+            FORMAT_Q,
+            DATE,
+            "q",
+            null,
+            "Display the quarter of the year as a number (1 - 4)."),
+        nfe(
+            FORMAT_Y,
+            DATE,
+            "y",
+            null,
+            "Display the day of the year as a number (1 - 366)."),
+        nfe(
+            FORMAT_YY,
+            DATE,
+            "yy",
+            null,
+            "Display the year as a 2-digit number (00 - 99)."),
+        nfe(
+            FORMAT_YYYY,
+            DATE,
+            "yyyy",
+            null,
+            "Display the year as a 4-digit number (100 - 9999)."),
+        nfe(
+            FORMAT_H,
+            DATE,
+            "h",
+            null,
+            "Display the hour as a number without leading zeros (0 - 23)."),
+        nfe(
+            FORMAT_HH,
+            DATE,
+            "hh",
+            null,
+            "Display the hour as a number with leading zeros (00 - 23)."),
+        nfe(
+            FORMAT_N,
+            DATE,
+            "n",
+            null,
+            "Display the minute as a number without leading zeros (0 - 59)."),
+        nfe(
+            FORMAT_NN,
+            DATE,
+            "nn",
+            null,
+            "Display the minute as a number with leading zeros (00 - 59)."),
+        nfe(
+            FORMAT_S,
+            DATE,
+            "s",
+            null,
+            "Display the second as a number without leading zeros (0 - 59)."),
+        nfe(
+            FORMAT_SS,
+            DATE,
+            "ss",
+            null,
+            "Display the second as a number with leading zeros (00 - 59)."),
+        nfe(
+            FORMAT_TTTTT,
+            DATE,
+            "ttttt",
+            null,
+            "Display a time as a complete time (including hour, minute, and "
+            + "second), formatted using the time separator defined by the time "
+            + "format recognized by your system. A leading zero is displayed "
+            + "if the leading zero option is selected and the time is before "
+            + "10:00 A.M. or P.M. The default time format is h:mm:ss."),
+        nfe(
+            FORMAT_UPPER_AM_SOLIDUS_PM,
+            DATE,
+            "AM/PM",
+            null,
+            "Use the 12-hour clock and display an uppercase AM with any hour "
+            + "before noon; display an uppercase PM with any hour between noon and 11:59 P.M."),
+        nfe(
+            FORMAT_LOWER_AM_SOLIDUS_PM,
+            DATE,
+            "am/pm",
+            null,
+            "Use the 12-hour clock and display a lowercase AM with any hour "
+            + "before noon; display a lowercase PM with any hour between noon "
+            + "and 11:59 P.M."),
+        nfe(
+            FORMAT_UPPER_A_SOLIDUS_P,
+            DATE,
+            "A/P",
+            null,
+            "Use the 12-hour clock and display an uppercase A with any hour "
+            + "before noon; display an uppercase P with any hour between noon "
+            + "and 11:59 P.M."),
+        nfe(
+            FORMAT_LOWER_A_SOLIDUS_P,
+            DATE,
+            "a/p",
+            null,
+            "Use the 12-hour clock and display a lowercase A with any hour "
+            + "before noon; display a lowercase P with any hour between noon "
+            + "and 11:59 P.M."),
+        nfe(
+            FORMAT_AMPM,
+            DATE,
+            "AMPM",
+            null,
+            "Use the 12-hour clock and display the AM string literal as "
+            + "defined by your system with any hour before noon; display the "
+            + "PM string literal as defined by your system with any hour "
+            + "between noon and 11:59 P.M. AMPM can be either uppercase or "
+            + "lowercase, but the case of the string displayed matches the "
+            + "string as defined by your system settings. The default format "
+            + "is AM/PM."),
+        nfe(
+            FORMAT_0,
+            NUMERIC | SPECIAL,
+            "0",
+            "Digit placeholder",
+            "Display a digit or a zero. If the expression has a digit in the "
+            + "position where the 0 appears in the format string, display it; "
+            + "otherwise, display a zero in that position. If the number has "
+            + "fewer digits than there are zeros (on either side of the "
+            + "decimal) in the format expression, display leading or trailing "
+            + "zeros. If the number has more digits to the right of the "
+            + "decimal separator than there are zeros to the right of the "
+            + "decimal separator in the format expression, round the number to "
+            + "as many decimal places as there are zeros. If the number has "
+            + "more digits to the left of the decimal separator than there are "
+            + "zeros to the left of the decimal separator in the format "
+            + "expression, display the extra digits without modification."),
+        nfe(
+            FORMAT_POUND,
+            NUMERIC | SPECIAL,
+            "#",
+            "Digit placeholder",
+            "Display a digit or nothing. If the expression has a digit in the "
+            + "position where the # appears in the format string, display it; "
+            + "otherwise, display nothing in that position.  This symbol works "
+            + "like the 0 digit placeholder, except that leading and trailing "
+            + "zeros aren't displayed if the number has the same or fewer "
+            + "digits than there are # characters on either side of the "
+            + "decimal separator in the format expression."),
+        nfe(
+            FORMAT_DECIMAL,
+            NUMERIC | SPECIAL,
+            ".",
+            "Decimal placeholder",
+            "In some locales, a comma is used as the decimal separator. The "
+            + "decimal placeholder determines how many digits are displayed to "
+            + "the left and right of the decimal separator. If the format "
+            + "expression contains only number signs to the left of this "
+            + "symbol, numbers smaller than 1 begin with a decimal separator. "
+            + "If you always want a leading zero displayed with fractional "
+            + "numbers, use 0 as the first digit placeholder to the left of "
+            + "the decimal separator instead. The actual character used as a "
+            + "decimal placeholder in the formatted output depends on the "
+            + "Number Format recognized by your system."),
+        nfe(
+            FORMAT_PERCENT,
+            NUMERIC,
+            "%",
+            "Percent placeholder",
+            "The expression is multiplied by 100. The percent character (%) is "
+            + "inserted in the position where it appears in the format "
+            + "string."),
+        nfe(
+            FORMAT_THOUSEP,
+            NUMERIC | SPECIAL,
+            ",",
+            "Thousand separator",
+            "In some locales, a period is used as a thousand separator. The "
+            + "thousand separator separates thousands from hundreds within a "
+            + "number that has four or more places to the left of the decimal "
+            + "separator. Standard use of the thousand separator is specified "
+            + "if the format contains a thousand separator surrounded by digit "
+            + "placeholders (0 or #). Two adjacent thousand separators or a "
+            + "thousand separator immediately to the left of the decimal "
+            + "separator (whether or not a decimal is specified) means \"scale "
+            + "the number by dividing it by 1000, rounding as needed.\"  You "
+            + "can scale large numbers using this technique. For example, you "
+            + "can use the format string \"##0,,\" to represent 100 million as "
+            + "100. Numbers smaller than 1 million are displayed as 0. Two "
+            + "adjacent thousand separators in any position other than "
+            + "immediately to the left of the decimal separator are treated "
+            + "simply as specifying the use of a thousand separator. The "
+            + "actual character used as the thousand separator in the "
+            + "formatted output depends on the Number Format recognized by "
+            + "your system."),
+        nfe(
+            FORMAT_TIMESEP,
+            DATE | SPECIAL,
+            ":",
+            "Time separator",
+            "In some locales, other characters may be used to represent the "
+            + "time separator. The time separator separates hours, minutes, "
+            + "and seconds when time values are formatted. The actual "
+            + "character used as the time separator in formatted output is "
+            + "determined by your system settings."),
+        nfe(
+            FORMAT_DATESEP,
+            DATE | SPECIAL,
+            "/",
+            "Date separator",
+            "In some locales, other characters may be used to represent the "
+            + "date separator. The date separator separates the day, month, "
+            + "and year when date values are formatted. The actual character "
+            + "used as the date separator in formatted output is determined by "
+            + "your system settings."),
+        nfe(
+            FORMAT_E_MINUS_UPPER,
+            NUMERIC | SPECIAL,
+            "E-",
+            "Scientific format",
+            "If the format expression contains at least one digit placeholder "
+            + "(0 or #) to the right of E-, E+, e-, or e+, the number is "
+            + "displayed in scientific format and E or e is inserted between "
+            + "the number and its exponent. The number of digit placeholders "
+            + "to the right determines the number of digits in the exponent. "
+            + "Use E- or e- to place a minus sign next to negative exponents. "
+            + "Use E+ or e+ to place a minus sign next to negative exponents "
+            + "and a plus sign next to positive exponents."),
+        nfe(
+            FORMAT_E_PLUS_UPPER,
+            NUMERIC | SPECIAL,
+            "E+",
+            "Scientific format",
+            "See E-."),
+        nfe(
+            FORMAT_E_MINUS_LOWER,
+            NUMERIC | SPECIAL,
+            "e-",
+            "Scientific format",
+            "See E-."),
+        nfe(
+            FORMAT_E_PLUS_LOWER,
+            NUMERIC | SPECIAL,
+            "e+",
+            "Scientific format",
+            "See E-."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            "-",
+            "Display a literal character",
+            "To display a character other than one of those listed, precede it "
+            + "with a backslash (\\) or enclose it in double quotation marks "
+            + "(\" \")."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            "+",
+            "Display a literal character",
+            "See -."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            "$",
+            "Display a literal character",
+            "See -."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            "(",
+            "Display a literal character",
+            "See -."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            ")",
+            "Display a literal character",
+            "See -."),
+        nfe(
+            FORMAT_LITERAL,
+            GENERAL,
+            " ",
+            "Display a literal character",
+            "See -."),
+        nfe(
+            FORMAT_BACKSLASH,
+            GENERAL | SPECIAL,
+            "\\",
+            "Display the next character in the format string",
+            "Many characters in the format expression have a special meaning "
+            + "and can't be displayed as literal characters unless they are "
+            + "preceded by a backslash. The backslash itself isn't displayed. "
+            + "Using a backslash is the same as enclosing the next character "
+            + "in double quotation marks. To display a backslash, use two "
+            + "backslashes (\\).  Examples of characters that can't be "
+            + "displayed as literal characters are the date- and "
+            + "time-formatting characters (a, c, d, h, m, n, p, q, s, t, w, y, "
+            + "and /:), the numeric-formatting characters (#, 0, %, E, e, "
+            + "comma, and period), and the string-formatting characters (@, &, "
+            + "<, >, and !)."),
+        nfe(
+            FORMAT_QUOTE,
+            GENERAL | SPECIAL,
+            "\"",
+            "Display the string inside the double quotation marks",
+            "To include a string in format from within code, you must use "
+            + "Chr(34) to enclose the text (34 is the character code for a "
+            + "double quotation mark)."),
+        nfe(
+            FORMAT_CHARACTER_OR_SPACE,
+            STRING,
+            "@",
+            "Character placeholder",
+            "Display a character or a space. If the string has a character in "
+            + "the position where the @ appears in the format string, display "
+            + "it; otherwise, display a space in that position. Placeholders "
+            + "are filled from right to left unless there is an ! character in "
+            + "the format string. See below."),
+        nfe(
+            FORMAT_CHARACTER_OR_NOTHING,
+            STRING,
+            "&",
+            "Character placeholder",
+            "Display a character or nothing. If the string has a character in "
+            + "the position where the & appears, display it; otherwise, "
+            + "display nothing. Placeholders are filled from right to left "
+            + "unless there is an ! character in the format string. See "
+            + "below."),
+        nfe(
+            FORMAT_LOWER,
+            STRING | SPECIAL,
+            "<",
+            "Force lowercase",
+            "Display all characters in lowercase format."),
+        nfe(
+            FORMAT_UPPER,
+            STRING | SPECIAL,
+            ">",
+            "Force uppercase",
+            "Display all characters in uppercase format."),
+        nfe(
+            FORMAT_FILL_FROM_LEFT,
+            STRING | SPECIAL,
+            "!",
+            "Force left to right fill of placeholders",
+            "The default is to fill from right to left."),
+        nfe(
+            FORMAT_SEMI,
+            GENERAL | SPECIAL,
+            ";",
+            "Separates format strings for different kinds of values",
+            "If there is one section, the format expression applies to all "
+            + "values. If there are two sections, the first section applies "
+            + "to positive values and zeros, the second to negative values. If "
+            + "there are three sections, the first section applies to positive "
+            + "values, the second to negative values, and the third to zeros. "
+            + "If there are four sections, the first section applies to "
+            + "positive values, the second to negative values, the third to "
+            + "zeros, and the fourth to Null values."),
+        nfe(
+            FORMAT_INTL_CURRENCY,
+            NUMERIC | SPECIAL,
+            intlCurrencySymbol + "",
+            null,
+            "Display the locale's currency symbol."),
+        nfe(
+            FORMAT_USD,
+            GENERAL,
+            "USD",
+            null,
+            "Display USD (U.S. Dollars)."),
+        nfe(
+            FORMAT_GENERAL_NUMBER,
+            NUMERIC | SPECIAL,
+            "General Number",
+            null,
+            "Shows numbers as entered."),
+        nfe(
+            FORMAT_GENERAL_DATE,
+            DATE | SPECIAL,
+            "General Date",
+            null,
+            "Shows date and time if expression contains both. If expression is "
+            + "only a date or a time, the missing information is not "
+            + "displayed."),
     };
 
     static class MacroToken {
@@ -1303,33 +1656,60 @@ public class Format {
     // Named formats.  todo: Supply the translation strings.
     private static final MacroToken[] macroTokens = {
         new MacroToken(
-            "Currency", null, "Shows currency values according to the locale's CurrencyFormat.  Negative numbers are inside parentheses."),
+            "Currency",
+            null,
+            "Shows currency values according to the locale's CurrencyFormat.  "
+            + "Negative numbers are inside parentheses."),
         new MacroToken(
             "Fixed", "0", "Shows at least one digit."),
         new MacroToken(
             "Standard", "#,##0", "Uses a thousands separator."),
         new MacroToken(
-            "Percent", "0.00%", "Multiplies the value by 100 with a percent sign at the end."),
+            "Percent",
+            "0.00%",
+            "Multiplies the value by 100 with a percent sign at the end."),
         new MacroToken(
             "Scientific", "0.00e+00", "Uses standard scientific notation."),
         new MacroToken(
-            "Long Date", "dddd, mmmm dd, yyyy", "Uses the Long Date format specified in the Regional Settings dialog box of the Microsoft Windows Control Panel."),
+            "Long Date",
+            "dddd, mmmm dd, yyyy",
+            "Uses the Long Date format specified in the Regional Settings "
+            + "dialog box of the Microsoft Windows Control Panel."),
         new MacroToken(
-            "Medium Date", "dd-mmm-yy", "Uses the dd-mmm-yy format (for example, 03-Apr-93)"),
+            "Medium Date",
+            "dd-mmm-yy",
+            "Uses the dd-mmm-yy format (for example, 03-Apr-93)"),
         new MacroToken(
-            "Short Date", "m/d/yy", "Uses the Short Date format specified in the Regional Settings dialog box of the Windows Control Panel."),
+            "Short Date",
+            "m/d/yy",
+            "Uses the Short Date format specified in the Regional Settings "
+            + "dialog box of the Windows Control Panel."),
         new MacroToken(
-            "Long Time", "h:mm:ss AM/PM", "Shows the hour, minute, second, and \"AM\" or \"PM\" using the h:mm:ss format."),
+            "Long Time",
+            "h:mm:ss AM/PM",
+            "Shows the hour, minute, second, and \"AM\" or \"PM\" using the "
+            + "h:mm:ss format."),
         new MacroToken(
-            "Medium Time", "h:mm AM/PM", "Shows the hour, minute, and \"AM\" or \"PM\" using the \"hh:mm AM/PM\" format."),
+            "Medium Time",
+            "h:mm AM/PM",
+            "Shows the hour, minute, and \"AM\" or \"PM\" using the \"hh:mm "
+            + "AM/PM\" format."),
         new MacroToken(
-            "Short Time", "hh:mm", "Shows the hour and minute using the hh:mm format."),
+            "Short Time",
+            "hh:mm",
+            "Shows the hour and minute using the hh:mm format."),
         new MacroToken(
-            "Yes/No", "\\Y\\e\\s;\\Y\\e\\s;\\N\\o;\\N\\o", "Any nonzero numeric value (usually - 1) is Yes. Zero is No."),
+            "Yes/No",
+            "\\Y\\e\\s;\\Y\\e\\s;\\N\\o;\\N\\o",
+            "Any nonzero numeric value (usually - 1) is Yes. Zero is No."),
         new MacroToken(
-            "True/False", "\\T\\r\\u\\e;\\T\\r\\u\\e;\\F\\a\\l\\s\\e;\\F\\a\\l\\s\\e", "Any nonzero numeric value (usually - 1) is True. Zero is False."),
+            "True/False",
+            "\\T\\r\\u\\e;\\T\\r\\u\\e;\\F\\a\\l\\s\\e;\\F\\a\\l\\s\\e",
+            "Any nonzero numeric value (usually - 1) is True. Zero is False."),
         new MacroToken(
-            "On/Off", "\\O\\n;\\O\\n;\\O\\f\\f;\\O\\f\\f", "Any nonzero numeric value (usually - 1) is On. Zero is Off."),
+            "On/Off",
+            "\\O\\n;\\O\\n;\\O\\f\\f;\\O\\f\\f",
+            "Any nonzero numeric value (usually - 1) is On. Zero is Off."),
     };
 
     /**
@@ -1371,14 +1751,16 @@ public class Format {
         // If the format string is empty, use a Java format.
         // Later entries in the formats list default to the first (e.g.
         // "#.00;;Nil"), but the first entry must be set.
-        if (alternateFormatList.size() == 0 || alternateFormatList.get(0) == null) {
+        if (alternateFormatList.size() == 0
+            || alternateFormatList.get(0) == null)
+        {
             format = new JavaFormat(locale.locale);
         } else if (alternateFormatList.size() == 1) {
-            format = (BasicFormat) alternateFormatList.get(0);
+            format = alternateFormatList.get(0);
         } else {
             BasicFormat[] alternateFormats =
-                    (BasicFormat[]) alternateFormatList.toArray(
-                            new BasicFormat[alternateFormatList.size()]);
+                alternateFormatList.toArray(
+                    new BasicFormat[alternateFormatList.size()]);
             format = new AlternateFormat(alternateFormats);
         }
     }
@@ -1510,9 +1892,10 @@ public class Format {
         if (currencyFormat.getMaximumFractionDigits() > 0) {
             buf.append('.');
             appendTimes(buf, '0', currencyFormat.getMinimumFractionDigits());
-            appendTimes(buf, '#',
-                    currencyFormat.getMaximumFractionDigits() -
-                    currencyFormat.getMinimumFractionDigits());
+            appendTimes(
+                buf, '#',
+                currencyFormat.getMaximumFractionDigits()
+                - currencyFormat.getMinimumFractionDigits());
         }
         buf.append(currencyRight);
         String currencyFormatString = buf.toString();
@@ -1644,9 +2027,9 @@ public class Format {
                 useThouSep = false,
                 fillFromRight = true;
 
-        /** Whether to print numbers in decimal or exponential format.  Valid
-         * values are FORMAT_NULL, FORMAT_E_PLUS_LOWER, FORMAT_E_MINUS_LOWER,
-         * FORMAT_E_PLUS_UPPER, FORMAT_E_MINUS_UPPER. */
+        // Whether to print numbers in decimal or exponential format.  Valid
+        // values are FORMAT_NULL, FORMAT_E_PLUS_LOWER, FORMAT_E_MINUS_LOWER,
+        // FORMAT_E_PLUS_UPPER, FORMAT_E_MINUS_UPPER.
         int expFormat = FORMAT_NULL;
 
         // todo: Parse the string for ;s
@@ -1662,8 +2045,8 @@ public class Format {
                             + ";("  + locale.currencyFormat + ")";
                     } else {
                         throw new Error(
-                            "Format: internal: token " + macroTokens[i].name +
-                            " should have translation");
+                            "Format: internal: token " + macroTokens[i].name
+                            + " should have translation");
                     }
                 } else {
                     formatString = macroTokens[i].translation;
@@ -1750,8 +2133,9 @@ loop:
                                 if (prevFormat instanceof LiteralFormat) {
                                     // ignore boilerplate
                                     j--;
-                                } else if (prevFormat.code == FORMAT_H ||
-                                           prevFormat.code == FORMAT_HH) {
+                                } else if (prevFormat.code == FORMAT_H
+                                    || prevFormat.code == FORMAT_HH)
+                                {
                                     theyMeantMinute = true;
                                     break;
                                 } else {
@@ -1814,7 +2198,7 @@ loop:
                                 s = "";
                                 newFormatString = "";
                             } else {
-                                s = formatString.substring(1,2);
+                                s = formatString.substring(1, 2);
                                 newFormatString = formatString.substring(2);
                             }
                             format = new LiteralFormat(s);
@@ -1828,8 +2212,9 @@ loop:
                         {
                             numberState = RIGHT_OF_EXP;
                             expFormat = token.code;
-                            if (zeroesLeftOfPoint == 0 &&
-                                zeroesRightOfPoint == 0) {
+                            if (zeroesLeftOfPoint == 0
+                                && zeroesRightOfPoint == 0)
+                            {
                                 // We need a mantissa, so that format(123.45,
                                 // "E+") gives "1E+2", not "0E+2" or "E+2".
                                 zeroesLeftOfPoint = 1;
@@ -1918,7 +2303,7 @@ loop:
                 // None of the standard format elements matched.  Make the
                 // current character into a literal.
                 format = new LiteralFormat(
-                    formatString.substring(0,1));
+                    formatString.substring(0, 1));
                 newFormatString = formatString.substring(1);
             }
 
@@ -1982,14 +2367,16 @@ loop:
                 // If there is a thousands separator (",") immediately to the
                 // left of the point, or at the end of the number, divide the
                 // number by 1000.  (Or by 1000^n if there are more than one.)
-                if (haveSeenNumber &&
-                    i + 1 < formats.length &&
-                    formats[i + 1].code != FORMAT_THOUSEP &&
-                    formats[i + 1].code != FORMAT_0 &&
-                    formats[i + 1].code != FORMAT_POUND) {
+                if (haveSeenNumber
+                    && i + 1 < formats.length
+                    && formats[i + 1].code != FORMAT_THOUSEP
+                    && formats[i + 1].code != FORMAT_0
+                    && formats[i + 1].code != FORMAT_POUND)
+                {
                     for (int j = i;
                          j >= 0 && formats[j].code == FORMAT_THOUSEP;
-                         j--) {
+                         j--)
+                    {
                         decimalShift -= 3;
                         formats[j] = new LiteralFormat(""); // ignore
                     }
@@ -2018,9 +2405,11 @@ loop:
 
         // Create a CompoundFormat containing all of the format elements.
         BasicFormat alternateFormat =
-                formats.length == 0 ? null :
-                formats.length == 1 ? formats[0] :
-                new CompoundFormat(formats);
+            formats.length == 0
+            ? null
+            : formats.length == 1
+            ? formats[0]
+            : new CompoundFormat(formats);
         alternateFormatList.add(alternateFormat);
         return formatString;
     }
@@ -2083,9 +2472,10 @@ loop:
         private FieldPosition pos;
 
         public StringBuffer format(
-                double number,
-                StringBuffer result,
-                FieldPosition fieldPosition) {
+             double number,
+             StringBuffer result,
+             FieldPosition fieldPosition)
+        {
             pos = fieldPosition;
             return result;
         }
@@ -2111,8 +2501,8 @@ static class FloatingDecimal {
     static final long   fractMask = ~(signMask | expMask);
     static final int    expShift = 52;
     static final int    expBias  = 1023;
-    static final long   fractHOB = (1L<<expShift); // assumed High-Order bit
-    static final long   expOne   = ((long)expBias)<<expShift; // exponent of 1.0
+    static final long   fractHOB = (1L << expShift); // assumed High-Order bit
+    static final long   expOne = ((long)expBias) << expShift; // exponent of 1.0
     static final int    maxSmallBinExp = 62;
     static final int    minSmallBinExp = -(63 / 3);
 
@@ -2124,7 +2514,7 @@ static class FloatingDecimal {
     static final int    singleExpMask  =    0x7f800000;
     static final int    singleFractMask =   ~(singleSignMask | singleExpMask);
     static final int    singleExpShift  =   23;
-    static final int    singleFractHOB  =   1<<singleExpShift;
+    static final int    singleFractHOB  =   1 << singleExpShift;
     static final int    singleExpBias   =   127;
 
     /*
@@ -2243,14 +2633,15 @@ static class FloatingDecimal {
             long residue = lvalue % pow10;
             lvalue /= pow10;
             decExponent += i;
-            if (residue >= (pow10>>1)) {
+            if (residue >= (pow10 >> 1)) {
                 // round up based on the low-order bits we're discarding
                 lvalue++;
             }
         }
         if (lvalue <= Integer.MAX_VALUE) {
             if (lvalue <= 0L) {
-                throw new RuntimeException("Assertion botch: value " + lvalue + " <= 0");
+                throw new RuntimeException(
+                    "Assertion botch: value " + lvalue + " <= 0");
             }
             // even easier subcase!
             // can do int arithmetic rather than long!
@@ -2352,7 +2743,7 @@ static class FloatingDecimal {
         // Discover obvious special cases of NaN and Infinity.
         binExp = (int)((dBits & expMask) >> expShift);
         fractBits = dBits & fractMask;
-        if (binExp == (int)(expMask>>expShift)) {
+        if (binExp == (int)(expMask >> expShift)) {
             isExceptional = true;
             if (fractBits == 0L) {
                 digits =  infinity;
@@ -2380,7 +2771,8 @@ static class FloatingDecimal {
                 fractBits <<= 1;
                 binExp -= 1;
             }
-            nSignificantBits = expShift + binExp; // recall binExp is  - shift count.
+            // recall binExp is  - shift count.
+            nSignificantBits = expShift + binExp;
             binExp += 1;
         } else {
             fractBits |= fractHOB;
@@ -2412,7 +2804,7 @@ static class FloatingDecimal {
         // Discover obvious special cases of NaN and Infinity.
         binExp = ((fBits & singleExpMask) >> singleExpShift);
         fractBits = fBits & singleFractMask;
-        if (binExp == (singleExpMask>>singleExpShift)) {
+        if (binExp == (singleExpMask >> singleExpShift)) {
             isExceptional = true;
             if (fractBits == 0L) {
                 digits =  infinity;
@@ -2440,7 +2832,8 @@ static class FloatingDecimal {
                 fractBits <<= 1;
                 binExp -= 1;
             }
-            nSignificantBits = singleExpShift + binExp; // recall binExp is  - shift count.
+            // recall binExp is  - shift count.
+            nSignificantBits = singleExpShift + binExp;
             binExp += 1;
         } else {
             fractBits |= singleFractHOB;
@@ -2448,7 +2841,10 @@ static class FloatingDecimal {
         }
         binExp -= singleExpBias;
         // call the routine that actually does all the hard work.
-        dtoa(binExp, ((long)fractBits)<<(expShift - singleExpShift), nSignificantBits);
+        dtoa(
+            binExp,
+            ((long)fractBits) << (expShift - singleExpShift),
+            nSignificantBits);
     }
 
     private void
@@ -2467,7 +2863,9 @@ static class FloatingDecimal {
             // Look more closely at the number to decide if,
             // with scaling by 10^nTinyBits, the result will fit in
             // a long.
-            if ((nTinyBits < long5pow.length) && ((nFractBits + n5bits[nTinyBits]) < 64)) {
+            if ((nTinyBits < long5pow.length)
+                && ((nFractBits + n5bits[nTinyBits]) < 64))
+            {
                 /*
                  * We can do this:
                  * take the fraction bits, which are normalized.
@@ -2508,7 +2906,8 @@ static class FloatingDecimal {
                  * else {
                  *     fractBits >>>= expShift + 1-nFractBits;
                  *     fractBits *= long5pow[ nTinyBits ];
-                 *     halfULP = long5pow[ nTinyBits ] >> (1+nSignificantBits-nFractBits);
+                 *     halfULP = long5pow[ nTinyBits ]
+                 *         >> (1 + nSignificantBits - nFractBits);
                  *     developLongDigits(-nTinyBits, fractBits, halfULP);
                  *     return;
                  * }
@@ -2526,7 +2925,9 @@ static class FloatingDecimal {
          *      S      = 10^max(0, decExp) * 2^nTinyBits
          * (noting that nTinyBits has already been forced to non-negative)
          * I am also going to compute a large positive integer
-         *      M      = (1/2^nSignificantBits) * 2^nTinyBits * 10^max(0, -decExp)
+         *      M      = (1/2^nSignificantBits)
+         *               * 2^nTinyBits
+         *               * 10^max(0, -decExp)
          * i.e. M is (1/2) of the ULP of d, scaled like B.
          * When we iterate through dividing B/S and picking off the
          * quotient bits, we will know when to stop when the remainder
@@ -2550,7 +2951,9 @@ static class FloatingDecimal {
         double d2 = Double.longBitsToDouble(
             expOne | (fractBits &~ fractHOB));
         decExp = (int)Math.floor(
-            (d2 - 1.5D) * 0.289529654D + 0.176091259 + (double)binExp * 0.301029995663981);
+            (d2 - 1.5D) * 0.289529654D
+            + 0.176091259
+            + (double)binExp * 0.301029995663981);
         int B2, B5; // powers of 2 and powers of 5, respectively, in B
         int S2, S5; // powers of 2 and powers of 5, respectively, in S
         int M2, M5; // powers of 2 and powers of 5, respectively, in M
@@ -2628,8 +3031,14 @@ static class FloatingDecimal {
          * 26 Sept 96 is not that day.
          * So we use a symmetric test.
          */
-        Bbits = nFractBits + B2 + ((B5 < n5bits.length) ? n5bits[B5] : (B5 * 3));
-        tenSbits = S2 + 1 + (((S5 + 1) < n5bits.length) ? n5bits[(S5 + 1)] : ((S5 + 1) * 3));
+        Bbits =
+            nFractBits
+            + B2
+            + ((B5 < n5bits.length) ? n5bits[B5] : (B5 * 3));
+        tenSbits =
+            S2
+            + 1
+            + (((S5 + 1) < n5bits.length) ? n5bits[(S5 + 1)] : ((S5 + 1) * 3));
         if (Bbits < 64 && tenSbits < 64) {
             if (Bbits < 32 && tenSbits < 32) {
                 // wa-hoo! They're all ints!
@@ -2650,7 +3059,8 @@ static class FloatingDecimal {
                 high = (b + m > tens);
                 if (q >= 10) {
                     // bummer, dude
-                    throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                    throw new RuntimeException(
+                        "Assertion botch: excessivly large digit " + q);
                 } else if ((q == 0) && ! high) {
                     // oops. Usually ignore leading zero.
                     decExp--;
@@ -2672,7 +3082,8 @@ static class FloatingDecimal {
                     m *= 10;
                     if (q >= 10) {
                         // bummer, dude
-                        throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                        throw new RuntimeException(
+                            "Assertion botch: excessivly large digit " + q);
                     }
                     if (m > 0L) {
                         low  = (b <  m);
@@ -2688,7 +3099,7 @@ static class FloatingDecimal {
                     }
                     digits[ndigit++] = (char)('0' + q);
                 }
-                lowDigitDifference = (b<<1) - tens;
+                lowDigitDifference = (b << 1) - tens;
             } else {
                 // still good! they're all longs!
                 long b = (fractBits * long5pow[B5]) << B2;
@@ -2708,7 +3119,8 @@ static class FloatingDecimal {
                 high = (b + m > tens);
                 if (q >= 10) {
                     // bummer, dude
-                    throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                    throw new RuntimeException(
+                        "Assertion botch: excessivly large digit " + q);
                 } else if ((q == 0) && ! high) {
                     // oops. Usually ignore leading zero.
                     decExp--;
@@ -2730,7 +3142,8 @@ static class FloatingDecimal {
                     m *= 10;
                     if (q >= 10) {
                         // bummer, dude
-                        throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                        throw new RuntimeException(
+                            "Assertion botch: excessivly large digit " + q);
                     }
                     if (m > 0L) {
                         low  = (b <  m);
@@ -2746,7 +3159,7 @@ static class FloatingDecimal {
                     }
                     digits[ndigit++] = (char)('0' + q);
                 }
-                lowDigitDifference = (b<<1) - tens;
+                lowDigitDifference = (b << 1) - tens;
             }
         } else {
             FDBigInt tenSval;
@@ -2793,7 +3206,8 @@ static class FloatingDecimal {
             high = (Bval.add(Mval).cmp(tenSval) > 0);
             if (q >= 10) {
                 // bummer, dude
-                throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                throw new RuntimeException(
+                    "Assertion botch: excessivly large digit " + q);
             } else if ((q == 0) && ! high) {
                 // oops. Usually ignore leading zero.
                 decExp--;
@@ -2814,7 +3228,8 @@ static class FloatingDecimal {
                 Mval = Mval.mult(10);
                 if (q >= 10) {
                     // bummer, dude
-                    throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+                    throw new RuntimeException(
+                        "Assertion botch: excessivly large digit " + q);
                 }
                 low  = (Bval.cmp(Mval) < 0);
                 high = (Bval.add(Mval).cmp(tenSval) > 0);
@@ -2956,7 +3371,7 @@ static class FloatingDecimal {
         }
         if (n == 0) {
             nDigits = 1;
-            digits = new char[] {'0','0','0','0','0','0','0','0'};
+            digits = new char[] {'0', '0', '0', '0', '0', '0', '0', '0'};
             decExponent = 0;
         } else {
             nDigits = 0;
@@ -2975,8 +3390,9 @@ static class FloatingDecimal {
     // jhyde added
     public void shift(int i)
     {
-        if (isExceptional ||
-            nDigits == 1 && digits[0] == '0') {
+        if (isExceptional
+            || nDigits == 1 && digits[0] == '0')
+        {
             ; // don't multiply zero
         } else {
             decExponent += i;
@@ -3000,7 +3416,8 @@ static class FloatingDecimal {
         //         +maxDigitsRightOfDecimal
         //          + 10  (for decimal point and sign or -Infinity)
         //         +decExponent/3 (for the thousand separators)
-        int resultLen = 10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
+        int resultLen =
+            10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
         char result[] = new char[resultLen];
         int i = toJavaFormatString(
             result, 0, minDigitsLeftOfDecimal, decimalChar,
@@ -3122,10 +3539,11 @@ static class FloatingDecimal {
 
             // Now print the number.
             for (int j = firstDigitToPrint; j < wholeDigits; j++) {
-                if (thousandChar != '\0' &&
-                    (wholeDigits - j) % 3 == 0 &&
-                    j > firstDigitToPrint &&
-                    j < wholeDigits - 1) {
+                if (thousandChar != '\0'
+                    && (wholeDigits - j) % 3 == 0
+                    && j > firstDigitToPrint
+                    && j < wholeDigits - 1)
+                {
                     result[i++] = thousandChar;
                 }
                 result[i++] = digits2[j];
@@ -3221,14 +3639,22 @@ static class FloatingDecimal {
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+        * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
     };
 
     // approximately ceil(log2(long5pow[i]))
@@ -3262,9 +3688,13 @@ static class FloatingDecimal {
         61,
     };
 
-    private static final char infinity[] = { 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y' };
+    private static final char infinity[] = {
+        'I', 'n', 'f', 'i', 'n', 'i', 't', 'y'
+    };
     private static final char notANumber[] = { 'N', 'a', 'N' };
-    private static final char zero[] = { '0', '0', '0', '0', '0', '0', '0', '0' };
+    private static final char zero[] = {
+        '0', '0', '0', '0', '0', '0', '0', '0'
+    };
 }
 
 /*
@@ -3290,7 +3720,7 @@ static class FDBigInt {
     public FDBigInt(long v) {
         data = new int[2];
         data[0] = (int)v;
-        data[1] = (int)(v>>>32);
+        data[1] = (int)(v >>> 32);
         nWords = (data[1] == 0) ? 1 : 2;
     }
 
@@ -3317,7 +3747,7 @@ static class FDBigInt {
                 throw new IllegalArgumentException("negative shift count");
             }
         }
-        int wordcount = c>>5;
+        int wordcount = c >> 5;
         int bitcount  = c & 0x1f;
         int anticount = 32 - bitcount;
         int t[] = data;
@@ -3333,11 +3763,11 @@ static class FDBigInt {
             System.arraycopy(s, 0, t, wordcount, nWords);
             target = wordcount - 1;
         } else {
-            t[target--] = s[src]>>>anticount;
+            t[target--] = s[src] >>> anticount;
             while (src >= 1) {
-                t[target--] = (s[src]<<bitcount) | (s[--src]>>>anticount);
+                t[target--] = (s[src] << bitcount) | (s[--src] >>> anticount);
             }
-            t[target--] = s[src]<<bitcount;
+            t[target--] = s[src] << bitcount;
         }
         while (target >= 0) {
             t[target--] = 0;
@@ -3421,7 +3851,11 @@ static class FDBigInt {
         long p;
 
         // guess adequate size of r.
-        r = new int[(v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL) ? nWords + 1 : nWords];
+        r =
+            new int[
+                (v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL)
+                ? nWords + 1
+                : nWords];
         p = 0L;
         for (int i = 0; i < nWords; i++) {
             p += v * ((long)data[i] & 0xffffffffL);
@@ -3452,7 +3886,10 @@ static class FDBigInt {
             long p = 0L;
             int j;
             for (j = 0; j < other.nWords; j++) {
-                p += ((long)r[i + j] & 0xffffffffL) + v * ((long)other.data[j] & 0xffffffffL); // UNSIGNED CONVERSIONS ALL 'ROUND.
+                // UNSIGNED CONVERSIONS ALL 'ROUND.
+                p +=
+                    ((long)r[i + j] & 0xffffffffL)
+                    + v * ((long)other.data[j] & 0xffffffffL);
                 r[i + j] = (int)p;
                 p >>>= 32;
             }
@@ -3533,11 +3970,13 @@ static class FDBigInt {
             c >>= 32; // signed shift.
         }
         if (c != 0L) {
-            throw new RuntimeException("Assertion botch: borrow out of subtract");
+            throw new RuntimeException(
+                "Assertion botch: borrow out of subtract");
         }
         while (i < m) {
             if (other.data[i++] != 0) {
-                throw new RuntimeException("Assertion botch: negative result of subtract");
+                throw new RuntimeException(
+                    "Assertion botch: negative result of subtract");
             }
         }
         return new FDBigInt(r, n - nzeros);
@@ -3626,7 +4065,9 @@ static class FDBigInt {
         long q = ((long)data[n] & 0xffffffffL) / (long)S.data[n];
         long diff = 0L;
         for (int i = 0; i <= n ; i++) {
-            diff += ((long)data[i] & 0xffffffffL) -  q * ((long)S.data[i] & 0xffffffffL);
+            diff +=
+                ((long)data[i] & 0xffffffffL)
+                -  q * ((long)S.data[i] & 0xffffffffL);
             data[i] = (int)diff;
             diff >>= 32; // N.B. SIGNED shift.
         }
@@ -3638,7 +4079,9 @@ static class FDBigInt {
             while (sum ==  0L) {
                 sum = 0L;
                 for (int i = 0; i <= n; i++) {
-                    sum += ((long)data[i] & 0xffffffffL) +  ((long)S.data[i] & 0xffffffffL);
+                    sum +=
+                        ((long)data[i] & 0xffffffffL)
+                        + ((long)S.data[i] & 0xffffffffL);
                     data[i] = (int) sum;
                     sum >>= 32; // Signed or unsigned, answer is 0 or 1
                 }
@@ -3652,7 +4095,9 @@ static class FDBigInt {
                  *  + 1.
                  */
                 if (sum != 0 && sum != 1) {
-                    throw new RuntimeException("Assertion botch: " + sum + " carry out of division correction");
+                    throw new RuntimeException(
+                        "Assertion botch: " + sum
+                        + " carry out of division correction");
                 }
                 q -= 1;
             }

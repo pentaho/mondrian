@@ -27,7 +27,8 @@ import mondrian.olap.MondrianProperties;
  */
 public class Checkin_7634 extends CsvDBTestCase {
     private static final String DIRECTORY =
-                            "testsrc/main/mondrian/rolap/aggmatcher";
+        "testsrc/main/mondrian/rolap/aggmatcher";
+
     private static final String CHECKIN_7634 = "Checkin_7634.csv";
 
     private int crossJoinSize;
@@ -42,7 +43,8 @@ public class Checkin_7634 extends CsvDBTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        crossJoinSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
+        crossJoinSize =
+            MondrianProperties.instance().CrossJoinOptimizerSize.get();
     }
 
     protected void tearDown() throws Exception {
@@ -62,20 +64,16 @@ public class Checkin_7634 extends CsvDBTestCase {
 
 
         // Execute query but do not used the CrossJoin nonEmptyList optimization
-//System.out.println("NO OP");
-//
-        MondrianProperties.instance().CrossJoinOptimizerSize.set(Integer.MAX_VALUE);
+        MondrianProperties.instance().CrossJoinOptimizerSize.set(
+            Integer.MAX_VALUE);
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
-//System.out.println(resultString1);
 
         // Execute query using the new version of the CrossJoin
         // nonEmptyList optimization
-//System.out.println("OP NEW");
         MondrianProperties.instance().CrossJoinOptimizerSize.set(0);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
-//System.out.println(resultString2);
 
         // This succeeds.
         assertEquals(resultString1, resultString2);

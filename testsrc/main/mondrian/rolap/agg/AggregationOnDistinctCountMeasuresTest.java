@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -42,10 +42,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         schemaReader = getTestContext().getConnection().getSchemaReader();
-        salesCube = (RolapCube) cubeByName(getTestContext().getConnection(),
+        salesCube = (RolapCube) cubeByName(
+            getTestContext().getConnection(),
             cubeNameSales);
-        salesCubeSchemaReader = salesCube.
-            getSchemaReader(getTestContext().getConnection().getRole());
+        salesCubeSchemaReader =
+            salesCube.getSchemaReader(
+                getTestContext().getConnection().getRole());
     }
 
     public TestContext getTestContext() {
@@ -175,8 +177,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(query, result);
 
-        // Check aggregate loading sql pattern
-        // Note Derby does not support multicolumn IN list, so the predicates remain in AND/OR form.
+        // Check aggregate loading sql pattern.  Note Derby does not support
+        // multicolumn IN list, so the predicates remain in AND/OR form.
         String derbySql =
             "select \"time_by_day\".\"the_year\" as \"c0\", "
             + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
@@ -208,8 +210,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQuerySql(query, patterns);
@@ -310,7 +314,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Row #0: 5,581\n");
     }
 
-    public void testDistinctCountOnMembersWithNonJoiningDimensionNotAtAllLevel() {
+    public void testDistinctCountOnMembersWithNonJoiningDimensionNotAtAllLevel()
+    {
         assertQueryReturns(
             "WITH MEMBER WAREHOUSE.X as "
             + "'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS})'"
@@ -402,7 +407,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-//        assertQueryReturns("select {[PRODUCT].[BRAND NAME].MEMBERS} on 0 from sales", "");
         int origMaxConstraint = props.MaxConstraints.get();
         props.MaxConstraints.set(7);
 
@@ -427,7 +431,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #2:\n"
                 + "{[Product].[X]}\n"
                 + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
-                + "Distinct Count aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
+                + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
         }
 
         assertQueryReturns(
@@ -509,11 +513,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null,
                 null);
 
-        SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-                new SqlPattern(Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-            };
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
+        };
 
         assertQuerySql(testContext, query, patterns);
     }
@@ -661,8 +666,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
         }
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
         assertQuerySql(
             "WITH \n"
@@ -688,7 +695,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCanNotBatchForDifferentCompoundPredicate() {
-        boolean originalGroupingSetsPropertyValue = props.EnableGroupingSets.get();
+        boolean originalGroupingSetsPropertyValue =
+            props.EnableGroupingSets.get();
         props.EnableGroupingSets.set(true);
         String mdxQueryWithFewMembers =
             "WITH "
@@ -737,10 +745,22 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForAgg, oraTeraSqlForAgg),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForAgg, oraTeraSqlForAgg),
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oraTeraSqlForAgg,
+                oraTeraSqlForAgg),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA,
+                oraTeraSqlForAgg,
+                oraTeraSqlForAgg),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oraTeraSqlForDetail,
+                oraTeraSqlForDetail),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA,
+                oraTeraSqlForDetail,
+                oraTeraSqlForDetail),
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
@@ -749,8 +769,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
 
-    public void testDistinctCountAggHappensInNonGSQueryForSubsetOfMembersWithMixedMeasures() {
-        boolean originalGroupingSetsPropertyValue = props.EnableGroupingSets.get();
+    /**
+     * Test distinct count agg happens in non gs query for subset of members
+     * with mixed measures.
+     */
+    public void testDistinctCountInNonGroupingSetsQuery() {
+        boolean originalGroupingSetsPropertyValue =
+            props.EnableGroupingSets.get();
         props.EnableGroupingSets.set(true);
         String mdxQueryWithFewMembers =
             "WITH "
@@ -803,10 +828,22 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDetail, oraTeraSqlForDetail),
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSqlForDistinctCountAgg, oraTeraSqlForDistinctCountAgg),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oraTeraSqlForDetail,
+                oraTeraSqlForDetail),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA,
+                oraTeraSqlForDetail,
+                oraTeraSqlForDetail),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oraTeraSqlForDistinctCountAgg,
+                oraTeraSqlForDistinctCountAgg),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA,
+                oraTeraSqlForDistinctCountAgg,
+                oraTeraSqlForDistinctCountAgg),
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
@@ -815,7 +852,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-        boolean originalGroupingSetsPropertyValue = props.EnableGroupingSets.get();
+        boolean originalGroupingSetsPropertyValue =
+            props.EnableGroupingSets.get();
         props.EnableGroupingSets.set(false);
         String mdxQueryWithMembers =
             "WITH "
@@ -862,8 +900,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\", \"customer\".\"gender\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
-            new SqlPattern(Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
         assertQueryReturns(mdxQueryWithMembers, desiredResult);
@@ -927,8 +967,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
-            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.LUCIDDB, luciddbSql, luciddbSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.LUCIDDB, luciddbSql, luciddbSql),
         };
 
         assertQuerySql(query, patterns);
@@ -1018,7 +1060,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             /*
             new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
             */
-            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
 
         assertQuerySql(query, patterns);
     }
@@ -1061,27 +1104,45 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     public void testOptimizeChildrenForTuplesWithLength1() {
         List<Member[]> memberList =
-            AggregateFunDef.AggregateCalc
-                .makeTupleList(
-                    productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
+            AggregateFunDef.AggregateCalc.makeTupleList(
+                productMembersPotScrubbersPotsAndPans(
+                    salesCubeSchemaReader));
 
         List tuples = optimizeChildren(memberList);
-        assertTrue(tuppleListContains(tuples,
-            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
-                "Household", "Kitchen Products", "Pot Scrubbers", "Cormorant"),
-                salesCubeSchemaReader)));
-        assertFalse(tuppleListContains(tuples,
-            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
-                "Household", "Kitchen Products", "Pot Scrubbers"),
-                salesCubeSchemaReader)));
-        assertFalse(tuppleListContains(tuples,
-            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
-                "Household", "Kitchen Products", "Pots and Pans", "Cormorant"),
-                salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(Id.Segment.toList("Product", "All Products", "Non-Consumable",
-                "Household", "Kitchen Products", "Pots and Pans"),
-                salesCubeSchemaReader)));
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pot Scrubbers",
+                        "Cormorant"),
+                    salesCubeSchemaReader)));
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pot Scrubbers"),
+                    salesCubeSchemaReader)));
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans",
+                        "Cormorant"),
+                    salesCubeSchemaReader)));
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans"),
+                    salesCubeSchemaReader)));
         assertEquals(4, tuples.size());
     }
 
@@ -1096,14 +1157,19 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 memberList,
                 storeMembersCAAndOR(salesCubeSchemaReader));
         List tuples = optimizeChildren(memberList);
-        assertFalse(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Store","All Stores","USA","OR","Portland"),
-                salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Store","All Stores","USA","OR"),
-                salesCubeSchemaReader)));
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Store", "All Stores", "USA", "OR", "Portland"),
+                    salesCubeSchemaReader)));
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList("Store", "All Stores", "USA", "OR"),
+                    salesCubeSchemaReader)));
         assertEquals(16, tuples.size());
     }
 
@@ -1116,20 +1182,31 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         List tuples = optimizeChildren(memberList);
         assertEquals(4, tuples.size());
 
-        assertFalse(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pots and Pans","Cormorant"),
+        assertFalse(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans",
+                        "Cormorant"),
                 salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pots and Pans"),
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pots and Pans"),
                 salesCubeSchemaReader)));
-        assertTrue(tuppleListContains(tuples,
-            member(
-                Id.Segment.toList("Product","All Products","Non-Consumable",
-                    "Household","Kitchen Products","Pot Scrubbers","Cormorant"),
+        assertTrue(
+            tuppleListContains(
+                tuples,
+                member(
+                    Id.Segment.toList(
+                        "Product", "All Products", "Non-Consumable",
+                        "Household", "Kitchen Products", "Pot Scrubbers",
+                        "Cormorant"),
                 salesCubeSchemaReader)));
     }
 
@@ -1147,9 +1224,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     public void testShouldNotRemoveDuplicateTuples() {
         Member maleChildMember = member(
-            Id.Segment.toList("Gender","All Gender","M"), salesCubeSchemaReader);
+            Id.Segment.toList("Gender", "All Gender", "M"),
+            salesCubeSchemaReader);
         Member femaleChildMember = member(
-            Id.Segment.toList("Gender","All Gender","F"), salesCubeSchemaReader);
+            Id.Segment.toList("Gender", "All Gender", "F"),
+            salesCubeSchemaReader);
 
         List<Member> memberList = new ArrayList<Member>();
         memberList.add(maleChildMember);
@@ -1161,10 +1240,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testMemberCountIsSameForAllMembersInTuple() {
-        List <Member[]>memberList =
+        List <Member[]> memberList =
             CrossJoinFunDef.crossJoin(
-                genderMembersIncludingAll(false, salesCubeSchemaReader, salesCube),
-                storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+                genderMembersIncludingAll(
+                    false, salesCubeSchemaReader, salesCube),
+                storeMembersUsaAndCanada(
+                    false, salesCubeSchemaReader, salesCube));
         Map<Member, Integer>[] memberCounterMap =
             AggregateFunDef.AggregateCalc.membersVersusOccurencesInTuple(
                 memberList);
@@ -1180,15 +1261,15 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     public void testMemberCountIsNotSameForAllMembersInTuple() {
         Member maleChild =
             member(
-                Id.Segment.toList("Gender","All Gender","M"),
+                Id.Segment.toList("Gender", "All Gender", "M"),
                 salesCubeSchemaReader);
         Member femaleChild =
             member(
-                Id.Segment.toList("Gender","All Gender","F"),
+                Id.Segment.toList("Gender", "All Gender", "F"),
                 salesCubeSchemaReader);
         Member mexicoMember =
             member(
-                Id.Segment.toList("Store","All Stores","Mexico"),
+                Id.Segment.toList("Store", "All Stores", "Mexico"),
                 salesCubeSchemaReader);
 
         List<Member[]> memberList = new ArrayList<Member[]>();
@@ -1281,8 +1362,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     private List<Member[]> optimizeChildren(List<Member[]> memberList) {
-        return AggregateFunDef.AggregateCalc.
-            optimizeChildren(memberList, schemaReader,salesCube);
+        return AggregateFunDef.AggregateCalc.optimizeChildren(
+            memberList, schemaReader, salesCube);
     }
 
     private List<Member[]> tupleList(List<Member> members) {

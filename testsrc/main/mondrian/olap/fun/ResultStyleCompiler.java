@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde and others
 //
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -155,8 +155,13 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
         int lineNumber;
 
         int cnt;
-        MultiCalc(Calc calcIter, Calc calcList, Calc calcMList,
-                            boolean onlyMutableList) {
+
+        MultiCalc(
+            Calc calcIter,
+            Calc calcList,
+            Calc calcMList,
+            boolean onlyMutableList)
+        {
             this.calcIter = calcIter;
             this.calcList = calcList;
             this.calcMList = calcMList;
@@ -200,25 +205,14 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
             Object valueMList = calcMList.evaluate(eval2);
 
             if (finalEval()) {
-/*
-System.out.println("MultiCalc.evaluator: valueIter.size="+((List)valueIter).size());
-System.out.println("MultiCalc.evaluator: valueList.size="+((List)valueList).size());
-System.out.println("MultiCalc.evaluator: valueMList.size="+((List)valueMList).size());
-*/
-
                 if (! compare(valueIter, valueList)) {
-                    throw new RuntimeException("MultiCalc.evaluator: ERROR Iter-List");
+                    throw new RuntimeException(
+                        "MultiCalc.evaluator: ERROR Iter-List");
                 }
                 if (! compare(valueIter, valueMList)) {
-                    throw new RuntimeException("MultiCalc.evaluator: ERROR Iter-MList");
+                    throw new RuntimeException(
+                        "MultiCalc.evaluator: ERROR Iter-MList");
                 }
-/*
-                if (! compare(valueMList, valueList)) {
-System.out.println("MultiCalc.evaluator: lists NOT EQUALS cnt="+cnt);
-                } else {
-System.out.println("MultiCalc.evaluator: lists EQUALS cnt="+cnt);
-                }
-*/
             }
 
             return (onlyMutableList) ? valueMList : valueIter;

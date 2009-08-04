@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -45,8 +45,12 @@ public class RolapCubeMember extends RolapMember {
 
     protected final RolapCube rolapCube;
 
-    public RolapCubeMember(RolapCubeMember parent, RolapMember member,
-            RolapCubeLevel level, RolapCube cube) {
+    public RolapCubeMember(
+        RolapCubeMember parent,
+        RolapMember member,
+        RolapCubeLevel level,
+        RolapCube cube)
+    {
         super();
 
         this.parentMember = parent;
@@ -60,7 +64,8 @@ public class RolapCubeMember extends RolapMember {
             // this is a special case ...
             // replace hierarchy name portion of all member with new name
             if (member.getLevel().getHierarchy().getName().equals(
-                    level.getHierarchy().getName())) {
+                    level.getHierarchy().getName()))
+            {
                 rolapAllMemberCubeName = member.getName();
             } else {
                 // special case if we're dealing with a closure
@@ -68,7 +73,9 @@ public class RolapCubeMember extends RolapMember {
                     level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
 
                 // convert string to regular expression
-                String memberLevelName = member.getLevel().getHierarchy().getName().replaceAll("\\.", "\\\\.");
+                String memberLevelName =
+                    member.getLevel().getHierarchy().getName().replaceAll(
+                        "\\.", "\\\\.");
 
                 rolapAllMemberCubeName = member.getName().replaceAll(
                         memberLevelName,
@@ -79,8 +86,9 @@ public class RolapCubeMember extends RolapMember {
             rolapAllMemberCubeName = null;
             Object name = rolapMember.getPropertyValue(Property.NAME.name);
             if (name != null
-                    && !(rolapMember.getKey() != null && name.equals(rolapMember
-                            .getKey()))) {
+                && !(rolapMember.getKey() != null
+                     && name.equals(rolapMember.getKey())))
+            {
                 // Save memory by only saving the name as a property if it's
                 // different from the key.
                 setUniqueName(name);
@@ -275,8 +283,10 @@ public class RolapCubeMember extends RolapMember {
         return rolapMember.getSolveOrder();
     }
 
-    protected Object getPropertyFromMap(String propertyName,
-            boolean matchCase) {
+    protected Object getPropertyFromMap(
+        String propertyName,
+        boolean matchCase)
+    {
         return rolapMember.getPropertyFromMap(propertyName, matchCase);
     }
 
@@ -311,8 +321,11 @@ public class RolapCubeMember extends RolapMember {
             for (int i = 0; i < fcall.getArgCount(); i++) {
                 if (fcall.getArg(i) instanceof HierarchyExpr) {
                     HierarchyExpr expr = (HierarchyExpr)fcall.getArg(i);
-                    if (expr.getHierarchy().equals(rolapMember.getHierarchy())) {
-                        fcall.getArgs()[i] = new HierarchyExpr(this.getHierarchy());
+                    if (expr.getHierarchy().equals(
+                        rolapMember.getHierarchy()))
+                    {
+                        fcall.getArgs()[i] =
+                            new HierarchyExpr(this.getHierarchy());
                     }
                 }
             }
@@ -320,8 +333,11 @@ public class RolapCubeMember extends RolapMember {
         return exp;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader,
-            Id.Segment childName, MatchType matchType) {
+    public OlapElement lookupChild(
+        SchemaReader schemaReader,
+        Id.Segment childName,
+        MatchType matchType)
+    {
         return
             schemaReader.lookupMemberChildByName(this, childName, matchType);
     }

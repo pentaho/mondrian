@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -238,12 +238,8 @@ public class RolapUtil {
             new SqlStatement(
                 dataSource, sql, maxRows, component, message,
                 resultSetType, resultSetConcurrency);
-        try {
-            stmt.execute();
-            return stmt;
-        } catch (SQLException e) {
-            throw stmt.handle(e);
-        }
+        stmt.execute();
+        return stmt;
     }
 
     /**
@@ -273,10 +269,12 @@ public class RolapUtil {
         String alertValue = alertProperty.get();
 
         if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.WARN.toString())) {
+            org.apache.log4j.Level.WARN.toString()))
+        {
             LOGGER.warn(alertMsg);
         } else if (alertValue.equalsIgnoreCase(
-                       org.apache.log4j.Level.ERROR.toString())) {
+            org.apache.log4j.Level.ERROR.toString()))
+        {
             LOGGER.error(alertMsg);
             throw MondrianResource.instance().NativeEvaluationUnsupported.ex(
                 functionName);
@@ -297,10 +295,12 @@ public class RolapUtil {
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
                     Class.forName(jdbcDriver);
-                    LOGGER.info("Mondrian: JDBC driver "
+                    LOGGER.info(
+                        "Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
-                    LOGGER.warn("Mondrian: Warning: JDBC driver "
+                    LOGGER.warn(
+                        "Mondrian: Warning: JDBC driver "
                         + jdbcDriver + " not found");
                 }
             }
@@ -310,11 +310,11 @@ public class RolapUtil {
     /**
      * Creates a compiler which will generate programs which will test
      * whether the dependencies declared via
-     * {@link mondrian.calc.Calc#dependsOn(mondrian.olap.Dimension)} are
-     * accurate.
+     * {@link mondrian.calc.Calc#dependsOn(Hierarchy)} are accurate.
      */
     public static ExpCompiler createDependencyTestingCompiler(
-            ExpCompiler compiler) {
+        ExpCompiler compiler)
+    {
         return new RolapDependencyTestingEvaluator.DteCompiler(compiler);
     }
 
@@ -346,14 +346,18 @@ public class RolapUtil {
         // create a member corresponding to the member we're trying
         // to locate so we can use it to hierarchically compare against
         // the members array
-        Member searchMember = level.getHierarchy().createMember(parent, level, searchName.name, null);
+        Member searchMember =
+            level.getHierarchy().createMember(
+                parent, level, searchName.name, null);
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
             if (searchName.quoting == Id.Quoting.KEY
-                    && member instanceof RolapMember) {
-                if (((RolapMember) member).getKey().toString()
-                        .equals(searchName.name)) {
+                && member instanceof RolapMember)
+            {
+                if (((RolapMember) member).getKey().toString().equals(
+                    searchName.name))
+                {
                     return member;
                 }
             }
@@ -373,15 +377,19 @@ public class RolapUtil {
                 return member;
             }
             if (matchType == MatchType.BEFORE) {
-                if (rc < 0 &&
-                    (bestMatch == null ||
-                        FunUtil.compareSiblingMembers(member, bestMatch) > 0)) {
+                if (rc < 0
+                    && (bestMatch == null
+                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        > 0))
+                {
                     bestMatch = member;
                 }
             } else if (matchType == MatchType.AFTER) {
-                if (rc > 0 &&
-                    (bestMatch == null ||
-                        FunUtil.compareSiblingMembers(member, bestMatch) < 0)) {
+                if (rc > 0
+                    && (bestMatch == null
+                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        < 0))
+                {
                     bestMatch = member;
                 }
             }

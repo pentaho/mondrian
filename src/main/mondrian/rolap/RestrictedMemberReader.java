@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -125,7 +125,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                     } else {
                         grandChildren.clear();
                     }
-                    memberReader.getMemberChildren(member, grandChildren, constraint);
+                    memberReader.getMemberChildren(
+                        member, grandChildren, constraint);
                     fullChildren.addAll(i, grandChildren);
                     // Step back to before the first child we just inserted,
                     // and go through the loop again.

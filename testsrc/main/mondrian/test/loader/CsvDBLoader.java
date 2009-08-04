@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -213,7 +213,10 @@ public class CsvDBLoader extends DBLoader {
                         } else {
                             line = CsvLoaderRowStream.this.csvloader.nextLine();
                             // remove comment lines
-                            if (line.length > 0 && line[0].length() > 0 && line[0].startsWith("#")) {
+                            if (line.length > 0
+                                && line[0].length() > 0
+                                && line[0].startsWith("#"))
+                            {
                                 return hasNext();
                             }
                         }
@@ -265,8 +268,9 @@ public class CsvDBLoader extends DBLoader {
         loadTables(reader, tableList);
     }
 
-    public void loadTables(Reader reader, List<Table> tableList) throws Exception {
-//System.out.println("CsvLoader.loadTables: TOP:");
+    public void loadTables(Reader reader, List<Table> tableList)
+        throws Exception
+    {
         CsvLoader csvloader = null;
         try {
             Table table = null;
@@ -613,7 +617,7 @@ if (value0.startsWith("# ")) {
                         + nullString
                         + "\", linenos " + lineNos);
                 }
-                columnType = columnType.substring(0,index).trim();
+                columnType = columnType.substring(0, index).trim();
 //System.out.println("columnType="+columnType);
                 type = Type.getType(columnType);
 //System.out.println("nullsAllowed="+nullsAllowed);
@@ -660,10 +664,12 @@ if (value0.startsWith("# ")) {
     protected static File checkDirectory(String dirName) throws Exception {
         File dir = new File(dirName);
         if (! dir.exists()) {
-            throw new Exception("The directory \"" + dirName + "\" does not exist");
+            throw new Exception(
+                "The directory \"" + dirName + "\" does not exist");
         }
         if (! dir.isDirectory()) {
-            throw new Exception("The file \"" + dirName + "\" is not a directory");
+            throw new Exception(
+                "The file \"" + dirName + "\" is not a directory");
         }
         return dir;
     }
@@ -700,11 +706,13 @@ if (value0.startsWith("# ")) {
 
         buf.append("Options:");
         buf.append(nl);
-        buf.append("  <propertyFile>        A property file which can be used to");
+        buf.append(
+            "  <propertyFile>        A property file which can be used to");
         buf.append(nl);
         buf.append("                        to set some of the options.");
         buf.append(nl);
-        buf.append("  <jdbcDrivers>         Comma-separated list of JDBC drivers;");
+        buf.append(
+            "  <jdbcDrivers>         Comma-separated list of JDBC drivers;");
         buf.append(nl);
         buf.append("  <jdbcURL>             JDBC connect string for DB.");
         buf.append(nl);
@@ -712,19 +720,28 @@ if (value0.startsWith("# ")) {
         buf.append(nl);
         buf.append("  [password]            JDBC password for user for DB.");
         buf.append(nl);
-        buf.append("  <batch size>          Size of JDBC batch updates - default to 50 inserts.");
+        buf.append(
+            "  <batch size>          "
+            + "Size of JDBC batch updates - default to 50 inserts.");
         buf.append(nl);
-        buf.append("  [outputDirectory]     Directory where per-table sql should be put");
+        buf.append(
+            "  [outputDirectory]     "
+            + "Directory where per-table sql should be put");
         buf.append(nl);
         buf.append("                        rather than loading the database.");
         buf.append(nl);
-        buf.append("  [force]               If output files already exist, delete them");
+        buf.append(
+            "  [force]               "
+            + "If output files already exist, delete them");
         buf.append(nl);
         buf.append("  [inputDirectory]     Directory containing input files");
         buf.append(nl);
-        buf.append("  [regular expression] A regular expression used to determine");
+        buf.append(
+            "  [regular expression] A regular expression used to determine");
         buf.append(nl);
-        buf.append("                       which files in the input directory to use.");
+        buf.append(
+            "                       "
+            + "which files in the input directory to use.");
         buf.append(nl);
         buf.append("The values in the property file are overridden by");
         buf.append(nl);
@@ -830,7 +847,8 @@ if (value0.startsWith("# ")) {
                 batchSizeStr = arg;
 
             } else if (arg.startsWith("-outputDirectory=")) {
-                outputDirectory = args[i].substring("-outputDirectory=".length());
+                outputDirectory =
+                    args[i].substring("-outputDirectory=".length());
             } else if (arg.equals("-outputDirectory")) {
                 if (++i == args.length) {
                     usage("Missing argument for -outputDirectory");

@@ -1,16 +1,15 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
@@ -27,8 +26,10 @@ import java.util.Arrays;
  * @since 24 August, 2006
  * @version $Id$
  */
-public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
-
+public class RolapBaseCubeMeasure
+    extends RolapMember
+    implements RolapStoredMeasure
+{
     private static final List<String> datatypeList =
         Arrays.asList("Integer", "Numeric", "String");
 
@@ -53,15 +54,28 @@ public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeas
 
     private CellFormatter formatter;
 
+    /**
+     * Creates a RolapBaseCubeMeasure.
+     *
+     * @param cube Cube
+     * @param parentMember Parent member
+     * @param level Level this member belongs to
+     * @param name Name of this member
+     * @param formatString Format string
+     * @param expression Expression
+     * @param aggregatorName Aggregator
+     * @param datatype Data type
+     */
     RolapBaseCubeMeasure(
-            RolapCube cube,
-            RolapMember parentMember,
-            RolapLevel level,
-            String name,
-            String formatString,
-            MondrianDef.Expression expression,
-            String aggregatorName,
-            String datatype) {
+        RolapCube cube,
+        RolapMember parentMember,
+        RolapLevel level,
+        String name,
+        String formatString,
+        MondrianDef.Expression expression,
+        String aggregatorName,
+        String datatype)
+    {
         super(parentMember, level, name, null, MemberType.MEASURE);
         this.cube = cube;
         this.expression = expression;
@@ -69,8 +83,8 @@ public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeas
             formatString = "";
         }
         setProperty(
-                Property.FORMAT_EXP.name,
-                Literal.createString(formatString));
+            Property.FORMAT_EXP.name,
+            Literal.createString(formatString));
 
         // Validate aggregator.
         this.aggregator =
@@ -92,8 +106,9 @@ public class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeas
 
         setProperty(Property.AGGREGATION_TYPE.name, aggregator);
         if (datatype == null) {
-            if (aggregator == RolapAggregator.Count ||
-                    aggregator == RolapAggregator.DistinctCount) {
+            if (aggregator == RolapAggregator.Count
+                || aggregator == RolapAggregator.DistinctCount)
+            {
                 datatype = "Integer";
             } else {
                 datatype = "Numeric";

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,14 +30,16 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class StdevFunDef extends AbstractAggregateFunDef {
-    static final ReflectiveMultiResolver StdevResolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver StdevResolver =
+        new ReflectiveMultiResolver(
             "Stdev",
             "Stdev(<Set>[, <Numeric Expression>])",
             "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
             new String[]{"fnx", "fnxn"},
             StdevFunDef.class);
 
-    static final ReflectiveMultiResolver StddevResolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver StddevResolver =
+        new ReflectiveMultiResolver(
             "Stddev",
             "Stddev(<Set>[, <Numeric Expression>])",
             "Alias for Stdev.",
@@ -50,14 +52,16 @@ class StdevFunDef extends AbstractAggregateFunDef {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
-        final Calc calc = call.getArgCount() > 1 ?
-                compiler.compileScalar(call.getArg(1), true) :
-                new ValueCalc(call);
+            compiler.compileList(call.getArg(0));
+        final Calc calc =
+            call.getArgCount() > 1
+            ? compiler.compileScalar(call.getArg(1), true)
+            : new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 List memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double)stdev(evaluator.push(false), memberList, calc, false);
+                return (Double) stdev(
+                    evaluator.push(false), memberList, calc, false);
             }
 
             public boolean dependsOn(Dimension dimension) {

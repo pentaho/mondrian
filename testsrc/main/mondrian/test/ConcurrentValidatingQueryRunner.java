@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -49,8 +49,8 @@ public class ConcurrentValidatingQueryRunner extends Thread {
     private static Object lock = new Object();
 
     /**
-     * Runs concurrent queries without flushing cache. This constructor provides backward
-     * compatibilty for usage in {@link ConcurrentMdxTest}.
+     * Runs concurrent queries without flushing cache. This constructor
+     * provides backward compatibilty for usage in {@link ConcurrentMdxTest}.
      *
      * @param numSeconds Running time
      * @param useRandomQuery If set to <code>true</code>, the runner will
@@ -107,8 +107,8 @@ public class ConcurrentValidatingQueryRunner extends Thread {
             while (System.currentTimeMillis() - mStartTime < mRunTime) {
                 try {
                     if (mRandomQueries) {
-                        queryIndex = (int) (Math.random() *
-                            mdxQueries.length);
+                        queryIndex =
+                            (int) (Math.random() * mdxQueries.length);
                     } else {
                         queryIndex = mRunCount %
                             mdxQueries.length;
@@ -118,14 +118,16 @@ public class ConcurrentValidatingQueryRunner extends Thread {
 
                     synchronized (lock) {
                         // flush a random region of cache
-                        if (mRandomCacheFlush &&
-                            (Math.random() < mRandomFlushFrequency)) {
+                        if (mRandomCacheFlush
+                            && (Math.random() < mRandomFlushFrequency))
+                        {
                             flushRandomRegionOfCache();
                         }
 
                         // flush the whole schema
-                        if (mRandomCacheFlush &&
-                            (Math.random() < mRandomFlushFrequency)) {
+                        if (mRandomCacheFlush
+                            && (Math.random() < mRandomFlushFrequency))
+                        {
                             flushSchema();
                         }
                     }
@@ -270,16 +272,16 @@ public class ConcurrentValidatingQueryRunner extends Thread {
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
 
-        Cube whsalesCube = connection.getSchema().lookupCube("Warehouse and Sales", true);
+        Cube whsalesCube =
+            connection.getSchema().lookupCube("Warehouse and Sales", true);
         measuresRegion =
             cacheControl.createMeasuresRegion(whsalesCube);
         cacheControl.flush(measuresRegion);
     }
 
     /**
-     * Flushes a random region of cache. This is not truly random yet; the method
-     * pick one of the three US states to be flushed.
-     *
+     * Flushes a random region of cache. This is not truly random yet; the
+     * method pick one of the three US states to be flushed.
      */
     private void flushRandomRegionOfCache() {
         // todo: more dimensions for randomizing

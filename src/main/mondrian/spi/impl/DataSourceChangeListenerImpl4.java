@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -32,7 +32,8 @@ import mondrian.rolap.agg.Aggregation;
  * It is specified in the connection string, like this:
  *
  * <blockquote><code>
- * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust; DataSourceChangeListener=com.acme.MyChangeListener;
+ * Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust;
+ * DataSourceChangeListener=com.acme.MyChangeListener;
  * </code></blockquote>
  *
  * This class should be called in mondrian before any data is read, so
@@ -51,12 +52,16 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
 
     /** Creates a new instance of DataSourceChangeListenerImpl2 */
     public DataSourceChangeListenerImpl4() {
-        this(0,0);
+        this(0, 0);
     }
-    public DataSourceChangeListenerImpl4(int flushInverseFrequencyHierarchy,
-            int flushInverseFrequencyAggregation) {
+
+    public DataSourceChangeListenerImpl4(
+        int flushInverseFrequencyHierarchy,
+        int flushInverseFrequencyAggregation)
+    {
         this.flushInverseFrequencyHierarchy = flushInverseFrequencyHierarchy;
-        this.flushInverseFrequencyAggregation = flushInverseFrequencyAggregation;
+        this.flushInverseFrequencyAggregation =
+            flushInverseFrequencyAggregation;
     }
 
     public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -139,6 +139,13 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      */
     Iterator<Integer> iterator();
 
+    /**
+     * Returns the number of bits set.
+     *
+     * @return Number of bits set
+     */
+    int cardinality();
+
     public abstract class Factory {
 
         /**
@@ -157,17 +164,6 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             } else {
                 return new BitKey.Big(size);
             }
-/*
-            switch (AbstractBitKey.chunkCount(size)) {
-            case 0:
-            case 1:
-                return new BitKey.Small();
-            case 2:
-                return new BitKey.Mid128();
-            default:
-                return new BitKey.Big(size);
-            }
-*/
         }
 
         /**
@@ -175,7 +171,10 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
          */
         public static BitKey makeBitKey(BitSet bitSet) {
             BitKey bitKey = makeBitKey(bitSet.length());
-            for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
+            for (int i = bitSet.nextSetBit(0);
+                i >= 0;
+                i = bitSet.nextSetBit(i + 1))
+            {
                 bitKey.set(i);
             }
             return bitKey;
@@ -218,6 +217,28 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
          */
         protected static int chunkCount(int size) {
             return (size + 63) >> ChunkBitCount;
+        }
+
+        /**
+         * Returns the number of one-bits in the two's complement binary
+         * representation of the specified <tt>long</tt> value.  This function
+         * is sometimes referred to as the <i>population count</i>.
+         *
+         * <p>(Copied from {@link java.lang.Long#bitCount(long)}, which was
+         * introduced in JDK 1.5, but we need the functionality in JDK 1.4.)
+         *
+         * @return the number of one-bits in the two's complement binary
+         *     representation of the specified <tt>long</tt> value.
+         * @since 1.5
+         */
+         protected static int bitCount(long i) {
+            i = i - ((i >>> 1) & 0x5555555555555555L);
+            i = (i & 0x3333333333333333L) + ((i >>> 2) & 0x3333333333333333L);
+            i = (i + (i >>> 4)) & 0x0f0f0f0f0f0f0f0fL;
+            i = i + (i >>> 8);
+            i = i + (i >>> 16);
+            i = i + (i >>> 32);
+            return (int)i & 0x7f;
         }
 
         public final void set(int pos, boolean value) {
@@ -393,7 +414,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             if (pos < 64) {
                 bits |= bit(pos);
             } else {
-                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 64");
+                throw new IllegalArgumentException(
+                    "pos " + pos + " exceeds capacity 64");
             }
         }
 
@@ -407,6 +429,10 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
         public void clear() {
             bits = 0;
+        }
+
+        public int cardinality() {
+            return bitCount(bits);
         }
 
         private void or(long bits) {
@@ -497,8 +523,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits | other.bits0) == this.bits) &&
-                    (other.bits1 == 0);
+                return ((this.bits | other.bits0) == this.bits)
+                    && (other.bits1 == 0);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -707,7 +733,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             } else if (pos < 128) {
                 bits1 |= bit(pos);
             } else {
-                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 128");
+                throw new IllegalArgumentException(
+                    "pos " + pos + " exceeds capacity 128");
             }
         }
 
@@ -735,6 +762,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         public void clear() {
             bits0 = 0;
             bits1 = 0;
+        }
+
+        public int cardinality() {
+            return bitCount(bits0)
+               + bitCount(bits1);
         }
 
         private void or(long bits0, long bits1) {
@@ -828,8 +860,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits0 | other.bits0) == this.bits0) &&
-                    ((this.bits1 | other.bits1) == this.bits1);
+                return ((this.bits0 | other.bits0) == this.bits0)
+                    && ((this.bits1 | other.bits1) == this.bits1);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -856,8 +888,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return (this.bits0 & other.bits0) != 0 ||
-                    (this.bits1 & other.bits1) != 0;
+                return (this.bits0 & other.bits0) != 0
+                    || (this.bits1 & other.bits1) != 0;
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -965,8 +997,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (o instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) o;
-                return (this.bits0 == other.bits0) &&
-                    (this.bits1 == other.bits1);
+                return (this.bits0 == other.bits0)
+                    && (this.bits1 == other.bits1);
 
             } else if (o instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) o;
@@ -1011,8 +1043,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
 
         public boolean isEmpty() {
-            return bits0 == 0 &&
-                    bits1 == 0;
+            return bits0 == 0
+                && bits1 == 0;
         }
 
         // implement Comparable (in lazy, expensive fashion)
@@ -1107,6 +1139,14 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             for (int i = 0; i < bits.length; i++) {
                 bits[i] = 0;
             }
+        }
+
+        public int cardinality() {
+            int n = 0;
+            for (int i = 0; i < bits.length; i++) {
+                n += bitCount(bits[i]);
+            }
+            return n;
         }
 
         private void or(long bits0) {
@@ -1235,8 +1275,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits[0] | other.bits0) == this.bits[0]) &&
-                    ((this.bits[1] | other.bits1) == this.bits[1]);
+                return ((this.bits[0] | other.bits0) == this.bits[0])
+                    && ((this.bits[1] | other.bits1) == this.bits[1]);
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -1266,8 +1306,8 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return (this.bits[0] & other.bits0) != 0 ||
-                    (this.bits[1] & other.bits1) != 0;
+                return (this.bits[0] & other.bits0) != 0
+                    || (this.bits[1] & other.bits1) != 0;
 
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;

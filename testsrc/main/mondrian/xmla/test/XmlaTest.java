@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,8 +46,10 @@ public class XmlaTest extends TestCase {
             Logger.getLogger(XmlaTest.class);
 
     static {
-        XMLUnit.setControlParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-        XMLUnit.setTestParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+        XMLUnit.setControlParser(
+            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+        XMLUnit.setTestParser(
+            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setIgnoreWhitespace(true);
     }
 
@@ -77,7 +79,8 @@ public class XmlaTest extends TestCase {
 
     protected void runTest() throws Exception {
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()
-            && getName().equals("mdschemaLevelsCubeDimRestrictions")) {
+            && getName().equals("mdschemaLevelsCubeDimRestrictions"))
+        {
             // Changes in unique names of hierarchies and levels mean that the
             // output is a different order in the old behavior, and cannot be
             // fixed by a few sed-like comparisons.
@@ -139,7 +142,8 @@ public class XmlaTest extends TestCase {
         XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
         handler.process(request, response);
 
-        return XmlaUtil.stream2Element(new ByteArrayInputStream(resBuf.toByteArray()));
+        return XmlaUtil.stream2Element(
+            new ByteArrayInputStream(resBuf.toByteArray()));
     }
 
     public static TestSuite suite() {
@@ -150,9 +154,10 @@ public class XmlaTest extends TestCase {
         MondrianProperties properties = MondrianProperties.instance();
         String filePattern = properties.QueryFilePattern.get();
 
-        final Pattern pattern = filePattern == null ?
-            null :
-            Pattern.compile(filePattern);
+        final Pattern pattern =
+            filePattern == null
+            ? null
+            : Pattern.compile(filePattern);
 
         List<String> testCaseNames = diffRepos.getTestCaseNames();
 
@@ -183,9 +188,11 @@ public class XmlaTest extends TestCase {
     public static class OtherTest extends TestCase {
         public void testEncodeElementName() {
             assertEquals("Foo", XmlaUtil.encodeElementName("Foo"));
-            assertEquals("Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
+            assertEquals(
+                "Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
             if (false) // FIXME:
-            assertEquals("Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
+            assertEquals(
+                "Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
         }
     }
 }

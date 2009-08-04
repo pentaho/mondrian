@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -114,7 +114,8 @@ public class Formula extends QueryPart {
         final Type type = exp.getType();
         if (isMember) {
             if (!TypeUtil.canEvaluate(type)) {
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exp.toString());
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(
+                    exp.toString());
             }
         } else {
             if (!TypeUtil.isSet(type)) {
@@ -165,9 +166,10 @@ public class Formula extends QueryPart {
                 Id.Segment segment = id.getSegments().get(i);
                 OlapElement parent = mdxElement;
                 mdxElement = null;
-                // BCHOW: The last segment of the id is the name of the calculated member
-                // so no need to look for a pre-existing child.  This avoids
-                // unnecessarily executing SQL and loading children into cache.
+                // The last segment of the id is the name of the calculated
+                // member so no need to look for a pre-existing child.  This
+                // avoids unnecessarily executing SQL and loading children into
+                // cache.
                 if (i != id.getSegments().size() - 1) {
                     mdxElement = schemaReader.getElementChild(parent, segment);
                 }
@@ -186,8 +188,8 @@ public class Formula extends QueryPart {
                     } else {
                         Hierarchy hierarchy = parent.getHierarchy();
                         if (hierarchy == null) {
-                            throw MondrianResource.instance().
-                                MdxCalculatedHierarchyError.ex(id.toString());
+                            throw MondrianResource.instance()
+                                .MdxCalculatedHierarchyError.ex(id.toString());
                         }
                         level = hierarchy.getLevels()[0];
                     }
@@ -211,7 +213,8 @@ public class Formula extends QueryPart {
     public Object[] getChildren() {
         Object[] children = new Object[1 + memberProperties.length];
         children[0] = exp;
-        System.arraycopy(memberProperties, 0,
+        System.arraycopy(
+            memberProperties, 0,
             children, 1, memberProperties.length);
         return children;
     }
@@ -373,8 +376,9 @@ public class Formula extends QueryPart {
         }
         if (exp instanceof FunCall) {
             FunCall call = (FunCall) exp;
-            if (call.getFunName().equals("-") &&
-                call.getSyntax() == Syntax.Prefix) {
+            if (call.getFunName().equals("-")
+                && call.getSyntax() == Syntax.Prefix)
+            {
                 final Number number = quickEval(call.getArg(0));
                 if (number == null) {
                     return null;
@@ -504,7 +508,7 @@ public class Formula extends QueryPart {
          */
         private boolean hasCyclicReference(Exp expr) {
             List<MemberExpr> expList = new ArrayList<MemberExpr>();
-            return hasCyclicReference(expr,expList);
+            return hasCyclicReference(expr, expList);
         }
 
         private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
@@ -516,16 +520,20 @@ public class Formula extends QueryPart {
                 expList.add(memberExpr);
                 Member member = memberExpr.getMember();
                 if (member instanceof RolapCalculatedMember) {
-                    RolapCalculatedMember calculatedMember = (RolapCalculatedMember) member;
-                    Exp exp1 = calculatedMember.getExpression().accept(validator);
-                    return hasCyclicReference(exp1,expList);
+                    RolapCalculatedMember calculatedMember =
+                        (RolapCalculatedMember) member;
+                    Exp exp1 =
+                        calculatedMember.getExpression().accept(validator);
+                    return hasCyclicReference(exp1, expList);
                 }
             }
             if (expr instanceof FunCall) {
                 FunCall funCall = (FunCall) expr;
                 Exp[] exps = funCall.getArgs();
                 for (int i = 0; i < exps.length; i++) {
-                    if (hasCyclicReference(exps[i], cloneForEachBranch(expList))) {
+                    if (hasCyclicReference(
+                        exps[i], cloneForEachBranch(expList)))
+                    {
                         return true;
                     }
                 }

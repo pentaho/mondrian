@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,8 +55,8 @@ public class HierarchyType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        return this.dimension == dimension ||
-            (!definitely && this.dimension == null);
+        return this.dimension == dimension
+            || (!definitely && this.dimension == null);
     }
 
     public Dimension getDimension() {
@@ -94,11 +94,13 @@ public class HierarchyType implements Type {
         }
         HierarchyType that = (HierarchyType) type;
         if (this.getHierarchy() != null
-            && this.getHierarchy().equals(that.getHierarchy())) {
+            && this.getHierarchy().equals(that.getHierarchy()))
+        {
             return this;
         }
         if (this.getDimension() != null
-            && this.getDimension().equals(that.getDimension())) {
+            && this.getDimension().equals(that.getDimension()))
+        {
             return new HierarchyType(
                 this.getDimension(),
                 null);

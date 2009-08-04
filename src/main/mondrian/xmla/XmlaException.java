@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -25,16 +25,20 @@ public class XmlaException extends MondrianException {
         return formatFaultCode(xex.getFaultCode(), xex.getCode());
     }
     public static String formatFaultCode(String faultCode, String code) {
-        return formatFaultCode(XmlaConstants.SOAP_PREFIX,
-                faultCode, code);
+        return formatFaultCode(
+            XmlaConstants.SOAP_PREFIX,
+            faultCode, code);
     }
-    public static String formatFaultCode(String nsPrefix,
-                String faultCode, String code) {
-        return nsPrefix +
-            ':' +
-            faultCode +
-            '.' +
-            code;
+
+    public static String formatFaultCode(
+        String nsPrefix,
+        String faultCode, String code)
+    {
+        return nsPrefix
+            + ':'
+            + faultCode
+            + '.'
+            + code;
     }
     public static String formatDetail(String msg) {
         return XmlaConstants.FAULT_FS_PREFIX + msg;
@@ -53,10 +57,11 @@ public class XmlaException extends MondrianException {
     private final String faultString;
 
     public XmlaException(
-            String faultCode,
-            String code,
-            String faultString,
-            Throwable cause) {
+        String faultCode,
+        String code,
+        String faultString,
+        Throwable cause)
+    {
         super(faultString, cause);
         this.faultCode = faultCode;
         this.code = code;

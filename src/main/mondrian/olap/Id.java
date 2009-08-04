@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,7 +27,8 @@ import java.util.Collections;
  */
 public class Id
     extends ExpBase
-    implements Cloneable {
+    implements Cloneable
+{
 
     private final List<Segment> segments;
 
@@ -97,8 +98,9 @@ public class Id
     public Exp accept(Validator validator) {
         if (segments.size() == 1) {
             final Segment s = segments.get(0);
-            if (s.quoting == Quoting.UNQUOTED &&
-                validator.getFunTable().isReserved(s.name)) {
+            if (s.quoting == Quoting.UNQUOTED
+                && validator.getFunTable().isReserved(s.name))
+            {
                 return Literal.createSymbol(s.name.toUpperCase());
             }
         }
@@ -195,8 +197,8 @@ public class Id
         public boolean equals(final Object o) {
             if (o instanceof Segment) {
                 Segment that = (Segment) o;
-                return that.name.equals(this.name) &&
-                    that.quoting == this.quoting;
+                return that.name.equals(this.name)
+                    && that.quoting == this.quoting;
             } else {
                 return false;
             }

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -86,7 +86,8 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             final String suffix = "_" + Integer.toString(j);
             columnName = originalColumnName;
             if (originalColumnName.length() + suffix.length()
-                > maxColumnNameLength) {
+                > maxColumnNameLength)
+            {
                 columnName =
                     originalColumnName.substring(
                         0, maxColumnNameLength - suffix.length());

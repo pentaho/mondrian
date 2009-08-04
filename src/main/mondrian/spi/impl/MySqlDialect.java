@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -9,8 +9,12 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
+import mondrian.util.Pair;
 
 import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
 import java.sql.*;
 
 /**
@@ -114,6 +118,57 @@ public class MySqlDialect extends JdbcDialectImpl {
         return quoteIdentifierString;
     }
 
+    protected boolean deduceSupportsSelectNotInGroupBy(Connection connection)
+        throws SQLException
+    {
+        boolean supported = false;
+        String sqlmode = getCurrentSqlMode(connection);
+        if (sqlmode == null) {
+            supported = true;
+        } else {
+            if (!sqlmode.contains("ONLY_FULL_GROUP_BY")) {
+                supported = true;
+            }
+        }
+        return supported;
+    }
+
+    private String getCurrentSqlMode(Connection connection)
+        throws SQLException
+    {
+        return getSqlMode(connection, true);
+    }
+
+    private String getSqlMode(Connection connection, boolean session)
+        throws SQLException
+    {
+        String scope = session ? "SESSION" : "GLOBAL";
+        String sqlmode = null;
+        Statement s = connection.createStatement();
+        if (s.execute("SELECT @@" + scope + ".sql_mode")) {
+            ResultSet rs = s.getResultSet();
+            rs.next();
+            sqlmode = rs.getString(1);
+        }
+        s.close();
+        return sqlmode;
+    }
+
+
+    public void appendHintsAfterFromClause(
+        StringBuilder buf,
+        Map<String, String> hints)
+    {
+        if (hints != null) {
+            String forcedIndex = hints.get("force_index");
+            if (forcedIndex != null) {
+                buf.append(" FORCE INDEX (");
+                buf.append(forcedIndex);
+                buf.append(")");
+            }
+        }
+    }
+
     public boolean requiresAliasForFromQuery() {
         return true;
     }
@@ -146,19 +201,10 @@ public class MySqlDialect extends JdbcDialectImpl {
         boolean nullable,
         boolean ascending)
     {
-        if (nullable) {
-            assert getNullCollation() == NullCollation.NEGINF;
-            if (ascending) {
-                return "ISNULL(" + expr + "), " + expr;
-            } else {
-                return expr + " DESC";
-            }
+        if (nullable && ascending) {
+            return "ISNULL(" + expr + "), " + expr + " ASC";
         } else {
-            if (ascending) {
-                return expr + " ASC";
-            } else {
-                return expr + " DESC";
-            }
+            return super.generateOrderItem(expr, nullable, ascending);
         }
     }
 

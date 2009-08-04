@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -183,12 +183,15 @@ class RolapCell implements Cell {
         final Member[] currentMembers = result.getCellMembers(pos);
 
         // replace member if we're dealing with a trivial formula
-        if (currentMembers[0] instanceof RolapHierarchy.RolapCalculatedMeasure) {
+        if (currentMembers[0]
+            instanceof RolapHierarchy.RolapCalculatedMeasure)
+        {
             RolapHierarchy.RolapCalculatedMeasure measure =
                 (RolapHierarchy.RolapCalculatedMeasure)currentMembers[0];
             if (measure.getFormula().getExpression() instanceof MemberExpr) {
                 currentMembers[0] =
-                    ((MemberExpr)measure.getFormula().getExpression()).getMember();
+                    ((MemberExpr) measure.getFormula().getExpression())
+                    .getMember();
             }
         }
         return currentMembers;
@@ -229,6 +232,49 @@ class RolapCell implements Cell {
         return result.getMember(pos, dimension);
     }
 
+    public void setValue(
+        Object newValue,
+        AllocationPolicy allocationPolicy,
+        Object... allocationArgs)
+    {
+        if (allocationPolicy == null) {
+            // user error
+            throw Util.newError(
+                "Allocation policy must not be null");
+        }
+        Scenario scenario = result.getQuery().getConnection().getScenario();
+        final Member[] members = result.getCellMembers(pos);
+        for (int i = 0; i < members.length; i++) {
+            Member member = members[i];
+            if (ScenarioImpl.isScenario(member.getDimension())) {
+                scenario =
+                    (Scenario) member.getPropertyValue(Property.SCENARIO.name);
+                members[i] = member.getHierarchy().getAllMember();
+            } else if (member.isCalculated()) {
+                throw Util.newError(
+                    "Cannot write to cell: one of the coordinates ("
+                    + member.getUniqueName()
+                    + ") is a calculcated member");
+            }
+        }
+        if (scenario == null) {
+            throw Util.newError("No active scenario");
+        }
+        if (allocationArgs == null) {
+            allocationArgs = new Object[0];
+        }
+        final Object currentValue = getValue();
+        double doubleCurrentValue = ((Number) currentValue).doubleValue();
+        double doubleNewValue = ((Number) newValue).doubleValue();
+        ((ScenarioImpl) scenario).setCellValue(
+            result.getQuery().getConnection(),
+            Arrays.asList(members),
+            doubleNewValue,
+            doubleCurrentValue,
+            allocationPolicy,
+            allocationArgs);
+    }
+
     /**
      * Visitor that walks over a cell's expression and checks whether the
      * cell should allow drill-through. If not, throws the {@link #bomb}
@@ -238,7 +284,8 @@ class RolapCell implements Cell {
      * <ul>
      * <li>Literal 1 is drillable</li>
      * <li>Member [Measures].[Unit Sales] is drillable</li>
-     * <li>Calculated member with expression [Measures].[Unit Sales] + 1 is drillable</li>
+     * <li>Calculated member with expression [Measures].[Unit Sales] +
+     *     1 is drillable</li>
      * <li>Calculated member with expression
      *     ([Measures].[Unit Sales], [Time].PrevMember) is not drillable</li>
      * </ul>
@@ -264,7 +311,8 @@ class RolapCell implements Cell {
                 || def.getName().equals("*")
                 || def.getName().equals("CoalesceEmpty")
                 // Allow parentheses but don't allow tuple
-                || def.getName().equals("()") && args.length == 1) {
+                || def.getName().equals("()") && args.length == 1)
+            {
                 visitChildren(args);
                 return null;
             }
@@ -291,7 +339,9 @@ class RolapCell implements Cell {
                 }
             } else if (member instanceof RolapCubeMember) {
                 handleMember(((RolapCubeMember) member).rolapMember);
-            } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+            } else if (member
+                instanceof RolapHierarchy.RolapCalculatedMeasure)
+            {
                 RolapHierarchy.RolapCalculatedMeasure measure =
                     (RolapHierarchy.RolapCalculatedMeasure) member;
                 measure.getFormula().getExpression().accept(this);

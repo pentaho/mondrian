@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -22,7 +22,8 @@ import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 
 /**
- * Definition of the <code>&lt;Named Set&gt;.Current</code> MDX builtin function.
+ * Definition of the <code>&lt;Named Set&gt;.Current</code> MDX
+ * builtin function.
  *
  * @author jhyde
  * @version $Id$

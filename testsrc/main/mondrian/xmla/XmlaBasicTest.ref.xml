@@ -20381,13 +20381,13 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>inStrRev</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>int_</FUNCTION_NAME>
+                        <FUNCTION_NAME>int</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>Value</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>int_</CAPTION>
+                        <CAPTION>int</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
@@ -21893,7 +21893,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                     <row>
                         <FUNCTION_NAME>string</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>Integer, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>

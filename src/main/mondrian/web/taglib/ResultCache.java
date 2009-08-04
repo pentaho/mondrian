@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -53,7 +53,8 @@ public class ResultCache implements HttpSessionBindingListener {
     public static ResultCache getInstance(
         HttpSession session,
         ServletContext servletContext,
-        String name) {
+        String name)
+    {
         String fqname = ATTR_NAME + name;
         ResultCache resultCache = (ResultCache) session.getAttribute(fqname);
         if (resultCache == null) {
@@ -86,7 +87,7 @@ public class ResultCache implements HttpSessionBindingListener {
     public Document getDOM() {
         try {
             if (document == null) {
-                document = DOMBuilder.build(getResult());
+                document = DomBuilder.build(getResult());
             }
             return document;
         } catch (ParserConfigurationException e) {

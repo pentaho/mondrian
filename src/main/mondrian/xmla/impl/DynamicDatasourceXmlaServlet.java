@@ -1,8 +1,8 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,9 +34,10 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
     protected String lastDataSourcesConfigString;
 
     protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws ServletException, IOException
+    {
         reloadDataSources();
         super.doPost(request, response);
     }
@@ -46,7 +47,8 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
      */
     void reloadDataSources() {
         try {
-            String dataSourcesConfigString = readDataSourcesContent(dataSourcesConfigUrl);
+            String dataSourcesConfigString =
+                readDataSourcesContent(dataSourcesConfigUrl);
             if (hasDataSourcesContentChanged(dataSourcesConfigString)) {
                 DataSourcesConfig.DataSources newDataSources =
                         parseDataSources(dataSourcesConfigString);
@@ -58,60 +60,79 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
                 }
             }
         } catch (Exception e) {
-            throw Util.newError(e, "Failed to parse data sources config '" +
-                    dataSourcesConfigUrl.toExternalForm() + "'");
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config '"
+                + dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
-    protected boolean hasDataSourcesContentChanged
-            (String dataSourcesConfigString) {
+    protected boolean hasDataSourcesContentChanged(
+        String dataSourcesConfigString)
+    {
         return dataSourcesConfigString != null
-                && !dataSourcesConfigString.equals(this.lastDataSourcesConfigString);
+            && !dataSourcesConfigString.equals(
+                this.lastDataSourcesConfigString);
     }
 
     /**
      * Overides XmlaServlet.parseDataSourcesUrl to store dataSorucesConfigUrl,
-     * Datasoruces Configuration content
+     * Datasoruces Configuration content.
+     *
      * @param dataSourcesConfigUrl
      */
-    protected DataSourcesConfig.DataSources parseDataSourcesUrl
-            (URL dataSourcesConfigUrl) {
+    protected DataSourcesConfig.DataSources parseDataSourcesUrl(
+        URL dataSourcesConfigUrl)
+    {
         this.dataSourcesConfigUrl = dataSourcesConfigUrl;
         try {
-            String dataSourcesConfigString = readDataSourcesContent(dataSourcesConfigUrl);
+            String dataSourcesConfigString =
+                readDataSourcesContent(dataSourcesConfigUrl);
             if (lastDataSourcesConfigString == null) {
                 // This is the first time we are reading any datasource config
                 this.lastDataSourcesConfigString = dataSourcesConfigString;
             }
             return parseDataSources(dataSourcesConfigString);
         } catch (Exception e) {
-            throw Util.newError(e, "Failed to parse data sources config '" +
-                    dataSourcesConfigUrl.toExternalForm() + "'");
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config '"
+                + dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
     void flushObsoleteCatalogs(DataSourcesConfig.DataSources newDataSources) {
         Map<String, DataSourcesConfig.Catalog> newDatasourceCatalogs =
-                createCatalogMap(newDataSources);
+            createCatalogMap(newDataSources);
 
-        for (DataSourcesConfig.DataSource oldDataSource : dataSources.dataSources) {
-            for (DataSourcesConfig.Catalog oldCatalog : oldDataSource.catalogs.catalogs) {
+        for (DataSourcesConfig.DataSource oldDataSource
+            : dataSources.dataSources)
+        {
+            for (DataSourcesConfig.Catalog oldCatalog
+                : oldDataSource.catalogs.catalogs)
+            {
                 DataSourcesConfig.Catalog newCatalog =
                         newDatasourceCatalogs.get(oldCatalog.name);
-                if (!(newCatalog != null &&
-                        areCatalogsEqual(oldCatalog, newCatalog))) {
+                if (!(newCatalog != null
+                      && areCatalogsEqual(oldCatalog, newCatalog)))
+                {
                     flushCatalog(oldCatalog.name);
                 }
             }
         }
     }
 
-    private Map<String, DataSourcesConfig.Catalog> createCatalogMap
-            (DataSourcesConfig.DataSources newDataSources) {
+    private Map<String, DataSourcesConfig.Catalog> createCatalogMap(
+        DataSourcesConfig.DataSources newDataSources)
+    {
         Map<String, DataSourcesConfig.Catalog> newDatasourceCatalogNames =
                 new HashMap<String, DataSourcesConfig.Catalog>();
-        for (DataSourcesConfig.DataSource dataSource : newDataSources.dataSources) {
-            for (DataSourcesConfig.Catalog catalog : dataSource.catalogs.catalogs) {
+        for (DataSourcesConfig.DataSource dataSource
+            : newDataSources.dataSources)
+        {
+            for (DataSourcesConfig.Catalog catalog
+                : dataSource.catalogs.catalogs)
+            {
                 newDatasourceCatalogNames.put(catalog.name, catalog);
             }
         }
@@ -132,18 +153,21 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
         DataSourcesConfig.Catalog catalog1,
         DataSourcesConfig.Catalog catalog2)
     {
-        if ((catalog1.getDataSourceInfo() != null &&
-                catalog2.getDataSourceInfo() == null) ||
-                (catalog2.getDataSourceInfo() != null &&
-                        catalog1.getDataSourceInfo() == null)) {
+        if ((catalog1.getDataSourceInfo() != null
+             && catalog2.getDataSourceInfo() == null)
+            || (catalog2.getDataSourceInfo() != null
+                && catalog1.getDataSourceInfo() == null))
+        {
             return false;
         }
 
-        if ((catalog1.getDataSourceInfo() == null &&
-                catalog2.getDataSourceInfo() == null) ||
-                (catalog1.getDataSourceInfo().equals(catalog2.getDataSourceInfo()))) {
-            return (catalog1.name.equals(catalog2.name) &&
-                    catalog1.definition.equals(catalog2.definition));
+        if ((catalog1.getDataSourceInfo() == null
+             && catalog2.getDataSourceInfo() == null)
+            || (catalog1.getDataSourceInfo().equals(
+                catalog2.getDataSourceInfo())))
+        {
+            return catalog1.name.equals(catalog2.name)
+                && catalog1.definition.equals(catalog2.definition);
         }
         return false;
     }

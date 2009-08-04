@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -65,21 +65,22 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         assert segments.length > 0;
         for (Segment segment : segments) {
             if (segment.aggregation != segments[0].aggregation) {
-                assert!fail;
+                assert !fail;
                 return false;
             }
             int n = segment.axes.length;
             if (n != segments[0].axes.length) {
-                assert!fail;
+                assert !fail;
                 return false;
             }
             for (int j = 0; j < segment.axes.length; j++) {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
-                if (segment.axes[j].getPredicate() !=
-                    segments[0].axes[j].getPredicate()) {
-                    assert!fail;
+                if (segment.axes[j].getPredicate()
+                    != segments[0].axes[j].getPredicate())
+                {
+                    assert !fail;
                     return false;
                 }
             }

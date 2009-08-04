@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -49,8 +49,8 @@ class ResultComparator {
         HashSet<String> defaultDimMembers = new HashSet<String>();
 
         for (Dimension dim : dims) {
-            String uniqueName = dim.getHierarchies()[0].
-                getDefaultMember().getUniqueName();
+            String uniqueName =
+                dim.getHierarchies()[0].getDefaultMember().getUniqueName();
             defaultDimMembers.add(uniqueName);
         }
 
@@ -158,7 +158,7 @@ class ResultComparator {
                    + Util.nl;
         TestContext.assertEqualsVerbose(
             TestContext.fold(
-                XMLUtility.toString(xmlRoot)),
+                XmlUtility.toString(xmlRoot)),
             toString(result),
             false,
             message);
@@ -166,12 +166,12 @@ class ResultComparator {
 
     private String toString(Result result) {
         Element element = toXml(result);
-        return XMLUtility.toString(element);
+        return XmlUtility.toString(element);
     }
 
     private Element toXml(Result result) {
-        DocumentBuilder db = XMLUtility.createDomParser(
-            false, true, false, new XMLUtility.UtilityErrorHandler());
+        DocumentBuilder db = XmlUtility.createDomParser(
+            false, true, false, new XmlUtility.UtilityErrorHandler());
         final Document document = db.newDocument();
         final Element dataResultXml = document.createElement("dataResult");
         slicerAxisToXml(document, dataResultXml, result);

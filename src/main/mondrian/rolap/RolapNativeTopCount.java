@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -29,7 +29,8 @@ import mondrian.spi.Dialect;
 public class RolapNativeTopCount extends RolapNativeSet {
 
     public RolapNativeTopCount() {
-        super.setEnabled(MondrianProperties.instance().EnableNativeTopCount.get());
+        super.setEnabled(
+            MondrianProperties.instance().EnableNativeTopCount.get());
     }
 
     static class TopCountConstraint extends SetConstraint {
@@ -37,9 +38,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
         boolean ascending;
         Integer count;
 
-        public TopCountConstraint(int count,
+        public TopCountConstraint(
+            int count,
             CrossJoinArg[] args, RolapEvaluator evaluator,
-            Exp orderByExpr, boolean ascending) {
+            Exp orderByExpr, boolean ascending)
+        {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;
@@ -57,7 +60,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         public void addConstraint(
             SqlQuery sqlQuery,
             RolapCube baseCube,
-            AggStar aggStar) {
+            AggStar aggStar)
+        {
             if (orderByExpr != null) {
                 RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
                 String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
@@ -66,9 +70,9 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     String alias = sqlQuery.nextColumnAlias();
                     alias = dialect.quoteIdentifier(alias);
                     sqlQuery.addSelect(orderBySql, alias);
-                    sqlQuery.addOrderBy(alias, ascending, true, false);
+                    sqlQuery.addOrderBy(alias, ascending, true, true);
                 } else {
-                    sqlQuery.addOrderBy(orderBySql, ascending, true, false);
+                    sqlQuery.addOrderBy(orderBySql, ascending, true, true);
                 }
             }
             super.addConstraint(sqlQuery, baseCube, aggStar);
@@ -91,13 +95,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
         return true;
     }
 
-    NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+    NativeEvaluator createEvaluator(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        Exp[] args)
+    {
         boolean ascending;
 
         if (!isEnabled()) {
             return null;
         }
-        if (!TopCountConstraint.isValidContext(evaluator, restrictMemberTypes())) {
+        if (!TopCountConstraint.isValidContext(
+            evaluator, restrictMemberTypes()))
+        {
             return null;
         }
 
@@ -150,7 +160,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
         TupleConstraint constraint =
-            new TopCountConstraint(count, cargs, evaluator, orderByExpr, ascending);
+            new TopCountConstraint(
+                count, cargs, evaluator, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;

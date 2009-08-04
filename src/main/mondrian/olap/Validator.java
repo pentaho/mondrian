@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -113,6 +113,16 @@ public interface Validator {
         Exp[] args,
         String name,
         Syntax syntax);
+
+    /**
+     * Whether to resolve function name and arguments to a function definition
+     * each time a node is validated, not just the first time.
+     *
+     * <p>Default implementation returns {@code false}.
+     *
+     * @return whether to resolve function each time
+     */
+    boolean alwaysResolveFunDef();
 }
 
 // End Validator.java

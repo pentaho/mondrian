@@ -1,8 +1,8 @@
 This is a source, binary or data distribution of Mondrian,
 an OLAP Engine written in Java.
 
-This code is released under the terms of the Common Public
-License (CPL); see LICENSE.html.
+This code is released under the terms of the Eclipse Public
+License v1.0 (EPL); see LICENSE.html.
 
 For installation instructions, see doc/install.html
 (http://mondrian.pentaho.org/documentation/installation.php).

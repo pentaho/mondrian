@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2009 Julian Hyde and others.
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,8 +46,9 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     private void checkAxis(
-            String s,
-            String expectedName) {
+        String s,
+        String expectedName)
+    {
         Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
         Query query = p.parseInternal(null, q, false, funTable, false, false);
@@ -65,17 +66,23 @@ public class ParserTest extends FoodMartTestCase {
     public void testNegativeCases() throws Exception {
         assertParseQueryFails(
             "select [member] on axis(1.7) from sales",
-            "Invalid axis specification. The axis number must be non-negative integer, but it was 1.7.");
-        assertParseQueryFails("select [member] on axis(-1) from sales", "Syntax error at line");
+            "Invalid axis specification. "
+            + "The axis number must be non-negative integer, but it was 1.7.");
+        assertParseQueryFails(
+            "select [member] on axis(-1) from sales",
+            "Syntax error at line");
         // used to be an error, no longer
         assertParseQuery(
             "select [member] on axis(5) from sales",
             "select [member] ON AXIS(5)\n"
             + "from [sales]\n");
-        assertParseQueryFails("select [member] on axes(0) from sales", "Syntax error at line");
+        assertParseQueryFails(
+            "select [member] on axes(0) from sales",
+            "Syntax error at line");
         assertParseQueryFails(
             "select [member] on 0.5 from sales",
-            "Invalid axis specification. The axis number must be non-negative integer, but it was 0.5.");
+            "Invalid axis specification. "
+            + "The axis number must be non-negative integer, but it was 0.5.");
         assertParseQuery(
             "select [member] on 555 from sales",
             "select [member] ON AXIS(555)\n"
@@ -137,9 +144,9 @@ public class ParserTest extends FoodMartTestCase {
             Exception nested = (Exception) e.getCause();
             String message = nested.getMessage();
             if (message.indexOf(expected) < 0) {
-                fail("Actual result [" + message +
-                    "] did not contain [" + expected +
-                    "]");
+                fail(
+                    "Actual result [" + message
+                    + "] did not contain [" + expected + "]");
             }
         }
     }
@@ -228,8 +235,12 @@ public class ParserTest extends FoodMartTestCase {
             + "from [cube]\n");
     }
 
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-306">
+     * MONDRIAN-306, "Parser should not require braces around range op in WITH
+     * SET"</a>.
+     */
     public void testSetExpr() {
-        // bug 1751352: parser does not recognize ':' range operator in WITH SET
         assertParseQuery(
             "with set [Set1] as '[Product].[Drink]:[Product].[Food]' \n"
             + "select [Set1] on columns, {[Measures].defaultMember} on rows \n"
@@ -258,7 +269,8 @@ public class ParserTest extends FoodMartTestCase {
 
     public void testCellProperties() {
         assertParseQuery(
-                "select {[foo]} on columns from [cube] CELL PROPERTIES FORMATTED_VALUE",
+                "select {[foo]} on columns "
+                + "from [cube] CELL PROPERTIES FORMATTED_VALUE",
                 "select {[foo]} ON COLUMNS\n"
                 + "from [cube]\n"
                 + "[FORMATTED_VALUE]");
@@ -281,8 +293,10 @@ public class ParserTest extends FoodMartTestCase {
 
     public void testIs() {
         assertParseExpr(
-            "[Measures].[Unit Sales] IS [Measures].[Unit Sales] AND [Measures].[Unit Sales] IS NULL",
-            "(([Measures].[Unit Sales] IS [Measures].[Unit Sales]) AND ([Measures].[Unit Sales] IS NULL))");
+            "[Measures].[Unit Sales] IS [Measures].[Unit Sales] "
+            + "AND [Measures].[Unit Sales] IS NULL",
+            "(([Measures].[Unit Sales] IS [Measures].[Unit Sales]) "
+            + "AND ([Measures].[Unit Sales] IS NULL))");
     }
 
     public void testIsNull() {
@@ -302,7 +316,7 @@ public class ParserTest extends FoodMartTestCase {
             "(x is null) + 56 > 6", "((((x IS NULL)) + 56.0) > 6.0)");
 
         // FIXME: Should be
-        //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5.0))) IS NULL) + 5.0)");
+        //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5.0))) IS NULL) + 5.0)"
         assertParseExpr(
             "x is null and a = b or c = d + 5 is null + 5",
             "(((x IS NULL) AND (a = b)) OR ((c = (d + 5.0)) IS (NULL + 5.0)))");
@@ -324,17 +338,21 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     /**
-     * Verify that calculated measures made of several * operators can resolve them
-     * correctly.
+     * Verifies that calculated measures made of several '*' operators
+     * can resolve them correctly.
      */
     public void testMultiplication() {
         Parser p = new Parser();
         final String mdx =
-            wrapExpr("([Measures].[Unit Sales] * [Measures].[Store Cost] * [Measures].[Store Sales])");
+            wrapExpr(
+                "([Measures].[Unit Sales]"
+                + " * [Measures].[Store Cost]"
+                + " * [Measures].[Store Sales])");
 
         try {
             final Query query =
-                p.parseInternal(getConnection(), mdx, false, funTable, false, false);
+                p.parseInternal(
+                    getConnection(), mdx, false, funTable, false, false);
             query.resolve();
         } catch (Throwable e) {
             fail(e.getMessage());
@@ -382,29 +400,40 @@ public class ParserTest extends FoodMartTestCase {
         assertParseExpr("+45", "45.0");
 
         // space bad
-        assertParseExprFails("4 5", "Syntax error at line 1, column 35, token '5.0'");
+        assertParseExprFails(
+            "4 5",
+            "Syntax error at line 1, column 35, token '5.0'");
 
         assertParseExpr("3.14", "3.14");
         assertParseExpr(".12345", "0.12345");
 
         // lots of digits left and right of point
         assertParseExpr("31415926535.89793", "3.141592653589793E10");
-        assertParseExpr("31415926535897.9314159265358979", "3.141592653589793E13");
+        assertParseExpr(
+            "31415926535897.9314159265358979",
+            "3.141592653589793E13");
         assertParseExpr("3.141592653589793", "3.141592653589793");
-        assertParseExpr("-3141592653589793.14159265358979", "(- 3.141592653589793E15)");
+        assertParseExpr(
+            "-3141592653589793.14159265358979",
+            "(- 3.141592653589793E15)");
 
         // exponents akimbo
         assertParseExpr("1e2", "100.0");
-        assertParseExprFails("1e2e3", "Syntax error at line 1, column 37, token 'e3'");
+        assertParseExprFails(
+            "1e2e3",
+            "Syntax error at line 1, column 37, token 'e3'");
         assertParseExpr("1.2e3", "1200.0");
         assertParseExpr("-1.2345e3", "(- 1234.5)");
-        assertParseExprFails("1.2e3.4", "Syntax error at line 1, column 39, token '0.4'");
+        assertParseExprFails(
+            "1.2e3.4",
+            "Syntax error at line 1, column 39, token '0.4'");
         assertParseExpr(".00234e0003", "2.34");
         assertParseExpr(".00234e-0067", "2.34E-70");
     }
 
     /**
-     * Testcase for bug 1688645, "High precision number in MDX causes overflow".
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-272">
+     * MONDRIAN-272, "High precision number in MDX causes overflow"</a>.
      * The problem was that "5000001234" exceeded the precision of the int being
      * used to gather the mantissa.
      */
@@ -443,7 +472,8 @@ public class ParserTest extends FoodMartTestCase {
      */
     private void assertParseQuery(String mdx, final String expected) {
         Parser p = new TestParser();
-        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
+        final Query query =
+            p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
@@ -459,7 +489,8 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(String expr, final String expected) {
         TestParser p = new TestParser();
         final String mdx = wrapExpr(expr);
-        final Query query = p.parseInternal(null, mdx, false, funTable, false, false);
+        final Query query =
+            p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
@@ -484,11 +515,12 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         protected Query makeQuery(
-                Formula[] formulae,
-                QueryAxis[] axes,
-                String cube,
-                Exp slicer,
-                QueryPart[] cellProps) {
+            Formula[] formulae,
+            QueryAxis[] axes,
+            String cube,
+            Exp slicer,
+            QueryPart[] cellProps)
+        {
             setFormulas(formulae);
             setAxes(axes);
             setCube(cube);

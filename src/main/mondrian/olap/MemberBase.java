@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,7 +26,8 @@ import java.util.ArrayList;
  */
 public abstract class MemberBase
     extends OlapElementBase
-    implements Member {
+    implements Member
+{
 
     protected Member parentMember;
     protected final Level level;
@@ -86,7 +87,9 @@ public abstract class MemberBase
             | (memberType == MemberType.ALL ? FLAG_ALL : 0)
             | (memberType == MemberType.NULL ? FLAG_NULL : 0)
             | (computeCalculated(memberType) ? FLAG_CALCULATED : 0)
-            | (level.getHierarchy().getDimension().isMeasures() ? FLAG_MEASURE : 0);
+            | (level.getHierarchy().getDimension().isMeasures()
+               ? FLAG_MEASURE
+               : 0);
     }
 
     protected MemberBase() {
@@ -155,7 +158,7 @@ public abstract class MemberBase
     }
 
     public boolean isCalculated() {
-       return (flags & FLAG_CALCULATED) != 0;
+        return (flags & FLAG_CALCULATED) != 0;
     }
 
     public boolean isEvaluated() {

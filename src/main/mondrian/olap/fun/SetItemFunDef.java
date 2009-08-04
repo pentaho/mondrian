@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,18 +33,21 @@ import java.util.ArrayList;
  * @since Mar 23, 2006
  */
 class SetItemFunDef extends FunDefBase {
-    static final Resolver intResolver = new ReflectiveMultiResolver(
+    static final Resolver intResolver =
+        new ReflectiveMultiResolver(
             "Item",
             "<Set>.Item(<Index>)",
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the zero-based position of the tuple in the set in <Index>.",
             new String[] {"mmxn"},
             SetItemFunDef.class);
 
-    static final Resolver stringResolver = new ResolverBase(
+    static final Resolver stringResolver =
+        new ResolverBase(
             "Item",
             "<Set>.Item(<String> [, ...])",
             "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the member name (or names) in <String>.",
-            Syntax.Method) {
+            Syntax.Method)
+    {
         public FunDef resolve(
             Exp[] args,
             Validator validator,
@@ -60,19 +63,22 @@ class SetItemFunDef extends FunDefBase {
             final SetType setType = (SetType) setExp.getType();
             int arity;
             if (setType.getElementType() instanceof TupleType) {
-                arity = ((TupleType) setType.getElementType()).elementTypes.length;
+                arity =
+                    ((TupleType) setType.getElementType()).elementTypes.length;
             } else {
                 arity = 1;
             }
             // All args must be strings.
             for (int i = 1; i < args.length; i++) {
                 if (!validator.canConvert(
-                        args[i], Category.String, conversions)) {
+                    args[i], Category.String, conversions))
+                {
                     return null;
                 }
             }
             if (args.length - 1 != arity) {
-                throw Util.newError("Argument count does not match set's cardinality " + arity);
+                throw Util.newError(
+                    "Argument count does not match set's cardinality " + arity);
             }
             final int category = arity == 1 ? Category.Member : Category.Tuple;
             FunDef dummy = createDummyFunDef(this, category, args);
@@ -91,10 +97,12 @@ class SetItemFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
-        final Type elementType = ((SetType) listCalc.getType()).getElementType();
-        final boolean isString = call.getArgCount() < 2 ||
-                        call.getArg(1).getType() instanceof StringType;
+            compiler.compileList(call.getArg(0));
+        final Type elementType =
+            ((SetType) listCalc.getType()).getElementType();
+        final boolean isString =
+            call.getArgCount() < 2
+            || call.getArg(1).getType() instanceof StringType;
         final IntegerCalc indexCalc;
         final StringCalc[] stringCalcs;
         List<Calc> calcList = new ArrayList<Calc>();
@@ -118,7 +126,8 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member[]> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
@@ -145,7 +154,8 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member[]> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
@@ -163,7 +173,8 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List<Member> list = listCalc.evaluateList(evaluator.push(false));
+                        final List<Member> list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final String result =
                                 stringCalcs[0].evaluateString(evaluator);
@@ -178,7 +189,8 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator.push(false));
+                        final List list =
+                            listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();

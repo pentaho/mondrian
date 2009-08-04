@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -47,8 +47,8 @@ class ParallelPeriodFunDef extends FunDefBase {
             Dimension defaultTimeDimension =
                 validator.getQuery().getCube().getTimeDimension();
             if (defaultTimeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             Hierarchy hierarchy = defaultTimeDimension.getHierarchy();
             return MemberType.forHierarchy(hierarchy);
@@ -61,16 +61,17 @@ class ParallelPeriodFunDef extends FunDefBase {
         Exp[] args = call.getArgs();
 
         // Numeric Expression defaults to 1.
-        final IntegerCalc lagValueCalc = (args.length >= 2) ?
-                compiler.compileInteger(args[1]) :
-                ConstantCalc.constantInteger(1);
+        final IntegerCalc lagValueCalc =
+            (args.length >= 2)
+            ? compiler.compileInteger(args[1])
+            : ConstantCalc.constantInteger(1);
 
         // If level is not specified, we compute it from
         // member at runtime.
         final LevelCalc ancestorLevelCalc =
-                args.length >= 1 ?
-                compiler.compileLevel(args[0]) :
-                null;
+            args.length >= 1
+            ? compiler.compileLevel(args[0])
+            : null;
 
         final MemberCalc memberCalc;
         switch (args.length) {
@@ -92,8 +93,8 @@ class ParallelPeriodFunDef extends FunDefBase {
                     compiler.getEvaluator().getCube()
                     .getTimeDimension();
             if (timeDimension == null) {
-                throw MondrianResource.instance().
-                            NoTimeDimensionInCube.ex(getName());
+                throw MondrianResource.instance().NoTimeDimensionInCube.ex(
+                    getName());
             }
             memberCalc = new DimensionCurrentMemberCalc(timeDimension);
             break;
@@ -150,14 +151,15 @@ class ParallelPeriodFunDef extends FunDefBase {
         }
 
         if (lagValue == Integer.MIN_VALUE) {
-            // bump up lagValue by one
-            // otherwise -lagValue(used in the getleadMember call below)is out of range
-            // because Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
+            // Bump up lagValue by one; otherwise -lagValue (used in
+            // the getleadMember call below) is out of range because
+            // Integer.MAX_VALUE == -(Integer.MIN_VALUE + 1)
             lagValue +=  1;
         }
 
-        int distance = member.getLevel().getDepth() -
-            ancestorLevel.getDepth();
+        int distance =
+            member.getLevel().getDepth()
+            - ancestorLevel.getDepth();
         Member ancestor = FunUtil.ancestor(
             evaluator, member, distance, ancestorLevel);
         Member inLaw = evaluator.getSchemaReader()

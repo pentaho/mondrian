@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -44,13 +44,15 @@ public class LevelType implements Type {
         this.level = level;
         if (level != null) {
             Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-            Util.assertPrecondition(level.getHierarchy() == hierarchy,
-                    "level.getHierarchy() == hierarchy");
+            Util.assertPrecondition(
+                level.getHierarchy() == hierarchy,
+                "level.getHierarchy() == hierarchy");
         }
         if (hierarchy != null) {
             Util.assertPrecondition(dimension != null, "dimension != null");
-            Util.assertPrecondition(hierarchy.getDimension() == dimension,
-                    "hierarchy.getDimension() == dimension");
+            Util.assertPrecondition(
+                hierarchy.getDimension() == dimension,
+                "hierarchy.getDimension() == dimension");
         }
         StringBuilder buf = new StringBuilder("LevelType<");
         if (level != null) {
@@ -79,8 +81,8 @@ public class LevelType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean definitely) {
-        return this.dimension == dimension ||
-            (!definitely && this.dimension == null);
+        return this.dimension == dimension
+            || (!definitely && this.dimension == null);
     }
 
     public Dimension getDimension() {
@@ -119,18 +121,21 @@ public class LevelType implements Type {
         }
         LevelType that = (LevelType) type;
         if (this.getLevel() != null
-            && this.getLevel().equals(that.getLevel())) {
+            && this.getLevel().equals(that.getLevel()))
+        {
             return this;
         }
         if (this.getHierarchy() != null
-            && this.getHierarchy().equals(that.getHierarchy())) {
+            && this.getHierarchy().equals(that.getHierarchy()))
+        {
             return new LevelType(
                 this.getDimension(),
                 this.getHierarchy(),
                 null);
         }
         if (this.getDimension() != null
-            && this.getDimension().equals(that.getDimension())) {
+            && this.getDimension().equals(that.getDimension()))
+        {
             return new LevelType(
                 this.getDimension(),
                 null,

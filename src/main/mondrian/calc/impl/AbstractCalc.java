@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,12 +28,20 @@ import java.util.Collections;
  * @since Sep 27, 2005
  */
 public abstract class AbstractCalc implements Calc {
+    private final Calc[] calcs;
     protected final Type type;
     protected final Exp exp;
 
-    protected AbstractCalc(Exp exp) {
+    /**
+     * Creates an AbstractCalc.
+     *
+     * @param exp Source expression
+     * @param calcs Child compiled expressions
+     */
+    protected AbstractCalc(Exp exp, Calc[] calcs) {
         assert exp != null;
         this.exp = exp;
+        this.calcs = calcs;
         this.type = exp.getType();
     }
 
@@ -48,7 +56,7 @@ public abstract class AbstractCalc implements Calc {
         final Calc[] calcs = getCalcs();
         final List<Object> argumentList = getArguments();
         if (calcs.length > 0 || !argumentList.isEmpty()) {
-           pw.print("(");
+            pw.print("(");
             int k = 0;
             for (Calc calc : calcs) {
                 if (k++ > 0) {
@@ -70,8 +78,8 @@ public abstract class AbstractCalc implements Calc {
      * Returns the name of this expression type, used when serializing an
      * expression to a string.
      *
-     * <p>The default implementation tries to extract a name from a function call,
-     * if any, then prints the last part of the class name.
+     * <p>The default implementation tries to extract a name from a function
+     * call, if any, then prints the last part of the class name.
      */
     protected String getName() {
         String name;
@@ -93,7 +101,9 @@ public abstract class AbstractCalc implements Calc {
     /**
      * Returns this expression's child expressions.
      */
-    public abstract Calc[] getCalcs();
+    public Calc[] getCalcs() {
+        return calcs;
+    }
 
     public boolean dependsOn(Dimension dimension) {
         return anyDepends(getCalcs(), dimension);
@@ -121,7 +131,8 @@ public abstract class AbstractCalc implements Calc {
      * dimensions of {Set}.
      */
     public static boolean anyDependsButFirst(
-            Calc[] calcs, Dimension dimension) {
+            Calc[] calcs, Dimension dimension)
+    {
         if (calcs.length == 0) {
             return false;
         }
@@ -146,7 +157,8 @@ public abstract class AbstractCalc implements Calc {
      * else true.
      */
     public static boolean butDepends(
-            Calc[] calcs, Dimension dimension) {
+            Calc[] calcs, Dimension dimension)
+    {
         boolean result = true;
         for (Calc calc : calcs) {
             if (calc != null) {

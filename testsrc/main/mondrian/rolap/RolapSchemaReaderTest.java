@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -32,7 +32,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 "Sales Ragged", "Sales 2"
         };
 
-        Connection connection = getTestContext().withRole("No HR Cube").getConnection();
+        Connection connection =
+            getTestContext().withRole("No HR Cube").getConnection();
         try {
             SchemaReader reader = connection.getSchemaReader();
 
@@ -89,8 +90,9 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testConnectUseContentChecksum() {
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();
-        properties.put(RolapConnectionProperties.UseContentChecksum.name(),
-                        "true");
+        properties.put(
+            RolapConnectionProperties.UseContentChecksum.name(),
+            "true");
 
         try {
             DriverManager.getConnection(

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -42,6 +42,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     private final MondrianOlap4jCatalog olap4jCatalog =
         new MondrianOlap4jCatalog(this);
 
+    /**
+     * Creates a MondrianOlap4jDatabaseMetaData.
+     *
+     * @param olap4jConnection Connection
+     */
     MondrianOlap4jDatabaseMetaData(
         MondrianOlap4jConnection olap4jConnection)
     {
@@ -91,12 +96,26 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             olap4jConnection, rowset.headerList, rowset.rowList);
     }
 
+    /**
+     * Wraps a string in an object that indicates that it is to be treated as
+     * a wildcard pattern, not a literal match.
+     *
+     * @param pattern Pattern
+     * @return Wildcard, or null if pattern is null
+     */
     private XmlaUtil.Wildcard wildcard(String pattern) {
         return pattern == null
             ? null
             : new XmlaUtil.Wildcard(pattern);
     }
 
+    /**
+     * Returns the catalogs in this database.
+     *
+     * Intentionally package-protected; not part of the JDBC or olap4j API.
+     *
+     * @return List of catalogs in this database
+     */
     // package-protected
     NamedList<Catalog> getCatalogObjects() {
         NamedList<MondrianOlap4jCatalog> list =
@@ -154,19 +173,19 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public String getDriverName() throws SQLException {
-        return MondrianOlap4jDriver.NAME;
+        return olap4jConnection.driver.getName();
     }
 
     public String getDriverVersion() throws SQLException {
-        return MondrianOlap4jDriver.VERSION;
+        return olap4jConnection.driver.getVersion();
     }
 
     public int getDriverMajorVersion() {
-        return MondrianOlap4jDriver.MAJOR_VERSION;
+        return olap4jConnection.driver.getMajorVersion();
     }
 
     public int getDriverMinorVersion() {
-        return MondrianOlap4jDriver.MINOR_VERSION;
+        return olap4jConnection.driver.getMinorVersion();
     }
 
     public boolean usesLocalFiles() throws SQLException {
@@ -262,7 +281,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public boolean supportsConvert(
-        int fromType, int toType) throws SQLException {
+        int fromType, int toType) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -270,7 +290,9 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsDifferentTableCorrelationNames() throws SQLException {
+    public boolean supportsDifferentTableCorrelationNames()
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -406,7 +428,9 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException {
+    public boolean supportsCatalogsInPrivilegeDefinitions()
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -562,15 +586,21 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
+    public boolean supportsTransactionIsolationLevel(int level)
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsDataDefinitionAndDataManipulationTransactions() throws SQLException {
+    public boolean supportsDataDefinitionAndDataManipulationTransactions()
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsDataManipulationTransactionsOnly() throws SQLException {
+    public boolean supportsDataManipulationTransactionsOnly()
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -585,7 +615,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     public ResultSet getProcedures(
         String catalog,
         String schemaPattern,
-        String procedureNamePattern) throws SQLException {
+        String procedureNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -593,7 +624,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String procedureNamePattern,
-        String columnNamePattern) throws SQLException {
+        String columnNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -601,7 +633,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String tableNamePattern,
-        String types[]) throws SQLException {
+        String types[]) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -648,7 +681,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String tableNamePattern,
-        String columnNamePattern) throws SQLException {
+        String columnNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -656,14 +690,16 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schema,
         String table,
-        String columnNamePattern) throws SQLException {
+        String columnNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getTablePrivileges(
         String catalog,
         String schemaPattern,
-        String tableNamePattern) throws SQLException {
+        String tableNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -672,27 +708,32 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String schema,
         String table,
         int scope,
-        boolean nullable) throws SQLException {
+        boolean nullable) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getVersionColumns(
-        String catalog, String schema, String table) throws SQLException {
+        String catalog, String schema, String table) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getPrimaryKeys(
-        String catalog, String schema, String table) throws SQLException {
+        String catalog, String schema, String table) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getImportedKeys(
-        String catalog, String schema, String table) throws SQLException {
+        String catalog, String schema, String table) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getExportedKeys(
-        String catalog, String schema, String table) throws SQLException {
+        String catalog, String schema, String table) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -702,7 +743,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String parentTable,
         String foreignCatalog,
         String foreignSchema,
-        String foreignTable) throws SQLException {
+        String foreignTable) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -715,7 +757,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String schema,
         String table,
         boolean unique,
-        boolean approximate) throws SQLException {
+        boolean approximate) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -724,7 +767,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public boolean supportsResultSetConcurrency(
-        int type, int concurrency) throws SQLException {
+        int type, int concurrency) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -772,7 +816,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String typeNamePattern,
-        int[] types) throws SQLException {
+        int[] types) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -799,14 +844,16 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     public ResultSet getSuperTypes(
         String catalog,
         String schemaPattern,
-        String typeNamePattern) throws SQLException {
+        String typeNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
     public ResultSet getSuperTables(
         String catalog,
         String schemaPattern,
-        String tableNamePattern) throws SQLException {
+        String tableNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -814,11 +861,14 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String catalog,
         String schemaPattern,
         String typeNamePattern,
-        String attributeNamePattern) throws SQLException {
+        String attributeNamePattern) throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsResultSetHoldability(int holdability) throws SQLException {
+    public boolean supportsResultSetHoldability(int holdability)
+        throws SQLException
+    {
         throw new UnsupportedOperationException();
     }
 

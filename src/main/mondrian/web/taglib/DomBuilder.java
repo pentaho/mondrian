@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -34,21 +34,23 @@ import java.io.StringReader;
 import java.util.List;
 
 /**
- * transforms a mondrian result into a DOM
+ * Transforms a mondrian result into a DOM (Document Object Model).
  */
-public class DOMBuilder {
-    private static final Logger LOGGER = Logger.getLogger(DOMBuilder.class);
+public class DomBuilder {
+    private static final Logger LOGGER = Logger.getLogger(DomBuilder.class);
 
     Document factory;
     Result result;
     int dimCount;
 
-    protected DOMBuilder(Document factory, Result result) {
+    protected DomBuilder(Document factory, Result result) {
         this.factory = factory;
         this.result = result;
     }
 
-    public static Document build(Result result) throws ParserConfigurationException {
+    public static Document build(Result result)
+        throws ParserConfigurationException
+    {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
         dbf.setExpandEntityReferences(true);
@@ -61,7 +63,7 @@ public class DOMBuilder {
     }
 
     public static Element build(Document factory, Result result) {
-        return new DOMBuilder(factory, result).build();
+        return new DomBuilder(factory, result).build();
     }
 
     private Element build() {
@@ -84,7 +86,8 @@ public class DOMBuilder {
             buildRows2Dim(body, result.getAxes()[1]);
             break;
         default:
-            throw new IllegalArgumentException("DOMBuilder requires 0, 1 or 2 dimensional result");
+            throw new IllegalArgumentException(
+                "DomBuilder requires 0, 1 or 2 dimensional result");
         }
         Element slicers = elem("slicers", mdxtable);
         buildSlicer(slicers);
@@ -130,12 +133,17 @@ public class DOMBuilder {
             return positions.size();
         }
 
-        private void build(Element row, List<Member> currentMembers, boolean even) {
+        private void build(
+            Element row,
+            List<Member> currentMembers,
+            boolean even)
+        {
             for (int i = 0; i < levels; i++) {
                 Member currentMember = currentMembers.get(i);
                 Member prevMember    = prevMembers[i];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
-                    Element currentElem = createMemberElem("row-heading", row, currentMember);
+                    Element currentElem =
+                        createMemberElem("row-heading", row, currentMember);
                     if (even) {
                         currentElem.setAttribute("style", "even");
                     } else {
@@ -151,7 +159,8 @@ public class DOMBuilder {
                     Element prevElem = prevElems[i];
                     prevElem.setAttribute("style", "span");
                     prevSpan[i] += 1;
-                    prevElem.setAttribute("rowspan", Integer.toString(prevSpan[i]));
+                    prevElem.setAttribute(
+                        "rowspan", Integer.toString(prevSpan[i]));
                 }
             }
         }
@@ -186,7 +195,9 @@ public class DOMBuilder {
 
                 for (int j = 0; j < rowIndex - 1; j++) {
                     Member currentMember = position.get(j);
-                    if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
+                    if (prevMembers[j] == null
+                        || !prevMembers[j].equals(currentMember))
+                    {
                         prevMembers[j] = currentMember;
                         for (int k = j + 1; k < levels; k++) {
                             prevMembers[j] = null;
@@ -197,7 +208,8 @@ public class DOMBuilder {
                 Member currentMember = position.get(rowIndex);
                 Member prevMember    = prevMembers[rowIndex];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
-                    Element currentElem = createMemberElem("column-heading", row, currentMember);
+                    Element currentElem =
+                        createMemberElem("column-heading", row, currentMember);
                     prevMembers[rowIndex] = currentMember;
                     prevElems[rowIndex] = currentElem;
                     prevSpan[rowIndex] = 1;
@@ -208,15 +220,22 @@ public class DOMBuilder {
                     Element prevElem = prevElems[rowIndex];
                     prevElem.setAttribute("style", "span");
                     prevSpan[rowIndex] += 1;
-                    prevElem.setAttribute("colspan", Integer.toString(prevSpan[rowIndex]));
+                    prevElem.setAttribute(
+                        "colspan", Integer.toString(prevSpan[rowIndex]));
                 }
             }
         }
 
         void buildCornerElement(Element row) {
             Element corner = elem("corner", row);
-            corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].getPositions().get(0).size()));
-            corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].getPositions().get(0).size()));
+            corner.setAttribute(
+                "rowspan",
+                Integer.toString(
+                    result.getAxes()[0].getPositions().get(0).size()));
+            corner.setAttribute(
+                "colspan",
+                Integer.toString(
+                    result.getAxes()[1].getPositions().get(0).size()));
         }
     }
 
@@ -306,13 +325,13 @@ public class DOMBuilder {
     private void addMemberProperties(Member m, Element e) {
         Property[] props = m.getLevel().getProperties();
         if (props != null) {
-          for (int i = 0; i < props.length; i++) {
-            String propName = props[i].getName();
-            String propValue = "" + m.getPropertyValue(propName);
-            Element propElem = elem("property", e);
-            propElem.setAttribute("name", propName);
-            propElem.setAttribute("value", propValue);
-          }
+            for (int i = 0; i < props.length; i++) {
+                String propName = props[i].getName();
+                String propValue = "" + m.getPropertyValue(propName);
+                Element propElem = elem("property", e);
+                propElem.setAttribute("name", propName);
+                propElem.setAttribute("value", propValue);
+            }
         }
     }
 
@@ -328,24 +347,26 @@ public class DOMBuilder {
         return section;
     }
 
-    private static final String PRETTY_PRINTER = ""
-    + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
-    + "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
-    + "<xsl:template match=\"*|@*\">\n"
-    + "  <xsl:copy>\n"
-    + "    <xsl:apply-templates select=\"*|@*\"/>\n"
-    + "  </xsl:copy>\n"
-    + "</xsl:template>\n"
-    + "</xsl:stylesheet>\n";
+    private static final String PRETTY_PRINTER =
+        ""
+        + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
+        + "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
+        + "<xsl:template match=\"*|@*\">\n"
+        + "  <xsl:copy>\n"
+        + "    <xsl:apply-templates select=\"*|@*\"/>\n"
+        + "  </xsl:copy>\n"
+        + "</xsl:template>\n"
+        + "</xsl:stylesheet>\n";
 
     public static void debug(Document doc) {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             StringReader input = new StringReader(PRETTY_PRINTER);
-            //File input = new File(System.getProperty("test.dir") + "/" + "pretty.xsl");
             Templates templates = tf.newTemplates(new StreamSource(input));
             OutputStream result = new ByteArrayOutputStream();
-            templates.newTransformer().transform(new DOMSource(doc), new StreamResult(result));
+            templates.newTransformer().transform(
+                new DOMSource(doc),
+                new StreamResult(result));
             LOGGER.debug(result.toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -354,4 +375,4 @@ public class DOMBuilder {
 
 }
 
-// End DOMBuilder.java
+// End DomBuilder.java

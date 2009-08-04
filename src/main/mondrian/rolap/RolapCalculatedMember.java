@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,8 +29,18 @@ import mondrian.olap.*;
 public class RolapCalculatedMember extends RolapMember {
     private final Formula formula;
 
+    /**
+     * Creates a RolapCalculatedMember.
+     *
+     * @param parentMember Parent member
+     * @param level Level
+     * @param name Name
+     * @param formula Formula
+     */
     RolapCalculatedMember(
-        RolapMember parentMember, RolapLevel level, String name,
+        RolapMember parentMember,
+        RolapLevel level,
+        String name,
         Formula formula)
     {
         // A calculated measure has MemberType.FORMULA because FORMULA
@@ -48,7 +58,9 @@ public class RolapCalculatedMember extends RolapMember {
     public Object getPropertyValue(String propertyName, boolean matchCase) {
         if (Util.equal(propertyName, Property.FORMULA.name, matchCase)) {
             return formula;
-        } else if (Util.equal(propertyName, Property.CHILDREN_CARDINALITY.name, matchCase)) {
+        } else if (Util.equal(
+            propertyName, Property.CHILDREN_CARDINALITY.name, matchCase))
+        {
             // Looking up children is unnecessary for calculated member.
             // If do that, SQLException will be thrown.
             return 0;
@@ -63,9 +75,9 @@ public class RolapCalculatedMember extends RolapMember {
 
     public boolean isCalculatedInQuery() {
         final String memberScope =
-                (String) getPropertyValue(Property.MEMBER_SCOPE.name);
-        return memberScope == null ||
-                memberScope.equals("QUERY");
+            (String) getPropertyValue(Property.MEMBER_SCOPE.name);
+        return memberScope == null
+            || memberScope.equals("QUERY");
     }
 
     public Exp getExpression() {
@@ -76,6 +88,5 @@ public class RolapCalculatedMember extends RolapMember {
         return formula;
     }
 }
-
 
 // End RolapCalculatedMember.java

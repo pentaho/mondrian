@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -67,6 +67,19 @@ public class DerbyDialect extends JdbcDialectImpl {
 
     public boolean supportsGroupByExpressions() {
         return false;
+    }
+
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending)
+    {
+        if (nullable && !ascending) {
+            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, "
+               + expr + " DESC";
+        } else {
+            return super.generateOrderItem(expr, nullable, ascending);
+        }
     }
 }
 

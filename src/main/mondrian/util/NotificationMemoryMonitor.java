@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -54,8 +54,9 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             // I don't know whether this approach is better, or whether
             // we should rather check for the pool name "Tenured Gen"?
-            if (pool.getType() == MemoryType.HEAP &&
-                pool.isUsageThresholdSupported()) {
+            if (pool.getType() == MemoryType.HEAP
+                && pool.isUsageThresholdSupported())
+            {
                 return pool;
             }
         }
@@ -79,8 +80,10 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
          * @param notification
          * @param unused
          */
-        public void handleNotification(final Notification notification,
-                                       final Object unused) {
+        public void handleNotification(
+            final Notification notification,
+            final Object unused)
+        {
             final String type = notification.getType();
 
             if (type.equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {

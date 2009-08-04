@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -95,20 +95,20 @@ public abstract class ClearViewBase extends BatchTestCase {
                 null, "${customDimensions}");
             customDimensions =
                 (! (customDimensions.equals("")
-                    || customDimensions.equals("${customDimensions}"))) ?
-                        customDimensions : null;
+                    || customDimensions.equals("${customDimensions}")))
+                ? customDimensions : null;
             String calculatedMembers = diffRepos.expand(
                 null, "${calculatedMembers}");
             calculatedMembers =
                 (! (calculatedMembers.equals("")
-                    || calculatedMembers.equals("${calculatedMembers}"))) ?
-                        calculatedMembers : null;
+                    || calculatedMembers.equals("${calculatedMembers}")))
+                ? calculatedMembers : null;
             String namedSets = diffRepos.expand(
                 null, "${namedSets}");
             namedSets =
                 (! (namedSets.equals("")
-                    || namedSets.equals("${namedSets}"))) ?
-                        namedSets : null;
+                    || namedSets.equals("${namedSets}")))
+                ? namedSets : null;
             testContext = testContext.createSubstitutingCube(
                 cubeName, customDimensions, calculatedMembers, namedSets);
         }
@@ -125,7 +125,8 @@ public abstract class ClearViewBase extends BatchTestCase {
                 testContext.executeQuery(mdx));
             diffRepos.assertEquals("result", "${result}", result);
         } finally {
-            MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
+            MondrianProperties.instance().ExpandNonNative.set(
+                origExpandNonNative);
         }
     }
 

@@ -1,8 +1,8 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -59,7 +59,8 @@ public class XmlaHandler implements XmlaConstants {
     private static final String EMPTY_MD_DATA_SET_XML_SCHEMA =
         computeEmptyXsd(SetType.MD_DATA_SET);
 
-    private static final String NS_XML_SQL = "urn:schemas-microsoft-com:xml-sql";
+    private static final String NS_XML_SQL =
+        "urn:schemas-microsoft-com:xml-sql";
 
     //
     // Some xml schema data types.
@@ -290,10 +291,11 @@ public class XmlaHandler implements XmlaConstants {
                         this.value = inputValue;
                         this.isDecimal = true;
 
-                    } else if (inputValue instanceof Byte ||
-                            inputValue instanceof Short ||
-                            inputValue instanceof Integer ||
-                            inputValue instanceof Long) {
+                    } else if (inputValue instanceof Byte
+                        || inputValue instanceof Short
+                        || inputValue instanceof Integer
+                        || inputValue instanceof Long)
+                    {
                         // Convert from byte/short/integer/long to double
                         this.value = ((Number) inputValue).doubleValue();
                         this.valueType = valueTypeHint;
@@ -512,8 +514,8 @@ public class XmlaHandler implements XmlaConstants {
                 if (map.containsKey(ds.getDataSourceName())) {
                     // This is not an XmlaException
                     throw Util.newError(
-                        "duplicated data source name '" +
-                            ds.getDataSourceName() + "'");
+                        "duplicated data source name '"
+                        + ds.getDataSourceName() + "'");
                 }
                 // Set parent pointers.
                 for (DataSourcesConfig.Catalog catalog : ds.catalogs.catalogs) {
@@ -537,7 +539,8 @@ public class XmlaHandler implements XmlaConstants {
      * @throws XmlaException on error
      */
     public void process(XmlaRequest request, XmlaResponse response)
-            throws XmlaException {
+        throws XmlaException
+    {
         int method = request.getMethod();
         long start = System.currentTimeMillis();
 
@@ -580,7 +583,8 @@ public class XmlaHandler implements XmlaConstants {
                     HSB_DRILL_THROUGH_FORMAT_CODE,
                     HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
                     new UnsupportedOperationException(
-                        "<Format>: only 'Tabular' allowed when drilling through"));
+                        "<Format>: only 'Tabular' allowed when drilling "
+                        + "through"));
             }
         } else {
             final String formatName =
@@ -588,10 +592,12 @@ public class XmlaHandler implements XmlaConstants {
             if (formatName != null) {
                 Enumeration.Format format = valueOf(
                     Enumeration.Format.class, formatName, null);
-                if (format != Enumeration.Format.Multidimensional &&
-                    format != Enumeration.Format.Tabular) {
+                if (format != Enumeration.Format.Multidimensional
+                    && format != Enumeration.Format.Tabular)
+                {
                     throw new UnsupportedOperationException(
-                        "<Format>: only 'Multidimensional', 'Tabular' currently supported");
+                        "<Format>: only 'Multidimensional', 'Tabular' "
+                        + "currently supported");
                 }
             }
             final String axisFormatName =
@@ -639,26 +645,30 @@ public class XmlaHandler implements XmlaConstants {
         SaxWriter writer = response.getWriter();
         writer.startDocument();
 
-        writer.startElement(prefix + ":ExecuteResponse", new String[] {
-            "xmlns:" + prefix, NS_XMLA});
+        writer.startElement(
+            prefix + ":ExecuteResponse",
+            "xmlns:" + prefix, NS_XMLA);
         writer.startElement(prefix + ":return");
         boolean rowset =
-            request.isDrillThrough() ||
-                Enumeration.Format.Tabular.name().equals(
-                    request.getProperties().get(
-                        PropertyDefinition.Format.name()));
-        writer.startElement("root", new String[] {
+            request.isDrillThrough()
+            || Enumeration.Format.Tabular.name().equals(
+                request.getProperties().get(
+                    PropertyDefinition.Format.name()));
+        writer.startElement(
+            "root",
             "xmlns",
-            result == null ? NS_XMLA_EMPTY :
-                rowset ? NS_XMLA_ROWSET :
-                NS_XMLA_MDDATASET,
+            result == null
+            ? NS_XMLA_EMPTY
+            : rowset
+            ? NS_XMLA_ROWSET
+            : NS_XMLA_MDDATASET,
             "xmlns:xsi", NS_XSI,
             "xmlns:xsd", NS_XSD,
-            "xmlns:EX", NS_XMLA_EX,
-        });
+            "xmlns:EX", NS_XMLA_EX);
 
         if ((content == Enumeration.Content.Schema)
-                || (content == Enumeration.Content.SchemaData)) {
+            || (content == Enumeration.Content.SchemaData))
+        {
             if (result != null) {
                 if (result instanceof MDDataSet_Tabular) {
                     MDDataSet_Tabular tabResult = (MDDataSet_Tabular) result;
@@ -679,7 +689,8 @@ public class XmlaHandler implements XmlaConstants {
 
         try {
             if ((content == Enumeration.Content.Data)
-                    || (content == Enumeration.Content.SchemaData)) {
+                || (content == Enumeration.Content.SchemaData))
+            {
                 if (result != null) {
                     result.unparse(writer);
                 }
@@ -709,173 +720,174 @@ public class XmlaHandler implements XmlaConstants {
      * @see RowsetDefinition#writeRowsetXmlSchema(SaxWriter)
      */
     static void writeDatasetXmlSchema(SaxWriter writer, SetType settype) {
-        String setNsXmla = (settype == SetType.ROW_SET)
-                ? XmlaConstants.NS_XMLA_ROWSET
-                : XmlaConstants.NS_XMLA_MDDATASET;
+        String setNsXmla =
+            (settype == SetType.ROW_SET)
+            ? XmlaConstants.NS_XMLA_ROWSET
+            : XmlaConstants.NS_XMLA_MDDATASET;
 
-        writer.startElement("xsd:schema", new String[] {
+        writer.startElement(
+            "xsd:schema",
             "xmlns:xsd", XmlaConstants.NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
             "xmlns:xsi", XmlaConstants.NS_XSI,
             "xmlns:sql", NS_XML_SQL,
-            "elementFormDefault", "qualified"
-        });
+            "elementFormDefault", "qualified");
 
         // MemberType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "MemberType"
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "MemberType");
         writer.startElement("xsd:sequence");
-        writer.element("xsd:element", new String[] {
+        writer.element(
+            "xsd:element",
             "name", "UName",
-            "type", XSD_STRING
-        });
-        writer.element("xsd:element", new String[] {
+            "type", XSD_STRING);
+        writer.element(
+            "xsd:element",
             "name", "Caption",
-            "type", XSD_STRING
-        });
-        writer.element("xsd:element", new String[] {
+            "type", XSD_STRING);
+        writer.element(
+            "xsd:element",
             "name", "LName",
-            "type", XSD_STRING
-        });
-        writer.element("xsd:element", new String[] {
+            "type", XSD_STRING);
+        writer.element(
+            "xsd:element",
             "name", "LNum",
-            "type", XSD_UNSIGNED_INT
-        });
-        writer.element("xsd:element", new String[] {
+            "type", XSD_UNSIGNED_INT);
+        writer.element(
+            "xsd:element",
             "name", "DisplayInfo",
-            "type", XSD_UNSIGNED_INT
-        });
-        writer.startElement("xsd:sequence", new String[] {
+            "type", XSD_UNSIGNED_INT);
+        writer.startElement(
+            "xsd:sequence",
             "maxOccurs", "unbounded",
-            "minOccurs", "0",
-        });
-        writer.element("xsd:any", new String[] {
+            "minOccurs", "0");
+        writer.element(
+            "xsd:any",
             "processContents", "lax",
-            "maxOccurs", "unbounded",
-        });
+            "maxOccurs", "unbounded");
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:sequence
-        writer.element("xsd:attribute", new String[] {
-            "name", "Hierarchy",
-            "type", XSD_STRING
-        });
+        writer.element(
+            "xsd:attribute",
+                "name", "Hierarchy",
+                "type", XSD_STRING);
         writer.endElement(); // xsd:complexType name="MemberType"
 
         // PropType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "PropType",
-        });
-        writer.element("xsd:attribute", new String[] {
+        writer.startElement(
+            "xsd:complexType",
+            "name", "PropType");
+        writer.element(
+            "xsd:attribute",
             "name", "name",
-            "type", XSD_STRING
-        });
+            "type", XSD_STRING);
         writer.endElement(); // xsd:complexType name="PropType"
 
         // TupleType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "TupleType"
-        });
-        writer.startElement("xsd:sequence", new String[] {
-            "maxOccurs", "unbounded"
-        });
-        writer.element("xsd:element", new String[] {
+        writer.startElement(
+            "xsd:complexType",
+            "name", "TupleType");
+        writer.startElement(
+            "xsd:sequence",
+            "maxOccurs", "unbounded");
+        writer.element(
+            "xsd:element",
             "name", "Member",
-            "type", "MemberType",
-        });
+            "type", "MemberType");
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:complexType name="TupleType"
 
         // MembersType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "MembersType"
-        });
-        writer.startElement("xsd:sequence", new String[] {
-            "maxOccurs", "unbounded",
-        });
-        writer.element("xsd:element", new String[] {
+        writer.startElement(
+            "xsd:complexType",
+            "name", "MembersType");
+        writer.startElement(
+            "xsd:sequence",
+            "maxOccurs", "unbounded");
+        writer.element(
+            "xsd:element",
             "name", "Member",
-            "type", "MemberType",
-        });
+            "type", "MemberType");
         writer.endElement(); // xsd:sequence
-        writer.element("xsd:attribute", new String[] {
+        writer.element(
+            "xsd:attribute",
             "name", "Hierarchy",
-            "type", XSD_STRING
-        });
+            "type", XSD_STRING);
         writer.endElement(); // xsd:complexType
 
         // TuplesType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "TuplesType"
-        });
-        writer.startElement("xsd:sequence", new String[] {
-            "maxOccurs", "unbounded",
-        });
-        writer.element("xsd:element", new String[] {
+        writer.startElement(
+            "xsd:complexType",
+            "name", "TuplesType");
+        writer.startElement(
+            "xsd:sequence",
+            "maxOccurs", "unbounded");
+        writer.element(
+            "xsd:element",
             "name", "Tuple",
-            "type", "TupleType",
-        });
+            "type", "TupleType");
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:complexType
 
         // CrossProductType
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "CrossProductType",
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "CrossProductType");
         writer.startElement("xsd:sequence");
-        writer.startElement("xsd:choice", new String[] {
+        writer.startElement(
+            "xsd:choice",
             "minOccurs", "0",
-            "maxOccurs", "unbounded",
-        });
-        writer.element("xsd:element", new String[] {
+            "maxOccurs", "unbounded");
+        writer.element(
+            "xsd:element",
             "name", "Members",
-            "type", "MembersType"
-        });
-        writer.element("xsd:element", new String[] {
+            "type", "MembersType");
+        writer.element(
+            "xsd:element",
             "name", "Tuples",
-            "type", "TuplesType"
-        });
+            "type", "TuplesType");
         writer.endElement(); // xsd:choice
         writer.endElement(); // xsd:sequence
-        writer.element("xsd:attribute", new String[] {
+        writer.element(
+            "xsd:attribute",
             "name", "Size",
-            "type", XSD_UNSIGNED_INT
-        });
+            "type", XSD_UNSIGNED_INT);
         writer.endElement(); // xsd:complexType
 
         // OlapInfo
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "OlapInfo",
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "OlapInfo");
         writer.startElement("xsd:sequence");
 
         { // <CubeInfo>
-            writer.startElement("xsd:element", new String[] {
-                "name", "CubeInfo"
-            });
+            writer.startElement(
+                "xsd:element",
+                "name", "CubeInfo");
             writer.startElement("xsd:complexType");
             writer.startElement("xsd:sequence");
 
             { // <Cube>
-                writer.startElement("xsd:element", new String[] {
+                writer.startElement(
+                    "xsd:element",
                     "name", "Cube",
-                    "maxOccurs", "unbounded"
-                });
+                    "maxOccurs", "unbounded");
                 writer.startElement("xsd:complexType");
                 writer.startElement("xsd:sequence");
 
-                writer.element("xsd:element", new String[] {
+                writer.element(
+                    "xsd:element",
                     "name", "CubeName",
-                    "type", XSD_STRING
-                });
+                    "type", XSD_STRING);
 
                 writer.endElement(); // xsd:sequence
                 writer.endElement(); // xsd:complexType
@@ -886,84 +898,85 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // xsd:complexType
             writer.endElement(); // xsd:element name=CubeInfo
         }
+
         { // <AxesInfo>
-            writer.startElement("xsd:element", new String[] {
-                "name", "AxesInfo"
-            });
+            writer.startElement(
+                "xsd:element",
+                "name", "AxesInfo");
             writer.startElement("xsd:complexType");
             writer.startElement("xsd:sequence");
             { // <AxisInfo>
-                writer.startElement("xsd:element", new String[] {
+                writer.startElement(
+                    "xsd:element",
                     "name", "AxisInfo",
-                    "maxOccurs", "unbounded"
-                });
+                    "maxOccurs", "unbounded");
                 writer.startElement("xsd:complexType");
                 writer.startElement("xsd:sequence");
 
                 { // <HierarchyInfo>
-                    writer.startElement("xsd:element", new String[] {
+                    writer.startElement(
+                        "xsd:element",
                         "name", "HierarchyInfo",
                         "minOccurs", "0",
-                        "maxOccurs", "unbounded"
-                    });
+                        "maxOccurs", "unbounded");
                     writer.startElement("xsd:complexType");
                     writer.startElement("xsd:sequence");
-                    writer.startElement("xsd:sequence", new String[] {
-                        "maxOccurs", "unbounded"
-                    });
-                    writer.element("xsd:element", new String[] {
+                    writer.startElement(
+                        "xsd:sequence",
+                        "maxOccurs", "unbounded");
+                    writer.element(
+                        "xsd:element",
                         "name", "UName",
-                        "type", "PropType"
-                    });
-                    writer.element("xsd:element", new String[] {
+                        "type", "PropType");
+                    writer.element(
+                        "xsd:element",
                         "name", "Caption",
-                        "type", "PropType"
-                    });
-                    writer.element("xsd:element", new String[] {
+                        "type", "PropType");
+                    writer.element(
+                        "xsd:element",
                         "name", "LName",
-                        "type", "PropType"
-                    });
-                    writer.element("xsd:element", new String[] {
+                        "type", "PropType");
+                    writer.element(
+                        "xsd:element",
                         "name", "LNum",
-                        "type", "PropType"
-                    });
-                    writer.element("xsd:element", new String[] {
+                        "type", "PropType");
+                    writer.element(
+                        "xsd:element",
                         "name", "DisplayInfo",
                         "type", "PropType",
                         "minOccurs", "0",
-                        "maxOccurs", "unbounded"
-                    });
-                    if (false) writer.element("xsd:element", new String[] {
+                        "maxOccurs", "unbounded");
+                    if (false) writer.element(
+                        "xsd:element",
                         "name", "PARENT_MEMBER_NAME",
                         "type", "PropType",
                         "minOccurs", "0",
-                        "maxOccurs", "unbounded"
-                    });
+                        "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
                     // This is the Depth element for JPivot??
                     writer.startElement("xsd:sequence");
-                    writer.element("xsd:any", new String[] {
+                    writer.element(
+                        "xsd:any",
                         "processContents", "lax",
-                         "minOccurs", "0",
-                        "maxOccurs", "unbounded"
-                    });
+                        "minOccurs", "0",
+                        "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
                     writer.endElement(); // xsd:sequence
-                    writer.element("xsd:attribute", new String[] {
+                    writer.element(
+                        "xsd:attribute",
                         "name", "name",
                         "type", XSD_STRING,
-                        "use", "required"
-                    });
+                        "use", "required");
                     writer.endElement(); // xsd:complexType
                     writer.endElement(); // xsd:element name=HierarchyInfo
                 }
                 writer.endElement(); // xsd:sequence
-                writer.element("xsd:attribute", new String[] {
+                writer.element(
+                    "xsd:attribute",
                     "name", "name",
-                    "type", XSD_STRING
-                });
+                    "type", XSD_STRING);
                 writer.endElement(); // xsd:complexType
                 writer.endElement(); // xsd:element name=AxisInfo
             }
@@ -975,78 +988,78 @@ public class XmlaHandler implements XmlaConstants {
         // CellInfo
 
         { // <CellInfo>
-            writer.startElement("xsd:element", new String[] {
-                "name", "CellInfo"
-            });
+            writer.startElement(
+                "xsd:element",
+                "name", "CellInfo");
             writer.startElement("xsd:complexType");
             writer.startElement("xsd:sequence");
-            writer.startElement("xsd:sequence", new String[] {
+            writer.startElement(
+                "xsd:sequence",
                 "minOccurs", "0",
-                "maxOccurs", "unbounded"
-            });
+                "maxOccurs", "unbounded");
             writer.startElement("xsd:choice");
-            writer.element("xsd:element", new String[] {
+            writer.element(
+                "xsd:element",
                 "name", "Value",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "FmtValue",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "BackColor",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "ForeColor",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "FontName",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "FontSize",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "FontFlags",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "FormatString",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "NonEmptyBehavior",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "SolveOrder",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "Updateable",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "Visible",
-                "type", "PropType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "PropType");
+            writer.element(
+                "xsd:element",
                 "name", "Expression",
-                "type", "PropType"
-            });
+                "type", "PropType");
             writer.endElement(); // xsd:choice
             writer.endElement(); // xsd:sequence
-            writer.startElement("xsd:sequence", new String[] {
+            writer.startElement(
+                "xsd:sequence",
                 "maxOccurs", "unbounded",
-                "minOccurs", "0"
-            });
-            writer.element("xsd:any", new String[] {
+                "minOccurs", "0");
+            writer.element(
+                "xsd:any",
                 "processContents", "lax",
-                "maxOccurs", "unbounded"
-            });
+                "maxOccurs", "unbounded");
             writer.endElement(); // xsd:sequence
             writer.endElement(); // xsd:sequence
             writer.endElement(); // xsd:complexType
@@ -1058,38 +1071,38 @@ public class XmlaHandler implements XmlaConstants {
 
         // Axes
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "Axes"
-        });
-        writer.startElement("xsd:sequence", new String[] {
-            "maxOccurs", "unbounded"
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "Axes");
+        writer.startElement(
+            "xsd:sequence",
+            "maxOccurs", "unbounded");
         { // <Axis>
-            writer.startElement("xsd:element", new String[] {
-                "name", "Axis"
-            });
+            writer.startElement(
+                "xsd:element",
+                "name", "Axis");
             writer.startElement("xsd:complexType");
-            writer.startElement("xsd:choice", new String[] {
+            writer.startElement(
+                "xsd:choice",
                 "minOccurs", "0",
-                "maxOccurs", "unbounded"
-            });
-            writer.element("xsd:element", new String[] {
+                "maxOccurs", "unbounded");
+            writer.element(
+                "xsd:element",
                 "name", "CrossProduct",
-                "type", "CrossProductType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "CrossProductType");
+            writer.element(
+                "xsd:element",
                 "name", "Tuples",
-                "type", "TuplesType"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "TuplesType");
+            writer.element(
+                "xsd:element",
                 "name", "Members",
-                "type", "MembersType"
-            });
+                "type", "MembersType");
             writer.endElement(); // xsd:choice
-            writer.element("xsd:attribute", new String[] {
+            writer.element(
+                "xsd:attribute",
                 "name", "name",
-                "type", XSD_STRING
-            });
+                "type", XSD_STRING);
             writer.endElement(); // xsd:complexType
         }
         writer.endElement(); // xsd:element
@@ -1098,79 +1111,79 @@ public class XmlaHandler implements XmlaConstants {
 
         // CellData
 
-        writer.startElement("xsd:complexType", new String[] {
-            "name", "CellData"
-        });
+        writer.startElement(
+            "xsd:complexType",
+            "name", "CellData");
         writer.startElement("xsd:sequence");
         { // <Cell>
-            writer.startElement("xsd:element", new String[] {
+            writer.startElement(
+                "xsd:element",
                 "name", "Cell",
                 "minOccurs", "0",
-                "maxOccurs", "unbounded"
-            });
+                "maxOccurs", "unbounded");
             writer.startElement("xsd:complexType");
-            writer.startElement("xsd:sequence", new String[] {
-                "maxOccurs", "unbounded"
-            });
+            writer.startElement(
+                "xsd:sequence",
+                "maxOccurs", "unbounded");
             writer.startElement("xsd:choice");
-            writer.element("xsd:element", new String[] {
-                "name", "Value"
-            });
-            writer.element("xsd:element", new String[] {
+            writer.element(
+                "xsd:element",
+                "name", "Value");
+            writer.element(
+                "xsd:element",
                 "name", "FmtValue",
-                "type", XSD_STRING
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_STRING);
+            writer.element(
+                "xsd:element",
                 "name", "BackColor",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "ForeColor",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "FontName",
-                "type", XSD_STRING
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_STRING);
+            writer.element(
+                "xsd:element",
                 "name", "FontSize",
-                "type", "xsd:unsignedShort"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "xsd:unsignedShort");
+            writer.element(
+                "xsd:element",
                 "name", "FontFlags",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "FormatString",
-                "type", XSD_STRING
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_STRING);
+            writer.element(
+                "xsd:element",
                 "name", "NonEmptyBehavior",
-                "type", "xsd:unsignedShort"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "xsd:unsignedShort");
+            writer.element(
+                "xsd:element",
                 "name", "SolveOrder",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "Updateable",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "Visible",
-                "type", XSD_UNSIGNED_INT
-            });
-            writer.element("xsd:element", new String[] {
+                "type", XSD_UNSIGNED_INT);
+            writer.element(
+                "xsd:element",
                 "name", "Expression",
-                "type", XSD_STRING
-            });
+                "type", XSD_STRING);
             writer.endElement(); // xsd:choice
             writer.endElement(); // xsd:sequence
-            writer.element("xsd:attribute", new String[] {
+            writer.element(
+                "xsd:attribute",
                 "name", "CellOrdinal",
                 "type", XSD_UNSIGNED_INT,
-                "use", "required"
-            });
+                "use", "required");
             writer.endElement(); // xsd:complexType
             writer.endElement(); // xsd:element name=Cell
         }
@@ -1178,25 +1191,25 @@ public class XmlaHandler implements XmlaConstants {
         writer.endElement(); // xsd:complexType
 
         { // <root>
-            writer.startElement("xsd:element", new String[] {
-                "name", "root"
-            });
+            writer.startElement(
+                "xsd:element",
+                "name", "root");
             writer.startElement("xsd:complexType");
-            writer.startElement("xsd:sequence", new String[] {
-                "maxOccurs", "unbounded"
-            });
-            writer.element("xsd:element", new String[] {
+            writer.startElement(
+                "xsd:sequence",
+                "maxOccurs", "unbounded");
+            writer.element(
+                "xsd:element",
                 "name", "OlapInfo",
-                "type", "OlapInfo"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "OlapInfo");
+            writer.element(
+                "xsd:element",
                 "name", "Axes",
-                "type", "Axes"
-            });
-            writer.element("xsd:element", new String[] {
+                "type", "Axes");
+            writer.element(
+                "xsd:element",
                 "name", "CellData",
-                "type", "CellData"
-            });
+                "type", "CellData");
             writer.endElement(); // xsd:sequence
             writer.endElement(); // xsd:complexType
             writer.endElement(); // xsd:element name=root
@@ -1207,18 +1220,18 @@ public class XmlaHandler implements XmlaConstants {
 
     static void writeEmptyDatasetXmlSchema(SaxWriter writer, SetType setType) {
         String setNsXmla = XmlaConstants.NS_XMLA_ROWSET;
-        writer.startElement("xsd:schema", new String[] {
+        writer.startElement(
+            "xsd:schema",
             "xmlns:xsd", XmlaConstants.NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
             "xmlns:xsi", XmlaConstants.NS_XSI,
             "xmlns:sql", NS_XML_SQL,
-            "elementFormDefault", "qualified"
-        });
+            "elementFormDefault", "qualified");
 
-        writer.element("xsd:element", new String[] {
-            "name", "root"
-        });
+        writer.element(
+            "xsd:element",
+            "name", "root");
 
         writer.endElement(); // xsd:schema
     }
@@ -1257,8 +1270,10 @@ public class XmlaHandler implements XmlaConstants {
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
             if ("true".equals(advancedFlag)) {
-                final Position position = result.getAxes()[0].getPositions().get(0);
-                Member[] members = position.toArray(new Member[position.size()]);
+                final Position position =
+                    result.getAxes()[0].getPositions().get(0);
+                Member[] members = position.toArray(
+                    new Member[position.size()]);
 
                 final CellRequest cellRequest =
                     RolapAggregationManager.makeRequest(members);
@@ -1318,7 +1333,9 @@ public class XmlaHandler implements XmlaConstants {
                 }
             } else {
                 int count = -1;
-                if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+                if (MondrianProperties.instance().EnableTotalCount
+                    .booleanValue())
+                {
                     count = dtCell.getDrillThroughCount();
                 }
 
@@ -1330,7 +1347,8 @@ public class XmlaHandler implements XmlaConstants {
                 Dialect dialect =
                     ((RolapSchema) connection.getSchema()).getDialect();
                 if (!dialect.supportsResultSetConcurrency(
-                    resultSetType, resultSetConcurrency)) {
+                    resultSetType, resultSetConcurrency))
+                {
                     // downgrade to non-scroll cursor, since we can
                     // fake absolute() via forward fetch
                     resultSetType = ResultSet.TYPE_FORWARD_ONLY;
@@ -1546,59 +1564,58 @@ public class XmlaHandler implements XmlaConstants {
          * @param writer Writer
          */
         public void metadata(SaxWriter writer) {
-            writer.startElement("xsd:schema", new String[] {
+            writer.startElement(
+                "xsd:schema",
                 "xmlns:xsd", XmlaConstants.NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
                 "xmlns:xsi", XmlaConstants.NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
-                "elementFormDefault", "qualified"
-            });
+                "elementFormDefault", "qualified");
 
             { // <root>
-                writer.startElement("xsd:element", new String[] {
-                    "name", "root"
-                });
+                writer.startElement(
+                    "xsd:element",
+                    "name", "root");
                 writer.startElement("xsd:complexType");
                 writer.startElement("xsd:sequence");
-                writer.element("xsd:element", new String[] {
+                writer.element(
+                    "xsd:element",
                     "maxOccurs", "unbounded",
                     "minOccurs", "0",
                     "name", "row",
-                    "type", "row"
-                });
+                    "type", "row");
                 writer.endElement(); // xsd:sequence
                 writer.endElement(); // xsd:complexType
                 writer.endElement(); // xsd:element name=root
             }
 
             { // xsd:simpleType name="uuid"
-                writer.startElement("xsd:simpleType", new String[] {
-                    "name", "uuid"
-                });
-                writer.startElement("xsd:restriction", new String[] {
-                    "base", XSD_STRING
-                });
-                writer.element("xsd:pattern", new String[] {
-                    "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-                });
+                writer.startElement(
+                    "xsd:simpleType",
+                        "name", "uuid");
+                writer.startElement(
+                    "xsd:restriction",
+                    "base", XSD_STRING);
+                writer.element(
+                    "xsd:pattern",
+                    "value", RowsetDefinition.UUID_PATTERN);
                 writer.endElement(); // xsd:restriction
                 writer.endElement(); // xsd:simpleType
             }
 
             { // xsd:complexType name="row"
-                writer.startElement("xsd:complexType", new String[] {
-                    "name", "row"
-                });
+                writer.startElement(
+                    "xsd:complexType",
+                    "name", "row");
                 writer.startElement("xsd:sequence");
                 for (Column column : columns) {
                     writer.element(
-                        "xsd:element", new String[] {
+                        "xsd:element",
                         "minOccurs", "0",
                         "name", column.encodedName,
                         "sql:field", column.name,
-                        "type", column.xsdType
-                    });
+                        "type", column.xsdType);
                 }
 
                 writer.endElement(); // xsd:sequence
@@ -1640,7 +1657,8 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     private QueryResult executeQuery(XmlaRequest request)
-            throws XmlaException {
+        throws XmlaException
+    {
         final String statement = request.getStatement();
 
         if (LOGGER.isDebugEnabled()) {
@@ -1686,10 +1704,14 @@ public class XmlaHandler implements XmlaConstants {
                     ex);
             }
 
-            final String formatName = request.getProperties().get(
+            final String formatName =
+                request.getProperties().get(
                     PropertyDefinition.Format.name());
-            Enumeration.Format format = valueOf(Enumeration.Format.class, formatName,
-                null);
+            Enumeration.Format format =
+                valueOf(
+                    Enumeration.Format.class,
+                    formatName,
+                    null);
 
             if (format == Enumeration.Format.Multidimensional) {
                 return new MDDataSet_Multidimensional(result);
@@ -1721,7 +1743,8 @@ public class XmlaHandler implements XmlaConstants {
             // Not in spec nor generated by SQL Server
 //            "Depth"
             };
-        protected static final Map<String, String> longPropNames = new HashMap<String, String>();
+        protected static final Map<String, String> longPropNames =
+            new HashMap<String, String>();
 
         static {
             longPropNames.put("UName", Property.MEMBER_UNIQUE_NAME.name);
@@ -1791,8 +1814,9 @@ public class XmlaHandler implements XmlaConstants {
             for (Dimension dimension : unseenDimensionList) {
                 hierarchies.add(dimension.getHierarchy());
             }
-            writer.startElement("AxisInfo",
-                    new String[] { "name", "SlicerAxis"});
+            writer.startElement(
+                "AxisInfo",
+                new String[] { "name", "SlicerAxis"});
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
             writeHierarchyInfo(writer, hierarchies, getProps(slicerAxis));
             writer.endElement(); // AxisInfo
@@ -1805,17 +1829,20 @@ public class XmlaHandler implements XmlaConstants {
             // -----------
             writer.startElement("CellInfo");
             if (shouldReturnCellProperty(Property.VALUE.getName())) {
-                writer.element("Value", new String[] {
-                "name", "VALUE"});
+                writer.element(
+                    "Value",
+                    "name", "VALUE");
             }
             if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())) {
-                writer.element("FmtValue", new String[] {
-                    "name", "FORMATTED_VALUE"});
+                writer.element(
+                    "FmtValue",
+                    "name", "FORMATTED_VALUE");
             }
 
             if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())) {
-                writer.element("FormatString", new String[] {
-                    "name", "FORMAT_STRING"});
+                writer.element(
+                    "FormatString",
+                    "name", "FORMAT_STRING");
             }
             writer.endElement(); // CellInfo
             // -----------
@@ -1828,7 +1855,9 @@ public class XmlaHandler implements XmlaConstants {
             QueryAxis queryAxis,
             String axisName)
         {
-            writer.startElement("AxisInfo", new String[] { "name", axisName});
+            writer.startElement(
+                "AxisInfo",
+                "name", axisName);
 
             List<Hierarchy> hierarchies;
             Iterator<Position> it = axis.getPositions().iterator();
@@ -1859,9 +1888,8 @@ public class XmlaHandler implements XmlaConstants {
         {
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
-                    "HierarchyInfo", new String[]{
-                    "name", hierarchy.getName()
-                });
+                    "HierarchyInfo",
+                    "name", hierarchy.getName());
                 for (final String prop : props) {
                     writer.element(
                         prop, getAttributes(prop, hierarchy));
@@ -1874,8 +1902,9 @@ public class XmlaHandler implements XmlaConstants {
             String actualPropName = getPropertyName(prop);
             List<String> values = new ArrayList<String>();
             values.add("name");
-            values.add(hierarchy.getUniqueName() + "." +
-                    Util.quoteMdxIdentifier(actualPropName));
+            values.add(
+                hierarchy.getUniqueName() + "." + Util.quoteMdxIdentifier(
+                    actualPropName));
             if (longPropNames.get(prop) == null) {
                 //Adding type attribute to the optional properties
                 values.add("type");
@@ -1920,15 +1949,18 @@ public class XmlaHandler implements XmlaConstants {
             // now generate SlicerAxis information
             //
             List<Hierarchy> hierarchies = slicerAxisHierarchies;
-            writer.startElement("Axis", new String[] { "name", "SlicerAxis"});
+            writer.startElement(
+                "Axis",
+                "name", "SlicerAxis");
             writer.startElement("Tuples");
             writer.startElement("Tuple");
 
             Map<String, Integer> memberMap = new HashMap<String, Integer>();
             Member positionMember;
             Axis slicerAxis = result.getSlicerAxis();
-            if (slicerAxis.getPositions() != null &&
-                slicerAxis.getPositions().size() > 0) {
+            if (slicerAxis.getPositions() != null
+                && slicerAxis.getPositions().size() > 0)
+            {
                 final Position pos0 = slicerAxis.getPositions().get(0);
                 int i = 0;
                 for (Member member : pos0) {
@@ -1969,9 +2001,9 @@ public class XmlaHandler implements XmlaConstants {
                     }
                 } else {
                     LOGGER.warn(
-                        "Can not create SlicerAxis: " +
-                            "null default member for Hierarchy " +
-                            hierarchy.getUniqueName());
+                        "Can not create SlicerAxis: "
+                        + "null default member for Hierarchy "
+                        + hierarchy.getUniqueName());
                 }
             }
 
@@ -1995,7 +2027,8 @@ public class XmlaHandler implements XmlaConstants {
             if (dimensionProperties.length == 0) {
                 return defaultProps;
             }
-            String[] props = new String[defaultProps.length + dimensionProperties.length];
+            String[] props =
+                new String[defaultProps.length + dimensionProperties.length];
             System.arraycopy(defaultProps, 0, props, 0, defaultProps.length);
             for (int i = 0; i < dimensionProperties.length; i++) {
                 props[defaultProps.length + i] =
@@ -2004,8 +2037,15 @@ public class XmlaHandler implements XmlaConstants {
             return props;
         }
 
-        private void axis(SaxWriter writer, Axis axis, String[] props, String axisName) {
-            writer.startElement("Axis", new String[] { "name", axisName});
+        private void axis(
+            SaxWriter writer,
+            Axis axis,
+            String[] props,
+            String axisName)
+        {
+            writer.startElement(
+                "Axis",
+                "name", axisName);
             writer.startElement("Tuples");
 
             List<Position> positions = axis.getPositions();
@@ -2037,8 +2077,9 @@ public class XmlaHandler implements XmlaConstants {
             int k,
             String[] props)
         {
-            writer.startElement("Member", new String[] {
-                "Hierarchy", member.getHierarchy().getName()});
+            writer.startElement(
+                "Member",
+                "Hierarchy", member.getHierarchy().getName());
             for (String prop : props) {
                 Object value;
                 String propLong = longPropNames.get(prop);
@@ -2048,9 +2089,10 @@ public class XmlaHandler implements XmlaConstants {
                 if (propLong.equals(Property.DISPLAY_INFO.name)) {
                     Integer childrenCard = (Integer) member
                       .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                    value = calculateDisplayInfo(prevPosition,
-                                nextPosition,
-                                member, k, childrenCard);
+                    value = calculateDisplayInfo(
+                        prevPosition,
+                        nextPosition,
+                        member, k, childrenCard);
                 } else if (propLong.equals(Property.DEPTH.name)) {
                     value = member.getDepth();
                 } else {
@@ -2066,9 +2108,11 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void slicerAxis(
-                SaxWriter writer, Member member, String[] props) {
-            writer.startElement("Member", new String[] {
-                "Hierarchy", member.getHierarchy().getName()});
+            SaxWriter writer, Member member, String[] props)
+        {
+            writer.startElement(
+                "Member",
+                "Hierarchy", member.getHierarchy().getName());
             for (String prop : props) {
                 Object value;
                 String propLong = longPropNames.get(prop);
@@ -2077,8 +2121,8 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 if (propLong.equals(Property.DISPLAY_INFO.name)) {
                     Integer childrenCard =
-                        (Integer) member
-                            .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                        (Integer) member.getPropertyValue(
+                            Property.CHILDREN_CARDINALITY.name);
                     // NOTE: don't know if this is correct for
                     // SlicerAxis
                     int displayInfo = 0xffff & childrenCard;
@@ -2121,8 +2165,9 @@ public class XmlaHandler implements XmlaConstants {
                 String currentParentUName = currentMember.getParentUniqueName();
                 Member prevMember = prevPosition.get(memberOrdinal);
                 String prevParentUName = prevMember.getParentUniqueName();
-                if (currentParentUName != null &&
-                    currentParentUName.equals(prevParentUName)) {
+                if (currentParentUName != null
+                    && currentParentUName.equals(prevParentUName))
+                {
                     displayInfo |= 0x20000;
                 }
             }
@@ -2141,8 +2186,11 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.endElement(); // CellData
         }
-        private void recurse(SaxWriter writer, int[] pos,
-                int axisOrdinal, Evaluator evaluator, int[] cellOrdinal) {
+
+        private void recurse(
+            SaxWriter writer, int[] pos,
+            int axisOrdinal, Evaluator evaluator, int[] cellOrdinal)
+        {
             if (axisOrdinal < 0) {
                 emitCell(writer, pos, evaluator, cellOrdinal[0]++);
 
@@ -2153,21 +2201,26 @@ public class XmlaHandler implements XmlaConstants {
                 for (Position position : positions) {
                     pos[axisOrdinal] = i;
                     evaluator.setContext(position);
-                    recurse(writer, pos, axisOrdinal - 1, evaluator, cellOrdinal);
+                    recurse(
+                        writer, pos, axisOrdinal - 1, evaluator, cellOrdinal);
                     i++;
                 }
             }
         }
-        private void emitCell(SaxWriter writer, int[] pos,
-                            Evaluator evaluator, int ordinal) {
+
+        private void emitCell(
+            SaxWriter writer, int[] pos,
+            Evaluator evaluator, int ordinal)
+        {
             Cell cell = result.getCell(pos);
             if (cell.isNull() && ordinal != 0) {
                 // Ignore null cell like MS AS, except for Oth ordinal
                 return;
             }
 
-            writer.startElement("Cell", new String[] {
-                "CellOrdinal", Integer.toString(ordinal)});
+            writer.startElement(
+                "Cell",
+                "CellOrdinal", Integer.toString(ordinal));
             for (int i = 0; i < cellProps.length; i++) {
                 String cellPropLong = cellPropLongs[i];
                 Object value = cell.getPropertyValue(cellPropLong);
@@ -2176,16 +2229,19 @@ public class XmlaHandler implements XmlaConstants {
                 if (value != null && shouldReturnCellProperty(cellPropLong)) {
                     if (cellPropLong.equals(Property.VALUE.name)) {
                         String valueType = deduceValueType(evaluator, value);
-                        writer.startElement(cellProps[i], new String[] {"xsi:type", valueType});
+                        writer.startElement(
+                            cellProps[i],"xsi:type", valueType});
                     } else {
                         writer.startElement(cellProps[i]);
                     }
 
                     String valueString = value.toString();
 
-                    if (cellPropLong.equals(Property.VALUE.name) &&
-                            value instanceof Number) {
-                        valueString = XmlaUtil.normalizeNumericString(valueString);
+                    if (cellPropLong.equals(Property.VALUE.name)
+                        && value instanceof Number)
+                    {
+                        valueString =
+                            XmlaUtil.normalizeNumericString(valueString);
                     }
 
                     writer.characters(valueString);
@@ -2206,14 +2262,16 @@ public class XmlaHandler implements XmlaConstants {
                         continue;
                     }
                     final String dataType = (String)
-                        evaluator.getProperty(Property.DATATYPE.getName(), null);
+                        evaluator.getProperty(
+                            Property.DATATYPE.getName(), null);
                     final ValueInfo vi = new ValueInfo(dataType, value);
                     final String valueType = vi.valueType;
                     value = vi.value;
                     isDecimal = vi.isDecimal;
 
-                    writer.startElement(cellProps[i],
-                            new String[] {"xsi:type", valueType});
+                    writer.startElement(
+                        cellProps[i],
+                        new String[] {"xsi:type", valueType});
                 } else {
                     writer.startElement(cellProps[i]);
                 }
@@ -2231,8 +2289,8 @@ public class XmlaHandler implements XmlaConstants {
 
         private boolean shouldReturnCellProperty(String cellPropLong) {
             Query query = result.getQuery();
-            return query.isCellPropertyEmpty() ||
-                    query.hasCellProperty(cellPropLong);
+            return query.isCellPropertyEmpty()
+                || query.hasCellProperty(cellPropLong);
         }
     }
 
@@ -2262,15 +2320,16 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         public void metadata(SaxWriter writer) {
-            writer.element("xsd:element", new String[] {
+            writer.element(
+                "xsd:element",
                 "minOccurs", "0",
                 "name", encodedName,
-                "sql:field", name,
-            });
+                "sql:field", name);
         }
 
         public void write(
-                SaxWriter writer, Cell cell, Member[] members) {
+            SaxWriter writer, Cell cell, Member[] members)
+        {
             if (cell.isNull()) {
                 return;
             }
@@ -2279,7 +2338,7 @@ public class XmlaHandler implements XmlaConstants {
             String valueString = value.toString();
             String valueType = deduceValueType(cell, value);
 
-            writer.startElement(encodedName, new String[] {
+            writer.startElement(encodedName,
                 "xsi:type", valueType});
             if (value instanceof Number) {
                 valueString = XmlaUtil.normalizeNumericString(valueString);
@@ -2297,8 +2356,9 @@ public class XmlaHandler implements XmlaConstants {
 
             String valueString = value.toString();
 
-            writer.startElement(encodedName, new String[] {
-                "xsi:type", valueType});
+            writer.startElement(
+                encodedName,
+                "xsi:type", valueType);
             if (isDecimal) {
                 valueString = XmlaUtil.normalizeNumericString(valueString);
             }
@@ -2318,25 +2378,28 @@ public class XmlaHandler implements XmlaConstants {
         private final int memberOrdinal;
 
         public MemberColumnHandler(
-                String property, Level level, int memberOrdinal) {
-            super(level.getUniqueName() + "." +
-                    Util.quoteMdxIdentifier(property));
+            String property, Level level, int memberOrdinal)
+        {
+            super(
+                level.getUniqueName() + "."
+                + Util.quoteMdxIdentifier(property));
             this.property = property;
             this.level = level;
             this.memberOrdinal = memberOrdinal;
         }
 
         public void metadata(SaxWriter writer) {
-            writer.element("xsd:element", new String[] {
+            writer.element(
+                "xsd:element",
                 "minOccurs", "0",
                 "name", encodedName,
                 "sql:field", name,
-                "type", XSD_STRING
-            });
+                "type", XSD_STRING);
         }
 
         public void write(
-                SaxWriter writer, Cell cell, Member[] members) {
+            SaxWriter writer, Cell cell, Member[] members)
+        {
             Member member = members[memberOrdinal];
             final int depth = level.getDepth();
             if (member.getDepth() < depth) {
@@ -2365,7 +2428,10 @@ public class XmlaHandler implements XmlaConstants {
         private int cellOrdinal;
 
         private static final Id[] MemberCaptionIdArray = {
-            new Id(new Id.Segment(Property.MEMBER_CAPTION.name, Id.Quoting.QUOTED))
+            new Id(
+                new Id.Segment(
+                    Property.MEMBER_CAPTION.name,
+                    Id.Quoting.QUOTED))
         };
         private final Member[] members;
         private final ColumnHandler[] columnHandlers;
@@ -2393,7 +2459,8 @@ public class XmlaHandler implements XmlaConstants {
 
             // Build a list of the lowest level used on each non-COLUMNS axis.
             Level[] levels = new Level[dimensionCount];
-            List<ColumnHandler> columnHandlerList = new ArrayList<ColumnHandler>();
+            List<ColumnHandler> columnHandlerList =
+                new ArrayList<ColumnHandler>();
             int memberOrdinal = 0;
             if (!empty) {
                 for (int i = axes.length - 1; i > 0; i--) {
@@ -2405,9 +2472,10 @@ public class XmlaHandler implements XmlaConstants {
                     for (Position position : positions) {
                         memberOrdinal = z0; // rewind to start
                         for (Member member : position) {
-                            if (jj == 0 ||
-                                member.getLevel().getDepth() >
-                                    levels[memberOrdinal].getDepth()) {
+                            if (jj == 0
+                                || member.getLevel().getDepth()
+                                > levels[memberOrdinal].getDepth())
+                            {
                                 levels[memberOrdinal] = member.getLevel();
                             }
                             memberOrdinal++;
@@ -2472,50 +2540,50 @@ public class XmlaHandler implements XmlaConstants {
 //                return;
 //            }
 
-            writer.startElement("xsd:schema", new String[] {
+            writer.startElement(
+                "xsd:schema",
                 "xmlns:xsd", XmlaConstants.NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
                 "xmlns:xsi", XmlaConstants.NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
-                "elementFormDefault", "qualified"
-            });
+                "elementFormDefault", "qualified");
 
             { // <root>
-                writer.startElement("xsd:element", new String[] {
-                    "name", "root"
-                });
+                writer.startElement(
+                    "xsd:element",
+                    "name", "root");
                 writer.startElement("xsd:complexType");
                 writer.startElement("xsd:sequence");
-                writer.element("xsd:element", new String[] {
+                writer.element(
+                    "xsd:element",
                     "maxOccurs", "unbounded",
                     "minOccurs", "0",
                     "name", "row",
-                    "type", "row",
-                });
+                    "type", "row");
                 writer.endElement(); // xsd:sequence
                 writer.endElement(); // xsd:complexType
                 writer.endElement(); // xsd:element name=root
             }
 
             { // xsd:simpleType name="uuid"
-                writer.startElement("xsd:simpleType", new String[] {
-                    "name", "uuid",
-                });
-                writer.startElement("xsd:restriction", new String[] {
-                    "base", XSD_STRING
-                });
-                writer.element("xsd:pattern", new String[] {
-                    "value", "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-                });
+                writer.startElement(
+                    "xsd:simpleType",
+                    "name", "uuid");
+                writer.startElement(
+                    "xsd:restriction",
+                    "base", XSD_STRING);
+                writer.element(
+                    "xsd:pattern",
+                    "value", RowsetDefinition.UUID_PATTERN);
                 writer.endElement(); // xsd:restriction
                 writer.endElement(); // xsd:simpleType
             }
 
             { // xsd:complexType name="row"
-                writer.startElement("xsd:complexType", new String[] {
-                    "name", "row",
-                });
+                writer.startElement(
+                    "xsd:complexType",
+                    "name", "row");
                 writer.startElement("xsd:sequence");
                 for (ColumnHandler columnHandler : columnHandlers) {
                     columnHandler.metadata(writer);
@@ -2585,7 +2653,8 @@ public class XmlaHandler implements XmlaConstants {
                         if (columnHandler instanceof MemberColumnHandler) {
                             columnHandler.write(writer, null, members);
                         } else if (columnHandler instanceof CellColumnHandler) {
-                            columnHandler.write(writer, result.getCell(pos), null);
+                            columnHandler.write(
+                                writer, result.getCell(pos), null);
                             pos[0]++;// next col.
                         }
                     }
@@ -2631,7 +2700,9 @@ public class XmlaHandler implements XmlaConstants {
                 CLIENT_FAULT_FC,
                 HSB_DISCOVER_FORMAT_CODE,
                 HSB_DISCOVER_FORMAT_FAULT_FS,
-                new UnsupportedOperationException("<Format>: only 'Tabular' allowed in Discover method type"));
+                new UnsupportedOperationException(
+                    "<Format>: only 'Tabular' allowed in Discover method "
+                    + "type"));
         }
         final String contentName =
             request.getProperties().get(PropertyDefinition.Content.name());
@@ -2642,24 +2713,27 @@ public class XmlaHandler implements XmlaConstants {
         SaxWriter writer = response.getWriter();
         writer.startDocument();
 
-        writer.startElement(prefix + ":DiscoverResponse", new String[] {
-            "xmlns:" + prefix, NS_XMLA});
+        writer.startElement(
+            prefix + ":DiscoverResponse",
+            "xmlns:" + prefix, NS_XMLA);
         writer.startElement(prefix + ":return");
-        writer.startElement("root", new String[] {
+        writer.startElement(
+            "root",
             "xmlns", NS_XMLA_ROWSET,
             "xmlns:xsi", NS_XSI,
             "xmlns:xsd", NS_XSD,
-            "xmlns:EX", NS_XMLA_EX
-        });
+            "xmlns:EX", NS_XMLA_EX);
 
         if ((content == Enumeration.Content.Schema)
-                || (content == Enumeration.Content.SchemaData)) {
+            || (content == Enumeration.Content.SchemaData))
+        {
             rowset.rowsetDefinition.writeRowsetXmlSchema(writer);
         }
 
         try {
             if ((content == Enumeration.Content.Data)
-                    || (content == Enumeration.Content.SchemaData)) {
+                || (content == Enumeration.Content.SchemaData))
+            {
                 rowset.unparse(response);
             }
         } catch (XmlaException xex) {
@@ -2714,10 +2788,11 @@ public class XmlaHandler implements XmlaConstants {
      * @throws XmlaException If error occurs
      */
     protected Connection getConnection(
-            final DataSourcesConfig.Catalog catalog,
-            final Role role,
-            final String roleName)
-            throws XmlaException {
+        final DataSourcesConfig.Catalog catalog,
+        final Role role,
+        final String roleName)
+        throws XmlaException
+    {
         DataSourcesConfig.DataSource ds = catalog.getDataSource();
 
         Util.PropertyList connectProperties =
@@ -2729,7 +2804,8 @@ public class XmlaHandler implements XmlaConstants {
             if (catalogUrl == null) {
                 LOGGER.debug("XmlaHandler.getConnection: catalogUrl is null");
             } else {
-                LOGGER.debug("XmlaHandler.getConnection: catalogUrl=" + catalogUrl);
+                LOGGER.debug(
+                    "XmlaHandler.getConnection: catalogUrl=" + catalogUrl);
             }
         }
 
@@ -2739,8 +2815,9 @@ public class XmlaHandler implements XmlaConstants {
         // Checking access
         if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
             .equalsIgnoreCase(
-                ds.getAuthenticationMode()) &&
-            (role == null) && (roleName == null))
+                ds.getAuthenticationMode())
+            && (role == null)
+            && (roleName == null))
         {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2765,9 +2842,11 @@ public class XmlaHandler implements XmlaConstants {
 
         if (LOGGER.isDebugEnabled()) {
             if (conn == null) {
-                LOGGER.debug("XmlaHandler.getConnection: returning connection null");
+                LOGGER.debug(
+                    "XmlaHandler.getConnection: returning connection null");
             } else {
-                LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
+                LOGGER.debug(
+                    "XmlaHandler.getConnection: returning connection not null");
             }
         }
         return conn;
@@ -2792,12 +2871,14 @@ public class XmlaHandler implements XmlaConstants {
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,
                 HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError("no data source is configured with name '" +
-                    dataSourceInfo + "'"));
+                Util.newError(
+                    "no data source is configured with name '"
+                    + dataSourceInfo + "'"));
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaHandler.getDataSource: dataSourceInfo=" +
-                dataSourceInfo);
+            LOGGER.debug(
+                "XmlaHandler.getDataSource: dataSourceInfo="
+                + dataSourceInfo);
         }
 
         final DataSourcesConfig.DataSource ds =
@@ -2807,8 +2888,9 @@ public class XmlaHandler implements XmlaConstants {
                 // TODO: this if a failure situation
                 LOGGER.debug("XmlaHandler.getDataSource: ds is null");
             } else {
-                LOGGER.debug("XmlaHandler.getDataSource: ds.dataSourceInfo=" +
-                    ds.getDataSourceInfo());
+                LOGGER.debug(
+                    "XmlaHandler.getDataSource: ds.dataSourceInfo="
+                    + ds.getDataSourceInfo());
             }
         }
         return ds;
@@ -2942,7 +3024,8 @@ public class XmlaHandler implements XmlaConstants {
 
         int index = dtSql.indexOf("from");
         String whereClause = " " + dtSql.substring(index);
-        final String fieldNames = properties.get(PropertyDefinition.TableFields.name());
+        final String fieldNames =
+            properties.get(PropertyDefinition.TableFields.name());
         StringTokenizer st = new StringTokenizer(fieldNames, ",");
         drillThruColumnNames.clear();
         while (st.hasMoreTokens()) {
@@ -2975,7 +3058,8 @@ public class XmlaHandler implements XmlaConstants {
                 String countSql = buf.toString();
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Advanced drill through counting sql: " + countSql);
+                    LOGGER.debug(
+                        "Advanced drill through counting sql: " + countSql);
                 }
                 SqlStatement smt =
                     RolapUtil.executeQuery(
@@ -3033,7 +3117,8 @@ public class XmlaHandler implements XmlaConstants {
                 } else {
                     System.out.println(",");
                 }
-                System.out.print("        new MetadataColumn(\"" + column.name + "\")");
+                System.out.print(
+                    "        new MetadataColumn(\"" + column.name + "\")");
             }
             System.out.println("),");
         }

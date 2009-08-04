@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,14 +30,20 @@ public class CellRequest {
     public final boolean extendedContext;
     public final boolean drillThrough;
     /**
-     * List of {@link mondrian.rolap.RolapStar.Column}s being which have values
-     * in this request.
+     * List of {@link mondrian.rolap.RolapStar.Column}s which have values
+     * in this request, stored according to their integer bit positions.
      */
-    private final List<RolapStar.Column> constrainedColumnList =
-        new ArrayList<RolapStar.Column>();
+    private final List<Integer> constrainedColumnList =
+        new ArrayList<Integer>();
 
     private final List<StarColumnPredicate> columnPredicateList =
         new ArrayList<StarColumnPredicate>();
+
+    /**
+     * Maps column integer bit positions to {@link mondrian.rolap.RolapStar.Column}s
+     */
+    private final Map<Integer, RolapStar.Column> bitToColumnMap =
+        new HashMap<Integer, RolapStar.Column>();
 
     /*
      * Array of column values;
@@ -46,11 +52,11 @@ public class CellRequest {
     private Object[] singleValues;
 
     /**
-     * After all of the columns are loaded into the constrainedColumnList instance
-     * variable, this columnsCache is created the first time the getColumns
-     * method is called.
-     * <p>
-     * It is assumed that the call to all additional columns,
+     * After all of the columns are loaded into the {@link
+     * #constrainedColumnList} instance variable, this columnsCache is created
+     * the first time the getColumns method is called.
+     *
+     * <p>It is assumed that the call to all additional columns,
      * {@link #addConstrainedColumn}, will not be called after the first call to
      * the {@link #getConstrainedColumns()} method.
      */
@@ -88,9 +94,9 @@ public class CellRequest {
     private boolean unsatisfiable;
 
     /**
-     * The columnPredicateList and columnsCache must be set after all constraints
-     * have been added. This is used by access methods to determine if
-     * both columnPredicateList and columnsCache need to be generated.
+     * The columnPredicateList and columnsCache must be set after all
+     * constraints have been added. This is used by access methods to determine
+     * if both columnPredicateList and columnsCache need to be generated.
      */
     private boolean isDirty = true;
 
@@ -132,9 +138,10 @@ public class CellRequest {
             // This column is already constrained. Unless the value is the same,
             // or this value or the previous value is null (meaning
             // unconstrained) the request will never return any results.
-            int index = constrainedColumnList.indexOf(column);
+            int index = constrainedColumnList.indexOf(bitPosition);
             assert index >= 0;
-            final StarColumnPredicate prevValue = columnPredicateList.get(index);
+            final StarColumnPredicate prevValue =
+                columnPredicateList.get(index);
             if (prevValue == null) {
                 // Previous column was unconstrained. Constrain on new
                 // value.
@@ -142,8 +149,8 @@ public class CellRequest {
                 // Previous column was constrained. Nothing to do.
                 return;
             } else if (predicate.equalConstraint(prevValue)) {
-                        // Same constraint again. Nothing to do.
-                        return;
+                // Same constraint again. Nothing to do.
+                return;
             } else {
                 // Different constraint. Request is impossible to satisfy.
                 predicate = null;
@@ -152,7 +159,8 @@ public class CellRequest {
             columnPredicateList.set(index, predicate);
 
         } else {
-            this.constrainedColumnList.add(column);
+            this.constrainedColumnList.add(bitPosition);
+            this.bitToColumnMap.put(bitPosition, column);
             this.constrainedColumnsBitKey.set(bitPosition);
             this.columnPredicateList.add(predicate);
         }
@@ -162,8 +170,8 @@ public class CellRequest {
      * Add compound member (formed via aggregate function) constraint to the
      * Cell.
      *
-     * @param compoundBitKey
-     * @param compoundPredicate
+     * @param compoundBitKey Compound bit key
+     * @param compoundPredicate Compound predicate
      */
     public void addAggregateList(
         BitKey compoundBitKey,
@@ -172,14 +180,18 @@ public class CellRequest {
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
 
+    /**
+     * Returns the measure of this cell request.
+     *
+     * @return Measure
+     */
     public RolapStar.Measure getMeasure() {
         return measure;
     }
 
     public RolapStar.Column[] getConstrainedColumns() {
         if (this.columnsCache == null) {
-            // This is called more than once so caching the value makes
-            // sense.
+            // This is called more than once so caching the value makes sense.
             check();
         }
         return this.columnsCache;
@@ -195,7 +207,8 @@ public class CellRequest {
     }
 
     /**
-     * Get the map of compound predicates
+     * Returns the map of compound predicates.
+     *
      * @return predicate map
      */
     public Map<BitKey, StarPredicate> getCompoundPredicateMap() {
@@ -217,19 +230,12 @@ public class CellRequest {
             columnPredicateList.clear();
             int i = 0;
             for (int bitPos : constrainedColumnsBitKey) {
-                // NOTE: If the RolapStar.Column were stored in maybe a Map
-                // rather than the constrainedColumnList List, we would
-                // not have to for-loop over the list for each bit position.
-                for (int j = 0; j < size; j++) {
-                    RolapStar.Column rc = constrainedColumnList.get(j);
-                    if (rc.getBitPosition() == bitPos) {
-                        int index = constrainedColumnList.indexOf(rc);
-                        final StarColumnPredicate value =
+                int index = constrainedColumnList.indexOf(bitPos);
+                if (index >= 0) {
+                    final StarColumnPredicate value =
                             oldColumnPredicates[index];
-                        columnPredicateList.add(value);
-                        columnsCache[i++] = rc;
-                        break;
-                    }
+                    columnPredicateList.add(value);
+                    columnsCache[i++] = this.bitToColumnMap.get(bitPos);
                 }
             }
             isDirty = false;

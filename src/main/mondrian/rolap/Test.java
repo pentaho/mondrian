@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -40,7 +40,8 @@ public class Test {
             try {
                 test.convertFoodMart();
             } catch (java.sql.SQLException e) {
-                System.out.println("Error: " + mondrian.olap.Util.getErrorMessage(e));
+                System.out.println(
+                    "Error: " + mondrian.olap.Util.getErrorMessage(e));
             }
         }
     }
@@ -48,8 +49,10 @@ public class Test {
     Test(String[] args)
     {
         pw = new PrintWriter(System.out, true);
-        String connectString = "Data Source=LOCALHOST;Provider=msolap;Catalog=Foodmart";
-        connection = (RolapConnection) DriverManager.getConnection(connectString, null);
+        String connectString =
+            "Data Source=LOCALHOST;Provider=msolap;Catalog=Foodmart";
+        connection =
+            (RolapConnection) DriverManager.getConnection(connectString, null);
     }
 
     void convertFoodMart() throws java.sql.SQLException
@@ -66,25 +69,16 @@ public class Test {
             statement = connection.createStatement();
             statement2 = connection.createStatement();
             String sql =
-                "select * from (" +
-                " select *, \"fname\" + ' ' + \"lname\" as \"name\" from \"customer\")" +
-                "order by \"country\", \"state_province\", \"city\", \"name\"";
-//          sql = "select * from \"customer\" " +
-//              "where (\"country\", \"state_province\") = " +
-//              " ('Canada', 'BC')";
-//          sql = "select * from \"customer\" " +
-//              "where \"country\" = 'Canada' " +
-//              " and \"state_province\" = 'BC'";
+                "select * from ("
+                + " select *, \"fname\" + ' ' + \"lname\" as \"name\" from \"customer\")"
+                + "order by \"country\", \"state_province\", \"city\", \"name\"";
             java.sql.ResultSet resultSet = statement.executeQuery(sql);
-            if (true) {
-//              return;
-            }
             int i = 0;
             while (resultSet.next()) {
                 int customer_id = resultSet.getInt("customer_id");
                 statement2.executeUpdate(
-                    "update \"customer\" set \"ordinal\" = " + (++i * 3) +
-                    " where \"customer_id\" = " + customer_id);
+                    "update \"customer\" set \"ordinal\" = " + (++i * 3)
+                    + " where \"customer_id\" = " + customer_id);
             }
             connection.commit();
         } finally {
@@ -111,7 +105,8 @@ public class Test {
 
     void run()
     {
-        RolapCube salesCube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
+        RolapCube salesCube =
+            (RolapCube) connection.getSchema().lookupCube("Sales", true);
         RolapHierarchy measuresHierarchy =
                 (RolapHierarchy) salesCube.getMeasuresHierarchy();
         testMemberReader(measuresHierarchy.getMemberReader());
@@ -140,7 +135,8 @@ public class Test {
         Level[] levels = rootMembers.get(0).getHierarchy().getLevels();
         Level level = levels[levels.length > 1 ? 1 : 0];
         pw.print("Members at level " + level.getUniqueName() + " are ");
-        List<RolapMember> members = reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+        List<RolapMember> members =
+            reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
         print(members);
         pw.println();
 

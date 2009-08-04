@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -89,6 +89,10 @@ public class SqlQuery {
     private final List<ClauseList> groupingSet;
     private final ClauseList groupingFunction;
 
+
+    /** Controls whether table optimization hints are used */
+    private boolean allowHints;
+
     /**
      * This list is used to keep track of what aliases have been  used in the
      * FROM clause. One might think that a java.util.Set would be a more
@@ -128,6 +132,12 @@ public class SqlQuery {
         this.buf = new StringBuilder(128);
         this.groupingSet = new ArrayList<ClauseList>();
         this.dialect = dialect;
+
+        // REVIEW emcdermid 10-Jul-2009: It might be okay to allow
+        // hints in all cases, but for initial implementation this
+        // allows us to them on selectively in specific situations.
+        // Usage will likely expand with experimentation.
+        this.allowHints = false;
     }
 
     /**
@@ -154,6 +164,16 @@ public class SqlQuery {
 
     public void setDistinct(final boolean distinct) {
         this.distinct = distinct;
+    }
+
+    /**
+     * Chooses whether table optimization hints may be used
+     * (assuming the dialect supports it).
+     *
+     * @param t True to allow hints to be used, false otherwise
+     */
+    public void setAllowHints(boolean t) {
+        this.allowHints = t;
     }
 
     /**
@@ -210,10 +230,11 @@ public class SqlQuery {
      * Adds <code>[schema.]table AS alias</code> to the FROM clause.
      *
      * @param schema schema name; may be null
-     * @param table table name
+     * @param name table name
      * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
      * @param filter Extra filter condition, or null
+     * @param hints table optimization hints, if any
      * @param failIfExists Whether to throw a RuntimeException if from clause
      *   already contains this alias
      *
@@ -222,22 +243,23 @@ public class SqlQuery {
      */
     boolean addFromTable(
         final String schema,
-        final String table,
+        final String name,
         final String alias,
         final String filter,
+        final Map hints,
         final boolean failIfExists)
     {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
-                        "query already contains alias '" + alias + "'");
+                    "query already contains alias '" + alias + "'");
             } else {
                 return false;
             }
         }
 
         buf.setLength(0);
-        dialect.quoteIdentifier(buf, schema, table);
+        dialect.quoteIdentifier(buf, schema, name);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 
@@ -250,6 +272,10 @@ public class SqlQuery {
             fromAliases.add(alias);
         }
 
+        if (this.allowHints) {
+            dialect.appendHintsAfterFromClause(buf, hints);
+        }
+
         from.add(buf.toString());
 
         if (filter != null) {
@@ -259,9 +285,10 @@ public class SqlQuery {
         return true;
     }
 
-    public void addFrom(final SqlQuery sqlQuery,
-                        final String alias,
-                        final boolean failIfExists)
+    public void addFrom(
+        final SqlQuery sqlQuery,
+        final String alias,
+        final boolean failIfExists)
     {
         addFromQuery(sqlQuery.toString(), alias, failIfExists);
     }
@@ -284,9 +311,10 @@ public class SqlQuery {
     {
         if (relation instanceof MondrianDef.View) {
             final MondrianDef.View view = (MondrianDef.View) relation;
-            final String viewAlias = (alias == null)
-                    ? view.getAlias()
-                    : alias;
+            final String viewAlias =
+                (alias == null)
+                ? view.getAlias()
+                : alias;
             final String sqlString = view.getCodeSet().chooseQuery(dialect);
             return addFromQuery(sqlString, viewAlias, false);
 
@@ -298,12 +326,17 @@ public class SqlQuery {
 
         } else if (relation instanceof MondrianDef.Table) {
             final MondrianDef.Table table = (MondrianDef.Table) relation;
-            final String tableAlias = (alias == null)
-                    ? table.getAlias()
-                    : alias;
+            final String tableAlias =
+                (alias == null)
+                ? table.getAlias()
+                : alias;
             return addFromTable(
-                table.schema, table.name, tableAlias,
-                table.getFilter(), failIfExists);
+                table.schema,
+                table.name,
+                tableAlias,
+                table.getFilter(),
+                table.getHintMap(),
+                failIfExists);
 
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
@@ -355,13 +388,9 @@ public class SqlQuery {
      * @return Alias of expression
      */
     public String addSelectGroupBy(final String expression) {
-        final String c = addSelect(expression);
-        if (dialect.requiresGroupByAlias()) {
-            addGroupBy(dialect.quoteIdentifier(c));
-        } else {
-            addGroupBy(expression);
-        }
-        return c;
+        final String alias = addSelect(expression);
+        addGroupBy(expression, alias);
+        return alias;
     }
 
     public int getCurrentSelectListSize()
@@ -419,6 +448,14 @@ public class SqlQuery {
         groupBy.add(expression);
     }
 
+    public void addGroupBy(final String expression, final String alias) {
+        if (dialect.requiresGroupByAlias()) {
+            addGroupBy(dialect.quoteIdentifier(alias));
+        } else {
+            addGroupBy(expression);
+        }
+    }
+
     public void addHaving(final String expression)
     {
         having.add(expression);
@@ -458,7 +495,8 @@ public class SqlQuery {
         } else {
             buf.setLength(0);
 
-            select.toBuffer(buf,
+            select.toBuffer(
+                buf,
                 distinct ? "select distinct " : "select ", ", ");
             buf.append(getGroupingFunction(""));
             from.toBuffer(buf, " from ", ", ");
@@ -587,9 +625,11 @@ public class SqlQuery {
             return false;
         }
 
-        void toBuffer(final StringBuilder buf,
-                      final String first,
-                      final String sep) {
+        void toBuffer(
+            final StringBuilder buf,
+            final String first,
+            final String sep)
+        {
             boolean firstTime = true;
             for (String s : this) {
                 if (firstTime) {
@@ -677,7 +717,8 @@ public class SqlQuery {
         }
 
         private static String getBestName(Dialect dialect) {
-            return dialect.getDatabaseProduct().getFamily().name().toLowerCase();
+            return dialect.getDatabaseProduct().getFamily().name()
+                .toLowerCase();
         }
     }
 }

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,7 +25,7 @@ import java.util.List;
  * @author luis f. canals
  */
 public class ResultLoader {
-    private final List<Target> targets;
+    private final List<TargetBase> targets;
     private final int enumTargetCount;
     private final ResultSet resultSet;
     private final boolean execQuery;
@@ -39,7 +39,7 @@ public class ResultLoader {
 
     public ResultLoader(
         final int enumTargetCount,
-        final List<Target> targets,
+        final List<TargetBase> targets,
         final SqlStatement stmt,
         final ResultSet resultSet,
         final boolean execQuery,
@@ -72,7 +72,7 @@ public class ResultLoader {
 */
         if (enumTargetCount == 0) {
             int column = 0;
-            for (Target target : targets) {
+            for (TargetBase target : targets) {
                 target.removeCurrMember();
                 column = target.addRow(resultSet, column);
             }
@@ -145,7 +145,7 @@ public class ResultLoader {
      */
     private void resetCurrMembers(List<RolapMember> partialRow) {
         int nativeTarget = 0;
-        for (Target target : targets) {
+        for (TargetBase target : targets) {
             if (target.getSrcMembers() == null) {
                 if (partialRow != null) {
                     target.setCurrMember(partialRow.get(nativeTarget++));
@@ -172,10 +172,14 @@ public class ResultLoader {
      * @param message Message to issue on failure
      */
     private void addTargets(
-        int currEnumTargetIdx, int currTargetIdx, int nEnumTargets,
-        int[] srcMemberIdxes, ResultSet resultSet, String message) {
-
-        Target currTarget = targets.get(currTargetIdx);
+        int currEnumTargetIdx,
+        int currTargetIdx,
+        int nEnumTargets,
+        int[] srcMemberIdxes,
+        ResultSet resultSet,
+        String message)
+    {
+        TargetBase currTarget = targets.get(currTargetIdx);
         for (int i = 0; i < currTarget.getSrcMembers().size(); i++) {
             srcMemberIdxes[currEnumTargetIdx] = i;
             if (currEnumTargetIdx < nEnumTargets - 1) {
@@ -191,7 +195,7 @@ public class ResultLoader {
             } else {
                 int column = 0;
                 int enumTargetIdx = 0;
-                for (Target target : targets) {
+                for (TargetBase target : targets) {
                     if (target.getSrcMembers() == null) {
                         try {
                             column = target.addRow(resultSet, column);
@@ -217,7 +221,7 @@ public class ResultLoader {
      */
     private void savePartialResult(List<List<RolapMember>> partialResult) {
         List<RolapMember> row = new ArrayList<RolapMember>();
-        for (Target target : targets) {
+        for (TargetBase target : targets) {
             if (target.getSrcMembers() == null) {
                 row.add(target.getCurrMember());
             }

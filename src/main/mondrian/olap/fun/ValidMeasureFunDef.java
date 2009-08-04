@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,7 +56,8 @@ public class ValidMeasureFunDef extends FunDefBase
     }
 
     private static class CalcImpl
-            extends GenericCalc {
+        extends GenericCalc
+    {
         private final Calc calc;
 
         public CalcImpl(ResolvedFunCall call, Calc calc) {
@@ -89,7 +90,8 @@ public class ValidMeasureFunDef extends FunDefBase
                 getBaseCubeofMeasure(
                     evaluator, memberList.get(measurePosition), baseCube);
             List<Dimension> vMinusBDimensions =
-                getDimensionsToForceToAllLevel(virtualCube, baseCube, memberList);
+                getDimensionsToForceToAllLevel(
+                    virtualCube, baseCube, memberList);
             // declare members array and fill in with all needed members
             final List<Member> validMeasureMembers =
                 new ArrayList<Member>(memberList);
@@ -117,7 +119,9 @@ public class ValidMeasureFunDef extends FunDefBase
             return evaluator.evaluateCurrent();
         }
 
-        private List<Member> getCalculatedMembersFromContext(Evaluator evaluator) {
+        private List<Member> getCalculatedMembersFromContext(
+            Evaluator evaluator)
+        {
             Member[] currentMembers = evaluator.getMembers();
             List<Member> calculatedMembers = new ArrayList<Member>();
             for (Member currentMember : currentMembers) {
@@ -128,13 +132,13 @@ public class ValidMeasureFunDef extends FunDefBase
             return calculatedMembers;
         }
 
-
         public Calc[] getCalcs() {
             return new Calc[]{calc};
         }
 
         private RolapCube getBaseCubeofMeasure(
-                Evaluator evaluator, Member member, RolapCube baseCube) {
+            Evaluator evaluator, Member member, RolapCube baseCube)
+        {
             final Cube[] cubes = evaluator.getSchemaReader().getCubes();
             for (Cube cube1 : cubes) {
                 RolapCube cube = (RolapCube) cube1;

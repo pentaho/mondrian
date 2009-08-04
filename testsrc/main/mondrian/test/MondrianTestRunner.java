@@ -3,9 +3,9 @@
 // Modified from junit's TestRunner class. Original code is covered by
 // the junit license and modifications are covered as follows:
 //
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -93,7 +93,9 @@ public class MondrianTestRunner extends BaseTestRunner {
            public void endTest(Test arg0) {
                 if (arg0 instanceof TestCase) {
                  long longb = System.currentTimeMillis() - longa[0];
-                 System.out.println("endTest " + ((TestCase)arg0).getName() + " " + longb + " ms");
+                 System.out.println(
+                     "endTest " + ((TestCase)arg0).getName() + " " + longb
+                     + " ms");
               }
            }
 
@@ -113,7 +115,8 @@ public class MondrianTestRunner extends BaseTestRunner {
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 public void run() {
-                    setStopReason("Test stopped because the time limit expired.");
+                    setStopReason(
+                        "Test stopped because the time limit expired.");
                     result.stop();
                 }
             }, 1000L * (long)getTimeLimit());
@@ -124,8 +127,9 @@ public class MondrianTestRunner extends BaseTestRunner {
         for (int i = 0; i < getVUsers(); i++) {
             threads[i] = new Thread(new Runnable() {
                 public void run() {
-                    //System.out.println("Thread: " + Thread.currentThread().getName());
-                    for (int j = 0; getIterations() == 0 || j < getIterations(); j++) {
+                    for (int j = 0; getIterations() == 0 || j < getIterations();
+                         j++)
+                    {
                         suite.run(result);
                         if (!result.wasSuccessful()) {
                             setStopReason("Test stopped due to errors.");
@@ -146,8 +150,9 @@ public class MondrianTestRunner extends BaseTestRunner {
             try {
                 threads[i].join();
             } catch (InterruptedException e) {
-                System.out.println("Thread: " + threads[i].getName() + " interrupted: "
-                        + e.getMessage());
+                System.out.println(
+                    "Thread: " + threads[i].getName() + " interrupted: "
+                    + e.getMessage());
             }
         }
 

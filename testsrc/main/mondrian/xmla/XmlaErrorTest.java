@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -45,7 +45,8 @@ import java.util.Enumeration;
  * @version $Id$
  */
 public class XmlaErrorTest extends XmlaBaseTestCase
-        implements XmlaConstants {
+    implements XmlaConstants
+{
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
@@ -56,8 +57,8 @@ public class XmlaErrorTest extends XmlaBaseTestCase
     static String password = null;
 
     static boolean isEquals(String s1, String s2) {
-        return (s1 == s2) ||
-            ((s1 != null) && (s2 != null) && (s1.equals(s2)));
+        return (s1 == s2)
+            || ((s1 != null) && (s2 != null) && (s1.equals(s2)));
     }
 
     static class Callback implements XmlaRequestCallback {
@@ -108,15 +109,19 @@ System.out.println("userPass=" + userPass);
 }
                 if (! authScheme.equals(HttpServletRequest.BASIC_AUTH)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
-                        new Exception("Authorization: bad schema: " + authScheme));
+                        new Exception(
+                            "Authorization: bad schema: " + authScheme));
                 }
                 int index = userPass.indexOf(':');
                 if (index == -1) {
                     throw XmlaRequestCallback.Helper.authorizationException(
-                        new Exception("Authorization: badly formed userPass in encoding: " + encoded));
+                        new Exception(
+                            "Authorization: badly formed userPass in encoding: "
+                            + encoded));
                 }
                 String userid = userPass.substring(0, index);
-                String password = userPass.substring(index + 1, userPass.length());
+                String password =
+                    userPass.substring(index + 1, userPass.length());
 if (DEBUG) {
 System.out.println("userid=" + userid);
 System.out.println("password=" + password);
@@ -140,8 +145,8 @@ System.out.println("password=" + password);
             }
 
             String expect = request.getHeader(EXPECT);
-            if ((expect != null) &&
-                expect.equalsIgnoreCase(EXPECT_100_CONTINUE))
+            if ((expect != null)
+                && expect.equalsIgnoreCase(EXPECT_100_CONTINUE))
             {
                 XmlaRequestCallback.Helper.generatedExpectResponse(
                     request, response, context);
@@ -157,7 +162,9 @@ System.out.println("password=" + password);
             Element[] requestSoapParts,
             Map<String, Object> context) throws Exception
         {
-            context.put(MY_SESSION_ID, getSessionId("XmlaExcelXPTest", Action.CREATE));
+            context.put(
+                MY_SESSION_ID,
+                getSessionId("XmlaExcelXPTest", Action.CREATE));
         }
 
         public String generateSessionId(Map<String, Object> context) {
@@ -165,10 +172,11 @@ System.out.println("password=" + password);
         }
 
         public void postAction(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context) throws Exception
+        {
         }
     }
 
@@ -214,12 +222,14 @@ System.out.println("password=" + password);
         String errorCode;
         String errorDesc;
 
-        Fault(String faultCode,
-              String faultString,
-              String faultActor,
-              String errorNS,
-              String errorCode,
-              String errorDesc) {
+        Fault(
+            String faultCode,
+            String faultString,
+            String faultActor,
+            String errorNS,
+            String errorCode,
+            String errorDesc)
+        {
             this.faultCode = faultCode;
             this.faultString = faultString;
             this.faultActor = faultActor;
@@ -325,10 +335,16 @@ System.out.println("password=" + password);
                 notSame("faultcode", this.faultCode, expectedFault.faultCode);
             }
             if (! isEquals(this.faultString, expectedFault.faultString)) {
-                notSame("faultstring", this.faultString, expectedFault.faultString);
+                notSame(
+                    "faultstring",
+                    this.faultString,
+                    expectedFault.faultString);
             }
             if (! isEquals(this.faultActor, expectedFault.faultActor)) {
-                notSame("faultactor", this.faultActor, expectedFault.faultActor);
+                notSame(
+                    "faultactor",
+                    this.faultActor,
+                    expectedFault.faultActor);
             }
             if (! isEquals(this.errorNS, expectedFault.errorNS)) {
                 throw new Exception(
@@ -557,7 +573,8 @@ System.out.println("password=" + password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
         req.setHeader(XmlaRequestCallback.AUTHORIZATION, "FOOBAR");
 
         try {
@@ -582,7 +599,8 @@ System.out.println("password=" + password);
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -595,7 +613,9 @@ System.out.println("password=" + password);
 
         try {
             doTest(req, expectedFault);
-            req.setHeader(XmlaRequestCallback.EXPECT, XmlaRequestCallback.EXPECT_100_CONTINUE);
+            req.setHeader(
+                XmlaRequestCallback.EXPECT,
+                XmlaRequestCallback.EXPECT_100_CONTINUE);
 if (DEBUG) {
 System.out.println("DO IT AGAIN");
 }
@@ -628,7 +648,8 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";
@@ -669,7 +690,8 @@ System.out.println("DO IT AGAIN");
         req.setContentType("text/xml");
 
         req.setAuthType(HttpServletRequest.BASIC_AUTH);
-        req.setHeader(XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
+        req.setHeader(
+            XmlaRequestCallback.AUTHORIZATION, HttpServletRequest.BASIC_AUTH);
 
         String user = "MY_USER";
         String password = "MY_PASSWORD";

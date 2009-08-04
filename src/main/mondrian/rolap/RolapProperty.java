@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
@@ -34,6 +34,7 @@ class RolapProperty extends Property {
 
     private final PropertyFormatter formatter;
     private final String caption;
+    private final boolean dependsOnLevelValue;
 
     /** The column or expression which yields the property's value. */
     private final MondrianDef.Expression exp;
@@ -56,12 +57,16 @@ class RolapProperty extends Property {
         MondrianDef.Expression exp,
         String formatterDef,
         String caption,
+        Boolean dependsOnLevelValue,
         boolean internal)
     {
         super(name, type, -1, internal, false, false, null);
         this.exp = exp;
         this.caption = caption;
         this.formatter = makePropertyFormatter(formatterDef);
+        this.dependsOnLevelValue =
+            dependsOnLevelValue == null ? false
+                : dependsOnLevelValue.booleanValue();
     }
 
     private PropertyFormatter makePropertyFormatter(String formatterDef) {
@@ -101,6 +106,20 @@ class RolapProperty extends Property {
             return getName();
         }
         return caption;
+    }
+
+    /**
+     * @return <p>Returns the dependsOnLevelValue setting (if unset,
+     * returns false).  This indicates whether the property is
+     * functionally dependent on the level with which it is
+     * associated.</p>
+     *
+     * <p>If true, then the property column can be eliminated from
+     * the GROUP BY clause for queries on certain databases such
+     * as MySQL.</p>
+     */
+    public boolean dependsOnLevelValue() {
+        return dependsOnLevelValue;
     }
 }
 

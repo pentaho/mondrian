@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -48,7 +48,7 @@ public class BatchTestCase extends FoodMartTestCase {
     protected final String[] fieldValueProductDepartment = {
         "Alcoholic Beverages", "Baked Goods", "Baking Goods",
          "Beverages", "Breakfast Foods", "Canned Foods",
-        "Canned Products","Carousel", "Checkout", "Dairy",
+        "Canned Products", "Carousel", "Checkout", "Dairy",
         "Deli", "Eggs", "Frozen Foods", "Health and Hygiene",
         "Household", "Meat", "Packaged Foods", "Periodicals",
         "Produce", "Seafood", "Snack Foods", "Snacks",
@@ -73,7 +73,8 @@ public class BatchTestCase extends FoodMartTestCase {
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()])));
 
-        addRequests(batch, cubeName, measure, tableNames, fieldNames,
+        addRequests(
+            batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0);
         return batch;
     }
@@ -92,7 +93,8 @@ public class BatchTestCase extends FoodMartTestCase {
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()]), constraint));
 
-        addRequests(batch, cubeName, measure, tableNames, fieldNames,
+        addRequests(
+            batch, cubeName, measure, tableNames, fieldNames,
             fieldValues, new ArrayList<String>(), 0, constraint);
         return batch;
     }
@@ -110,7 +112,8 @@ public class BatchTestCase extends FoodMartTestCase {
         if (currPos < fieldNames.length) {
             for (int j = 0; j < fieldValues[currPos].length; j++) {
                 selectedValues.add(fieldValues[currPos][j]);
-                addRequests(batch, cubeName, measure, tableNames,
+                addRequests(
+                    batch, cubeName, measure, tableNames,
                     fieldNames, fieldValues, selectedValues, currPos + 1);
                 selectedValues.remove(fieldValues[currPos][j]);
             }
@@ -136,7 +139,8 @@ public class BatchTestCase extends FoodMartTestCase {
         if (currPos < fieldNames.length) {
             for (int j = 0; j < fieldValues[currPos].length; j++) {
                 selectedValues.add(fieldValues[currPos][j]);
-                addRequests(batch, cubeName, measure, tableNames,
+                addRequests(
+                    batch, cubeName, measure, tableNames,
                     fieldNames, fieldValues, selectedValues, currPos + 1,
                     constraint);
                 selectedValues.remove(fieldValues[currPos][j]);
@@ -145,7 +149,8 @@ public class BatchTestCase extends FoodMartTestCase {
             batch.add(
                 createRequest(
                     cubeName, measure, tableNames, fieldNames,
-                    selectedValues.toArray(new String[selectedValues.size()]), constraint));
+                    selectedValues.toArray(
+                        new String[selectedValues.size()]), constraint));
         }
     }
 
@@ -154,7 +159,8 @@ public class BatchTestCase extends FoodMartTestCase {
         String cubeName, String measure)
     {
         FastBatchingCellReader.Batch batch =
-            createBatch(new FastBatchingCellReader(getCube(cubeName)),
+            createBatch(
+                new FastBatchingCellReader(getCube(cubeName)),
                 tableNames, fieldNames,
                 fieldValues, cubeName,
                 measure);
@@ -261,7 +267,7 @@ public class BatchTestCase extends FoodMartTestCase {
         Connection connection = TestContext.instance().getConnection();
         for (Cube cube : connection.getSchema().getCubes()) {
             if (cube.getName().equals(cubeName)) {
-                 return (RolapCube) cube;
+                return (RolapCube) cube;
             }
         }
         return null;
@@ -274,8 +280,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param mdxQuery MDX query
      * @param patterns Set of patterns for expected SQL statements
      */
-    protected void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, true);
+    protected void assertQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -287,8 +297,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param patterns Set of patterns for expected SQL statements
      */
     protected void assertQuerySql(
-        TestContext testContext, String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(testContext, mdxQuery, patterns, false, false, true);
+        TestContext testContext,
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            testContext, mdxQuery, patterns, false, false, true);
     }
 
     /**
@@ -298,8 +312,12 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param mdxQuery MDX query
      * @param patterns Set of patterns for expected SQL statements
      */
-    protected void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, true, false, true);
+    protected void assertNoQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, true, false, true);
     }
 
     /**
@@ -313,8 +331,10 @@ public class BatchTestCase extends FoodMartTestCase {
     protected void assertQuerySql(
         String mdxQuery,
         SqlPattern[] patterns,
-        boolean clearCache) {
-        assertQuerySqlOrNot(getTestContext(), mdxQuery, patterns, false, false, clearCache);
+        boolean clearCache)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, false, false, clearCache);
     }
 
     /**
@@ -426,6 +446,10 @@ public class BatchTestCase extends FoodMartTestCase {
             return sql.replaceAll(" =as= ", " as ");
         case DERBY:
             return sql.replaceAll("`", "\"");
+        case ACCESS:
+            return sql.replaceAll(
+                "ISNULL\\(([^)]*)\\)",
+                "Iif($1 IS NULL, 1, 0)");
         default:
             return sql;
         }
@@ -637,10 +661,12 @@ public class BatchTestCase extends FoodMartTestCase {
         String[] tables;
         String[] columns;
         List<String[]> valueList;
+
         CellRequestConstraint(
             String[] tables,
             String[] columns,
-            List<String[]> valueList) {
+            List<String[]> valueList)
+        {
             this.tables = tables;
             this.columns = columns;
             this.valueList = valueList;
@@ -661,7 +687,8 @@ public class BatchTestCase extends FoodMartTestCase {
             List<StarPredicate> orPredList = new ArrayList<StarPredicate>();
             for (String[] values : valueList) {
                 assert (values.length == tables.length);
-                List<StarPredicate> andPredList = new ArrayList<StarPredicate>();
+                List<StarPredicate> andPredList =
+                    new ArrayList<StarPredicate>();
                 for (int i = 0; i < values.length; i++) {
                     andPredList.add(
                         new ValueColumnPredicate(starColumn[i], values[i]));

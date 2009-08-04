@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -227,7 +227,8 @@ public class AbstractExpCompiler implements ExpCompiler {
         final Calc calc = compileScalar(exp, false);
         final Type type = calc.getType();
         if (type instanceof DecimalType
-            && ((DecimalType) type).getScale() == 0) {
+            && ((DecimalType) type).getScale() == 0)
+        {
             return (IntegerCalc) calc;
         } else if (type instanceof NumericType) {
             if (calc instanceof ConstantCalc) {
@@ -248,11 +249,11 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public StringCalc compileString(Exp exp) {
-        return (StringCalc) compile(exp);
+        return (StringCalc) compileScalar(exp, false);
     }
 
     public DateTimeCalc compileDateTime(Exp exp) {
-        return (DateTimeCalc) compile(exp);
+        return (DateTimeCalc) compileScalar(exp, false);
     }
 
     public ListCalc compileList(Exp exp) {
@@ -376,7 +377,8 @@ public class AbstractExpCompiler implements ExpCompiler {
     public DoubleCalc compileDouble(Exp exp) {
         final DoubleCalc calc = (DoubleCalc) compileScalar(exp, false);
         if (calc instanceof ConstantCalc
-            && !(calc.evaluate(null) instanceof Double)) {
+            && !(calc.evaluate(null) instanceof Double))
+        {
             return ConstantCalc.constantDouble(
                 calc.evaluateDouble(null));
         }
@@ -586,7 +588,7 @@ public class AbstractExpCompiler implements ExpCompiler {
                 MondrianResource.instance()
                     .CannotImplicitlyConvertDimensionToHierarchy
                     .ex(
-                    dimension.getName()));
+                        dimension.getName()));
         }
     }
 
@@ -596,7 +598,10 @@ public class AbstractExpCompiler implements ExpCompiler {
     public static class DimensionCurrentMemberCalc extends AbstractMemberCalc {
         private final DimensionCalc dimensionCalc;
 
-        public DimensionCurrentMemberCalc(Exp exp, DimensionCalc dimensionCalc) {
+        public DimensionCurrentMemberCalc(
+            Exp exp,
+            DimensionCalc dimensionCalc)
+        {
             super(exp, new Calc[] {dimensionCalc});
             this.dimensionCalc = dimensionCalc;
         }
@@ -612,7 +617,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         }
 
         public boolean dependsOn(Dimension dimension) {
-            return dimensionCalc.getType().usesDimension(dimension, true) ;
+            return dimensionCalc.getType().usesDimension(dimension, true);
         }
     }
 }

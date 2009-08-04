@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2005-2005 SAS Institute, Inc.
 // Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -76,8 +76,10 @@ public class CompatibilityTest extends FoodMartTestCase {
      * See how we are at diagnosing reserved words.
      */
     public void testReservedWord() {
-        assertAxisThrows("with member [Measures].ordinal as '1'\n"
-                    + " select {[Measures].ordinal} on columns from Sales", "Syntax error");
+        assertAxisThrows(
+            "with member [Measures].ordinal as '1'\n"
+            + " select {[Measures].ordinal} on columns from Sales",
+            "Syntax error");
         assertQueryReturns(
             "with member [Measures].[ordinal] as '1'\n"
             + " select {[Measures].[ordinal]} on columns from Sales",
@@ -136,10 +138,18 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Customers].[All Customers]", "[Customers].[aLl CuStOmErS]");
         checkAxis("[Customers].[All Customers]", "[Customers].[all customers]");
 
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[Mexico]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[MEXICO]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mExIcO]");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mexico]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[Mexico]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[MEXICO]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[mExIcO]");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[mexico]");
     }
 
     /**
@@ -209,25 +219,46 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Profit]", "[Measures].PROFIT");
         checkAxis("[Measures].[Profit]", "[Measures].profit");
 
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].Mexico");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].MEXICO");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mExIcO");
-        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mexico");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].Mexico");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].MEXICO");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].mExIcO");
+        checkAxis(
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].mexico");
     }
 
     /**
-     * Hierarchy names of the form [Dim].[Hier], [Dim.Hier], and Dim.Hier are accepted.
+     * Hierarchy names of the form [Dim].[Hier], [Dim.Hier], and
+     * Dim.Hier are accepted.
      */
     public void testHierarchyNames() {
         checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[Customers].[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "Customers.[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[Customers].Customers.[All Customers]");
-        // don't know if this makes sense: checkAxis("[Customers].[All Customers]", "[Customers.Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "[Customers].[Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "Customers.[Customers].[All Customers]");
+        checkAxis(
+            "[Customers].[All Customers]",
+            "[Customers].Customers.[All Customers]");
+        if (false) {
+            // don't know if this makes sense
+            checkAxis(
+                "[Customers].[All Customers]",
+                "[Customers.Customers].[All Customers]");
+        }
     }
 
     private void checkAxis(String result, String expression) {
-        Assert.assertEquals(result, executeSingletonAxis(expression).toString());
+        Assert.assertEquals(
+            result, executeSingletonAxis(expression).toString());
     }
 
 
@@ -493,24 +524,34 @@ public class CompatibilityTest extends FoodMartTestCase {
 
     private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
         props.NeedDimensionPrefix.set(prefixNeeded);
-        assertAxisReturns("[Gender].[M]","[Gender].[All Gender].[M]");
-        assertAxisReturns("[Gender].[All Gender].[M]","[Gender].[All Gender].[M]");
-        assertAxisReturns("[Store].[USA]","[Store].[All Stores].[USA]");
-        assertAxisReturns("[Store].[All Stores].[USA]","[Store].[All Stores].[USA]");
+        assertAxisReturns("[Gender].[M]", "[Gender].[All Gender].[M]");
+        assertAxisReturns(
+            "[Gender].[All Gender].[M]", "[Gender].[All Gender].[M]");
+        assertAxisReturns("[Store].[USA]", "[Store].[All Stores].[USA]");
+        assertAxisReturns(
+            "[Store].[All Stores].[USA]", "[Store].[All Stores].[USA]");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 
     public void testWithNoDimensionPrefix() {
         props.NeedDimensionPrefix.set(false);
-        assertAxisReturns("{[M]}","[Gender].[All Gender].[M]");
-        assertAxisReturns("{M}","[Gender].[All Gender].[M]");
-        assertAxisReturns("{[USA].[CA]}","[Store].[All Stores].[USA].[CA]");
-        assertAxisReturns("{USA.CA}","[Store].[All Stores].[USA].[CA]");
+        assertAxisReturns("{[M]}", "[Gender].[All Gender].[M]");
+        assertAxisReturns("{M}", "[Gender].[All Gender].[M]");
+        assertAxisReturns("{[USA].[CA]}", "[Store].[All Stores].[USA].[CA]");
+        assertAxisReturns("{USA.CA}", "[Store].[All Stores].[USA].[CA]");
         props.NeedDimensionPrefix.set(true);
-        assertAxisThrows("{[M]}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
-        assertAxisThrows("{M}","Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
-        assertAxisThrows("{[USA].[CA]}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
-        assertAxisThrows("{USA.CA}","Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        assertAxisThrows(
+            "{[M]}",
+            "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows(
+             "{M}",
+             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+        assertAxisThrows(
+            "{[USA].[CA]}",
+            "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+        assertAxisThrows(
+             "{USA.CA}",
+             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 }

@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -135,7 +135,9 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
          * @param index Index
          */
         public MondrianOlap4jPosition(
-            mondrian.olap.Position mondrianPosition, int index) {
+            mondrian.olap.Position mondrianPosition,
+            int index)
+        {
             this.mondrianPosition = mondrianPosition;
             this.index = index;
         }

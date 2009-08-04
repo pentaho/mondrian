@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,7 +28,7 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class HierarchizeFunDef extends FunDefBase {
-    static final String[] prePost = {"PRE","POST"};
+    static final String[] prePost = {"PRE", "POST"};
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Hierarchize",
             "Hierarchize(<Set>[, POST])",
@@ -61,7 +61,8 @@ class HierarchizeFunDef extends FunDefBase {
             final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
             return new AbstractTupleListCalc(call, new Calc[] {listCalc}) {
                 public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-                    List<Member[]> list = tupleListCalc.evaluateTupleList(evaluator);
+                    List<Member[]> list =
+                        tupleListCalc.evaluateTupleList(evaluator);
                     hierarchizeTupleList(list, post, arity);
                     return list;
                 }

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,7 +13,6 @@
 
 package mondrian.rolap;
 
-import mondrian.gui.MondrianGuiDef.AggTable;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -21,10 +20,14 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
+import mondrian.util.ObjectFactory;
+import mondrian.util.CreationException;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
+
+import org.eigenbase.util.property.StringProperty;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
@@ -45,6 +48,7 @@ class SqlMemberSource
     private MemberCache cache;
     private int lastOrdinal = 0;
     private boolean assignOrderKeys;
+    private Map<Object, Object> valuePool;
 
     SqlMemberSource(RolapHierarchy hierarchy) {
         this.hierarchy = hierarchy;
@@ -52,6 +56,7 @@ class SqlMemberSource
             hierarchy.getRolapSchema().getInternalConnection().getDataSource();
         assignOrderKeys =
             MondrianProperties.instance().CompareSiblingsByOrderKey.get();
+        valuePool = ValuePoolFactoryFactory.getValuePoolFactory().create(this);
     }
 
     // implement MemberSource
@@ -214,18 +219,19 @@ class SqlMemberSource
                         // this error, try a workaround similar to the Sybase
                         // workaround above.
                         throw Util.newInternal(
-                            "Cannot generate query to count members of level '" +
-                            level.getUniqueName() +
-                            "': database supports neither SELECT-in-FROM nor compound COUNT DISTINCT");
+                            "Cannot generate query to count members of level '"
+                            + level.getUniqueName()
+                            + "': database supports neither SELECT-in-FROM nor "
+                            + "compound COUNT DISTINCT");
                     }
                 }
                 hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
 
                 String keyExp = level2.getKeyExp().getExpression(sqlQuery);
-                if (columnCount > 0 &&
-                    !sqlQuery.getDialect().allowsCompoundCountDistinct() &&
-                    sqlQuery.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.SYBASE)
+                if (columnCount > 0
+                    && !sqlQuery.getDialect().allowsCompoundCountDistinct()
+                    && sqlQuery.getDialect().getDatabaseProduct()
+                    == Dialect.DatabaseProduct.SYBASE)
                 {
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
@@ -260,7 +266,8 @@ class SqlMemberSource
             SqlQuery outerQuery =
                 SqlQuery.newQuery(
                     dataSource,
-                    "while generating query to count members in level " + level);
+                    "while generating query to count members in level "
+                    + level);
             outerQuery.addSelect("count(*)");
             // Note: the "init" is for Postgres, which requires
             // FROM-queries to have an alias
@@ -299,8 +306,8 @@ class SqlMemberSource
                 if (limit > 0 && limit < stmt.rowCount) {
                     // result limit exceeded, throw an exception
                     throw stmt.handle(
-                        MondrianResource.instance().MemberFetchLimitExceeded.
-                        ex(limit));
+                        MondrianResource.instance().MemberFetchLimitExceeded.ex(
+                            limit));
                 }
 
                 int column = 0;
@@ -346,7 +353,14 @@ RME is this right
 
                     Property[] properties = level.getProperties();
                     for (Property property : properties) {
-                        member.setProperty(property.getName(),
+                        /* REVIEW emcdermid 9-Jul-2009:
+                         * Should we also look up the value in the
+                         * pool here, rather than setting it directly?
+                         * Presumably the value is already in the pool
+                         * as a result of makeMember().
+                         */
+                        member.setProperty(
+                            property.getName(),
                             resultSet.getObject(column + 1));
                         column++;
                     }
@@ -404,7 +418,6 @@ RME is this right
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
             sqlQuery.addOrderBy(expString, true, false, true);
-            sqlQuery.addGroupBy(expString);
             if (!exp.equals(level.getKeyExp())) {
                 sqlQuery.addSelect(expString);
             }
@@ -414,7 +427,14 @@ RME is this right
                 exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 expString = exp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(expString);
+                String alias = sqlQuery.addSelect(expString);
+                // Some dialects allow us to eliminate properties from the
+                // group by that are functionally dependent on the level value
+                if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                    || !property.dependsOnLevelValue())
+                {
+                    sqlQuery.addGroupBy(expString, alias);
+                }
             }
         }
         return sqlQuery.toString();
@@ -422,19 +442,21 @@ RME is this right
 
     // implement MemberReader
     public List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal) {
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(null);
+            sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
-            RolapLevel level,
-            int startOrdinal,
-            int endOrdinal,
-            TupleConstraint constraint) {
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint)
+    {
         if (level.isAll()) {
             final List<RolapMember> list = new ArrayList<RolapMember>();
             list.add(hierarchy.getAllMember());
@@ -548,15 +570,17 @@ RME is this right
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
-        boolean collapsedLevel = (aggStar != null) &&
-                        isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+        boolean collapsedLevel =
+            (aggStar != null)
+            && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
 
         if (!collapsedLevel) {
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
             String q = level.getKeyExp().getExpression(sqlQuery);
             sqlQuery.addSelectGroupBy(q);
 
-            // in non empty mode the level table must be joined to the fact table
+            // in non empty mode the level table must be joined to the fact
+            // table
             constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
 
             if (level.hasCaptionColumn()) {
@@ -578,7 +602,14 @@ RME is this right
                 final MondrianDef.Expression exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 final String s = exp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(s);
+                String alias = sqlQuery.addSelect(s);
+                // Some dialects allow us to eliminate properties from the
+                // group by that are functionally dependent on the level value
+                if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                    || !property.dependsOnLevelValue())
+                {
+                    sqlQuery.addGroupBy(s, alias);
+                }
             }
         } else {
             // an earlier check was made in getAggStar() to verify
@@ -621,9 +652,11 @@ RME is this right
             return null;
         }
         RolapBaseCubeMeasure measure = (RolapBaseCubeMeasure)members[0];
-        // we need to do more than this!  we need the rolap star ordinal, not the rolap cube
+        // we need to do more than this!  we need the rolap star ordinal, not
+        // the rolap cube
 
-        int bitPosition = ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
+        int bitPosition =
+            ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
 
         int ordinal = measure.getOrdinal();
 
@@ -670,8 +703,9 @@ RME is this right
         // member objects
 
         if (!childLevel.isAll()) {
-            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel) &&
-                levelContainsMultipleColumns(childLevel)) {
+            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel)
+                && levelContainsMultipleColumns(childLevel))
+            {
                 return null;
             }
         }
@@ -735,8 +769,12 @@ RME is this right
         return levelCollapsed;
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
@@ -780,9 +818,10 @@ RME is this right
     {
         // allow parent child calculated members through
         // this fixes the non closure parent child hierarchy bug
-        if (!parentMember.isAll() &&
-                parentMember.isCalculated() &&
-                !parentMember.getLevel().isParentChild()) {
+        if (!parentMember.isAll()
+            && parentMember.isCalculated()
+            && !parentMember.getLevel().isParentChild())
+        {
             return;
         }
         getMemberChildren2(parentMember, children, constraint);
@@ -868,8 +907,8 @@ RME is this right
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
                     // result limit exceeded, throw an exception
-                    throw MondrianResource.instance().MemberFetchLimitExceeded.
-                        ex(limit);
+                    throw MondrianResource.instance().MemberFetchLimitExceeded
+                        .ex(limit);
                 }
 
                 Object value = resultSet.getObject(1);
@@ -934,11 +973,11 @@ RME is this right
             // to the parent member; the data member does not have any
             // children.
             final RolapParentChildMember parentChildMember =
-                childLevel.hasClosedPeer() ?
-                    new RolapParentChildMember(
-                            parentMember, childLevel, value, member)
-                    : new RolapParentChildMemberNoClosure(
-                            parentMember, childLevel, value, member);
+                childLevel.hasClosedPeer()
+                ? new RolapParentChildMember(
+                    parentMember, childLevel, value, member)
+                : new RolapParentChildMemberNoClosure(
+                    parentMember, childLevel, value, member);
 
             member = parentChildMember;
         }
@@ -954,10 +993,44 @@ RME is this right
             Property property = properties[j];
             member.setProperty(
                     property.getName(),
-                    resultSet.getObject(columnOffset + j + 1));
+                    getPooledValue(resultSet.getObject(columnOffset + j + 1)));
         }
         cache.putMember(key, member);
         return member;
+    }
+
+
+    /**
+     * <p>Looks up an object (and if needed, stores it) in a cached value pool.
+     * This permits us to reuse references to an existing object rather than
+     * create new references to what are essentially duplicates.  The intent
+     * is to allow the duplicate object to be garbage collected earlier, thus
+     * keeping overall memory requirements down.</p>
+     *
+     * <p>If
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * is not set, then valuePool will be null and no attempt to cache the
+     * value will be made.  The method will simply return the incoming
+     * object reference.</p>
+     *
+     * @param incoming An object to look up.  Must be immutable in usage,
+     *        even if not declared as such.
+     * @return a reference to a cached object equal to the incoming object,
+     *        or to the incoming object if either no cached object was found,
+     *        or caching is disabled.
+     */
+    private Object getPooledValue(Object incoming) {
+        if (valuePool == null) {
+            return incoming;
+        } else {
+            Object ret = this.valuePool.get(incoming);
+            if (ret != null) {
+                return ret;
+            } else {
+                this.valuePool.put(incoming, incoming);
+                return incoming;
+            }
+        }
     }
 
     /**
@@ -978,12 +1051,12 @@ RME is this right
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
-                "while generating query to retrieve children of parent/child " +
-                    "hierarchy member " + member);
+                "while generating query to retrieve children of parent/child "
+                + "hierarchy member " + member);
         Util.assertTrue(
             member.isAll(),
-            "In the current implementation, parent/child hierarchies must " +
-                "have only one level (plus the 'All' level).");
+            "In the current implementation, parent/child hierarchies must "
+            + "have only one level (plus the 'All' level).");
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
@@ -995,8 +1068,9 @@ RME is this right
         String parentId = level.getParentExp().getExpression(sqlQuery);
         StringBuilder condition = new StringBuilder(64);
         condition.append(parentId);
-        if (level.getNullParentValue() == null ||
-                level.getNullParentValue().equalsIgnoreCase("NULL")) {
+        if (level.getNullParentValue() == null
+            || level.getNullParentValue().equalsIgnoreCase("NULL"))
+        {
             condition.append(" IS NULL");
         } else {
             // Quote the value if it doesn't seem to be a number.
@@ -1025,7 +1099,14 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(s);
+            String alias = sqlQuery.addSelect(s);
+            // Some dialects allow us to eliminate properties from the group by
+            // that are functionally dependent on the level value
+            if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                || !property.dependsOnLevelValue())
+            {
+                sqlQuery.addGroupBy(s, alias);
+            }
         }
         return sqlQuery.toString();
     }
@@ -1047,8 +1128,8 @@ RME is this right
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
-                "while generating query to retrieve children of " +
-                    "parent/child hierarchy member " + member);
+                "while generating query to retrieve children of "
+                + "parent/child hierarchy member " + member);
         RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
@@ -1077,7 +1158,14 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(s);
+            String alias = sqlQuery.addSelect(s);
+            // Some dialects allow us to eliminate properties from the group by
+            // that are functionally dependent on the level value
+            if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                || !property.dependsOnLevelValue())
+            {
+                sqlQuery.addGroupBy(s, alias);
+            }
         }
         return sqlQuery.toString();
     }
@@ -1156,7 +1244,8 @@ RME is this right
                 list.add(dataMember);
                 RolapHierarchy hierarchy = getHierarchy();
                 if (hierarchy instanceof RolapCubeHierarchy) {
-                    hierarchy = ((RolapCubeHierarchy)hierarchy).getRolapHierarchy();
+                    hierarchy =
+                        ((RolapCubeHierarchy) hierarchy).getRolapHierarchy();
                 }
                 hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;
@@ -1188,7 +1277,8 @@ RME is this right
      * Unfortunately it's the best we can do without a closure table.
      */
     private static class RolapParentChildMemberNoClosure
-        extends RolapParentChildMember {
+        extends RolapParentChildMember
+    {
 
         public RolapParentChildMemberNoClosure(
             RolapMember parentMember,
@@ -1203,6 +1293,102 @@ RME is this right
 
         public Exp getExpression() {
             return getHierarchy().getAggregateChildrenExpression();
+        }
+    }
+
+    /**
+     * <p>Interface definition for the pluggable factory used to decide
+     * which implementation of {@link java.util.Map} to use to pool
+     * reusable values.</p>
+     */
+    public interface ValuePoolFactory {
+        /**
+         * <p>Create a new {@link java.util.Map} to be used to pool values.
+         * The value pool permits us to reuse references to existing objects
+         * rather than create new references to what are essentially duplicates
+         * of the same object.  The intent is to allow the duplicate object
+         * to be garbage collected earlier, thus keeping overall memory
+         * requirements down.</p>
+         *
+         * @param source The {@link SqlMemberSource} in which values are
+         * being pooled.
+         * @return a new value pool map
+         */
+        Map<Object, Object> create(SqlMemberSource source);
+    }
+
+    /**
+     * Default {@link mondrian.rolap.SqlMemberSource.ValuePoolFactory}
+     * implementation, used if
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * is not set.
+     */
+    public static final class NullValuePoolFactory
+        implements ValuePoolFactory
+    {
+        /**
+         * {@inheritDoc}
+         * <p>This version returns null, meaning that
+         * by default values will not be pooled.</p>
+         *
+         * @param source {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        public Map<Object, Object> create(SqlMemberSource source) {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Creates the ValuePoolFactory which is in turn used
+     * to create property-value maps for member properties.</p>
+     *
+     * <p>The name of the ValuePoolFactory is drawn from
+     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * in mondrian.properties.  If unset, it defaults to
+     * {@link mondrian.rolap.SqlMemberSource.NullValuePoolFactory}. </p>
+     */
+    public static final class ValuePoolFactoryFactory
+        extends ObjectFactory.Singleton<ValuePoolFactory>
+    {
+        /**
+         * Single instance of the <code>ValuePoolFactoryFactory</code>.
+         */
+        private static final ValuePoolFactoryFactory factory;
+        static {
+            factory = new ValuePoolFactoryFactory();
+        }
+
+        /**
+         * Access the <code>ValuePoolFactory</code> instance.
+         *
+         * @return the <code>Map</code>.
+         */
+        public static ValuePoolFactory getValuePoolFactory() {
+            return factory.getObject();
+        }
+
+        /**
+         * The constructor for the <code>ValuePoolFactoryFactory</code>.
+         * This passes the <code>ValuePoolFactory</code> class to the
+         * <code>ObjectFactory</code> base class.
+         */
+        @SuppressWarnings({"unchecked"})
+        private ValuePoolFactoryFactory() {
+            super((Class) ValuePoolFactory.class);
+        }
+
+        protected StringProperty getStringProperty() {
+            return MondrianProperties.instance()
+               .SqlMemberSourceValuePoolFactoryClass;
+        }
+
+        protected ValuePoolFactory getDefault(
+            Class[] parameterTypes,
+            Object[] parameterValues)
+            throws CreationException
+        {
+            return new NullValuePoolFactory();
         }
     }
 }

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2001-2009 Julian Hyde and others
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -58,22 +58,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Aggregation {
 
-    /**
-     * The key that uniquely identify this Aggregation. It is also used
-     * to lookup Aggregation.
-     */
-    private AggregationKey aggregationKey;
+    private final List<StarPredicate> compoundPredicateList;
+    private final RolapStar star;
+    private final BitKey constrainedColumnsBitKey;
 
     /**
-     * Setting for optimizing sql predicates.
+     * Setting for optimizing SQL predicates.
      */
-    private int maxConstraints;
+    private final int maxConstraints;
 
     /**
-     * List of soft references to segments.
-     * This List implementation should be Thread safe on all mutative operations
-     * (add, set, and so on). Access to this list is not synchronized in the code.
-     * This is the only mutable field in the class.
+     * List of soft references to segments.  This List implementation should be
+     * thread-safe on all mutative operations (add, set, and so on). Access to
+     * this list is not synchronized in the code.  This is the only mutable
+     * field in the class.
      */
     private final List<SoftReference<Segment>> segmentRefs;
 
@@ -99,14 +97,19 @@ public class Aggregation {
     public Aggregation(
         AggregationKey aggregationKey)
     {
+        this.compoundPredicateList = aggregationKey.getCompoundPredicateList();
+        this.star = aggregationKey.getStar();
+        this.constrainedColumnsBitKey =
+            aggregationKey.getConstrainedColumnsBitKey();
         this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
-                MondrianProperties.instance().MaxConstraints.get();
+            MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-        this.aggregationKey = aggregationKey;
     }
 
-    private CopyOnWriteArrayList<SoftReference<Segment>> getThreadSafeListImplementation() {
+    private CopyOnWriteArrayList<SoftReference<Segment>>
+        getThreadSafeListImplementation()
+    {
         return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
 
@@ -161,8 +164,6 @@ public class Aggregation {
         GroupingSet groupingSet =
             new GroupingSet(
                 segments, levelBitKey, measureBitKey, axes, columns);
-        final List<StarPredicate> compoundPredicateList =
-            aggregationKey.getCompoundPredicateList();
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
             // Segments are loaded using group by grouping sets
@@ -202,8 +203,9 @@ public class Aggregation {
      * would be returned anyway.
      */
     public StarColumnPredicate[] optimizePredicates(
-            RolapStar.Column[] columns,
-            StarColumnPredicate[] predicates) {
+        RolapStar.Column[] columns,
+        StarColumnPredicate[] predicates)
+    {
         RolapStar star = getStar();
         Util.assertTrue(predicates.length == columns.length);
         StarColumnPredicate[] newPredicates = predicates.clone();
@@ -222,7 +224,8 @@ public class Aggregation {
         }
 
         for (int i = 0; i < newPredicates.length; i++) {
-            // A set of constraints with only one entry will not be optimized away
+            // A set of constraints with only one entry will not be optimized
+            // away
             if (!(newPredicates[i] instanceof ListColumnPredicate)) {
                 bloats[i] = 0.0;
                 continue;
@@ -262,11 +265,13 @@ public class Aggregation {
                         level = m.getLevel();
                     } else {
                         if (parent != null
-                                && !parent.equals(m.getParentMember())) {
+                            && !parent.equals(m.getParentMember()))
+                        {
                             parent = null; // no common parent
                         }
                         if (level != null
-                                && !level.equals(m.getLevel())) {
+                            && !level.equals(m.getLevel()))
+                        {
                             // should never occur, constraints are of same level
                             level = null;
                         }
@@ -350,7 +355,8 @@ public class Aggregation {
             }
             // eliminate this constraint
             if (MondrianProperties.instance().OptimizePredicates.get()
-                    || bloats[j] == 1) {
+                || bloats[j] == 1)
+            {
                 newPredicates[j] = new LiteralStarPredicate(columns[j], true);
             }
         }
@@ -395,8 +401,9 @@ public class Aggregation {
     }
 
     public void flush(
-            CacheControl cacheControl,
-            RolapCacheRegion cacheRegion) {
+        CacheControl cacheControl,
+        RolapCacheRegion cacheRegion)
+    {
         // Compare the bitmaps.
         //
         // Case 1: aggregate bitmap contains request bitmap.
@@ -443,8 +450,8 @@ public class Aggregation {
                 // and the columns defining the segment. Therefore, the segment
                 // is definitely affected. Flush it.
                 cacheControl.trace(
-                        "discard segment - it has no columns in common: " +
-                                segment);
+                    "discard segment - it has no columns in common: "
+                    + segment);
                 continue;
             }
 
@@ -462,7 +469,8 @@ public class Aggregation {
 
                 RolapStar.Column column = columns[i];
                 if (!cacheRegion.getConstrainedColumnsBitKey().get(
-                        column.getBitPosition())) {
+                    column.getBitPosition()))
+                {
                     axisKeepBitSet.set(0, keyCount);
                     continue;
                 }
@@ -538,7 +546,9 @@ public class Aggregation {
                 // segment, in case new axis values have appeared.
                 RolapStar.Column column = columns[i];
                 final int bitPosition = column.getBitPosition();
-                if (!cacheRegion.getConstrainedColumnsBitKey().get(bitPosition)) {
+                if (!cacheRegion.getConstrainedColumnsBitKey().get(
+                    bitPosition))
+                    {
                     continue;
                 }
 
@@ -553,8 +563,8 @@ public class Aggregation {
                 }
 
                 float retention =
-                        (float) axisBitSet.cardinality() /
-                                (float) axisKeys.length;
+                    (float) axisBitSet.cardinality()
+                    / (float) axisKeys.length;
 
                 if (bestColumn == -1 || retention > bestRetention) {
                     // If there are multiple partially-satisfied
@@ -593,10 +603,10 @@ public class Aggregation {
                 cellCount *= .5;
             }
             Segment.Region region =
-                    new Segment.Region(
-                            regionPredicates,
-                            new ArrayList<StarPredicate>(cacheRegion.getPredicates()),
-                            cellCount);
+                new Segment.Region(
+                    regionPredicates,
+                    new ArrayList<StarPredicate>(cacheRegion.getPredicates()),
+                    cellCount);
 
             // How many cells left after we exclude this region? If there are
             // none left, throw away the segment. It doesn't matter if we
@@ -667,9 +677,10 @@ public class Aggregation {
      * cell's value is null.
      */
     public Object getCellValue(
-            RolapStar.Measure measure,
-            Object[] keys,
-            RolapAggregationManager.PinSet pinSet) {
+        RolapStar.Measure measure,
+        Object[] keys,
+        RolapAggregationManager.PinSet pinSet)
+    {
         for (SoftReference<Segment> segmentref : segmentRefs) {
             Segment segment = segmentref.get();
             if (segment == null) {
@@ -690,9 +701,11 @@ public class Aggregation {
             } else {
                 // avoid to call wouldContain - its slow
                 if (pinSet != null
-                        && !((AggregationManager.PinSetImpl) pinSet).contains(segment)
-                        && segment.wouldContain(keys)) {
-                    segment.waitUntilLoaded(); //Waiting on Segment state
+                    && !((AggregationManager.PinSetImpl) pinSet).contains(
+                        segment)
+                    && segment.wouldContain(keys))
+                {
+                    segment.waitUntilLoaded(); // waiting on Segment state
                     if (segment.isReady()) {
                         ((AggregationManager.PinSetImpl) pinSet).add(segment);
                         return segment.getCellValue(keys);
@@ -712,10 +725,10 @@ public class Aggregation {
     }
 
     /**
-     * This is called during Sql generation.
+     * This is called during SQL generation.
      */
     public RolapStar getStar() {
-        return aggregationKey.getStar();
+        return star;
     }
 
     /**
@@ -723,7 +736,7 @@ public class Aggregation {
      * query.
      */
     public BitKey getConstrainedColumnsBitKey() {
-        return aggregationKey.getConstrainedColumnsBitKey();
+        return constrainedColumnsBitKey;
     }
 
     // -- classes -------------------------------------------------------------
@@ -742,20 +755,23 @@ public class Aggregation {
          * binary search.
          */
         private final Map<Comparable<?>, Integer> mapKeyToOffset =
-                new HashMap<Comparable<?>, Integer>();
+            new HashMap<Comparable<?>, Integer>();
 
         /**
          * Actual key values retrieved.
          */
         private Comparable<?>[] keys;
-        private boolean hasNull;
+
+        private static final Integer ZERO = Integer.valueOf(0);
+        private static final Integer ONE = Integer.valueOf(1);
 
         /**
          * Creates an empty Axis.
          *
          * @param predicate Predicate defining which keys should appear on
-         *                  axis. (If a key passes the predicate but is not in the list, every
-         *                  cell with that key is assumed to have a null value.)
+         *                  axis. (If a key passes the predicate but
+         *                  is not in the list, every cell with that
+         *                  key is assumed to have a null value.)
          */
         Axis(StarColumnPredicate predicate) {
             this.predicate = predicate;
@@ -766,8 +782,9 @@ public class Aggregation {
          * Creates an axis populated with a set of keys.
          *
          * @param predicate Predicate defining which keys should appear on
-         *                  axis. (If a key passes the predicate but is not in the list, every
-         *                  cell with that key is assumed to have a null value.)
+         *                  axis. (If a key passes the predicate but
+         *                  is not in the list, every cell with that
+         *                  key is assumed to have a null value.)
          * @param keys      Keys
          */
         Axis(StarColumnPredicate predicate, Comparable<?>[] keys) {
@@ -776,8 +793,8 @@ public class Aggregation {
             for (int i = 0; i < keys.length; i++) {
                 Comparable<?> key = keys[i];
                 mapKeyToOffset.put(key, i);
-                assert i == 0 ||
-                        ((Comparable) keys[i - 1]).compareTo(keys[i]) < 0;
+                assert i == 0
+                   || ((Comparable) keys[i - 1]).compareTo(keys[i]) < 0;
             }
         }
 
@@ -798,7 +815,6 @@ public class Aggregation {
          * @return Number of keys on axis
          */
         int loadKeys(SortedSet<Comparable<?>> valueSet, boolean hasNull) {
-            this.hasNull = hasNull;
             int size = valueSet.size();
 
             if (hasNull) {
@@ -818,9 +834,10 @@ public class Aggregation {
             return size;
         }
 
-        static final Comparable wrap(Object o) {
+        static Comparable wrap(Object o) {
+            // Before JDK 1.5, Boolean did not implement Comparable
             if (Util.PreJdk15 && o instanceof Boolean) {
-                return Integer.valueOf((Boolean) o ? 1 : 0);
+                return (Boolean) o ? ONE : ZERO;
             } else {
                 return (Comparable) o;
             }
@@ -944,14 +961,17 @@ public class Aggregation {
          *
          * @param flushPredicate Multi-column predicate to test
          * @param segmentAxes    Axes of the segment. (The columns that the
-         *                       predicate may not be present, or may be in a different order.)
-         * @param data           Segment dataset, which allows pruner to determine whether
-         *                       a particular cell is currently empty
+         *                       predicate may not be present, or may
+         *                       be in a different order.)
+         * @param data           Segment dataset, which allows pruner
+         *                       to determine whether a particular
+         *                       cell is currently empty
          */
         ValuePruner(
-                StarPredicate flushPredicate,
-                Axis[] segmentAxes,
-                SegmentDataset data) {
+            StarPredicate flushPredicate,
+            Axis[] segmentAxes,
+            SegmentDataset data)
+        {
             this.flushPredicate = flushPredicate;
             this.arity = flushPredicate.getConstrainedColumnList().size();
             this.axes = new Axis[arity];
@@ -991,7 +1011,8 @@ public class Aggregation {
             for (int i = 0; i < axes.length; i++) {
                 Axis axis = axes[i];
                 if (axis.getPredicate().getConstrainedColumn().getBitPosition()
-                        == bitPosition) {
+                    == bitPosition)
+                {
                     return i;
                 }
             }
@@ -1052,13 +1073,16 @@ public class Aggregation {
                 if (axis == null) {
                     evaluatePredicate(axisOrdinal + 1);
                 } else {
-                    for (int keyOrdinal = 0; keyOrdinal < axis.keys.length; keyOrdinal++) {
+                    for (int keyOrdinal = 0;
+                         keyOrdinal < axis.keys.length;
+                         keyOrdinal++)
+                    {
                         Object key = axis.keys[keyOrdinal];
                         values[axisOrdinal] = key;
                         ordinals[axisOrdinal] = keyOrdinal;
                         cellKey.setAxis(
-                                axisInverseOrdinals[axisOrdinal],
-                                keyOrdinal);
+                            axisInverseOrdinals[axisOrdinal],
+                            keyOrdinal);
                         evaluatePredicate(axisOrdinal + 1);
                     }
                 }

@@ -1,14 +1,18 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.spi;
 
+import mondrian.olap.MondrianDef;
+import mondrian.util.Pair;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description of an SQL dialect.
@@ -280,7 +284,8 @@ public interface Dialect {
      * Returns whether this Dialect allows a subquery in the from clause,
      * for example
      *
-     * <blockquote><code>SELECT * FROM (SELECT * FROM t) AS x</code></blockquote>
+     * <blockquote><code>SELECT * FROM (SELECT * FROM t) AS
+     * x</code></blockquote>
      *
      * @see #requiresAliasForFromQuery()
      *
@@ -540,6 +545,63 @@ public interface Dialect {
     boolean allowsOrderByAlias();
 
     /**
+     * Returns true if this dialect allows only integers in the ORDER BY
+     * clause of a UNION (or other set operation) query.
+     *
+     * <p>For example,
+     *
+     * <code>SELECT x, y + z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y + z FROM t<br/>
+     * ORDER BY 1, 2</code>
+     *
+     * is allowed but
+     *
+     * <code>SELECT x, y, z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y, z FROM t<br/>
+     * ORDER BY x</code>
+     *
+     * is not.
+     *
+     * <p>Teradata is an example of a dialect with this restriction.
+     *
+     * @return whether this dialect allows only integers in the ORDER BY
+     * clause of a UNION (or other set operation) query
+     */
+    boolean requiresUnionOrderByOrdinal();
+
+    /**
+     * Returns true if this dialect allows an expression in the ORDER BY
+     * clause of a UNION (or other set operation) query only if it occurs in
+     * the SELECT clause.
+     *
+     * <p>For example,
+     *
+     * <code>SELECT x, y + z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y + z FROM t<br/>
+     * ORDER BY y + z</code>
+     *
+     * is allowed but
+     *
+     * <code>SELECT x, y, z FROM t<br/>
+     * UNION ALL<br/>
+     * SELECT x, y, z FROM t<br/>
+     * ORDER BY y + z</code>
+     * <code>SELECT x, y, z FROM t ORDER BY y + z</code>
+     *
+     * is not.
+     *
+     * <p>Access is an example of a dialect with this restriction.
+     *
+     * @return whether this dialect allows an expression in the ORDER BY
+     * clause of a UNION (or other set operation) query only if it occurs in
+     * the SELECT clause
+     */
+    boolean requiresUnionOrderByExprToBeInSelectClause();
+
+    /**
      * Returns true if this dialect supports multi-value IN expressions.
      * E.g.,
      *
@@ -586,6 +648,20 @@ public interface Dialect {
     DatabaseProduct getDatabaseProduct();
 
     /**
+     * Assembles and returns a string containing any hints that should
+     * be appended after the FROM clause in a SELECT statement, based
+     * on any hints provided.  Any unrecognized or unsupported hints will
+     * be ignored.
+     *
+     * @param buf The Stringbuffer to which the dialect-specific syntax
+     * for any relevant table hints may be appended.  Must not be null.
+     * @param hints A map of table hints provided in the schema definition
+     */
+    void appendHintsAfterFromClause(
+        StringBuilder buf,
+        Map<String, String> hints);
+
+    /**
      * Returns whether this Dialect object can be used for all connections
      * from the same data source.
      *
@@ -603,6 +679,26 @@ public interface Dialect {
      * from the same data source
      */
     boolean allowsDialectSharing();
+
+    /**
+     * Returns whether the database currently permits queries to include in the
+     * SELECT clause expressions that are not listed in the GROUP BY clause. The
+     * SQL standard allows this if the database can deduce that the expression
+     * is functionally dependent on columns in the GROUP BY clause.
+     *
+     * <p>For example, {@code SELECT empno, first_name || ' ' || last_name FROM
+     * emps GROUP BY empno} is valid because {@code empno} is the primary key of
+     * the {@code emps} table, and therefore all columns are dependent on it.
+     * For a given value of {@code empno},
+     * {@code first_name || ' ' || last_name} has a unique value.
+     *
+     * <p>Most databases do not, MySQL is an example of one that does (if the
+     * functioality is enabled).
+     *
+     * @return Whether this Dialect allows SELECT clauses to contain
+     * columns that are not in the GROUP BY clause
+     */
+    boolean allowsSelectNotInGroupBy();
 
     /**
      * Enumeration of common database types.
@@ -771,7 +867,7 @@ public interface Dialect {
          * Null values order as positive infinity.
          * They appear last with ASC, first with DESC.
          */
-        POSINF;
+        POSINF,
     }
 }
 

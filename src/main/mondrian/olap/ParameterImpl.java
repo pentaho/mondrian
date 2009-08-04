@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,7 +28,8 @@ import mondrian.calc.impl.GenericCalc;
  * @since Jul 22, 2006
  */
 public class ParameterImpl
-    implements Parameter, ParameterCompilable {
+    implements Parameter, ParameterCompilable
+{
 
     private final String name;
     private String description;
@@ -76,9 +77,9 @@ public class ParameterImpl
         this.description = description;
         this.type = type;
         assert defaultExp != null;
-        assert type instanceof StringType ||
-            type instanceof NumericType ||
-            type instanceof MemberType;
+        assert type instanceof StringType
+            || type instanceof NumericType
+            || type instanceof MemberType;
     }
 
     public Scope getScope() {
@@ -136,8 +137,8 @@ public class ParameterImpl
             return false;
         }
         ParameterImpl that = (ParameterImpl) other;
-        return that.getName().equals(this.getName()) &&
-            that.defaultExp.equals(this.defaultExp);
+        return that.getName().equals(this.getName())
+            && that.defaultExp.equals(this.defaultExp);
     }
 
     public int hashCode() {
@@ -156,9 +157,9 @@ public class ParameterImpl
     }
 
     public void setType(Type type) {
-        assert type instanceof StringType ||
-            type instanceof NumericType ||
-            type instanceof MemberType;
+        assert type instanceof StringType
+            || type instanceof NumericType
+            || type instanceof MemberType;
         this.type = type;
     }
 
@@ -182,16 +183,13 @@ public class ParameterImpl
      * It uses a slot which has a unique id within the execution environment.
      */
     private static class ParameterCalc
-        extends GenericCalc {
+        extends GenericCalc
+    {
         private final ParameterSlot slot;
 
         public ParameterCalc(ParameterSlot slot) {
-            super(new DummyExp(slot.getParameter().getType()));
+            super(new DummyExp(slot.getParameter().getType()), new Calc[0]);
             this.slot = slot;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[0];
         }
 
         public Object evaluate(Evaluator evaluator) {

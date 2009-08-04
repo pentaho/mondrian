@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
@@ -33,10 +33,10 @@ import org.apache.log4j.Logger;
  */
 public class NoCacheMemberReader implements MemberReader, MemberCache {
     private static final Logger LOGGER =
-            Logger.getLogger(NoCacheMemberReader.class);
+        Logger.getLogger(NoCacheMemberReader.class);
 
     private final SqlConstraintFactory sqlConstraintFactory =
-            SqlConstraintFactory.instance();
+        SqlConstraintFactory.instance();
 
     private final MemberReader source;
 
@@ -45,8 +45,8 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         this.source = source;
         if (!source.setCache(this)) {
             throw Util.newInternal(
-                    "MemberSource (" + source + ", " + source.getClass() +
-                    ") does not support cache-writeback");
+                "MemberSource (" + source + ", " + source.getClass()
+                + ") does not support cache-writeback");
         }
     }
 
@@ -85,8 +85,10 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return getMember(key, true);
     }
 
-    public RolapMember getMember(final Object key,
-            final boolean mustCheckCacheStatus) {
+    public RolapMember getMember(
+        final Object key,
+        final boolean mustCheckCacheStatus)
+    {
         LOGGER.debug("Returning null member: no cache");
         return null;
     }
@@ -117,21 +119,25 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return source.getRootMembers();
     }
 
-
     public List<RolapMember> getMembersInLevel(
-                final RolapLevel level, final int startOrdinal,
-                final int endOrdinal) {
+        final RolapLevel level,
+        final int startOrdinal,
+        final int endOrdinal)
+    {
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(null);
+            sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
-            final RolapLevel level, final int startOrdinal,
-            final int endOrdinal, final TupleConstraint constraint) {
+        final RolapLevel level,
+        final int startOrdinal,
+        final int endOrdinal,
+        final TupleConstraint constraint)
+    {
         LOGGER.debug("Entering getMembersInLevel");
         return source.getMembersInLevel(
-                level, startOrdinal, endOrdinal, constraint);
+            level, startOrdinal, endOrdinal, constraint);
     }
 
     public void getMemberChildren(
@@ -210,7 +216,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 while (n-- > 0) {
                     if (!iter.hasNext()) {
                         return (RolapMember) member.getHierarchy()
-                                .getNullMember();
+                            .getNullMember();
                     }
                     sibling = iter.nextMember();
                 }
@@ -221,7 +227,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 while (n-- > 0) {
                     if (!iter.hasPrevious()) {
                         return (RolapMember) member.getHierarchy()
-                                .getNullMember();
+                            .getNullMember();
                     }
                     sibling = iter.previousMember();
                 }
@@ -256,18 +262,20 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 return;
             }
         }
-        throw Util.newInternal("sibling iterator did not hit end point, start="
-                + startMember
-                + ", end="
-                + endMember);
+        throw Util.newInternal(
+            "sibling iterator did not hit end point, start="
+            + startMember + ", end=" + endMember);
     }
 
     public int getMemberCount() {
         return source.getMemberCount();
     }
 
-    public int compare(final RolapMember m1, final RolapMember m2,
-                       final boolean siblingsAreEqual) {
+    public int compare(
+        final RolapMember m1,
+        final RolapMember m2,
+        final boolean siblingsAreEqual)
+    {
         if (m1 == m2) {
             return 0;
         }
@@ -371,14 +379,17 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                     "member " + member + " not found among its siblings");
             }
         }
+
         boolean hasNext() {
-            return (this.position < this.siblings.size() - 1) ||
-                (parentIterator != null) &&
-                parentIterator.hasNext();
+            return (this.position < this.siblings.size() - 1)
+                || (parentIterator != null)
+                && parentIterator.hasNext();
         }
+
         Object next() {
             return nextMember();
         }
+
         RolapMember nextMember() {
             if (++this.position >= this.siblings.size()) {
                 if (parentIterator == null) {
@@ -392,14 +403,17 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
             }
             return (RolapMember) this.siblings.get(this.position);
         }
+
         boolean hasPrevious() {
-            return (this.position > 0) ||
-                (parentIterator != null) &&
-                parentIterator.hasPrevious();
+            return (this.position > 0)
+                || (parentIterator != null)
+                && parentIterator.hasPrevious();
         }
+
         Object previous() {
             return previousMember();
         }
+
         RolapMember previousMember() {
             if (--this.position < 0) {
                 if (parentIterator == null) {

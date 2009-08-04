@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -323,7 +323,9 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected final V getObject(final Properties props) throws CreationException {
+    protected final V getObject(final Properties props)
+        throws CreationException
+    {
         return getObject(props, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);
     }
 
@@ -339,12 +341,13 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected final V getObject(final Class[] parameterTypes,
-                                final Object[] parameterValues)
-            throws CreationException {
-        return getObject(System.getProperties(),
-                         parameterTypes,
-                         parameterValues);
+    protected final V getObject(
+        final Class[] parameterTypes,
+        final Object[] parameterValues)
+        throws CreationException
+    {
+        return getObject(
+            System.getProperties(), parameterTypes, parameterValues);
     }
 
     /**
@@ -365,11 +368,11 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected V getObject(final Properties props,
-                          final Class[] parameterTypes,
-                          final Object[] parameterValues)
-            throws CreationException {
-
+    protected V getObject(
+        final Properties props,
+        final Class[] parameterTypes,
+        final Object[] parameterValues) throws CreationException
+    {
         // Unit test override
         final String className = getClassName();
         if (className != null) {
@@ -404,10 +407,11 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected V getObject(final String className,
-                          final Class[] parameterTypes,
-                          final Object[] parameterValues)
-            throws CreationException {
+    protected V getObject(
+        final String className,
+        final Class[] parameterTypes,
+        final Object[] parameterValues) throws CreationException
+    {
         try {
             // As a place to begin google:
             //   org.apache.cxf.BusFactoryHelper.java
@@ -435,8 +439,10 @@ public abstract class ObjectFactory<V> {
                 return constructor.newInstance(parameterValues);
             }
         } catch (Exception exc) {
-            throw new CreationException("Error creating object of type \"" +
-                        this.interfaceClass.getName() + "\"" , exc);
+            throw new CreationException(
+                "Error creating object of type \""
+                + this.interfaceClass.getName() + "\"",
+                exc);
         }
     }
 
@@ -451,8 +457,10 @@ public abstract class ObjectFactory<V> {
      * not represent a subclass of the specified class (here "subclass"
      * includes the class itself).
      */
-    private static <V> Class<? extends V> asSubclass(final Class<V> clazz,
-                                                     final Class<?> genericClass) {
+    private static <V> Class<? extends V> asSubclass(
+        final Class<V> clazz,
+        final Class<?> genericClass)
+    {
         if (clazz.isAssignableFrom(genericClass)) {
             return (Class<? extends V>) genericClass;
         } else {
@@ -513,9 +521,10 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected abstract V getDefault(Class[] parameterTypes,
-                                    Object[] parameterValues)
-        throws CreationException;
+    protected abstract V getDefault(
+        Class[] parameterTypes,
+        Object[] parameterValues)
+    throws CreationException;
 
     /**
      * Factory method which creates an exception to be thrown
@@ -527,8 +536,10 @@ public abstract class ObjectFactory<V> {
     // unlikely that anyone will want to handle it. This code should wrap the
     // error using Util.newError, just like elsewhere in mondrian.
     protected CreationException defaultCreationException() {
-        return new CreationException("Error creating object of type \"" +
-                        this.interfaceClass.getName() + "\"");
+        return new CreationException(
+            "Error creating object of type \""
+            + this.interfaceClass.getName()
+            + "\"");
     }
 
     /**
@@ -605,18 +616,20 @@ public abstract class ObjectFactory<V> {
          * @return the newly created object
          * @throws CreationException if unable to create the object
          */
-        protected T getObject(final Properties props,
-                              final Class[] parameterTypes,
-                              final Object[] parameterValues)
-                throws CreationException {
-
+        protected T getObject(
+            final Properties props,
+            final Class[] parameterTypes,
+            final Object[] parameterValues) throws CreationException
+        {
             // Unit test override, do not use application instance.
             final String className = getClassName();
             if (className != null) {
                 if (this.testSingleInstance == null) {
-                    this.testSingleInstance = getTestObject(className,
-                                                    parameterTypes,
-                                                    parameterValues);
+                    this.testSingleInstance =
+                        getTestObject(
+                            className,
+                            parameterTypes,
+                            parameterValues);
                 }
                 return this.testSingleInstance;
             }
@@ -652,10 +665,11 @@ public abstract class ObjectFactory<V> {
          * @return the newly created object
          * @throws CreationException if unable to create the object
          */
-        protected T getTestObject(final String className,
-                                  final Class[] parameterTypes,
-                                  final Object[] parameterValues)
-                throws CreationException {
+        protected T getTestObject(
+            final String className,
+            final Class[] parameterTypes,
+            final Object[] parameterValues) throws CreationException
+        {
             return getObject(className, parameterTypes, parameterValues);
         }
     }

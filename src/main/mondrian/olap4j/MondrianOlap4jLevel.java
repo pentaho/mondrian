@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,6 +14,8 @@ import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Named;
 
 import java.util.*;
+
+import mondrian.olap.Util;
 
 /**
  * Implementation of {@link Level}
@@ -27,6 +29,12 @@ class MondrianOlap4jLevel implements Level, Named {
     private final MondrianOlap4jSchema olap4jSchema;
     private final mondrian.olap.Level level;
 
+    /**
+     * Creates a MondrianOlap4jLevel.
+     *
+     * @param olap4jSchema Schema
+     * @param level Mondrian level
+     */
     MondrianOlap4jLevel(
         MondrianOlap4jSchema olap4jSchema,
         mondrian.olap.Level level)
@@ -36,8 +44,8 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public boolean equals(Object obj) {
-        return obj instanceof MondrianOlap4jLevel &&
-            level.equals(((MondrianOlap4jLevel) obj).level);
+        return obj instanceof MondrianOlap4jLevel
+            && level.equals(((MondrianOlap4jLevel) obj).level);
     }
 
     public int hashCode() {
@@ -56,8 +64,38 @@ class MondrianOlap4jLevel implements Level, Named {
         return new MondrianOlap4jDimension(olap4jSchema, level.getDimension());
     }
 
+    public boolean isCalculated() {
+        return false;
+    }
+
     public Type getLevelType() {
-        throw new UnsupportedOperationException();
+        switch (level.getLevelType()) {
+        case Regular:
+            return Type.REGULAR;
+        case TimeDays:
+            return Type.TIME_DAYS;
+        case TimeHalfYear:
+            return Type.TIME_HALF_YEAR;
+        case TimeHours:
+            return Type.TIME_HOURS;
+        case TimeMinutes:
+            return Type.TIME_MINUTES;
+        case TimeMonths:
+            return Type.TIME_MONTHS;
+        case TimeQuarters:
+            return Type.TIME_QUARTERS;
+        case TimeSeconds:
+            return Type.TIME_SECONDS;
+        case TimeUndefined:
+            return Type.TIME_UNDEFINED;
+        case TimeWeeks:
+            return Type.TIME_WEEKS;
+        case TimeYears:
+            return Type.TIME_YEARS;
+        case Null:
+        default:
+            throw Util.unexpected(level.getLevelType());
+        }
     }
 
     public NamedList<Property> getProperties() {

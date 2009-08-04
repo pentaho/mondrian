@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -1284,16 +1284,24 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         props.ReadAggregates.set(false);
 
         FoodMartTestCase.QueryAndResult[] singleQuery = {mdxQueries[0]};
-        assertTrue(ConcurrentValidatingQueryRunner.runTest(1, 1, false, true,
-                singleQuery).size() == 0);
+        assertTrue(
+            ConcurrentValidatingQueryRunner.runTest(
+                1, 1, false, true, singleQuery)
+            .size() == 0);
         //ensures same global aggregation is used by 2 or more threads and
         // all of them load the same segment.
-        FoodMartTestCase.QueryAndResult[] singleQueryFor2Threads = {mdxQueries[1]};
-        assertTrue(ConcurrentValidatingQueryRunner.runTest(2, 5, false, true,
-                singleQueryFor2Threads).size() == 0);
+        FoodMartTestCase.QueryAndResult[] singleQueryFor2Threads = {
+            mdxQueries[1]
+        };
+        assertTrue(
+            ConcurrentValidatingQueryRunner.runTest(
+                2, 5, false, true, singleQueryFor2Threads)
+            .size() == 0);
 
-        assertTrue(ConcurrentValidatingQueryRunner.runTest(10, 45, true, true,
-                mdxQueries).size() == 0);
+        assertTrue(
+            ConcurrentValidatingQueryRunner.runTest(
+                10, 45, true, true, mdxQueries)
+            .size() == 0);
     }
 
     protected void tearDown() throws Exception {

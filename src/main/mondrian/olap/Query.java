@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -58,17 +58,20 @@ import java.util.*;
 public class Query extends QueryPart {
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapCube
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapCube
      */
     public Formula[] formulas;
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapConnection
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapConnection
      */
     public QueryAxis[] axes;
 
     /**
-     * public-private: This must be public because it is still accessed in rolap.RolapResult
+     * public-private: This must be public because it is still accessed in
+     * rolap.RolapResult
      */
     public QueryAxis slicerAxis;
 
@@ -172,14 +175,15 @@ public class Query extends QueryPart {
      * Creates a Query.
      */
     public Query(
-            Connection connection,
-            Formula[] formulas,
-            QueryAxis[] axes,
-            String cube,
-            QueryAxis slicerAxis,
-            QueryPart[] cellProps,
-            boolean load,
-            boolean strictValidation) {
+        Connection connection,
+        Formula[] formulas,
+        QueryAxis[] axes,
+        String cube,
+        QueryAxis slicerAxis,
+        QueryPart[] cellProps,
+        boolean load,
+        boolean strictValidation)
+    {
         this(
             connection,
             Util.lookupCube(connection.getSchemaReader(), cube, true),
@@ -196,15 +200,16 @@ public class Query extends QueryPart {
      * Creates a Query.
      */
     public Query(
-            Connection connection,
-            Cube mdxCube,
-            Formula[] formulas,
-            QueryAxis[] axes,
-            QueryAxis slicerAxis,
-            QueryPart[] cellProps,
-            Parameter[] parameters,
-            boolean load,
-            boolean strictValidation) {
+        Connection connection,
+        Cube mdxCube,
+        Formula[] formulas,
+        QueryAxis[] axes,
+        QueryAxis slicerAxis,
+        QueryPart[] cellProps,
+        Parameter[] parameters,
+        boolean load,
+        boolean strictValidation)
+    {
         this.connection = connection;
         this.cube = mdxCube;
         this.formulas = formulas;
@@ -295,20 +300,30 @@ public class Query extends QueryPart {
      * @return Validator
      */
     public Validator createValidator() {
-        return new QueryValidator(connection.getSchema().getFunTable());
+        return new QueryValidator(connection.getSchema().getFunTable(), false);
     }
 
     /**
-     * Creates a validator for this query that uses a given function table.
+     * Creates a validator for this query that uses a given function table and
+     * function validation policy.
      *
      * @param functionTable Function table
+     * @param alwaysResolveFunDef Whether to always resolve function
+     *     definitions (see {@link Validator#alwaysResolveFunDef()})
      * @return Validator
      */
-    public Validator createValidator(FunTable functionTable) {
-        return new QueryValidator(functionTable);
+    public Validator createValidator(
+        FunTable functionTable,
+        boolean alwaysResolveFunDef)
+    {
+        return new QueryValidator(functionTable, alwaysResolveFunDef);
     }
 
-    public Object clone() {
+    @SuppressWarnings({
+        "CloneDoesntCallSuperClone",
+        "CloneDoesntDeclareCloneNotSupportedException"
+    })
+    public Query clone() {
         return new Query(
             connection,
             cube,
@@ -319,10 +334,6 @@ public class Query extends QueryPart {
             parameters.toArray(new Parameter[parameters.size()]),
             load,
             strictValidation);
-    }
-
-    public Query safeClone() {
-        return (Query) clone();
     }
 
     public Connection getConnection() {
@@ -455,9 +466,9 @@ public class Query extends QueryPart {
     {
         MondrianProperties props = MondrianProperties.instance();
         return
-            !strictValidation &&
-            ((load && props.IgnoreInvalidMembers.get()) ||
-                (!load && props.IgnoreInvalidMembersDuringQuery.get()));
+            !strictValidation
+            && ((load && props.IgnoreInvalidMembers.get())
+                || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
     }
 
     /**
@@ -550,8 +561,8 @@ public class Query extends QueryPart {
                         String parameterName =
                             ParameterFunDef.getParameterName(call.getArgs());
                         if (parametersByName.get(parameterName) != null) {
-                            throw MondrianResource.instance().
-                                ParameterDefinedMoreThanOnce.ex(parameterName);
+                            throw MondrianResource.instance()
+                                .ParameterDefinedMoreThanOnce.ex(parameterName);
                         }
 
                         Type type =
@@ -589,7 +600,8 @@ public class Query extends QueryPart {
 
             // Make sure that there are no gaps. If there are N axes, then axes
             // 0 .. N-1 should exist.
-            int seekOrdinal = AxisOrdinal.StandardAxisOrdinal.COLUMNS.logicalOrdinal();
+            int seekOrdinal =
+                AxisOrdinal.StandardAxisOrdinal.COLUMNS.logicalOrdinal();
             for (QueryAxis axis : axes) {
                 if (!axisNames.contains(seekOrdinal)) {
                     AxisOrdinal axisName =
@@ -761,7 +773,8 @@ public class Query extends QueryPart {
 
         Parameter param = getSchemaReader(false).getParameter(parameterName);
         if (param == null) {
-            throw MondrianResource.instance().UnknownParameter.ex(parameterName);
+            throw MondrianResource.instance().UnknownParameter.ex(
+                parameterName);
         }
         if (!param.isModifiable()) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
@@ -843,10 +856,11 @@ public class Query extends QueryPart {
     public Member lookupMemberFromCache(String memberUniqueName) {
         // first look in defined members
         for (Member member : getDefinedMembers()) {
-            if (Util.equalName(member.getUniqueName(), memberUniqueName) ||
-                Util.equalName(
-                        getUniqueNameWithoutAll(member),
-                        memberUniqueName)) {
+            if (Util.equalName(member.getUniqueName(), memberUniqueName)
+                || Util.equalName(
+                    getUniqueNameWithoutAll(member),
+                    memberUniqueName))
+            {
                 return member;
             }
         }
@@ -858,8 +872,8 @@ public class Query extends QueryPart {
         Member parentMember = member.getParentMember();
         if ((parentMember != null) && !parentMember.isAll()) {
             return Util.makeFqName(
-                            getUniqueNameWithoutAll(parentMember),
-                            member.getName());
+                getUniqueNameWithoutAll(parentMember),
+                member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
         }
@@ -870,9 +884,10 @@ public class Query extends QueryPart {
      */
     private NamedSet lookupNamedSet(String name) {
         for (Formula formula : formulas) {
-            if (!formula.isMember() &&
-                formula.getElement() != null &&
-                formula.getName().equals(name)) {
+            if (!formula.isMember()
+                && formula.getElement() != null
+                && formula.getName().equals(name))
+            {
                 return (NamedSet) formula.getElement();
             }
         }
@@ -922,35 +937,37 @@ public class Query extends QueryPart {
                 while ((parent != null) && (grandParent != null)) {
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedOnAxis.ex(
-                                formulaType,
-                                uniqueName,
-                                ((QueryAxis) parent).getAxisName());
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedOnAxis.ex(
+                                    formulaType,
+                                    uniqueName,
+                                    ((QueryAxis) parent).getAxisName());
 
                         } else if (parent instanceof Formula) {
                             String parentFormulaType =
                                 ((Formula) parent).isMember()
-                                    ? MondrianResource.instance().CalculatedMember.str()
-                                    : MondrianResource.instance().CalculatedSet.str();
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedInFormula.ex(
-                                formulaType, uniqueName, parentFormulaType,
-                                ((Formula) parent).getUniqueName());
+                                    ? MondrianResource.instance()
+                                          .CalculatedMember.str()
+                                    : MondrianResource.instance()
+                                          .CalculatedSet.str();
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedInFormula.ex(
+                                    formulaType, uniqueName, parentFormulaType,
+                                    ((Formula) parent).getUniqueName());
 
                         } else {
-                            throw MondrianResource.instance().
-                                MdxCalculatedFormulaUsedOnSlicer.ex(
-                                formulaType, uniqueName);
+                            throw MondrianResource.instance()
+                                .MdxCalculatedFormulaUsedOnSlicer.ex(
+                                    formulaType, uniqueName);
                         }
                     }
                     ++i;
                     parent = walker.getAncestor(i);
                     grandParent = walker.getAncestor(i + 1);
                 }
-                throw MondrianResource.instance().
-                    MdxCalculatedFormulaUsedInQuery.ex(
-                    formulaType, uniqueName, Util.unparse(this));
+                throw MondrianResource.instance()
+                    .MdxCalculatedFormulaUsedInQuery.ex(
+                        formulaType, uniqueName, Util.unparse(this));
             }
         }
 
@@ -986,12 +1003,15 @@ public class Query extends QueryPart {
         Walker walker = new Walker(this);
         while (walker.hasMoreElements()) {
             Object queryElement = walker.nextElement();
-            if (queryElement instanceof MemberExpr &&
-                ((MemberExpr) queryElement).getMember().equals(mdxElement)) {
+            if (queryElement instanceof MemberExpr
+                && ((MemberExpr) queryElement).getMember().equals(mdxElement))
+            {
                 return false;
             }
-            if (queryElement instanceof NamedSetExpr &&
-                ((NamedSetExpr) queryElement).getNamedSet().equals(mdxElement)) {
+            if (queryElement instanceof NamedSetExpr
+                && ((NamedSetExpr) queryElement).getNamedSet().equals(
+                    mdxElement))
+            {
                 return false;
             }
         }
@@ -1028,9 +1048,10 @@ public class Query extends QueryPart {
     List<Member> getDefinedMembers() {
         List<Member> definedMembers = new ArrayList<Member>();
         for (final Formula formula : formulas) {
-            if (formula.isMember() &&
-                formula.getElement() != null &&
-                getConnection().getRole().canAccess(formula.getElement())) {
+            if (formula.isMember()
+                && formula.getElement() != null
+                && getConnection().getRole().canAccess(formula.getElement()))
+            {
                 definedMembers.add((Member) formula.getElement());
             }
         }
@@ -1042,8 +1063,8 @@ public class Query extends QueryPart {
      */
     public void setAxisShowEmptyCells(int axis, boolean showEmpty) {
         if (axis >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
-                ex(axis);
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported
+                .ex(axis);
         }
         axes[axis].setNonEmpty(!showEmpty);
     }
@@ -1054,13 +1075,13 @@ public class Query extends QueryPart {
      */
     public Hierarchy[] getMdxHierarchiesOnAxis(AxisOrdinal axis) {
         if (axis.logicalOrdinal() >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
-                ex(axis.logicalOrdinal());
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported
+                .ex(axis.logicalOrdinal());
         }
         QueryAxis queryAxis =
-            axis.isFilter() ?
-                slicerAxis :
-                axes[axis.logicalOrdinal()];
+            axis.isFilter()
+            ? slicerAxis
+            : axes[axis.logicalOrdinal()];
         return collectHierarchies(queryAxis.getSet());
     }
 
@@ -1333,8 +1354,9 @@ public class Query extends QueryPart {
                     continue;       // have already done these
                 }
                 Id id = formula.getIdentifier();
-                if (id.getSegments().size() == 1 &&
-                    id.getSegments().get(0).matches(s.name)) {
+                if (id.getSegments().size() == 1
+                    && id.getSegments().get(0).matches(s.name))
+                {
                     return formula.getNamedSet();
                 }
             }
@@ -1463,8 +1485,21 @@ public class Query extends QueryPart {
      * dependencies between Validator and Query are explicit.
      */
     private class QueryValidator extends ValidatorImpl {
-        public QueryValidator(FunTable functionTable) {
+        private final boolean alwaysResolveFunDef;
+
+        /**
+         * Creates a QueryValidator.
+         *
+         * @param functionTable Function table
+         * @param alwaysResolveFunDef Whether to always resolve function
+         *     definitions (see {@link #alwaysResolveFunDef()})
+         */
+        public QueryValidator(
+            FunTable functionTable,
+            boolean alwaysResolveFunDef)
+        {
             super(functionTable);
+            this.alwaysResolveFunDef = alwaysResolveFunDef;
         }
 
         protected void defineParameter(Parameter param) {
@@ -1475,6 +1510,10 @@ public class Query extends QueryPart {
 
         public Query getQuery() {
             return Query.this;
+        }
+
+        public boolean alwaysResolveFunDef() {
+            return alwaysResolveFunDef;
         }
     }
 }

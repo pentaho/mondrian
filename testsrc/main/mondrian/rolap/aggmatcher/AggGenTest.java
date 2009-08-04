@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -45,7 +45,10 @@ public class AggGenTest extends FoodMartTestCase {
         super(name);
     }
 
-    public void testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn() throws Exception {
+    public void
+        testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn()
+        throws Exception
+    {
         Logger logger = Logger.getLogger(AggGen.class);
         StringWriter writer = new StringWriter();
         Appender myAppender = new WriterAppender(new SimpleLayout(), writer);
@@ -58,13 +61,16 @@ public class AggGenTest extends FoodMartTestCase {
         // test run
 
         MondrianProperties props = MondrianProperties.instance();
-        props.AggregateRules.setString("DefaultRules.xml"); // If run in Ant and with mondrian.jar, please comment out this line
+        // If run in Ant and with mondrian.jar, please comment out this line:
+        props.AggregateRules.setString("DefaultRules.xml");
         props.UseAggregates.setString(trueValue);
         props.ReadAggregates.setString(trueValue);
         props.GenerateAggregateSql.setString(trueValue);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
-        Query query = rolapConn.parseQuery("select {[Measures].[Count]} on columns from [HR]");
+        Query query =
+            rolapConn.parseQuery(
+                "select {[Measures].[Count]} on columns from [HR]");
         rolapConn.execute(query);
 
         logger.removeAppender(myAppender);

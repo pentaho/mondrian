@@ -1,8 +1,9 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -22,10 +23,10 @@ import mondrian.rolap.aggmatcher.AggStar;
  * limits the result of a Member SQL query to the current evaluation context.
  * All Members of the current context are joined against the fact table and only
  * those rows are returned, that have an entry in the fact table.
- * <p>
- * For example, if you have two dimensions, "invoice" and "time", and the current
- * context (e.g. the slicer) contains a day from the "time" dimension, then
- * only the invoices of that day are found. Used to optimize NON EMPTY.
+ *
+ * <p>For example, if you have two dimensions, "invoice" and "time", and the
+ * current context (e.g. the slicer) contains a day from the "time" dimension,
+ * then only the invoices of that day are found. Used to optimize NON EMPTY.
  *
  * <p> The {@link TupleConstraint} methods may silently ignore calculated
  * members (depends on the <code>strict</code> c'tor argument), so these may
@@ -36,8 +37,9 @@ import mondrian.rolap.aggmatcher.AggStar;
  * @author av
  * @since Nov 2, 2005
  */
-public class SqlContextConstraint implements MemberChildrenConstraint,
-        TupleConstraint {
+public class SqlContextConstraint
+    implements MemberChildrenConstraint, TupleConstraint
+{
     List<Object> cacheKey;
     private Evaluator evaluator;
     private boolean strict;
@@ -84,20 +86,6 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
                 return false;
             }
             assert levels != null;
-            // we need to make sure all the levels join with each fact table;
-            // otherwise, it doesn't make sense to do the processing
-            // natively, as you'll end up with cartesian product joins!
-            // for each rolap cube, make sure there is a base cube level
-            // equivalent
-            for (RolapCube baseCube : baseCubes) {
-                for (Level level : levels) {
-                    if (baseCube.findBaseCubeHierarchy(
-                            (RolapHierarchy)level.getHierarchy()) == null) {
-                        return false;
-                    }
-                }
-            }
-
             query.setBaseCubes(baseCubeList);
         }
 
@@ -143,7 +131,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         for (Member member : query.getMeasuresMembers()) {
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
+                addMeasure(
+                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
                 findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
@@ -187,7 +176,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             MemberExpr memberExpr = (MemberExpr) exp;
             Member member = memberExpr.getMember();
             if (member instanceof RolapStoredMeasure) {
-                addMeasure((RolapStoredMeasure) member, baseCubes, baseCubeList);
+                addMeasure(
+                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
             } else if (member instanceof RolapCalculatedMember) {
                 findMeasures(member.getExpression(), baseCubes, baseCubeList);
             }
@@ -276,9 +266,9 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * context.
      */
     public void addConstraint(
-            SqlQuery sqlQuery,
-            RolapCube baseCube,
-            AggStar aggStar)
+        SqlQuery sqlQuery,
+        RolapCube baseCube,
+        AggStar aggStar)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
@@ -316,7 +306,9 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             sqlQuery, baseCube, aggStar, evaluator, (RolapCubeLevel)level);
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        RolapMember parent)
+    {
         return this;
     }
 

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -61,15 +61,18 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             new String[]{"fxxnn"}, false, false);
 
     public TopBottomPercentSumFunDef(
-            FunDef dummyFunDef, boolean top, boolean percent) {
+        FunDef dummyFunDef, boolean top, boolean percent)
+    {
         super(dummyFunDef);
         this.top = top;
         this.percent = percent;
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = (ListCalc) compiler.compileAs(call.getArg(0),
-            null, ResultStyle.MUTABLELIST_ONLY);
+        final ListCalc listCalc =
+            (ListCalc) compiler.compileAs(
+                call.getArg(0),
+                null, ResultStyle.MUTABLELIST_ONLY);
         final DoubleCalc doubleCalc = compiler.compileDouble(call.getArg(1));
         final Calc calc = compiler.compileScalar(call.getArg(2), true);
         return new CalcImpl(call, listCalc, doubleCalc, calc);
@@ -80,9 +83,10 @@ class TopBottomPercentSumFunDef extends FunDefBase {
         private final boolean percent;
 
         public ResolverImpl(
-                final String name, final String signature,
-                final String description, final String[] signatures,
-                boolean top, boolean percent) {
+            final String name, final String signature,
+            final String description, final String[] signatures,
+            boolean top, boolean percent)
+        {
             super(name, signature, description, signatures);
             this.top = top;
             this.percent = percent;
@@ -98,7 +102,12 @@ class TopBottomPercentSumFunDef extends FunDefBase {
         private final DoubleCalc doubleCalc;
         private final Calc calc;
 
-        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, DoubleCalc doubleCalc, Calc calc) {
+        public CalcImpl(
+            ResolvedFunCall call,
+            ListCalc listCalc,
+            DoubleCalc doubleCalc,
+            Calc calc)
+        {
             super(call, new Calc[]{listCalc, doubleCalc, calc});
             this.listCalc = listCalc;
             this.doubleCalc = doubleCalc;
@@ -162,17 +171,18 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 } else if (o instanceof Exception) {
                     // ignore the error
                 } else {
-                    throw Util.newInternal("got " + o + " when expecting Number");
+                    throw Util.newInternal(
+                        "got " + o + " when expecting Number");
                 }
             }
 
-            // MSAS exhibits the following behavior. If the value of all members is
-            // null, then the first (or last) member of the set is returned for percent
-            // operations.
+            // MSAS exhibits the following behavior. If the value of all members
+            // is null, then the first (or last) member of the set is returned
+            // for percent operations.
             if (memberCount > 0 && percent && nullCount == memberCount) {
-                return top ?
-                        list.subList(0, 1) :
-                        list.subList(memberCount - 1, memberCount);
+                return top
+                    ? list.subList(0, 1)
+                    : list.subList(memberCount - 1, memberCount);
             }
             return list;
         }

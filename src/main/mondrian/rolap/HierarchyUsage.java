@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2008 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -296,12 +296,12 @@ public class HierarchyUsage {
     public boolean equals(Object o) {
         if (o instanceof HierarchyUsage) {
             HierarchyUsage other = (HierarchyUsage) o;
-            return (this.kind == other.kind) &&
-                Util.equals(this.fact, other.fact) &&
-                this.hierarchyName.equals(other.hierarchyName) &&
-                Util.equalName(this.name, other.name) &&
-                Util.equalName(this.source, other.source) &&
-                Util.equalName(this.foreignKey, other.foreignKey);
+            return (this.kind == other.kind)
+                && Util.equals(this.fact, other.fact)
+                && this.hierarchyName.equals(other.hierarchyName)
+                && Util.equalName(this.name, other.name)
+                && Util.equalName(this.source, other.source)
+                && Util.equalName(this.foreignKey, other.foreignKey);
         } else {
             return false;
         }
@@ -355,22 +355,29 @@ public class HierarchyUsage {
             this.joinTable =
                 findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
-        } else if (hierarchy.getXmlHierarchy() != null &&
-                hierarchy.getXmlHierarchy().primaryKey != null) {
+        } else if (hierarchy.getXmlHierarchy() != null
+            && hierarchy.getXmlHierarchy().primaryKey != null)
+        {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
             //    also specify the "primaryKeyTable" attribute if the hierarchy
             //    is a join (hence has more than one table).
-            this.joinTable = findJoinTable(hierarchy,
-                hierarchy.getXmlHierarchy().primaryKeyTable);
-            this.joinExp = new MondrianDef.Column(this.joinTable.getAlias(),
+            this.joinTable =
+                findJoinTable(
+                    hierarchy,
+                    hierarchy.getXmlHierarchy().primaryKeyTable);
+            this.joinExp =
+                new MondrianDef.Column(
+                    this.joinTable.getAlias(),
                     hierarchy.getXmlHierarchy().primaryKey);
         } else {
             // 3. If neither of the above, the join is assumed to be to key of
             //    the last level.
             final Level[] levels = hierarchy.getLevels();
             RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
-            this.joinTable = findJoinTable(hierarchy,
-                joinLevel.getKeyExp().getTableAlias());
+            this.joinTable =
+                findJoinTable(
+                    hierarchy,
+                    joinLevel.getKeyExp().getTableAlias());
             this.joinExp = joinLevel.getKeyExp();
         }
 
@@ -418,8 +425,8 @@ public class HierarchyUsage {
             if (table == null) {
                 // todo: i18n msg
                 throw Util.newError(
-                    "no table '" + tableName +
-                    "' found in hierarchy " + hierarchy.getUniqueName());
+                    "no table '" + tableName
+                    + "' found in hierarchy " + hierarchy.getUniqueName());
             }
         }
         return table;

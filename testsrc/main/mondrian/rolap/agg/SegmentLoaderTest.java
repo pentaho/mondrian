@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,7 +43,6 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-
             List<Object[]> loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList)
@@ -52,7 +51,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return getData(true);
             }
         };
-        loader.load(groupingSets, null,null);
+        loader.load(groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -67,36 +66,11 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyUnitSalesAggregate(groupingSets.get(1).getSegments()[0]);
     }
 
-    public void testLoadWithMockResultsForLoadingSummaryAndDetailedSegmentsWithNullInRollupColumn() {
-        GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
-
-        GroupingSet groupingSetsInfo = getDefaultGroupingSet();
-        ArrayList<GroupingSet> groupingSets =
-            new ArrayList<GroupingSet>();
-        groupingSets.add(groupingSetsInfo);
-        groupingSets.add(groupableSetsInfo);
-        SegmentLoader loader = new SegmentLoader() {
-            SqlStatement createExecuteSql(
-                    GroupingSetsList groupingSetsList,
-                    List<StarPredicate> compoundPredicateList)
-            {
-                return null;
-            }
-
-
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList)
-                    throws SQLException
-            {
-                return getDataWithNullInRollupColumn(true);
-            }
-        };
-        loader.load(groupingSets, null, null);
-        Segment detailedSegment = groupingSets.get(0).getSegments()[0];
-        assertEquals(3, detailedSegment.getCellCount());
-    }
-
-    public void testLoadWithMockResultsForLoadingSummaryAndDetailedSegmentsUsingSparse() {
+    /**
+     * Tests load with mock results for loading summary and detailed
+     * segments with null in rollup column.
+     */
+    public void testLoadWithWithNullInRollupColumn() {
         GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
 
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
@@ -112,14 +86,44 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList)
+                throws SQLException
+            {
+                return getDataWithNullInRollupColumn(true);
+            }
+        };
+        loader.load(groupingSets, null, null);
+        Segment detailedSegment = groupingSets.get(0).getSegments()[0];
+        assertEquals(3, detailedSegment.getCellCount());
+    }
 
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList) throws
+    public void
+        testLoadWithMockResultsForLoadingSummaryAndDetailedSegmentsUsingSparse()
+    {
+        GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
+
+        GroupingSet groupingSetsInfo = getDefaultGroupingSet();
+        ArrayList<GroupingSet> groupingSets =
+            new ArrayList<GroupingSet>();
+        groupingSets.add(groupingSetsInfo);
+        groupingSets.add(groupableSetsInfo);
+        SegmentLoader loader = new SegmentLoader() {
+            SqlStatement createExecuteSql(
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
+            {
+                return null;
+            }
+
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(true);
             }
-
 
             boolean useSparse(boolean sparse, int n, List<Object[]> rows) {
                 return true;
@@ -154,10 +158,10 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList) throws
-                SQLException
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList)
+                throws SQLException
             {
                 return getData(false);
             }
@@ -171,7 +175,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyUnitSalesDetailed(groupingSetsInfo.getSegments()[0]);
     }
 
-    public void testProcessDataForGettingGroupingSetsBitKeysAndLoadingAxisValueSet()
+    public void
+        testProcessDataForGettingGroupingSetsBitKeysAndLoadingAxisValueSet()
         throws SQLException
     {
         GroupingSet groupableSetsInfo = getGroupingSetRollupOnGender();
@@ -183,8 +188,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
 
         SegmentLoader loader = new SegmentLoader() {
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList) throws
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getData(true);
@@ -195,8 +201,10 @@ public class SegmentLoaderTest extends BatchTestCase {
             loader.getDistinctValueWorkspace(axisCount);
         boolean[] axisContainsNull = new boolean[axisCount];
 
-        List<Object[]> list = loader.processData(null, axisContainsNull,
-            axisValueSet, new GroupingSetsList(groupingSets));
+        List<Object[]> list =
+            loader.processData(
+                null, axisContainsNull,
+                axisValueSet, new GroupingSetsList(groupingSets));
         int totalNoOfRows = 12;
         int lengthOfRowWithBitKey = 6;
         Object[] detailedRow = list.get(0);
@@ -226,12 +234,15 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGender() {
         GroupingSet groupableSetsInfo =
-            getGroupingSet(new String[]{tableTime, tableProductClass,
-                tableProductClass}, new String[]{fieldYear,
-                fieldProductFamily, fieldProductDepartment},
-                new String[][]{fieldValuesYear,
+            getGroupingSet(
+                new String[]{tableTime, tableProductClass, tableProductClass},
+                new String[]{
+                    fieldYear, fieldProductFamily, fieldProductDepartment},
+                new String[][]{
+                    fieldValuesYear,
                     fieldValuesProductFamily,
-                    fieldValueProductDepartment}, cubeNameSales,
+                    fieldValueProductDepartment},
+                cubeNameSales,
                 measureUnitSales);
         return groupableSetsInfo;
     }
@@ -242,8 +253,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
 
         SegmentLoader loader = new SegmentLoader() {
-            List<Object[]> loadData(SqlStatement stmt,
-                                    GroupingSetsList groupingSetsList) throws
+            List<Object[]> loadData(
+                SqlStatement stmt,
+                GroupingSetsList groupingSetsList) throws
                 SQLException
             {
                 return getDataWithNullInAxisColumn(false);
@@ -256,7 +268,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
 
-        loader.processData(null, axisContainsNull,
+        loader.processData(
+            null, axisContainsNull,
             axisValueSet, new GroupingSetsList(groupingSets));
 
         assertFalse(axisContainsNull[0]);
@@ -279,8 +292,9 @@ public class SegmentLoaderTest extends BatchTestCase {
                 List<Object[]> data = new ArrayList<Object[]>();
                 data.add(new Object[]{"1997", "Food", "Deli", "F", "5990"});
                 data.add(new Object[]{"1997", "Food", "Deli", "M", "6047"});
-                data.add(new Object[]{"1997", "Food", "Canned_Products", "F",
-                    "867"});
+                data.add(
+                    new Object[] {
+                        "1997", "Food", "Canned_Products", "F", "867"});
 
                 return data;
             }
@@ -290,9 +304,11 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SortedSet<Comparable<?>>[] axisValueSet =
             loader.getDistinctValueWorkspace(4);
-        List<Object[]> list = loader.processData(null, new boolean[4],
-            axisValueSet,
-            new GroupingSetsList(groupingSets));
+        List<Object[]> list =
+            loader.processData(
+                null, new boolean[4],
+                axisValueSet,
+                new GroupingSetsList(groupingSets));
         int totalNoOfRows = 3;
         assertEquals(totalNoOfRows, list.size());
         int lengthOfRowWithoutBitKey = 5;
@@ -367,8 +383,10 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private void verifyUnitSalesAggregate(Segment segment) {
-        Double[] unitSalesValues = {null, null, 4186.0, null, 1812.0, null,
-            null, 12037.0, null, 841.0, null, null};
+        Double[] unitSalesValues = {
+            null, null, 4186.0, null, 1812.0, null,
+            null, 12037.0, null, 841.0, null, null
+        };
         Iterator<Map.Entry<CellKey, Object>> iterator =
             segment.getData().iterator();
         int index = 0;
@@ -379,14 +397,15 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     public void testGetGroupingBitKey() {
-        Object[] data =
-            new Object[]{"1997", "Food", "Deli", "M", "6047", 0, 0,
-                0, 0};
-        assertEquals(BitKey.Factory.makeBitKey(4),
+        Object[] data = {
+            "1997", "Food", "Deli", "M", "6047", 0, 0, 0, 0
+        };
+        assertEquals(
+            BitKey.Factory.makeBitKey(4),
             new SegmentLoader().getRollupBitKey(4, data, 5));
 
-        data = new Object[]{"1997", "Food", "Deli", null, "12037", 0,
-            0, 0, 1};
+        data = new Object[]{
+            "1997", "Food", "Deli", null, "12037", 0, 0, 0, 1};
         BitKey key = BitKey.Factory.makeBitKey(4);
         key.set(3);
         assertEquals(key, new SegmentLoader().getRollupBitKey(4, data, 5));
@@ -407,7 +426,8 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         List<BitKey> bitKeysList = detail.getRollupColumnsBitKeyList();
         int columnsCount = 4;
-        assertEquals(BitKey.Factory.makeBitKey(columnsCount),
+        assertEquals(
+            BitKey.Factory.makeBitKey(columnsCount),
             bitKeysList.get(0));
         BitKey key = BitKey.Factory.makeBitKey(columnsCount);
         key.set(0);
@@ -418,7 +438,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(getGroupingSetRollupOnGenderAndProductFamily());
         bitKeysList = new GroupingSetsList(groupingSets)
             .getRollupColumnsBitKeyList();
-        assertEquals(BitKey.Factory.makeBitKey(columnsCount),
+        assertEquals(
+            BitKey.Factory.makeBitKey(columnsCount),
             bitKeysList.get(0));
         key = BitKey.Factory.makeBitKey(columnsCount);
         key.set(0);
@@ -430,7 +451,8 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductFamily() {
-        return getGroupingSet(new String[]{tableTime, tableProductClass},
+        return getGroupingSet(
+            new String[]{tableTime, tableProductClass},
             new String[]{fieldYear, fieldProductDepartment},
             new String[][]{fieldValuesYear, fieldValueProductDepartment},
             cubeNameSales, measureUnitSales);
@@ -476,7 +498,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertEquals(productFamily, rollupColumnsList.get(2));
         assertEquals(year, rollupColumnsList.get(3));
 
-        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
+        assertTrue(
+            new GroupingSetsList(new ArrayList<GroupingSet>())
             .getRollupColumns().isEmpty());
     }
 
@@ -489,7 +512,9 @@ public class SegmentLoaderTest extends BatchTestCase {
             measureUnitSales);
     }
 
-    private GroupingSet getGroupingSetRollupOnProductFamilyAndProductDepartment() {
+    private GroupingSet
+        getGroupingSetRollupOnProductFamilyAndProductDepartment()
+    {
         return getGroupingSet(
             new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
@@ -498,7 +523,9 @@ public class SegmentLoaderTest extends BatchTestCase {
             measureUnitSales);
     }
 
-    private GroupingSet getGroupingSetRollupOnGenderAndProductDepartmentAndYear() {
+    private GroupingSet
+        getGroupingSetRollupOnGenderAndProductDepartmentAndYear()
+    {
         return getGroupingSet(
             new String[]{tableProductClass},
             new String[]{fieldProductFamily},
@@ -559,7 +586,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertEquals(productFamily, rollupColumnsList.get(2));
         assertEquals(year, rollupColumnsList.get(3));
 
-        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
+        assertTrue(
+            new GroupingSetsList(new ArrayList<GroupingSet>())
             .getRollupColumns().isEmpty());
     }
 
@@ -610,16 +638,16 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertEquals(detailedColumns, groupingColumns.get(0));
         assertEquals(summaryColumns, groupingColumns.get(1));
 
-        groupingColumns = new GroupingSetsList(new ArrayList<GroupingSet>())
-            .getGroupingSetsColumns();
+        groupingColumns = new GroupingSetsList(
+            new ArrayList<GroupingSet>()).getGroupingSetsColumns();
         assertEquals(0, groupingColumns.size());
     }
 
     public void testSetFailOnStillLoadingSegments() {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
-        new SegmentLoader()
-            .setFailOnStillLoadingSegments(new GroupingSetsList(groupingSets));
+        new SegmentLoader().setFailOnStillLoadingSegments(
+            new GroupingSetsList(groupingSets));
 
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
@@ -630,8 +658,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnGender());
-        new SegmentLoader()
-            .setFailOnStillLoadingSegments(new GroupingSetsList(groupingSets));
+        new SegmentLoader().setFailOnStillLoadingSegments(
+            new GroupingSetsList(groupingSets));
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
                 assertTrue(segment.isFailed());
@@ -691,26 +719,32 @@ public class SegmentLoaderTest extends BatchTestCase {
         data.add(
             new Object[]{"1997", "Food", "Canned_Products", "M", "945", 0});
         if (incSummaryData) {
-            data.add(new Object[]{"1997", "Food", "Canned_Products", null,
-                "1812", 1});
+            data.add(
+                new Object[]{
+                    "1997", "Food", "Canned_Products", null, "1812", 1});
         }
         data.add(new Object[]{"1997", "Drink", "Dairy", "F", "1987", 0});
         data.add(new Object[]{"1997", "Drink", "Dairy", "M", "2199", 0});
         if (incSummaryData) {
             data.add(new Object[]{"1997", "Drink", "Dairy", null, "4186", 1});
         }
-        data.add(new Object[]{"1997", "Non-Consumable", "Carousel", "F", "368",
-            0});
-        data.add(new Object[]{"1997", "Non-Consumable", "Carousel", "M", "473",
-            0});
+        data.add(
+            new Object[]{
+                "1997", "Non-Consumable", "Carousel", "F", "368", 0});
+        data.add(
+            new Object[]{
+                "1997", "Non-Consumable", "Carousel", "M", "473", 0});
         if (incSummaryData) {
-            data.add(new Object[]{"1997", "Non-Consumable", "Carousel", null,
-                "841", 1});
+            data.add(
+                new Object[]{
+                    "1997", "Non-Consumable", "Carousel", null, "841", 1});
         }
         return data;
     }
 
-    private List<Object[]> getDataWithNullInRollupColumn(boolean incSummaryData) {
+    private List<Object[]> getDataWithNullInRollupColumn(
+        boolean incSummaryData)
+    {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[]{"1997", "Food", "Deli", "F", "5990", 0});
         data.add(new Object[]{"1997", "Food", "Deli", "M", "6047", 0});
@@ -721,7 +755,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         return data;
     }
 
-    private List<Object[]> getDataWithNullInAxisColumn(boolean incSummaryData) {
+    private List<Object[]> getDataWithNullInAxisColumn(
+        boolean incSummaryData)
+    {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[]{"1997", "Food", "Deli", "F", "5990", 0});
         data.add(new Object[]{"1997", "Food", "Deli", "M", "6047", 0});

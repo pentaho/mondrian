@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -42,9 +42,11 @@ public class ServletContextCatalogLocator implements CatalogLocator {
                     // The catalogPath does not exist, but construct a feasible
                     // URL so that the error message makes sense.
                     url = servletContext.getResource("/");
-                    url = new URL(url.getProtocol(), url.getHost(),
-                            url.getPort(),
-                            url.getFile() + catalogPath.substring(1));
+                    url = new URL(
+                        url.getProtocol(),
+                        url.getHost(),
+                        url.getPort(),
+                        url.getFile() + catalogPath.substring(1));
                 }
                 catalogPath = url.toString();
             } catch (MalformedURLException ignored) {

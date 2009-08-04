@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -35,13 +35,16 @@ public class VisualTotalsTest extends TestCase {
     }
 
     public void testSubstituteOneStarBegin() {
-        final String actual = VisualTotalsFunDef.substitute("* is the word.", "Grease");
+        final String actual =
+            VisualTotalsFunDef.substitute("* is the word.", "Grease");
         final String expected = "Grease is the word.";
         assertEquals(expected, actual);
     }
 
     public void testSubstituteOneStarEnd() {
-        final String actual = VisualTotalsFunDef.substitute("Lies, damned lies, and *!", "statistics");
+        final String actual =
+            VisualTotalsFunDef.substitute(
+                "Lies, damned lies, and *!", "statistics");
         final String expected = "Lies, damned lies, and statistics!";
         assertEquals(expected, actual);
     }
@@ -53,7 +56,9 @@ public class VisualTotalsTest extends TestCase {
     }
 
     public void testSubstituteCombined() {
-        final String actual = VisualTotalsFunDef.substitute("*: see small print**** for *", "disclaimer");
+        final String actual =
+            VisualTotalsFunDef.substitute(
+                "*: see small print**** for *", "disclaimer");
         final String expected = "disclaimer: see small print** for disclaimer";
         assertEquals(expected, actual);
     }

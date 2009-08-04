@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,15 +29,19 @@ import org.apache.log4j.Logger;
  *
  * @author Gang Chen
  */
-public class DefaultXmlaRequest implements XmlaRequest,
-                                           XmlaConstants {
-
-    private static final Logger LOGGER = Logger.getLogger(DefaultXmlaRequest.class);
+public class DefaultXmlaRequest
+    implements XmlaRequest, XmlaConstants
+{
+    private static final Logger LOGGER =
+        Logger.getLogger(DefaultXmlaRequest.class);
 
     private static final String MSG_INVALID_XMLA = "Invalid XML/A message";
-    private static final String MSG_INVALID_DRILLTHROUGH = "Invalid DRILLTHROUGH statement";
-    private static final String MSG_INVALID_MAXROWS = "MAXROWS is not positive integer";
-    private static final String MSG_INVALID_FIRSTROWSET = "FIRSTROWSET isn't positive integer";
+    private static final String MSG_INVALID_DRILLTHROUGH =
+        "Invalid DRILLTHROUGH statement";
+    private static final String MSG_INVALID_MAXROWS =
+        "MAXROWS is not positive integer";
+    private static final String MSG_INVALID_FIRSTROWSET =
+        "FIRSTROWSET isn't positive integer";
 
     /* common content */
     private int method;
@@ -61,18 +65,23 @@ public class DefaultXmlaRequest implements XmlaRequest,
     }
 
     public DefaultXmlaRequest(final Element xmlaRoot, final String roleName)
-            throws XmlaException {
+        throws XmlaException
+    {
         this(xmlaRoot, roleName, null);
     }
 
     public DefaultXmlaRequest(final Element xmlaRoot, final Role role)
-            throws XmlaException {
+        throws XmlaException
+    {
         this(xmlaRoot, null, role);
     }
-    protected DefaultXmlaRequest(final Element xmlaRoot,
-                                 final String roleName,
-                                 final Role role)
-            throws XmlaException {
+
+    protected DefaultXmlaRequest(
+        final Element xmlaRoot,
+        final String roleName,
+        final Role role)
+        throws XmlaException
+    {
         init(xmlaRoot);
         this.roleName = roleName;
         this.role = role;
@@ -90,14 +99,16 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     public Map<String, Object> getRestrictions() {
         if (method != METHOD_DISCOVER) {
-            throw new IllegalStateException("Only METHOD_DISCOVER has restrictions");
+            throw new IllegalStateException(
+                "Only METHOD_DISCOVER has restrictions");
         }
         return restrictions;
     }
 
     public String getStatement() {
         if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException("Only METHOD_EXECUTE has statement");
+            throw new IllegalStateException(
+                "Only METHOD_EXECUTE has statement");
         }
         return statement;
     }
@@ -118,28 +129,32 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     public String getRequestType() {
         if (method != METHOD_DISCOVER) {
-            throw new IllegalStateException("Only METHOD_DISCOVER has requestType");
+            throw new IllegalStateException(
+                "Only METHOD_DISCOVER has requestType");
         }
         return requestType;
     }
 
     public boolean isDrillThrough() {
         if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+            throw new IllegalStateException(
+                "Only METHOD_EXECUTE determines drillthrough");
         }
         return drillthrough;
     }
 
     public int drillThroughMaxRows() {
         if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+            throw new IllegalStateException(
+                "Only METHOD_EXECUTE determines drillthrough");
         }
         return maxRows;
     }
 
     public int drillThroughFirstRowset() {
         if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException("Only METHOD_EXECUTE determines drillthrough");
+            throw new IllegalStateException(
+                "Only METHOD_EXECUTE determines drillthrough");
         }
         return firstRowset;
     }
@@ -187,9 +202,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
     }
 
     private void initDiscover(Element discoverRoot) throws XmlaException {
-        Element[] childElems = XmlaUtil.filterChildElements(discoverRoot,
-                                                            NS_XMLA,
-                                                            "RequestType");
+        Element[] childElems =
+            XmlaUtil.filterChildElements(
+                discoverRoot,
+                NS_XMLA,
+                "RequestType");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -203,9 +220,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
         }
         requestType = XmlaUtil.textInElement(childElems[0]); // <RequestType>
 
-        childElems = XmlaUtil.filterChildElements(discoverRoot,
-                                                  NS_XMLA,
-                                                  "Restrictions");
+        childElems =
+            XmlaUtil.filterChildElements(
+                discoverRoot,
+                NS_XMLA,
+                "Restrictions");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -219,9 +238,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
         }
         initRestrictions(childElems[0]); // <Restriciotns><RestrictionList>
 
-        childElems = XmlaUtil.filterChildElements(discoverRoot,
-                                                  NS_XMLA,
-                                                  "Properties");
+        childElems =
+            XmlaUtil.filterChildElements(
+                discoverRoot,
+                NS_XMLA,
+                "Properties");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -237,9 +258,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
     }
 
     private void initExecute(Element executeRoot) throws XmlaException {
-        Element[] childElems = XmlaUtil.filterChildElements(executeRoot,
-                                                            NS_XMLA,
-                                                            "Command");
+        Element[] childElems =
+            XmlaUtil.filterChildElements(
+                executeRoot,
+                NS_XMLA,
+                "Command");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -253,9 +276,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
         }
         initCommand(childElems[0]); // <Command><Statement>
 
-        childElems = XmlaUtil.filterChildElements(executeRoot,
-                                                  NS_XMLA,
-                                                  "Properties");
+        childElems =
+            XmlaUtil.filterChildElements(
+                executeRoot,
+                NS_XMLA,
+                "Properties");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -270,8 +295,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
         initProperties(childElems[0]); // <Properties><PropertyList>
     }
 
-    private void initRestrictions(Element restrictionsRoot) throws XmlaException {
-        Map<String, List<String>> restrictions = new HashMap<String, List<String>>();
+    private void initRestrictions(Element restrictionsRoot)
+        throws XmlaException
+    {
+        Map<String, List<String>> restrictions =
+            new HashMap<String, List<String>>();
         Element[] childElems =
             XmlaUtil.filterChildElements(
                 restrictionsRoot,
@@ -296,14 +324,13 @@ public class DefaultXmlaRequest implements XmlaRequest,
                         }
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append("DefaultXmlaRequest.initRestrictions: ");
-                            buf.append(" key=\"");
-                            buf.append(key);
-                            buf.append("\", value=\"");
-                            buf.append(value);
-                            buf.append("\"");
-                            LOGGER.debug(buf.toString());
+                            LOGGER.debug(
+                                "DefaultXmlaRequest.initRestrictions: "
+                                + " key=\""
+                                + key
+                                + "\", value=\""
+                                + value
+                                + "\"");
                         }
 
                         values.add(value);
@@ -327,9 +354,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     private void initProperties(Element propertiesRoot) throws XmlaException {
         Map<String, String> properties = new HashMap<String, String>();
-        Element[] childElems = XmlaUtil.filterChildElements(propertiesRoot,
-                                                            NS_XMLA,
-                                                            "PropertyList");
+        Element[] childElems =
+            XmlaUtil.filterChildElements(
+                propertiesRoot,
+                NS_XMLA,
+                "PropertyList");
         if (childElems.length == 1) {
             NodeList nlst = childElems[0].getChildNodes();
             for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -341,14 +370,13 @@ public class DefaultXmlaRequest implements XmlaRequest,
                         String value = XmlaUtil.textInElement(e);
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append("DefaultXmlaRequest.initProperties: ");
-                            buf.append(" key=\"");
-                            buf.append(key);
-                            buf.append("\", value=\"");
-                            buf.append(value);
-                            buf.append("\"");
-                            LOGGER.debug(buf.toString());
+                            LOGGER.debug(
+                                "DefaultXmlaRequest.initProperties: "
+                                + " key=\""
+                                + key
+                                + "\", value=\""
+                                + value
+                                + "\"");
                         }
 
                         properties.put(key, value);
@@ -372,9 +400,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
 
     private void initCommand(Element commandRoot) throws XmlaException {
-        Element[] childElems = XmlaUtil.filterChildElements(commandRoot,
-                                                            NS_XMLA,
-                                                            "Statement");
+        Element[] childElems =
+            XmlaUtil.filterChildElements(
+                commandRoot,
+                NS_XMLA,
+                "Statement");
         if (childElems.length != 1) {
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -409,7 +439,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 maxRows = firstRowset = -1;
                 try {
                     if (mrOffset > dtOffset && mrOffset < slOffset) {
-                        maxRows = parseIntValue(statement.substring(mrOffset, slOffset));
+                        maxRows = parseIntValue(
+                            statement.substring(mrOffset, slOffset));
                         if (maxRows <= 0) {
                             StringBuilder buf = new StringBuilder(100);
                             buf.append(MSG_INVALID_MAXROWS);
@@ -422,8 +453,13 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                 Util.newError(buf.toString()));
                         }
                     }
-                    if (frOffset > dtOffset && frOffset > mrOffset && frOffset < slOffset) {
-                        firstRowset = parseIntValue(statement.substring(frOffset, slOffset));
+                    if (frOffset > dtOffset
+                        && frOffset > mrOffset
+                        && frOffset < slOffset)
+                    {
+                        firstRowset =
+                            parseIntValue(
+                                statement.substring(frOffset, slOffset));
                         if (firstRowset <= 0) {
                             StringBuilder buf = new StringBuilder(100);
                             buf.append(MSG_INVALID_FIRSTROWSET);
@@ -453,7 +489,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
                 StringBuilder dtStmtBuf = new StringBuilder();
                 dtStmtBuf.append(statement.substring(0, dtOffset)); // formulas
-                dtStmtBuf.append(statement.substring(slOffset)); // select to end
+                // select to end
+                dtStmtBuf.append(statement.substring(slOffset));
                 statement = dtStmtBuf.toString();
 
                 drillthrough = true;

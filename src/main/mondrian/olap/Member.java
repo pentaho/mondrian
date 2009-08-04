@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -101,10 +101,12 @@ public interface Member extends OlapElement, Comparable {
     boolean isCalculated();
 
     /**
-     * Returns whether this member should be evaluated within the Evaluator, normally
-     * isCalculated() and isEvaluated() should return the same value, but in situations
-     * where mondrian would like to treat the two concepts separately such in role based
-     * security, these values may differ.
+     * Returns whether this member should be evaluated within the Evaluator.
+     *
+     * <p>Normally {@link #isCalculated} and {@link #isEvaluated} should return
+     * the same value, but in situations where mondrian would like to treat the
+     * two concepts separately such in role based security, these values may
+     * differ.
      *
      * @return true if evaluated
      */
@@ -136,7 +138,8 @@ public interface Member extends OlapElement, Comparable {
     Object getPropertyValue(String propertyName, boolean matchCase);
 
     /**
-     * Returns the formatted value of the property named <code>propertyName</code>.
+     * Returns the formatted value of the property named
+     * <code>propertyName</code>.
      */
     String getPropertyFormattedValue(String propertyName);
 

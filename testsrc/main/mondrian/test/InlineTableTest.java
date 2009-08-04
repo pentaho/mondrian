@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -246,8 +246,10 @@ public class InlineTableTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Alternative Promotion].[All Alternative Promotions]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29" + extra + "]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20" + extra + "]}\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29"
+            + extra + "]}\n"
+            + "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20"
+            + extra + "]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: \n"
             + "Row #0: \n");

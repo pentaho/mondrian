@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -42,10 +42,13 @@ import mondrian.spi.UserDefinedFunction;
  * </pre></code></blockquote>
  */
 public class InverseNormalUdf implements UserDefinedFunction {
-    private static final Logger LOGGER = Logger.getLogger(InverseNormalUdf.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(InverseNormalUdf.class);
 
-    private static DistributionFactory distributionFactory = DistributionFactory.newInstance();
-    private static NormalDistribution nd = distributionFactory.createNormalDistribution();
+    private static DistributionFactory distributionFactory =
+        DistributionFactory.newInstance();
+    private static NormalDistribution nd =
+        distributionFactory.createNormalDistribution();
 
     public String getName() {
         return "InverseNormal";
@@ -91,16 +94,20 @@ public class InverseNormalUdf implements UserDefinedFunction {
          */
         double dbl = d.doubleValue();
         if (dbl < 0.0 || dbl > 1.0) {
-            LOGGER.debug("Invalid value for inverse normal distribution: " + dbl);
-            throw new MondrianEvaluationException("Invalid value for inverse normal distribution: " + dbl);
+            LOGGER.debug(
+                "Invalid value for inverse normal distribution: " + dbl);
+            throw new MondrianEvaluationException(
+                "Invalid value for inverse normal distribution: " + dbl);
         }
         try {
             Double result = new Double(nd.inverseCumulativeProbability(dbl));
             LOGGER.debug("Inverse Normal result : " + result.doubleValue());
             return result;
         } catch (MathException e) {
-            LOGGER.debug("Exception calculating inverse normal distribution: " + dbl, e);
-            throw new MondrianEvaluationException("Exception calculating inverse normal distribution: " + dbl);
+            LOGGER.debug(
+                "Exception calculating inverse normal distribution: " + dbl, e);
+            throw new MondrianEvaluationException(
+                "Exception calculating inverse normal distribution: " + dbl);
         }
     }
 

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -27,7 +27,8 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class CountFunDef extends AbstractAggregateFunDef {
-    static final String[] ReservedWords = new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
+    static final String[] ReservedWords =
+        new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
 
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
             "Count",
@@ -46,25 +47,12 @@ class CountFunDef extends AbstractAggregateFunDef {
             compiler.compileAs(
                 call.getArg(0), null, ResultStyle.ITERABLE_ANY);
         final boolean includeEmpty =
-                call.getArgCount() < 2 ||
-                ((Literal) call.getArg(1)).getValue().equals(
-                        "INCLUDEEMPTY");
+            call.getArgCount() < 2
+            || ((Literal) call.getArg(1)).getValue().equals(
+                "INCLUDEEMPTY");
         return new AbstractIntegerCalc(
                 call, new Calc[] {calc}) {
             public int evaluateInteger(Evaluator evaluator) {
-/*
-                if (calc instanceof ListCalc) {
-                    ListCalc listCalc = (ListCalc) calc;
-                    List memberList = evaluateCurrentList(listCalc, evaluator);
-                    return count(evaluator, memberList, includeEmpty);
-                } else {
-                    // must be IterCalc
-                    IterCalc iterCalc = (IterCalc) calc;
-                    Iterable iterable =
-                        evaluateCurrentIterable(iterCalc, evaluator);
-                    return count(evaluator, iterable, includeEmpty);
-                }
-*/
                 evaluator = evaluator.push(false);
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;

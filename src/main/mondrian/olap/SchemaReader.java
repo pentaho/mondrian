@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2003-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -71,9 +71,10 @@ public interface SchemaReader {
      *
      * @param level Level
      * @param approximate Whether an approximation is acceptable
-     * @param materialize Whether to go to disk if no approximation for the count
-     *   is available and the members are not in cache. If false, returns
-     *   {@link Integer#MIN_VALUE} if value is not in cache.
+     * @param materialize Whether to go to disk if no approximation
+     *   for the count is available and the members are not in
+     *   cache. If false, returns {@link Integer#MIN_VALUE} if value
+     *   is not in cache.
      */
     int getLevelCardinality(
         Level level, boolean approximate, boolean materialize);

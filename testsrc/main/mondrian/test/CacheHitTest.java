@@ -1,10 +1,10 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2008 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -66,7 +66,7 @@ public class CacheHitTest extends FoodMartTestCase {
         suite.addTest(QueryAllTest.suite());
 
         System.out.println("== " + this.getName() + " ==");
-        runTestSuiteInOrder(suite,50);
+        runTestSuiteInOrder(suite, 50);
         clearCache("Sales");
     }
 
@@ -104,7 +104,7 @@ public class CacheHitTest extends FoodMartTestCase {
         suite.addTest(QueryAllVCTest.suite());
 
         System.out.println("== " + this.getName() + " ==");
-        runTestSuiteInOrder(suite,50);
+        runTestSuiteInOrder(suite, 50);
         clearCache("Warehouse and Sales");
     }
 

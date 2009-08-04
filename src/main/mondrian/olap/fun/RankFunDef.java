@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,28 +55,30 @@ public class RankFunDef extends FunDefBase {
         final Type type0 = call.getArg(0).getType();
         if (type0 instanceof TupleType) {
             final TupleCalc tupleCalc =
-                    compiler.compileTuple(call.getArg(0));
+                compiler.compileTuple(call.getArg(0));
             final ListCalc listCalc =
-                    compiler.compileList(call.getArg(1));
+                compiler.compileList(call.getArg(1));
             final Calc sortCalc =
-                    compiler.compileScalar(call.getArg(2), true);
+                compiler.compileScalar(call.getArg(2), true);
             Calc sortedListCalc =
-                    new SortCalc(call, listCalc, sortCalc);
+                new SortCalc(call, listCalc, sortCalc);
             final ExpCacheDescriptor cacheDescriptor =
-                    new ExpCacheDescriptor(
-                            call, sortedListCalc, compiler.getEvaluator());
-            return new Rank3TupleCalc(call, tupleCalc, sortCalc, cacheDescriptor);
+                new ExpCacheDescriptor(
+                    call, sortedListCalc, compiler.getEvaluator());
+            return new Rank3TupleCalc(
+                call, tupleCalc, sortCalc, cacheDescriptor);
         } else {
             final MemberCalc memberCalc =
                     compiler.compileMember(call.getArg(0));
             final ListCalc listCalc = compiler.compileList(call.getArg(1));
             final Calc sortCalc = compiler.compileScalar(call.getArg(2), true);
             Calc sortedListCalc =
-                    new SortCalc(call, listCalc, sortCalc);
+                new SortCalc(call, listCalc, sortCalc);
             final ExpCacheDescriptor cacheDescriptor =
-                    new ExpCacheDescriptor(
-                            call, sortedListCalc, compiler.getEvaluator());
-            return new Rank3MemberCalc(call, memberCalc, sortCalc, cacheDescriptor);
+                new ExpCacheDescriptor(
+                    call, sortedListCalc, compiler.getEvaluator());
+            return new Rank3MemberCalc(
+                call, memberCalc, sortCalc, cacheDescriptor);
         }
     }
 
@@ -108,7 +110,9 @@ public class RankFunDef extends FunDefBase {
         private final TupleCalc tupleCalc;
         private final Calc listCalc;
 
-        public Rank2TupleCalc(ResolvedFunCall call, TupleCalc tupleCalc, Calc listCalc) {
+        public Rank2TupleCalc(
+            ResolvedFunCall call, TupleCalc tupleCalc, Calc listCalc)
+        {
             super(call, new Calc[] {tupleCalc, listCalc});
             this.tupleCalc = tupleCalc;
             this.listCalc = listCalc;
@@ -129,7 +133,8 @@ public class RankFunDef extends FunDefBase {
             // list, so returns an error "Formula error - dimension count is
             // not valid - in the Rank function". We will naturally return 0,
             // which I think is better.
-            RankedTupleList rankedList = (RankedTupleList) listCalc.evaluate(evaluator);
+            RankedTupleList rankedList =
+                (RankedTupleList) listCalc.evaluate(evaluator);
             if (rankedList == null) {
                 return 0;
             }
@@ -158,8 +163,8 @@ public class RankFunDef extends FunDefBase {
             // If the member is null (or the tuple contains a null member)
             // the result is null (even if the list is null).
             final Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null ||
-                member.isNull())
+            if (member == null
+                || member.isNull())
             {
                 return IntegerNull;
             }
@@ -168,7 +173,8 @@ public class RankFunDef extends FunDefBase {
             // list, so returns an error "Formula error - dimension count is
             // not valid - in the Rank function". We will naturally return 0,
             // which I think is better.
-            RankedMemberList rankedList = (RankedMemberList) listCalc.evaluate(evaluator);
+            RankedMemberList rankedList =
+                (RankedMemberList) listCalc.evaluate(evaluator);
             if (rankedList == null) {
                 return 0;
             }
@@ -253,10 +259,11 @@ public class RankFunDef extends FunDefBase {
         private final ExpCacheDescriptor cacheDescriptor;
 
         public Rank3MemberCalc(
-                ResolvedFunCall call,
-                MemberCalc memberCalc,
-                Calc sortCalc,
-                ExpCacheDescriptor cacheDescriptor) {
+            ResolvedFunCall call,
+            MemberCalc memberCalc,
+            Calc sortCalc,
+            ExpCacheDescriptor cacheDescriptor)
+        {
             super(call, new Calc[] {memberCalc, sortCalc});
             this.memberCalc = memberCalc;
             this.sortCalc = sortCalc;
@@ -321,14 +328,17 @@ public class RankFunDef extends FunDefBase {
         private final ListCalc listCalc;
         private final Calc sortCalc;
 
-        public SortCalc(Exp exp, ListCalc listExp, Calc sortExp) {
-            super(exp);
-            this.listCalc = listExp;
-            this.sortCalc = sortExp;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {listCalc, sortCalc};
+        /**
+         * Creates a SortCalc.
+         *
+         * @param exp Source expression
+         * @param listCalc Compiled expression to compute the list
+         * @param sortCalc Compiled expression to compute the sort key
+         */
+        public SortCalc(Exp exp, ListCalc listCalc, Calc sortCalc) {
+            super(exp, new Calc[] {listCalc, sortCalc});
+            this.listCalc = listCalc;
+            this.sortCalc = sortCalc;
         }
 
         public boolean dependsOn(Dimension dimension) {
@@ -441,14 +451,17 @@ public class RankFunDef extends FunDefBase {
         private final ListCalc listCalc;
         private final boolean tuple;
 
+        /**
+         * Creates a RankedListCalc.
+         *
+         * @param listCalc Compiled expression to compute the list
+         * @param tuple Whether elements of the list are tuples (as opposed to
+         * members)
+         */
         public RankedListCalc(ListCalc listCalc, boolean tuple) {
-            super(new DummyExp(listCalc.getType()));
+            super(new DummyExp(listCalc.getType()), new Calc[] {listCalc});
             this.listCalc = listCalc;
             this.tuple = tuple;
-        }
-
-        public Calc[] getCalcs() {
-            return new Calc[] {listCalc};
         }
 
         public Object evaluate(Evaluator evaluator) {

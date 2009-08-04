@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2008 Julian Hyde and others
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,7 +43,7 @@ import java.sql.SQLException;
  */
 public class AggTableManager {
     private static final Logger LOGGER =
-            Logger.getLogger(AggTableManager.class);
+        Logger.getLogger(AggTableManager.class);
 
     private final RolapSchema schema;
 
@@ -69,10 +69,9 @@ public class AggTableManager {
         deregisterTriggers(MondrianProperties.instance());
 
         if (getLogger().isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(100);
-            buf.append("AggTableManager.finalCleanUp: schema=");
-            buf.append(schema.getName());
-            getLogger().debug(buf.toString());
+            getLogger().debug(
+                "AggTableManager.finalCleanUp: schema="
+                + schema.getName());
         }
     }
 
@@ -244,7 +243,8 @@ public class AggTableManager {
                     if (tableDef != null) {
                         // load columns
                         dbTable.load();
-                        makeAggStar = tableDef.columnsOK(star,
+                        makeAggStar = tableDef.columnsOK(
+                            star,
                             dbFactTable,
                             dbTable,
                             msgRecorder);
@@ -254,7 +254,8 @@ public class AggTableManager {
                         if (rules.matchesTableName(factTableName, name)) {
                             // load columns
                             dbTable.load();
-                            makeAggStar = rules.columnsOK(star,
+                            makeAggStar = rules.columnsOK(
+                                star,
                                 dbFactTable,
                                 dbTable,
                                 msgRecorder);
@@ -263,21 +264,25 @@ public class AggTableManager {
 
 
                     if (makeAggStar) {
-                        dbTable.setTableUsageType(JdbcSchema.TableUsageType.AGG);
+                        dbTable.setTableUsageType(
+                            JdbcSchema.TableUsageType.AGG);
                         String alias = null;
-                        dbTable.table = new MondrianDef.Table(schema,
+                        dbTable.table = new MondrianDef.Table(
+                            schema,
                             name,
-                            alias);
-                        AggStar aggStar = AggStar.makeAggStar(star,
+                            alias,
+                            null); // don't know about table hints
+                        AggStar aggStar = AggStar.makeAggStar(
+                            star,
                             dbTable,
                             msgRecorder);
                         if (aggStar.getSize() > 0) {
                             star.addAggStar(aggStar);
                         } else {
-                            String msg = mres.AggTableZeroSize.str(
+                            getLogger().warn(
+                                mres.AggTableZeroSize.str(
                                 aggStar.getFactTable().getName(),
-                                factTableName);
-                            getLogger().warn(msg);
+                                factTableName));
                         }
                     }
                     // Note: if the dbTable name matches but the columnsOK does
@@ -299,6 +304,7 @@ public class AggTableManager {
             }
         }
     }
+
     private boolean runTrigger() {
         if (RolapSchema.cacheContains(schema)) {
             return true;
@@ -434,9 +440,12 @@ public class AggTableManager {
      * @param star
      * @param msgRecorder
      */
-    void bindToStar(final JdbcSchema.Table dbFactTable,
-                    final RolapStar star,
-                    final MessageRecorder msgRecorder) throws SQLException {
+    void bindToStar(
+        final JdbcSchema.Table dbFactTable,
+        final RolapStar star,
+        final MessageRecorder msgRecorder)
+        throws SQLException
+    {
         msgRecorder.pushContextName("AggTableManager.bindToStar");
         try {
             // load columns
@@ -444,16 +453,25 @@ public class AggTableManager {
 
             dbFactTable.setTableUsageType(JdbcSchema.TableUsageType.FACT);
 
-            MondrianDef.RelationOrJoin relation = star.getFactTable().getRelation();
+            MondrianDef.RelationOrJoin relation =
+                star.getFactTable().getRelation();
             String schema = null;
+            MondrianDef.Hint[] tableHints = null;
             if (relation instanceof MondrianDef.Table) {
                 schema = ((MondrianDef.Table) relation).schema;
+                tableHints = ((MondrianDef.Table) relation).tableHints;
             }
             String tableName = dbFactTable.getName();
             String alias = null;
-            dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
+            dbFactTable.table = new MondrianDef.Table(
+                schema,
+                tableName,
+                alias,
+                tableHints);
 
-            for (JdbcSchema.Table.Column factColumn : dbFactTable.getColumns()) {
+            for (JdbcSchema.Table.Column factColumn
+                : dbFactTable.getColumns())
+            {
                 String cname = factColumn.getName();
                 RolapStar.Column[] rcs =
                     star.getFactTable().lookupColumns(cname);
@@ -482,14 +500,16 @@ public class AggTableManager {
                 } else {
                     RolapStar.Column rColumn =
                         star.getFactTable().lookupColumn(cname);
-                    if ((rColumn != null) &&
-                        !(rColumn instanceof RolapStar.Measure)) {
+                    if ((rColumn != null)
+                        && !(rColumn instanceof RolapStar.Measure))
+                    {
                         // Ok, maybe its used in a non-shared dimension
                         // This is a column in the fact table which is
                         // (not necessarily) a measure but is also not
                         // a foreign key to an external dimension table.
                         JdbcSchema.Table.Column.Usage usage =
-                            factColumn.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
+                            factColumn.newUsage(
+                                JdbcSchema.UsageType.FOREIGN_KEY);
                         usage.setSymbolicName("FOREIGN_KEY");
                         usage.rColumn = rColumn;
                     }
@@ -497,11 +517,11 @@ public class AggTableManager {
 
                 // warn if it has not been identified
                 if (!factColumn.hasUsage() && getLogger().isDebugEnabled()) {
-                    String msg = mres.UnknownFactTableColumn.str(
-                        msgRecorder.getContext(),
-                        dbFactTable.getName(),
-                        factColumn.getName());
-                    getLogger().debug(msg);
+                    getLogger().debug(
+                        mres.UnknownFactTableColumn.str(
+                            msgRecorder.getContext(),
+                            dbFactTable.getName(),
+                            factColumn.getName()));
                 }
             }
         } finally {

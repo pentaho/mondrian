@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2009-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -65,8 +65,8 @@ abstract class ValidatorImpl implements Validator {
             // not occur for any query, valid or invalid.
             throw Util.newInternal(
                 e,
-                "Infinite recursion encountered while validating '" +
-                    Util.unparse(exp) + "'");
+                "Infinite recursion encountered while validating '"
+                + Util.unparse(exp) + "'");
         }
         if (resolved == null) {
             try {
@@ -86,7 +86,8 @@ abstract class ValidatorImpl implements Validator {
             final Type type = resolved.getType();
             if (!TypeUtil.canEvaluate(type)) {
                 String exprString = Util.unparse(resolved);
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(
+                    exprString);
             }
         }
 
@@ -225,6 +226,10 @@ abstract class ValidatorImpl implements Validator {
         return matchDef;
     }
 
+    public boolean alwaysResolveFunDef() {
+        return false;
+    }
+
     private int sumConversionCost(
         List<Resolver.Conversion> conversionList)
     {
@@ -276,8 +281,9 @@ abstract class ValidatorImpl implements Validator {
             }
         } else if (parent instanceof UnresolvedFunCall) {
             final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
-            if (funCall.getSyntax() == Syntax.Parentheses ||
-                funCall.getFunName() == "*") {
+            if (funCall.getSyntax() == Syntax.Parentheses
+                || funCall.getFunName().equals("*"))
+            {
                 return requiresExpression(n - 1);
             } else {
                 int k = whichArg(funCall, (Exp) stack.get(n));

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,10 +55,12 @@ class TupleItemFunDef extends FunDefBase {
         final Type type = call.getArg(0).getType();
         if (type instanceof MemberType) {
             final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
+                compiler.compileMember(call.getArg(0));
             final IntegerCalc indexCalc =
-                    compiler.compileInteger(call.getArg(1));
-            return new AbstractMemberCalc(call, new Calc[] {memberCalc, indexCalc}) {
+                compiler.compileInteger(call.getArg(1));
+            return new AbstractMemberCalc(
+                call, new Calc[] {memberCalc, indexCalc})
+            {
                 public Member evaluateMember(Evaluator evaluator) {
                     final Member member =
                             memberCalc.evaluateMember(evaluator);
@@ -72,17 +74,19 @@ class TupleItemFunDef extends FunDefBase {
             };
         } else {
             final TupleCalc tupleCalc =
-                    compiler.compileTuple(call.getArg(0));
+                compiler.compileTuple(call.getArg(0));
             final IntegerCalc indexCalc =
-                    compiler.compileInteger(call.getArg(1));
-            return new AbstractMemberCalc(call, new Calc[] {tupleCalc, indexCalc}) {
+                compiler.compileInteger(call.getArg(1));
+            return new AbstractMemberCalc(
+                call, new Calc[] {tupleCalc, indexCalc})
+            {
                 final Member[] nullTupleMembers =
                         makeNullTuple((TupleType) tupleCalc.getType());
                 public Member evaluateMember(Evaluator evaluator) {
                     final Member[] members =
                             tupleCalc.evaluateTuple(evaluator);
-                    assert members == null ||
-                            members.length == nullTupleMembers.length;
+                    assert members == null
+                        || members.length == nullTupleMembers.length;
                     final int index = indexCalc.evaluateInteger(evaluator);
                     if (members == null) {
                         return nullTupleMembers[index];

@@ -1,9 +1,9 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2008 Julian Hyde
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -61,9 +61,10 @@ public class ValueColumnPredicate
     }
 
     public boolean equalConstraint(StarPredicate that) {
-        return that instanceof ValueColumnPredicate &&
-            getConstrainedColumnBitKey().equals(that.getConstrainedColumnBitKey()) &&
-            this.value.equals(((ValueColumnPredicate) that).value);
+        return that instanceof ValueColumnPredicate
+            && getConstrainedColumnBitKey().equals(
+                that.getConstrainedColumnBitKey())
+            && this.value.equals(((ValueColumnPredicate) that).value);
     }
 
     public int compareTo(Object o) {
@@ -77,9 +78,10 @@ public class ValueColumnPredicate
             return columnBitKeyComp;
         }
 
-        if (this.value instanceof Comparable &&
-            that.value instanceof Comparable &&
-            this.value.getClass() == that.value.getClass()) {
+        if (this.value instanceof Comparable
+            && that.value instanceof Comparable
+            && this.value.getClass() == that.value.getClass())
+        {
             return ((Comparable) this.value).compareTo(that.value);
         } else {
             String thisComp = String.valueOf(this.value);
@@ -172,8 +174,9 @@ public class ValueColumnPredicate
         // constrained by the OR.
         BitKey inListRHSBitKey = inListLHSBitKey.copy();
 
-        if (!getConstrainedColumnBitKey().equals(inListLHSBitKey) ||
-            value == RolapUtil.sqlNullValue) {
+        if (!getConstrainedColumnBitKey().equals(inListLHSBitKey)
+            || value == RolapUtil.sqlNullValue)
+        {
             inListRHSBitKey.clear();
         }
 

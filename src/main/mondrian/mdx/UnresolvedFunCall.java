@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -62,13 +62,15 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
             Util.assertTrue(name.equals(""));
             break;
         default:
-            Util.assertTrue(!name.startsWith("$") &&
-                !name.equals("{}") &&
-                !name.equals("()"));
+            Util.assertTrue(
+                !name.startsWith("$")
+                && !name.equals("{}")
+                && !name.equals("()"));
             break;
         }
     }
 
+    @SuppressWarnings({"CloneDoesntCallSuperClone"})
     public UnresolvedFunCall clone() {
         return new UnresolvedFunCall(name, syntax, ExpBase.cloneArray(args));
     }
@@ -97,7 +99,8 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
     public Exp accept(Validator validator) {
         Exp[] newArgs = new Exp[args.length];
         FunDef funDef =
-            FunUtil.resolveFunArgs(validator, args, newArgs, name, syntax);
+            FunUtil.resolveFunArgs(
+                validator, null, args, newArgs, name, syntax);
         return funDef.createCall(validator, newArgs);
     }
 

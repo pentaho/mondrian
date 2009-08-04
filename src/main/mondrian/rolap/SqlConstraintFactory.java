@@ -1,7 +1,7 @@
 /*
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -27,7 +27,8 @@ public class SqlConstraintFactory {
 
     static boolean enabled;
 
-    private static final SqlConstraintFactory instance = new SqlConstraintFactory();
+    private static final SqlConstraintFactory instance =
+        new SqlConstraintFactory();
 
     /**
      * singleton
@@ -44,7 +45,9 @@ public class SqlConstraintFactory {
         enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
     }
 
-    public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
+    public MemberChildrenConstraint getMemberChildrenConstraint(
+        Evaluator context)
+    {
         if (!enabled || !SqlContextConstraint.isValidContext(context, false)) {
             return DefaultMemberChildrenConstraint.instance();
         }
@@ -74,7 +77,9 @@ public class SqlConstraintFactory {
         if (!enabled) {
             return DefaultTupleConstraint.instance();
         }
-        if (!SqlContextConstraint.isValidContext(context, false, levels, false)) {
+        if (!SqlContextConstraint.isValidContext(
+            context, false, levels, false))
+        {
             return DefaultTupleConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);

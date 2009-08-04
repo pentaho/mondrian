@@ -1,8 +1,8 @@
 /*
 // $Id$
-// This software is subject to the terms of the Common Public License
+// This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
+// http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
 // Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
@@ -60,7 +60,8 @@ public class SetFunDef extends FunDefBase {
                     type0 = type;
                 } else {
                     if (!TypeUtil.isUnionCompatible(type0, type)) {
-                        throw MondrianResource.instance().ArgsMustHaveSameHierarchy.ex(getName());
+                        throw MondrianResource.instance()
+                            .ArgsMustHaveSameHierarchy.ex(getName());
                     }
                 }
             }
@@ -325,7 +326,9 @@ public class SetFunDef extends FunDefBase {
                 case ITERABLE:
                     final MemberIterCalc iterCalc = (MemberIterCalc) calc;
                     return new AbstractMemberIterCalc(arg, new Calc[] {calc}) {
-                        public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                        public Iterable<Member> evaluateMemberIterable(
+                            Evaluator evaluator)
+                        {
                             return iterCalc.evaluateMemberIterable(evaluator);
                         }
 
@@ -415,7 +418,9 @@ public class SetFunDef extends FunDefBase {
             final MemberCalc memberCalc = compiler.compileMember(arg);
             final ResolvedFunCall call = wrapAsSet(arg);
             return new AbstractMemberIterCalc(call, new Calc[] {memberCalc}) {
-                public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+                public Iterable<Member> evaluateMemberIterable(
+                    Evaluator evaluator)
+                {
                     final Member member =
                         memberCalc.evaluateMember(evaluator);
                     return new Iterable<Member>() {
@@ -433,7 +438,8 @@ public class SetFunDef extends FunDefBase {
                                     }
                                 }
                                 public void remove() {
-                                    throw new UnsupportedOperationException("remove");
+                                    throw new UnsupportedOperationException(
+                                        "remove");
                                 }
                             };
                         }
@@ -447,7 +453,9 @@ public class SetFunDef extends FunDefBase {
             final TupleCalc tupleCalc = compiler.compileTuple(arg);
             final ResolvedFunCall call = wrapAsSet(arg);
             return new AbstractTupleIterCalc(call, new Calc[] {tupleCalc}) {
-                public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+                public Iterable<Member[]> evaluateTupleIterable(
+                    Evaluator evaluator)
+                {
                     final Member[] members = tupleCalc.evaluateTuple(evaluator);
                     return new Iterable<Member[]>() {
                         public Iterator<Member[]> iterator() {
@@ -464,7 +472,8 @@ public class SetFunDef extends FunDefBase {
                                     }
                                 }
                                 public void remove() {
-                                    throw new UnsupportedOperationException("remove");
+                                    throw new UnsupportedOperationException(
+                                        "remove");
                                 }
                             };
                         }
@@ -517,15 +526,19 @@ public class SetFunDef extends FunDefBase {
             List<ResultStyle> resultStyles)
         {
             super(exp, null);
-            final List<Calc> calcList = compileSelf(args, compiler, resultStyles);
+            final List<Calc> calcList =
+                compileSelf(args, compiler, resultStyles);
             iterCalcs = calcList.toArray(new MemberIterCalc[calcList.size()]);
         }
 
-        public Calc[] getCalcs() {
+        // override return type
+        public MemberIterCalc[] getCalcs() {
             return iterCalcs;
         }
 
-        public Iterable<Member> evaluateMemberIterable(final Evaluator evaluator) {
+        public Iterable<Member> evaluateMemberIterable(
+            final Evaluator evaluator)
+        {
             return new Iterable<Member>() {
                 public Iterator<Member> iterator() {
                     return new Iterator<Member>() {
@@ -552,9 +565,11 @@ public class SetFunDef extends FunDefBase {
                                     if (index >= iterCalcs.length) {
                                         return false;
                                     }
-                                    MemberIterCalc iterCalc = iterCalcs[index++];
+                                    MemberIterCalc iterCalc =
+                                        iterCalcs[index++];
                                     Iterable<Member> iter =
-                                        iterCalc.evaluateMemberIterable(evaluator);
+                                        iterCalc.evaluateMemberIterable(
+                                            evaluator);
                                     currentIterator = iter.iterator();
                                     b = currentIterator.hasNext();
                                 }
@@ -599,17 +614,20 @@ public class SetFunDef extends FunDefBase {
             int[] parameterTypes = new int[args.length];
             for (int i = 0; i < args.length; i++) {
                 if (validator.canConvert(
-                        args[i], Category.Member, conversions)) {
+                    args[i], Category.Member, conversions))
+                {
                     parameterTypes[i] = Category.Member;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Set, conversions)) {
+                    args[i], Category.Set, conversions))
+                {
                     parameterTypes[i] = Category.Set;
                     continue;
                 }
                 if (validator.canConvert(
-                        args[i], Category.Tuple, conversions)) {
+                    args[i], Category.Tuple, conversions))
+                {
                     parameterTypes[i] = Category.Tuple;
                     continue;
                 }
