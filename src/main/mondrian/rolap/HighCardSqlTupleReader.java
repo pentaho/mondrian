@@ -112,6 +112,12 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             } else {
                 throw Util.newError(sqle, message);
             }
+        } finally {
+            if (!moreRows) {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            }
         }
     }
 
