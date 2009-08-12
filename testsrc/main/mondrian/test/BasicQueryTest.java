@@ -6823,41 +6823,43 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This unit test would cause connection leaks without a fix for MONDRIAN-571.
+     * This unit test would cause connection leaks without a fix for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-571">MONDRIAN-571,
+     * "HighCardSqlTupleReader does not close SQL Connections"</a>.
      * It would be better if there was a way to verify that no leaks occurred in
      * the data source.
      */
     public void testHighCardSqlTupleReaderLeakingConnections() {
         assertQueryReturns(
-                "WITH MEMBER [Measures].[NegativeSales] AS '- [Measures].[Store Sales]' "
-                + "MEMBER [Product].[SameName] AS 'Aggregate(Filter("
-                + "[Product].[Product Name].members,([Measures].[Store Sales] > 0)))' "
-                + "MEMBER [Measures].[SameName] AS "
-                + "'([Measures].[Store Sales],[Product].[SameName])' "
-                + "select {[Measures].[Store Sales], [Measures].[NegativeSales], "
-                + "[Measures].[SameName]} ON COLUMNS, "
-                + "[Store].[Store Country].members ON ROWS "
-                + "from [Sales] "
-                + "where [Time].[1997]",
-                "Axis #0:\n"
-                + "{[Time].[1997]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[NegativeSales]}\n"
-                + "{[Measures].[SameName]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[All Stores].[Canada]}\n"
-                + "{[Store].[All Stores].[Mexico]}\n"
-                + "{[Store].[All Stores].[USA]}\n"
-                + "Row #0: \n"
-                + "Row #0: \n"
-                + "Row #0: \n"
-                + "Row #1: \n"
-                + "Row #1: \n"
-                + "Row #1: \n"
-                + "Row #2: 565,238.13\n"
-                + "Row #2: -565,238.13\n"
-                + "Row #2: 565,238.13\n");
+            "WITH MEMBER [Measures].[NegativeSales] AS '- [Measures].[Store Sales]' "
+            + "MEMBER [Product].[SameName] AS 'Aggregate(Filter("
+            + "[Product].[Product Name].members,([Measures].[Store Sales] > 0)))' "
+            + "MEMBER [Measures].[SameName] AS "
+            + "'([Measures].[Store Sales],[Product].[SameName])' "
+            + "select {[Measures].[Store Sales], [Measures].[NegativeSales], "
+            + "[Measures].[SameName]} ON COLUMNS, "
+            + "[Store].[Store Country].members ON ROWS "
+            + "from [Sales] "
+            + "where [Time].[1997]",
+            "Axis #0:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[NegativeSales]}\n"
+            + "{[Measures].[SameName]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[Canada]}\n"
+            + "{[Store].[All Stores].[Mexico]}\n"
+            + "{[Store].[All Stores].[USA]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #2: 565,238.13\n"
+            + "Row #2: -565,238.13\n"
+            + "Row #2: 565,238.13\n");
     }
 }
 
