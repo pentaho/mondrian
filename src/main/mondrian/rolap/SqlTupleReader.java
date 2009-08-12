@@ -671,20 +671,25 @@ public class SqlTupleReader implements TupleReader {
         }
 
         if (virtualCube) {
-            StringBuilder selectString = new StringBuilder();
             Query query = constraint.getEvaluator().getQuery();
 
             // Make fact table appear in fixed sequence
 
-            Collection<RolapCube> baseCubes = getBaseCubeCollection(query);
-
+            final Collection<RolapCube> baseCubes =
+                getBaseCubeCollection(query);
+            Collection<RolapCube> fullyJoiningBaseCubes =
+                getFullyJoiningBaseCubes(baseCubes);
+            if (fullyJoiningBaseCubes.size() == 0) {
+                return sqlForEmptyTuple(dataSource, baseCubes);
+            }
             // generate sub-selects, each one joining with one of
             // the fact table referenced
             int k = -1;
             // Save the original measure in the context
             Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             String prependString = "";
-            for (RolapCube baseCube : baseCubes) {
+            final StringBuilder selectString = new StringBuilder();
+            for (RolapCube baseCube : fullyJoiningBaseCubes) {
                 // Use the measure from the corresponding base cube in the
                 // context to find the correct join path to the base fact
                 // table.
@@ -695,19 +700,12 @@ public class SqlTupleReader implements TupleReader {
                 constraint.getEvaluator().setContext(measureInCurrentbaseCube);
 
                 WhichSelect whichSelect =
-                    (++k == baseCubes.size() - 1)
+                    (++k == fullyJoiningBaseCubes.size() - 1)
                         ? WhichSelect.LAST : WhichSelect.NOT_LAST;
-                final String generateSelect =
-                    generateSelectForLevels(
-                        dataSource, baseCube, whichSelect);
-                if (!"".equals(generateSelect)) {
-                    selectString.append(prependString);
-                    selectString.append(generateSelect);
-                    prependString = UNION;
-                }
-            }
-            if (selectString.length() == 0) {
-                return sqlForEmptyTuple(dataSource, baseCubes);
+                selectString.append(prependString);
+                selectString.append(generateSelectForLevels(
+                    dataSource, baseCube, whichSelect));
+                prependString = UNION;
             }
 
             // Restore the original measure member
@@ -717,6 +715,26 @@ public class SqlTupleReader implements TupleReader {
             return generateSelectForLevels(dataSource, cube, WhichSelect.ONLY);
         }
     }
+
+    private Collection<RolapCube> getFullyJoiningBaseCubes(
+        Collection<RolapCube> baseCubes)
+    {
+        final Collection<RolapCube> fullyJoiningCubes =
+            new ArrayList<RolapCube>();
+        for (RolapCube baseCube : baseCubes) {
+            boolean allTargetsJoin = true;
+            for (TargetBase target : targets) {
+                if (!targetIsOnBaseCube(target, baseCube)) {
+                    allTargetsJoin = false;
+                }
+            }
+            if (allTargetsJoin) {
+                fullyJoiningCubes.add(baseCube);
+            }
+        }
+        return fullyJoiningCubes;
+    }
+
 
     Collection<RolapCube> getBaseCubeCollection(final Query query) {
         RolapCube.CubeComparator cubeComparator =
@@ -768,16 +786,12 @@ public class SqlTupleReader implements TupleReader {
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
             if (target.getSrcMembers() == null) {
-                if (targetIsOnBaseCube(target, baseCube)) {
-                    addLevelMemberSql(
-                        sqlQuery,
-                        target.getLevel(),
-                        baseCube,
-                        whichSelect,
-                        aggStar);
-                } else {
-                    return "";
-                }
+                addLevelMemberSql(
+                    sqlQuery,
+                    target.getLevel(),
+                    baseCube,
+                    whichSelect,
+                    aggStar);
             }
         }
 
