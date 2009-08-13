@@ -1806,7 +1806,7 @@ The default value for this property is an empty string.</PropertyDescription>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
                         <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
-                        <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+                        <HIERARCHY_CAPTION>Weekly</HIERARCHY_CAPTION>
                         <DIMENSION_TYPE>1</DIMENSION_TYPE>
                         <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
                         <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
