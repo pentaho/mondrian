@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,6 +16,7 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
 import mondrian.olap.PropertyFormatter;
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 
@@ -65,8 +66,7 @@ class RolapProperty extends Property {
         this.caption = caption;
         this.formatter = makePropertyFormatter(formatterDef);
         this.dependsOnLevelValue =
-            dependsOnLevelValue == null ? false
-                : dependsOnLevelValue.booleanValue();
+            dependsOnLevelValue != null && dependsOnLevelValue;
     }
 
     private PropertyFormatter makePropertyFormatter(String formatterDef) {
@@ -78,13 +78,9 @@ class RolapProperty extends Property {
                 Constructor<PropertyFormatter> ctor = clazz.getConstructor();
                 return ctor.newInstance();
             } catch (Exception e) {
-                StringBuilder buf = new StringBuilder(64);
-                buf.append("RolapProperty.makePropertyFormatter: ");
-                buf.append("Could not create PropertyFormatter from");
-                buf.append("formatterDef \"");
-                buf.append(formatterDef);
-                buf.append("\"");
-                LOGGER.error(buf.toString(), e);
+                throw
+                    MondrianResource.instance().PropertyFormatterLoadFailed.ex(
+                        formatterDef, name, e);
             }
         }
         return null;
