@@ -71,7 +71,7 @@ public class Util extends XOMUtil {
 
     /**
      * Whether we are running a version of Java before 1.5.
-     * <p/>
+     *
      * <p>If this variable is true, we will be running retroweaver. Retroweaver
      * has some problems involving {@link java.util.EnumSet}.
      */
@@ -2475,8 +2475,11 @@ public class Util extends XOMUtil {
         Object[] args = {};
 
         // 0. Check that class is public and top-level or static.
+        // Before JDK 1.5, inner classes are impossible; retroweaver cannot
+        // handle the getEnclosingClass method, so skip the check.
         if (!Modifier.isPublic(udfClass.getModifiers())
-            || (udfClass.getEnclosingClass() != null
+            || (!PreJdk15
+                && udfClass.getEnclosingClass() != null
                 && !Modifier.isStatic(udfClass.getModifiers())))
         {
             throw MondrianResource.instance().UdfClassMustBePublicAndStatic.ex(

@@ -792,6 +792,11 @@ public class UdfTest extends FoodMartTestCase {
      * Tests that a non-static function gives an error.
      */
     public void testNonStaticUdfFails() {
+        if (Util.PreJdk15) {
+            // Cannot detect non-static inner classes in JDK 1.4, because
+            // such things are not supposed to exist.
+            return;
+        }
         TestContext tc = TestContext.create(
             null,
             null,
