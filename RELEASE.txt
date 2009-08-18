@@ -1,10 +1,10 @@
-Mondrian 3.1.1.12687 production release notes
+Mondrian 3.1.2.13008 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1.1.12687 is a minor release version of the leading
+Mondrian 3.1.2.13008 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -51,6 +51,11 @@ Main functionality in this release
    enable, set mondrian.olap.SsasCompatibleNaming=true.
  - Netezza Dialect (3.1.1)
  - Various Workbench changes (3.1.1) 
+ - Implemented compound slicer; that is, a WHERE clause that
+   contains a set of members or tuples. logged MONDRIAN-555
+   to record missing functionality. (3.1.2)
+ - Upgraded license from CPL to EPL (3.1.2)
+ - Implemented scenarios (writeback) (3.1.2)
 
 API changes from 3.0 to 3.1
 ---------------------------
@@ -60,9 +65,37 @@ API changes from 3.0 to 3.1
    be an enum, is now an interface. Code that explicitly
    depends on this class will need to be recompiled.
  - Upgrade to olap4-0.9.7.145.
+ - Upgraded to olap4j-0.9.7.232 (3.1.2)
+
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed since mondrian-3.1.1-12687
+----------------------------------------------------------
+
+MONDRIAN-444 - Mondrian doesn't support WHERE clause with 
+               set of tuples
+MONDRIAN-562 - Aggregate tables don't work in Vertica
+MONDRIAN-565 - If two cubes have dimension with same name, 
+               mondrian treats grant to one as grant to other
+MONDRIAN-571 - HighCardSqlTupleReader does not close SQL 
+               Connections
+MONDRIAN-576 - Upgrade retroweaver to version 2.0.7
+MONDRIAN-577 - Reduce method-level synchronization in 
+               mondrian/rolap/agg/Segment.java
+MONDRIAN-585 - Concurrent usage can cause VFS socket 
+               exceptions when reading schema via HTTP.
+MONDRIAN-588 - UDF returning List works under 2.4, fails 
+               under 3.1.1
+MONDRIAN-589 - UDF expecting List gets anonymous 
+               mondrian.rolap.RolapNamedSetEvaluator$1 
+               instead
+MONDRIAN-587 - testCrossjoinWithOneDimensionThatDoesNotJoinToBothBaseCubes 
+               fails on Oracle/JDK1.5
+MONDRIAN-598 - Format improvement to log entry in 
+               "makePropertyFormatter" - space missing
+PSW-55 - Update PSW product icon
 
 Bugs and feature requests fixed since mondrian-3.1.0-12477-RC1
 --------------------------------------------------------------
@@ -144,3 +177,5 @@ BISERVER-2491 - Mondrian: rollupPolicy=partial and queries
 BISERVER-2786 - Schema Workbench: Provide more information
           when schema is invalid due to invalid hierarchies
 ------------------------------------------------------------
+
+
