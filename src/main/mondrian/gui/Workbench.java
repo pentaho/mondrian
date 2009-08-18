@@ -117,7 +117,7 @@ public class Workbench extends javax.swing.JFrame {
 
         ImageIcon icon = new javax.swing.ImageIcon(
             myClassLoader.getResource(
-                getResourceConverter().getGUIReference("cube")));
+                getResourceConverter().getGUIReference("productIcon")));
 
         this.setIconImage(icon.getImage());
     }
