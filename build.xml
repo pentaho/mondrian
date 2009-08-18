@@ -924,6 +924,7 @@ ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
 ${java.dir}/**/*.gif,
+${java.dir}/**/*.png,
 ${java.dir}/**/*.html,
 ${lib.dir}/mondrian.xsd,
 ${testsrc.dir}/queryFiles/**/*.xml,
@@ -940,6 +941,7 @@ ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
 ${doc.dir}/**/*.css,
 ${doc.dir}/**/*.gif,
+${doc.dir}/**/*.png,
 ${doc.dir}/**/*.jpeg,
 ${doc.dir}/**/*.html,
 bin/cmdrunner.sh,
@@ -1565,7 +1567,7 @@ xalan.jar"/>
           includes="mondrian/gui/**/*.class"/>
       <fileset
           dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
+          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
       <manifest>
           <attribute name="Main-Class" value="${workbench.main.class}"/>
       </manifest>
@@ -1573,7 +1575,7 @@ xalan.jar"/>
     <copy todir="${classes.dir}">
       <fileset
           dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
+          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
     </copy>
   </target>
 
