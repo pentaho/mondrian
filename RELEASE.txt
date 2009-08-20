@@ -1,10 +1,10 @@
-Mondrian 3.1.2.13008 production release notes
+Mondrian 3.1.3.13015 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1.2.13008 is a minor release version of the leading
+Mondrian 3.1.3.13015 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -56,6 +56,7 @@ Main functionality in this release
    to record missing functionality. (3.1.2)
  - Upgraded license from CPL to EPL (3.1.2)
  - Implemented scenarios (writeback) (3.1.2)
+ - Implemented HSQLDB dialect (3.1.3)
 
 API changes from 3.0 to 3.1
 ---------------------------
@@ -70,6 +71,12 @@ API changes from 3.0 to 3.1
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed since mondrian 3.1.3-13015
+----------------------------------------------------------
+
+MONDRIAN-605 - hsqldb 1.8 fails when using top count, order 
+               by NULLS FIRST, LAST SQL syntax not supported
 
 Bugs and feature requests fixed since mondrian-3.1.1-12687
 ----------------------------------------------------------
