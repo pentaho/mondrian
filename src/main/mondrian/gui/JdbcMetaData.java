@@ -355,38 +355,25 @@ public class JdbcMetaData {
     private void setColumns(String schemaName, String tableName) {
         LOGGER.debug(
             "setColumns: <" + tableName + "> in schema <" + schemaName + ">");
-
-        if (initConnection() != null) {
-            return;
-        }
-
-        if (schemaName == null) {
-            schemaName = jdbcSchema;
-        }
-
-        DbSchema dbs = db.getSchema(schemaName);
-
-        if (dbs == null) {
-            throw new RuntimeException(
-                "No schema with name: <" + schemaName + ">");
-        }
-
-        DbTable dbt = dbs.getTable(tableName);
-
+        DbTable dbt = db.getTable(schemaName, tableName);
         if (dbt == null) {
-            throw new RuntimeException(
+            LOGGER.debug(
                 "No table with name: <"
                 + tableName
                 + "> in schema <"
                 + schemaName
                 + ">");
+            return;
         }
-
-        setColumns(dbt);
-
-        LOGGER.debug("got " + dbt.colsDataType.size() + " columns");
-
-        closeConnection();
+        if (initConnection() != null) {
+            return;
+        }
+        try {
+            setColumns(dbt);
+            LOGGER.debug("got " + dbt.colsDataType.size() + " columns");
+        } finally {
+            closeConnection();
+        }
     }
 
     /**
@@ -768,14 +755,9 @@ public class JdbcMetaData {
         }
 
         private boolean hasColumns(String schemaName, String tableName) {
-            DbSchema dbs = getSchema(schemaName);
-
-            if (dbs != null) {
-                DbTable t = dbs.getTable(tableName);
-
-                if (t != null) {
-                    return t.hasColumns();
-                }
+            DbTable table = getTable(schemaName, tableName);
+            if (table != null) {
+                return table.hasColumns();
             }
             return false;
         }
