@@ -267,7 +267,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jPanel1.add(selectSchemasButton, gridBagConstraints);
 
         // Disable the select schemas button for now
-        selectSchemasButton.setEnabled(false);
+        selectSchemasButton.setVisible(false);
 
         requireSchemaButton.setSelected(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
