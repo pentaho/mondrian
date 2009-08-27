@@ -2213,17 +2213,7 @@ public class CrossJoinFunDef extends FunDefBase {
             ResolvedFunCall crossJoinCall)
         {
             this.queryMeasureSet = queryMeasureSet;
-            finder = new ResolvedFunCallFinder(crossJoinCall);
-        }
-
-        public Object visit(ResolvedFunCall funcall) {
-            Exp[] exps = funcall.getArgs();
-            if (exps != null) {
-                for (Exp exp : exps) {
-                    exp.accept(this);
-                }
-            }
-            return null;
+            this.finder = new ResolvedFunCallFinder(crossJoinCall);
         }
 
         public Object visit(ParameterExpr parameterExpr) {
@@ -2255,8 +2245,6 @@ public class CrossJoinFunDef extends FunDefBase {
                         exp.accept(finder);
                         if (! finder.found) {
                             exp.accept(this);
-                            // commented line out to fix bug #1696772
-                            // queryMeasureSet.add(member);
                         }
                         activeMeasures.remove(member);
                     }
@@ -2361,7 +2349,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         final String measureSetKey = "MEASURE_SET-" + ctag;
         Set<Member> measureSet =
-                (Set<Member>) query.getEvalCache(measureSetKey);
+            Util.cast((Set) query.getEvalCache(measureSetKey));
         // If not in query cache, then create and place into cache.
         // This information is used for each iteration so it makes
         // sense to create and cache it.
@@ -2390,7 +2378,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
         final String allMemberListKey = "ALL_MEMBER_LIST-" + ctag;
         List<Member> allMemberList =
-                (List<Member>) query.getEvalCache(allMemberListKey);
+            Util.cast((List) query.getEvalCache(allMemberListKey));
 
         final String nonAllMembersKey = "NON_ALL_MEMBERS-" + ctag;
         Member[][] nonAllMembers =
