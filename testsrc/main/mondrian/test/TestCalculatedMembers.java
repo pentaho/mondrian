@@ -1417,6 +1417,78 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Row #3: 332\n"
             + "Row #3: 2.20\n");
     }
+
+    /**
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-608">
+     * MONDRIAN-608, "Performance issue with large number of measures"</a>.
+     */
+    public void testExponentialPerformanceBugMondrian608() {
+        // Run variants of the same query with increasing expression complexity.
+        // With MONDRIAN-608, running time triples each iteration (for
+        // example, i=10 takes 2.7s, i=11 takes 9.6s), so 20 would be very
+        // noticeable!
+        final boolean print = false;
+        for (int i = 0; i < 20; ++i) {
+            checkForExponentialPerformance(i, print);
+        }
+    }
+
+    /**
+     * Runs a query with an calculated member whose expression is a given
+     * complexity.
+     *
+     * @param n Expression complexity
+     * @param print Whether to print timings
+     */
+    private void checkForExponentialPerformance(
+        int n,
+        boolean print)
+    {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < n; ++i) {
+            buf.append(
+                "+ [Measures].[Sales Count] - [Measures].[Sales Count]\n");
+        }
+        final long t0 = System.currentTimeMillis();
+        final String mdx =
+            "with member [Measures].[M0] as\n"
+            + "    [Measures].[Unit Sales]\n"
+            + "   + [Measures].[Store Cost]\n"
+            + "   + [Measures].[Store Sales]\n"
+            + "   + [Measures].[Customer Count]\n"
+            + buf
+            + "  set [#DataSet#] as NonEmptyCrossjoin(\n"
+            + "    {[Product].[Food]},\n"
+            + "    {Descendants([Store].[USA], 1)})\n"
+            + "select {[Measures].[M0]} on columns,\n"
+            + " NON EMPTY Hierarchize({[#DataSet#]}) on rows\n"
+            + "FROM [Sales]";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[M0]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[CA]}\n"
+            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[OR]}\n"
+            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[WA]}\n"
+            + "Row #0: 217,506\n"
+            + "Row #1: 193,104\n"
+            + "Row #2: 359,162\n");
+
+        // Check for a similar issue in the visitor that analyzes a calculated
+        // member's expression to see whether a cell based on that member can
+        // be drilled through.
+        final Result result = executeQuery(mdx);
+        assertTrue(result.getCell(new int[] {0, 0}).canDrillThrough());
+
+        final long t1 = System.currentTimeMillis();
+        if (print) {
+            System.out.println(
+                "For n=" + n + ", took " + (t1 - t0) + " millis");
+        }
+    }
 }
 
 // End TestCalculatedMembers.java

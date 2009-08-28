@@ -12,8 +12,7 @@ package mondrian.spi;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 
-import org.apache.log4j.*;
-import org.apache.log4j.Category;
+import java.util.List;
 
 /**
  * Definition of a user-defined function.
@@ -56,7 +55,9 @@ public interface UserDefinedFunction {
 
     /**
      * Returns the return-type of this function.
-     * @param parameterTypes
+     *
+     * @param parameterTypes Parameter types
+     * @return Return type
      */
     public Type getReturnType(Type[] parameterTypes);
 
@@ -81,12 +82,69 @@ public interface UserDefinedFunction {
     public String[] getReservedWords();
 
     interface Argument {
+        /**
+         * Returns the type of the argument.
+         *
+         * @return Argument type
+         */
+        Type getType();
 
+        /**
+         * Evaluates the argument as a scalar expression.
+         *
+         * <p>The effect is the same as
+         * {@link #evaluate(mondrian.olap.Evaluator)} except if the argument
+         * evaluates to a member or tuple. This method will set the context
+         * to the member or tuple and evaluate the current measure, whereas
+         * {@code evaluate} would return the member or tuple.
+         *
+         * <p>The effect is similar to creating a calculated member in an MDX
+         * query:</p>
+         *
+         * <blockquote>WITH MEMBER [Measures].[Previous Period] AS<br/>
+         * &nbsp;&nbsp;([Measures].[Unit Sales], [Time].[Time].PrevMember)<br/>
+         * SELECT {[Measures].[Unit Sales],<br/>
+         * &nbsp;&nbsp;&nbsp;&nbsp;[Measures].[Previous Period]} on 0,<br/>
+         * &nbsp;&nbsp;[Time].[Time].Children on 1<br/>
+         * FROM [Sales]</blockquote>
+         *
+         * <p>Note how {@code [Measures].[Previous Period]} is defined as a
+         * tuple, but evaluates to a number.</p>
+         *
+         * @param evaluator Evaluation context
+         * @return Scalar expression at the given member or tuple
+         */
         Object evaluateScalar(Evaluator evaluator);
 
+        /**
+         * Evaluates the argument.
+         *
+         * <p>If the argument is a set of members or tuples, this method may
+         * return either a {@link List} or an {@link Iterable}. It is not safe
+         * to blindly cast to {@code List}. For guaranteed type, call
+         * {@link #evaluateList(mondrian.olap.Evaluator)} or
+         * {@link #evaluateIterable(mondrian.olap.Evaluator)}.
+         *
+         * @param evaluator Evaluation context
+         * @return Result of evaluating the argument
+         */
         Object evaluate(Evaluator evaluator);
 
-        Type getType();
+        /**
+         * Evaluates the argument to a list of members or tuples.
+         *
+         * @param eval Evaluation context
+         * @return List of members or tuples.
+         */
+        List evaluateList(Evaluator eval);
+
+        /**
+         * Evaluates the argument to an iterable over members or tuples.
+         *
+         * @param eval Evaluation context
+         * @return Iterable over members or tuples.
+         */
+        Iterable evaluateIterable(Evaluator eval);
     }
 }
 

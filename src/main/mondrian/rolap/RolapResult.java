@@ -25,6 +25,7 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
+import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
@@ -472,45 +473,27 @@ public class RolapResult extends ResultBase {
     }
 
     private static class CalculatedMeasureVisitor
-        extends mondrian.mdx.MdxVisitorImpl
+        extends MdxVisitorImpl
     {
         Dimension dimension;
 
         CalculatedMeasureVisitor() {
         }
-        public Object visit(mondrian.olap.Formula formula) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.ResolvedFunCall call) {
-            return null;
-        }
-        public Object visit(mondrian.olap.Id id) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.DimensionExpr dimensionExpr) {
+
+        public Object visit(DimensionExpr dimensionExpr) {
             dimension = dimensionExpr.getDimension();
             return null;
         }
-        public Object visit(mondrian.mdx.HierarchyExpr hierarchyExpr) {
+
+        public Object visit(HierarchyExpr hierarchyExpr) {
             Hierarchy hierarchy = hierarchyExpr.getHierarchy();
             dimension = hierarchy.getDimension();
             return null;
         }
-        public Object visit(mondrian.mdx.LevelExpr levelExpr) {
-            return null;
-        }
-        public Object visit(mondrian.mdx.MemberExpr memberExpr)  {
+
+        public Object visit(MemberExpr memberExpr)  {
             Member member = memberExpr.getMember();
             dimension = member.getHierarchy().getDimension();
-            return null;
-        }
-        public Object visit(mondrian.mdx.NamedSetExpr namedSetExpr) {
-            return null;
-        }
-        public Object visit(mondrian.olap.Literal literal) {
             return null;
         }
     }

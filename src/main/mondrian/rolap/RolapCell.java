@@ -305,24 +305,18 @@ class RolapCell implements Cell {
         public Object visit(ResolvedFunCall call) {
             final FunDef def = call.getFunDef();
             final Exp[] args = call.getArgs();
-            if (def.getName().equals("+")
-                || def.getName().equals("-")
-                || def.getName().equals("/")
-                || def.getName().equals("*")
-                || def.getName().equals("CoalesceEmpty")
+            final String name = def.getName();
+            if (name.equals("+")
+                || name.equals("-")
+                || name.equals("/")
+                || name.equals("*")
+                || name.equals("CoalesceEmpty")
                 // Allow parentheses but don't allow tuple
-                || def.getName().equals("()") && args.length == 1)
+                || name.equals("()") && args.length == 1)
             {
-                visitChildren(args);
                 return null;
             }
             throw bomb;
-        }
-
-        private void visitChildren(Exp[] args) {
-            for (Exp arg : args) {
-                arg.accept(this);
-            }
         }
 
         public void handleMember(Member member) {

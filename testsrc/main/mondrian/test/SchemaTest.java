@@ -1609,6 +1609,31 @@ public class SchemaTest extends FoodMartTestCase {
             sw.toString());
     }
 
+    public void testPropertyFormatter() {
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
+                + "    <Hierarchy name=\"Store2\" hasAll=\"true\" allMemberName=\"All Stores\" primaryKey=\"store_id\">\n"
+                + "      <Table name=\"store_ragged\"/>\n"
+                + "      <Level name=\"Store2\" table=\"store_ragged\" column=\"store_id\" captionColumn=\"store_name\" uniqueMembers=\"true\">\n"
+                + "           <Property name=\"Store Type\" column=\"store_type\" formatter=\""
+                + DummyPropertyFormatter.class.getName()
+                + "\"/>"
+                + "           <Property name=\"Store Manager\" column=\"store_manager\"/>"
+                + "     </Level>"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        try {
+            testContext.assertSimpleQuery();
+            fail("expected exception");
+        } catch (RuntimeException e) {
+            TestContext.checkThrowable(
+                e,
+                "Failed to load formatter class 'mondrian.test.SchemaTest$DummyPropertyFormatter' for property 'Store Type'.");
+        }
+    }
+
     /**
      * Bug <a href="http://jira.pentaho.com/browse/MONDRIAN-233">MONDRIAN-233,
      * "ClassCastException in AggQuerySpec"</a> occurs when two cubes
@@ -2534,6 +2559,21 @@ public class SchemaTest extends FoodMartTestCase {
             TestContext.checkThrowable(
                 e,
                 "Value 'TimeUnspecified' of attribute 'levelType' has illegal value 'TimeUnspecified'.  Legal values: {Regular, TimeYears, ");
+        }
+    }
+
+    /**
+     * Implementation of {@link mondrian.olap.PropertyFormatter} that throws.
+     */
+    public static class DummyPropertyFormatter implements PropertyFormatter {
+        public DummyPropertyFormatter() {
+            throw new RuntimeException("oops");
+        }
+
+        public String formatProperty(
+            Member member, String propertyName, Object propertyValue)
+        {
+            return null;
         }
     }
 }

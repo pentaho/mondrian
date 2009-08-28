@@ -735,20 +735,35 @@ public class UdfTest extends FoodMartTestCase {
      * <p>Test case for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-588">MONDRIAN-588,
      * "UDF returning List works under 2.4, fails under 3.1.1"</a>.
+     *
+     * <p>Also test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-589">MONDRIAN-589,
+     * "UDF expecting List gets anonymous
+     * mondrian.rolap.RolapNamedSetEvaluator$1 instead"</a>.
      */
     public void testListUdf() {
+        checkListUdf(ReverseFunction.class);
+        checkListUdf(ReverseIterableFunction.class);
+    }
+
+    /**
+     * Helper for {@link #testListUdf()}.
+     *
+     * @param functionClass Class that implements the "Reverse" function.
+     */
+    private void checkListUdf(
+        final Class<? extends ReverseFunction> functionClass)
+    {
         TestContext tc = TestContext.create(
             null,
             null,
             null,
             null,
             "<UserDefinedFunction name=\"Reverse\" className=\""
-            + ReverseFunction.class.getName()
+            + functionClass.getName()
             + "\"/>\n",
             null);
-        tc.assertQueryReturns(
-            "select Reverse([Gender].Members) on 0\n"
-            + "from [Sales]",
+        final String expectedResult =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -757,13 +772,35 @@ public class UdfTest extends FoodMartTestCase {
             + "{[Gender].[All Gender]}\n"
             + "Row #0: 135,215\n"
             + "Row #0: 131,558\n"
-            + "Row #0: 266,773\n");
+            + "Row #0: 266,773\n";
+        // UDF called directly in axis expression.
+        tc.assertQueryReturns(
+            "select Reverse([Gender].Members) on 0\n"
+            + "from [Sales]",
+            expectedResult);
+        // UDF as calc set definition
+        tc.assertQueryReturns(
+            "with set [Foo] as Reverse([Gender].Members)\n"
+            + "select [Foo] on 0\n"
+            + "from [Sales]",
+            expectedResult);
+        // UDF applied to calc set -- exhibited MONDRIAN-589
+        tc.assertQueryReturns(
+            "with set [Foo] as [Gender].Members\n"
+            + "select Reverse([Foo]) on 0\n"
+            + "from [Sales]",
+            expectedResult);
     }
 
     /**
      * Tests that a non-static function gives an error.
      */
     public void testNonStaticUdfFails() {
+        if (Util.PreJdk15) {
+            // Cannot detect non-static inner classes in JDK 1.4, because
+            // such things are not supposed to exist.
+            return;
+        }
         TestContext tc = TestContext.create(
             null,
             null,
@@ -1034,9 +1071,13 @@ public class UdfTest extends FoodMartTestCase {
      */
     public static class ReverseFunction implements UserDefinedFunction {
         public Object execute(Evaluator eval, Argument[] args) {
-            List memberList = (List) args[0].evaluate(eval);
-            Collections.reverse(memberList);
-            return memberList;
+            // Note: must call Argument.evaluateList. If we call
+            // Argument.evaluate we may get an Iterable.
+            List<?> list = args[0].evaluateList(eval);
+            // We do not need to copy before we reverse. The list is guaranteed
+            // to be mutable.
+            Collections.reverse(list);
+            return list;
         }
 
         public String getDescription() {
@@ -1068,6 +1109,24 @@ public class UdfTest extends FoodMartTestCase {
      * Function that is non-static.
      */
     public class ReverseFunctionNotStatic extends ReverseFunction {
+    }
+
+    /**
+     * Function that takes a set of members as argument, and returns a set of
+     * members.
+     */
+    public static class ReverseIterableFunction extends ReverseFunction {
+        public Object execute(Evaluator eval, Argument[] args) {
+            // Note: must call Argument.evaluateList. If we call
+            // Argument.evaluate we may get an Iterable.
+            Iterable iterable = args[0].evaluateIterable(eval);
+            List<Object> list = new ArrayList<Object>();
+            for (Object o : iterable) {
+                list.add(o);
+            }
+            Collections.reverse(list);
+            return list;
+        }
     }
 
     /**
