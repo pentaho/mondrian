@@ -317,6 +317,7 @@ public class SchemaExplorer
         addCalculatedMemberButton = new JButton();
         addLevelButton = new JButton();
         addPropertyButton = new JButton();
+        addCalculatedMemberPropertyButton = new JButton();
 
         addVirtualCubeButton = new JButton();
         addVirtualCubeDimensionButton = new JButton();
@@ -692,6 +693,16 @@ public class SchemaExplorer
             }
         };
 
+        addCalculatedMemberProperty = new AbstractAction(
+                getResourceConverter().getString(
+                    "schemaExplorer.addCalculatedMemberProperty.title",
+                    "Add Calculated Member Property"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addCalculatedMemberProperty(e);
+            }
+        };
+
         addVirtualCube = new AbstractAction(
             getResourceConverter().getString(
                 "schemaExplorer.addVirtualCube.title", "Add Virtual Cube"))
@@ -908,6 +919,18 @@ public class SchemaExplorer
                 "schemaExplorer.addProperty.title", "Add Property"));
         addPropertyButton.addActionListener(addProperty);
 
+        addCalculatedMemberPropertyButton.setIcon(
+            new ImageIcon(
+                myClassLoader.getResource(
+                    getResourceConverter().getGUIReference(
+                        "addCalculatedMemberProperty"))));
+        addCalculatedMemberPropertyButton.setToolTipText(
+            getResourceConverter().getString(
+                "schemaExplorer.addCalculatedMemberProperty.title",
+                "Add Calculated Member Property"));
+        addCalculatedMemberPropertyButton.addActionListener(
+            addCalculatedMemberProperty);
+
         addVirtualCubeButton.setIcon(
             new ImageIcon(
                 myClassLoader.getResource(
@@ -1010,6 +1033,7 @@ public class SchemaExplorer
         jToolBar1.add(addMeasureButton);
         jToolBar1.add(addLevelButton);
         jToolBar1.add(addPropertyButton);
+        jToolBar1.add(addCalculatedMemberPropertyButton);
         jToolBar1.addSeparator();
         jToolBar1.add(addVirtualCubeButton);
         jToolBar1.add(addVirtualCubeDimensionButton);
@@ -3434,6 +3458,73 @@ public class SchemaExplorer
     /**
      * @param evt
      */
+    protected void addCalculatedMemberProperty(ActionEvent evt) {
+        TreePath tpath = tree.getSelectionPath();
+        int parentIndex = -1;
+        Object path = null;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                final Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.CalculatedMember) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+
+        if (!(path instanceof MondrianGuiDef.CalculatedMember)) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.calculatedMemberNotSelected.alert",
+                    "Calculated Member not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        MondrianGuiDef.CalculatedMember calcMember =
+            (MondrianGuiDef.CalculatedMember) path;
+
+        MondrianGuiDef.CalculatedMemberProperty property =
+            new MondrianGuiDef.CalculatedMemberProperty();
+        property.name = "";
+
+        if (calcMember.memberProperties == null) {
+            calcMember.memberProperties =
+                new MondrianGuiDef.CalculatedMemberProperty[0];
+        }
+        property.name =
+            getNewName(
+                getResourceConverter().getString(
+                    "schemaExplorer.newProperty.title",
+                    "New Property"),
+                calcMember.memberProperties);
+        NodeDef[] temp = calcMember.memberProperties;
+        calcMember.memberProperties =
+            new MondrianGuiDef.CalculatedMemberProperty[temp.length + 1];
+        for (int i = 0; i < temp.length; i++) {
+            calcMember.memberProperties[i] =
+                (MondrianGuiDef.CalculatedMemberProperty) temp[i];
+        }
+
+        calcMember.memberProperties[calcMember.memberProperties.length - 1] =
+            property;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(property));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    /**
+     * @param evt
+     */
     protected void addClosure(ActionEvent evt) {
         TreePath tpath = tree.getSelectionPath();
         int parentIndex = -1;
@@ -4218,7 +4309,8 @@ public class SchemaExplorer
                                instanceof MondrianGuiDef.CalculatedMember)
                     {
                         jPopupMenu.add(addFormula);
-                        if (((MondrianGuiDef.NamedSet) pathSelected)
+                        jPopupMenu.add(addCalculatedMemberProperty);
+                        if (((MondrianGuiDef.CalculatedMember) pathSelected)
                             .formulaElement == null)
                         {
                             addFormula.setEnabled(false);
@@ -4493,6 +4585,7 @@ public class SchemaExplorer
     private AbstractAction addView;
     private AbstractAction addInlineTable;
     private AbstractAction addProperty;
+    private AbstractAction addCalculatedMemberProperty;
     private AbstractAction addClosure;
 
     private AbstractAction addAggName;
@@ -4520,6 +4613,7 @@ public class SchemaExplorer
     private JScrollPane jScrollPane2;
     private JScrollPane jScrollPane1;
     private JButton addPropertyButton;
+    private JButton addCalculatedMemberPropertyButton;
     private JButton pasteButton;
     private JLabel targetLabel;
     private JLabel validStatusLabel;
