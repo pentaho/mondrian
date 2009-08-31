@@ -374,6 +374,10 @@ public class QueryPanel extends javax.swing.JPanel {
                 getResourceConverter().getString(
                     "common.errorDialog.title", "Error"),
                 JOptionPane.ERROR_MESSAGE);
+            resultTextPane.setText(getResourceConverter().getFormattedString(
+                "queryPanel.exceptionMessage",
+                "Exception: {0}\n\nSee workbench log for full stacktrace.",
+                ex.getMessage()));
         }
     }
 
