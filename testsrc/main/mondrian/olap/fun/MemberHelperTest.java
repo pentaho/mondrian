@@ -129,6 +129,10 @@ public class MemberHelperTest extends TestCase {
             return MemberType.REGULAR;
         }
 
+        public boolean isParentChildLeaf() {
+            return false;
+        }
+
         public int getOrdinal() {
             return 0;
         }

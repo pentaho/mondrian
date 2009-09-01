@@ -955,7 +955,7 @@ public class SqlConstraintUtils {
             if (m.isAll()) {
                 continue;
             }
-            if (m.isCalculated()) {
+            if (m.isCalculated() && !m.isParentChildLeaf()) {
                 if (restrictMemberTypes) {
                     throw Util.newInternal(
                         "addMemberConstraint: cannot "

@@ -82,6 +82,11 @@ public class Target extends TargetBase {
                     member = level.getHierarchy().getAllMember();
                     continue;
                 }
+
+                if (childLevel.isParentChild()) {
+                    column++;
+                }
+
                 Object value = resultSet.getObject(++column);
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;
@@ -97,9 +102,18 @@ public class Target extends TargetBase {
                 member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
-                    member = memberBuilder.makeMember(
-                        parentMember, childLevel, value, captionValue,
-                        parentChild, resultSet, key, column);
+                    if (constraint instanceof
+                        RolapNativeCrossJoin.NonEmptyCrossJoinConstraint
+                        && childLevel.isParentChild())
+                    {
+                        member = castToNonEmptyCJConstraint(constraint)
+                            .findMember(value);
+                    }
+                    if (member == null) {
+                        member = memberBuilder.makeMember(
+                            parentMember, childLevel, value, captionValue,
+                            parentChild, resultSet, key, column);
+                    }
                 }
 
                 // Skip over the columns consumed by makeMember

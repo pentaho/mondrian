@@ -2903,6 +2903,10 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
+        public boolean isParentChildLeaf() {
+            return false;
+        }
+
         public void setName(String name) {
             throw new UnsupportedOperationException();
         }

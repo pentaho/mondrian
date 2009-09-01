@@ -58,6 +58,7 @@ import org.eigenbase.util.property.IntegerProperty;
 public class NonEmptyTest extends BatchTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
+    TestContext localTestContext;
 
     public NonEmptyTest() {
         super();
@@ -67,8 +68,35 @@ public class NonEmptyTest extends BatchTestCase {
         super(name);
     }
 
+    @Override
+    public TestContext getTestContext() {
+        return localTestContext != null
+            ? localTestContext : super.getTestContext();
+    }
+
+    public void setTestContext(TestContext testContext) {
+        localTestContext = testContext;
+    }
+
+    public void testBugMondrian584EnumOrder() {
+        // The interpreter results include males before females, which is
+        // correct because it is consistent with the explicit order present
+        // in the query. Native evaluation returns the females before males,
+        // which is probably a reflection of the database ordering.
+        //
+        if (Bug.BugMondrian584Fixed) {
+            checkNative(
+                4,
+                4,
+                "SELECT non empty { CrossJoin( "
+                    + "  {Gender.M, Gender.F}, "
+                    + "  { [Marital Status].[Marital Status].members } "
+                    + ") } on 0 from sales");
+        }
+    }
+
     public void testBugCantRestrictSlicerToCalcMember() throws Exception {
-        TestContext ctx = TestContext.instance();
+        TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
             "WITH MEMBER [Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' "
             + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
@@ -127,7 +155,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testTopCountWithCalcMemberInSlicer() {
         // Internal error: can not restrict SQL to calculated Members
-        TestContext ctx = TestContext.instance();
+        TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
             "with member [Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' "
             + "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -152,7 +180,7 @@ public class NonEmptyTest extends BatchTestCase {
          * When caching topcount results, the number of elements must
          * be part of the cache key
          */
-        TestContext ctx = TestContext.instance();
+        TestContext ctx = getTestContext();
         // fill cache
         ctx.assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1240,6 +1268,189 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Sales] where ("
             + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjMembersWithHideIfBlankLeafAndNoAll() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+            + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+            + "        hideMemberIf=\"IfBlankName\""
+            + "        />\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
+
+        // No 'all' level, and ragged because [Product Name] is hidden if
+        // blank.  Native evaluation should be able to handle this query.
+        checkNative(
+            9999,  // Don't know why resultLimit needs to be so high.
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product Ragged].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjMembersWithHideIfBlankLeaf() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // [Product Name] can be hidden if it is blank, but native evaluation
+        // should be able to handle the query.
+        checkNative(
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product Ragged].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjMembersWithHideIfParentsNameLeaf() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfParentsName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // [Product Name] can be hidden if it it matches its parent name, so
+        // native evaluation can not handle this query.
+        checkNotNative(
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product Ragged].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjMembersWithHideIfBlankNameAncestor() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // Since the parent of [Product Name] can be hidden, native evaluation
+        // can't handle the query.
+        checkNative(
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product Ragged].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjMembersWithHideIfParentsNameAncestor() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+                + "        hideMemberIf=\"IfParentsName\""
+                + "        />\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // Since the parent of [Product Name] can be hidden, native evaluation
+        // can't handle the query.
+        checkNative(
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        [Product Ragged].[Product Name].Members), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
+    public void testCjEnumWithHideIfBlankLeaf() {
+        setTestContext(TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // [Product Name] can be hidden if it is blank, but native evaluation
+        // should be able to handle the query.
+        // Note there's an existing bug with result ordering in native
+        // non-empty evaluation of enumerations. This test intentionally
+        // avoids this bug by explicitly lilsting [High Top Cauliflower]
+        // before [Sphinx Bagels].
+        checkNative(
+            999,
+            7,
+            "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin("
+                + "    Crossjoin("
+                + "        [Customers].[Name].Members,"
+                + "        { [Product Ragged].[Kiwi].[Kiwi Scallops],"
+                + "          [Product Ragged].[Fast].[Fast Avocado Dip],"
+                + "          [Product Ragged].[High Top].[High Top Lemons],"
+                + "          [Product Ragged].[Moms].[Moms Sliced Turkey],"
+                + "          [Product Ragged].[High Top].[High Top Cauliflower],"
+                + "          [Product Ragged].[Sphinx].[Sphinx Bagels]"
+                + "        }), "
+                + "    [Promotions].[Promotion Name].Members) ON rows "
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -2412,7 +2623,7 @@ public class NonEmptyTest extends BatchTestCase {
         // should have gotten one ERROR
         int nEvents = countFilteredEvents(
             events, org.apache.log4j.Level.ERROR, expectedMessage);
-        assertEquals(1, nEvents);
+        assertEquals("logged error count check", 1, nEvents);
         events.clear();
 
         // verify that exactly one warning is posted but execution succeeds
@@ -2428,7 +2639,7 @@ public class NonEmptyTest extends BatchTestCase {
         // should have gotten one WARN
         nEvents = countFilteredEvents(
             events, org.apache.log4j.Level.WARN, expectedMessage);
-        assertEquals(1, nEvents);
+        assertEquals("logged warning count check", 1, nEvents);
         events.clear();
 
         // verify that no warning is posted if native evaluation is
@@ -2446,7 +2657,7 @@ public class NonEmptyTest extends BatchTestCase {
         // should have gotten no WARN
         nEvents = countFilteredEvents(
             events, org.apache.log4j.Level.WARN, expectedMessage);
-        assertEquals(0, nEvents);
+        assertEquals("logged warning count check", 0, nEvents);
         events.clear();
 
         // no biggie if we don't get here for some reason; just being
@@ -3372,7 +3583,7 @@ public class NonEmptyTest extends BatchTestCase {
      * calculations"</a>.
      */
     public void testBugMondrian412() throws Exception {
-        TestContext ctx = TestContext.instance();
+        TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
             "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
             + "select NON EMPTY {[Measures].[Store Sales], [Measures].[AvgRevenue]} ON COLUMNS, "
@@ -3625,6 +3836,39 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 10589.0\n");
     }
 
+    public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
+        final String query = "SELECT"
+            + " NON EMPTY "
+            + "Crossjoin("
+            + "{"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+            + "},"
+            + "[Store].[Store Name].members"
+            + ") on 0 from hr";
+        checkNative(50, 5, query);
+    }
+
+    public void testNonLeafMembersOfPCDimensionAreNotNativelyEvaluated() {
+        final String query = "SELECT"
+            + " NON EMPTY "
+            + "Crossjoin("
+            + "{"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley],"
+            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+            + "},"
+            + "[Store].[Store Name].members"
+            + ") on 0 from hr";
+        checkNotNative(9, query);
+    }
+
     /**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-321">
      * MONDRIAN-321, "CrossJoin has no nulls when
@@ -3663,7 +3907,7 @@ public class NonEmptyTest extends BatchTestCase {
         String mdx,
         String expectedResult)
     {
-        mdx = TestContext.instance().upgradeQuery(mdx);
+        mdx = getTestContext().upgradeQuery(mdx);
 
         getConnection().getCacheControl(null).flushSchemaCache();
         Connection con = getTestContext().getFoodMartConnection(false);
@@ -3754,7 +3998,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        mdx = TestContext.instance().upgradeQuery(mdx);
+        mdx = getTestContext().upgradeQuery(mdx);
 
         getConnection().getCacheControl(null).flushSchemaCache();
         try {
@@ -3805,27 +4049,25 @@ public class NonEmptyTest extends BatchTestCase {
 
             if (expectedResult != null) {
                 TestContext.assertEqualsVerbose(
-                    TestContext.fold(expectedResult),
+                    expectedResult,
                     nativeResult,
                     false,
                     "Native implementation returned different result than "
                     + "expected; MDX=" + mdx);
                 TestContext.assertEqualsVerbose(
-                    TestContext.fold(expectedResult),
+                    expectedResult,
                     interpretedResult,
                     false,
                     "Interpreter implementation returned different result than "
                     + "expected; MDX=" + mdx);
             }
 
-            if (!nativeResult.equals(interpretedResult)) {
-                TestContext.assertEqualsVerbose(
-                    TestContext.fold(interpretedResult),
-                    nativeResult,
-                    false,
-                    "Native implementation returned different result than "
-                    + "interpreter; MDX=" + mdx);
-            }
+            TestContext.assertEqualsVerbose(
+                interpretedResult,
+                nativeResult,
+                false,
+                "Native implementation actual result different from "
+                    + "interpreter-created expected result; MDX=" + mdx);
         } finally {
             Connection con = getConnection();
             RolapNativeRegistry reg = getRegistry(con);

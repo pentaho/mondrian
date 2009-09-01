@@ -61,6 +61,8 @@ public interface Member extends OlapElement, Comparable {
      */
     MemberType getMemberType();
 
+    boolean isParentChildLeaf();
+
     enum MemberType {
         UNKNOWN,
         REGULAR, // adMemberRegular

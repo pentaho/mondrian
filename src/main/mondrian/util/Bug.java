@@ -133,6 +133,16 @@ public class Bug {
     public static final boolean BugMondrian555Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-584">bug MONDRIAN-584,
+     * "Native evaluation returns enumerated members in the wrong order"</a>
+     * is fixed. A query that includes { Gender.M, Gender.F } should return
+     * results where the Gender.M values are returned before the Gender.F
+     * values.
+     */
+    public static final boolean BugMondrian584Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *

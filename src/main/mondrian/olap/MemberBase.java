@@ -291,6 +291,10 @@ public abstract class MemberBase
     public String getPropertyFormattedValue(String propertyName) {
         return getPropertyValue(propertyName).toString();
     }
+
+    public boolean isParentChildLeaf() {
+        return false;
+    }
 }
 
 // End MemberBase.java

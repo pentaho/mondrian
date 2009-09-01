@@ -1,5 +1,7 @@
 package mondrian.rolap;
 
+import mondrian.rolap.sql.TupleConstraint;
+
 import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -84,6 +86,12 @@ public abstract class TargetBase {
 
     public void add(final RolapMember member) {
         this.getList().add(member);
+    }
+
+    RolapNativeCrossJoin.NonEmptyCrossJoinConstraint
+    castToNonEmptyCJConstraint(TupleConstraint constraint) {
+        return
+            ((RolapNativeCrossJoin.NonEmptyCrossJoinConstraint) constraint);
     }
 }
 // End TargetBase.java

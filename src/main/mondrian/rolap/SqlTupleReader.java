@@ -19,7 +19,6 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.spi.Dialect;
-import mondrian.spi.DialectManager;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -196,9 +195,19 @@ public class SqlTupleReader implements TupleReader {
                     member = cache.getMember(key, checkCacheStatus);
                     checkCacheStatus = false; // only check the first time
                     if (member == null) {
-                        member = memberBuilder.makeMember(
-                            parentMember, childLevel, value, captionValue,
-                            parentChild, resultSet, key, column);
+                        if (constraint instanceof
+                            RolapNativeCrossJoin.NonEmptyCrossJoinConstraint
+                            && childLevel.isParentChild())
+                        {
+                            member =
+                                castToNonEmptyCJConstraint(constraint)
+                                    .findMember(value);
+                        }
+                        if (member == null) {
+                            member = memberBuilder.makeMember(
+                                parentMember, childLevel, value, captionValue,
+                                parentChild, resultSet, key, column);
+                        }
                     }
 
                     // Skip over the columns consumed by makeMember
@@ -945,7 +954,11 @@ public class SqlTupleReader implements TupleReader {
                     hierarchy.addToFrom(sqlQuery, parentExp);
                     String parentSql = parentExp.getExpression(sqlQuery);
                     sqlQuery.addSelectGroupBy(parentSql);
-                    sqlQuery.addOrderBy(parentSql, true, false, true);
+                    if (whichSelect.equals(WhichSelect.LAST)
+                        || whichSelect.equals(WhichSelect.ONLY))
+                    {
+                        sqlQuery.addOrderBy(parentSql, true, false, true);
+                    }
                 }
 
                 String keySql = keyExp.getExpression(sqlQuery);

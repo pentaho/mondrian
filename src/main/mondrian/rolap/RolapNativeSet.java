@@ -22,6 +22,8 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.mdx.*;
 
+import static mondrian.rolap.RolapLevel.HideMemberCondition.*;
+
 import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
@@ -459,7 +461,7 @@ public abstract class RolapNativeSet extends RolapNative {
                         hasAllMember = true;
                     }
 
-                    if (m.isCalculated()) {
+                    if (m.isCalculated() && !m.isParentChildLeaf()) {
                         if (restrictMemberTypes) {
                             return null;
                         }
@@ -487,7 +489,9 @@ public abstract class RolapNativeSet extends RolapNative {
             // level will be null for an empty CJ input that is pushed down
             // to the native evaluator.
             // This case is not treated as a non-native input.
-            if ((level != null) && (!isSimpleLevel(level))) {
+            if ((level != null) && (!isSimpleLevel(level)
+                && !supportedParentChild(level, args)))
+            {
                 return null;
             }
             List<RolapMember> members = new ArrayList<RolapMember>();
@@ -503,6 +507,22 @@ public abstract class RolapNativeSet extends RolapNative {
             return new MemberListCrossJoinArg(
                 level, members, restrictMemberTypes,
                 hasCalcMembers, hasNonCalcMembers, hasAllMember);
+        }
+
+        private static boolean supportedParentChild(
+            RolapLevel level, List<RolapMember> args)
+        {
+            if (level.isParentChild()) {
+                boolean allArgsLeaf = true;
+                for (RolapMember rolapMember : args) {
+                if (!rolapMember.isParentChildLeaf()) {
+                    allArgsLeaf = false;
+                    break;
+                }
+            }
+                return allArgsLeaf;
+            }
+            return false;
         }
 
         public RolapLevel getLevel() {
@@ -756,7 +776,8 @@ public abstract class RolapNativeSet extends RolapNative {
         List<RolapMember> memberList = new ArrayList<RolapMember>();
         for (int i = 0; i < args.length; ++i) {
             if (!(args[i] instanceof MemberExpr)
-                || ((MemberExpr) args[i]).getMember().isCalculated())
+                || (((MemberExpr) args[i]).getMember().isCalculated()
+                && !((MemberExpr) args[i]).getMember().isParentChildLeaf()))
             {
                 // also returns null if any member is calculated
                 return null;
@@ -888,12 +909,11 @@ public abstract class RolapNativeSet extends RolapNative {
      * Ensures that level is not ragged and not a parent/child level.
      */
     protected static boolean isSimpleLevel(RolapLevel level) {
-        RolapHierarchy hier = level.getHierarchy();
-        // does not work with ragged hierarchies
-        if (hier.isRagged()) {
+        // does not work with ragged hierarchies except in the
+        // simplest cases -- see isToRagged.
+        if (isTooRagged(level)) {
             return false;
         }
-        // does not work with parent/child
         if (level.isParentChild()) {
             return false;
         }
@@ -902,6 +922,36 @@ public abstract class RolapNativeSet extends RolapNative {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Determines whether the specified level is too ragged for native
+     * evaluation, which is able to handle one special case of a ragged
+     * hierarchy: when the level specified in the query is the leaf level of
+     * the hierarchy and HideMemberCondition for the level is IfBlankName.
+     * This is true even if higher levels of the hierarchy can be hidden
+     * because even in that case the only column that needs to be read is the
+     * column that holds the leaf. IfParentsName can't be handled even at the
+     * leaf level because in the general case we aren't reading the column
+     * that holds the parent. Also, IfBlankName can't be handled for non-leaf
+     * levels because we would have to read the column for the next level
+     * down for members with blank names.
+     *
+     * @param level A RolapLevel to check the raggedness of.
+     * @return true if the specified level is too ragged for native
+     *         evaluation.
+     */
+    protected static boolean isTooRagged(
+        RolapLevel level)
+    {
+        // Is this the special case of raggedness that native evaluation
+        // is able to handle?
+        if (level.getDepth() == level.getHierarchy().getLevels().length - 1) {
+            return (level.getHideMemberCondition() != Never
+                && level.getHideMemberCondition() != IfBlankName);
+        }
+        // Handle the general case in the traditional way.
+        return level.getHierarchy().isRagged();
     }
 
     /**

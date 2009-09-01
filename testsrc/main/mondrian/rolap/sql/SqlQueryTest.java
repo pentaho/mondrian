@@ -237,6 +237,43 @@ public class SqlQueryTest extends BatchTestCase {
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
 
+    public void testTableNameIsIncludedWithParentChildQuery() {
+        String sql =
+            "select `employee`.`employee_id` as `c0`, "
+            + "`employee`.`full_name` as `c1`, "
+            + "`employee`.`marital_status` as `c2`, "
+            + "`employee`.`position_title` as `c3`, "
+            + "`employee`.`gender` as `c4`, "
+            + "`employee`.`salary` as `c5`, "
+            + "`employee`.`education_level` as `c6`, "
+            + "`employee`.`management_role` as `c7` "
+            + "from `employee` as `employee` "
+            + "where `employee`.`supervisor_id` = 0 "
+            + "group by `employee`.`employee_id`, `employee`.`full_name`, "
+            + "`employee`.`marital_status`, `employee`.`position_title`, "
+            + "`employee`.`gender`, `employee`.`salary`,"
+            + " `employee`.`education_level`, `employee`.`management_role`"
+            + " order by Iif(`employee`.`employee_id` IS NULL, 1, 0),"
+            + " `employee`.`employee_id` ASC";
+
+        final String mdx =
+            "SELECT "
+            + "  GENERATE("
+            + "    {[Employees].[All Employees].[Sheri Nowmer]},"
+            + "{"
+            + "  {([Employees].CURRENTMEMBER)},"
+            + "  HEAD("
+            + "    ADDCALCULATEDMEMBERS([Employees].CURRENTMEMBER.CHILDREN), 51)"
+            + "},"
+            + "ALL"
+            + ") DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0) \n"
+            + "FROM [HR]  CELL PROPERTIES VALUE, FORMAT_STRING";
+        assertQuerySql(
+            mdx
+            , new SqlPattern[]{new SqlPattern(
+            Dialect.DatabaseProduct.ACCESS, sql, sql)});
+    }
+
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             // Sql pattner will be different if using aggregate tables.

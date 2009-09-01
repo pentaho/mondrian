@@ -65,6 +65,23 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             // the slicer.
             super(args, evaluator, false);
         }
+
+        public RolapMember findMember(Object key) {
+            for (CrossJoinArg arg : args) {
+                if (arg instanceof MemberListCrossJoinArg) {
+                    final MemberListCrossJoinArg crossJoinArg =
+                        (MemberListCrossJoinArg) arg;
+                    final List<RolapMember> memberList =
+                        crossJoinArg.getMembers();
+                    for (RolapMember rolapMember : memberList) {
+                        if (key.equals(rolapMember.getKey())) {
+                            return rolapMember;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     protected boolean restrictMemberTypes() {

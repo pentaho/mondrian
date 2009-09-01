@@ -55,6 +55,10 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public boolean isParentChildLeaf() {
+        return false;
+    }
+
     public void setName(String name) {
         throw new UnsupportedOperationException();
     }

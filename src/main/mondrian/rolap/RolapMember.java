@@ -41,6 +41,7 @@ public class RolapMember extends MemberBase {
      * otherwise null.
      */
     private Comparable orderKey;
+    private Boolean isParentChildLeaf;
 
     /**
      * This returns an array of member arrays where the first member
@@ -826,6 +827,15 @@ public class RolapMember extends MemberBase {
         return (val == null)
             ? ""
             : val.toString();
+    }
+
+    public boolean isParentChildLeaf() {
+        if (isParentChildLeaf == null) {
+            isParentChildLeaf = getLevel().isParentChild()
+                && getDimension().getSchema().getSchemaReader()
+                .getMemberChildren(this).size() == 0;
+        }
+        return isParentChildLeaf;
     }
 
     /**

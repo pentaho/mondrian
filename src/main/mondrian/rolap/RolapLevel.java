@@ -139,6 +139,9 @@ public class RolapLevel extends LevelBase {
         } else {
             this.ordinalExp = this.keyExp;
         }
+        if (parentExp instanceof MondrianDef.Column) {
+            checkColumn((MondrianDef.Column) parentExp);
+        }
         this.parentExp = parentExp;
         if (parentExp != null) {
             Util.assertTrue(

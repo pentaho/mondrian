@@ -1162,21 +1162,27 @@ public class TestContext {
     }
 
     /**
-     * Converts a string constant into platform-specific line endings.
+     * Replaces line-endings in a string with the platform-dependent
+     * equivalent. If the input string already has platform-dependent
+     * line endings, no replacements are made.
      *
-     * @param string String where line endings are represented as linefeed "\n"
+     * @param string String whose line endings are to be made platform-
+     *               dependent. Typically these are constant "expected
+     *               value" string expressions where the linefeed is
+     *               represented as linefeed "\n", but sometimes this method
+     *               will receive strings created dynamically where the line
+     *               endings are already appropriate for the platform.
      * @return String where all linefeeds have been converted to
-     * platform-specific (CR+LF on Windows, LF on Unix/Linux)
+     *         platform-specific (CR+LF on Windows, LF on Unix/Linux)
      */
     public static SafeString fold(String string) {
-        if (!nl.equals("\n")) {
-            string = Util.replace(string, "\n", nl);
-        }
         if (string == null) {
             return null;
-        } else {
+        }
+        if (nl.equals("\n") || string.indexOf(nl) != -1) {
             return new SafeString(string);
         }
+        return new SafeString(Util.replace(string, "\n", nl));
     }
 
     /**
