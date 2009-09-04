@@ -20,6 +20,7 @@ import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
+import java.sql.Timestamp;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -436,9 +437,16 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(para, false, -8.56, null);
         assertAssignParameter(para, false, new BigDecimal("12.345"), null);
         assertAssignParameter(para, false, new BigInteger("12345"), null);
+        // Formatted date will depends on time zone. Only match part of message.
         assertAssignParameter(
-            para, false, new Time(12345678),
-            "Invalid value '19:25:45' for parameter 'x', type NUMERIC");
+            para, false, new Date(),
+            "' for parameter 'x', type NUMERIC");
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type NUMERIC");
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()),
+            "' for parameter 'x', type NUMERIC");
         assertAssignParameter(
             para, false, null,
             "Invalid value 'null' for parameter 'x', type NUMERIC");
@@ -456,7 +464,11 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(para, false, -8.56, null);
         assertAssignParameter(para, false, new BigDecimal("12.345"), null);
         assertAssignParameter(para, false, new BigInteger("12345"), null);
-        assertAssignParameter(para, false, new Time(12345678), null);
+        assertAssignParameter(para, false, new Date(), null);
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()), null);
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()), null);
         assertAssignParameter(para, false, null, null);
     }
 
@@ -484,9 +496,14 @@ public class ParameterTest extends FoodMartTestCase {
             "Invalid value '12.345' for parameter 'x',"
             + " type MemberType<hierarchy=[Customers]>");
         assertAssignParameter(
-            para, false, new Time(12345678),
-            "Invalid value '19:25:45' for parameter 'x',"
-            + " type MemberType<hierarchy=[Customers]>");
+            para, false, new Date(),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
 
         // Valid to set to null. It means use the default member of the
         // hierarchy. (Not necessarily the same as the default value of the
@@ -552,8 +569,14 @@ public class ParameterTest extends FoodMartTestCase {
             para, true, new BigDecimal("12.345"),
             "Invalid value '12.345' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
         assertAssignParameter(
-            para, true, new Time(12345678),
-            "Invalid value '19:25:45' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+            para, true, new Date(),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new Time(new Date().getTime()),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
 
         List<Member> list;
         SchemaReader sr =
