@@ -26,6 +26,10 @@ public class DateTimeType extends ScalarType {
     public boolean equals(Object obj) {
         return obj instanceof DateTimeType;
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof java.util.Date;
+    }
 }
 
 // End DateTimeType.java

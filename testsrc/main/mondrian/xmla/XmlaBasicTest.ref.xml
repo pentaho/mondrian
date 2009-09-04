@@ -21356,6 +21356,24 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>Parameter</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Parameter</FUNCTION_NAME>
+                        <DESCRIPTION>Returns default value of parameter.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Hierarchy, Set, String</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Parameter</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Parameter</FUNCTION_NAME>
+                        <DESCRIPTION>Returns default value of parameter.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Hierarchy, Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Parameter</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>ParamRef</FUNCTION_NAME>
                         <DESCRIPTION>Returns the current value of this
                             parameter. If it is null, returns the

@@ -10,13 +10,13 @@
 package mondrian.mdx;
 
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TypeUtil;
+import mondrian.olap.type.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ParameterCompilable;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * MDX expression which is a usage of a {@link mondrian.olap.Parameter}.
@@ -28,6 +28,11 @@ public class ParameterExpr extends ExpBase {
 
     private Parameter parameter;
 
+    /**
+     * Creates a ParameterExpr.
+     *
+     * @param parameter Parameter
+     */
     public ParameterExpr(Parameter parameter)
     {
         this.parameter = parameter;
@@ -111,13 +116,11 @@ public class ParameterExpr extends ExpBase {
                 pw.print(Category.instance.getName(category).toUpperCase());
                 break;
             case Category.Member:
-                String memberName =
-                    type.getLevel() != null
-                    ? type.getLevel().getUniqueName()
-                    : type.getHierarchy() != null
-                    ? type.getHierarchy().getUniqueName()
-                    : type.getDimension().getUniqueName();
-                pw.print(memberName);
+                pw.print(uniqueName(type));
+                break;
+            case Category.Set:
+                Type elementType = ((SetType) type).getElementType();
+                pw.print(uniqueName(elementType));
                 break;
             default:
                 throw Category.instance.badValue(category);
@@ -129,6 +132,18 @@ public class ParameterExpr extends ExpBase {
             } else if (value instanceof String) {
                 String s = (String) value;
                 pw.print(Util.quoteForMdx(s));
+            } else if (value instanceof List) {
+                List list = (List) value;
+                pw.print("{");
+                int i = -1;
+                for (Object o : list) {
+                    ++i;
+                    if (i > 0) {
+                        pw.print(", ");
+                    }
+                    pw.print(o);
+                }
+                pw.print("}");
             } else {
                 pw.print(value);
             }
@@ -139,6 +154,23 @@ public class ParameterExpr extends ExpBase {
             pw.print(")");
         } else {
             pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
+        }
+    }
+
+    /**
+     * Returns the unique name of the level, hierarchy, or dimension of this
+     * type, whichever is most specific.
+     *
+     * @param type Type
+     * @return Most specific description of type
+     */
+    private String uniqueName(Type type) {
+        if (type.getLevel() != null) {
+            return type.getLevel().getUniqueName();
+        } else if (type.getHierarchy() != null) {
+            return type.getHierarchy().getUniqueName();
+        } else {
+            return type.getDimension().getUniqueName();
         }
     }
 
