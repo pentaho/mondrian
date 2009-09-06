@@ -16,8 +16,7 @@ import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
-import mondrian.mdx.DimensionExpr;
-import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.*;
 
 import java.util.*;
 
@@ -193,8 +192,8 @@ public class AbstractExpCompiler implements ExpCompiler {
             // <Member> --> <Member>.Level
             final MemberCalc memberCalc = compileMember(exp);
             return new MemberLevelFunDef.CalcImpl(
-                    new DummyExp(LevelType.forType(type)),
-                    memberCalc);
+                new DummyExp(LevelType.forType(type)),
+                memberCalc);
         }
         assert type instanceof LevelType;
         return (LevelCalc) compile(exp);
@@ -206,7 +205,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
             return new HierarchyDimensionFunDef.CalcImpl(
                 new DummyExp(new DimensionType(type.getDimension())),
-                    hierarchyCalc);
+                hierarchyCalc);
         }
         assert type instanceof DimensionType : type;
         return (DimensionCalc) compile(exp);
@@ -437,7 +436,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             TupleCalc tupleCalc = compileTuple(exp);
             final TupleValueCalc scalarCalc =
                 new TupleValueCalc(
-                    new DummyExp(tupleType.getValueType()), tupleCalc);
+                new DummyExp(tupleType.getValueType()), tupleCalc);
             return scalarCalc.optimize();
         } else if (type instanceof ScalarType) {
             if (specific) {
@@ -482,7 +481,26 @@ public class AbstractExpCompiler implements ExpCompiler {
 
         // Compile the expression only AFTER the parameter has been
         // registered with a slot. Otherwise a cycle is possible.
-        Calc calc = parameter.getDefaultExp().accept(this);
+        final Type type = parameter.getType();
+        Exp defaultExp = parameter.getDefaultExp();
+        Calc calc;
+        if (type instanceof ScalarType) {
+            if (!defaultExp.getType().equals(type)) {
+                defaultExp =
+                    new UnresolvedFunCall(
+                        "Cast",
+                        Syntax.Cast,
+                        new Exp[] {
+                            defaultExp,
+                            Literal.createSymbol(
+                                Category.instance.getName(
+                                    TypeUtil.typeToCategory(type)))});
+                defaultExp = getValidator().validate(defaultExp, true);
+            }
+            calc = compileScalar(defaultExp, true);
+        } else {
+            calc = compileAs(defaultExp, type, resultStyles);
+        }
         slot2.setDefaultValueCalc(calc);
         return slot2;
     }
@@ -614,7 +632,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             throw FunUtil.newEvalException(
                 MondrianResource.instance()
                     .CannotImplicitlyConvertDimensionToHierarchy.ex(
-                        dimension.getName()));
+                    dimension.getName()));
         }
     }
 }

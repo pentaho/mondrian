@@ -31,6 +31,10 @@ public class StringType extends ScalarType {
     public boolean equals(Object obj) {
         return obj instanceof StringType;
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof String;
+    }
 }
 
 // End StringType.java

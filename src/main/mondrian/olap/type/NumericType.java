@@ -36,6 +36,11 @@ public class NumericType extends ScalarType {
         return obj instanceof NumericType
             && toString().equals(obj.toString());
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Number
+            || value instanceof Character;
+    }
 }
 
 // End NumericType.java

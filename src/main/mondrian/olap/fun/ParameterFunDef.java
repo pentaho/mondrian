@@ -15,6 +15,9 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.mdx.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to
  * <code>Parameter</code> and <code>ParamRef</code> functions. It exists only
@@ -150,14 +153,17 @@ public class ParameterFunDef extends FunDefBase {
             // Parameter(string const, symbol, numeric[, string const]): numeric
             "fn#yn#", "fn#yn",
             // Parameter(string const, hierarchy constant, member[, string
-            // const]): member
+            // const[, symbol]]): member
             "fm#hm#", "fm#hm",
+            // Parameter(string const, hierarchy constant, set[, string
+            // const]): set
+            "fx#hx#", "fx#hx",
         };
 
         public ParameterResolver() {
             super(
                 "Parameter",
-                "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
+                "Parameter(<Name>, <Type>, <DefaultValue>, <Description>, <Set>)",
                 "Returns default value of parameter.",
                 SIGNATURES);
         }
@@ -189,7 +195,8 @@ public class ParameterFunDef extends FunDefBase {
                         "Invalid dimension for parameter '"
                         + parameterName + "'");
                 }
-                type = new MemberType(
+                type =
+                    new MemberType(
                         type.getDimension(),
                         type.getHierarchy(),
                         type.getLevel(),
@@ -217,23 +224,34 @@ public class ParameterFunDef extends FunDefBase {
                     "Invalid type for parameter '" + parameterName
                     + "'; expecting NUMERIC, STRING or a hierarchy");
             }
+
+            // Default value
             Exp exp = args[2];
-            if (exp.getCategory() != category) {
-                String typeName =
-                    Category.instance.getName(category).toUpperCase();
+            Validator validator =
+                createSimpleValidator(BuiltinFunTable.instance());
+            final List<Conversion> conversionList = new ArrayList<Conversion>();
+            String typeName = Category.instance.getName(category).toUpperCase();
+            if (!validator.canConvert(exp, category, conversionList)) {
                 throw newEvalException(
                     dummyFunDef,
                     "Default value of parameter '" + parameterName
                     + "' is inconsistent with its type, " + typeName);
             }
+            if (exp.getCategory() == Category.Set
+                && category == Category.Member)
+            {
+                // Default value is a set; take this an indication that
+                // the type is 'set of <member type>'.
+                type = new SetType(type);
+            }
             if (category == Category.Member) {
-                final Type expType = exp.getType();
-                if (type.getDimension() != null
-                    && expType.getDimension() != type.getDimension()
-                    || type.getHierarchy() != null
-                    && expType.getHierarchy() != type.getHierarchy()
-                    || type.getLevel() != null
-                    && expType.getLevel() != type.getLevel())
+                Type expType = exp.getType();
+                if (expType instanceof SetType) {
+                    expType = ((SetType) expType).getElementType();
+                }
+                if (distinctFrom(type.getDimension(), expType.getDimension())
+                    || distinctFrom(type.getHierarchy(), expType.getHierarchy())
+                    || distinctFrom(type.getLevel(), expType.getLevel()))
                 {
                     throw newEvalException(
                         dummyFunDef,
@@ -242,6 +260,7 @@ public class ParameterFunDef extends FunDefBase {
                         + type);
                 }
             }
+
             String parameterDescription = null;
             if (args.length > 3) {
                 if (args[3] instanceof Literal
@@ -258,8 +277,14 @@ public class ParameterFunDef extends FunDefBase {
             }
 
             return new ParameterFunDef(
-                    dummyFunDef, parameterName, type, category,
-                    exp, parameterDescription);
+                dummyFunDef, parameterName, type, category,
+                exp, parameterDescription);
+        }
+
+        private static <T> boolean distinctFrom(T t1, T t2) {
+            return t1 != null
+               && t2 != null
+               && !t1.equals(t2);
         }
     }
 
@@ -269,17 +294,17 @@ public class ParameterFunDef extends FunDefBase {
     public static class ParamRefResolver extends MultiResolver {
         public ParamRefResolver() {
             super(
-                    "ParamRef",
-                    "ParamRef(<Name>)",
-                    "Returns the current value of this parameter. If it is null, returns the default value.",
-                    new String[]{"fv#"});
+                "ParamRef",
+                "ParamRef(<Name>)",
+                "Returns the current value of this parameter. If it is null, returns the default value.",
+                new String[]{"fv#"});
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
             String parameterName = getParameterName(args);
             return new ParameterFunDef(
-                    dummyFunDef, parameterName, null, Category.Unknown, null,
-                    null);
+                dummyFunDef, parameterName, null, Category.Unknown, null,
+                null);
         }
     }
 }

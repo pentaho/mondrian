@@ -9476,7 +9476,7 @@ Intel platforms):
     public void testCastBug524() {
         assertExprReturns(
             "Cast(Int([Measures].[Store Sales] / 3600) as String)",
-            "157.00");
+            "157");
     }
 
     /**

@@ -12,13 +12,13 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.StringType;
-import mondrian.olap.type.MemberType;
+import mondrian.olap.type.*;
 import mondrian.mdx.MemberExpr;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.calc.impl.AbstractMemberListCalc;
+
+import java.util.List;
 
 /**
  * Implementation of {@link Parameter}.
@@ -30,7 +30,6 @@ import mondrian.calc.impl.GenericCalc;
 public class ParameterImpl
     implements Parameter, ParameterCompilable
 {
-
     private final String name;
     private String description;
     private Exp defaultExp;
@@ -159,7 +158,10 @@ public class ParameterImpl
     public void setType(Type type) {
         assert type instanceof StringType
             || type instanceof NumericType
-            || type instanceof MemberType;
+            || type instanceof MemberType
+            || (type instanceof SetType
+                && ((SetType) type).getElementType() instanceof MemberType)
+            : type;
         this.type = type;
     }
 
@@ -175,18 +177,31 @@ public class ParameterImpl
             slot.setParameterValue(this.slot.getParameterValue());
         }
         this.slot = slot;
-        return new ParameterCalc(slot);
+        if (type instanceof SetType) {
+            return new MemberListParameterCalc(slot);
+        } else {
+            return new ParameterCalc(slot);
+        }
     }
 
     /**
-     * Compiled expression which yields the value of a parameter.
-     * It uses a slot which has a unique id within the execution environment.
+     * Compiled expression which yields the value of a scalar, member, level,
+     * hierarchy or dimension parameter.
+     *
+     * <p>It uses a slot which has a unique id within the execution environment.
+     *
+     * @see MemberListParameterCalc
      */
     private static class ParameterCalc
         extends GenericCalc
     {
         private final ParameterSlot slot;
 
+        /**
+         * Creates a ParameterCalc.
+         *
+         * @param slot Slot
+         */
         public ParameterCalc(ParameterSlot slot) {
             super(new DummyExp(slot.getParameter().getType()), new Calc[0]);
             this.slot = slot;
@@ -201,7 +216,40 @@ public class ParameterImpl
             return value;
         }
     }
+
+    /**
+     * Compiled expression which yields the value of parameter whose type is
+     * a list of members.
+     *
+     * <p>It uses a slot which has a unique id within the execution environment.
+     *
+     * @see ParameterCalc
+     */
+    private static class MemberListParameterCalc
+        extends AbstractMemberListCalc
+    {
+        private final ParameterSlot slot;
+
+        /**
+         * Creates a MemberListParameterCalc.
+         *
+         * @param slot Slot
+         */
+        public MemberListParameterCalc(ParameterSlot slot) {
+            super(new DummyExp(slot.getParameter().getType()), new Calc[0]);
+            this.slot = slot;
+        }
+
+        public List<Member> evaluateMemberList(Evaluator evaluator) {
+            List<Member> value =
+                (List<Member>) evaluator.getParameterValue(slot);
+            if (slot.getParameterValue() == null) {
+                // save value if not set (setting the default value)
+                slot.setParameterValue(value);
+            }
+            return value;
+        }
+    }
 }
 
 // End ParameterImpl.java
-

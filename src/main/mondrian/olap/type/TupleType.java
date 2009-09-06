@@ -124,6 +124,22 @@ public class TupleType implements Type {
         return commonTupleType(type, conversionCount);
     }
 
+    public boolean isInstance(Object value) {
+        if (!(value instanceof Object[])) {
+            return false;
+        }
+        Object[] objects = (Object[]) value;
+        if (objects.length != elementTypes.length) {
+            return false;
+        }
+        for (int i = 0; i < objects.length; i++) {
+            if (!elementTypes[i].isInstance(objects[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private Type commonTupleType(Type type, int[] conversionCount) {
         TupleType that = (TupleType) type;
 

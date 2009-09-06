@@ -107,6 +107,11 @@ public class ScalarType implements Type {
     public Dimension getDimension() {
         return null;
     }
+
+    public boolean isInstance(Object value) {
+        // Somewhat pessimistic.
+        return false;
+    }
 }
 
 // End ScalarType.java

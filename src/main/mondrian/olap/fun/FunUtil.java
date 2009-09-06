@@ -1076,6 +1076,26 @@ public class FunUtil extends Util {
     }
 
     /**
+     * Converts a double (primitive) value to a Double. {@link #DoubleNull}
+     * becomes null.
+     */
+    public static Double box(double d) {
+        return d == DoubleNull
+            ? null
+            : d;
+    }
+
+    /**
+     * Converts an int (primitive) value to an Integer. {@link #IntegerNull}
+     * becomes null.
+     */
+    public static Integer box(int n) {
+        return n == IntegerNull
+            ? null
+            : n;
+    }
+
+    /**
      * Sorts an array of values.
      */
     public static void sortValuesDesc(Object[] values) {
@@ -1307,8 +1327,8 @@ public class FunUtil extends Util {
         double avg2 = _avg(sw2);
         double covar = 0.0;
         for (int i = 0; i < sw1.v.size(); i++) {
-            //all of this casting seems inefficient - can we make SetWrapper
-            //contain an array of double instead?
+            // all of this casting seems inefficient - can we make SetWrapper
+            // contain an array of double instead?
             double diff1 = (((Double) sw1.v.get(i)).doubleValue() - avg1);
             double diff2 = (((Double) sw2.v.get(i)).doubleValue() - avg2);
             covar += (diff1 * diff2);

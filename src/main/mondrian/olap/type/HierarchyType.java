@@ -115,6 +115,14 @@ public class HierarchyType implements Type {
         }
         return HierarchyType.Unknown;
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Hierarchy
+            && (hierarchy == null
+                || value.equals(hierarchy))
+            && (dimension == null
+                || ((Hierarchy) value).getDimension().equals(dimension));
+    }
 }
 
 // End HierarchyType.java

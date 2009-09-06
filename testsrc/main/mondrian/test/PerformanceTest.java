@@ -9,7 +9,9 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Result;
+import mondrian.olap.*;
+
+import java.util.*;
 
 /**
  * Various unit tests concerned with performance.
@@ -19,6 +21,8 @@ import mondrian.olap.Result;
  * @version $Id$
  */
 public class PerformanceTest extends FoodMartTestCase {
+    // Set this to false for checked in code.
+    private static final boolean DEBUG = false;
 
     public PerformanceTest(String name) {
         super(name);
@@ -80,6 +84,92 @@ public class PerformanceTest extends FoodMartTestCase {
             + "      </Dimension>\n",
             "      <CalculatedMember dimension=\"Measures\" name=\"EXP2_4\" formula=\"IIf([ACC].CurrentMember.Level.Ordinal = [ACC].[All].Ordinal, Sum([ACC].[All].Children, [Measures].[Unit Sales]),     [Measures].[Unit Sales])\"/>\n"
             + "      <CalculatedMember dimension=\"Measures\" name=\"EXP2\" formula=\"IIf(0 &#60; [Measures].[EXP2_4], [Measures].[EXP2_4], NULL)\"/>\n");
+    }
+
+    /**
+     * Tests performance when an MDX query contains a very large explicit set.
+     */
+    public void testVeryLargeExplicitSet() {
+        // All numbers in the following are on mackerel (a Dell D630 laptop
+        // running Vista and JDK 1.6 against Access).
+        Result result;
+        final TestContext testContext = getTestContext();
+        long t0 = System.currentTimeMillis();
+        final Axis axis = testContext.executeAxis("Customers.Members");
+        printDuration("Execute axis", t0); // 5s on mackerel
+        final List<Position> positionList = axis.getPositions();
+        assertEquals(10407, positionList.size());
+
+        // Take customers 0-2000 and 5000-7000. Using contiguous bursts,
+        // Mondrian has a chance to optimize how it reads cells from the
+        // database.
+        List<Member> memberList = new ArrayList<Member>();
+        for (int i = 0; i < positionList.size(); i++) {
+            Position position = positionList.get(i);
+            ++i;
+            if (i < 2000 || i >= 5000 && i < 7000) {
+                memberList.add(position.get(0));
+            }
+        }
+
+        // Build a query with an explcit member list.
+        if (DEBUG) {
+            StringBuilder buf = new StringBuilder();
+            for (Member member : memberList) {
+                if (buf.length() > 0) {
+                    buf.append(", ");
+                }
+                buf.append(member);
+            }
+            final String mdx =
+                "WITH SET [Selected Customers] AS {" + buf + "}\n"
+                + "SELECT {[Measures].[Unit Sales],\n"
+                + "        [Measures].[Store Sales]} on 0,\n"
+                + "  [Selected Customers] on 1\n"
+                + "FROM [Sales]";
+            t0 = System.currentTimeMillis();
+            result = testContext.executeQuery(mdx);
+            printDuration("First execute", t0); // 75s on mackerel
+            assertEquals(
+                memberList.size(),
+                result.getAxes()[1].getPositions().size());
+
+            t0 = System.currentTimeMillis();
+            result = testContext.executeQuery(mdx);
+            printDuration("Second execute", t0); // 65s on mackerel
+            assertEquals(
+                memberList.size(),
+                result.getAxes()[1].getPositions().size());
+        }
+
+        // Much more efficient technique. Use a parameter, and bind to array.
+        // Cuts out a lot of parsing, so takes 2.4s as opposed to 65s.
+        Query query =
+            testContext.getConnection().parseQuery(
+                "WITH SET [Selected Customers]\n"
+                + "  AS Parameter('Foo', [Customers], {}, 'Description')\n"
+                + "SELECT {[Measures].[Unit Sales],\n"
+                + "        [Measures].[Store Sales]} on 0,\n"
+                + "  [Selected Customers] on 1\n"
+                + "FROM [Sales]");
+        query.setParameter("Foo", memberList);
+        t0 = System.currentTimeMillis();
+        result = testContext.getConnection().execute(query);
+        printDuration("Param query, 1st execute", t0); // 2424ms on mackerel
+        t0 = System.currentTimeMillis();
+        result = testContext.getConnection().execute(query);
+        printDuration("Param query, 2nd execute", t0); // 51ms on mackerel
+        assertEquals(
+            memberList.size(),
+            result.getAxes()[1].getPositions().size());
+    }
+
+    private void printDuration(String desc, long t0) {
+        final long t1 = System.currentTimeMillis();
+        final long duration = t1 - t0;
+        if (DEBUG) {
+            System.out.println(desc + " took " + duration + " millis");
+        }
     }
 }
 

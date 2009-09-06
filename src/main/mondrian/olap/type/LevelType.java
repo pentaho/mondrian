@@ -9,10 +9,7 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Level;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 /**
  * The type of an expression which represents a level.
@@ -150,6 +147,16 @@ public class LevelType implements Type {
                 null);
         }
         return LevelType.Unknown;
+    }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Level
+            && (level == null
+                || value.equals(level))
+            && (hierarchy == null
+                || ((Level) value).getHierarchy().equals(hierarchy))
+            && (dimension == null
+                || ((Level) value).getDimension().equals(dimension));
     }
 }
 

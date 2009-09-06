@@ -16,7 +16,11 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import org.eigenbase.util.property.Property;
 
-import java.util.Set;
+import java.util.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -131,8 +135,7 @@ public class ParameterTest extends FoodMartTestCase {
     public void testNumericParameterStringValueFails() {
         assertExprThrows(
             "Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",
-            "Default value of parameter 'S' is inconsistent with its type, "
-            + "NUMERIC");
+            "java.lang.NumberFormatException: For input string: \"xy\"");
     }
 
     public void testParameterDimension() {
@@ -193,16 +196,49 @@ public class ParameterTest extends FoodMartTestCase {
             "Invalid type for parameter 'Foo'; expecting NUMERIC, STRING or a hierarchy");
     }
 
+    /**
+     * Tests that member parameter fails validation if the level name is
+     * invalid.
+     */
+    public void testParameterMemberFailsBadLevel() {
+        assertExprThrows(
+            "Parameter(\"Foo\", [Customers].[State], [Customers].[USA].[CA], \"\")",
+            "MDX object '[Customers].[State]' not found in cube 'Sales'");
+        assertExprReturns(
+            "Parameter(\"Foo\", [Customers].[State Province], [Customers].[USA].[CA], \"\")",
+            "74,748");
+    }
+
+    /**
+     * Tests that a dimension name can be used as the default value of a
+     * member-valued parameter. It is interpreted to mean the default value of
+     * that dimension.
+     */
+    public void testParameterMemberDefaultValue() {
+        // "[Time]" is shorthand for "[Time].CurrentMember"
+        assertExprReturns(
+            "Parameter(\"Foo\", [Time], [Time].[Time], \"Description\").UniqueName",
+            "[Time].[1997]");
+
+        assertExprReturns(
+            "Parameter(\"Foo\", [Time], [Time].[Time].Children.Item(2), \"Description\").UniqueName",
+            "[Time].[1997].[Q3]");
+    }
+
     public void testParameterWithExpressionForHierarchyFails() {
         assertExprThrows(
             "Parameter(\"Foo\",[Gender].DefaultMember.Hierarchy,[Gender].[M],\"Foo\")",
             "Invalid parameter 'Foo'. Type must be a NUMERIC, STRING, or a dimension, hierarchy or level");
     }
 
-    public void _testDerivedParameterFails() {
-        assertExprThrows(
-            "Parameter(\"X\",NUMERIC,Parameter(\"Y\",NUMERIC,1)+2)",
-            "Parameter may not be derived from another parameter");
+    /**
+     * Tests a parameter derived from another parameter. OK as long as it is
+     * not cyclic.
+     */
+    public void testDerivedParameter() {
+        assertExprReturns(
+            "Parameter(\"X\", NUMERIC, Parameter(\"Y\", NUMERIC, 1) + 2)",
+            "3");
     }
 
     public void testParameterInSlicer() {
@@ -389,16 +425,314 @@ public class ParameterTest extends FoodMartTestCase {
             resultString);
     }
 
-    public void testFoo() {
+    /**
+     * Positive and negative tests assigning values to a parameter of type
+     * NUMERIC.
+     */
+    public void testAssignNumericParameter() {
+        final String para = "Parameter(\"x\", NUMERIC, 1)";
+        assertAssignParameter(para, false, "8", null);
+        assertAssignParameter(para, false, "8.24", null);
+        assertAssignParameter(para, false, 8, null);
+        assertAssignParameter(para, false, -8.56, null);
+        assertAssignParameter(para, false, new BigDecimal("12.345"), null);
+        assertAssignParameter(para, false, new BigInteger("12345"), null);
+        // Formatted date will depends on time zone. Only match part of message.
+        assertAssignParameter(
+            para, false, new Date(),
+            "' for parameter 'x', type NUMERIC");
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type NUMERIC");
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()),
+            "' for parameter 'x', type NUMERIC");
+        assertAssignParameter(
+            para, false, null,
+            "Invalid value 'null' for parameter 'x', type NUMERIC");
+    }
+
+    /**
+     * Positive and negative tests assigning values to a parameter of type
+     * STRING.
+     */
+    public void testAssignStringParameter() {
+        final String para = "Parameter(\"x\", STRING, 'xxx')";
+        assertAssignParameter(para, false, "8", null);
+        assertAssignParameter(para, false, "8.24", null);
+        assertAssignParameter(para, false, 8, null);
+        assertAssignParameter(para, false, -8.56, null);
+        assertAssignParameter(para, false, new BigDecimal("12.345"), null);
+        assertAssignParameter(para, false, new BigInteger("12345"), null);
+        assertAssignParameter(para, false, new Date(), null);
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()), null);
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()), null);
+        assertAssignParameter(para, false, null, null);
+    }
+
+    /**
+     * Positive and negative tests assigning values to a parameter whose type is
+     * a member.
+     */
+    public void testAssignMemberParameter() {
+        final String para = "Parameter(\"x\", [Customers], [Customers].[USA])";
+        assertAssignParameter(
+            para, false, "8", "MDX object '[8]' not found in cube 'Sales'");
+        assertAssignParameter(
+            para, false, "8.24",
+            "MDX object '[8.24]' not found in cube 'Sales'");
+        assertAssignParameter(
+            para, false, 8,
+            "Invalid value '8' for parameter 'x',"
+            + " type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, -8.56,
+            "Invalid value '-8.56' for parameter 'x',"
+            + " type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new BigDecimal("12.345"),
+            "Invalid value '12.345' for parameter 'x',"
+            + " type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new Date(),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, false, new Time(new Date().getTime()),
+            "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+
+        // Valid to set to null. It means use the default member of the
+        // hierarchy. (Not necessarily the same as the default value of the
+        // parameter. There's no way to get back to the default value of a
+        // parameter once you've set it -- even by setting it to null.)
+        assertAssignParameter(para, false, null, null);
+
+        SchemaReader sr =
+            TestContext.instance().getConnection()
+                .parseQuery("select from [Sales]").getSchemaReader(true);
+
+        // Member of wrong hierarchy.
+        assertAssignParameter(
+            para, false, sr.getMemberByUniqueName(
+                Id.Segment.toList("Time", "1997", "Q2", "5"), true),
+            "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
+            + "type MemberType<hierarchy=[Customers]>");
+
+        // Member of right hierarchy.
+        assertAssignParameter(
+            para, false, sr.getMemberByUniqueName(
+                Id.Segment.toList("Customers", "All Customers"), true),
+            null);
+
+        // Member of wrong level of right hierarchy.
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], [Customers].[USA].[CA])",
+            false,
+            sr.getMemberByUniqueName(
+                Id.Segment.toList("Customers", "USA"), true),
+            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
+        // Member of right level.
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], [Customers].[USA].[CA])",
+            false,
+            sr.getMemberByUniqueName(
+                Id.Segment.toList("Customers", "USA", "OR"), true),
+            null);
+    }
+
+    /**
+     * Positive and negative tests assigning values to a parameter whose type is
+     * a set of members.
+     */
+    public void testAssignSetParameter() {
+        final String para =
+            "Parameter(\"x\", [Customers], {[Customers].[USA], [Customers].[USA].[CA]})";
+        assertAssignParameter(
+            para, true, "8",
+            "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, "foobar",
+            "Invalid value 'foobar' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, 8,
+            "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, -8.56,
+            "Invalid value '-8.56' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new BigDecimal("12.345"),
+            "Invalid value '12.345' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new Date(),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new Timestamp(new Date().getTime()),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+        assertAssignParameter(
+            para, true, new Time(new Date().getTime()),
+            "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+
+        List<Member> list;
+        SchemaReader sr =
+            TestContext.instance().getConnection()
+                .parseQuery("select from [Sales]").getSchemaReader(true);
+
+        // Empty list is OK.
+        list = Collections.emptyList();
+        assertAssignParameter(para, true, list, null);
+
+        // Not valid to set list to null.
+        assertAssignParameter(
+            para, true, null,
+            "Invalid value 'null' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>>");
+
+        // List that contains one member of wrong hierarchy.
+        list =
+            Arrays.asList(
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "Mexico"), true),
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Time", "1997", "Q2", "5"), true));
+        assertAssignParameter(
+            para, true, list,
+            "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
+            + "type MemberType<hierarchy=[Customers]>");
+
+        // List that contains members of correct hierarchy.
+        list =
+            Arrays.asList(
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "Mexico"), true),
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "Canada"), true));
+        assertAssignParameter(para, true, list, null);
+
+        // List that contains member of wrong level of right hierarchy.
+        list =
+            Arrays.asList(
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "USA"), true));
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
+            true,
+            list,
+            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
+        // List that contains members of right level, and a null member.
+        list =
+            Arrays.asList(
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "USA", "CA"), true),
+                null,
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "USA", "OR"), true));
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
+            true,
+            list,
+            null);
+    }
+
+    /**
+     * Checks that assigning a given value to a parameter does (or, if
+     * {@code expectedMsg} is null, does not) give an error.
+     *
+     * @param parameterMdx MDX expression declaring parameter
+     * @param set Whether parameter is a set (as opposed to a member or scalar)
+     * @param value Value to assign to parameter
+     * @param expectedMsg Expected message, or null if it should succeed
+     */
+    private void assertAssignParameter(
+        String parameterMdx,
+        boolean set,
+        Object value,
+        String expectedMsg)
+    {
+        Connection connection = getTestContext().getConnection();
+        try {
+            String mdx = set
+                ? "with set [Foo] as "
+                  + parameterMdx
+                  + " \n"
+                  + "select [Foo] on columns,\n"
+                  + "{Time.Time.Children} on rows\n"
+                  + "from [Sales]"
+                : "with member [Measures].[s] as "
+                  + parameterMdx
+                  + " \n"
+                  + "select {[Measures].[s]} on columns,\n"
+                  + "{Time.Time.Children} on rows\n"
+                  + "from [Sales]";
+            Query query = connection.parseQuery(mdx);
+            if (expectedMsg == null) {
+                query.setParameter("x", value);
+                final Result result = connection.execute(query);
+                assertNotNull(result);
+            } else {
+                try {
+                    query.setParameter("x", value);
+                    final Result result = connection.execute(query);
+                    fail("expected error, got " + TestContext.toString(result));
+                } catch (Exception e) {
+                    TestContext.checkThrowable(e, expectedMsg);
+                }
+            }
+        } finally {
+            connection.close();
+        }
+    }
+
+    /**
+     * Tests a parameter whose type is a set of members.
+     */
+    public void testParamSet() {
         Connection connection = getTestContext().getConnection();
         try {
             String mdx =
-                "with member [Measures].[s] as Parameter(\"x\", NUMERIC, 1) "
-                + "select {[Measures].[s]} on columns, "
-                + "{Time.Time.Children} on rows "
+                "select [Measures].[Unit Sales] on 0,\n"
+                + " Parameter(\"Foo\", [Time], {}, \"Foo\") on 1\n"
                 + "from [Sales]";
             Query query = connection.parseQuery(mdx);
-            query.setParameter("x", "8");
+            SchemaReader sr = query.getSchemaReader(false);
+            Member m1 =
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Time", "1997", "Q2", "5"), true);
+            Member m2 =
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Time", "1997", "Q3"), true);
+            Parameter p = sr.getParameter("Foo");
+            final List<Member> list = Arrays.asList(m1, m2);
+            p.setValue(list);
+            assertEquals(list, p.getValue());
+            query.resolve();
+            p.setValue(list);
+            assertEquals(list, p.getValue());
+            mdx = query.toString();
+            TestContext.assertEqualsVerbose(
+                "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + "  Parameter(\"Foo\", [Time], {[Time].[1997].[Q2].[5], [Time].[1997].[Q3]}, \"Foo\") ON ROWS\n"
+                + "from [Sales]\n",
+                mdx);
+
+            final Result result = connection.execute(query);
+            TestContext.assertEqualsVerbose(
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997].[Q2].[5]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "Row #0: 21,081\n"
+                + "Row #1: 65,848\n",
+                TestContext.toString(result));
         } finally {
             connection.close();
         }
@@ -571,7 +905,7 @@ public class ParameterTest extends FoodMartTestCase {
             + "from [Warehouse]",
             "MDX object '[Customers]' not found in cube 'Warehouse'");
     }
-
 }
 
 // End ParameterTest.java
+

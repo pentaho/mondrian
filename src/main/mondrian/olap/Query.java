@@ -774,7 +774,7 @@ public class Query extends QueryPart {
      *
      * @throws RuntimeException if there is not parameter with the given name
      */
-    public void setParameter(String parameterName, String value) {
+    public void setParameter(String parameterName, Object value) {
         // Need to resolve query before we set parameters, in order to create
         // slots to store them in. (This code will go away when parameters
         // belong to prepared statements.)
@@ -791,21 +791,110 @@ public class Query extends QueryPart {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
                 parameterName, param.getScope().name());
         }
-        final Exp exp = quickParse(
-            TypeUtil.typeToCategory(param.getType()), value, this);
-        param.setValue(exp);
+        final Object value2 =
+            quickParse(
+                parameterName, param.getType(), value, this);
+        param.setValue(value2);
     }
 
-    private static Exp quickParse(int category, String value, Query query) {
+    /**
+     * Converts a value into something appropriate for a given type.
+     *
+     * <p>Viz:
+     * <ul>
+     * <li>For numerics, takes number or string and returns a {@link Number}.
+     * <li>For strings, takes string, or calls {@link Object#toString()} on any
+     *     other type
+     * <li>For members, takes member or string
+     * <li>For sets of members, requires a list of members or strings and
+     *     converts each element to a member.
+     * </ul>
+     *
+     * @param type Type
+     * @param value Value
+     * @param query Query
+     * @return Value of appropriate type
+     * @throws NumberFormatException If value needs to be a number but isn't
+     */
+    private static Object quickParse(
+        String parameterName,
+        Type type,
+        Object value,
+        Query query)
+        throws NumberFormatException
+    {
+        int category = TypeUtil.typeToCategory(type);
         switch (category) {
         case Category.Numeric:
-            return Literal.create(new Double(value));
+            if (value instanceof Number) {
+                return (Number) value;
+            }
+            if (value instanceof String) {
+                String s = (String) value;
+                try {
+                    return new Integer(s);
+                } catch (NumberFormatException e) {
+                    return new Double(s);
+                }
+            }
+            throw Util.newInternal(
+                "Invalid value '" + value + "' for parameter '" + parameterName
+                + "', type " + type);
         case Category.String:
-            return Literal.createString(value);
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
+        case Category.Set:
+            if (!(value instanceof List)) {
+                throw Util.newInternal(
+                    "Invalid value '" + value + "' for parameter '"
+                    + parameterName + "', type " + type);
+            }
+            List<Member> expList = new ArrayList<Member>();
+            final List list = (List) value;
+            final SetType setType = (SetType) type;
+            final Type elementType = setType.getElementType();
+            for (Object o : list) {
+                // In keeping with MDX semantics, null members are omitted from
+                // lists.
+                if (o == null) {
+                    continue;
+                }
+                final Member member =
+                    (Member) quickParse(parameterName, elementType, o, query);
+                expList.add(member);
+            }
+            return expList;
         case Category.Member:
-            Member member =
-                (Member) Util.lookup(query, Util.parseIdentifier(value));
-            return new MemberExpr(member);
+            if (value == null) {
+                // Setting a member parameter to null is the same as setting to
+                // the default member of the hierarchy. May not be equivalent to
+                // the default value of the parameter.
+                if (type.getHierarchy() != null) {
+                    value = type.getHierarchy().getDefaultMember();
+                } else if (type.getDimension() != null) {
+                    value =
+                        type.getDimension().getHierarchy().getDefaultMember();
+                }
+            }
+            if (value instanceof Member) {
+                if (type.isInstance(value)) {
+                    return (Member) value;
+                }
+            }
+            if (value instanceof String) {
+                String memberName = (String) value;
+                final OlapElement olapElement =
+                    Util.lookup(
+                        query, Util.parseIdentifier(memberName));
+                if (olapElement instanceof Member) {
+                    return (Member) olapElement;
+                }
+            }
+            throw Util.newInternal(
+                "Invalid value '" + value + "' for parameter '"
+                + parameterName + "', type " + type);
         default:
             throw Category.instance.badValue(category);
         }

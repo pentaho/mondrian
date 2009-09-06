@@ -211,6 +211,16 @@ public class MemberType implements Type {
         }
         return MemberType.Unknown;
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Member
+            && (level == null
+            || ((Member) value).getLevel().equals(level))
+            && (hierarchy == null
+            || ((Member) value).getHierarchy().equals(hierarchy))
+            && (dimension == null
+            || ((Member) value).getDimension().equals(dimension));
+    }
 }
 
 // End MemberType.java

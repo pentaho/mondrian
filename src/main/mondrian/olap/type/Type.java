@@ -147,6 +147,14 @@ public interface Type {
      * @return More general type
      */
     Type computeCommonType(Type type, int[] conversionCount);
+
+    /**
+     * Returns whether a value is valid for a type.
+     *
+     * @param value Value
+     * @return Whether value is valid for this type
+     */
+    boolean isInstance(Object value);
 }
 
 // End Type.java

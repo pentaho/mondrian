@@ -113,6 +113,12 @@ public class DimensionType implements Type {
         }
         return DimensionType.Unknown;
     }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Dimension
+            && (dimension == null
+                || value.equals(dimension));
+    }
 }
 
 // End DimensionType.java

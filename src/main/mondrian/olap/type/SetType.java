@@ -11,6 +11,8 @@ package mondrian.olap.type;
 
 import mondrian.olap.*;
 
+import java.util.List;
+
 /**
  * Set type.
  *
@@ -120,6 +122,19 @@ public class SetType implements Type {
             return null;
         }
         return new SetType(mostGeneralElementType);
+    }
+
+    public boolean isInstance(Object value) {
+        if (!(value instanceof List)) {
+            return false;
+        }
+        List list = (List) value;
+        for (Object o : list) {
+            if (!elementType.isInstance(o)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

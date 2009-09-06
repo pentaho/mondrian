@@ -31,6 +31,11 @@ public class CubeType implements Type {
         this.cube = cube;
     }
 
+    /**
+     * Returns the cube.
+     *
+     * @return Cube
+     */
     public Cube getCube() {
         return cube;
     }
@@ -72,6 +77,10 @@ public class CubeType implements Type {
         return this.equals(type)
             ? this
             : null;
+    }
+
+    public boolean isInstance(Object value) {
+        return value instanceof Cube;
     }
 }
 
