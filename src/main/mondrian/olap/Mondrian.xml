@@ -1111,6 +1111,7 @@ Revision is $Id$
                 <li>ingres</li>
                 <li>infobright</li>
                 <li>luciddb</li>
+                <li>vertica</li>
                 </ul>
             </Doc>
         </Attribute>

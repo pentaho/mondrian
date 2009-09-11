@@ -736,7 +736,8 @@ public interface Dialect {
         MYSQL,
         SQLSTREAM,
         SYBASE,
-        TERADATA;
+        TERADATA,
+        VERTICA;
 
         /**
          * Return the root of the family of products this database product
