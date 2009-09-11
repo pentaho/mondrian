@@ -861,6 +861,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.TERADATA;
         } else if (productName.toUpperCase().indexOf("HSQL") >= 0) {
             return DatabaseProduct.HSQLDB;
+        } else if (productName.toUpperCase().indexOf("VERTICA") >= 0) {
+            return DatabaseProduct.VERTICA;
         } else {
             return DatabaseProduct.UNKNOWN;
         }
