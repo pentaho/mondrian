@@ -64,12 +64,12 @@ CP="${CP}${PS}${HOME}/.schemaWorkbench"
 # in the java command below to adjust workbench logging
 
 # add all needed JDBC drivers to the classpath
-for i in `ls drivers/*.jar 2> /dev/null`; do
+for i in `ls ${MONDRIAN_HOME}/drivers/*.jar 2> /dev/null`; do
     CP="${CP}${PS}${i}"
 done
 
 # add all needed plugins to the classpath
-for i in `ls plugins/*.jar 2> /dev/null`; do
+for i in `ls ${MONDRIAN_HOME}/plugins/*.jar 2> /dev/null`; do
     CP="${CP}${PS}${i}"
 done
 
