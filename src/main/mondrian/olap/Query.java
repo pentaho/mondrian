@@ -322,6 +322,13 @@ public class Query extends QueryPart {
         return new QueryValidator(functionTable, alwaysResolveFunDef);
     }
 
+    /**
+     *@Deprecated this method has been deprecated, please use clone instead.
+     */
+    public Query safeClone() {
+        return (Query) clone();
+    }
+
     @SuppressWarnings({
         "CloneDoesntCallSuperClone",
         "CloneDoesntDeclareCloneNotSupportedException"
