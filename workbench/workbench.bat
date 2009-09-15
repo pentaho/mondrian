@@ -49,6 +49,9 @@ rem add all needed plugin jars to the classpath
 
 for %%i in ("plugins\*.jar") do call cpappend %%i
 
-java -Xms100m -Xmx500m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
+set PENTAHO_JAVA=java
+call "%~dp0set-pentaho-java.bat"
+
+"%_PENTAHO_JAVA%" -Xms100m -Xmx500m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
 
 rem End workbench.bat
