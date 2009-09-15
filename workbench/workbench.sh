@@ -7,14 +7,14 @@
 # first look in directory of the script for lib, then 
 # look up one folder if lib does not exist
 
-MONDRIAN_HOME=$(cd $(dirname $0); pwd)
-if test ! -d $MONDRIAN_HOME/lib; then
-  MONDRIAN_HOME=$(cd $(dirname $0)/..; pwd)
+MONDRIAN_HOME=`cd \`dirname $0\`; pwd`
+if test ! -d "$MONDRIAN_HOME/lib"; then
+  MONDRIAN_HOME="`cd \`dirname $0\`/..; pwd`"
 fi
-case $(uname) in
+case `uname` in
 Windows_NT|CYGWIN*)
     export PS=";"
-    export MONDRIAN_HOME=$(cygpath -m $MONDRIAN_HOME)
+    export MONDRIAN_HOME=`cygpath -m $MONDRIAN_HOME`
     ;;
 *)
     export PS=":"
@@ -78,6 +78,9 @@ done
 JAVA_FLAGS="-Xms100m -Xmx500m"
 #JAVA_FLAGS="-verbose $JAVA_FLAGS"
 
-exec java $JAVA_FLAGS -cp "$CP" mondrian.gui.Workbench
+. "$MONDRIAN_HOME/set-pentaho-java.sh"
+setPentahoJava
+
+exec "$_PENTAHO_JAVA" $JAVA_FLAGS -cp "$CP" mondrian.gui.Workbench
 
 # End workbench.sh
