@@ -1,10 +1,10 @@
-Mondrian 3.1.4.13046 production release notes
+Mondrian 3.1.4.13047 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1.4.13046 is a minor release version of the leading
+Mondrian 3.1.4.13047 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -75,7 +75,7 @@ API changes from 3.0 to 3.1
 See CHANGES.txt for a list of all source code changes
 since the previous release.
 
-Bugs and feature requests fixed since mondrian 3.1.4-13046
+Bugs and feature requests fixed since mondrian 3.1.4-13047
 ----------------------------------------------------------
 MONDRIAN-621 - JPivot sort throws java.lang.NoSuchMethodError: 
 		mondrian.olap.Query.safeClone()Lmondrian/olap/Query
