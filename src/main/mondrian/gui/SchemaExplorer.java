@@ -3467,25 +3467,34 @@ public class SchemaExplorer
                 parentIndex--)
             {
                 final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.CalculatedMember) {
+                if (p instanceof MondrianGuiDef.CalculatedMember
+                    || p instanceof MondrianGuiDef.Measure)
+                {
                     path = p;
                     break;
                 }
             }
         }
-
-        if (!(path instanceof MondrianGuiDef.CalculatedMember)) {
+        if (path instanceof MondrianGuiDef.CalculatedMember) {
+            addCalcMemberPropToCalcMember(
+                (MondrianGuiDef.CalculatedMember)path, parentIndex, tpath);
+        } else if (path instanceof MondrianGuiDef.Measure) {
+            addCalcMemberPropToMeasure(
+                (MondrianGuiDef.Measure)path, parentIndex, tpath);
+        } else {
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.calculatedMemberNotSelected.alert",
-                    "Calculated Member not selected."),
+                    "Calculated Member or Measure not selected."),
                     alert, JOptionPane.WARNING_MESSAGE);
-            return;
         }
+    }
 
-        MondrianGuiDef.CalculatedMember calcMember =
-            (MondrianGuiDef.CalculatedMember) path;
-
+    protected void addCalcMemberPropToCalcMember(
+            MondrianGuiDef.CalculatedMember calcMember,
+            int parentIndex,
+            TreePath tpath)
+    {
         MondrianGuiDef.CalculatedMemberProperty property =
             new MondrianGuiDef.CalculatedMemberProperty();
         property.name = "";
@@ -3509,6 +3518,48 @@ public class SchemaExplorer
         }
 
         calcMember.memberProperties[calcMember.memberProperties.length - 1] =
+            property;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(property));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void addCalcMemberPropToMeasure(
+            MondrianGuiDef.Measure measure,
+            int parentIndex,
+            TreePath tpath)
+    {
+
+        MondrianGuiDef.CalculatedMemberProperty property =
+            new MondrianGuiDef.CalculatedMemberProperty();
+        property.name = "";
+
+        if (measure.memberProperties == null) {
+            measure.memberProperties =
+                new MondrianGuiDef.CalculatedMemberProperty[0];
+        }
+        property.name =
+            getNewName(
+                getResourceConverter().getString(
+                    "schemaExplorer.newProperty.title",
+                    "New Property"),
+                measure.memberProperties);
+        NodeDef[] temp = measure.memberProperties;
+        measure.memberProperties =
+            new MondrianGuiDef.CalculatedMemberProperty[temp.length + 1];
+        for (int i = 0; i < temp.length; i++) {
+            measure.memberProperties[i] =
+                (MondrianGuiDef.CalculatedMemberProperty) temp[i];
+        }
+
+        measure.memberProperties[measure.memberProperties.length - 1] =
             property;
 
         Object[] parentPathObjs = new Object[parentIndex + 1];
@@ -4283,10 +4334,11 @@ public class SchemaExplorer
                         }
                     } else if (pathSelected instanceof MondrianGuiDef.Measure) {
                         jPopupMenu.add(addMeasureExp);
+                        jPopupMenu.add(addCalculatedMemberProperty);
                         if (((MondrianGuiDef.Measure) pathSelected).measureExp
                             == null)
                         {
-                            addMeasureExp.setEnabled(false);
+                            addMeasureExp.setEnabled(true);
                         } else {
                             addMeasureExp.setEnabled(false);
                         }
