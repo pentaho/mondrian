@@ -604,10 +604,10 @@ public class RolapEvaluator implements Evaluator {
                 continue;
             }
 
-            final Object p = member.getPropertyValue(name);
-            if (p != null) {
-                final int solve = member.getSolveOrder();
-                if (solve > maxSolve) {
+            final int solve = member.getSolveOrder();
+            if (solve > maxSolve) {
+                final Object p = member.getPropertyValue(name);
+                if (p != null) {
                     o = p;
                     maxSolve = solve;
                 }
