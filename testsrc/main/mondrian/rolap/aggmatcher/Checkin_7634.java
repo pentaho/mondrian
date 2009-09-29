@@ -1,4 +1,12 @@
-
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.aggmatcher;
 
 import mondrian.test.loader.CsvDBTestCase;
@@ -16,7 +24,8 @@ import mondrian.olap.MondrianProperties;
  * use of the old optimization, currently the nonEmptyListOld method in
  * the CrossJoinFunDef class, and the new, checkin 7634, version of the
  * method called nonEmptyList.
- * The old optimization only looked at the default measure while the
+ *
+ * <p>The old optimization only looked at the default measure while the
  * new version looks at all measures appearing in the query.
  * The example Cube and data for the junit is such that there is no
  * data for the default measure. Thus the old optimization fails
