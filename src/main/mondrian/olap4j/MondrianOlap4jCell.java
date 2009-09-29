@@ -9,14 +9,11 @@
 */
 package mondrian.olap4j;
 
-import org.olap4j.Cell;
-import org.olap4j.CellSet;
-import org.olap4j.OlapException;
+import org.olap4j.*;
 import org.olap4j.metadata.Property;
 
 import javax.sql.DataSource;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 import java.sql.*;
 import java.lang.reflect.Proxy;
 
@@ -35,6 +32,13 @@ class MondrianOlap4jCell implements Cell {
     private final MondrianOlap4jCellSet olap4jCellSet;
     private final mondrian.olap.Cell cell;
 
+    /**
+     * Creates a MondrianOlap4jCell.
+     *
+     * @param coordinates Coordinates
+     * @param olap4jCellSet Cell set
+     * @param cell Cell in native Mondrian representation
+     */
     MondrianOlap4jCell(
         int[] coordinates,
         MondrianOlap4jCellSet olap4jCellSet,
@@ -139,12 +143,27 @@ class MondrianOlap4jCell implements Cell {
         }
     }
 
+    public void setValue(
+        Object newValue,
+        AllocationPolicy allocationPolicy,
+        Object... allocationArgs)
+    {
+        Scenario scenario =
+            olap4jCellSet.olap4jStatement.olap4jConnection.getScenario();
+        cell.setValue(scenario, newValue, allocationPolicy, allocationArgs);
+    }
+
     // must be public for reflection to work
     public static class MyDelegatingInvocationHandler
         extends DelegatingInvocationHandler
     {
         private final ResultSet resultSet;
 
+        /**
+         * Creates a MyDelegatingInvocationHandler.
+         *
+         * @param resultSet Result set
+         */
         MyDelegatingInvocationHandler(ResultSet resultSet) {
             this.resultSet = resultSet;
         }
@@ -153,7 +172,11 @@ class MondrianOlap4jCell implements Cell {
             return resultSet;
         }
 
-        // implement ResultSet.close()
+        /**
+         * Helper method to implement {@link java.sql.ResultSet#close()}.
+         *
+         * @throws SQLException on error
+         */
         public void close() throws SQLException {
             resultSet.getStatement().getConnection().close();
         }

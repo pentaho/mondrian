@@ -11,7 +11,8 @@ package mondrian.olap4j;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.rolap.RolapMeasure;
+import mondrian.rolap.*;
+
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
@@ -76,6 +77,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private String roleName;
     private boolean autoCommit;
     private boolean readOnly;
+    private Scenario scenario;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -125,6 +127,18 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public OlapStatement createStatement() {
         return new MondrianOlap4jStatement(this);
+    }
+
+    public ScenarioImpl createScenario() {
+        return ((RolapConnection) connection).createScenario();
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {

@@ -1,6 +1,9 @@
 package mondrian.test;
 
-import mondrian.olap.*;
+import org.olap4j.*;
+
+import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * Test for writeback functionality.
@@ -13,8 +16,9 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests creating a scenario and setting a connection's active scenario.
      */
-    public void testCreateScenario() {
-        final Connection connection = getConnection();
+    public void testCreateScenario() throws SQLException {
+        final OlapConnection connection =
+            getTestContext().getOlap4jConnection();
         try {
             assertNull(connection.getScenario());
             final Scenario scenario = connection.createScenario();
@@ -34,13 +38,14 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests setting the value of one cell.
      */
-    public void testSetCell() {
-        final Connection connection = getConnection();
+    public void testSetCell() throws SQLException {
+        final OlapConnection connection =
+            getTestContext().getOlap4jConnection();
         try {
             assertNull(connection.getScenario());
             final Scenario scenario = connection.createScenario();
             connection.setScenario(scenario);
-            connection.parseQuery(
+            connection.prepareOlapStatement(
                 "select {[Measures].[Unit Sales]} on 0,\n"
                 + "{[Product].Children} on 1\n"
                 + "from [Sales]");
@@ -52,18 +57,19 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests that setting a cell's value without an active scenario is illegal.
      */
-    public void testSetCellWithoutScenarioFails() {
-        final Connection connection = getConnection();
+    public void testSetCellWithoutScenarioFails() throws SQLException {
+        final OlapConnection connection =
+            getTestContext().getOlap4jConnection();
         try {
             assertNull(connection.getScenario());
-            final Query query = connection.parseQuery(
+            final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
                 "select {[Measures].[Unit Sales]} on 0,\n"
                 + "{[Product].Children} on 1\n"
                 + "from [Sales]");
-            final Result result = connection.execute(query);
-            final Cell cell = result.getCell(new int[]{0, 1});
+            final CellSet result = pstmt.executeQuery();
+            final Cell cell = result.getCell(Arrays.asList(0, 1));
             try {
-                cell.setValue(123, Cell.AllocationPolicy.EQUAL_ALLOCATION);
+                cell.setValue(123, AllocationPolicy.EQUAL_ALLOCATION);
                 fail("expected error");
             } catch (RuntimeException e) {
                 TestContext.checkThrowable(e, "No active scenario");
@@ -76,17 +82,19 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests that setting a calculated member is illegal.
      */
-    public void testSetCellCalcError() {
+    public void testSetCellCalcError() throws SQLException {
         final TestContext testContext = TestContext.instance().withScenario();
-        Result result = testContext.executeQuery(
+        final OlapConnection connection = testContext.getOlap4jConnection();
+        PreparedOlapStatement pstmt = connection.prepareOlapStatement(
             "with member [Measures].[Unit Sales Plus One]\n"
             + "   as ' [Measures].[Unit Sales] + 1 '\n"
             + "select {[Measures].[Unit Sales Plus One]} on 0,\n"
             + "{[Product].Children} on 1\n"
             + "from [Sales]");
-        Cell cell = result.getCell(new int[]{0, 1});
+        CellSet cellSet = pstmt.executeQuery();
+        Cell cell = cellSet.getCell(Arrays.asList(0, 1));
         try {
-            cell.setValue(123, Cell.AllocationPolicy.EQUAL_ALLOCATION);
+            cell.setValue(123, AllocationPolicy.EQUAL_ALLOCATION);
             fail("expected exception");
         } catch (RuntimeException e) {
             TestContext.checkThrowable(
@@ -96,19 +104,19 @@ public class ScenarioTest extends FoodMartTestCase {
         }
 
         // Calc member on non-measures dimension
-        result = testContext.executeQuery(
+        cellSet = pstmt.executeOlapQuery(
             "with member [Product].[FoodDrink]\n"
             + "   as Aggregate({[Product].[Food], [Product].[Drink]})\n"
             + "select {[Measures].[Unit Sales]} on 0,\n"
             + "{[Product].Children, [Product].[FoodDrink]} on 1\n"
             + "from [Sales]");
         // OK to set ([Measures].[Unit Sales], [Product].[Drink])
-        cell = result.getCell(new int[]{0, 1});
-        cell.setValue(123, Cell.AllocationPolicy.EQUAL_ALLOCATION);
+        cell = cellSet.getCell(Arrays.asList(0, 1));
+        cell.setValue(123, AllocationPolicy.EQUAL_ALLOCATION);
         // Not OK to set ([Measures].[Unit Sales], [Product].[FoodDrink])
-        cell = result.getCell(new int[]{0, 3});
+        cell = cellSet.getCell(Arrays.asList(0, 3));
         try {
-            cell.setValue(123, Cell.AllocationPolicy.EQUAL_ALLOCATION);
+            cell.setValue(123, AllocationPolicy.EQUAL_ALLOCATION);
             fail("expected exception");
         } catch (RuntimeException e) {
             TestContext.checkThrowable(
@@ -121,14 +129,16 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests that allocation policies that are not supported give an error.
      */
-    public void testUnsupportedAllocationPolicyFails() {
+    public void testUnsupportedAllocationPolicyFails() throws SQLException {
         final TestContext testContext = TestContext.instance().withScenario();
-        final Result result = testContext.executeQuery(
+        final OlapConnection connection = testContext.getOlap4jConnection();
+        final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
             "select {[Measures].[Unit Sales]} on 0,\n"
             + "{[Product].Children} on 1\n"
             + "from [Sales]");
-        final Cell cell = result.getCell(new int[]{0, 1});
-        for (Cell.AllocationPolicy policy : Cell.AllocationPolicy.values()) {
+        final CellSet cellSet = pstmt.executeQuery();
+        final Cell cell = cellSet.getCell(Arrays.asList(0, 1));
+        for (AllocationPolicy policy : AllocationPolicy.values()) {
             switch (policy) {
             case EQUAL_ALLOCATION:
             case EQUAL_INCREMENT:
@@ -155,19 +165,19 @@ public class ScenarioTest extends FoodMartTestCase {
     /**
      * Tests setting cells by the "equal increment" allocation policy.
      */
-    public void testEqualIncrement() {
-        assertAllocation(Cell.AllocationPolicy.EQUAL_INCREMENT);
+    public void testEqualIncrement() throws SQLException {
+        assertAllocation(AllocationPolicy.EQUAL_INCREMENT);
     }
 
     /**
      * Tests setting cells by the "equal allocation" allocation policy.
      */
-    public void testEqualAllocation() {
-        assertAllocation(Cell.AllocationPolicy.EQUAL_ALLOCATION);
+    public void testEqualAllocation() throws SQLException {
+        assertAllocation(AllocationPolicy.EQUAL_ALLOCATION);
     }
 
     private void assertAllocation(
-        final Cell.AllocationPolicy allocationPolicy)
+        final AllocationPolicy allocationPolicy) throws SQLException
     {
         // TODO: Should not need to explicitly create a scenario. Add element
         //  <Writeback enabled="true"/>
@@ -190,16 +200,20 @@ public class ScenarioTest extends FoodMartTestCase {
                 + "</Dimension>",
                 "<Measure name='Atomic Cell Count' aggregator='count'/>")
                 .withScenario();
-        int id = testContext.getConnection().getScenario().getId();
-        final Result result = testContext.executeQuery(
+        final OlapConnection connection = testContext.getOlap4jConnection();
+        String id = connection.getScenario().getId();
+        final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
             "select {[Measures].[Unit Sales]} on 0,\n"
             + "{[Product].Children} on 1\n"
             + "from [Sales]\n"
-            + "where [Scenario].[" + id + "]");
+            + "where [Scenario].["
+            + id
+            + "]");
+        final CellSet cellSet = pstmt.executeQuery();
 
         // Update ([Product].[Drink], [Measures].[Unit Sales])
         // from 24,597 to 23,597.
-        final Cell cell = result.getCell(new int[]{0, 0});
+        final Cell cell = cellSet.getCell(Arrays.asList(0, 0));
         cell.setValue(23597, allocationPolicy);
 
         testContext.assertQueryReturns(
@@ -240,7 +254,7 @@ public class ScenarioTest extends FoodMartTestCase {
             + "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Skinner]}\n"
             + "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Token]}\n"
             + "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington]}\n"
-            + (allocationPolicy == Cell.AllocationPolicy.EQUAL_INCREMENT
+            + (allocationPolicy == AllocationPolicy.EQUAL_INCREMENT
                 ? "Row #0: 23,597\n"
                   + "Row #1: 191,940\n"
                   + "Row #2: 50,236\n"

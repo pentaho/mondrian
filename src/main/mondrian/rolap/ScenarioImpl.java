@@ -19,8 +19,11 @@ import mondrian.calc.impl.GenericCalc;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olap4j.Scenario;
+import org.olap4j.AllocationPolicy;
+
 /**
- * Implementation of {@link mondrian.olap.Scenario}.
+ * Implementation of {@link org.olap4j.Scenario}.
  *
  * @author jhyde
  * @since 24 April, 2009
@@ -72,7 +75,7 @@ public final class ScenarioImpl implements Scenario {
         List<RolapMember> members,
         double newValue,
         double currentValue,
-        Cell.AllocationPolicy allocationPolicy,
+        AllocationPolicy allocationPolicy,
         Object[] allocationArgs)
     {
         Util.discard(connection); // for future use
@@ -156,8 +159,8 @@ public final class ScenarioImpl implements Scenario {
                 allocationPolicy));
     }
 
-    public int getId() {
-        return id;
+    public String getId() {
+        return Integer.toString(id);
     }
 
     /**
@@ -281,29 +284,25 @@ public final class ScenarioImpl implements Scenario {
 
     /**
      * Created by a call to {@link
-     * Cell#setValue(Object, mondrian.olap.Cell.AllocationPolicy, Object[])},
+     * org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
      * records that a cell's value has been changed.
      *
      * <p>From this, other cell values can be modified as they are read into
      * cache. Only the cells specifically modified by the client have a
      * {@code CellValueOverride}.
      *
-     * <p>In future, a {@link mondrian.olap.Scenario} could be persisted by
-     * serializing all {@code CellValueOverride}s to a file.
+     * <p>In future, a {@link ScenarioImpl} could be persisted by
+     * serializing all {@code WritebackCell}s to a file.
      */
-    // TODO: private
-    public static class WritebackCell {
-        // TODO: private
-        public final BitKey constrainedColumnsBitKey;
-        public final Object[] keyValues;
-        public final double newValue;
-        public final double currentValue;
-        private final Cell.AllocationPolicy allocationPolicy;
+    private static class WritebackCell {
+        private final double newValue;
+        private final double currentValue;
+        private final AllocationPolicy allocationPolicy;
         private Member[] membersByOrdinal;
         private final double atomicCellCount;
 
         /**
-         * Creates a CellValueOverride.
+         * Creates a WritebackCell.
          *
          * @param cube Cube
          * @param members Members that form context
@@ -320,12 +319,12 @@ public final class ScenarioImpl implements Scenario {
             Object[] keyValues,
             double newValue,
             double currentValue,
-            Cell.AllocationPolicy allocationPolicy)
+            AllocationPolicy allocationPolicy)
         {
             assert keyValues.length == constrainedColumnsBitKey.cardinality();
-            Util.discard(cube);
-            this.constrainedColumnsBitKey = constrainedColumnsBitKey;
-            this.keyValues = keyValues;
+            Util.discard(cube); // not used currently
+            Util.discard(constrainedColumnsBitKey); // not used currently
+            Util.discard(keyValues); // not used currently
             this.newValue = newValue;
             this.currentValue = currentValue;
             this.allocationPolicy = allocationPolicy;
@@ -427,7 +426,7 @@ public final class ScenarioImpl implements Scenario {
      *
      * <p>When evaluated, replaces the value of a cell with the value overridden
      * by a writeback value, per
-     * {@link mondrian.olap.Cell#setValue(Object, mondrian.olap.Cell.AllocationPolicy, Object[])},
+     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
      * and modifies the values of ancestors or descendants of such cells
      * according to the allocation policy.
      */

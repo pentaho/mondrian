@@ -67,7 +67,6 @@ public class RolapConnection extends ConnectionBase {
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
-    private Scenario scenario;
 
     /**
      * Creates a connection.
@@ -526,9 +525,11 @@ public class RolapConnection extends ConnectionBase {
     public Result execute(Query query) {
         class Listener implements MemoryMonitor.Listener {
             private final Query query;
+
             Listener(final Query query) {
                 this.query = query;
             }
+
             public void memoryUsageNotification(long used, long max) {
                 StringBuilder buf = new StringBuilder(200);
                 buf.append("OutOfMemory used=");
@@ -542,6 +543,7 @@ public class RolapConnection extends ConnectionBase {
                 RolapConnection.memoryUsageNotification(query, buf.toString());
             }
         }
+
         Listener listener = new Listener(query);
         MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
         long currId = -1;
@@ -711,17 +713,15 @@ public class RolapConnection extends ConnectionBase {
         return dataSource;
     }
 
-    public Scenario createScenario() {
+    /**
+     * Helper method to allow olap4j wrappers to implement
+     * {@link org.olap4j.OlapConnection#createScenario()}.
+     *
+     * @return new Scenario
+     */
+    public ScenarioImpl createScenario() {
         final ScenarioImpl scenario = new ScenarioImpl();
         scenario.register(schema);
-        return scenario;
-    }
-
-    public void setScenario(Scenario scenario) {
-        this.scenario = scenario;
-    }
-
-    public Scenario getScenario() {
         return scenario;
     }
 
@@ -737,6 +737,13 @@ public class RolapConnection extends ConnectionBase {
         /** workspace. Synchronized access only. */
         private final int[] pos;
 
+        /**
+         * Creates a NonEmptyResult.
+         *
+         * @param result Result set
+         * @param query Query
+         * @param axis Which axis to make non-empty
+         */
         NonEmptyResult(Result result, Query query, int axis) {
             super(query, result.getAxes().clone());
 
@@ -810,13 +817,12 @@ public class RolapConnection extends ConnectionBase {
                 return isEmptyRecurse(fixedAxis, axis - 1);
             } else {
                 List<Position> positions = getAxes()[axis].getPositions();
-                int i = 0;
-                for (Position position : positions) {
+                final int positionCount = positions.size();
+                for (int i = 0; i < positionCount; i++) {
                     pos[axis] = i;
                     if (!isEmptyRecurse(fixedAxis, axis - 1)) {
                         return false;
                     }
-                    i++;
                 }
                 return true;
             }
@@ -960,7 +966,6 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getConnection(jdbcUser, jdbcPassword);
         }
     }
-
 }
 
 // End RolapConnection.java

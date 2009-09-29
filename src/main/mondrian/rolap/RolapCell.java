@@ -17,6 +17,9 @@ import mondrian.rolap.agg.CellRequest;
 import java.sql.*;
 import java.util.*;
 
+import org.olap4j.AllocationPolicy;
+import org.olap4j.Scenario;
+
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
  * {@link RolapResult}.
@@ -233,6 +236,7 @@ class RolapCell implements Cell {
     }
 
     public void setValue(
+        Scenario scenario,
         Object newValue,
         AllocationPolicy allocationPolicy,
         Object... allocationArgs)
@@ -242,7 +246,6 @@ class RolapCell implements Cell {
             throw Util.newError(
                 "Allocation policy must not be null");
         }
-        Scenario scenario = result.getQuery().getConnection().getScenario();
         final RolapMember[] members = result.getCellMembers(pos);
         for (int i = 0; i < members.length; i++) {
             Member member = members[i];
