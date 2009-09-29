@@ -627,10 +627,22 @@ public abstract class RolapNativeSet extends RolapNative {
         if (member.isCalculated()) {
             return null;
         }
-        if (!(args[1] instanceof LevelExpr)) {
+        RolapLevel level = null;
+        if ((args[1] instanceof LevelExpr)) {
+            level = (RolapLevel) ((LevelExpr) args[1]).getLevel();
+        } else if (args[1] instanceof Literal) {
+            RolapLevel[] levels = (RolapLevel[])
+                    member.getHierarchy().getLevels();
+            int currentDepth = member.getDepth();
+            Literal descendantsDepth = (Literal)args[1];
+            int newDepth = currentDepth + descendantsDepth.getIntValue();
+            if (newDepth < levels.length) {
+                level = levels[newDepth];
+            }
+        } else {
             return null;
         }
-        RolapLevel level = (RolapLevel) ((LevelExpr) args[1]).getLevel();
+
         if (!isSimpleLevel(level)) {
             return null;
         }

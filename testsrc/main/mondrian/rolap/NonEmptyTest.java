@@ -1592,6 +1592,20 @@ public class NonEmptyTest extends BatchTestCase {
                         + "  [Time].[1997].[Q1].[1])");
     }
 
+    // testcase for bug MONDRIAN-506
+    public void testCjMembersDescendantsWithNumericArgument() {
+        checkNative(
+                67,
+                67,
+                "select {[Measures].[Store Sales]} on columns,"
+                        + " NON EMPTY Crossjoin("
+                        + "  {[Product].[Product Name].Members},"
+                        + "  {Descendants([Customers].[All Customers].[USA].[CA], 2)}) ON rows "
+                        + " from [Sales] where ("
+                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                        + "  [Time].[1997].[Q1].[1])");
+    }
+
     public void testCjChildrenMembers() {
         checkNative(
                 67, 67, "select {[Measures].[Store Sales]} on columns,"
