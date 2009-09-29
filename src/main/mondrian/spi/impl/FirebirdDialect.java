@@ -37,6 +37,10 @@ public class FirebirdDialect extends JdbcDialectImpl {
     public boolean allowsAs() {
         return false;
     }
+
+    public boolean supportsOrderByNullsLast() {
+        return true;
+    }
 }
 
 // End FirebirdDialect.java

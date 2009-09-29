@@ -37,6 +37,11 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
     public boolean requiresAliasForFromQuery() {
         return true;
     }
+
+    public boolean supportsOrderByNullsLast() {
+        // Support for "ORDER BY ... NULLS LAST" was introduced in Postgres 8.3.
+        return productVersion.compareTo("8.3") >= 0;
+    }
 }
 
 // End PostgreSqlDialect.java
