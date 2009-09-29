@@ -51,7 +51,6 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         + "    dimension=\"gender\"\n"
         + "    visible=\"false\"\n"
         + "    formula=\"gender.m - gender.f\">\n"
-        + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"#.##\"/>\n"
         + "  <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\"3000\"/>\n"
         + "</CalculatedMember>"
         + "<CalculatedMember\n"
@@ -66,7 +65,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         + "    dimension=\"measures\"\n"
         + "    visible=\"false\"\n"
         + "    formula=\"measures.[unit sales] / measures.[sales count]\">\n"
-        + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"#.##\"/>\n"
+        + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"0.0#\"/>\n"
         + "  <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\"10\"/>\n"
         + "</CalculatedMember>"
         + "<CalculatedMember\n"
@@ -74,7 +73,6 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         + "    dimension=\"Time\"\n"
         + "    visible=\"false\"\n"
         + "    formula=\"AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})\">\n"
-        + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"#.##\"/>\n"
         + "  <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\"20\"/>\n"
         + "</CalculatedMember>";
 
@@ -121,7 +119,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         final String mdx =
             "with\n"
             + "member gender.override as 'gender.maleMinusFemale', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio], measures.[unit sales], "
             + "measures.[sales count]} on 0,\n"
             + "{gender.override,gender.maleMinusFemale} on 1\n"
@@ -140,18 +138,18 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
             + "Row #0: 3.11\n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testOverrideCubeMemberDoesNotHappenScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as 'gender.maleMinusFemale', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio], measures.[unit sales], "
             + "measures.[sales count]} on 0,\n"
             + "{gender.override,gender.maleMinusFemale} on 1\n"
@@ -169,12 +167,12 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 0.0\n"
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     /**
@@ -271,8 +269,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         final String mdx =
             "with\n"
             + "member gender.override as "
-            + "'([Gender].[maleMinusFemale], [Product].[Food])', SOLVE_ORDER=5,\n"
-            + "FORMAT_STRING='#.##'\n"
+            + "'([Gender].[maleMinusFemale], [Product].[Food])', SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -291,19 +288,18 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
             + "Row #0: 3.09\n"
-            + "Row #0: 2312\n"
+            + "Row #0: 2,312\n"
             + "Row #0: 749\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testOverrideCubeMemberInTupleDoesNotHappenScoped() {
         final String mdx =
             "with\n"
             + "member gender.override as "
-            + "'([Gender].[maleMinusFemale], [Product].[Food])', SOLVE_ORDER=5,\n"
-            + "FORMAT_STRING='#.##'\n"
+            + "'([Gender].[maleMinusFemale], [Product].[Food])', SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -321,12 +317,12 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
-            + "Row #0: 2312\n"
+            + "Row #0: 0.0\n"
+            + "Row #0: 2,312\n"
             + "Row #0: 749\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testConditionalCubeMemberEvalBeforeOtherMembersAbsolute() {
@@ -334,7 +330,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "with\n"
             + "member gender.override as 'iif(1=0,"
             + "[gender].[all gender].[m], [Gender].[maleMinusFemale])', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -353,11 +349,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
             + "Row #0: 3.11\n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testConditionalCubeMemberEvalBeforeOtherMembersScoped() {
@@ -365,7 +361,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "with\n"
             + "member gender.override as 'iif(1=0,"
             + "[gender].[all gender].[m], [Gender].[maleMinusFemale])', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -383,12 +379,12 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 0.0\n"
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testOverrideCubeMemberUsingStrToMemberDoesNotHappenAbsolute() {
@@ -396,7 +392,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "with\n"
             + "member gender.override as 'iif(1=0,[gender].[all gender].[m], "
             + "StrToMember(\"[Gender].[maleMinusFemale]\"))', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -415,11 +411,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
             + "Row #0: 3.11\n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     public void testOverrideCubeMemberUsingStrToMemberDoesNotHappenScoped() {
@@ -427,7 +423,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "with\n"
             + "member gender.override as 'iif(1=0,[gender].[all gender].[m], "
             + "StrToMember(\"[Gender].[maleMinusFemale]\"))', "
-            + "SOLVE_ORDER=5, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=5\n"
             + "select {measures.[ratio],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -445,12 +441,12 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[override]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n");
+            + "Row #0: 0.0\n"
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n");
     }
 
     /**
@@ -465,7 +461,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "With\n"
             + "member Time.Total1 as "
             + "'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
+            + ", FORMAT_STRING='#,###'\n"
             + "member measures.[ratio1] as "
             + "'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10 , FORMAT_STRING='#.##'\n"
@@ -489,11 +485,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
             + "Row #1: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
-            + "Row #1: 128901\n"
-            + "Row #1: 41956\n"
+            + "Row #1: 128,901\n"
+            + "Row #1: 41,956\n"
             + "Row #2: 3.07\n"
             + "Row #2: 66,291\n"
             + "Row #2: 21,588\n"
@@ -507,7 +503,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "With\n"
             + "member Time.Total1 as "
             + "'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
+            + ", FORMAT_STRING='#,###'\n"
             + "member measures.[ratio1] as "
             + "'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10 , FORMAT_STRING='#.##'\n"
@@ -531,11 +527,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: 3.07\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
-            + "Row #1: 3.07\n"
-            + "Row #1: 128901\n"
-            + "Row #1: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
+            + "Row #1: 3\n"
+            + "Row #1: 128,901\n"
+            + "Row #1: 41,956\n"
             + "Row #2: 3.07\n"
             + "Row #2: 66,291\n"
             + "Row #2: 21,588\n"
@@ -556,9 +552,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "With\n"
             + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
             + "AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]}))' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
+            + "\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
-            + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=10\n"
             + "select {measures.[ratio1],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -579,15 +575,15 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
             + "Row #1: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
-            + "Row #1: 128901\n"
-            + "Row #1: 41956\n"
-            + "Row #2: 3.07\n"
+            + "Row #1: 128,901\n"
+            + "Row #1: 41,956\n"
+            + "Row #2: 3\n"
             + "Row #2: 66,291\n"
             + "Row #2: 21,588\n"
-            + "Row #3: 3.07\n"
+            + "Row #3: 3\n"
             + "Row #3: 62,610\n"
             + "Row #3: 20,368\n");
     }
@@ -597,7 +593,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "With\n"
             + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
             + "AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]}))' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
+            + "\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
             + "select {measures.[ratio1],\n"
@@ -620,11 +616,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: 3.07\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
             + "Row #1: 3.07\n"
-            + "Row #1: 128901\n"
-            + "Row #1: 41956\n"
+            + "Row #1: 128,901\n"
+            + "Row #1: 41,956\n"
             + "Row #2: 3.07\n"
             + "Row #2: 66,291\n"
             + "Row #2: 21,588\n"
@@ -644,10 +640,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         final String mdx =
             "With\n"
             + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
-            + "SOLVE_ORDER=100, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=100\n"
             + "member Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
             + "StrToMember(\"[Time].[StrTotal]\"))' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
             + "select {measures.[ratio1],\n"
@@ -669,8 +664,8 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
             + "Row #1: 3.07\n"
             + "Row #1: 66,291\n"
             + "Row #1: 21,588\n"
@@ -683,10 +678,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         final String mdx =
             "With\n"
             + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
-            + "SOLVE_ORDER=100, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=100\n"
             + "member Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
             + "StrToMember(\"[Time].[StrTotal]\"))' , SOLVE_ORDER=20 \n"
-            + ", FORMAT_STRING='#.##'\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
             + "select {measures.[ratio1],\n"
@@ -708,8 +702,8 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q1]}\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: 3.07\n"
-            + "Row #0: 128901\n"
-            + "Row #0: 41956\n"
+            + "Row #0: 128,901\n"
+            + "Row #0: 41,956\n"
             + "Row #1: 3.07\n"
             + "Row #1: 66,291\n"
             + "Row #1: 21,588\n"
@@ -721,11 +715,10 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void test2LevelOfOverrideCubeMemberDoesNotHappenAbsolute() {
         final String mdx =
             "With member gender.override1 as 'gender.maleMinusFemale',\n"
-            + "SOLVE_ORDER=20, FORMAT_STRING='#.##'\n"
-            + "member gender.override2 as 'gender.override1', SOLVE_ORDER=2,\n"
-            + "FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=20\n"
+            + "member gender.override2 as 'gender.override1', SOLVE_ORDER=2\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
-            + "SOLVE_ORDER=50, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=50, FORMAT_STRING='0.0#'\n"
             + "select {measures.[ratio], measures.[ratio1],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -745,28 +738,27 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override1]}\n"
             + "{[Gender].[override2]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
+            + "Row #0: 0.0\n"
             + "Row #0: 3.11\n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
             + "Row #1: 3.11\n"
             + "Row #1: 3.11\n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n"
-            + "Row #2: \n"
-            + "Row #2: \n"
-            + "Row #2: 3657\n"
-            + "Row #2: 1175\n");
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n"
+            + "Row #2: 0.0\n"
+            + "Row #2: 0.0\n"
+            + "Row #2: 3,657\n"
+            + "Row #2: 1,175\n");
     }
 
     public void test2LevelOfOverrideCubeMemberDoesNotHappenScoped() {
         final String mdx =
             "With member gender.override1 as 'gender.maleMinusFemale',\n"
-            + "SOLVE_ORDER=20, FORMAT_STRING='#.##'\n"
-            + "member gender.override2 as 'gender.override1', SOLVE_ORDER=2,\n"
-            + "FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=20\n"
+            + "member gender.override2 as 'gender.override1', SOLVE_ORDER=2\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
-            + "SOLVE_ORDER=50, FORMAT_STRING='#.##'\n"
+            + "SOLVE_ORDER=50, FORMAT_STRING='0.0#'\n"
             + "select {measures.[ratio], measures.[ratio1],\n"
             + "measures.[unit sales],\n"
             + "measures.[sales count]} on 0,\n"
@@ -786,18 +778,18 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{[Gender].[override1]}\n"
             + "{[Gender].[override2]}\n"
             + "{[Gender].[maleMinusFemale]}\n"
-            + "Row #0: \n"
+            + "Row #0: 0.0\n"
             + "Row #0: 3.11\n"
-            + "Row #0: 3657\n"
-            + "Row #0: 1175\n"
-            + "Row #1: \n"
+            + "Row #0: 3,657\n"
+            + "Row #0: 1,175\n"
+            + "Row #1: 0.0\n"
             + "Row #1: 3.11\n"
-            + "Row #1: 3657\n"
-            + "Row #1: 1175\n"
-            + "Row #2: \n"
+            + "Row #1: 3,657\n"
+            + "Row #1: 1,175\n"
+            + "Row #2: 0.0\n"
             + "Row #2: 3.11\n"
-            + "Row #2: 3657\n"
-            + "Row #2: 1175\n");
+            + "Row #2: 3,657\n"
+            + "Row #2: 1,175\n");
     }
 }
 
