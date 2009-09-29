@@ -3,12 +3,9 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2007-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, Oct 5, 2002
 */
 
 package mondrian.olap;
@@ -17,7 +14,7 @@ package mondrian.olap;
  * <code>DelegatingRole</code> implements {@link Role} by
  * delegating all methods to an underlying {@link Role}.
  *
- * It is a convenient base class if you want to override just a few of
+ * <p>It is a convenient base class if you want to override just a few of
  * {@link Role}'s methods.
  *
  * @author Richard M. Emberson
@@ -27,6 +24,11 @@ package mondrian.olap;
 public class DelegatingRole implements Role {
     protected final Role role;
 
+    /**
+     * Creates a DelegatingRole.
+     *
+     * @param role Underlying role
+     */
     public DelegatingRole(Role role) {
         assert role != null;
         this.role = role;
@@ -48,39 +50,15 @@ public class DelegatingRole implements Role {
         return role.getAccess(hierarchy);
     }
 
-    public static class DelegatingHierarchyAccess
-        implements HierarchyAccess
-    {
-        protected final HierarchyAccess hierarchyAccess;
-
-        public DelegatingHierarchyAccess(HierarchyAccess hierarchyAccess) {
-            assert hierarchyAccess != null;
-            this.hierarchyAccess = hierarchyAccess;
-        }
-
-        public Access getAccess(Member member) {
-            return hierarchyAccess.getAccess(member);
-        }
-
-        public int getTopLevelDepth() {
-            return hierarchyAccess.getTopLevelDepth();
-        }
-
-        public int getBottomLevelDepth() {
-            return hierarchyAccess.getBottomLevelDepth();
-        }
-
-        public RollupPolicy getRollupPolicy() {
-            return hierarchyAccess.getRollupPolicy();
-        }
-
-        public boolean hasInaccessibleDescendants(Member member) {
-            return hierarchyAccess.hasInaccessibleDescendants(member);
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns the same access as the underlying role.
+     * Derived class may choose to refine access by creating a subclass of
+     * {@link mondrian.olap.RoleImpl.DelegatingHierarchyAccess}.
+     */
     public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
-        return new DelegatingHierarchyAccess(role.getAccessDetails(hierarchy));
+        return role.getAccessDetails(hierarchy);
     }
 
     public Access getAccess(Level level) {

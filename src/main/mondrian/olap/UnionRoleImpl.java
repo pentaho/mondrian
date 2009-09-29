@@ -2,14 +2,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2007 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Implementation of {@link Role} which combines the privileges of several
@@ -106,7 +105,13 @@ class UnionRoleImpl implements Role {
         if (list.isEmpty()) {
             return null;
         }
-        return new UnionHierarchyAccessImpl(hierarchy, list);
+        HierarchyAccess hierarchyAccess =
+            new UnionHierarchyAccessImpl(hierarchy, list);
+        if (list.size() > 5) {
+            hierarchyAccess =
+                new RoleImpl.CachingHierarchyAccess(hierarchyAccess);
+        }
+        return hierarchyAccess;
     }
 
     public Access getAccess(Level level) {
@@ -150,9 +155,20 @@ class UnionRoleImpl implements Role {
         return false;
     }
 
+    /**
+     * Implementation of {@link mondrian.olap.Role.HierarchyAccess} that
+     * gives access to an object if any one of the constituent hierarchy
+     * accesses has access to that object.
+     */
     private class UnionHierarchyAccessImpl implements HierarchyAccess {
         private final List<HierarchyAccess> list;
 
+        /**
+         * Creates a UnionHierarchyAccessImpl.
+         *
+         * @param hierarchy Hierarchy
+         * @param list List of underlying hierarchy accesses
+         */
         UnionHierarchyAccessImpl(
             Hierarchy hierarchy,
             List<HierarchyAccess> list)
@@ -163,7 +179,9 @@ class UnionRoleImpl implements Role {
 
         public Access getAccess(Member member) {
             Access access = Access.NONE;
-            for (Role role : roleList) {
+            final int roleCount = roleList.size();
+            for (int i = 0; i < roleCount; i++) {
+                Role role = roleList.get(i);
                 access = max(access, role.getAccess(member));
                 if (access == Access.ALL) {
                     break;

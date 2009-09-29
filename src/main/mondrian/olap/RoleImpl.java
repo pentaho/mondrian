@@ -105,6 +105,12 @@ public class RoleImpl implements Role {
         return toAccess(schemaGrants.get(schema));
     }
 
+    /**
+     * Converts a null Access object to {@link Access#NONE}.
+     *
+     * @param access Access object or null
+     * @return Access object, never null
+     */
     private static Access toAccess(Access access) {
         return access == null ? Access.NONE : access;
     }
@@ -223,7 +229,8 @@ public class RoleImpl implements Role {
      *     the lowest level. May only be specified if <code>access</code> is
      *    {@link mondrian.olap.Access#CUSTOM}.
      *
-     * @param rollupPolicy
+     * @param rollupPolicy Rollup policy
+     *
      * @pre hierarchy != null
      * @pre Access.instance().isValid(access)
      * @pre (access == Access.CUSTOM)
@@ -361,6 +368,12 @@ public class RoleImpl implements Role {
             levels[levels.length - 1], Role.RollupPolicy.FULL);
     }
 
+    /**
+     * Returns a role that is the union of the given roles.
+     *
+     * @param roleList List of roles
+     * @return Union role
+     */
     public static Role union(final List<Role> roleList) {
         assert roleList.size() > 0;
         return new UnionRoleImpl(roleList);
@@ -410,6 +423,12 @@ public class RoleImpl implements Role {
             return hierarchyAccess;
         }
 
+        /**
+         * Grants access to a member.
+         *
+         * @param member Member
+         * @param access Access
+         */
         void grant(Member member, Access access) {
             Util.assertTrue(member.getHierarchy() == hierarchy);
             // Remove any existing grants to descendants of "member"
@@ -479,6 +498,13 @@ public class RoleImpl implements Role {
             }
         }
 
+        /**
+         * Returns whether any of the (direct) children of a given member have
+         * access granted to them.
+         *
+         * @param parent Parent member
+         * @return Whether any of the member's children have a grant
+         */
         private boolean childGrantsExist(Member parent) {
             for (Map.Entry<Member, Access> entry : memberGrants.entrySet()) {
                 final Member member = entry.getKey();
@@ -579,7 +605,126 @@ public class RoleImpl implements Role {
         }
     }
 
+    /**
+     * Implementation of {@link mondrian.olap.Role.HierarchyAccess} that
+     * delegates all methods to an underlying hierarchy access.
+     */
+    public static abstract class DelegatingHierarchyAccess
+        implements HierarchyAccess
+    {
+        protected final HierarchyAccess hierarchyAccess;
 
+        /**
+         * Creates a DelegatingHierarchyAccess.
+         *
+         * @param hierarchyAccess Underlying hierarchy access
+         */
+        public DelegatingHierarchyAccess(HierarchyAccess hierarchyAccess) {
+            assert hierarchyAccess != null;
+            this.hierarchyAccess = hierarchyAccess;
+        }
+
+        public Access getAccess(Member member) {
+            return hierarchyAccess.getAccess(member);
+        }
+
+        public int getTopLevelDepth() {
+            return hierarchyAccess.getTopLevelDepth();
+        }
+
+        public int getBottomLevelDepth() {
+            return hierarchyAccess.getBottomLevelDepth();
+        }
+
+        public RollupPolicy getRollupPolicy() {
+            return hierarchyAccess.getRollupPolicy();
+        }
+
+        public boolean hasInaccessibleDescendants(Member member) {
+            return hierarchyAccess.hasInaccessibleDescendants(member);
+        }
+    }
+
+    /**
+     * Implementation of {@link mondrian.olap.Role.HierarchyAccess} that caches
+     * the access of each member and level.
+     *
+     * <p>This reduces the number of calls to the underlying HierarchyAccess,
+     * which is particularly useful for a union role which is based on many
+     * roles.
+     *
+     * <p>Caching uses two {@link java.util.WeakHashMap} objects, so should
+     * release resources if memory is scarce. However, it may use up memory and
+     * cause segments etc. to be removed from the cache when GC is triggered.
+     * For this reason, you should only use this wrapper for a HierarchyAccess
+     * which would otherwise have poor performance; currently used for union
+     * roles with 5 or more member roles.
+     */
+    static class CachingHierarchyAccess
+        extends DelegatingHierarchyAccess
+    {
+        private final Map<Member, Access> memberAccessMap =
+            new WeakHashMap<Member, Access>();
+        private RollupPolicy rollupPolicy;
+        private Map<Member, Boolean> inaccessibleDescendantsMap =
+            new WeakHashMap<Member, Boolean>();
+        private Integer topLevelDepth;
+        private Integer bottomLevelDepth;
+
+        /**
+         * Creates a CachingHierarchyAccess.
+         *
+         * @param hierarchyAccess Underlying hierarchy access
+         */
+        public CachingHierarchyAccess(HierarchyAccess hierarchyAccess) {
+            super(hierarchyAccess);
+        }
+
+        @Override
+        public Access getAccess(Member member) {
+            Access access = memberAccessMap.get(member);
+            if (access != null) {
+                return access;
+            }
+            access = hierarchyAccess.getAccess(member);
+            memberAccessMap.put(member, access);
+            return access;
+        }
+
+        @Override
+        public int getTopLevelDepth() {
+            if (topLevelDepth == null) {
+                topLevelDepth = hierarchyAccess.getTopLevelDepth();
+            }
+            return topLevelDepth;
+        }
+
+        @Override
+        public int getBottomLevelDepth() {
+            if (bottomLevelDepth == null) {
+                bottomLevelDepth = hierarchyAccess.getBottomLevelDepth();
+            }
+            return bottomLevelDepth;
+        }
+
+        @Override
+        public RollupPolicy getRollupPolicy() {
+            if (rollupPolicy == null) {
+                rollupPolicy = hierarchyAccess.getRollupPolicy();
+            }
+            return rollupPolicy;
+        }
+
+        @Override
+        public boolean hasInaccessibleDescendants(Member member) {
+            Boolean b = inaccessibleDescendantsMap.get(member);
+            if (b == null) {
+                b = hierarchyAccess.hasInaccessibleDescendants(member);
+                inaccessibleDescendantsMap.put(member, b);
+            }
+            return b;
+        }
+    }
 }
 
 // End RoleImpl.java
