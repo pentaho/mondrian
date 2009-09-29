@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2009-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import mondrian.rolap.sql.TupleConstraint;
@@ -7,15 +16,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * <p>
- * Base helper class for the sql tuple readers
- *  {@link mondrian.rolap.HighCardSqlTupleReader}
- *  {@link mondrian.rolap.SqlTupleReader}
- * Keeps track of target levels and constraints for adding to sql query
- * The real work is done in the extending classes.
- *  {@link Target}
- *  {@link mondrian.rolap.SqlTupleReader.Target}
- * </p>
+ * Base helper class for the SQL tuple readers
+ * {@link mondrian.rolap.HighCardSqlTupleReader} and
+ * {@link mondrian.rolap.SqlTupleReader}.
+ *
+ * <p>Keeps track of target levels and constraints for adding to the SQL query.
+ * The real work is done in the extending classes,
+ * {@link Target} and
+ * {@link mondrian.rolap.SqlTupleReader.Target}.
  *
  * @author Kurtis Walker
  * @since July 23, 2009
@@ -94,4 +102,5 @@ public abstract class TargetBase {
             ((RolapNativeCrossJoin.NonEmptyCrossJoinConstraint) constraint);
     }
 }
+
 // End TargetBase.java
