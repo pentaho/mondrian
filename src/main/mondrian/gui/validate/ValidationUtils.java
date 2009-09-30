@@ -103,8 +103,20 @@ public class ValidationUtils {
                 return nameMustBeSet;
             }
         } else if (value instanceof MondrianGuiDef.VirtualCube) {
-            if (isEmpty(((MondrianGuiDef.VirtualCube) value).name)) {
+            MondrianGuiDef.VirtualCube virtCube =
+                (MondrianGuiDef.VirtualCube)value;
+            if (isEmpty(virtCube.name)) {
                 return nameMustBeSet;
+            }
+            if (isEmpty(virtCube.dimensions)) {
+                return messages.getString(
+                    "schemaTreeCellRenderer.cubeMustHaveDimensions.alert",
+                    "Cube must contain dimensions");
+            }
+            if (isEmpty(virtCube.measures)) {
+                return messages.getString(
+                    "schemaTreeCellRenderer.cubeMustHaveMeasures.alert",
+                    "Cube must contain measures");
             }
         } else if (value instanceof MondrianGuiDef.VirtualCubeDimension) {
             if (isEmpty(((MondrianGuiDef.VirtualCubeDimension) value).name)) {
@@ -119,7 +131,7 @@ public class ValidationUtils {
             if (isEmpty(cubeVal.name)) {
                 return nameMustBeSet;
             }
-            if (((MondrianGuiDef.Cube) value).fact == null
+            if (cubeVal.fact == null
                 || ((cubeVal.fact instanceof MondrianGuiDef.Table)
                     && isEmpty(((MondrianGuiDef.Table) cubeVal.fact).name))
                 || ((cubeVal.fact instanceof MondrianGuiDef.View)
@@ -129,7 +141,16 @@ public class ValidationUtils {
                     "schemaTreeCellRenderer.factNameMustBeSet.alert",
                     "Fact name must be set");
             }
-
+            if (isEmpty(cubeVal.dimensions)) {
+                return messages.getString(
+                    "schemaTreeCellRenderer.cubeMustHaveDimensions.alert",
+                    "Cube must contain dimensions");
+            }
+            if (isEmpty(cubeVal.measures)) {
+                return messages.getString(
+                    "schemaTreeCellRenderer.cubeMustHaveMeasures.alert",
+                    "Cube must contain measures");
+            }
             // database validity check, if database connection is successful
             if (jdbcValidator.isInitialized()) {
                 if (((MondrianGuiDef.Cube) value).fact
@@ -795,6 +816,16 @@ public class ValidationUtils {
      */
     public static boolean isEmpty(String v) {
         return (v == null) || v.equals("");
+    }
+
+    /**
+     * Returns whether an array is null or empty
+     *
+     * @param arr array
+     * @return whether the array is null or empty
+     */
+    public static boolean isEmpty(Object[] arr) {
+        return arr == null || arr.length == 0;
     }
 
     /**
