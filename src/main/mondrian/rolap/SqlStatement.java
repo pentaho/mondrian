@@ -144,7 +144,7 @@ public class SqlStatement {
             final long execMs = time - startTime;
             Util.addDatabaseTime(execMs);
             status = ", exec " + execMs + " ms";
-        } catch (SQLException e) {
+        } catch (Exception e) {
             status = ", failed (" + e + ")";
             try {
                 if (statement != null) {
