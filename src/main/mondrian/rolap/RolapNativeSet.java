@@ -811,12 +811,13 @@ public abstract class RolapNativeSet extends RolapNative {
      * @param evaluator Evaluator to use if inputs are to be evaluated
      * @param fun The function, either "CrossJoin" or "NonEmptyCrossJoin"
      * @param args Inputs to the CrossJoin
+     * @param returnAny indicates we should return any valid crossjoin args
      * @return array of CrossJoinArg representing the inputs
      */
     protected CrossJoinArg[] checkCrossJoin(
         RolapEvaluator evaluator,
         FunDef fun,
-        Exp[] args)
+        Exp[] args, final boolean returnAny)
     {
         // is this "CrossJoin([A].children, [B].children)"
         if (!"Crossjoin".equalsIgnoreCase(fun.getName())
@@ -832,20 +833,30 @@ public abstract class RolapNativeSet extends RolapNative {
         // MemberListCrossJoinArg.
         CrossJoinArg[][] argArray = new CrossJoinArg[2][];
         for (int i = 0; i < 2; i++) {
-            argArray[i] = checkCrossJoinArg(evaluator, args[i]);
-            if (argArray[i] == null) {
+            argArray[i] = checkCrossJoinArg(evaluator, args[i], returnAny);
+            if (argArray[i] == null && !returnAny) {
                 argArray[i] = expandNonNative(evaluator, args[i]);
             }
-            if (argArray[i] == null) {
+            if (argArray[i] == null && !returnAny) {
                 return null;
             }
         }
         CrossJoinArg[] ret =
-            new CrossJoinArg[argArray[0].length + argArray[1].length];
-        System.arraycopy(argArray[0], 0, ret, 0, argArray[0].length);
+            new CrossJoinArg[length(argArray, 0) + length(argArray, 1)];
+        if (argArray[0] != null) {
+            System.arraycopy(argArray[0], 0, ret, 0, length(argArray, 0));
+        }
+        if (argArray[1] != null) {
         System.arraycopy(
-            argArray[1], 0, ret, argArray[0].length, argArray[1].length);
+            argArray[1], 0, ret, length(argArray, 0), length(argArray, 1));
+        }
         return ret;
+    }
+    private int length(final CrossJoinArg[][] argArray, final int index) {
+        if (argArray[index] != null) {
+            return argArray[index].length;
+        }
+        return 0;
     }
 
     private CrossJoinArg[] expandNonNative(
@@ -877,6 +888,13 @@ public abstract class RolapNativeSet extends RolapNative {
     protected CrossJoinArg[] checkCrossJoinArg(
         RolapEvaluator evaluator,
         Exp exp)
+    {
+        return checkCrossJoinArg(evaluator,exp,false);
+    }
+
+    protected CrossJoinArg[] checkCrossJoinArg(
+        RolapEvaluator evaluator,
+        Exp exp, final boolean returnAny)
     {
         if (exp instanceof NamedSetExpr) {
             NamedSet namedSet = ((NamedSetExpr) exp).getNamedSet();
@@ -912,9 +930,12 @@ public abstract class RolapNativeSet extends RolapNative {
         // strip off redundant set braces, for example
         // { Gender.Gender.members }, or {{{ Gender.M }}}
         if ("{}".equalsIgnoreCase(fun.getName()) && args.length == 1) {
-            return checkCrossJoinArg(evaluator, args[0]);
+            return checkCrossJoinArg(evaluator, args[0], returnAny);
         }
-        return checkCrossJoin(evaluator, fun, args);
+        if ("NativizeSet".equalsIgnoreCase(fun.getName()) && args.length == 1) {
+            return checkCrossJoinArg(evaluator, args[0], returnAny);
+        }
+        return checkCrossJoin(evaluator, fun, args,returnAny);
     }
 
     /**

@@ -546,7 +546,13 @@ public class RolapHierarchy extends HierarchyBase {
             subRelation = getRelation();
         }
 
-        query.addFrom(subRelation, null, failIfExists);
+        boolean tableAdded = query.addFrom(subRelation, null, failIfExists);
+        if (tableAdded && table != null) {
+            RolapStar.Condition joinCondition = table.getJoinCondition();
+            if (joinCondition != null) {
+                query.addWhere(joinCondition);
+            }
+        }
     }
 
     /**

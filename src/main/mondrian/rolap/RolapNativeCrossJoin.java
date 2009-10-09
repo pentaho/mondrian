@@ -100,7 +100,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
         RolapCube cube = evaluator.getCube();
 
-        CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args);
+        CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args, false);
 
         if (cargs == null) {
             // Something in the arguments to the crossjoin prevented
@@ -214,11 +214,51 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
         evaluator.setContext(evalMembers);
-
-        TupleConstraint constraint =
-            new NonEmptyCrossJoinConstraint(cargs, evaluator);
+        TupleConstraint constraint = buildConstraint(evaluator, fun, cargs);
         SchemaReader schemaReader = evaluator.getSchemaReader();
         return new SetEvaluator(cargs, schemaReader, constraint);
+    }
+
+    private TupleConstraint buildConstraint(
+        final RolapEvaluator evaluator,
+        final FunDef fun,
+        final CrossJoinArg[] cargs)
+    {
+        CrossJoinArg[] myArgs;
+        if (safeToConstrainByOtherAxes(fun)) {
+            myArgs = buildArgs(evaluator, cargs);
+        } else {
+            myArgs = cargs;
+        }
+        return new NonEmptyCrossJoinConstraint(myArgs, evaluator);
+    }
+
+    private CrossJoinArg[] buildArgs(
+        final RolapEvaluator evaluator, final CrossJoinArg[] cargs)
+    {
+        Set<CrossJoinArg> joinArgs =
+            buildConstraintFromAllAxes(
+                evaluator, evaluator.getQuery().getAxes());
+        joinArgs.addAll(Arrays.asList(cargs));
+        return joinArgs.toArray(new CrossJoinArg[joinArgs.size()]);
+    }
+
+    private boolean safeToConstrainByOtherAxes(final FunDef fun) {
+        return !(fun instanceof NonEmptyCrossJoinFunDef);
+    }
+
+    private Set<CrossJoinArg> buildConstraintFromAllAxes(
+        final RolapEvaluator evaluator, final QueryAxis[] axes)
+    {
+        Set<CrossJoinArg> joinArgs = new HashSet<CrossJoinArg>();
+        for (QueryAxis ax : axes) {
+            CrossJoinArg[] axesArgs =
+                checkCrossJoinArg(evaluator, ax.getSet(), true);
+            if (axesArgs != null) {
+                joinArgs.addAll(Arrays.asList(axesArgs));
+            }
+        }
+        return joinArgs;
     }
 
     private void alertCrossJoinNonNative(

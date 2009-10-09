@@ -17,6 +17,7 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
@@ -436,6 +437,15 @@ public class SqlQuery {
         buf.append(exprRight);
 
         addWhere(buf.toString());
+    }
+
+    public void addWhere(RolapStar.Condition joinCondition) {
+        String left = joinCondition.getLeft().getTableAlias();
+        String right = joinCondition.getRight().getTableAlias();
+        if (fromAliases.contains(left) && fromAliases.contains(right)) {
+            addWhere(joinCondition.getLeft(this),
+                " = ",joinCondition.getRight(this));
+        }
     }
 
     public void addWhere(final String expression)
