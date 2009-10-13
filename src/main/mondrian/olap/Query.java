@@ -285,15 +285,42 @@ public class Query extends QueryPart {
         Exp exp,
         MemberProperty[] memberProperties)
     {
-        Formula newFormula = new Formula(id, exp, memberProperties);
+        addFormula(new Formula(id, exp, memberProperties));
+    }
+
+    /**
+     * Adds a new formula specifying a member or a set
+     * to an existing query; resolve is called after
+     * the formula has been added.
+     *
+     * @param formula Formula to add to query
+     */
+    public void addFormula(Formula formula) {
         int formulaCount = 0;
         if (formulas.length > 0) {
             formulaCount = formulas.length;
         }
         Formula[] newFormulas = new Formula[formulaCount + 1];
         System.arraycopy(formulas, 0, newFormulas, 0, formulaCount);
-        newFormulas[formulaCount] = newFormula;
+        newFormulas[formulaCount] = formula;
         formulas = newFormulas;
+        resolve();
+    }
+
+    /**
+     * Adds some number of new formulas specifying members
+     * or sets to an existing query; resolve is only called
+     * once, after all the new members have been added to
+     * the query.
+     *
+     * @param additions Formulas to add to query
+     */
+    public void addFormulas(Formula... additions) {
+        int formulaCount = formulas.length;
+        Formula[] temp = new Formula[formulaCount + additions.length];
+        System.arraycopy(formulas, 0, temp, 0, formulaCount);
+        System.arraycopy(additions, 0, temp, formulaCount, additions.length);
+        formulas = temp;
         resolve();
     }
 

@@ -4111,6 +4111,39 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
+    public static void checkNotNative(String mdx) {
+        NonEmptyTest test = new NonEmptyTest();
+        test.checkNotNative(0, mdx, null);
+    }
+
+    public static void checkNotNative(String mdx, Result expectedResult) {
+        NonEmptyTest test = new NonEmptyTest();
+        test.checkNotNative(
+            getRowCount(expectedResult),
+            mdx,
+            TestContext.toString(expectedResult));
+    }
+
+    public static void checkNative(String mdx) {
+        NonEmptyTest test = new NonEmptyTest();
+        test.checkNative(0, 0, mdx, null, true);
+    }
+
+    public static void checkNative(String mdx, Result expectedResult) {
+        NonEmptyTest test = new NonEmptyTest();
+        test.checkNative(
+            0,
+            getRowCount(expectedResult),
+            mdx,
+            TestContext.toString(expectedResult),
+            true);
+    }
+
+    private static int getRowCount(Result result) {
+        return result.getAxes()[result.getAxes().length - 1]
+            .getPositions().size();
+    }
+
     Result executeQuery(String mdx, Connection connection) {
         Query query = connection.parseQuery(mdx);
         query.setResultStyle(ResultStyle.LIST);

@@ -1915,17 +1915,31 @@ public class FunUtil extends Util {
         String name,
         Syntax syntax)
     {
-        Query query = validator.getQuery();
-        Cube cube = null;
-        if (query != null) {
-            cube = query.getCube();
-        }
         for (int i = 0; i < args.length; i++) {
             newArgs[i] = validator.validate(args[i], false);
         }
         if (funDef == null || validator.alwaysResolveFunDef()) {
             funDef = validator.getDef(newArgs, name, syntax);
         }
+        checkNativeCompatible(validator, funDef, newArgs);
+        return funDef;
+    }
+
+    /**
+     * Functions that dynamically return one or more members of the measures
+     * dimension prevent us from using native evaluation.
+     *
+     * @param validator Validator used to validate function arguments and
+     *           resolve the function
+     * @param funDef Function definition, or null to deduce definition from
+     *           name, syntax and argument types
+     * @param args    Arguments to the function
+     */
+    private static void checkNativeCompatible(
+            Validator validator,
+            FunDef funDef,
+            Exp[] args)
+    {
         // If the first argument to a function is either:
         // 1) the measures dimension or
         // 2) a measures member where the function returns another member or
@@ -1939,21 +1953,25 @@ public class FunUtil extends Util {
         // Measures dimension as well as functions like the range operator,
         // siblings, and lag, when the argument is a measure member.
         // However, we do allow functions like isEmpty, rank, and topPercent.
-        // Also, the set function is ok since it just enumerates its
-        // arguments.
+        //
+        // Also, the Set and Parentheses functions are ok since they're
+        // essentially just containers.
+        Query query = validator.getQuery();
         if (!(funDef instanceof SetFunDef)
+            && !(funDef instanceof ParenthesesFunDef)
             && query != null
             && query.nativeCrossJoinVirtualCube())
         {
             int[] paramCategories = funDef.getParameterCategories();
             if (paramCategories.length > 0) {
                 final int cat0 = paramCategories[0];
-                final Exp arg0 = newArgs[0];
+                final Exp arg0 = args[0];
                 switch (cat0) {
                 case Category.Dimension:
                 case Category.Hierarchy:
                     if (arg0 instanceof DimensionExpr
-                        && ((DimensionExpr) arg0).getDimension().isMeasures())
+                        && ((DimensionExpr) arg0).getDimension().isMeasures()
+                        && !(funDef instanceof HierarchyCurrentMemberFunDef))
                     {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
@@ -1961,8 +1979,7 @@ public class FunUtil extends Util {
                 case Category.Member:
                     if (arg0 instanceof MemberExpr
                         && ((MemberExpr) arg0).getMember().isMeasure()
-                        && (funDef.getReturnCategory() == Category.Member
-                            || funDef.getReturnCategory() == Category.Set))
+                        && isMemberOrSet(funDef.getReturnCategory()))
                     {
                         query.setVirtualCubeNonNativeCrossJoin();
                     }
@@ -1970,8 +1987,10 @@ public class FunUtil extends Util {
                 }
             }
         }
+    }
 
-        return funDef;
+    private static boolean isMemberOrSet(int category) {
+        return category == Category.Member || category == Category.Set;
     }
 
     static void appendTuple(StringBuilder buf, Member[] members) {

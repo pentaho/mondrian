@@ -153,12 +153,7 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
     }
 
     public Object accept(MdxVisitor visitor) {
-        final Object o = visitor.visit(this);
-        // visit the call's arguments
-        for (Exp arg : args) {
-            arg.accept(visitor);
-        }
-        return o;
+        return visitor.visit(this);
     }
 }
 
