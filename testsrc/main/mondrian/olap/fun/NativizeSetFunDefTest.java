@@ -1015,7 +1015,7 @@ public class NativizeSetFunDefTest extends FoodMartTestCase {
                 + "from [Sales]\n");
     }
 
-    public void testTransformsWithSeveralDimensionsNestedOnRows() {
+    public void DISABLED_testTransformsWithSeveralDimensionsNestedOnRows() {
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
 
