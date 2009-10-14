@@ -11,6 +11,13 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
+/**
+ * Definition of the <code>NativizeSet</code> MDX function.
+ *
+ * @author jrand
+ * @version $Id$
+ * @since Oct 14, 2009
+ */
 public class NativizeSetFunDef extends FunDefBase {
     /*
      * Static final fields.

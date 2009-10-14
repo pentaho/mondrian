@@ -101,7 +101,9 @@ public class SqlConstraintUtils {
             }
 
             final String value = String.valueOf(values[i]);
-            if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
+                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
+            {
                 sqlQuery.addWhere(
                     expr,
                     " is ",
@@ -631,7 +633,7 @@ public class SqlConstraintUtils {
         if (key != RolapUtil.sqlNullValue) {
             return key.toString();
         } else {
-            return RolapUtil.mdxNullLiteral;
+            return RolapUtil.mdxNullLiteral();
         }
     }
 
@@ -701,7 +703,7 @@ public class SqlConstraintUtils {
 
         String constraint;
 
-        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
+        if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
             constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
         } else {
             if (datatype.isNumeric()) {
@@ -861,7 +863,7 @@ public class SqlConstraintUtils {
 
                 // If parent at a level is NULL, record this parent and all
                 // its children(if there's any)
-                if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+                if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(value)) {
                     // Add to the nullParent map
                     List<RolapMember> childrenList =
                         parentWithNullToChildrenMap.get(p);

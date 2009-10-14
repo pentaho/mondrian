@@ -16,17 +16,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import mondrian.calc.ResultStyle;
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Connection;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Id;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.NativeEvaluationUnsupportedException;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -3881,6 +3871,28 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Store].[Store Name].members"
             + ") on 0 from hr";
         checkNotNative(9, query);
+    }
+
+    public void testNativeWithOverriddenNullMemberRepAndNullConstraint() {
+        String preMdx = "SELECT FROM [Sales]";
+
+        String mdx =
+            "SELECT \n"
+                + "  [Gender].[Gender].MEMBERS ON ROWS\n"
+                + " ,{[Measures].[Unit Sales]} ON COLUMNS\n"
+                + "FROM [Sales]\n"
+                + "WHERE \n"
+                + "  [Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
+
+        // run an mdx query with the default NullMemberRepresentation
+        executeQuery(preMdx);
+
+        propSaver.set(MondrianProperties.instance()
+            .NullMemberRepresentation, "~Missing ");
+        propSaver.set(MondrianProperties.instance()
+            .EnableNonEmptyOnAllAxis, true);
+        RolapUtil.reloadNullLiteral();
+        executeQuery(mdx);
     }
 
     /**

@@ -331,7 +331,7 @@ public class RolapMember extends MemberBase {
     protected static String keyToString(Object key) {
         String name;
         if (key == null || RolapUtil.sqlNullValue.equals(key)) {
-            name = RolapUtil.mdxNullLiteral;
+            name = RolapUtil.mdxNullLiteral();
         } else if (key instanceof Id.Segment) {
             name = ((Id.Segment) key).name;
         } else {
@@ -518,7 +518,7 @@ public class RolapMember extends MemberBase {
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
-                value = RolapUtil.mdxNullLiteral;
+                value = RolapUtil.mdxNullLiteral();
             }
             setUniqueName(value);
         }
@@ -782,7 +782,7 @@ public class RolapMember extends MemberBase {
             // If the key value in the database is null, then we use
             // a special key value whose toString() is "null".
             final String name = getName();
-            return name.equals(RolapUtil.mdxNullLiteral) || name.equals("");
+            return name.equals(RolapUtil.mdxNullLiteral()) || name.equals("");
         }
 
         case IfParentsName:

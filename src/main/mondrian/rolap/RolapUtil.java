@@ -75,9 +75,20 @@ public class RolapUtil {
      * Runtime NullMemberRepresentation property change not taken into
      * consideration
      */
-    public static final String mdxNullLiteral =
-            MondrianProperties.instance().NullMemberRepresentation.get();
+    private static String mdxNullLiteral = null;
     public static final String sqlNullLiteral = "null";
+
+    public static String mdxNullLiteral() {
+        if (mdxNullLiteral == null) {
+            reloadNullLiteral();
+        }
+        return mdxNullLiteral;
+    }
+
+    public static void reloadNullLiteral() {
+        mdxNullLiteral =
+            MondrianProperties.instance().NullMemberRepresentation.get();
+    }
 
     /**
      * Names of classes of drivers we've loaded (or have tried to load).

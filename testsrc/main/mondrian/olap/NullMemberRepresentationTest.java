@@ -68,7 +68,7 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
     }
 
     private String getNullMemberRepresentation() {
-        return RolapUtil.mdxNullLiteral;
+        return RolapUtil.mdxNullLiteral();
     }
 
 }
