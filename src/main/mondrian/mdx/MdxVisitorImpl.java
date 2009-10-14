@@ -39,10 +39,6 @@ public class MdxVisitorImpl implements MdxVisitor {
     }
 
     public Object visit(ResolvedFunCall call) {
-        // visit the call's arguments
-        for (Exp arg : call.getArgs()) {
-            arg.accept(this);
-        }
         return null;
     }
 

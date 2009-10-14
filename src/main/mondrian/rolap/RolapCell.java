@@ -317,16 +317,9 @@ class RolapCell implements Cell {
                 // Allow parentheses but don't allow tuple
                 || name.equals("()") && args.length == 1)
             {
-                visitChildren(args);
                 return null;
             }
             throw bomb;
-        }
-
-        private void visitChildren(Exp[] args) {
-            for (Exp arg : args) {
-                arg.accept(this);
-            }
         }
 
         public void handleMember(Member member) {
