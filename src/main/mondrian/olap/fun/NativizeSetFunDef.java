@@ -488,7 +488,8 @@ public class NativizeSetFunDef extends FunDefBase {
             }
 
             if (exps.length > 1
-                && call.getFunDef() instanceof SetFunDef) {
+                && call.getFunDef() instanceof SetFunDef)
+            {
                 return flattenSetFunDef(call);
             }
             return null;

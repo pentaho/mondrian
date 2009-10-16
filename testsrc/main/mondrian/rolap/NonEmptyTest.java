@@ -3929,7 +3929,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name` "
                 + "order by 1 ASC, 2 ASC",
             623);
-        assertQuerySql(mdx,new SqlPattern[]{pattern});
+        assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
     /**

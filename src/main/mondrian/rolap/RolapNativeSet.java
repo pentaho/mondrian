@@ -889,7 +889,7 @@ public abstract class RolapNativeSet extends RolapNative {
         RolapEvaluator evaluator,
         Exp exp)
     {
-        return checkCrossJoinArg(evaluator,exp,false);
+        return checkCrossJoinArg(evaluator, exp, false);
     }
 
     protected CrossJoinArg[] checkCrossJoinArg(
@@ -935,7 +935,7 @@ public abstract class RolapNativeSet extends RolapNative {
         if ("NativizeSet".equalsIgnoreCase(fun.getName()) && args.length == 1) {
             return checkCrossJoinArg(evaluator, args[0], returnAny);
         }
-        return checkCrossJoin(evaluator, fun, args,returnAny);
+        return checkCrossJoin(evaluator, fun, args, returnAny);
     }
 
     /**
