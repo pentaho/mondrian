@@ -520,6 +520,30 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    /**
+     * Tests an 'DRILLTHROUGH SELECT' statement with a zero-dimensional query,
+     * that is, a query with 'SELECT FROM', and no axes.
+     *
+     * @throws Exception on error
+     */
+    public void testDrillThroughZeroDimensionalQuery() throws Exception {
+        // NOTE: this test uses the filter method to adjust the expected result
+        // for different databases
+        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+            return;
+        }
+        String requestType = "EXECUTE";
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
     protected String filter(
         String testCaseName,
         String filename,

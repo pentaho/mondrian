@@ -1252,7 +1252,9 @@ public class XmlaHandler implements XmlaConstants {
         final Query query = connection.parseQuery(statement);
         query.setResultStyle(ResultStyle.LIST);
         final Result result = connection.execute(query);
-        Cell dtCell = result.getCell(new int[] {0, 0});
+        // cell [0, 0] in a 2-dimensional query, [0, 0, 0] in 3 dimensions, etc.
+        final int[] coords = new int[result.getAxes().length];
+        Cell dtCell = result.getCell(coords);
 
         if (!dtCell.canDrillThrough()) {
             throw new XmlaException(
