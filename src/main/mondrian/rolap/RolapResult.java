@@ -238,6 +238,10 @@ public class RolapResult extends ResultBase {
                 axisMembers);
             axisMembers.setSlicer(false);
 
+            // Save unadulterated context for the next time we need to evaluate
+            // the slicer.
+            final RolapEvaluator savedEvaluator = evaluator.push();
+
             if (!axisMembers.isEmpty()) {
                 for (Member m : axisMembers) {
                     if (m == null) {
@@ -309,7 +313,7 @@ public class RolapResult extends ResultBase {
                 evalExecute(
                     nonAllMembers,
                     nonAllMembers.size() - 1,
-                    evaluator.push(),
+                    savedEvaluator,
                     query.slicerAxis,
                     query.slicerCalc);
 

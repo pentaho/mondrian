@@ -116,6 +116,91 @@ public class CompoundSlicerTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests compound slicer with EXCEPT.
+     *
+     * <p>Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-637">
+     * Bug MONDRIAN-637, "Using Except in the slicer makes no sense"</a>.
+     */
+    public void testCompoundSlicerExcept() {
+        final String expected =
+            "Axis #0:\n"
+            + "{[Promotion Media].[All Media].[Bulk Mail]}\n"
+            + "{[Promotion Media].[All Media].[Cash Register Handout]}\n"
+            + "{[Promotion Media].[All Media].[Daily Paper, Radio]}\n"
+            + "{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}\n"
+            + "{[Promotion Media].[All Media].[In-Store Coupon]}\n"
+            + "{[Promotion Media].[All Media].[No Media]}\n"
+            + "{[Promotion Media].[All Media].[Product Attachment]}\n"
+            + "{[Promotion Media].[All Media].[Radio]}\n"
+            + "{[Promotion Media].[All Media].[Street Handout]}\n"
+            + "{[Promotion Media].[All Media].[Sunday Paper]}\n"
+            + "{[Promotion Media].[All Media].[Sunday Paper, Radio]}\n"
+            + "{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}\n"
+            + "{[Promotion Media].[All Media].[TV]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 259,035\n"
+            + "Row #1: 127,871\n"
+            + "Row #2: 131,164\n";
+
+        // slicer expression that inherits [Promotion Media] member from context
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + " [Gender].Members on 1\n"
+            + "from [Sales]\n"
+            + "where Except(\n"
+            + "  [Promotion Media].Children,\n"
+            + "  {[Promotion Media].[Daily Paper]})", expected);
+
+        // similar query, but don't assume that [Promotion Media].CurrentMember
+        // = [Promotion Media].[All Media]
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + " [Gender].Members on 1\n"
+            + "from [Sales]\n"
+            + "where Except(\n"
+            + "  [Promotion Media].[All Media].Children,\n"
+            + "  {[Promotion Media].[Daily Paper]})", expected);
+
+        // reference query, computing the same numbers a different way
+        assertQueryReturns(
+            "with member [Promotion Media].[Except Daily Paper] as\n"
+            + "  Aggregate(\n"
+            + "    Except(\n"
+            + "      [Promotion Media].Children,\n"
+            + "      {[Promotion Media].[Daily Paper]}))\n"
+            + "select [Measures].[Unit Sales]\n"
+            + " * {[Promotion Media],\n"
+            + "    [Promotion Media].[Daily Paper],\n"
+            + "    [Promotion Media].[Except Daily Paper]} on 0,\n"
+            + " [Gender].Members on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales], [Promotion Media].[All Media]}\n"
+            + "{[Measures].[Unit Sales], [Promotion Media].[All Media].[Daily Paper]}\n"
+            + "{[Measures].[Unit Sales], [Promotion Media].[Except Daily Paper]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 7,738\n"
+            + "Row #0: 259,035\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 3,687\n"
+            + "Row #1: 127,871\n"
+            + "Row #2: 135,215\n"
+            + "Row #2: 4,051\n"
+            + "Row #2: 131,164\n");
+    }
+
+    /**
      * Tests a query with a compond slicer over tuples. (Multiple rows, each
      * of which has multiple members.)
      */
@@ -239,6 +324,10 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #2: \n");
     }
 
+    /**
+     * Test case for a basic query with more than one member of the same
+     * hierarchy in the WHERE clause.
+     */
     public void testCompoundSlicer() {
         // Reference query.
         assertQueryReturns(
@@ -247,16 +336,16 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where {[Product].[Drink]}",
             "Axis #0:\n"
-                + "{[Product].[All Products].[Drink]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Gender].[All Gender]}\n"
-                + "{[Gender].[All Gender].[F]}\n"
-                + "{[Gender].[All Gender].[M]}\n"
-                + "Row #0: 24,597\n"
-                + "Row #1: 12,202\n"
-                + "Row #2: 12,395\n");
+            + "{[Product].[All Products].[Drink]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #1: 12,202\n"
+            + "Row #2: 12,395\n");
         // Reference query.
         assertQueryReturns(
             "select [Measures].[Unit Sales] on 0,\n"
