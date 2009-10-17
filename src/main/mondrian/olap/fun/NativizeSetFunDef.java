@@ -714,7 +714,7 @@ public class NativizeSetFunDef extends FunDefBase {
             List<Collection<String>> nativeMembers)
         {
             List<ReassemblyCommand> commands = guide.getCommands();
-            EnumSet<NativeElementType> typesToAdd =
+            Set<NativeElementType> typesToAdd =
                 ReassemblyCommand.getMemberTypes(commands);
 
             if (typesToAdd.contains(LEVEL_MEMBERS)) {
@@ -1307,10 +1307,11 @@ public class NativizeSetFunDef extends FunDefBase {
             return memberType;
         }
 
-        public static EnumSet<NativeElementType>
-        getMemberTypes(Collection<ReassemblyCommand> commands) {
-            EnumSet<NativeElementType> types =
-                EnumSet.noneOf(NativeElementType.class);
+        public static Set<NativeElementType> getMemberTypes(
+            Collection<ReassemblyCommand> commands)
+        {
+            Set<NativeElementType> types =
+                Util.enumSetNoneOf(NativeElementType.class);
             for (ReassemblyCommand command : commands) {
                 types.add(command.getMemberType());
             }
