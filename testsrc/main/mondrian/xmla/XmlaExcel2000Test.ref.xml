@@ -372,6 +372,10 @@
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
                         <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
                             <Name>SCHEMA_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
@@ -3255,6 +3259,10 @@ The default value for this property is an empty string.</PropertyDescription>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
                         <Restrictions>
                             <Name>SCHEMA_NAME</Name>
                             <Type>xsd:string</Type>

@@ -324,9 +324,13 @@ public class XmlaSupport {
             String url = catalogNameUrl.getValue();
             buf.append("           <Catalog name='");
             buf.append(name);
-            buf.append("'><Definition>");
-            buf.append(url);
-            buf.append("</Definition></Catalog>");
+            buf.append("'>");
+            if (url != null) {
+                buf.append("<Definition>");
+                buf.append(url);
+                buf.append("</Definition>");
+            }
+            buf.append("</Catalog>");
         }
         buf.append("       </Catalogs>");
         buf.append(nl);
@@ -341,6 +345,7 @@ public class XmlaSupport {
         }
         return datasources;
     }
+
     public static String getSoapFaultXPath() {
         if (XmlaSupport.soapFaultXPath == null) {
             StringBuilder buf = new StringBuilder(100);
@@ -614,7 +619,8 @@ public class XmlaSupport {
             String dataSourceText =
                 XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
-            dsFile = File.createTempFile("datasources.xml", null);
+            dsFile = File.createTempFile("datasources", ".xml");
+            dsFile.deleteOnExit();
 
             OutputStream out = new FileOutputStream(dsFile);
             out.write(dataSourceText.getBytes());
@@ -677,7 +683,7 @@ public class XmlaSupport {
         String dataSourceText =
             XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
-        File dsFile = File.createTempFile("datasources.xml", null);
+        File dsFile = File.createTempFile("datasources", ".xml");
 
         //////////////////////////////////////////////////////////
         // NOTE: this is ok for CmdRunner or JUnit testing but

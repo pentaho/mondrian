@@ -200,6 +200,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         try {
             dsFile = File.createTempFile(
                 Long.toString(System.currentTimeMillis()), null);
+            dsFile.deleteOnExit();
 
             OutputStream out = new FileOutputStream(dsFile);
             out.write(ds1.toXML().getBytes());

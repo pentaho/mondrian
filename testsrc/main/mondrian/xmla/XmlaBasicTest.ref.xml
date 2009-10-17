@@ -34,6 +34,9 @@
                         <xsd:complexType name="row">
                             <xsd:sequence>
                                 <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                 <xsd:element minOccurs="0"
                                     name="SCHEMA_NAME"
                                     sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME"
@@ -11716,6 +11719,10 @@ The default value of this property is the empty string,in which case, all fields
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
                         <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                         <Restrictions>
                             <Name>SCHEMA_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>

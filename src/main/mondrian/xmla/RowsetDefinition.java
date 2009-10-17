@@ -485,6 +485,7 @@ enum RowsetDefinition {
      */
     MDSCHEMA_ACTIONS(
         11, null, new Column[] {
+            MdschemaActionsRowset.CatalogName,
             MdschemaActionsRowset.SchemaName,
             MdschemaActionsRowset.CubeName,
             MdschemaActionsRowset.ActionName,
@@ -493,6 +494,7 @@ enum RowsetDefinition {
         }, new Column[] {
             // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
             // ACTION_NAME.
+            MdschemaActionsRowset.CatalogName,
             MdschemaActionsRowset.SchemaName,
             MdschemaActionsRowset.CubeName,
             MdschemaActionsRowset.ActionName,
@@ -3488,6 +3490,14 @@ TODO: see above
             super(MDSCHEMA_ACTIONS, request, handler);
         }
 
+        private static final Column CatalogName =
+            new Column(
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
+                "The name of the catalog to which this action belongs.");
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
