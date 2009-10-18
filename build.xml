@@ -23,12 +23,12 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="3.1-SNAPSHOT"/>
+  <property name="version" value="4.0.0.13109"/>
   <property name="vendor" value="Pentaho"/>
   <property name="driver.name" value="Mondrian olap4j driver"/>
-  <property name="driver.version" value="3.1.2"/>
-  <property name="driver.version.major" value="3"/>
-  <property name="driver.version.minor" value="102"/>
+  <property name="driver.version" value="4.0.0"/>
+  <property name="driver.version.major" value="4"/>
+  <property name="driver.version.minor" value="000"/>
   <!--
     ===================================================================
     Set the properties related to paths
@@ -1236,7 +1236,8 @@ META-INF/**"
       <zipfileset
           dir="${testclasses.dir}"
           includes="
-mondrian/test/loader/**/*.class"/>
+mondrian/test/loader/**/*.class,
+mondrian/olap4j/MondrianInprocProxy*.class"/>
       <zipfileset
           dir="${javatest.dir}"
           includes="
