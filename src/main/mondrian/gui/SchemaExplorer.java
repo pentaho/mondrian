@@ -3491,9 +3491,9 @@ public class SchemaExplorer
     }
 
     protected void addCalcMemberPropToCalcMember(
-            MondrianGuiDef.CalculatedMember calcMember,
-            int parentIndex,
-            TreePath tpath)
+        MondrianGuiDef.CalculatedMember calcMember,
+        int parentIndex,
+        TreePath tpath)
     {
         MondrianGuiDef.CalculatedMemberProperty property =
             new MondrianGuiDef.CalculatedMemberProperty();
@@ -3532,11 +3532,10 @@ public class SchemaExplorer
     }
 
     protected void addCalcMemberPropToMeasure(
-            MondrianGuiDef.Measure measure,
-            int parentIndex,
-            TreePath tpath)
+        MondrianGuiDef.Measure measure,
+        int parentIndex,
+        TreePath tpath)
     {
-
         MondrianGuiDef.CalculatedMemberProperty property =
             new MondrianGuiDef.CalculatedMemberProperty();
         property.name = "";

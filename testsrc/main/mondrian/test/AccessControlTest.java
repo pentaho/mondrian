@@ -1646,15 +1646,19 @@ public class AccessControlTest extends FoodMartTestCase {
             buf.append(
                 "  <Role name=\"" + name + "\"> \n"
                 + "    <SchemaGrant access=\"none\"> \n"
-                + "      <CubeGrant access=\"all\" cube=\"" + cubeName + "\"> \n"
+                + "      <CubeGrant access=\"all\" cube=\"" + cubeName
+                + "\"> \n"
                 + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers]\" rollupPolicy=\"partial\"> \n"
-                + "          <MemberGrant access=\"all\" member=\"" + uniqueName + "\"/> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName + "\"/> \n"
                 + "        </HierarchyGrant> \n"
                 + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers2]\" rollupPolicy=\"partial\"> \n"
-                + "          <MemberGrant access=\"all\" member=\"" + uniqueName2 + "\"/> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName2 + "\"/> \n"
                 + "        </HierarchyGrant> \n"
                 + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers3]\" rollupPolicy=\"partial\"> \n"
-                + "          <MemberGrant access=\"all\" member=\"" + uniqueName3 + "\"/> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName3 + "\"/> \n"
                 + "        </HierarchyGrant> \n"
                 + "      </CubeGrant> \n"
                 + "    </SchemaGrant> \n"
@@ -1692,12 +1696,14 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext1 = testContext.withRole("Test");
         testContext1.executeQuery("select from [" + cubeName + "]");
         final long t1 = System.currentTimeMillis();
-//        System.out.println("Elapsed=" + (t1 - t0) + " millis");
-//        System.out.println("RoleImpl.accessCount=" + RoleImpl.accessCallCount);
-//        testContext1.executeQuery("select from [Sales with multiple customers]");
-//        final long t2 = System.currentTimeMillis();
-//        System.out.println("Elapsed=" + (t2 - t1) + " millis");
-//        System.out.println("RoleImpl.accessCount=" + RoleImpl.accessCallCount);
+//      System.out.println("Elapsed=" + (t1 - t0) + " millis");
+//      System.out.println(
+//          "RoleImpl.accessCount=" + RoleImpl.accessCallCount);
+//      testContext1.executeQuery(
+//          "select from [Sales with multiple customers]");
+//      final long t2 = System.currentTimeMillis();
+//      System.out.println("Elapsed=" + (t2 - t1) + " millis");
+//      System.out.println("RoleImpl.accessCount=" + RoleImpl.accessCallCount);
     }
 }
 

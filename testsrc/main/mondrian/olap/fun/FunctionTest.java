@@ -10278,7 +10278,6 @@ Intel platforms):
             + "Axis #1:\n");
     }
 
-
     /**
      * Executes a query that has a complex parse tree. Goal is to find
      * algorithmic complexity bugs in the validator which would make the query
@@ -10333,7 +10332,7 @@ Intel platforms):
         if (false) {
             System.out.println(buf.toString().length() + ": " + buf.toString());
         }
-        assertQueryReturns(buf.toString(), expected);   
+        assertQueryReturns(buf.toString(), expected);
     }
 
     /**
