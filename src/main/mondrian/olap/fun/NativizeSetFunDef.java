@@ -1382,7 +1382,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    private static <T> String toCsv(Iterable<T> list) {
+    private static <T> String toCsv(Collection<T> list) {
         StringBuilder buf = new StringBuilder();
         String sep = "";
         for (T element : list) {

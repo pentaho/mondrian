@@ -21363,6 +21363,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>Name</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>NativizeSet</FUNCTION_NAME>
+                        <DESCRIPTION>Tries to natively evaluate &lt;Set&gt;.</DESCRIPTION>
+                        <PARAMETER_LIST>Set</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>NativizeSet</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>NextMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the next member in the
                             level that contains a specified member.</DESCRIPTION>
@@ -22798,4 +22807,3 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
         </Resource>
     </TestCase>
 </Root>
-

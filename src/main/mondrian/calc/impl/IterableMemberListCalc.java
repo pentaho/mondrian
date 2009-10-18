@@ -9,8 +9,7 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.calc.DummyExp;
 import mondrian.calc.Calc;
 import mondrian.calc.MemberIterCalc;
@@ -40,8 +39,15 @@ public class IterableMemberListCalc extends AbstractMemberListCalc {
     }
 
     public List<Member> evaluateMemberList(Evaluator evaluator) {
+        // A MemberIterCalc is allowed to return a list. If so, save the copy.
+        final Iterable<Member> iterable =
+            iterCalc.evaluateMemberIterable(evaluator);
+        if (iterable instanceof List) {
+            return Util.cast((List) iterable);
+        }
+
         final List<Member> list = new ArrayList<Member>();
-        for (Member o : iterCalc.evaluateMemberIterable(evaluator)) {
+        for (Member o : iterable) {
             list.add(o);
         }
         return list;

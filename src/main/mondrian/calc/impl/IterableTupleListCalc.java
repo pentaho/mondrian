@@ -9,8 +9,7 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.calc.DummyExp;
 import mondrian.calc.Calc;
 import mondrian.calc.TupleIterCalc;
@@ -40,8 +39,15 @@ public class IterableTupleListCalc extends AbstractTupleListCalc {
     }
 
     public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+        // A TupleIterCalc is allowed to return a list. If so, save the copy.
+        final Iterable<Member[]> iterable =
+            iterCalc.evaluateTupleIterable(evaluator);
+        if (iterable instanceof List) {
+            return Util.cast((List) iterable);
+        }
+
         final List<Member[]> list = new ArrayList<Member[]>();
-        for (Member[] o : iterCalc.evaluateTupleIterable(evaluator)) {
+        for (Member[] o : iterable) {
             list.add(o);
         }
         return list;

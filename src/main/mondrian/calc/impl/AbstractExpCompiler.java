@@ -306,7 +306,10 @@ public class AbstractExpCompiler implements ExpCompiler {
             calc = compileAs(exp, null, ResultStyle.ITERABLE_ANY);
             assert calc != null;
         }
-        if (calc instanceof IterCalc) {
+        // If expression is an iterator, convert it to a list. Don't check
+        // 'calc instanceof IterCalc' because some generic calcs implement both
+        // ListCalc and IterCalc.
+        if (!(calc instanceof ListCalc)) {
             if (((SetType) calc.getType()).getArity() == 1) {
                 return toList((MemberIterCalc) calc);
             } else {
