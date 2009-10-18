@@ -7767,7 +7767,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Tests TopCount applied to a large result set.
      *
-     * Before optimizing (see FunUtil.partialSort), on a 2-core 32-bit 2.4GHz
+     * <p>Before optimizing (see FunUtil.partialSort), on a 2-core 32-bit 2.4GHz
      * machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs.
      * After optimizing, who knows?
      */
@@ -9345,6 +9345,134 @@ Intel platforms):
             "Argument to 'VisualTotals' function must be a set of members; got set of tuples.");
     }
 
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-615">MONDRIAN-615</a>,
+     * "VisualTotals doesn't work for the all member".
+     */
+    public void testVisualTotalsAll() {
+        assertQueryReturns(
+            "SELECT \n"
+            + "  {[Measures].[Unit Sales]} ON 0, \n"
+            + "  VisualTotals(\n"
+            + "    {[Customers].[All Customers],\n"
+            + "     [Customers].[USA],\n"
+            + "     [Customers].[USA].[CA],\n"
+            + "     [Customers].[USA].[OR]}) ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[All Customers].[USA]}\n"
+            + "{[Customers].[All Customers].[USA].[CA]}\n"
+            + "{[Customers].[All Customers].[USA].[OR]}\n"
+            + "Row #0: 142,407\n"
+            + "Row #1: 142,407\n"
+            + "Row #2: 74,748\n"
+            + "Row #3: 67,659\n");
+    }
+
+    /**
+     * Test case involving a named set and query pivoted. Suggested in
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-615">MONDRIAN-615</a>,
+     * "VisualTotals doesn't work for the all member".
+     */
+    public void testVisualTotalsWithNamedSetAndPivot() {
+        assertQueryReturns(
+            "WITH SET [CA_OR] AS\n"
+            + "    VisualTotals(\n"
+            + "        {[Customers].[All Customers],\n"
+            + "         [Customers].[USA],\n"
+            + "         [Customers].[USA].[CA],\n"
+            + "         [Customers].[USA].[OR]})\n"
+            + "SELECT \n"
+            + "    Drilldownlevel({[Time].[1997]}) ON 0, \n"
+            + "    [CA_OR] ON 1 \n"
+            + "FROM [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[All Customers].[USA]}\n"
+            + "{[Customers].[All Customers].[USA].[CA]}\n"
+            + "{[Customers].[All Customers].[USA].[OR]}\n"
+            + "Row #0: 142,407\n"
+            + "Row #0: 36,177\n"
+            + "Row #0: 33,131\n"
+            + "Row #0: 35,310\n"
+            + "Row #0: 37,789\n"
+            + "Row #1: 142,407\n"
+            + "Row #1: 36,177\n"
+            + "Row #1: 33,131\n"
+            + "Row #1: 35,310\n"
+            + "Row #1: 37,789\n"
+            + "Row #2: 74,748\n"
+            + "Row #2: 16,890\n"
+            + "Row #2: 18,052\n"
+            + "Row #2: 18,370\n"
+            + "Row #2: 21,436\n"
+            + "Row #3: 67,659\n"
+            + "Row #3: 19,287\n"
+            + "Row #3: 15,079\n"
+            + "Row #3: 16,940\n"
+            + "Row #3: 16,353\n");
+
+        // same query, swap axes
+        assertQueryReturns(
+            "WITH SET [CA_OR] AS\n"
+            + "    VisualTotals(\n"
+            + "        {[Customers].[All Customers],\n"
+            + "         [Customers].[USA],\n"
+            + "         [Customers].[USA].[CA],\n"
+            + "         [Customers].[USA].[OR]})\n"
+            + "SELECT \n"
+            + "    [CA_OR] ON 0,\n"
+            + "    Drilldownlevel({[Time].[1997]}) ON 1\n"
+            + "FROM [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[All Customers].[USA]}\n"
+            + "{[Customers].[All Customers].[USA].[CA]}\n"
+            + "{[Customers].[All Customers].[USA].[OR]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "Row #0: 142,407\n"
+            + "Row #0: 142,407\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 67,659\n"
+            + "Row #1: 36,177\n"
+            + "Row #1: 36,177\n"
+            + "Row #1: 16,890\n"
+            + "Row #1: 19,287\n"
+            + "Row #2: 33,131\n"
+            + "Row #2: 33,131\n"
+            + "Row #2: 18,052\n"
+            + "Row #2: 15,079\n"
+            + "Row #3: 35,310\n"
+            + "Row #3: 35,310\n"
+            + "Row #3: 18,370\n"
+            + "Row #3: 16,940\n"
+            + "Row #4: 37,789\n"
+            + "Row #4: 37,789\n"
+            + "Row #4: 21,436\n"
+            + "Row #4: 16,353\n");
+    }
+
     public void testCalculatedChild() {
         // Construct calculated children with the same name for both [Drink] and
         // [Non-Consumable].  Then, create a metric to select the calculated
@@ -10258,7 +10386,100 @@ Intel platforms):
             + "Axis #1:\n");
     }
 
+    /**
+     * Executes a query that has a complex parse tree. Goal is to find
+     * algorithmic complexity bugs in the validator which would make the query
+     * run extremely slowly.
+     */
+    public void testComplexQuery() {
+        final String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 131,558\n"
+            + "Row #2: 135,215\n";
 
+        // hand written case
+        assertQueryReturns(
+            "select\n"
+            + "   [Measures].[Unit Sales] on 0,\n"
+            + "   Distinct({\n"
+            + "     [Gender],\n"
+            + "     Tail(\n"
+            + "       Head({\n"
+            + "         [Gender],\n"
+            + "         [Gender].[F],\n"
+            + "         [Gender].[M]},\n"
+            + "         2),\n"
+            + "       1),\n"
+            + "     Tail(\n"
+            + "       Head({\n"
+            + "         [Gender],\n"
+            + "         [Gender].[F],\n"
+            + "         [Gender].[M]},\n"
+            + "         2),\n"
+            + "       1),\n"
+            + "     [Gender].[M]}) on 1\n"
+            + "from [Sales]", expected);
+
+        // generated equivalent
+        StringBuilder buf = new StringBuilder();
+        buf.append(
+            "select\n"
+            + "   [Measures].[Unit Sales] on 0,\n");
+        generateComplex(buf, "   ", 0, 7, 3);
+        buf.append(
+            " on 1\n"
+            + "from [Sales]");
+        if (false) {
+            System.out.println(buf.toString().length() + ": " + buf.toString());
+        }
+        assertQueryReturns(buf.toString(), expected);
+    }
+
+    /**
+     * Recursive routine to generate a complex MDX expression.
+     *
+     * @param buf String builder
+     * @param indent Indent
+     * @param depth Current depth
+     * @param depthLimit Max recursion depth
+     * @param breadth Number of iterations at each depth
+     */
+    private void generateComplex(
+        StringBuilder buf,
+        String indent,
+        int depth,
+        int depthLimit,
+        int breadth)
+    {
+        buf.append(indent + "Distinct({\n");
+        buf.append(indent + "  [Gender],\n");
+        for (int i = 0; i < breadth; i++) {
+            if (depth < depthLimit) {
+                buf.append(indent + "  Tail(\n");
+                buf.append(indent + "    Head({\n");
+                generateComplex(
+                    buf,
+                    indent + "      ",
+                    depth + 1,
+                    depthLimit,
+                    breadth);
+                buf.append("},\n");
+                buf.append(indent + "      2),\n");
+                buf.append(indent + "    1),\n");
+            } else {
+                buf.append(indent + "  [Gender].[F],\n");
+            }
+        }
+        buf.append(indent + "  [Gender].[M]})");
+    }
 }
 
 // End FunctionTest.java

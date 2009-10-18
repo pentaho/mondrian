@@ -9,7 +9,6 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-import mondrian.olap.MondrianDef;
 import mondrian.spi.*;
 
 import java.util.*;
@@ -712,7 +711,8 @@ public class JdbcDialectImpl implements Dialect {
                 // For ASC, we need to reverse the order.
                 // Use the SQL standard syntax 'ORDER BY x ASC NULLS LAST'.
                 if (ascending) {
-                    return expr + " ASC NULLS LAST";
+                    return expr + " ASC"
+                       + (supportsOrderByNullsLast() ? " NULLS LAST" : "");
                 } else {
                     return expr + " DESC";
                 }
@@ -720,7 +720,8 @@ public class JdbcDialectImpl implements Dialect {
                 if (ascending) {
                     return expr + " ASC";
                 } else {
-                    return expr + " DESC NULLS LAST";
+                    return expr + " DESC"
+                       + (supportsOrderByNullsLast() ? " NULLS LAST" : "");
                 }
             default:
                 throw Util.unexpected(collateLast);
@@ -732,6 +733,23 @@ public class JdbcDialectImpl implements Dialect {
                 return expr + " DESC";
             }
         }
+    }
+
+    /**
+     * Returns whether this dialect supports "ASC NULLS LAST" and "DESC NULLS
+     * LAST" applied to an item in the ORDER BY clause.
+     *
+     * <p>This feature is in standard SQL but is not supported by many
+     * databases, therefore the default implementation returns {@code false}.
+     *
+     * <p>This method is only called from
+     * {@link #generateOrderItem(String, boolean, boolean)}. Some dialects
+     * override that method and therefore never call this method.
+     *
+     * @return Whether this dialect supports "ORDER BY ... NULLS LAST".
+     */
+    public boolean supportsOrderByNullsLast() {
+        return false;
     }
 
     public boolean supportsGroupByExpressions() {
@@ -802,11 +820,12 @@ public class JdbcDialectImpl implements Dialect {
         String productName,
         String productVersion)
     {
+        final String upperProductName = productName.toUpperCase();
         if (productName.equals("ACCESS")) {
             return DatabaseProduct.ACCESS;
-        } else if (productName.trim().toUpperCase().equals("APACHE DERBY")) {
+        } else if (upperProductName.trim().equals("APACHE DERBY")) {
             return DatabaseProduct.DERBY;
-        } else if (productName.trim().toUpperCase().equals("DBMS:CLOUDSCAPE")) {
+        } else if (upperProductName.trim().equals("DBMS:CLOUDSCAPE")) {
             return DatabaseProduct.DERBY;
         } else if (productName.startsWith("DB2")) {
             if (productName.startsWith("DB2 UDB for AS/400")) {
@@ -831,37 +850,37 @@ public class JdbcDialectImpl implements Dialect {
                 // DB2 on NT returns "DB2/NT"
                 return DatabaseProduct.DB2;
             }
-        } else if (productName.toUpperCase().indexOf("FIREBIRD") >= 0) {
+        } else if (upperProductName.indexOf("FIREBIRD") >= 0) {
             return DatabaseProduct.FIREBIRD;
         } else if (productName.startsWith("Informix")) {
             return DatabaseProduct.INFORMIX;
-        } else if (productName.toUpperCase().equals("INGRES")) {
+        } else if (upperProductName.equals("INGRES")) {
             return DatabaseProduct.INGRES;
         } else if (productName.equals("Interbase")) {
             return DatabaseProduct.INTERBASE;
-        } else if (productName.toUpperCase().equals("LUCIDDB")) {
+        } else if (upperProductName.equals("LUCIDDB")) {
             return DatabaseProduct.LUCIDDB;
-        } else if (productName.toUpperCase().indexOf("SQL SERVER") >= 0) {
+        } else if (upperProductName.indexOf("SQL SERVER") >= 0) {
             return DatabaseProduct.MSSQL;
         } else if (productName.equals("Oracle")) {
             return DatabaseProduct.ORACLE;
-        } else if (productName.toUpperCase().indexOf("POSTGRE") >= 0) {
+        } else if (upperProductName.indexOf("POSTGRE") >= 0) {
             return DatabaseProduct.POSTGRESQL;
-        } else if (productName.toUpperCase().indexOf("NETEZZA") >= 0) {
+        } else if (upperProductName.indexOf("NETEZZA") >= 0) {
             return DatabaseProduct.NETEZZA;
-        } else if (productName.toUpperCase().equals("MYSQL (INFOBRIGHT)")) {
+        } else if (upperProductName.equals("MYSQL (INFOBRIGHT)")) {
             return DatabaseProduct.INFOBRIGHT;
-        } else if (productName.toUpperCase().equals("MYSQL")) {
+        } else if (upperProductName.equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
         } else if (productName.startsWith("HP Neoview")) {
             return DatabaseProduct.NEOVIEW;
-        } else if (productName.toUpperCase().indexOf("SYBASE") >= 0) {
+        } else if (upperProductName.indexOf("SYBASE") >= 0) {
             return DatabaseProduct.SYBASE;
-        } else if (productName.toUpperCase().indexOf("TERADATA") >= 0) {
+        } else if (upperProductName.indexOf("TERADATA") >= 0) {
             return DatabaseProduct.TERADATA;
-        } else if (productName.toUpperCase().indexOf("HSQL") >= 0) {
+        } else if (upperProductName.indexOf("HSQL") >= 0) {
             return DatabaseProduct.HSQLDB;
-        } else if (productName.toUpperCase().indexOf("VERTICA") >= 0) {
+        } else if (upperProductName.indexOf("VERTICA") >= 0) {
             return DatabaseProduct.VERTICA;
         } else {
             return DatabaseProduct.UNKNOWN;

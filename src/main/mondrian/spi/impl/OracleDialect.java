@@ -52,6 +52,10 @@ public class OracleDialect extends JdbcDialectImpl {
     public boolean supportsGroupingSets() {
         return true;
     }
+
+    public boolean supportsOrderByNullsLast() {
+        return true;
+    }
 }
 
 // End OracleDialect.java

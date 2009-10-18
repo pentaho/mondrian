@@ -375,7 +375,12 @@ public class RolapEvaluator implements Evaluator {
         final RolapMember m = (RolapMember) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
-        if (m.equals(previous)) {
+
+        // If the context is unchanged, save ourselves some effort. It would be
+        // a mistake to use equals here; we might treat the visual total member
+        // 'Gender.All' the same as the true 'Gender.All' because they have the
+        // same unique name, and that would be wrong.
+        if (m == previous) {
             return m;
         }
         if (previous.isEvaluated()) {

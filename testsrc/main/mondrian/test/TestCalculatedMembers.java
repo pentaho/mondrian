@@ -220,7 +220,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Time].[1997].[Q2].[5]}\n"
             + "{[Time].[1997].[Q2].[6]}\n"
             + "Row #0: $25,766.55\n"
-            + "Row #0: $-4,289.24\n"
+            + "Row #0: -$4,289.24\n"
             + "Row #1: $26,673.73\n"
             + "Row #1: $907.18\n"
             + "Row #2: $27,261.76\n"

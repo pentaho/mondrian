@@ -1617,6 +1617,94 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Row #2: 25,635\n"
                 + "Row #3: 2,117\n");
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-622">MONDRIAN-622,
+     * "Poor performance with large union role"</a>.
+     */
+    public void testBugMondrian622() {
+        StringBuilder buf = new StringBuilder();
+        StringBuilder buf2 = new StringBuilder();
+        final String cubeName = "Sales with multiple customers";
+        final Result result = TestContext.instance().executeQuery(
+            "select [Customers].[City].Members on 0 from [Sales]");
+        for (Position position : result.getAxes()[0].getPositions()) {
+            Member member = position.get(0);
+            String name = member.getParentMember().getName()
+                + "."
+                + member.getName(); // e.g. "BC.Burnaby"
+            // e.g. "[Customers].[State Province].[BC].[Burnaby]"
+            String uniqueName =
+                Util.replace(member.getUniqueName(), ".[All Customers]", "");
+            // e.g. "[Customers2].[State Province].[BC].[Burnaby]"
+            String uniqueName2 =
+                Util.replace(uniqueName, "Customers", "Customers2");
+            // e.g. "[Customers3].[State Province].[BC].[Burnaby]"
+            String uniqueName3 =
+                Util.replace(uniqueName, "Customers", "Customers3");
+            buf.append(
+                "  <Role name=\"" + name + "\"> \n"
+                + "    <SchemaGrant access=\"none\"> \n"
+                + "      <CubeGrant access=\"all\" cube=\"" + cubeName
+                + "\"> \n"
+                + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers]\" rollupPolicy=\"partial\"> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName + "\"/> \n"
+                + "        </HierarchyGrant> \n"
+                + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers2]\" rollupPolicy=\"partial\"> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName2 + "\"/> \n"
+                + "        </HierarchyGrant> \n"
+                + "        <HierarchyGrant access=\"custom\" hierarchy=\"[Customers3]\" rollupPolicy=\"partial\"> \n"
+                + "          <MemberGrant access=\"all\" member=\""
+                + uniqueName3 + "\"/> \n"
+                + "        </HierarchyGrant> \n"
+                + "      </CubeGrant> \n"
+                + "    </SchemaGrant> \n"
+                + "  </Role> \n");
+
+            buf2.append("    <RoleUsage roleName=\"" + name + "\"/>\n");
+        }
+        TestContext testContext = TestContext.create(
+            " <Dimension name=\"Customers\"> \n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\"> \n"
+            + "      <Table name=\"customer\"/> \n"
+            + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n"
+            + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> ",
+            "  <Cube name=\"" + cubeName + "\"> \n"
+            + "    <Table name=\"sales_fact_1997\"/> \n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/> \n"
+            + "    <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/> \n"
+            + "    <DimensionUsage name=\"Customers\" source=\"Customers\" foreignKey=\"customer_id\"/> \n"
+            + "    <DimensionUsage name=\"Customers2\" source=\"Customers\" foreignKey=\"customer_id\"/> \n"
+            + "    <DimensionUsage name=\"Customers3\" source=\"Customers\" foreignKey=\"customer_id\"/> \n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/> \n"
+            + "  </Cube> \n",
+            null, null, null,
+            buf.toString()
+            + "  <Role name=\"Test\"> \n"
+            + "    <Union>\n"
+            + buf2.toString()
+            + "    </Union>\n"
+            + "  </Role>\n");
+        final long t0 = System.currentTimeMillis();
+        final TestContext testContext1 = testContext.withRole("Test");
+        testContext1.executeQuery("select from [" + cubeName + "]");
+        final long t1 = System.currentTimeMillis();
+//      System.out.println("Elapsed=" + (t1 - t0) + " millis");
+//      System.out.println(
+//          "RoleImpl.accessCount=" + RoleImpl.accessCallCount);
+//      testContext1.executeQuery(
+//          "select from [Sales with multiple customers]");
+//      final long t2 = System.currentTimeMillis();
+//      System.out.println("Elapsed=" + (t2 - t1) + " millis");
+//      System.out.println("RoleImpl.accessCount=" + RoleImpl.accessCallCount);
+    }
 }
 
 // End AccessControlTest.java

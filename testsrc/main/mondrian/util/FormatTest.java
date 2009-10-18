@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Arrays;
+import java.math.BigDecimal;
 
 import mondrian.olap.Util;
 import mondrian.test.I18nTest;
@@ -54,7 +55,7 @@ public class FormatTest extends TestCase {
     private final Format.FormatLocale localeDe = Format.createLocale(
             Locale.GERMAN);
 
-    final Double d = new Double(3141592.653589793);
+    final Number d = new BigDecimal("3141592.653589793");
 
     // note that month #3 == April
     final Date date = makeCalendar(1969, 4, 29, 20, 9, 6);
@@ -110,7 +111,7 @@ public class FormatTest extends TestCase {
             "0.00E-00",    "6.00E00",  "-6.00E00",  "0.00E00",  "6.00E-01", "",
             locale);
         checkNumbers(
-            "$#,##0;;\\Z\\e\\r\\o", "$6", "$-6",    "Zero",     "$1",       "",
+            "$#,##0;;\\Z\\e\\r\\o", "$6", "-$6",    "Zero",     "$1",       "",
             locale);
         checkNumbers(
             "#,##0.0 USD", "6.0 USD",  "-6.0 USD",  "0.0 USD",  "0.6 USD",  "",
@@ -153,10 +154,10 @@ public class FormatTest extends TestCase {
         String resultEmpty,
         Format.FormatLocale locale)
     {
-        checkNumber(locale, format, new Double(6), result6);
-        checkNumber(locale, format, new Double(-6), resultNeg6);
-        checkNumber(locale, format, new Double(0), result0);
-        checkNumber(locale, format, new Double(.6), resultPoint6);
+        checkNumber(locale, format, new BigDecimal("6"), result6);
+        checkNumber(locale, format, new BigDecimal("-6"), resultNeg6);
+        checkNumber(locale, format, new BigDecimal("0"), result0);
+        checkNumber(locale, format, new BigDecimal(".6"), resultPoint6);
         checkNumber(locale, format, null, resultEmpty);
         checkNumber(locale, format, Long.valueOf(6), result6);
         checkNumber(locale, format, Long.valueOf(-6), resultNeg6);
@@ -190,77 +191,156 @@ public class FormatTest extends TestCase {
     }
 
     public void testTrickyNumbers() {
-        checkFormat(null, new Double(40.385), "##0.0#", "40.39");
-        checkFormat(null, new Double(40.386), "##0.0#", "40.39");
-        checkFormat(null, new Double(40.384), "##0.0#", "40.38");
-        checkFormat(null, new Double(40.385), "##0.#", "40.4");
-        checkFormat(null, new Double(40.38), "##0.0#", "40.38");
-        checkFormat(null, new Double(-40.38), "##0.0#", "-40.38");
-        checkFormat(null, new Double(0.040385), "#0.###", "0.04");
-        checkFormat(null, new Double(0.040385), "#0.000", "0.040");
-        checkFormat(null, new Double(0.040385), "#0.####", "0.0404");
-        checkFormat(null, new Double(0.040385), "00.####", "00.0404");
-        checkFormat(null, new Double(0.040385), ".00#", ".04");
-        checkFormat(null, new Double(0.040785), ".00#", ".041");
-        checkFormat(null, new Double(99.9999), "##.####", "99.9999");
-        checkFormat(null, new Double(99.9999), "##.###", "100");
-        checkFormat(null, new Double(99.9999), "##.00#", "100.00");
-        checkFormat(null, new Double(.00099), "#.00", ".00");
-        checkFormat(null, new Double(.00099), "#.00#", ".001");
-        checkFormat(null, new Double(12.34), "#.000##", "12.340");
+        checkFormat(null, new BigDecimal("40.385"), "##0.0#", "40.39");
+        checkFormat(null, new BigDecimal("40.386"), "##0.0#", "40.39");
+        checkFormat(null, new BigDecimal("40.384"), "##0.0#", "40.38");
+        checkFormat(null, new BigDecimal("40.385"), "##0.#", "40.4");
+        checkFormat(null, new BigDecimal("40.38"), "##0.0#", "40.38");
+        checkFormat(null, new BigDecimal("-40.38"), "##0.0#", "-40.38");
+        checkFormat(null, new BigDecimal("0.040385"), "#0.###", "0.04");
+        checkFormat(null, new BigDecimal("0.040385"), "#0.000", "0.040");
+        checkFormat(null, new BigDecimal("0.040385"), "#0.####", "0.0404");
+        checkFormat(null, new BigDecimal("0.040385"), "00.####", "00.0404");
+        checkFormat(null, new BigDecimal("0.040385"), ".00#", ".04");
+        checkFormat(null, new BigDecimal("0.040785"), ".00#", ".041");
+        checkFormat(null, new BigDecimal("99.9999"), "##.####", "99.9999");
+        checkFormat(null, new BigDecimal("99.9999"), "##", "100");
+        checkFormat(null, new BigDecimal("99.9999"), "##.#", "100.");
+        checkFormat(null, new BigDecimal("99.9999"), "##.###", "100.");
+        checkFormat(null, new BigDecimal("99.9999"), "##.00#", "100.00");
+        checkFormat(null, new BigDecimal(".00099"), "#.00", ".00");
+        checkFormat(null, new BigDecimal(".00099"), "#.00#", ".001");
+        checkFormat(null, new BigDecimal("12.34"), "#.000##", "12.340");
 
         // "Standard" must use thousands separator, and round
-        checkFormat(null, new Double(1234567.89), "Standard", "1,234,568");
+        checkFormat(
+            null, new BigDecimal("1234567.89"), "Standard", "1,234,568");
 
         // must use correct alternate for 0
-        checkFormat(null, new Double(0), "$#,##0;;\\Z\\e\\r\\o", "Zero");
+        checkFormat(null, new BigDecimal("0"), "$#,##0;;\\Z\\e\\r\\o", "Zero");
+
+        // If there is a '.' in the format string SSAS always prints it, even
+        // if there are no digits right to decimal.
+        checkFormat(null, new BigDecimal("23"), "#.#", "23.");
+        checkFormat(null, new BigDecimal("0"), "#.#", ".");
     }
 
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-186">
+     * MONDRIAN-186</a>, "Small negative numbers are printed as '-0'".
+     */
     public void testSmallNegativeNumbers() {
-        // Bug 1492365, "Small negative numbers are printed as '-0'".
-        checkFormat(null, new Double(-0.006), "#.0", ".0");
-        checkFormat(null, new Double(-0.006), "#.00", "-.01");
-        checkFormat(null, new Double(-0.0500001), "#.0", "-.1");
-        checkFormat(null, new Double(-0.0499999), "#.0", ".0");
+        checkFormat(null, new BigDecimal("-0.006"), "#.0", ".0");
+        checkFormat(null, new BigDecimal("-0.006"), "#.00", "-.01");
+        checkFormat(null, new BigDecimal("-0.0500001"), "#.0", "-.1");
+        checkFormat(null, new BigDecimal("-0.0499999"), "#.0", ".0");
 
         // Percent
-        checkFormat(null, new Double(-0.00006), "#.0%", ".0%");
-        checkFormat(null, new Double(-0.0006), "#.0%", "-.1%");
-        checkFormat(null, new Double(-0.0004), "#.0%", ".0%");
-        checkFormat(null, new Double(-0.0005), "#.0%", "-.1%");
-        checkFormat(null, new Double(-0.0005000001), "#.0%", "-.1%");
-        checkFormat(null, new Double(-0.00006), "#.00%", "-.01%");
-        checkFormat(null, new Double(-0.00004), "#.00%", ".00%");
-        checkFormat(null, new Double(-0.00006), "00000.00%", "-00000.01%");
-        checkFormat(null, new Double(-0.00004), "00000.00%", "00000.00%");
+        checkFormat(null, new BigDecimal("-0.00006"), "#.0%", ".0%");
+        checkFormat(null, new BigDecimal("-0.0006"), "#.0%", "-.1%");
+        checkFormat(null, new BigDecimal("-0.0004"), "#.0%", ".0%");
+        checkFormat(null, new BigDecimal("-0.0005"), "#.0%", "-.1%");
+        checkFormat(null, new BigDecimal("-0.0005000001"), "#.0%", "-.1%");
+        checkFormat(null, new BigDecimal("-0.00006"), "#.00%", "-.01%");
+        checkFormat(null, new BigDecimal("-0.00004"), "#.00%", ".00%");
+        checkFormat(
+            null, new BigDecimal("-0.00006"), "00000.00%", "-00000.01%");
+        checkFormat(null, new BigDecimal("-0.00004"), "00000.00%", "00000.00%");
+    }
 
+    /**
+     * When there are format strings for positive and negative numbers, and
+     * a number is too small to appear in either format string, it underflows
+     * to 'Nil', and gets to use a third format.
+     */
+    public void testNil() {
         // The +ve format gives "-0.01", but the negative format gives "0.0",
         // so we move onto the "Nil" format.
-        checkFormat(null, new Double(-0.001), "0.##;(0.##);Nil", "Nil");
-        checkFormat(null, new Double(-0.01), "0.##;(0.##);Nil", "(0.01)");
-        checkFormat(null, new Double(-0.01), "0.##;(0.#);Nil", "Nil");
+        checkFormat(null, new BigDecimal("-0.001"), "0.##;(0.##);Nil", "Nil");
+        checkFormat(null, new BigDecimal("-0.01"), "0.##;(0.##);Nil", "(0.01)");
+        checkFormat(null, new BigDecimal("-0.01"), "0.##;(0.#);Nil", "Nil");
 
-        // Bug 2028127
-        //checkFormat(null, new Double(-0.001), "0.##;(0.##)");
+        // Bug MONDRIAN-434. If there are only two sections, the default third
+        // section is '.'.
+        checkFormat(null, new BigDecimal("0.00001"), "#.##;(#.##)", ".");
+        checkFormat(null, new BigDecimal("0.001"), "0.##;(0.##)", "0.");
+        checkFormat(null, new BigDecimal("-0.001"), "0.##;(0.##)", "0.");
+
+        // Zero value and varying numbers of format strings.
+        checkFormat(
+            null, BigDecimal.ZERO, "\\P\\o\\s", "Pos");
+        checkFormat(
+            null, BigDecimal.ZERO, "\\P\\o\\s;\\N\\e\\g", "Pos");
+        checkFormat(
+            null, BigDecimal.ZERO, "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o", "Zero");
+        checkFormat(
+            null, BigDecimal.ZERO,
+            "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o;\\N\\u\\l\\l", "Zero");
+
+        // Small negative value and varying numbers of format strings.
+        checkFormat(
+            null, new BigDecimal("-0.00001"), "\\P\\o\\s", "-Pos");
+        checkFormat(
+            null, new BigDecimal("-0.00001"), "\\P\\o\\s;\\N\\e\\g", "Neg");
+        checkFormat(
+            null, new BigDecimal("-0.00001"),
+            "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o", "Neg");
+        checkFormat(
+            null, new BigDecimal("-0.00001"),
+            "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o;\\N\\u\\l\\l", "Neg");
+
+        checkFormat(
+            null, new BigDecimal("-0.001"), "\\P\\o\\s;\\N\\e\\g", "Neg");
+
+        // In the following two cases, note that a small number uses the 3rd
+        // format string (for zero) if it underflows the 1st or 2nd format
+        // string (for positive or negative numbers). But if underflow is not
+        // possible (as in the case of the 'Neg' format string),
+        checkFormat(
+            null, new BigDecimal("-0.001"), "#.#;(#.#);\\Z\\e\\r\\o",
+            "Zero");
+        checkFormat(
+            null, new BigDecimal("-0.001"), "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o",
+            "Neg");
+    }
+
+    /**
+     * Null values use the fourth format.
+     */
+    public void testNull() {
+        // Null value with different numbers of strings
+        checkFormat(
+            null, null, "\\P\\o\\s", "");
+        checkFormat(
+            null, null, "\\P\\o\\s;\\N\\e\\g", "");
+        checkFormat(
+            null, null, "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o", "");
+        checkFormat(
+            null, null, "\\P\\o\\s;\\N\\e\\g;\\Z\\e\\r\\o;\\N\\u\\l\\l",
+            "Null");
+        checkFormat(
+            null, null, "\\P\\o\\s;;;\\N\\u\\l\\l", "Null");
+        checkFormat(
+            null, null, "\\P\\o\\s;;;", "");
     }
 
     public void testNegativeZero() {
-        checkFormat(null, new Double(-0.0), "#0.000", "0.000");
-        checkFormat(null, new Double(-0.0), "#0", "0");
-        checkFormat(null, new Double(-0.0), "#0.0" ,"0.0");
+        checkFormat(null, new BigDecimal("-0.0"), "#0.000", "0.000");
+        checkFormat(null, new BigDecimal("-0.0"), "#0", "0");
+        checkFormat(null, new BigDecimal("-0.0"), "#0.0", "0.0");
     }
 
     public void testNumberRoundingBug() {
-        checkFormat(null, new Double(0.50), "0", "1");
-        checkFormat(null, new Double(-1.5), "0", "-2");
-        checkFormat(null, new Double(-0.50), "0", "-1");
-        checkFormat(null, new Double(-0.99999999), "0.0", "-1.0");
-        checkFormat(null, new Double (-0.45), "#.0", "-.5");
-        checkFormat(null, new Double (-0.45), "0", "0");
-        checkFormat(null, new Double(-0.49999), "0", "0");
-        checkFormat(null, new Double(-0.49999), "0.0", "-0.5");
-        checkFormat(null, new Double(0.49999), "0", "0");
-        checkFormat(null, new Double(0.49999), "#.0", ".5");
+        checkFormat(null, new BigDecimal("0.50"), "0", "1");
+        checkFormat(null, new BigDecimal("-1.5"), "0", "-2");
+        checkFormat(null, new BigDecimal("-0.50"), "0", "-1");
+        checkFormat(null, new BigDecimal("-0.99999999"), "0.0", "-1.0");
+        checkFormat(null, new BigDecimal("-0.45"), "#.0", "-.5");
+        checkFormat(null, new BigDecimal("-0.45"), "0", "0");
+        checkFormat(null, new BigDecimal("-0.49999"), "0", "0");
+        checkFormat(null, new BigDecimal("-0.49999"), "0.0", "-0.5");
+        checkFormat(null, new BigDecimal("0.49999"), "0", "0");
+        checkFormat(null, new BigDecimal("0.49999"), "#.0", ".5");
     }
 
     public void testCurrencyBug() {
@@ -359,7 +439,8 @@ public class FormatTest extends TestCase {
 
         // international currency symbol
         checkFormat(
-            null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
+            null, new BigDecimal("1.2"), "" + Format.intlCurrencySymbol + "#",
+            "$1");
     }
 
     public void testFrenchLocale() {
@@ -390,24 +471,41 @@ public class FormatTest extends TestCase {
     }
 
     private void checkFormat(
-            Format.FormatLocale locale,
-            Object o,
-            String formatString)
+        Format.FormatLocale locale,
+        Object o,
+        String formatString)
     {
         Format format = new Format(formatString, locale);
         String actualResult = format.format(o);
         Util.discard(actualResult);
+        if (o instanceof BigDecimal) {
+            BigDecimal bigDecimal = (BigDecimal) o;
+            checkFormat(locale, bigDecimal.doubleValue(), formatString);
+            checkFormat(locale, bigDecimal.floatValue(), formatString);
+            checkFormat(locale, bigDecimal.longValue(), formatString);
+            checkFormat(locale, bigDecimal.intValue(), formatString);
+        }
     }
 
     private void checkFormat(
-            Format.FormatLocale locale,
-            Object o,
-            String formatString,
-            String expectedResult)
+        Format.FormatLocale locale,
+        Object o,
+        String formatString,
+        String expectedResult)
     {
         Format format = new Format(formatString, locale);
         String actualResult = format.format(o);
         assertEquals(expectedResult, actualResult);
+        if (o instanceof BigDecimal) {
+            BigDecimal bigDecimal = (BigDecimal) o;
+            checkFormat(
+                locale, bigDecimal.doubleValue(), formatString, expectedResult);
+
+            // Convert value to various data types and make sure there is no
+            // error. Do not check the result -- it might be different because
+            // of rounding.
+            checkFormat(locale, bigDecimal.doubleValue(), formatString);
+        }
     }
 
     public void testCache() {
@@ -416,7 +514,7 @@ public class FormatTest extends TestCase {
         for (int i = 0; i < Format.CacheLimit * 2; ++i) {
             final Format format = Format.get(buf.toString(), null);
             final String s = format.format(i);
-            assertEquals(i + "", s);
+            assertEquals(i + ".", s);
             buf.append("#");
         }
     }

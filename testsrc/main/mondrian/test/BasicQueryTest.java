@@ -2443,6 +2443,35 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: NULL\n"
             + "Row #1: NULL\n"
             + "Row #2: $565,238.13\n");
+
+        // explicit null value
+        assertQueryReturns(
+            "with member [Measures].[Foo] as null,\n"
+            + " format_string = 'a;b;c;d'\n"
+            + "select {[Measures].[Foo]} on columns\n"
+            + "from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: d\n");
+    }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-434">MONDRIAN-434</a>,
+     * "Small negative numbers cause exceptions w 2-section format".
+     */
+    public void testFormatOfNil() {
+        assertQueryReturns(
+            "with member measures.formatTest as '0.000001',\n"
+            + " FORMAT_STRING='#.##;(#.##)' \n"
+            + "select { measures.formatTest } on 0 from sales ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[formatTest]}\n"
+            + "Row #0: .\n");
     }
 
     /**
