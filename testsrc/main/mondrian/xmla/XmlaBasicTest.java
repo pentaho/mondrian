@@ -590,6 +590,14 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     content,
                     " sql:field=\"Unit Sales\" type=\"xsd:double\"",
                     " sql:field=\"Unit Sales\" type=\"xsd:string\"");
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Week\" type=\"xsd:decimal\"",
+                    " sql:field=\"Week\" type=\"xsd:integer\"");
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Day\" type=\"xsd:decimal\"",
+                    " sql:field=\"Day\" type=\"xsd:integer\"");
                 break;
             case ACCESS:
                 break;
