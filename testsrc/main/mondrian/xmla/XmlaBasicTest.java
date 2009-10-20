@@ -12,11 +12,13 @@ package mondrian.xmla;
 import mondrian.olap.*;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
+import mondrian.tui.XmlaSupport;
 import mondrian.spi.Dialect;
 
 import org.w3c.dom.Document;
 
 import java.util.Properties;
+import java.util.Map;
 
 /**
  * Test XML/A functionality.
@@ -47,6 +49,8 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
                 Enumeration.Content.Schema.name();
     public static final String CONTENT_SCHEMADATA =
                 Enumeration.Content.SchemaData.name();
+    public static final String CONTENT_DATAOMITDEFAULTSLICER =
+                Enumeration.Content.DataOmitDefaultSlicer.name();
 
     public XmlaBasicTest() {
     }
@@ -612,6 +616,18 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testExecuteSlicerContentDataOmitDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContentDataOmitDefaultSlicer();
+    }
+
+    public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContentDataOmitDefaultSlicer();
+    }
+
     public void testExecuteWithoutCellProperties() throws Exception
     {
         String requestType = "EXECUTE";
@@ -842,6 +858,34 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
         doTest(requestType, props, testContext);
+    }
+
+    private void doTestExecuteContentDataOmitDefaultSlicer() throws Exception {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        String requestText = fileToString("request");
+        TestContext testContext = TestContext.instance();
+        requestText = testContext.upgradeQuery(requestText);
+        String respFileName = "${response}";
+        Document responseDoc = (respFileName != null)
+            ? fileToDocument(respFileName)
+            : null;
+
+        String connectString = testContext.getConnectString();
+        Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
+
+        Document expectedDoc;
+
+        final String ns = "cxmla";
+        expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+            responseDoc,
+            new String[][] {{"content", "DataOmitDefaultSlicer"}}, ns)
+            : null;
+        doTests(
+            requestText, props,
+            testContext, null, connectString, catalogNameUrls,
+            expectedDoc, XmlaBasicTest.CONTENT_DATAOMITDEFAULTSLICER, null);
     }
 
     protected String getSessionId(Action action) {

@@ -26,8 +26,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
-import java.io.StringWriter;
-import java.io.PrintWriter;
+import java.util.Date;
+import java.io.*;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 
 
 /**
@@ -689,7 +691,8 @@ public class XmlaHandler implements XmlaConstants {
 
         try {
             if ((content == Enumeration.Content.Data)
-                || (content == Enumeration.Content.SchemaData))
+                || (content == Enumeration.Content.SchemaData)
+                || (content == Enumeration.Content.DataOmitDefaultSlicer))
             {
                 if (result != null) {
                     result.unparse(writer);
@@ -1716,7 +1719,18 @@ public class XmlaHandler implements XmlaConstants {
                     null);
 
             if (format == Enumeration.Format.Multidimensional) {
-                return new MDDataSet_Multidimensional(result);
+                final String contentName =
+                    request.getProperties()
+                        .get(PropertyDefinition.Content.name());
+                Enumeration.Content content =
+                    valueOf(
+                        Enumeration.Content.class,
+                        contentName,
+                        CONTENT_DEFAULT);
+                final boolean omitDefaultSlicer =
+                    (content == Enumeration.Content.DataOmitDefaultSlicer);
+                return
+                    new MDDataSet_Multidimensional(result, omitDefaultSlicer);
             } else {
                 return new MDDataSet_Tabular(result);
             }
@@ -1763,9 +1777,17 @@ public class XmlaHandler implements XmlaConstants {
 
     static class MDDataSet_Multidimensional extends MDDataSet {
         private List<Hierarchy> slicerAxisHierarchies;
+        private boolean omitDefaultSlicerInfo;
 
         protected MDDataSet_Multidimensional(Result result) {
+            this(result, false);
+        }
+
+        protected MDDataSet_Multidimensional(
+            Result result, boolean isDataOmitDefaultSlicerContentType)
+        {
             super(result);
+            this.omitDefaultSlicerInfo = isDataOmitDefaultSlicerContentType;
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1777,9 +1799,6 @@ public class XmlaHandler implements XmlaConstants {
         private void olapInfo(SaxWriter writer) {
             // What are all of the cube's hierachies
             Cube cube = result.getQuery().getCube();
-            List<Dimension> unseenDimensionList =
-                new ArrayList<Dimension>(
-                    Arrays.asList(cube.getDimensions()));
 
             writer.startElement("OlapInfo");
             writer.startElement("CubeInfo");
@@ -1802,26 +1821,41 @@ public class XmlaHandler implements XmlaConstants {
                     axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
                 axisHierarchyList.addAll(hiers);
             }
-            // Remove all seen dimensions.
-            for (Hierarchy hier1 : axisHierarchyList) {
-                unseenDimensionList.remove(hier1.getDimension());
-            }
-
             ///////////////////////////////////////////////
             // create AxesInfo for slicer axes
             //
-            // The slicer axes contains the default hierarchy of each dimension
-            // not seen on another axis.
-            List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
-            for (Dimension dimension : unseenDimensionList) {
-                hierarchies.add(dimension.getHierarchy());
+            List<Hierarchy> hierarchies;
+            final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
+            if (omitDefaultSlicerInfo) {
+                Axis slicerAxis = result.getSlicerAxis();
+                // only add slicer axis element to response
+                // if something is on the slicer
+                if (slicerAxis.getPositions().get(0).size() > 0) {
+                    hierarchies =
+                        axisInfo(
+                            writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
+                } else {
+                    hierarchies = new ArrayList<Hierarchy>();
+                }
+            } else {
+                // The slicer axes contains the default hierarchy
+                // of each dimension not seen on another axis.
+                List<Dimension> unseenDimensionList =
+                new ArrayList<Dimension>(Arrays.asList(cube.getDimensions()));
+                for (Hierarchy hier1 : axisHierarchyList) {
+                    unseenDimensionList.remove(hier1.getDimension());
+                }
+                hierarchies = new ArrayList<Hierarchy>();
+                for (Dimension dimension : unseenDimensionList) {
+                    hierarchies.add(dimension.getHierarchy());
+                }
+                writer.startElement(
+                    "AxisInfo",
+                    new String[] { "name", "SlicerAxis"});
+                writeHierarchyInfo(
+                    writer, hierarchies, getProps(slicerQueryAxis));
+                writer.endElement(); // AxisInfo
             }
-            writer.startElement(
-                "AxisInfo",
-                new String[] { "name", "SlicerAxis"});
-            final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
-            writeHierarchyInfo(writer, hierarchies, getProps(slicerAxis));
-            writer.endElement(); // AxisInfo
             slicerAxisHierarchies = hierarchies;
             //
             ///////////////////////////////////////////////
@@ -1881,7 +1915,6 @@ public class XmlaHandler implements XmlaConstants {
 
             return hierarchies;
         }
-
 
         private void writeHierarchyInfo(
             SaxWriter writer,
@@ -1950,73 +1983,87 @@ public class XmlaHandler implements XmlaConstants {
             ////////////////////////////////////////////
             // now generate SlicerAxis information
             //
-            List<Hierarchy> hierarchies = slicerAxisHierarchies;
-            writer.startElement(
-                "Axis",
-                "name", "SlicerAxis");
-            writer.startElement("Tuples");
-            writer.startElement("Tuple");
-
-            Map<String, Integer> memberMap = new HashMap<String, Integer>();
-            Member positionMember;
-            Axis slicerAxis = result.getSlicerAxis();
-            if (slicerAxis.getPositions() != null
-                && slicerAxis.getPositions().size() > 0)
-            {
-                final Position pos0 = slicerAxis.getPositions().get(0);
-                int i = 0;
-                for (Member member : pos0) {
-                    memberMap.put(member.getHierarchy().getName(), i++);
+            if (omitDefaultSlicerInfo) {
+                final QueryAxis slicerQueryAxis =
+                    result.getQuery().getSlicerAxis();
+                Axis slicerAxis = result.getSlicerAxis();
+                // only add slicer axis element to response
+                // if something is on the slicer
+                if (slicerAxis.getPositions().get(0).size() > 0) {
+                    axis(
+                        writer,
+                        result.getSlicerAxis(),
+                        getProps(slicerQueryAxis),
+                        "SlicerAxis");
                 }
-            }
+            } else {
+                List<Hierarchy> hierarchies = slicerAxisHierarchies;
+                writer.startElement(
+                    "Axis",
+                    "name", "SlicerAxis");
+                writer.startElement("Tuples");
+                writer.startElement("Tuple");
 
-            final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
-            final List<Member> slicerMembers =
-                result.getSlicerAxis().getPositions().get(0);
-            for (Hierarchy hierarchy : hierarchies) {
-                // Find which member is on the slicer. If it's not explicitly
-                // there, use the default member.
-                Member member = hierarchy.getDefaultMember();
-                final Integer indexPosition =
-                    memberMap.get(hierarchy.getName());
-                if (indexPosition != null) {
-                    positionMember =
-                        slicerAxis.getPositions().get(0).get(indexPosition);
-                } else {
-                    positionMember = null;
-                }
-                for (Member slicerMember : slicerMembers) {
-                    if (slicerMember.getHierarchy().equals(hierarchy)) {
-                        member = slicerMember;
-                        break;
+                Map<String, Integer> memberMap = new HashMap<String, Integer>();
+                Member positionMember;
+                Axis slicerAxis = result.getSlicerAxis();
+                if (slicerAxis.getPositions() != null
+                    && slicerAxis.getPositions().size() > 0)
+                {
+                    final Position pos0 = slicerAxis.getPositions().get(0);
+                    int i = 0;
+                    for (Member member : pos0) {
+                        memberMap.put(member.getHierarchy().getName(), i++);
                     }
                 }
 
-                if (member != null) {
-                    if (positionMember != null) {
-                        writeMember(
-                            writer, positionMember, null,
-                            slicerAxis.getPositions().get(0), indexPosition,
-                            getProps(slicerQueryAxis));
+                final QueryAxis slicerQueryAxis =
+                    result.getQuery().getSlicerAxis();
+                final List<Member> slicerMembers =
+                    result.getSlicerAxis().getPositions().get(0);
+                for (Hierarchy hierarchy : hierarchies) {
+                    // Find which member is on the slicer.
+                    // If it's not explicitly there, use the default member.
+                    Member member = hierarchy.getDefaultMember();
+                    final Integer indexPosition =
+                        memberMap.get(hierarchy.getName());
+                    if (indexPosition != null) {
+                        positionMember =
+                            slicerAxis.getPositions().get(0).get(indexPosition);
                     } else {
-                        slicerAxis(writer, member, getProps(slicerQueryAxis));
+                        positionMember = null;
                     }
-                } else {
-                    LOGGER.warn(
-                        "Can not create SlicerAxis: "
-                        + "null default member for Hierarchy "
-                        + hierarchy.getUniqueName());
+                    for (Member slicerMember : slicerMembers) {
+                        if (slicerMember.getHierarchy().equals(hierarchy)) {
+                            member = slicerMember;
+                            break;
+                        }
+                    }
+
+                    if (member != null) {
+                        if (positionMember != null) {
+                            writeMember(
+                                writer, positionMember, null,
+                                slicerAxis.getPositions().get(0), indexPosition,
+                                getProps(slicerQueryAxis));
+                        } else {
+                            slicerAxis(
+                                writer, member, getProps(slicerQueryAxis));
+                        }
+                    } else {
+                        LOGGER.warn(
+                            "Can not create SlicerAxis: "
+                            + "null default member for Hierarchy "
+                            + hierarchy.getUniqueName());
+                    }
                 }
+                writer.endElement(); // Tuple
+                writer.endElement(); // Tuples
+                writer.endElement(); // Axis
             }
 
             //
             ////////////////////////////////////////////
-
-            writer.endElement(); // Tuple
-            writer.endElement(); // Tuples
-            writer.endElement(); // Axis
-
-
 
             writer.endElement(); // Axes
         }

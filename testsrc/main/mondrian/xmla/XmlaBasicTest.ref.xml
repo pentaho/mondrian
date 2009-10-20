@@ -17442,6 +17442,363 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testExecuteSlicerContentDataOmitDefaultSlicer">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <OlapInfo>
+                        <CubeInfo>
+                            <Cube>
+                                <CubeName>Sales</CubeName>
+                            </Cube>
+                        </CubeInfo>
+                        <AxesInfo>
+                            <AxisInfo name="Axis0">
+                                <HierarchyInfo name="Customers">
+                                    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Customers].[MEMBER_CAPTION]"/>
+                                    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Customers].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                            <AxisInfo name="Axis1">
+                                <HierarchyInfo name="Gender">
+                                    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Gender].[MEMBER_CAPTION]"/>
+                                    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Gender].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis">
+                                <HierarchyInfo name="Time">
+                                    <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Time].[MEMBER_CAPTION]"/>
+                                    <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Time].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                                <HierarchyInfo name="Marital Status">
+                                    <UName name="[Marital Status].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Marital Status].[MEMBER_CAPTION]"/>
+                                    <LName name="[Marital Status].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Marital Status].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Marital Status].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                                <HierarchyInfo name="Measures">
+                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
+                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                        </AxesInfo>
+                        <CellInfo>
+                            <Value name="VALUE"/>
+                            <FmtValue name="FORMATTED_VALUE"/>
+                            <FormatString name="FORMAT_STRING"/>
+                        </CellInfo>
+                    </OlapInfo>
+                    <Axes>
+                        <Axis name="Axis0">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <Caption>Canada</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>1</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <Caption>Mexico</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131081</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131075</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                        <Axis name="Axis1">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Gender">
+                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <Caption>F</Caption>
+                                    <LName>[Gender].[Gender]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Gender">
+                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <Caption>M</Caption>
+                                    <LName>[Gender].[Gender]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131072</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                        <Axis name="SlicerAxis">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Time">
+                                    <UName>[Time].[1997].[Q2]</UName>
+                                    <Caption>Q2</Caption>
+                                    <LName>[Time].[Quarter]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>3</DisplayInfo>
+                                    </Member>
+                                    <Member Hierarchy="Marital Status">
+                                    <UName>[Marital Status].[All Marital Status]</UName>
+                                    <Caption>All Marital Status</Caption>
+                                    <LName>[Marital Status].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>111</DisplayInfo>
+                                    </Member>
+                                    <Member Hierarchy="Measures">
+                                    <UName>[Measures].[Store Sales]</UName>
+                                    <Caption>Store Sales</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                    </Axes>
+                    <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="2">
+                            <Value xsi:type="xsd:double">65857.14</Value>
+                            <FmtValue>65,857.14</FmtValue>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="5">
+                            <Value xsi:type="xsd:double">66809.13</Value>
+                            <FmtValue>66,809.13</FmtValue>
+                            <FormatString>#,###.00</FormatString>
+                        </Cell>
+                    </CellData>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement>
+SELECT {[Customers].Children} ON 0,
+{[Gender].Children} ON 1
+FROM Sales
+WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
+         </Statement>
+        </Command>
+        <Properties>
+          <PropertyList>
+            <Catalog>${catalog}</Catalog>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Format>${format}</Format>
+            <AxisFormat>TupleFormat</AxisFormat>
+            <Content>DataOmitDefaultSlicer</Content>
+          </PropertyList>
+        </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testExecuteNoSlicerContentDataOmitDefaultSlicer">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <OlapInfo>
+                        <CubeInfo>
+                            <Cube>
+                                <CubeName>Sales</CubeName>
+                            </Cube>
+                        </CubeInfo>
+                        <AxesInfo>
+                            <AxisInfo name="Axis0">
+                                <HierarchyInfo name="Customers">
+                                    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Customers].[MEMBER_CAPTION]"/>
+                                    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Customers].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                            <AxisInfo name="Axis1">
+                                <HierarchyInfo name="Gender">
+                                    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Gender].[MEMBER_CAPTION]"/>
+                                    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Gender].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                        </AxesInfo>
+                        <CellInfo>
+                            <Value name="VALUE"/>
+                            <FmtValue name="FORMATTED_VALUE"/>
+                            <FormatString name="FORMAT_STRING"/>
+                        </CellInfo>
+                    </OlapInfo>
+                    <Axes>
+                        <Axis name="Axis0">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <Caption>Canada</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>1</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <Caption>Mexico</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131081</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Customers">
+                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131075</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                        <Axis name="Axis1">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Gender">
+                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <Caption>F</Caption>
+                                    <LName>[Gender].[Gender]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Gender">
+                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <Caption>M</Caption>
+                                    <LName>[Gender].[Gender]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>131072</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                    </Axes>
+                    <CellData>
+                        <Cell CellOrdinal="0">
+                            <FmtValue/>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="2">
+                            <Value xsi:type="xsd:double">131558</Value>
+                            <FmtValue>131,558</FmtValue>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="5">
+                            <Value xsi:type="xsd:double">135215</Value>
+                            <FmtValue>135,215</FmtValue>
+                            <FormatString>Standard</FormatString>
+                        </Cell>
+                    </CellData>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement>
+SELECT {[Customers].Children} ON 0,
+{[Gender].Children} ON 1
+FROM Sales
+         </Statement>
+        </Command>
+        <Properties>
+          <PropertyList>
+            <Catalog>${catalog}</Catalog>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Format>${format}</Format>
+            <AxisFormat>TupleFormat</AxisFormat>
+            <Content>DataOmitDefaultSlicer</Content>
+          </PropertyList>
+        </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testExecuteCrossjoinRole">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>

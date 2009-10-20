@@ -138,7 +138,8 @@ class Enumeration {
         None,
         Schema,
         Data,
-        SchemaData;
+        SchemaData,
+        DataOmitDefaultSlicer;
     }
 
     enum MdxSupport {
