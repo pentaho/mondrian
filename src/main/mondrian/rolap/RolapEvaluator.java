@@ -75,6 +75,7 @@ public class RolapEvaluator implements Evaluator {
     protected List<List<Member[]>> aggregationLists;
 
     private final List<Member> slicerMembers;
+    private Boolean nativeEnabled;
 
     /**
      * States of the finite state machine for determining the max solve order
@@ -130,6 +131,8 @@ public class RolapEvaluator implements Evaluator {
             }
             expandingMember = parent.expandingMember;
         }
+        nativeEnabled =
+            MondrianProperties.instance().EnableNativeNonEmpty.get();
     }
 
     /**
@@ -224,6 +227,14 @@ public class RolapEvaluator implements Evaluator {
         }
 
         return false;
+    }
+
+    public boolean nativeEnabled() {
+        return nativeEnabled;
+    }
+
+    public void setNativeEnabled(final Boolean nativeEnabled) {
+        this.nativeEnabled = nativeEnabled;
     }
 
     protected final Logger getLogger() {
@@ -609,6 +620,12 @@ public class RolapEvaluator implements Evaluator {
                 continue;
             }
 
+            // Don’t call member.getPropertyValue unless this member’s
+            // solve order is greater than one we’ve already seen.
+            // The getSolveOrder call is cheap call compared to the
+            // getPropertyValue call, and when we’re evaluating millions
+            // of members, this has proven to make a significant performance
+            // difference.
             final int solve = member.getSolveOrder();
             if (solve > maxSolve) {
                 final Object p = member.getPropertyValue(name);

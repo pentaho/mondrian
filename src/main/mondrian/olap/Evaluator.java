@@ -290,6 +290,17 @@ public interface Evaluator {
      */
     boolean needToReturnNullForUnrelatedDimension(Member[] members);
 
+     /**
+     * @param enabled indicates if native evaluation should be used
+     */
+    void setNativeEnabled(Boolean enabled);
+
+    /**
+     * indicates whether native evaluation is enabled in this context
+     * @return boolean
+     */
+    boolean nativeEnabled();
+
     /**
      * Interface for evaluating a particular named set.
      */

@@ -177,6 +177,7 @@ public class NativizeSetFunDef extends FunDefBase {
                     new TransformFromFormulasVisitor(query, compiler));
                 query.resolve();
                 ListCalc calc = compiler.compileList(resolved);
+                evaluator.setNativeEnabled(false);
                 return calc.evaluateList(evaluator);
             }
 
@@ -331,9 +332,11 @@ public class NativizeSetFunDef extends FunDefBase {
         @Override
         public Object visitResolvedFunCall(ResolvedFunCall call) {
             if (call.getFunDef() instanceof LevelMembersFunDef) {
-                Level level = ((LevelExpr) call.getArg(0)).getLevel();
-                substitutionMap.put(createMemberId(level), level);
-                dimensions.add(level.getDimension());
+                if (call.getArg(0) instanceof LevelExpr) {
+                    Level level = ((LevelExpr) call.getArg(0)).getLevel();
+                    substitutionMap.put(createMemberId(level), level);
+                    dimensions.add(level.getDimension());
+                }
             } else if (
                 functionWhitelist.contains(call.getFunDef().getClass()))
             {

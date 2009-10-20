@@ -5,10 +5,13 @@ import mondrian.olap.ResourceLimitExceededException;
 import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.rolap.NonEmptyTest;
+import mondrian.rolap.BatchTestCase;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.PropertySaver;
+import mondrian.test.SqlPattern;
+import mondrian.spi.Dialect;
 
-public class NativizeSetFunDefTest extends FoodMartTestCase {
+public class NativizeSetFunDefTest extends BatchTestCase {
     private final PropertySaver propSaver = new PropertySaver();
     private long highCardThreshold;
     private long nativeResultLimit;
@@ -1206,6 +1209,39 @@ public class NativizeSetFunDefTest extends FoodMartTestCase {
                 + "Axis #2:\n"
                 + "{[Time].[1997], [Gender].[All Gender].[F]}\n"
                 + "Row #0: 131,558\n");
+    }
+
+    public void testEvaluationIsNonNativeWhenBelowHighcardThreshoold() {
+        NativizeSetFunDef.setHighCardinalityThreshold(10000L);
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS,
+                "select `customer`.`gender` as `c0` "
+                    + "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` "
+                    + "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+                    + "and `customer`.`marital_status` = 'S' "
+                    + "group by `customer`.`gender` order by 1 ASC", 251)
+        };
+        String mdxQuery =
+            "select non empty NativizeSet("
+                + "Crossjoin([Gender].[Gender].members,{[Time].[1997]})) on 0 "
+                + "from [Warehouse and Sales] "
+                + "where [Marital Status].[Marital Status].[S]";
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, true, false, true);
+    }
+
+    public void testCalculatedLevelsDoNotCauseException() {
+        String mdx =
+            "SELECT \n"
+                + "  Nativizeset\n"
+                + "  (\n"
+                + "    {\n"
+                + "      [Store].Levels(0).MEMBERS\n"
+                + "    }\n"
+                + "  ) ON COLUMNS\n"
+                + "FROM [Sales]";
+        checkNotNative(mdx);
     }
 
     private void checkNotNative(String mdx) {

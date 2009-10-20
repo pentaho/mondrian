@@ -8,14 +8,14 @@
 */
 package mondrian.rolap;
 
-import java.util.List;
-
-import mondrian.olap.Id;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Id;
 import mondrian.olap.Level;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.List;
 
 /**
  * Creates the right constraint for common tasks.
@@ -36,6 +36,13 @@ public class SqlConstraintFactory {
     private SqlConstraintFactory() {
     }
 
+    private boolean enabled(final Evaluator context) {
+        if (context != null) {
+            return enabled && context.nativeEnabled();
+        }
+        return enabled;
+    }
+
     public static SqlConstraintFactory instance() {
         setNativeNonEmptyValue();
         return instance;
@@ -48,7 +55,9 @@ public class SqlConstraintFactory {
     public MemberChildrenConstraint getMemberChildrenConstraint(
         Evaluator context)
     {
-        if (!enabled || !SqlContextConstraint.isValidContext(context, false)) {
+        if (!enabled(context)
+            || !SqlContextConstraint.isValidContext(context, false))
+        {
             return DefaultMemberChildrenConstraint.instance();
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);
@@ -74,7 +83,7 @@ public class SqlConstraintFactory {
         if (context == null) {
             return DefaultTupleConstraint.instance();
         }
-        if (!enabled) {
+        if (!enabled(context)) {
             return DefaultTupleConstraint.instance();
         }
         if (!SqlContextConstraint.isValidContext(
