@@ -9,6 +9,8 @@
 */
 package mondrian.util;
 
+import org.apache.log4j.Logger;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -35,6 +37,9 @@ import java.util.NoSuchElementException;
  * @since Jan 16, 2007
  */
 public abstract class UnsupportedList<T> implements List<T> {
+    private static final Logger LOGGER =
+        Logger.getLogger(UnsupportedList.class);
+
     protected UnsupportedList() {
     }
 
@@ -180,10 +185,11 @@ public abstract class UnsupportedList<T> implements List<T> {
                 lastRet = cursor++;
                 return next;
             } catch (IndexOutOfBoundsException e) {
-                System.out.println(
-                    "UnsupportedList.Itr.next: cursor="  +  cursor);
-                System.out.println(
-                    "UnsupportedList.Itr.next: size="  +  size());
+                LOGGER.error(
+                    "UnsupportedList.Itr.next: cursor="
+                        +  cursor
+                        + ", size="
+                        + size(),e);
                 throw new NoSuchElementException();
             }
         }
