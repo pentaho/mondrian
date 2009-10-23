@@ -164,6 +164,32 @@ public class PerformanceTest extends FoodMartTestCase {
             result.getAxes()[1].getPositions().size());
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-639">
+     * Bug MONDRIAN-639, "RolapNamedSetEvaluator anon classes implement
+     * Iterable, causing performance regression from 2.4 in
+     * FunUtil.count()"</a>.
+     */
+    public void testBugMondrian639() {
+        // On my mac mini:
+        // takes 233 seconds before bug fixed
+        // takes 4.5 seconds after bug fixed
+        long start = System.currentTimeMillis();
+        Result result = executeQuery(
+            "WITH SET [cjoin] AS "
+            + "crossjoin(customers.members, [store type].[store type].members) "
+            + "MEMBER [Measures].[total_available_count] "
+            + "AS Format(COUNT([cjoin]), \"#####\") "
+            + "SELECT"
+            + "{[cjoin]} ON COLUMNS, "
+            + "{[Measures].[total_available_count]} ON ROWS "
+            + "FROM sales");
+        printDuration("Bug 639 (count() iterations)", start);
+        assertEquals(62442, result.getAxes()[0].getPositions().size());
+        assertEquals(1, result.getAxes()[1].getPositions().size());
+    }
+
     private void printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;

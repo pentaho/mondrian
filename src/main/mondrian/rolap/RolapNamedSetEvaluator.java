@@ -66,7 +66,7 @@ class RolapNamedSetEvaluator
 
     public Iterable<Member> evaluateMemberIterable() {
         ensureList();
-        return new Iterable<Member>() {
+        return new Collection<Member>() {
             public Iterator<Member> iterator() {
                 return new Iterator<Member>() {
                     int i = -1;
@@ -85,12 +85,63 @@ class RolapNamedSetEvaluator
                     }
                 };
             }
+
+            // The following are included to fill out the Collection
+            // interface, but anything that would alter the collection
+            // or is not strictly needed elsewhere is unsupported
+            public boolean add(Member o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean addAll(Collection<? extends Member> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void clear() {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean contains(Object o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean containsAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean isEmpty() {
+                return list.isEmpty();
+            }
+
+            public boolean remove(Object o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean removeAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean retainAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public int size() {
+                return list.size();
+            }
+
+            public Object[] toArray() {
+                throw new UnsupportedOperationException();
+            }
+
+            public <T> T[] toArray(T[] a) {
+                throw new UnsupportedOperationException();
+            }
         };
     }
 
     public Iterable<Member[]> evaluateTupleIterable() {
         ensureList();
-        return new Iterable<Member[]>() {
+        return new Collection<Member[]>() {
             public Iterator<Member[]> iterator() {
                 return new Iterator<Member[]>() {
                     int i = -1;
@@ -108,6 +159,57 @@ class RolapNamedSetEvaluator
                         throw new UnsupportedOperationException();
                     }
                 };
+            }
+
+            // The following are included to fill out the Collection
+            // interface, but anything that would alter the collection
+            // or is not strictly needed elsewhere is unsupported
+            public boolean add(Member[] o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean addAll(Collection<? extends Member[]> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void clear() {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean contains(Object o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean containsAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean isEmpty() {
+                return list.isEmpty();
+            }
+
+            public boolean remove(Object o) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean removeAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean retainAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public int size() {
+                return list.size();
+            }
+
+            public Object[] toArray() {
+                throw new UnsupportedOperationException();
+            }
+
+            public <T> T[] toArray(T[] a) {
+                throw new UnsupportedOperationException();
             }
         };
     }
