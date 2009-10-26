@@ -142,6 +142,16 @@ public class Bug {
      */
     public static final boolean BugMondrian584Fixed = false;
 
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-641">bug MONDRIAN-641,
+     * "Large NON EMPTY result performs poorly with ResultStyle.ITERABLE"</a>
+     */
+    public static final boolean BugMondrian641Fixed = false;
+
+
+
     /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.

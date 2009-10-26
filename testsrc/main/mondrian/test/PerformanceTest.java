@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 import java.util.*;
 
@@ -65,6 +66,27 @@ public class PerformanceTest extends FoodMartTestCase {
             + "where ([Time].[1997].[Q4], [Measures].[EXP2])");
         assertEquals(13, result2.getAxes()[0].getPositions().size());
         assertEquals(3263, result2.getAxes()[1].getPositions().size());
+    }
+
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-641">
+     * Bug MONDRIAN-641</a>, "Large NON EMPTY result performs poorly with
+     * ResultStyle.ITERABLE".  Runs in ~10 seconds with ResultStyle.LIST,
+     * 99+ seconds with ITERABLE (on DELL Latitude D630).
+     */
+    public void testBug641() {
+        if (Bug.BugMondrian641Fixed) {
+            long start = System.currentTimeMillis();
+            Result result = executeQuery(
+                    "select  non empty  {  crossjoin( customers.[city].members, "
+                    + "crossjoin( [store type].[store type].members,  "
+                    + "product.[product name].members)) }"
+                    + " on 0 from sales");
+            printDuration("Bug ", start);
+            assertEquals(51148, result.getAxes()[0].getPositions().size());
+        }
     }
 
     private TestContext getBugMondrian550Schema() {
