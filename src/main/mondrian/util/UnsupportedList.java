@@ -189,7 +189,7 @@ public abstract class UnsupportedList<T> implements List<T> {
                     "UnsupportedList.Itr.next: cursor="
                         +  cursor
                         + ", size="
-                        + size(),e);
+                        + size(), e);
                 throw new NoSuchElementException();
             }
         }
