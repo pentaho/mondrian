@@ -21260,6 +21260,15 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>MIRR</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>mod</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Value</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>mod</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>month</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>DateTime</PARAMETER_LIST>

@@ -11,6 +11,7 @@ package mondrian.olap.fun.vba;
 import static mondrian.olap.fun.JavaFunDef.Description;
 import static mondrian.olap.fun.JavaFunDef.FunctionName;
 import mondrian.olap.fun.JavaFunDef;
+import mondrian.olap.InvalidArgumentException;
 
 /**
  * Implementations of functions in the Excel worksheet library.
@@ -646,6 +647,46 @@ public abstract class Excel {
 
     // Skip: Max Returns the largest value in a set of values.  Todo: MDeterm
     // Returns the matrix determinant of an array.
+
+    /**
+     * The MOD function. Not technically in the Excel package, but this seemed
+     * like a good place to put it, since Excel has a MOD function.
+     *
+     * @param first First
+     * @param second Second
+     * @return First modulo second
+     */
+    @FunctionName("Mod")
+    @JavaFunDef.Signature("Mod(n, d)")
+    @Description("Returns the remainder of dividing n by d.")
+    public static double mod(
+        Object first,
+        Object second)
+    {
+        double iFirst;
+        if (!(first instanceof Number)) {
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "first parameter " + first
+                + " of Mod function must be of type number");
+        } else {
+            iFirst = ((Number) first).doubleValue();
+        }
+        double iSecond;
+        if (!(second instanceof Number)) {
+            throw new InvalidArgumentException(
+                "Invalid parameter. "
+                + "second parameter " + second
+                + " of Mod function must be of type number");
+        } else {
+            iSecond = ((Number) second).doubleValue();
+        }
+        // Use formula "mod(n, d) = n - d * int(n / d)".
+        if (iSecond == 0) {
+            throw new ArithmeticException("/ by zero");
+        }
+        return iFirst - iSecond * Vba.intNative(iFirst / iSecond);
+    }
 
     // Todo: MDuration Returns the modified Macauley duration for a security
     // with an assumed par value of $100.

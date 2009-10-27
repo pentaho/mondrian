@@ -118,6 +118,19 @@ public class ExcelTest extends TestCase {
         assertEquals(Math.tanh(0), Excel.tanh(0));
         assertEquals(Math.tanh(0.44), Excel.tanh(0.44));
     }
+
+    public void testMod() {
+        assertEquals(2.0, Excel.mod(28, 13));
+        assertEquals(-11.0, Excel.mod(28, -13));
+    }
+
+    public void testIntNative() {
+        assertEquals(5, Vba.intNative(5.1));
+        assertEquals(5, Vba.intNative(5.9));
+        assertEquals(-6, Vba.intNative(-5.9));
+        assertEquals(0, Vba.intNative(0.1));
+        assertEquals(0, Vba.intNative(0));
+    }
 }
 
 // End ExcelTest.java

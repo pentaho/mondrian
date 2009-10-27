@@ -5591,6 +5591,31 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("24 / 4 / 2 * 10 - -1", "31");
     }
 
+    public void testMod() {
+        // the following tests are consistent with excel xp
+
+        assertExprReturns("mod(11, 3)", "2");
+        assertExprReturns("mod(-12, 3)", "0");
+
+        // can handle non-ints, using the formula MOD(n, d) = n - d * INT(n / d)
+        assertExprReturns("mod(7.2, 3)", 1.2, 0.0001);
+        assertExprReturns("mod(7.2, 3.2)", .8, 0.0001);
+        assertExprReturns("mod(7.2, -3.2)", -2.4, 0.0001);
+
+        // per Excel doc "sign of result is same as divisor"
+        assertExprReturns("mod(3, 2)", "1");
+        assertExprReturns("mod(-3, 2)", "1");
+        assertExprReturns("mod(3, -2)", "-1");
+        assertExprReturns("mod(-3, -2)", "-1");
+
+        assertExprThrows(
+            "mod(4, 0)",
+            "java.lang.ArithmeticException: / by zero");
+        assertExprThrows(
+            "mod(0, 0)",
+            "java.lang.ArithmeticException: / by zero");
+    }
+
     public void testUnaryMinus() {
         assertExprReturns("-3", "-3");
     }
