@@ -8,10 +8,16 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
-import mondrian.calc.*;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ListCalc;
+import mondrian.calc.ResultStyle;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import static mondrian.rolap.RolapLevel.HideMemberCondition.IfBlankName;
+import static mondrian.rolap.RolapLevel.HideMemberCondition.Never;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.HardSmartCache;
@@ -20,13 +26,10 @@ import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.mdx.*;
-
-import static mondrian.rolap.RolapLevel.HideMemberCondition.*;
-
 import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
+import java.util.*;
 
 /**
  * Analyses set expressions and executes them in SQL if possible.
@@ -100,9 +103,18 @@ public abstract class RolapNativeSet extends RolapNative {
                 if (!(arg instanceof MemberListCrossJoinArg)
                     || !((MemberListCrossJoinArg) arg).hasCalcMembers())
                 {
-                    arg.addConstraint(sqlQuery, baseCube, aggStar);
+                    RolapLevel level = arg.getLevel();
+                    if (level == null || levelIsOnBaseCube(baseCube, level)) {
+                        arg.addConstraint(sqlQuery, baseCube, aggStar);
+                    }
                 }
             }
+        }
+
+        private boolean levelIsOnBaseCube(
+            final RolapCube baseCube, final RolapLevel level)
+        {
+            return baseCube.findBaseCubeHierarchy(level.getHierarchy()) != null;
         }
 
         /**

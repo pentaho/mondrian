@@ -3932,6 +3932,24 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
+    public void testNonJoiningDimIsNotIncludedInNativeTupleQuery() {
+        String mdxQuery = "select\n"
+            + " non empty {[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]} on 0, "
+            + " non empty Crossjoin([Gender].[Gender].members ,{[Marital Status].[Marital Status].members}) on 1, "
+            + " non empty {[Measures].[Unit Sales]} on 2"
+            + "from [Warehouse and Sales]";
+        SqlPattern[] expectedPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS,
+                "select `customer`.`gender` as `c0`, `customer`.`marital_status` as `c1` "
+                    + "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` "
+                    + "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+                    + "group by `customer`.`gender`, `customer`.`marital_status` "
+                    + "order by 1 ASC, 2 ASC", 286)
+        };
+        assertQuerySql(mdxQuery, expectedPatterns);
+    }
+
     /**
      * Make sure the mdx runs correctly and not in native mode.
      *
