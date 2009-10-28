@@ -1244,6 +1244,35 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         checkNotNative(mdx);
     }
 
+    public void testAxisWithArityOneIsNotNativelyEvaluated() {
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS,
+                "select `promotion`.`media_type` as `c0` "
+                    + "from `promotion` as `promotion`, `sales_fact_1997` as `sales_fact_1997` "
+                    + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
+                    + "group by `promotion`.`media_type` "
+                    + "order by Iif(`promotion`.`media_type` IS NULL, 1, 0), "
+                    + "`promotion`.`media_type` ASC", 296)
+        };
+        String query =
+            "select "
+                + "  NON EMPTY "
+                + "  NativizeSet("
+                + "    Except("
+                + "      {[Promotion Media].[Promotion Media].Members},\n"
+                + "      {[Promotion Media].[All Media].[Bulk Mail],[Promotion Media].[All Media].[Daily Paper]}"
+                + "    )"
+                + "  ) ON COLUMNS,"
+                + "  NON EMPTY "
+                + "  {[Measures].[Unit Sales]} ON ROWS "
+                + "from [Sales] \n"
+                + "where [Time].[1997]";
+        assertQuerySqlOrNot(
+            getTestContext(), query, patterns, true, false, true);
+    }
+
+
     private void checkNotNative(String mdx) {
         NonEmptyTest.checkNotNative(mdx, getResult(removeNativize(mdx)));
     }

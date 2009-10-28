@@ -106,6 +106,8 @@ public class RolapEvaluator implements Evaluator {
         if (parent == null) {
             depth = 0;
             nonEmpty = false;
+            nativeEnabled =
+                MondrianProperties.instance().EnableNativeNonEmpty.get();
             evalAxes = false;
             cellReader = null;
             final int hierarchyCount = root.cube.getHierarchies().size();
@@ -117,6 +119,7 @@ public class RolapEvaluator implements Evaluator {
         } else {
             depth = parent.depth + 1;
             nonEmpty = parent.nonEmpty;
+            nativeEnabled = parent.nativeEnabled;
             evalAxes = parent.evalAxes;
             cellReader = parent.cellReader;
             currentMembers = parent.currentMembers.clone();
@@ -131,8 +134,6 @@ public class RolapEvaluator implements Evaluator {
             }
             expandingMember = parent.expandingMember;
         }
-        nativeEnabled =
-            MondrianProperties.instance().EnableNativeNonEmpty.get();
     }
 
     /**

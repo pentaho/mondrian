@@ -6,6 +6,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import static mondrian.olap.fun.NativizeSetFunDef.NativeElementType.*;
 import mondrian.olap.type.SetType;
+import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import org.apache.log4j.Logger;
 
@@ -106,8 +107,8 @@ public class NativizeSetFunDef extends FunDefBase {
             throw new IllegalArgumentException(
                 "unexpected value for .getArity() - " + arity);
         } else if (arity == 1) {
-            compiler.getEvaluator().setNonEmpty(false);
-            return funArg.accept(compiler);
+            Calc calc = funArg.accept(compiler);
+            return new NonNativeMemberListCalc((MemberListCalc) calc);
         } else if (substitutionMap.isEmpty()) {
             return funArg.accept(compiler);
         } else {
@@ -122,6 +123,45 @@ public class NativizeSetFunDef extends FunDefBase {
             }
             return new NativeTupleListCalc(
                 call, calcs, compiler, substitutionMap, originalExp);
+        }
+    }
+
+    public static class NonNativeMemberListCalc implements MemberListCalc {
+        private final MemberListCalc parent;
+
+        protected NonNativeMemberListCalc(MemberListCalc parent) {
+            this.parent = parent;
+        }
+
+        public Object evaluate(final Evaluator evaluator) {
+            evaluator.setNativeEnabled(false);
+            return parent.evaluate(evaluator);
+        }
+
+        public boolean dependsOn(final Hierarchy hierarchy) {
+            return parent.dependsOn(hierarchy);
+        }
+
+        public Type getType() {
+            return parent.getType();
+        }
+
+        public void accept(final CalcWriter calcWriter) {
+            parent.accept(calcWriter);
+        }
+
+        public ResultStyle getResultStyle() {
+            return parent.getResultStyle();
+        }
+
+        public List<Member> evaluateMemberList(final Evaluator evaluator) {
+            evaluator.setNativeEnabled(false);
+            return parent.evaluateMemberList(evaluator);
+        }
+
+        public List evaluateList(final Evaluator evaluator) {
+            evaluator.setNativeEnabled(false);
+            return parent.evaluateMemberList(evaluator);
         }
     }
 
