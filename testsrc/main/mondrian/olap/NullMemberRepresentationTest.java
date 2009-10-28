@@ -10,7 +10,6 @@
 package mondrian.olap;
 
 import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
 import mondrian.rolap.RolapUtil;
 
 import java.io.IOException;
@@ -72,62 +71,6 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
         return RolapUtil.mdxNullLiteral();
     }
 
-    public void testCjMembersWithHideIfBlankAndMemberNameSpaceLeaf() {
-        MondrianProperties properties = MondrianProperties.instance();
-        String connectionString =
-            (String) properties.get("mondrian.test.connectString");
-        String jdbcUrl = (String) properties.get("mondrian.foodmart.jdbcURL");
-
-        if (jdbcUrl == null
-            || jdbcUrl.trim().equals("")
-            || connectionString == null
-            || connectionString.trim().equals(""))
-        {
-            return;
-        }
-
-        if (!isDbSupported(connectionString) || !isDbSupported(jdbcUrl)) {
-            return;
-        }
-        TestContext testContext = TestContext.createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
-                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-                + "      <Table name=\"customer\"/>\n"
-                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" hideMemberIf=\"IfBlankName\">\n"
-                + "         <NameExpression> "
-                + " <SQL dialect='generic'> "
-                +           "case \"gender\" "
-                +           "when 'F' then ' ' "
-                +           "when 'M' then 'M' "
-                + " end "
-                + "</SQL> "
-                + "</NameExpression>  "
-                + "      </Level>"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>");
-        testContext.assertQueryReturns(
-                " select {[Gender4].[Gender].members} "
-                    + "on COLUMNS "
-                    + "from sales",
-            "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Gender4].[All Gender].[M]}\n"
-                + "Row #0: 135,215\n");
-    }
-
-    public boolean isDbSupported(String property)
-    {
-        return property.indexOf("oracle") != -1
-            || property.indexOf("postgres") != -1
-            || property.indexOf("mysql") != -1
-            || property.indexOf("mssql") != -1
-            || property.indexOf("derby") != -1
-            || property.indexOf("teradata") != -1
-            || property.indexOf("db2") != -1
-            || property.indexOf("luciddb") != -1;
-    }
 }
 
 // End NullMemberRepresentationTest.java

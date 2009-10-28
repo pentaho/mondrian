@@ -782,8 +782,7 @@ public class RolapMember extends MemberBase {
             // If the key value in the database is null, then we use
             // a special key value whose toString() is "null".
             final String name = getName();
-            return name.equals(RolapUtil.mdxNullLiteral())
-                || name.trim().equals("");
+            return name.equals(RolapUtil.mdxNullLiteral()) || name.equals("");
         }
 
         case IfParentsName:
