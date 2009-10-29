@@ -12,6 +12,7 @@
 */
 
 package mondrian.olap;
+
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ResultStyle;
@@ -20,7 +21,6 @@ import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.util.Bug;
 
 import java.io.*;
 import java.util.*;
@@ -350,7 +350,7 @@ public class Query extends QueryPart {
     }
 
     /**
-     *@Deprecated this method has been deprecated, please use clone instead.
+     * @deprecated this method has been deprecated; please use {@link #clone}
      */
     public Query safeClone() {
         return (Query) clone();

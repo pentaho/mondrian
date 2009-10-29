@@ -1400,15 +1400,23 @@ diagrams and hyperlinks to source code">
     <record name="javadoc-complaints.log" action="stop"/>
     <loadfile srcFile="javadoc-complaints.log" property="javadoc.complaints">
       <filterchain>
-        <filterreader classname="org.apache.tools.ant.filters.LineContains">
-          <param type="negate" value="true"/>
-          <param type="contains" value="Error fetching URL"/>
-        </filterreader>
+        <!-- only interested in lines that are errors or warnings -->
+        <linecontainsregexp>
+            <regexp pattern=":[0-9]+: "/>
+        </linecontainsregexp>
+        <!-- ignore: unwrap does not exist until JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="Tag @link: can't find unwrap(Class)"/>
+        </linecontains>
+         <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="FactoryJdbc4Impl.java"/>
+        </linecontains>
         <striplinebreaks />
       </filterchain>
     </loadfile>
     <fail if="javadoc.complaints"
-        message="Javadoc reported warnings or errors; see javadoc-complaints.log for details"/>
+        message="Javadoc reported warnings or errors; see javadoc-complaints.log for details: ${javadoc.complaints}"/>
     <delete file="javadoc-complaints.log"/>
     <!-- Save disk space since we're just checking. -->
     <antcall target="cleanJavadoc"/>

@@ -35,6 +35,7 @@ import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
+import mondrian.test.build.CodeComplianceTest;
 import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
 import org.apache.log4j.Logger;
@@ -279,6 +280,7 @@ public class Main extends TestSuite {
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
             addTest(suite, SteelWheelsTestCase.class);
+            addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {

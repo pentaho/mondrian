@@ -9,17 +9,16 @@
 */
 package mondrian.rolap.sql;
 
-import java.sql.SQLException;
-
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
 /**
- * Test that various values of {@link Dialect#supportSelectNotInGroupBy}
+ * Test that various values of {@link Dialect#allowsSelectNotInGroupBy}
  * produce correctly optimized SQL.
  *
+ * @author Eric McDermid
  * @version $Id$
  */
 public class SelectNotInGroupByTest extends BatchTestCase {

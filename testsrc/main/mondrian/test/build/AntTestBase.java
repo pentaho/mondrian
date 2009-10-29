@@ -13,8 +13,8 @@ package mondrian.test.build;
 import junit.framework.TestCase;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.*;
+
+import mondrian.olap.Util;
 
 /**
  * Base class for tests that execute Ant targets.  Sub-classes
@@ -27,10 +27,10 @@ import java.util.*;
  * <ol>
  *   <li>Ant can be invoked by executing <code>ant</code>.  That is, ant is
  *       on the current PATH.</li>
- *   <li>The version of Ant on the PATH is new enough to execute the Aspen
+ *   <li>The version of Ant on the PATH is new enough to execute the
  *       build.xml script.</li>
- *   <li>The test is being invoked with the root Aspen directory (e.g.
- *       //depot/aspen) as the current directory.</li>
+ *   <li>The test is being invoked in the root directory (e.g.
+ *       //open/mondrian) as the current directory or a subdirectory of it.</li>
  * </ol>
  *
  * <pre>
@@ -49,6 +49,8 @@ import java.util.*;
  */
 abstract class AntTestBase extends TestCase
 {
+    private static final boolean DEBUG = false;
+
     /**
      * Creates an AntTestBase.
      *
@@ -69,13 +71,20 @@ abstract class AntTestBase extends TestCase
     protected void runAntTest(String target)
         throws IOException, InterruptedException
     {
-        Runtime runtime = Runtime.getRuntime();
+        if (Util.PreJdk15) {
+            // Cannot invoke ant in JDK 1.4 or ealier.
+            // ant gives "Unknown argument: -cp"
+            return;
+        }
 
+        Runtime runtime = Runtime.getRuntime();
         Process proc =
             runtime.exec(new String[] { "ant", "-find", "build.xml", target });
 
-        final Sucker outSucker = new Sucker(proc.getInputStream(), System.out);
-        final Sucker errSucker = new Sucker(proc.getErrorStream(), System.err);
+        final Sucker outSucker =
+            new Sucker(proc.getInputStream(), DEBUG ? System.out : null);
+        final Sucker errSucker =
+            new Sucker(proc.getErrorStream(), DEBUG ? System.err : null);
         outSucker.start();
         errSucker.start();
 
@@ -120,7 +129,9 @@ abstract class AntTestBase extends TestCase
             try {
                 while ((x = stream.read(buf)) >= 0) {
                     baos.write(buf, 0, x);
-                    out.write(buf, 0, x);
+                    if (out != null) {
+                        out.write(buf, 0, x);
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
