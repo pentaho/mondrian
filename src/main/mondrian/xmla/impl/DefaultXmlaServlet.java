@@ -128,11 +128,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Element envElem = soapDoc.getDocumentElement();
 
             if (LOGGER.isDebugEnabled()) {
-                final StringWriter writer = new StringWriter();
-                writer.write("XML/A request content");
-                writer.write(nl);
-                XmlaUtil.element2Text(envElem, writer);
-                LOGGER.debug(writer.toString());
+                logXmlaRequest(envElem);
             }
 
             if ("Envelope".equals(envElem.getLocalName())) {
@@ -190,6 +186,14 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 USM_UNKNOWN_FAULT_FS,
                 ex);
         }
+    }
+
+    protected void logXmlaRequest(Element envElem) {
+        final StringWriter writer = new StringWriter();
+        writer.write("XML/A request content");
+        writer.write(nl);
+        XmlaUtil.element2Text(envElem, writer);
+        LOGGER.debug(writer.toString());
     }
 
     /**
