@@ -1,0 +1,136 @@
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2006-2008 SQLstream, Inc.
+// Copyright (C) 2009-2009 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
+package mondrian.test.build;
+
+import junit.framework.TestCase;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.*;
+
+/**
+ * Base class for tests that execute Ant targets.  Sub-classes
+ * should invoke {@link #runAntTest(String)} to run an Ant target.  If
+ * the Ant sub-process cannot be started of if it returns an exit code that
+ * indicates error, the test fails.
+ *
+ * <p>
+ * AntTestBase makes the following assumptions about its run-time environment:
+ * <ol>
+ *   <li>Ant can be invoked by executing <code>ant</code>.  That is, ant is
+ *       on the current PATH.</li>
+ *   <li>The version of Ant on the PATH is new enough to execute the Aspen
+ *       build.xml script.</li>
+ *   <li>The test is being invoked with the root Aspen directory (e.g.
+ *       //depot/aspen) as the current directory.</li>
+ * </ol>
+ *
+ * <pre>
+ * REVIEW: SWZ: 3/11/2006: This class is not portable to Windows.  Potential
+ * solutions:
+ * 1) Check for Windows via System properties and invoke
+ *    "command.com ant.bat [target]" (or whatever's necessary) when the OS is
+ *    Windows.
+ * 2) Require Ant libraries be on the classpath and invoke Ant's API
+ *    directly.  This is preferred, since it should be OS neutral.
+ * </pre>
+ *
+ * @author Stephan Zuercher
+ * @since Mar 11, 2006
+ * @version $Id$
+ */
+abstract class AntTestBase extends TestCase
+{
+    /**
+     * Creates an AntTestBase.
+     *
+     * @param name Test name
+     */
+    AntTestBase(String name)
+    {
+        super(name);
+    }
+
+    /**
+     * Runs an ant task.
+     *
+     * @param target Name of ant target
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    protected void runAntTest(String target)
+        throws IOException, InterruptedException
+    {
+        Runtime runtime = Runtime.getRuntime();
+
+        Process proc =
+            runtime.exec(new String[] { "ant", "-find", "build.xml", target });
+
+        final Sucker outSucker = new Sucker(proc.getInputStream(), System.out);
+        final Sucker errSucker = new Sucker(proc.getErrorStream(), System.err);
+        outSucker.start();
+        errSucker.start();
+
+        int exitCode = proc.waitFor();
+        if (exitCode != 0) {
+            final String lineSep = System.getProperty("line.separator");
+            fail(
+                "Error running 'ant " + target + "'" + lineSep
+                + "Stdout:" + lineSep
+                + outSucker.toString()
+                + "Stderr:" + lineSep
+                + errSucker.toString());
+        }
+    }
+
+    /**
+     * Thread that reads from an input stream, stores in a buffer, and also
+     * writes to a given output stream.
+     *
+     * <p>Useful for ensuring that processes don't hang up because one of their
+     * outputs (stdout or stderr) is full.
+     */
+    private static class Sucker extends Thread {
+        private final InputStream stream;
+        private final PrintStream out;
+        private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        /**
+         * Creates a Sucker.
+         *
+         * @param stream Input stream
+         * @param out Output stream
+         */
+        Sucker(InputStream stream, PrintStream out) {
+            this.stream = stream;
+            this.out = out;
+        }
+
+        public void run() {
+            byte[] buf = new byte[1000];
+            int x;
+            try {
+                while ((x = stream.read(buf)) >= 0) {
+                    baos.write(buf, 0, x);
+                    out.write(buf, 0, x);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public String toString() {
+            return baos.toString();
+        }
+    }
+}
+
+// End AntTestBase.java

@@ -621,10 +621,10 @@ public class RolapEvaluator implements Evaluator {
                 continue;
             }
 
-            // Don’t call member.getPropertyValue unless this member’s
-            // solve order is greater than one we’ve already seen.
+            // Don't call member.getPropertyValue unless this member's
+            // solve order is greater than one we've already seen.
             // The getSolveOrder call is cheap call compared to the
-            // getPropertyValue call, and when we’re evaluating millions
+            // getPropertyValue call, and when we're evaluating millions
             // of members, this has proven to make a significant performance
             // difference.
             final int solve = member.getSolveOrder();

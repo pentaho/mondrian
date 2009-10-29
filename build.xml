@@ -12,7 +12,7 @@
   <property environment="env"/>
 
   <!-- Define desired ivy version and location. -->
-  <property name="ivy.install.version" value="2.0.0-rc2"/>
+  <property name="ivy.install.version" value="2.0.0"/>
   <property name="ivy.jar.dir" value="${basedir}/ivy"/>
   <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 
@@ -665,7 +665,6 @@ META-INF/**"/>
       description="Runs all JUnit tests."
       depends="compile,compile.tests,unzip-databases,set.connectString">
     <antcall target="test-nobuild"/>
-    <antcall target="checkJavadoc"/>
   </target>
 
   <target name="test-list">
@@ -944,6 +943,8 @@ ${doc.dir}/**/*.gif,
 ${doc.dir}/**/*.png,
 ${doc.dir}/**/*.jpeg,
 ${doc.dir}/**/*.html,
+bin/checkFile.awk,
+bin/checkFile.sh,
 bin/cmdrunner.sh,
 bin/cmdrunner.cmd,
 bin/run.sh,
@@ -1417,6 +1418,14 @@ diagrams and hyperlinks to source code">
     <delete includeEmptyDirs="true" quiet="true">
       <fileset dir="${javadoc.dir}" includes="**/*"/>
     </delete>
+  </target>
+
+  <target name="checkCodeFormatting">
+    <!-- Only runs on unix currently, because it's a shell script.
+         On Windows/cygwin, you can run bin/checkFile.sh manually. -->
+    <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh">
+        <arg line="--under ."/>
+    </exec>
   </target>
 
   <target name="war" depends="jar,compile.tests" description="
