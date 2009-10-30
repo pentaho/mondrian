@@ -82,9 +82,7 @@ abstract class AntTestBase extends TestCase
         // to be on the path.
         final File antFile = new File("/opt/ant1.7/bin/ant");
         String antCommand;
-        if (antFile.exists()
-            && antFile.canExecute())
-        {
+        if (antFile.exists()) {
             antCommand = antFile.getAbsolutePath();
         } else {
             antCommand = "ant";
