@@ -77,9 +77,23 @@ abstract class AntTestBase extends TestCase
             return;
         }
 
+        // On hudson, ant is not on the path but is at /opt/ant1.7. If that
+        // file exists, assume that we are on hudson. Otherwise, require ant
+        // to be on the path.
+        final File antFile = new File("/opt/ant1.7/bin/ant");
+        String antCommand;
+        if (antFile.exists()
+            && antFile.canExecute())
+        {
+            antCommand = antFile.getAbsolutePath();
+        } else {
+            antCommand = "ant";
+        }
+
         Runtime runtime = Runtime.getRuntime();
         Process proc =
-            runtime.exec(new String[] { "ant", "-find", "build.xml", target });
+            runtime.exec(
+                new String[] { antCommand, "-find", "build.xml", target });
 
         final Sucker outSucker =
             new Sucker(proc.getInputStream(), DEBUG ? System.out : null);
