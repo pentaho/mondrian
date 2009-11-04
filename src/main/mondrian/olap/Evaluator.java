@@ -92,6 +92,12 @@ public interface Evaluator {
     Evaluator push(boolean nonEmpty);
 
     /**
+     * Creates a new evaluator with the same state except nonEmpty
+     * and nativeEnabled properties.
+     */
+    Evaluator push(boolean nonEmpty, boolean nativeEnabled);
+
+    /**
      * Restores previous evaluator.
      */
     Evaluator pop();

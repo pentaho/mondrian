@@ -195,8 +195,9 @@ public class NativizeSetFunDef extends FunDefBase {
         public List<Member[]> computeTuples(Evaluator evaluator) {
             // Force non-empty to false to create the simplified list.
             List<Member[]> simplifiedList =
-                simpleCalc.evaluateTupleList(evaluator.push(false));
-            dumpListToLog("simplified list:", simplifiedList);
+                simpleCalc.evaluateTupleList(evaluator.push(false, false));
+            evaluator.pop();
+            dumpListToLog("simplified list", simplifiedList);
 
             if (simplifiedList.isEmpty()) {
                 return simplifiedList;
@@ -207,20 +208,18 @@ public class NativizeSetFunDef extends FunDefBase {
                     "Disabling native evaluation. originalExp="
                         + originalExp);
                 Query query = evaluator.getQuery();
-                query.setVirtualCubeNonNativeCrossJoin();
 
-                Exp parsed =
-                    query.getConnection().parseExpression(
-                        "{" + originalExp.toString() + "}");
+                Exp parsed = query.getConnection()
+                    .parseExpression("{" + originalExp.toString() + "}");
                 Exp resolved = compiler.getValidator().validate(parsed, false);
                 resolved.accept(
                     new TransformFromFormulasVisitor(query, compiler));
                 query.resolve();
                 ListCalc calc = compiler.compileList(resolved);
-                evaluator.setNativeEnabled(false);
-                return calc.evaluateList(evaluator);
+                List members = calc.evaluateList(evaluator.push(true, false));
+                evaluator.pop();
+                return members;
             }
-
             CrossJoinAnalyzer analyzer =
                 new CrossJoinAnalyzer(simplifiedList, substitutionMap);
             String crossJoin = analyzer.getCrossJoinExpression();
@@ -233,8 +232,15 @@ public class NativizeSetFunDef extends FunDefBase {
             }
 
             // Force non-empty to true to create the native list.
-            return analyzer.mergeCalcMembers(
-                evaluateJoinExpression(evaluator.push(true), crossJoin));
+            LOGGER.info(
+                "crossjoin reconstituted from simplified list: "
+                    + String.format(
+                    "%n"
+                        + crossJoin.replaceAll(",", "%n, ")));
+            List<Member[]> members = analyzer.mergeCalcMembers(
+                evaluateJoinExpression(evaluator.push(true, true), crossJoin));
+            evaluator.pop();
+            return members;
         }
 
         private boolean isHighCardinality(

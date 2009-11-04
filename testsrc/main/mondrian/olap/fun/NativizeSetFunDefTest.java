@@ -1272,6 +1272,17 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             getTestContext(), query, patterns, true, false, true);
     }
 
+    public void testOneAxisHighAndOneLowGetsNativeEvaluation() {
+        NativizeSetFunDef.setHighCardinalityThreshold(19L);
+        checkNative(
+            "select NativizeSet("
+                + "Crossjoin([Gender].[Gender].members,"
+                + "[Marital Status].[Marital Status].members)) on 0,"
+                + "NativizeSet("
+                + "Crossjoin([Store].[Store State].members,[Time].[Year].members)) on 1 "
+                + "from [Warehouse and Sales]");
+    }
+
 
     private void checkNotNative(String mdx) {
         NonEmptyTest.checkNotNative(mdx, getResult(removeNativize(mdx)));

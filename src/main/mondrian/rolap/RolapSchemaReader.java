@@ -563,8 +563,11 @@ public abstract class RolapSchemaReader
     {
         RolapEvaluator revaluator = (RolapEvaluator)
             AbstractCalc.simplifyEvaluator(calc, evaluator);
-        return schema.getNativeRegistry().createEvaluator(
-            revaluator, fun, args);
+        if (evaluator.nativeEnabled()) {
+            return schema.getNativeRegistry().createEvaluator(
+                revaluator, fun, args);
+        }
+        return null;
     }
 
     public Parameter getParameter(String name) {

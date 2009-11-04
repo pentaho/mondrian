@@ -300,6 +300,13 @@ public class RolapEvaluator implements Evaluator {
         return evaluator;
     }
 
+    public Evaluator push(boolean nonEmpty, boolean nativeEnabled) {
+        final RolapEvaluator evaluator = _push();
+        evaluator.setNonEmpty(nonEmpty);
+        evaluator.setNativeEnabled(nativeEnabled);
+        return evaluator;
+    }
+
     public final RolapEvaluator push() {
         return _push();
     }
