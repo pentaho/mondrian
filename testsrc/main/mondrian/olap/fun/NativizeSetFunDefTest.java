@@ -1272,6 +1272,16 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             getTestContext(), query, patterns, true, false, true);
     }
 
+    public void testAxisWithNamedSetArityOneIsNotNativelyEvaluated() {
+        checkNotNative(
+            "with "
+                + "set [COG_OQP_INT_s1] as "
+                + "'Intersect({[Gender].[Gender].Members}, {[Gender].[Gender].[M]})' "
+                + "select NON EMPTY "
+                + "NativizeSet([COG_OQP_INT_s1]) ON COLUMNS "
+                + "from [Sales]");
+    }
+
     public void testOneAxisHighAndOneLowGetsNativeEvaluation() {
         NativizeSetFunDef.setHighCardinalityThreshold(19L);
         checkNative(

@@ -108,7 +108,12 @@ public class NativizeSetFunDef extends FunDefBase {
                 "unexpected value for .getArity() - " + arity);
         } else if (arity == 1) {
             Calc calc = funArg.accept(compiler);
-            return new NonNativeMemberListCalc((MemberListCalc) calc);
+            if (calc instanceof MemberListCalc) {
+                return new NonNativeMemberListCalc((MemberListCalc) calc);
+            } else if (calc instanceof MemberIterCalc) {
+                return new NonNativeMemberIterCalc((MemberIterCalc) calc);
+            }
+            return calc;
         } else if (substitutionMap.isEmpty()) {
             return funArg.accept(compiler);
         } else {
@@ -126,10 +131,10 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    public static class NonNativeMemberListCalc implements MemberListCalc {
-        private final MemberListCalc parent;
+    static class NonNativeCalc implements Calc {
+        final Calc parent;
 
-        protected NonNativeMemberListCalc(MemberListCalc parent) {
+        protected NonNativeCalc(Calc parent) {
             this.parent = parent;
         }
 
@@ -153,17 +158,59 @@ public class NativizeSetFunDef extends FunDefBase {
         public ResultStyle getResultStyle() {
             return parent.getResultStyle();
         }
+    }
+
+    static class NonNativeMemberListCalc extends NonNativeCalc
+        implements MemberListCalc
+    {
+
+        protected NonNativeMemberListCalc(MemberListCalc parent) {
+            super(parent);
+        }
+
+        MemberListCalc parent() {
+            return (MemberListCalc) parent;
+        }
 
         public List<Member> evaluateMemberList(final Evaluator evaluator) {
             evaluator.setNativeEnabled(false);
-            return parent.evaluateMemberList(evaluator);
+            return parent().evaluateMemberList(evaluator);
         }
 
         public List evaluateList(final Evaluator evaluator) {
             evaluator.setNativeEnabled(false);
-            return parent.evaluateMemberList(evaluator);
+            return parent().evaluateList(evaluator);
         }
     }
+
+    static class NonNativeMemberIterCalc extends NonNativeCalc
+        implements MemberIterCalc
+    {
+        protected NonNativeMemberIterCalc(MemberIterCalc parent) {
+            super(parent);
+        }
+
+        MemberIterCalc parent() {
+            return (MemberIterCalc) parent;
+        }
+
+        public SetType getType() {
+            return parent().getType();
+        }
+
+        public Iterable<Member> evaluateMemberIterable(
+            final Evaluator evaluator)
+        {
+            evaluator.setNativeEnabled(false);
+            return parent().evaluateMemberIterable(evaluator);
+        }
+
+        public Iterable evaluateIterable(final Evaluator evaluator) {
+            evaluator.setNativeEnabled(false);
+            return parent().evaluateIterable(evaluator);
+        }
+    }
+
 
     public static class NativeTupleListCalc extends AbstractTupleListCalc {
         private final SubstitutionMap substitutionMap;
