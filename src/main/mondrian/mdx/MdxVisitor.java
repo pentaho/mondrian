@@ -20,6 +20,11 @@ import mondrian.olap.*;
  */
 public interface MdxVisitor {
     /**
+     * @return Indicates whether the visitee should call accept on it's children
+     */
+    boolean shouldVisitChildren();
+
+    /**
      * Visits a Query.
      *
      * @see Query#accept(MdxVisitor)

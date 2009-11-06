@@ -352,66 +352,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    static abstract class OneTimeOnlyVisitor extends MdxVisitorImpl {
-        private List<Exp> visited = new ArrayList<Exp>();
-        private boolean shouldVisit = true;
-
-        public Object visit(final ResolvedFunCall call) {
-            if (hasBeenVisited(call)) {
-                return null;
-            }
-            addVisited(call);
-            if (shouldVisit) {
-                return visitResolvedFunCall(call);
-            }
-            return null;
-        }
-
-        private boolean hasBeenVisited(final Exp exp) {
-            for (Exp visitedCall : visited) {
-                //== is correct.  I want them to be the same object
-                if (visitedCall == exp) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public Object visit(final MemberExpr memberExpr) {
-            if (hasBeenVisited(memberExpr)) {
-                return null;
-            }
-            addVisited(memberExpr);
-            if (shouldVisit) {
-                return visitMemberExpr(memberExpr);
-            }
-            return null;
-        }
-
-        private void addVisited(final Exp call) {
-            visited.add(call);
-        }
-
-        protected void markAllChildrenVisited(final ResolvedFunCall call) {
-            setShouldVisit(false);
-            for (Exp arg : call.getArgs()) {
-                arg.accept(this);
-            }
-            setShouldVisit(true);
-        }
-
-        private void setShouldVisit(final boolean shouldVisit) {
-            this.shouldVisit = shouldVisit;
-        }
-
-        Object visitMemberExpr(final MemberExpr memberExpr) {
-            return null;
-        }
-
-        abstract Object visitResolvedFunCall(final ResolvedFunCall call);
-    }
-
-    static class FindLevelsVisitor extends OneTimeOnlyVisitor {
+    static class FindLevelsVisitor extends MdxVisitorImpl {
         private final SubstitutionMap substitutionMap;
         private final Set<Dimension> dimensions;
 
@@ -423,7 +364,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         @Override
-        public Object visitResolvedFunCall(ResolvedFunCall call) {
+        public Object visit(ResolvedFunCall call) {
             if (call.getFunDef() instanceof LevelMembersFunDef) {
                 if (call.getArg(0) instanceof LevelExpr) {
                     Level level = ((LevelExpr) call.getArg(0)).getLevel();
@@ -436,21 +377,20 @@ public class NativizeSetFunDef extends FunDefBase {
                 for (Exp arg : call.getArgs()) {
                     arg.accept(this);
                 }
-            } else {
-                markAllChildrenVisited(call);
             }
+            turnOffVisitChildren();
             return null;
         }
 
 
         @Override
-        public Object visitMemberExpr(MemberExpr member) {
+        public Object visit(MemberExpr member) {
             dimensions.add(member.getMember().getDimension());
             return null;
         }
     }
 
-    static class AddFormulasVisitor extends OneTimeOnlyVisitor {
+    static class AddFormulasVisitor extends MdxVisitorImpl {
         private final Query query;
         private final Collection<Level> levels;
         private final Set<Dimension> dimensions;
@@ -467,10 +407,11 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         @Override
-        public Object visitResolvedFunCall(ResolvedFunCall call) {
+        public Object visit(ResolvedFunCall call) {
             if (call.getFunDef() instanceof NativizeSetFunDef) {
                 addFormulasToQuery();
             }
+            turnOffVisitChildren();
             return null;
         }
 
@@ -539,7 +480,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    static class TransformToFormulasVisitor extends OneTimeOnlyVisitor {
+    static class TransformToFormulasVisitor extends MdxVisitorImpl {
         private final Query query;
 
         public TransformToFormulasVisitor(Query query) {
@@ -548,7 +489,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         @Override
-        public Object visitResolvedFunCall(ResolvedFunCall call) {
+        public Object visit(ResolvedFunCall call) {
             LOGGER.debug("visit " + call);
             Object result = null;
             if (call.getFunDef() instanceof LevelMembersFunDef) {
@@ -557,9 +498,8 @@ public class NativizeSetFunDef extends FunDefBase {
                 functionWhitelist.contains(call.getFunDef().getClass()))
             {
                 result = visitCallArguments(call);
-            } else {
-                markAllChildrenVisited(call);
             }
+            turnOffVisitChildren();
             return result;
         }
 
@@ -640,7 +580,7 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    static class TransformFromFormulasVisitor extends OneTimeOnlyVisitor {
+    static class TransformFromFormulasVisitor extends MdxVisitorImpl {
         private final Query query;
         private final ExpCompiler compiler;
 
@@ -651,11 +591,11 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         @Override
-        public Object visitResolvedFunCall(ResolvedFunCall call) {
+        public Object visit(ResolvedFunCall call) {
             LOGGER.debug("visit " + call);
             Object result;
             result = visitCallArguments(call);
-
+            turnOffVisitChildren();
             return result;
         }
 

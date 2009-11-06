@@ -101,9 +101,10 @@ public class QueryAxis extends QueryPart {
     public Object accept(MdxVisitor visitor) {
         final Object o = visitor.visit(this);
 
-        // visit the expression which forms the axis
-        exp.accept(visitor);
-
+        if (visitor.shouldVisitChildren()) {
+            // visit the expression which forms the axis
+            exp.accept(visitor);
+        }
         return o;
     }
 

@@ -22,6 +22,22 @@ import mondrian.olap.*;
  * @since Jul 21, 2006
  */
 public class MdxVisitorImpl implements MdxVisitor {
+    private boolean shouldVisitChildren = true;
+
+    public boolean shouldVisitChildren() {
+        boolean returnValue = shouldVisitChildren;
+        turnOnVisitChildren();
+        return returnValue;
+    }
+
+    public void turnOnVisitChildren() {
+        shouldVisitChildren = true;
+    }
+
+    public void turnOffVisitChildren() {
+        shouldVisitChildren = false;
+    }
+
     public Object visit(Query query) {
         return null;
     }

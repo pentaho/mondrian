@@ -456,9 +456,10 @@ public class Formula extends QueryPart {
     public Object accept(MdxVisitor visitor) {
         final Object o = visitor.visit(this);
 
-        // visit the expression
-        exp.accept(visitor);
-
+        if (visitor.shouldVisitChildren()) {
+            // visit the expression
+            exp.accept(visitor);
+        }
         return o;
     }
 

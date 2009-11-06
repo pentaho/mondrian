@@ -139,7 +139,9 @@ public class NamedSetExpr extends ExpBase implements Exp {
 
     public Object accept(MdxVisitor visitor) {
         Object o = visitor.visit(this);
-        namedSet.getExp().accept(visitor);
+        if (visitor.shouldVisitChildren()) {
+            namedSet.getExp().accept(visitor);
+        }
         return o;
     }
 

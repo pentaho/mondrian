@@ -1339,18 +1339,19 @@ public class Query extends QueryPart {
     public Object accept(MdxVisitor visitor) {
         Object o = visitor.visit(this);
 
-        // visit formulas
-        for (Formula formula : formulas) {
-            formula.accept(visitor);
+        if (visitor.shouldVisitChildren()) {
+            // visit formulas
+            for (Formula formula : formulas) {
+                formula.accept(visitor);
+            }
+            // visit axes
+            for (QueryAxis axis : axes) {
+                axis.accept(visitor);
+            }
+            if (slicerAxis != null) {
+                slicerAxis.accept(visitor);
+            }
         }
-        // visit axes
-        for (QueryAxis axis : axes) {
-            axis.accept(visitor);
-        }
-        if (slicerAxis != null) {
-            slicerAxis.accept(visitor);
-        }
-
         return o;
     }
 
