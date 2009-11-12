@@ -1,36 +1,27 @@
 package mondrian.olap.fun;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.ResourceLimitExceededException;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
-import mondrian.rolap.NonEmptyTest;
+import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
-import mondrian.test.FoodMartTestCase;
+import mondrian.rolap.NonEmptyTest;
+import mondrian.spi.Dialect;
 import mondrian.test.PropertySaver;
 import mondrian.test.SqlPattern;
-import mondrian.spi.Dialect;
 
 public class NativizeSetFunDefTest extends BatchTestCase {
     private final PropertySaver propSaver = new PropertySaver();
-    private long highCardThreshold;
-    private long nativeResultLimit;
 
     public void setUp() throws Exception {
         super.setUp();
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
-        highCardThreshold = NativizeSetFunDef.getHighCardinalityThreshold();
-        nativeResultLimit = NativizeSetFunDef.getNativeResultLimit();
-        NativizeSetFunDef.setHighCardinalityThreshold(0);
+        propSaver.set(
+            MondrianProperties.instance().NativizeMinThreshold, 0);
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
         // revert any properties that have been set during this test
         propSaver.reset();
-        NativizeSetFunDef.setHighCardinalityThreshold(highCardThreshold);
-        NativizeSetFunDef.setNativeResultLimit(nativeResultLimit);
     }
 
     public void testLevelHierarchyHighCardinality() {
@@ -38,7 +29,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         //    Year: 2 (level * gender cardinality:2)
         //    Quarter: 16 (level * gender cardinality:2)
         //    Month: 48 (level * gender cardinality:2)
-        NativizeSetFunDef.setHighCardinalityThreshold(17L);
+        propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 17);
         String mdx = "select NativizeSet("
             + "CrossJoin( "
             + "gender.gender.members, "
@@ -55,7 +46,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         //    Year: 2 (level * gender cardinality:2)
         //    Quarter: 16 (level * gender cardinality:2)
         //    Month: 48 (level * gender cardinality:2)
-        NativizeSetFunDef.setHighCardinalityThreshold(50L);
+        propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 50);
         String mdx =
             "select NativizeSet("
                 + "CrossJoin( "
@@ -70,11 +61,26 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNamedSetLowCardinality() {
-        NativizeSetFunDef.setHighCardinalityThreshold(Integer.MAX_VALUE);
+        propSaver.set(
+            MondrianProperties.instance().NativizeMinThreshold,
+            Integer.MAX_VALUE);
         checkNotNative(
             "with "
                 + "set [levelMembers] as 'crossjoin( gender.gender.members, "
                 + "[marital status].[marital status].members) '"
+                + "select  nativizeSet([levelMembers]) on 0 "
+                + "from [warehouse and sales]");
+    }
+
+    public void testCrossjoinWithNamedSetLowCardinality() {
+        propSaver.set(
+            MondrianProperties.instance().NativizeMinThreshold,
+            Integer.MAX_VALUE);
+        checkNotNative(
+            "with "
+                + "set [genderMembers] as 'gender.gender.members'"
+                + "set [maritalMembers] as '[marital status].[marital status].members'"
+                + "set [levelMembers] as 'crossjoin( [genderMembers],[maritalMembers]) '"
                 + "select  nativizeSet([levelMembers]) on 0 "
                 + "from [warehouse and sales]");
     }
@@ -103,7 +109,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
                 + ")) on 0 from sales";
 
         // Set limit to zero (effectively, no limit)
-        NativizeSetFunDef.setNativeResultLimit(0);
+        propSaver.set(MondrianProperties.instance().NativizeMaxResults, 0);
         checkNative(mdx);
     }
 
@@ -119,7 +125,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from sales";
 
         // Set limit to exact size of result
-        NativizeSetFunDef.setNativeResultLimit(6);
+        propSaver.set(MondrianProperties.instance().NativizeMaxResults, 6);
         checkNative(mdx);
 
         try {
@@ -127,7 +133,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             // so it will have 4 rows.  Setting the limit to 3 means
             // that the exception will be thrown before calculated
             // members are merged into the result.
-            NativizeSetFunDef.setNativeResultLimit(3);
+            propSaver.set(MondrianProperties.instance().NativizeMaxResults, 3);
             checkNative(mdx);
             fail("Should have thrown ResourceLimitExceededException.");
         } catch (ResourceLimitExceededException expected) {
@@ -146,14 +152,14 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from sales";
 
         // Set limit to exact size of result
-        NativizeSetFunDef.setNativeResultLimit(6);
+        propSaver.set(MondrianProperties.instance().NativizeMaxResults, 6);
         checkNative(mdx);
 
         try {
             // The native list doesn't contain the calculated members,
             // so setting the limit to 5 means the exception won't be
             // thrown until calculated members are merged into the result.
-            NativizeSetFunDef.setNativeResultLimit(5);
+            propSaver.set(MondrianProperties.instance().NativizeMaxResults, 5);
             checkNative(mdx);
             fail("Should have thrown ResourceLimitExceededException.");
         } catch (ResourceLimitExceededException expected) {
@@ -239,7 +245,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
         // Set the threshold high; same mdx should no longer be natively
         // evaluated.
-        NativizeSetFunDef.setHighCardinalityThreshold(200000);
+        propSaver.set(
+            MondrianProperties.instance().NativizeMinThreshold, 200000);
         checkNotNative(mdx);
     }
 
@@ -487,6 +494,29 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             "SELECT NativizeSet(CrossJoin( "
                 + "   { [Time].[Month].currentmember }, "
                 + "   Gender.Gender.members )) " + "on 0 from sales");
+    }
+
+    public void disabled_testCalculatedCurrentMonth() {
+        checkNative(
+            "WITH "
+                + "SET [Current Month] AS 'tail([Time].[month].members, 1)'"
+                + "SELECT NativizeSet(CrossJoin( "
+                + "   { [Current Month] }, "
+                + "   Gender.Gender.members )) "
+                + "on 0 from sales");
+    }
+
+    public void disabled_testCalculatedRelativeMonth() {
+        checkNative(
+            "with "
+                + "member [gender].[cog_oqp_int_t2] as '1', solve_order = 65535 "
+                + "select NativizeSet("
+                + "   { { [gender].[cog_oqp_int_t2] }, "
+                + "       crossjoin( {tail([Time].[month].members, 1)}, [gender].[gender].members ) },"
+                + "   { { [gender].[cog_oqp_int_t2] }, "
+                + "       crossjoin( {tail([Time].[month].members, 1).lag(1)}, [gender].[gender].members ) },"
+                + ") on 0 "
+                + "from [sales]");
     }
 
     public void testAcceptsAllDimensionMembersSetAsInput() {
@@ -896,12 +926,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
                 + ")) on 0 from sales");
     }
 
-    public void DISABLED_testSameGenderAggTwiceByMaritalStatus() {
-        // Won't work because the expected will contain the aggregate twice
-        // but we'll only return it once, since we explicitly reject duplicate
-        // rows that have calculated members.
+    public void testSameGenderAggTwiceByMaritalStatus() {
         checkNotNative(
-            // NativizeSet removes the crossjoin, so not native
             "with "
                 + "member gender.agg as 'Aggregate( gender.gender.members )' "
                 + "select NativizeSet("
@@ -1093,6 +1119,15 @@ public class NativizeSetFunDefTest extends BatchTestCase {
                 + "from [Sales]\n");
     }
 
+    public void DISABLED_testParallelCrossjoins() {
+        checkNative(
+            // DE2185
+            "select NativizeSet( {"
+                + "  CrossJoin( { [Marital Status].[Marital Status].members }, { gender.F, gender. M } ),"
+                + "  CrossJoin( { [Marital Status].[Marital Status].members }, { gender.F, gender. M } )"
+                + "} ) on 0 from sales");
+    }
+
     public void DISABLED_testMultipleHeirarchyiesSsasTrue() {
         propSaver.set(
             MondrianProperties.instance().SsasCompatibleNaming, true);
@@ -1212,7 +1247,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testEvaluationIsNonNativeWhenBelowHighcardThreshoold() {
-        NativizeSetFunDef.setHighCardinalityThreshold(10000L);
+        propSaver.set(
+            MondrianProperties.instance().NativizeMinThreshold, 10000);
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
@@ -1233,14 +1269,14 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
     public void testCalculatedLevelsDoNotCauseException() {
         String mdx =
-            "SELECT \n"
-                + "  Nativizeset\n"
-                + "  (\n"
-                + "    {\n"
-                + "      [Store].Levels(0).MEMBERS\n"
-                + "    }\n"
-                + "  ) ON COLUMNS\n"
-                + "FROM [Sales]";
+            "SELECT "
+                + "  Nativizeset"
+                + "  ("
+                + "    {"
+                + "      [Store].Levels(0).MEMBERS"
+                + "    }"
+                + "  ) ON COLUMNS"
+                + " FROM [Sales]";
         checkNotNative(mdx);
     }
 
@@ -1283,7 +1319,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testOneAxisHighAndOneLowGetsNativeEvaluation() {
-        NativizeSetFunDef.setHighCardinalityThreshold(19L);
+        propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 19);
         checkNative(
             "select NativizeSet("
                 + "Crossjoin([Gender].[Gender].members,"
@@ -1293,6 +1329,30 @@ public class NativizeSetFunDefTest extends BatchTestCase {
                 + "from [Warehouse and Sales]");
     }
 
+    public void disabled_testAggregatesInSparseResultsGetSortedCorrectly() {
+        propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 0);
+        checkNative(
+            "select non empty NativizeSet("
+                + "Crossjoin({[Store Type].[Store Type].members,[Store Type].[all store types]},"
+                + "{ [Promotion Media].[Media Type].members }"
+                + ")) on 0 from sales");
+    }
+
+    public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
+        checkNative(
+            "SELECT"
+                + " NON EMPTY "
+                + "NativizeSet(Crossjoin("
+                + "{"
+                + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+                + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
+                + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
+                + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
+                + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+                + "},"
+                + "[Store].[Store Name].members"
+                + ")) on 0 from hr");
+    }
 
     private void checkNotNative(String mdx) {
         NonEmptyTest.checkNotNative(mdx, getResult(removeNativize(mdx)));

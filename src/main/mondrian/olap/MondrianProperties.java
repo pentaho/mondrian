@@ -1162,6 +1162,22 @@ public class MondrianProperties extends TriggerableProperties {
             SolveOrderModeEnum.ABSOLUTE.name());
 
     /**
+     */
+    public transient final IntegerProperty NativizeMinThreshold =
+        new IntegerProperty(
+                this,
+                "mondrian.native.NativizeMinThreshold",
+                200000);
+
+    /**
+     */
+    public transient final IntegerProperty NativizeMaxResults =
+        new IntegerProperty(
+                this,
+                "mondrian.native.NativizeMaxResults",
+                150000);
+
+    /**
      * Strategies for applying solve order, exposed via the property
      * {@link MondrianProperties#SolveOrderMode}.
      */

@@ -507,6 +507,32 @@ suite of regression tests.</p>
     </tr>
 
     <tr>
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#NativizeMaxResults">
+        mondrian.native.NativizeMaxResults</a></code></td>
+      <td>int</td>
+      <td>150000</td>
+      <td>
+        <p>Limits the maximum size of a NativizeSet result set.</p>
+        <p>If a query exceeds this limit you will get a LimitExceededDuringCrossjoin error.</p>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#NativizeMinThreshold">
+        mondrian.native.NativizeMinThreshold</a></code></td>
+      <td>int</td>
+      <td>200000</td>
+      <td>
+        <p>Disables native evaluation of a NativizeSet espression when the expression's 
+        expected cardinality falls below this value.</p>
+      </td>
+    </tr>
+    
+    <tr>
       <td colspan="4">
 
       <b><br>

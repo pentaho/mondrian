@@ -165,15 +165,6 @@ public class SqlTupleReader implements TupleReader {
                                     member,
                                     parentValue);
                             parentMember = cache.getMember(parentKey);
-                            if (parentMember == null) {
-                                // Parent member has not been loaded yet. Skip
-                                // this member this time. As long as the data
-                                // forms a hierarchy, we will complete in a
-                                // number of passes not greater than the depth
-                                // of the hierarchy.
-                                ++missedMemberCount;
-                                return -1;
-                            }
                         }
                     }
                     Object value = resultSet.getObject(++column);

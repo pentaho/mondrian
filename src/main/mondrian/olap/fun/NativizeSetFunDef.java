@@ -26,9 +26,6 @@ public class NativizeSetFunDef extends FunDefBase {
     protected static final Logger LOGGER =
         Logger.getLogger(NativizeSetFunDef.class);
 
-    private static final long DEFAULT_HIGH_CARDINALITY_THRESHOLD = 200L * 1000L;
-    private static final long DEFAULT_NATIVE_RESULT_LIMIT = 100L * 1000L;
-
     private static final String SENTINAL_PREFIX = "_Nativized_Sentinal_";
     private static final String MEMBER_NAME_PREFIX = "_Nativized_Member_";
     private static final String SET_NAME_PREFIX = "_Nativized_Set_";
@@ -47,14 +44,6 @@ public class NativizeSetFunDef extends FunDefBase {
         NativizeSetFunDef.class);
 
     /*
-     * Static non-final fields.
-     */
-    private static long highCardinalityThreshold
-        = DEFAULT_HIGH_CARDINALITY_THRESHOLD;
-    private static long nativeResultLimit
-        = DEFAULT_NATIVE_RESULT_LIMIT;
-
-    /*
      * Instance final fields.
      */
     private final SubstitutionMap substitutionMap = new SubstitutionMap();
@@ -71,22 +60,6 @@ public class NativizeSetFunDef extends FunDefBase {
     public NativizeSetFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
         LOGGER.debug("---- NativizeSetFunDef constructor");
-    }
-
-    public static void setHighCardinalityThreshold(long value) {
-        highCardinalityThreshold = value;
-    }
-
-    public static long getHighCardinalityThreshold() {
-        return highCardinalityThreshold;
-    }
-
-    public static void setNativeResultLimit(long value) {
-        nativeResultLimit = value;
-    }
-
-    public static long getNativeResultLimit() {
-        return nativeResultLimit;
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
@@ -238,35 +211,41 @@ public class NativizeSetFunDef extends FunDefBase {
             return computeTuples(evaluator);
         }
 
-        @SuppressWarnings({"unchecked"})
         public List<Member[]> computeTuples(Evaluator evaluator) {
-            // Force non-empty to false to create the simplified list.
-            List<Member[]> simplifiedList =
-                simpleCalc.evaluateTupleList(evaluator.push(false, false));
-            evaluator.pop();
-            dumpListToLog("simplified list", simplifiedList);
-
+            List<Member[]> simplifiedList = evaluateSimplifiedList(evaluator);
             if (simplifiedList.isEmpty()) {
                 return simplifiedList;
             }
-
             if (!isHighCardinality(evaluator, simplifiedList)) {
-                LOGGER.info(
-                    "Disabling native evaluation. originalExp="
-                        + originalExp);
-                Query query = evaluator.getQuery();
-
-                Exp parsed = query.getConnection()
-                    .parseExpression("{" + originalExp.toString() + "}");
-                Exp resolved = compiler.getValidator().validate(parsed, false);
-                resolved.accept(
-                    new TransformFromFormulasVisitor(query, compiler));
-                query.resolve();
-                ListCalc calc = compiler.compileList(resolved);
-                List members = calc.evaluateList(evaluator.push(true, false));
-                evaluator.pop();
-                return members;
+                return evaluateNonNative(evaluator);
             }
+            return evaluateNative(evaluator, simplifiedList);
+        }
+
+        private List<Member[]> evaluateSimplifiedList(Evaluator evaluator) {
+            List<Member[]> simplifiedList =
+                simpleCalc.evaluateTupleList(evaluator.push(false, false));
+            evaluator.pop();
+
+            dumpListToLog("simplified list", simplifiedList);
+            return simplifiedList;
+        }
+
+        @SuppressWarnings({"unchecked"})
+        private List<Member[]> evaluateNonNative(Evaluator evaluator) {
+            LOGGER.info(
+                "Disabling native evaluation. originalExp="
+                    + originalExp);
+            ListCalc calc =
+                compiler.compileList(getOriginalExp(evaluator.getQuery()));
+            List members = calc.evaluateList(evaluator.push(true, false));
+            evaluator.pop();
+            return members;
+        }
+
+        private List<Member[]> evaluateNative(
+            Evaluator evaluator, List<Member[]> simplifiedList)
+        {
             CrossJoinAnalyzer analyzer =
                 new CrossJoinAnalyzer(simplifiedList, substitutionMap);
             String crossJoin = analyzer.getCrossJoinExpression();
@@ -290,6 +269,18 @@ public class NativizeSetFunDef extends FunDefBase {
             return members;
         }
 
+        private Exp getOriginalExp(final Query query) {
+            originalExp.accept(
+                new TransformFromFormulasVisitor(query, compiler));
+            if (originalExp instanceof NamedSetExpr) {
+                //named sets get their evaluator cached in RolapResult.
+                //We do not want to use the cached evaluator, so pass along the
+                //expression instead.
+                return ((NamedSetExpr) originalExp).getNamedSet().getExp();
+            }
+            return originalExp;
+        }
+
         private boolean isHighCardinality(
             Evaluator evaluator, List<Member[]> simplifiedList)
         {
@@ -297,7 +288,9 @@ public class NativizeSetFunDef extends FunDefBase {
 
             SchemaReader schema = evaluator.getSchemaReader();
             Member[] tuple = simplifiedList.get(0);
-            long tupleCardinality = 1L;
+            long nativizeMinThreshold =
+                MondrianProperties.instance().NativizeMinThreshold.get();
+            long estimatedCardinality = simplifiedList.size();
 
             for (Member member : tuple) {
                 String memberName = member.getName();
@@ -311,44 +304,39 @@ public class NativizeSetFunDef extends FunDefBase {
                         Util.lookupHierarchyLevel(hierarchy, levelName);
                     long levelCardinality =
                         schema.getLevelCardinality(hierarchyLevel, false, true);
-                    tupleCardinality *= levelCardinality;
-                    if (tupleCardinality >= highCardinalityThreshold) {
-                        LOGGER.info(
-                            "isHighCardinality=true"
-                                + " partially computed="
-                                + tupleCardinality
-                                + " threshold=" + highCardinalityThreshold);
+                    estimatedCardinality *= levelCardinality;
+                    if (estimatedCardinality >= nativizeMinThreshold) {
+                        LOGGER.info(String.format(
+                            "isHighCardinality=%b: "
+                                + "partial estimate=%,d threshold=%,d",
+                            true,
+                            estimatedCardinality,
+                                nativizeMinThreshold));
                         return true;
                     }
                 }
             }
 
-            int listSize = simplifiedList.size();
-            long simplifiedListCardinality = listSize * tupleCardinality;
             boolean isHighCardinality
-                = (simplifiedListCardinality >= highCardinalityThreshold);
+                = (estimatedCardinality >= nativizeMinThreshold);
 
-            LOGGER.info(
-                "isHighCardinality="
-                    + isHighCardinality
-                    + " computed=" + simplifiedListCardinality
-                    + " threshold=" + highCardinalityThreshold);
+            LOGGER.info(String.format(
+                "isHighCardinality=%b: estimate=%,d threshold=%,d",
+                isHighCardinality,
+                estimatedCardinality,
+                    nativizeMinThreshold));
             return isHighCardinality;
         }
 
         private Iterable<?> evaluateJoinExpression(
             Evaluator evaluator, String crossJoinExpression)
         {
-            LOGGER.debug(
-                "reconstituted crossJoinExpression:\n"
-                    + crossJoinExpression
-                    + "\n");
-
-            Exp unresolved = evaluator.getQuery().getConnection()
-                .parseExpression(crossJoinExpression);
+            Exp unresolved =
+                evaluator.getQuery().getConnection()
+                    .parseExpression(crossJoinExpression);
             Exp resolved = compiler.getValidator().validate(unresolved, false);
-            IterCalc calc = compiler.compileIter(resolved);
-            return calc.evaluateIterable(evaluator);
+            ListCalc calc = compiler.compileList(resolved);
+            return calc.evaluateList(evaluator);
         }
     }
 
@@ -682,20 +670,20 @@ public class NativizeSetFunDef extends FunDefBase {
         private final List<Collection<String>> nativeMembers;
         private final ReassemblyGuide reassemblyGuide;
         private final List<Member[]> resultList;
-        private final Set<List<Member>> potentialDups;
 
         public CrossJoinAnalyzer(
             List<Member[]> simplifiedList, SubstitutionMap substitutionMap)
         {
+            long nativizeMaxResults =
+                MondrianProperties.instance().NativizeMaxResults.get();
             tupleSize = simplifiedList.get(0).length;
             tempTuple = new Member[tupleSize];
-            resultLimit = nativeResultLimit <= 0
+            resultLimit = nativizeMaxResults <= 0
                     ? Integer.MAX_VALUE
-                    : (int) Math.min(nativeResultLimit, Integer.MAX_VALUE);
+                    : (int) Math.min(nativizeMaxResults, Integer.MAX_VALUE);
 
             new ArrayList<Collection<String>>();
             resultList = new ArrayList<Member[]>();
-            potentialDups = new HashSet<List<Member>>();
 
             reassemblyGuide = classifyMembers(simplifiedList, substitutionMap);
             nativeMembers = findNativeMembers();
@@ -831,47 +819,84 @@ public class NativizeSetFunDef extends FunDefBase {
                 : copyList(
                     (Iterable<?>) nativeValues, tupleSize, nativeIndices);
 
-            dumpListToLog("native list:", nativeList);
-            mergeCalcMembers(reassemblyGuide, new Range(nativeList), true);
-            dumpListToLog("result list:", resultList);
+            dumpListToLog("native list", nativeList);
+            mergeCalcMembers(reassemblyGuide, new Range(nativeList), null);
+            dumpListToLog("result list", resultList);
             return resultList;
         }
 
         private void mergeCalcMembers(
-            ReassemblyGuide guide, Range range, boolean isNew)
+            ReassemblyGuide guide, Range range, Set<List<Member>> history)
         {
             int col = guide.getIndex();
             if (col == tupleSize - 1) {
-                appendMembers(guide, range, isNew);
+                if (history == null) {
+                    appendMembers(guide, range);
+                } else {
+                    appendMembers(guide, range, history);
+                }
                 return;
             }
 
             for (ReassemblyCommand command : guide.getCommands()) {
                 ReassemblyGuide nextGuide = command.forNextCol();
+                tempTuple[col] = null;
 
                 switch (command.getMemberType()) {
                 case NON_NATIVE:
                     tempTuple[col] = command.getMember();
-                    mergeCalcMembers(nextGuide, range, false);
+                    mergeCalcMembers(
+                        nextGuide,
+                        range,
+                        (history == null
+                            ? new HashSet<List<Member>>()
+                            : history));
                     break;
                 case ENUMERATED_VALUE:
                     Member value = command.getMember();
-                    tempTuple[col] = value;
                     Range valueRange = range.subRangeForValue(value, col);
-                    mergeCalcMembers(nextGuide, valueRange, isNew);
+                    if (!valueRange.isEmpty()) {
+                        mergeCalcMembers(nextGuide, valueRange, history);
+                    }
                     break;
                 case LEVEL_MEMBERS:
                     Level level = command.getLevel();
                     Range levelRange = range.subRangeForValue(level, col);
                     for (Range subRange : levelRange.subRanges(col)) {
-                        tempTuple[col] = subRange.getFirstMember(col);
-                        mergeCalcMembers(nextGuide, subRange, isNew);
+                        mergeCalcMembers(nextGuide, subRange, history);
                     }
                     break;
                 case OTHER_NATIVE:
                     for (Range subRange : range.subRanges(col)) {
-                        tempTuple[col] = subRange.getFirstMember(col);
-                        mergeCalcMembers(nextGuide, subRange, isNew);
+                        mergeCalcMembers(nextGuide, subRange, history);
+                    }
+                    break;
+                default:
+                    throw Util.unexpected(command.getMemberType());
+                }
+            }
+        }
+
+        private void appendMembers(ReassemblyGuide guide, Range range) {
+            int col = guide.getIndex();
+
+            for (ReassemblyCommand command : guide.getCommands()) {
+                switch (command.getMemberType()) {
+                case NON_NATIVE:
+                    tempTuple[col] = command.getMember();
+                    appendTuple(range.getTuple(), tempTuple);
+                    break;
+                case ENUMERATED_VALUE:
+                    Member value = command.getMember();
+                    Range valueRange = range.subRangeForValue(value, col);
+                    if (!valueRange.isEmpty()) {
+                        appendTuple(valueRange.getTuple());
+                    }
+                    break;
+                case LEVEL_MEMBERS:
+                case OTHER_NATIVE:
+                    for (Member[] tuple : range.getTuples()) {
+                        appendTuple(tuple);
                     }
                     break;
                 default:
@@ -881,22 +906,29 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         private void appendMembers(
-            ReassemblyGuide guide, Range range, boolean isNew)
+            ReassemblyGuide guide, Range range, Set<List<Member>> history)
         {
             int col = guide.getIndex();
 
             for (ReassemblyCommand command : guide.getCommands()) {
                 switch (command.getMemberType()) {
                 case NON_NATIVE:
-                case ENUMERATED_VALUE:
                     tempTuple[col] = command.getMember();
-                    appendTupleToResultIfNew(isNew);
+                    appendTuple(range.getTuple(), tempTuple, history);
+                    break;
+                case ENUMERATED_VALUE:
+                    Member value = command.getMember();
+                    Range valueRange = range.subRangeForValue(value, col);
+                    if (!valueRange.isEmpty()) {
+                        appendTuple(
+                            valueRange.getTuple(), tempTuple, history);
+                    }
                     break;
                 case LEVEL_MEMBERS:
                 case OTHER_NATIVE:
-                    for (Member member : range.getMembers(col)) {
-                        tempTuple[col] = member;
-                        appendTupleToResultIfNew(isNew);
+                    tempTuple[col] = null;
+                    for (Member[] tuple : range.getTuples()) {
+                        appendTuple(tuple, tempTuple, history);
                     }
                     break;
                 default:
@@ -905,19 +937,30 @@ public class NativizeSetFunDef extends FunDefBase {
             }
         }
 
-        private void appendTupleToResultIfNew(boolean isNew) {
-            Member[] newTuple = copyOfTuple(tempTuple);
-            if (isNew || potentialDups.add(Arrays.asList(newTuple))) {
-                resultList.add(newTuple);
-                checkNativeResultLimit(resultList.size());
+        private void appendTuple(
+            Member[] natives,
+            Member[] nonNatives, Set<List<Member>> history)
+        {
+            Member[] copy = copyOfTuple(natives, nonNatives);
+            if (history.add(Arrays.asList(copy))) {
+                appendTuple(copy);
             }
         }
 
-        private Member[] copyOfTuple(Member[] sourceTuple) {
-            // In Java 6, one could use
-            // 'copy = Arrays.copyOf(sourceTuple, tupleSize)'
-            Member[] copy = new Member[sourceTuple.length];
-            System.arraycopy(sourceTuple, 0, copy, 0, sourceTuple.length);
+        private void appendTuple(Member[] natives, Member[] nonNatives) {
+            appendTuple(copyOfTuple(natives, nonNatives));
+        }
+
+        private void appendTuple(Member[] tuple) {
+            resultList.add(tuple);
+            checkNativeResultLimit(resultList.size());
+        }
+
+        private Member[] copyOfTuple(Member[] natives, Member[] nonNatives) {
+            Member[] copy = new Member[tupleSize];
+            for (int i = 0; i < tupleSize; i++) {
+                copy[i] = (nonNatives[i] == null) ? natives[i] : nonNatives[i];
+            }
             return copy;
         }
 
@@ -946,34 +989,54 @@ public class NativizeSetFunDef extends FunDefBase {
         public List<Member[]> adaptList(
             final List<?> source, final int destSize, final int[] destIndices)
         {
-            checkNativeResultLimit(source.size());
-
             if (source.isEmpty()) {
                 return Collections.emptyList();
             }
+
+            checkNativeResultLimit(source.size());
+
+            String sourceListType = source.getClass().getSimpleName();
+            String sourceElementType = String.format("Member[%d]", destSize);
+
+            List<Member[]> sourceList;
+            List<Member[]> destList;
 
             final Object element = source.get(0);
             if ((element instanceof Member[])
                 && ((Member[]) element).length == destSize)
             {
-                LOGGER.info("Using native list as is.");
-                return Util.cast(source);
+                sourceList = Util.cast(source);
+            } else {
+                sourceElementType =
+                    String.format("Member[%d]", destIndices.length);
+                sourceList = new AbstractList<Member[]>() {
+                    final RowAdapter rowAdapter =
+                        RowAdapter
+                            .createAdapter(element, destSize, destIndices);
+                    final List<?> delegate = source;
+
+                    public Member[] get(int index) {
+                        return rowAdapter.copyOf(delegate.get(index));
+                    }
+
+                    public int size() {
+                        return delegate.size();
+                    }
+                };
             }
 
-            LOGGER.info("Using native list with widening adapter.");
-            return new AbstractList<Member[]>() {
-                final RowAdapter rowAdapter =
-                    RowAdapter.createAdapter(element, destSize, destIndices);
-                final List<?> delegate = source;
-
-                public Member[] get(int index) {
-                    return rowAdapter.copyOf(delegate.get(index));
-                }
-
-                public int size() {
-                    return delegate.size();
-                }
-            };
+            // The mergeCalcMembers method in this file assumes that the
+            // resultList is random access - that calls to get(n) are constant
+            // cost, regardless of n. Unfortunately, the TraversalList objects
+            // created by HighCardSqlTupleReader are implemented using linked
+            // lists, leading to pathologically long run times.
+            // This presumes that the ResultStyle is LIST
+            LOGGER.info(String.format(
+                    "returning native %s<%s> without copying to new list.",
+                sourceListType,
+                sourceElementType));
+            destList = sourceList;
+            return destList;
         }
 
         public List<Member[]> copyList(
@@ -982,11 +1045,24 @@ public class NativizeSetFunDef extends FunDefBase {
             Iterator<?> iterator = source.iterator();
             List<Member[]> dest = new ArrayList<Member[]>();
 
-            LOGGER.info("Copying native list.");
+            String sourceListType = source.getClass().getSimpleName();
+            String destElementType = String.format("Member[%d]", destSize);
+
             if (iterator.hasNext()) {
                 Object element = iterator.next();
                 RowAdapter adapter =
                     RowAdapter.createAdapter(element, destSize, destIndices);
+
+                String sourceElementType = "Member";
+                if (element.getClass().isArray()) {
+                    sourceElementType += String.format("Member[%d]", destSize);
+                }
+
+                LOGGER.info(String.format(
+                    "copying native %s<%s> into ArrayList<%s> is starting...",
+                    sourceListType,
+                    sourceElementType,
+                    destElementType));
 
                 dest.add(adapter.copyOf(element));
                 int size = 1;
@@ -994,6 +1070,7 @@ public class NativizeSetFunDef extends FunDefBase {
                     checkNativeResultLimit(size++);
                     dest.add(adapter.copyOf(iterator.next()));
                 }
+                LOGGER.info("copying native list into ArrayList is done.");
             }
 
             return dest;
@@ -1074,12 +1151,19 @@ public class NativizeSetFunDef extends FunDefBase {
             return to - from;
         }
 
-        public Member getMember(int cursor, int col) {
-            return list.get(cursor)[col];
+        public Member[] getTuple() {
+            if (from >= list.size()) {
+                throw new NoSuchElementException();
+            }
+            return list.get(from);
         }
 
-        public Member getFirstMember(int col) {
-            return list.get(from)[col];
+        public List<Member[]> getTuples() {
+            return list.subList(from, to);
+        }
+
+        public Member getMember(int cursor, int col) {
+            return list.get(cursor)[col];
         }
 
         public String toString() {
@@ -1407,12 +1491,15 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
     private static void dumpListToLog(
-        String heading, List<Member[]> nativeList)
+        String heading, List<Member[]> list)
     {
+        LOGGER.info(
+            String.format("%s created with %,d rows.", heading, list.size()));
         if (LOGGER.isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder("\n" + heading + "\n");
-            for (Member[] element : nativeList) {
-                buf.append(Util.commaList("\n", Arrays.asList(element)));
+            String nl = String.format("%n");
+            StringBuilder buf = new StringBuilder(nl);
+            for (Member[] element : list) {
+                buf.append(Util.commaList(nl, Arrays.asList(element)));
             }
             LOGGER.debug(buf.toString());
         }
@@ -1435,5 +1522,4 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
 }
-
 // End NativizeSetFunDef.java
