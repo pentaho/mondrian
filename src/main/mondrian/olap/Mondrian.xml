@@ -636,7 +636,7 @@ Revision is $Id$
                 <p>Allowable values are:
                 <code>Never</code> (a member always appears; the default);
                 <code>IfBlankName</code> (a member doesn't appear if its name
-                is null or empty); and
+                is null, empty or all whitespace); and
                 <code>IfParentsName</code> (a member appears unless its name
                 matches the parent's.</p>
             </Doc>
