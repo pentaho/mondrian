@@ -62,7 +62,8 @@ public class QueryAxis extends QueryPart {
         assert dimensionProperties != null;
         assert axisOrdinal != null;
         this.nonEmpty = nonEmpty
-            || MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
+            || (MondrianProperties.instance().EnableNonEmptyOnAllAxis.get()
+            && !axisOrdinal.isFilter());
         this.exp = set;
         this.axisOrdinal = axisOrdinal;
         this.subtotalVisibility = subtotalVisibility;

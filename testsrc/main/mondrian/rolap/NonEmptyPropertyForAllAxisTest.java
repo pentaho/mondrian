@@ -11,7 +11,10 @@
 package mondrian.rolap;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Query;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.PropertySaver;
+import mondrian.test.TestContext;
 import org.eigenbase.util.property.BooleanProperty;
 
 /**
@@ -20,20 +23,20 @@ import org.eigenbase.util.property.BooleanProperty;
  * @version $Id$
  */
 public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
+    protected void tearDown() throws Exception {
+        propSaver.reset();
+    }
 
     public void testNonEmptyForAllAxesWithPropertySet() {
-        final BooleanProperty property =
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis;
-        final boolean save = property.get();
-        try {
-            property.set(true);
-            final String MDX_QUERY =
-                "select {[Country].[USA].[OR].Children} on 0,"
-                    + " {[Promotions].Members} on 1 "
-                    + "from [Sales] "
-                    + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
-            final String EXPECTED_RESULT =
-                "Axis #0:\n"
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        final String MDX_QUERY =
+            "select {[Country].[USA].[OR].Children} on 0,"
+                + " {[Promotions].Members} on 1 "
+                + "from [Sales] "
+                + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
+        final String EXPECTED_RESULT =
+            "Axis #0:\n"
                 + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
                 + "Axis #1:\n"
                 + "{[Customers].[All Customers].[USA].[OR].[Albany]}\n"
@@ -71,10 +74,7 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
                 + "Row #3: \n"
                 + "Row #3: \n"
                 + "Row #3: \n";
-            assertQueryReturns(MDX_QUERY, EXPECTED_RESULT);
-        } finally {
-            property.set(save);
-        }
+        assertQueryReturns(MDX_QUERY, EXPECTED_RESULT);
     }
 
     public void testNonEmptyForAllAxesWithOutPropertySet() {
@@ -199,6 +199,15 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
             + "Row #54: 2\n";
         assertQueryReturns(MDX_QUERY, EXPECTED_RESULT);
     }
+
+    public void testSlicerAxisDoesNotGetNonEmptyApplied() {
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        String mdxQuery = "select from [Sales]\n"
+            + "where [Time].[1997]\n";
+        Query query = getConnection().parseQuery(mdxQuery);
+        TestContext.assertEqualsVerbose(mdxQuery, query.toString());
+     }
 }
 
 // End NonEmptyPropertyForAllAxisTest.java
