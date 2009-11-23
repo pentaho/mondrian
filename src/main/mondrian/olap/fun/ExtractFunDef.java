@@ -44,14 +44,12 @@ class ExtractFunDef extends FunDefBase {
             if (args.length < 2) {
                 return null;
             }
-            if (!validator.canConvert(
-                args[0], Category.Set, conversions))
-            {
+            if (!validator.canConvert(0, args[0], Category.Set, conversions)) {
                 return null;
             }
             for (int i = 1; i < args.length; ++i) {
                 if (!validator.canConvert(
-                    args[i], Category.Dimension, conversions))
+                    0, args[i], Category.Dimension, conversions))
                 {
                     return null;
                 }

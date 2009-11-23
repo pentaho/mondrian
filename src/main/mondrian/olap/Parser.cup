@@ -359,6 +359,8 @@ terminal String UNKNOWN; // a token the lexer doesn't like!
 // Non terminals
 non terminal QueryAxis
     axis_specification;
+non terminal UnresolvedFunCall
+    aliasedExpression;
 non terminal Exp
     case_expression,
     else_clause_opt,
@@ -881,7 +883,10 @@ value_expression_primary ::=
                 i.getSegments().get(i.getSegments().size() - 1).name,
                 Syntax.Function, Parser.toExpArray(lis));
         :}
-    |   CAST LPAREN expression:e AS identifier:t RPAREN {:
+    |   CAST LPAREN aliasedExpression:ae RPAREN {:
+            assert ae.getArgCount() == 2;
+            Exp e = ae.getArg(0);
+            Id.Segment t = ((Id) ae.getArg(1)).getSegments().get(0);
             RESULT = new UnresolvedFunCall(
                 "CAST", Syntax.Cast, new Exp[] {
                     e,
@@ -1222,20 +1227,24 @@ expression ::=
         expression:x COLON value_expression:y {: // range yields set
             RESULT = new UnresolvedFunCall(":", Syntax.Infix, new Exp[] {x, y});
         :}
+    |   aliasedExpression
     |   value_expression
     ;
+
 expression_or_empty ::=
         expression
     |   /* empty */ {:
             RESULT = new UnresolvedFunCall("", Syntax.Empty, new Exp[] {});
         :}
     ;
+
 exp_list_opt ::=
         /* empty */ {:
             RESULT = new LinkedList();
         :}
     |   exp_list
     ;
+
 exp_list ::=
         expression:e {:
             RESULT = new LinkedList();
@@ -1245,6 +1254,15 @@ exp_list ::=
             list.add(0, e); RESULT = list;
         :}
     ;
+
+aliasedExpression ::=
+        expression:x AS identifier:i {:
+            Id id = new Id(i);
+            RESULT =
+                new UnresolvedFunCall("AS", Syntax.Infix, new Exp[] {x, id});
+        :}
+    ;
+
 //
 // Leveling Rules for Member Value Expression
 //

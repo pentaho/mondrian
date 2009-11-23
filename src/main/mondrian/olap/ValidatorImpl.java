@@ -14,6 +14,7 @@ import mondrian.olap.type.TypeUtil;
 import mondrian.olap.fun.Resolver;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
+import mondrian.util.ArrayStack;
 
 import java.util.*;
 
@@ -37,11 +38,13 @@ import java.util.*;
  * @version $Id$
  */
 abstract class ValidatorImpl implements Validator {
-    private final Stack<QueryPart> stack = new Stack<QueryPart>();
+    protected final ArrayStack<QueryPart> stack = new ArrayStack<QueryPart>();
     private final FunTable funTable;
     private final Map<QueryPart, QueryPart> resolvedNodes =
         new HashMap<QueryPart, QueryPart>();
     private final QueryPart placeHolder = Literal.zero;
+    private final Map<FunCall, List<String>> scopeExprs =
+        new HashMap<FunCall, List<String>>();
 
     /**
      * Creates a ValidatorImpl.
@@ -113,7 +116,7 @@ abstract class ValidatorImpl implements Validator {
 
     public void validate(MemberProperty memberProperty) {
         MemberProperty resolved =
-                (MemberProperty) resolvedNodes.get(memberProperty);
+            (MemberProperty) resolvedNodes.get(memberProperty);
         if (resolved != null) {
             return; // already resolved
         }
@@ -221,6 +224,7 @@ abstract class ValidatorImpl implements Validator {
         final FunDef matchDef = matchDefs.get(0);
         for (Resolver.Conversion conversion : matchConversionList) {
             conversion.checkValid();
+            conversion.apply(this, Arrays.asList(args));
         }
 
         return matchDef;
@@ -241,9 +245,7 @@ abstract class ValidatorImpl implements Validator {
     }
 
     public boolean canConvert(
-        Exp fromExp,
-        int to,
-        List<Resolver.Conversion> conversions)
+        int ordinal, Exp fromExp, int to, List<Resolver.Conversion> conversions)
     {
         if (false)
         if (fromExp instanceof DimensionExpr) {
@@ -258,6 +260,7 @@ abstract class ValidatorImpl implements Validator {
                         new HierarchyExpr(
                             dimension.getHierarchies()[0]);
                     return TypeUtil.canConvert(
+                        ordinal,
                         fromExp.getType(),
                         to,
                         conversions);
@@ -267,6 +270,7 @@ abstract class ValidatorImpl implements Validator {
             }
         }
         return TypeUtil.canConvert(
+            ordinal,
             fromExp.getType(),
             to,
             conversions);
@@ -410,3 +414,4 @@ abstract class ValidatorImpl implements Validator {
 }
 
 // End ValidatorImpl.java
+

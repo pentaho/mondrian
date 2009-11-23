@@ -1084,8 +1084,7 @@ public class RolapCube extends CubeBase {
             RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
             RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
             roleImpl.grant(this, Access.ALL);
-            Role role = roleImpl;
-            schemaReader = new RolapCubeSchemaReader(role);
+            schemaReader = new RolapCubeSchemaReader(roleImpl);
         }
         return schemaReader;
     }
@@ -2588,7 +2587,7 @@ public class RolapCube extends CubeBase {
      */
     private class RolapCubeSchemaReader extends RolapSchemaReader {
         public RolapCubeSchemaReader(Role role) {
-            super(role, schema);
+            super(role, RolapCube.this.schema);
             assert role != null : "precondition: role != null";
         }
 
@@ -2676,6 +2675,12 @@ public class RolapCube extends CubeBase {
                 }
             }
             return list;
+        }
+
+        public SchemaReader withoutAccessControl() {
+            assert getClass() == RolapCubeSchemaReader.class
+                : "Derived class " + getClass() + " must override method";
+            return RolapCube.this.getSchemaReader();
         }
 
         public Member getMemberByUniqueName(

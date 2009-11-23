@@ -800,8 +800,11 @@ public class RolapEvaluator implements Evaluator {
         return FunUtil.newEvalException((FunDef) context, s);
     }
 
-    public final NamedSetEvaluator getNamedSetEvaluator(String name, Exp exp) {
-        return root.evaluateNamedSet(name, exp);
+    public final NamedSetEvaluator getNamedSetEvaluator(
+        NamedSet namedSet,
+        boolean create)
+    {
+        return root.evaluateNamedSet(namedSet, create);
     }
 
     public final int getMissCount() {

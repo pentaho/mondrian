@@ -136,6 +136,7 @@ public class TypeTest extends TestCase {
                     new ArrayList<Resolver.Conversion>();
                 final boolean canConvert =
                     TypeUtil.canConvert(
+                        0,
                         fromType,
                         toCategory,
                         conversions);

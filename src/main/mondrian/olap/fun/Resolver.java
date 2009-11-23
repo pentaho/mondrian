@@ -112,6 +112,15 @@ public interface Resolver {
          * dimension to a hierarchy is valid if is only one hierarchy.
          */
         void checkValid();
+
+        /**
+         * Applies this conversion to its argument, modifying the argument list
+         * in place.
+         *
+         * @param validator Validator
+         * @param args Argument list
+         */
+        void apply(Validator validator, List<Exp> args);
     }
 }
 

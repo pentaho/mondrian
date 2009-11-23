@@ -79,7 +79,7 @@ public class CoalesceEmptyFunDef extends FunDefBase {
                 int matchingArgs = 0;
                 conversions.clear();
                 for (int i = 0; i < args.length; i++) {
-                    if (validator.canConvert(args[i], type, conversions)) {
+                    if (validator.canConvert(i, args[i], type, conversions)) {
                         matchingArgs++;
                     }
                     argTypes[i] = type;

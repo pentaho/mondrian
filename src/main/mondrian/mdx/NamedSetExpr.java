@@ -133,8 +133,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
     }
 
     public Evaluator.NamedSetEvaluator getEval(Evaluator evaluator) {
-        return evaluator.getNamedSetEvaluator(
-            namedSet.getName(), namedSet.getExp());
+        return evaluator.getNamedSetEvaluator(namedSet, true);
     }
 
     public Object accept(MdxVisitor visitor) {

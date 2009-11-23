@@ -103,19 +103,24 @@ class CaseMatchFunDef extends FunDefBase {
             int j = 0;
             int clauseCount = (args.length - 1) / 2;
             int mismatchingArgs = 0;
-            if (!validator.canConvert(args[j++], valueType, conversions)) {
+            if (!validator.canConvert(j, args[j++], valueType, conversions)) {
                 mismatchingArgs++;
             }
             for (int i = 0; i < clauseCount; i++) {
-                if (!validator.canConvert(args[j++], valueType, conversions)) {
+                if (!validator.canConvert(j, args[j++], valueType, conversions))
+                {
                     mismatchingArgs++;
                 }
-                if (!validator.canConvert(args[j++], returnType, conversions)) {
+                if (!validator.canConvert(
+                    j, args[j++], returnType, conversions))
+                {
                     mismatchingArgs++;
                 }
             }
             if (j < args.length) {
-                if (!validator.canConvert(args[j++], returnType, conversions)) {
+                if (!validator.canConvert(
+                    j, args[j++], returnType, conversions))
+                {
                     mismatchingArgs++;
                 }
             }

@@ -87,7 +87,7 @@ public class UdfResolver implements Resolver {
             final int parameterCategory =
                 TypeUtil.typeToCategory(parameterType);
             if (!validator.canConvert(
-                arg, parameterCategory, conversions))
+                i, arg, parameterCategory, conversions))
             {
                 return null;
             }

@@ -574,9 +574,49 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
+     * Unit test for {@link mondrian.util.ArrayStack}.
+     */
+    public void testArrayStack() {
+        final ArrayStack<String> stack = new ArrayStack<String>();
+        assertEquals(0, stack.size());
+        stack.add("a");
+        assertEquals(1, stack.size());
+        assertEquals("a", stack.peek());
+        stack.push("b");
+        assertEquals(2, stack.size());
+        assertEquals("b", stack.peek());
+        assertEquals("b", stack.pop());
+        assertEquals(1, stack.size());
+        stack.add(0, "z");
+        assertEquals("a", stack.peek());
+        assertEquals(2, stack.size());
+        stack.push(null);
+        assertEquals(3, stack.size());
+        assertEquals(stack, Arrays.asList("z", "a", null));
+        String z = "";
+        for (String s : stack) {
+            z += s;
+        }
+        assertEquals("zanull", z);
+        stack.clear();
+        try {
+            String x = stack.peek();
+            fail("expected error, got " + x);
+        } catch (EmptyStackException e) {
+            // ok
+        }
+        try {
+            String x = stack.pop();
+            fail("expected error, got " + x);
+        } catch (EmptyStackException e) {
+            // ok
+        }
+    }
+
+    /**
      * Tests {@link Util#appendArrays(Object[], Object[][])}.
      */
-    public void testConcatenateArrays() {
+    public void testAppendArrays() {
         String[] a0 = {"a", "b", "c"};
         String[] a1 = {"foo", "bar"};
         String[] empty = {};

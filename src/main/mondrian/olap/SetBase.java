@@ -13,7 +13,7 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 
 import org.apache.log4j.Logger;
 
@@ -30,16 +30,33 @@ class SetBase extends OlapElementBase implements NamedSet {
 
     private String name;
     private final String uniqueName;
-    private final Exp exp;
+    private Exp exp;
+    private boolean validated;
 
-    SetBase(String name, Exp exp) {
+    /**
+     * Creates a SetBase.
+     *
+     * @param name Name
+     * @param exp Expression
+     * @param validated Whether has been validated
+     */
+    SetBase(String name, Exp exp, boolean validated) {
         this.name = name;
         this.exp = exp;
+        this.validated = validated;
         this.uniqueName = "[" + name + "]";
     }
 
+    public String getNameUniqueWithinQuery() {
+        return System.identityHashCode(this) + "";
+    }
+
+    public boolean isDynamic() {
+        return false;
+    }
+
     public Object clone() {
-        return new SetBase(name, (Exp) exp.clone());
+        return new SetBase(name, (Exp) exp.clone(), validated);
     }
 
     protected Logger getLogger() {
@@ -85,12 +102,24 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public NamedSet validate(Validator validator) {
-        Exp exp2 = validator.validate(exp, false);
-        return new SetBase(name, exp2);
+        if (!validated) {
+            exp = validator.validate(exp, false);
+            validated = true;
+        }
+        return this;
     }
 
     public Type getType() {
-        return exp.getType();
+        Type type = exp.getType();
+        if (type instanceof MemberType
+            || type instanceof TupleType)
+        {
+            // You can use a member or tuple as the expression for a set. It is
+            // implicitly converted to a set. The expression may not have been
+            // converted yet, so we wrap the type here.
+            type = new SetType(type);
+        }
+        return type;
     }
 }
 

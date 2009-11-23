@@ -495,9 +495,7 @@ class OrderFunDef extends FunDefBase {
                 return null;
             }
             // first arg must be a set
-            if (!validator.canConvert(
-                args[0], Category.Set, conversions))
-            {
+            if (!validator.canConvert(0, args[0], Category.Set, conversions)) {
                 return null;
             }
             argTypes[0] = Category.Set;
@@ -505,7 +503,7 @@ class OrderFunDef extends FunDefBase {
             int i = 1;
             while (i < args.length) {
                 if (!validator.canConvert(
-                    args[i], Category.Value, conversions))
+                    i, args[i], Category.Value, conversions))
                 {
                     return null;
                 } else {
@@ -517,7 +515,7 @@ class OrderFunDef extends FunDefBase {
                     //done, will default last arg to ASC
                 } else {
                     if (!validator.canConvert(
-                        args[i], Category.Symbol, conversions))
+                        i, args[i], Category.Symbol, conversions))
                     {
                         // continue, will default sort flag for prev arg to ASC
                     } else {

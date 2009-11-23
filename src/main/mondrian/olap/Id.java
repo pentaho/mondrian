@@ -106,7 +106,8 @@ public class Id
         }
         final Exp element =
             Util.lookup(
-                validator.getQuery(), segments, true);
+                validator.getQuery(), validator.getSchemaReader(), segments,
+                true);
 
         if (element == null) {
             return null;

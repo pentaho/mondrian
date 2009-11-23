@@ -287,7 +287,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
         } catch (Throwable e) {
             checkErrorMsg(
                 e,
-                "Mondrian Error:No function matches signature 'CrossJoin(<Member>, <Member>)'");
+                "Mondrian Error:Tuple contains more than one member of hierarchy '[Measures]'.");
         }
     }
 
@@ -368,3 +368,4 @@ public class CustomizedParserTest extends FoodMartTestCase {
 }
 
 // End CustomizedParserTest.java
+

@@ -76,6 +76,7 @@ public interface Validator {
     /**
      * Returns whether we can convert an argument to a parameter type.
      *
+     * @param ordinal argument ordinal
      * @param fromExp argument type
      * @param to   parameter type
      * @param conversions List of conversions performed;
@@ -84,6 +85,7 @@ public interface Validator {
      * @return Whether we can convert an argument to a parameter type
      */
     boolean canConvert(
+        int ordinal,
         Exp fromExp,
         int to,
         List<Resolver.Conversion> conversions);
@@ -123,6 +125,18 @@ public interface Validator {
      * @return whether to resolve function each time
      */
     boolean alwaysResolveFunDef();
+
+    /**
+     * Returns the schema reader with which to resolve names of MDX objects
+     * (dimensions, hierarchies, levels, members, named sets).
+     *
+     * <p>The schema reader is initially in the context of the query's cube,
+     * and during a traversal it may change if named sets are introduced using
+     * the 'expr AS alias' construct.
+     *
+     * @return Schema reader
+     */
+    SchemaReader getSchemaReader();
 }
 
 // End Validator.java

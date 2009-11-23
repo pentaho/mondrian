@@ -222,6 +222,21 @@ public class Vba {
         }
     }
 
+    /**
+     * Equivalent of the {@link #int_} function on the native 'double' type.
+     * Not an MDX function.
+     *
+     * @param dv Double value
+     * @return Value rounded towards negative infinity
+     */
+    static int intNative(double dv) {
+        int v = (int) dv;
+        if (v < 0 && v > dv) {
+            v--;
+        }
+        return v;
+    }
+
     // public String oct$(Object number)
 
     @FunctionName("Oct")

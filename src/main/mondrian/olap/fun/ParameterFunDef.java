@@ -231,7 +231,7 @@ public class ParameterFunDef extends FunDefBase {
                 createSimpleValidator(BuiltinFunTable.instance());
             final List<Conversion> conversionList = new ArrayList<Conversion>();
             String typeName = Category.instance.getName(category).toUpperCase();
-            if (!validator.canConvert(exp, category, conversionList)) {
+            if (!validator.canConvert(2, exp, category, conversionList)) {
                 throw newEvalException(
                     dummyFunDef,
                     "Default value of parameter '" + parameterName

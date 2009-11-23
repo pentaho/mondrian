@@ -1465,11 +1465,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     public SchemaReader getSchemaReader() {
-        return new RolapSchemaReader(defaultRole, this) {
-            public Cube getCube() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new RolapSchemaReader(defaultRole, this);
     }
 
     /**

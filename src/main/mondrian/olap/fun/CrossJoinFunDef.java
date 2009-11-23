@@ -228,6 +228,13 @@ public class CrossJoinFunDef extends FunDefBase {
                 exp,
                 null,
                 ResultStyle.ITERABLE_LIST_MUTABLELIST);
+        } else if (type instanceof TupleType) {
+            // this always returns an IterCalc
+            return new SetFunDef.ExprTupleIterCalc(
+                new DummyExp(new SetType(type)),
+                new Exp[] {exp},
+                compiler,
+                ResultStyle.ITERABLE_LIST_MUTABLELIST);
         } else {
             // this always returns an IterCalc
             return new SetFunDef.ExprMemberIterCalc(

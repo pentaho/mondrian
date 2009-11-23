@@ -213,11 +213,11 @@ public interface Evaluator {
     /**
      * Returns an evaluator for a named set.
      *
-     * @param name Name of set
-     * @param exp Expression to compute named set
+     * @param namedSet Named set
+     * @param create Whether to create evaluator if not found
      * @return Evaluator of named set
      */
-    NamedSetEvaluator getNamedSetEvaluator(String name, Exp exp);
+    NamedSetEvaluator getNamedSetEvaluator(NamedSet namedSet, boolean create);
 
     /**
      * Returns an array of the members which make up the current context.

@@ -56,6 +56,61 @@
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="dbschemaSchemata">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>DBSCHEMA_SCHEMATA</RequestType>
+  <Restrictions>
+    <RestrictionList/>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="SCHEMA_OWNER" sql:field="SCHEMA_OWNER" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <SCHEMA_OWNER/>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="discoverDataSources">
         <Resource name="request">
             <![CDATA[

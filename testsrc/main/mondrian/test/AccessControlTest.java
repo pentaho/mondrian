@@ -47,6 +47,18 @@ public class AccessControlTest extends FoodMartTestCase {
         super(name);
     }
 
+    public void testSchemaReader() {
+        final TestContext testContext = getTestContext();
+        final Connection connection = testContext.getConnection();
+        Schema schema = connection.getSchema();
+        final boolean fail = true;
+        Cube cube = schema.lookupCube("Sales", fail);
+        final SchemaReader schemaReader =
+            cube.getSchemaReader(connection.getRole());
+        final SchemaReader schemaReader1 = schemaReader.withoutAccessControl();
+        final SchemaReader schemaReader2 = schemaReader1.withoutAccessControl();
+    }
+
     public void testGrantDimensionNone() {
         final Connection connection =
             getTestContext().getFoodMartConnection(false);

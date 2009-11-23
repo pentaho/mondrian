@@ -730,7 +730,7 @@ public class Util extends XOMUtil {
      * <p>If <code>allowProp</code> is true, also allows property references
      * from valid members, for example
      * <code>[Measures].[Unit Sales].FORMATTED_VALUE</code>.
-     * In this case, the result will be a {@link ResolvedFunCall}.
+     * In this case, the result will be a {@link mondrian.mdx.ResolvedFunCall}.
      *
      * @param q Query expression belongs to
      * @param nameParts Parts of the identifier
@@ -742,23 +742,49 @@ public class Util extends XOMUtil {
         List<Id.Segment> nameParts,
         boolean allowProp)
     {
+        return lookup(q, q.getSchemaReader(true), nameParts, allowProp);
+    }
+
+    /**
+     * Converts an identifier into an expression by resolving its parts into
+     * an OLAP object (dimension, hierarchy, level or member) within the
+     * context of a query.
+     *
+     * <p>If <code>allowProp</code> is true, also allows property references
+     * from valid members, for example
+     * <code>[Measures].[Unit Sales].FORMATTED_VALUE</code>.
+     * In this case, the result will be a {@link ResolvedFunCall}.
+     *
+     * @param q Query expression belongs to
+     * @param schemaReader Schema reader
+     * @param nameParts Parts of the identifier
+     * @param allowProp Whether to allow property references
+     * @return OLAP object or property reference
+     */
+    public static Exp lookup(
+        Query q,
+        SchemaReader schemaReader,
+        List<Id.Segment> nameParts,
+        boolean allowProp)
+    {
         // First, look for a calculated member defined in the query.
         final String fullName = quoteMdxIdentifier(nameParts);
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
-        final SchemaReader schemaReader = q.getSchemaReader(false);
+        final SchemaReader schemaReaderSansAc =
+            schemaReader.withoutAccessControl();
+        final Cube cube = q.getCube();
         OlapElement olapElement =
-            schemaReader.lookupCompound(
-                q.getCube(), nameParts, false, Category.Unknown);
+            schemaReaderSansAc.lookupCompound(
+                cube, nameParts, false, Category.Unknown);
         if (olapElement != null) {
-            final SchemaReader accessConSchemaReader = q.getSchemaReader(true);
-            Role role = accessConSchemaReader.getRole();
+            Role role = schemaReader.getRole();
             if (!role.canAccess(olapElement)) {
                 olapElement = null;
             }
             if (olapElement instanceof Member) {
                 olapElement =
-                    accessConSchemaReader.substitute((Member) olapElement);
+                    schemaReader.substitute((Member) olapElement);
             }
         }
         if (olapElement == null) {
@@ -768,8 +794,8 @@ public class Util extends XOMUtil {
                 final String propertyName =
                     nameParts.get(nameParts.size() - 1).name;
                 olapElement =
-                    schemaReader.lookupCompound(
-                        q.getCube(), namePartsButOne, false, Category.Member);
+                    schemaReaderSansAc.lookupCompound(
+                        cube, namePartsButOne, false, Category.Member);
                 if (olapElement != null
                     && isValidProperty((Member) olapElement, propertyName))
                 {
@@ -789,19 +815,19 @@ public class Util extends XOMUtil {
                 while (nameLen > 0 && olapElement == null) {
                     List<Id.Segment> partialName =
                         nameParts.subList(0, nameLen);
-                    olapElement = schemaReader.lookupCompound(
-                        q.getCube(), partialName, false, Category.Unknown);
+                    olapElement = schemaReaderSansAc.lookupCompound(
+                        cube, partialName, false, Category.Unknown);
                     nameLen--;
                 }
                 if (olapElement != null) {
                     olapElement = olapElement.getHierarchy().getNullMember();
                 } else {
-                    throw MondrianResource.instance().MdxChildObjectNotFound
-                        .ex(fullName, q.getCube().getQualifiedName());
+                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
+                        fullName, cube.getQualifiedName());
                 }
             } else {
                 throw MondrianResource.instance().MdxChildObjectNotFound.ex(
-                    fullName, q.getCube().getQualifiedName());
+                    fullName, cube.getQualifiedName());
             }
         }
         // keep track of any measure members referenced; these will be used
@@ -2037,6 +2063,10 @@ public class Util extends XOMUtil {
                 return null;
             }
 
+            public SchemaReader getSchemaReader() {
+                throw new UnsupportedOperationException();
+            }
+
             public Exp validate(Exp exp, boolean scalar) {
                 return exp;
             }
@@ -2072,7 +2102,7 @@ public class Util extends XOMUtil {
             }
 
             public boolean canConvert(
-                Exp fromExp,
+                int ordinal, Exp fromExp,
                 int to,
                 List<Resolver.Conversion> conversions)
             {

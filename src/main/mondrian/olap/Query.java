@@ -21,6 +21,7 @@ import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.util.ArrayStack;
 
 import java.io.*;
 import java.util.*;
@@ -168,11 +169,18 @@ public class Query extends QueryPart {
      *    ResultStyle.MUTABLE_LIST
      * For java4, use LIST
      */
-    private ResultStyle resultStyle = (Util.Retrowoven)
-                ? ResultStyle.LIST : ResultStyle.ITERABLE;
-
+    private ResultStyle resultStyle =
+        Util.Retrowoven ? ResultStyle.LIST : ResultStyle.ITERABLE;
 
     private Map<String, Object> evalCache = new HashMap<String, Object>();
+
+    /**
+     * List of aliased expressions defined in this query, and where they are
+     * defined. There might be more than one aliased expression with the same
+     * name.
+     */
+    private final List<ScopedNamedSet> scopedNamedSets =
+        new ArrayList<ScopedNamedSet>();
 
     /**
      * Creates a Query.
@@ -269,7 +277,8 @@ public class Query extends QueryPart {
      * to an existing query.
      */
     public void addFormula(Id id, Exp exp) {
-        addFormula(id, exp, new MemberProperty[0]);
+        addFormula(
+            new Formula(false, id, exp, new MemberProperty[0], null, null));
     }
 
     /**
@@ -285,7 +294,7 @@ public class Query extends QueryPart {
         Exp exp,
         MemberProperty[] memberProperties)
     {
-        addFormula(new Formula(id, exp, memberProperties));
+        addFormula(new Formula(true, id, exp, memberProperties, null, null));
     }
 
     /**
@@ -319,7 +328,9 @@ public class Query extends QueryPart {
      * @return Validator
      */
     public Validator createValidator() {
-        return new QueryValidator(connection.getSchema().getFunTable(), false);
+        return createValidator(
+            connection.getSchema().getFunTable(),
+            false);
     }
 
     /**
@@ -335,7 +346,10 @@ public class Query extends QueryPart {
         FunTable functionTable,
         boolean alwaysResolveFunDef)
     {
-        return new QueryValidator(functionTable, alwaysResolveFunDef);
+        return new QueryValidator(
+            functionTable,
+            alwaysResolveFunDef,
+            Query.this);
     }
 
     /**
@@ -570,41 +584,10 @@ public class Query extends QueryPart {
         // Register all parameters.
         parameters.clear();
         parametersByName.clear();
-        accept(
-            new MdxVisitorImpl() {
-                public Object visit(ParameterExpr parameterExpr) {
-                    Parameter parameter = parameterExpr.getParameter();
-                    if (!parameters.contains(parameter)) {
-                        parameters.add(parameter);
-                        parametersByName.put(parameter.getName(), parameter);
-                    }
-                    return null;
-                }
+        accept(new ParameterFinder());
 
-                public Object visit(UnresolvedFunCall call) {
-                    if (call.getFunName().equals("Parameter")) {
-                        // Is there already a parameter with this name?
-                        String parameterName =
-                            ParameterFunDef.getParameterName(call.getArgs());
-                        if (parametersByName.get(parameterName) != null) {
-                            throw MondrianResource.instance()
-                                .ParameterDefinedMoreThanOnce.ex(parameterName);
-                        }
-
-                        Type type =
-                            ParameterFunDef.getParameterType(call.getArgs());
-
-                        // Create a temporary parameter. We don't know its
-                        // type yet. The default of NULL is temporary.
-                        Parameter parameter = new ParameterImpl(
-                            parameterName, Literal.nullValue, null, type);
-                        parameters.add(parameter);
-                        parametersByName.put(parameterName, parameter);
-                    }
-                    return null;
-                }
-            }
-        );
+        // Register all aliased expressions ('expr AS alias') as named sets.
+        accept(new AliasedExpressionFinder());
 
         // Validate formulas.
         if (formulas != null) {
@@ -969,7 +952,7 @@ public class Query extends QueryPart {
             role = null;
         }
         final SchemaReader cubeSchemaReader = cube.getSchemaReader(role);
-        return new QuerySchemaReader(cubeSchemaReader);
+        return new QuerySchemaReader(cubeSchemaReader, Query.this);
     }
 
     /**
@@ -1015,6 +998,49 @@ public class Query extends QueryPart {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates a named set defined by an alias.
+     */
+    public ScopedNamedSet createScopedNamedSet(
+        String name,
+        QueryPart scope,
+        Exp expr)
+    {
+        final ScopedNamedSet scopedNamedSet =
+            new ScopedNamedSet(
+                name, scope, expr);
+        scopedNamedSets.add(scopedNamedSet);
+        return scopedNamedSet;
+    }
+
+    /**
+     * Looks up a named set defined by an alias.
+     *
+     * @param nameParts Multi-part identifier for set
+     * @param scopeList Parse tree node where name is used (last in list) and
+     */
+    ScopedNamedSet lookupScopedNamedSet(
+        List<Id.Segment> nameParts,
+        ArrayStack<QueryPart> scopeList)
+    {
+        if (nameParts.size() != 1) {
+            return null;
+        }
+        String name = nameParts.get(0).name;
+        ScopedNamedSet bestScopedNamedSet = null;
+        int bestScopeOrdinal = -1;
+        for (ScopedNamedSet scopedNamedSet : scopedNamedSets) {
+            if (Util.equalName(scopedNamedSet.name, name)) {
+                int scopeOrdinal = scopeList.indexOf(scopedNamedSet.scope);
+                if (scopeOrdinal > bestScopeOrdinal) {
+                    bestScopedNamedSet = scopedNamedSet;
+                    bestScopeOrdinal = scopeOrdinal;
+                }
+            }
+        }
+        return bestScopedNamedSet;
     }
 
     /**
@@ -1103,7 +1129,7 @@ public class Query extends QueryPart {
         }
 
         // it has been found and removed
-        this.formulas = formulaList.toArray(new Formula[0]);
+        this.formulas = formulaList.toArray(new Formula[formulaList.size()]);
     }
 
     /**
@@ -1379,19 +1405,26 @@ public class Query extends QueryPart {
      * <p>Note especially that {@link #getCalculatedMember(java.util.List)}
      * returns the calculated members defined in this query.
      */
-    private class QuerySchemaReader extends DelegatingSchemaReader {
+    private static class QuerySchemaReader extends DelegatingSchemaReader {
+        private final Query query;
 
-        public QuerySchemaReader(SchemaReader cubeSchemaReader) {
+        public QuerySchemaReader(SchemaReader cubeSchemaReader, Query query) {
             super(cubeSchemaReader);
+            this.query = query;
+        }
+
+        public SchemaReader withoutAccessControl() {
+            return new QuerySchemaReader(
+                schemaReader.withoutAccessControl(), query);
         }
 
         public Member getMemberByUniqueName(
-                List<Id.Segment> uniqueNameParts,
-                boolean failIfNotFound,
-                MatchType matchType)
+            List<Id.Segment> uniqueNameParts,
+            boolean failIfNotFound,
+            MatchType matchType)
         {
             final String uniqueName = Util.implode(uniqueNameParts);
-            Member member = lookupMemberFromCache(uniqueName);
+            Member member = query.lookupMemberFromCache(uniqueName);
             if (member == null) {
                 // Not a calculated member in the query, so go to the cube.
                 member = schemaReader.getMemberByUniqueName(
@@ -1420,7 +1453,7 @@ public class Query extends QueryPart {
 
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
-            return lookupMemberFromCache(uniqueName);
+            return query.lookupMemberFromCache(uniqueName);
         }
 
         public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
@@ -1430,7 +1463,7 @@ public class Query extends QueryPart {
                 super.getCalculatedMembers(hierarchy);
             result.addAll(calculatedMembers);
             // Add calculated members defined in the query.
-            for (Member member : getDefinedMembers()) {
+            for (Member member : query.getDefinedMembers()) {
                 if (member.getHierarchy().equals(hierarchy)) {
                     result.add(member);
                 }
@@ -1451,7 +1484,7 @@ public class Query extends QueryPart {
         }
 
         public List<Member> getCalculatedMembers() {
-            return getDefinedMembers();
+            return query.getDefinedMembers();
         }
 
         public OlapElement getElementChild(OlapElement parent, Id.Segment s)
@@ -1473,7 +1506,7 @@ public class Query extends QueryPart {
             // then look in defined members (removed sf#1084651)
 
             // then in defined sets
-            for (Formula formula : formulas) {
+            for (Formula formula : query.formulas) {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
@@ -1515,7 +1548,7 @@ public class Query extends QueryPart {
             switch (category) {
             case Category.Unknown:
             case Category.Member:
-                if (parent == cube) {
+                if (parent == query.cube) {
                     final Member calculatedMember = getCalculatedMember(names);
                     if (calculatedMember != null) {
                         return calculatedMember;
@@ -1525,7 +1558,7 @@ public class Query extends QueryPart {
             switch (category) {
             case Category.Unknown:
             case Category.Set:
-                if (parent == cube) {
+                if (parent == query.cube) {
                     final NamedSet namedSet = getNamedSet(names);
                     if (namedSet != null) {
                         return namedSet;
@@ -1544,8 +1577,8 @@ public class Query extends QueryPart {
                     // Create a free-standing formula using the same
                     // expression, then use the member defined in that formula.
                     final Formula formulaClone = (Formula) formula.clone();
-                    formulaClone.createElement(Query.this);
-                    formulaClone.accept(createValidator());
+                    formulaClone.createElement(query);
+                    formulaClone.accept(query.createValidator());
                     olapElement = formulaClone.getMdxMember();
                 }
             }
@@ -1556,12 +1589,12 @@ public class Query extends QueryPart {
             if (nameParts.size() != 1) {
                 return null;
             }
-            return lookupNamedSet(nameParts.get(0).name);
+            return query.lookupNamedSet(nameParts.get(0).name);
         }
 
         public Parameter getParameter(String name) {
             // Look for a parameter defined in the query.
-            for (Parameter parameter : parameters) {
+            for (Parameter parameter : query.parameters) {
                 if (parameter.getName().equals(name)) {
                     return parameter;
                 }
@@ -1569,7 +1602,7 @@ public class Query extends QueryPart {
 
             // Look for a parameter defined in this connection.
             if (Util.lookup(RolapConnectionProperties.class, name) != null) {
-                Object value = connection.getProperty(name);
+                Object value = query.connection.getProperty(name);
                 // TODO: Don't assume it's a string.
                 // TODO: Create expression which will get the value from the
                 //  connection at the time the query is executed.
@@ -1610,6 +1643,7 @@ public class Query extends QueryPart {
      */
     private class QueryValidator extends ValidatorImpl {
         private final boolean alwaysResolveFunDef;
+        private final SchemaReader schemaReader;
 
         /**
          * Creates a QueryValidator.
@@ -1617,13 +1651,18 @@ public class Query extends QueryPart {
          * @param functionTable Function table
          * @param alwaysResolveFunDef Whether to always resolve function
          *     definitions (see {@link #alwaysResolveFunDef()})
+         * @param query Query
          */
         public QueryValidator(
-            FunTable functionTable,
-            boolean alwaysResolveFunDef)
+            FunTable functionTable, boolean alwaysResolveFunDef, Query query)
         {
             super(functionTable);
             this.alwaysResolveFunDef = alwaysResolveFunDef;
+            this.schemaReader = new ScopedSchemaReader(this, true);
+        }
+
+        public SchemaReader getSchemaReader() {
+            return schemaReader;
         }
 
         protected void defineParameter(Parameter param) {
@@ -1638,6 +1677,256 @@ public class Query extends QueryPart {
 
         public boolean alwaysResolveFunDef() {
             return alwaysResolveFunDef;
+        }
+
+        public ArrayStack<QueryPart> getScopeStack() {
+            return stack;
+        }
+    }
+
+    /**
+     * Schema reader that depends on the current scope during the validation
+     * of a query. Depending on the scope, different calculated sets may be
+     * visible. The scope is represented by the expression stack inside the
+     * validator.
+     */
+    private static class ScopedSchemaReader extends DelegatingSchemaReader {
+        private final QueryValidator queryValidator;
+        private final boolean accessControlled;
+
+        /**
+         * Creates a ScopedSchemaReader.
+         *
+         * @param queryValidator Validator that is being used to validate the
+         *     query
+         * @param accessControlled Access controlled
+         */
+        private ScopedSchemaReader(
+            QueryValidator queryValidator,
+            boolean accessControlled)
+        {
+            super(queryValidator.getQuery().getSchemaReader(accessControlled));
+            this.queryValidator = queryValidator;
+            this.accessControlled = accessControlled;
+        }
+
+        public SchemaReader withoutAccessControl() {
+            if (!accessControlled) {
+                return this;
+            }
+            return new ScopedSchemaReader(queryValidator, false);
+        }
+
+        public OlapElement lookupCompound(
+            OlapElement parent,
+            final List<Id.Segment> names,
+            boolean failIfNotFound,
+            int category,
+            MatchType matchType)
+        {
+            switch (category) {
+            case Category.Set:
+            case Category.Unknown:
+                final ScopedNamedSet namedSet =
+                    queryValidator.getQuery().lookupScopedNamedSet(
+                        names, queryValidator.getScopeStack());
+                if (namedSet != null) {
+                    return namedSet;
+                }
+            }
+            return super.lookupCompound(
+                parent, names, failIfNotFound, category, matchType);
+        }
+    }
+
+    public static class ScopedNamedSet implements NamedSet {
+        private final String name;
+        private final QueryPart scope;
+        private Exp expr;
+
+        /**
+         * Creates a ScopedNamedSet.
+         *
+         * @param name Name
+         * @param scope Scope of named set (the function call that encloses
+         *     the 'expr AS name', often GENERATE or FILTER)
+         * @param expr Expression that defines the set
+         */
+        private ScopedNamedSet(String name, QueryPart scope, Exp expr) {
+            this.name = name;
+            this.scope = scope;
+            this.expr = expr;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getNameUniqueWithinQuery() {
+            return System.identityHashCode(this) + "";
+        }
+
+        public boolean isDynamic() {
+            return true;
+        }
+
+        public Exp getExp() {
+            return expr;
+        }
+
+        public void setExp(Exp expr) {
+            this.expr = expr;
+        }
+
+        public void setName(String newName) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Type getType() {
+            return expr.getType();
+        }
+
+        public NamedSet validate(Validator validator) {
+            Exp newExpr = expr.accept(validator);
+            final Type type = newExpr.getType();
+            if (type instanceof MemberType
+                || type instanceof TupleType)
+            {
+                newExpr =
+                    new UnresolvedFunCall(
+                        "{}", Syntax.Braces, new Exp[] {newExpr})
+                    .accept(validator);
+            }
+            this.expr = newExpr;
+            return this;
+        }
+
+        public String getUniqueName() {
+            return name;
+        }
+
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        public OlapElement lookupChild(
+            SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getQualifiedName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Hierarchy getHierarchy() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Visitor that locates and registers parameters.
+     */
+    private class ParameterFinder extends MdxVisitorImpl {
+        public Object visit(ParameterExpr parameterExpr) {
+            Parameter parameter = parameterExpr.getParameter();
+            if (!parameters.contains(parameter)) {
+                parameters.add(parameter);
+                parametersByName.put(parameter.getName(), parameter);
+            }
+            return null;
+        }
+
+        public Object visit(UnresolvedFunCall call) {
+            if (call.getFunName().equals("Parameter")) {
+                // Is there already a parameter with this name?
+                String parameterName =
+                    ParameterFunDef.getParameterName(call.getArgs());
+                if (parametersByName.get(parameterName) != null) {
+                    throw MondrianResource.instance()
+                        .ParameterDefinedMoreThanOnce.ex(parameterName);
+                }
+
+                Type type =
+                    ParameterFunDef.getParameterType(call.getArgs());
+
+                // Create a temporary parameter. We don't know its
+                // type yet. The default of NULL is temporary.
+                Parameter parameter = new ParameterImpl(
+                    parameterName, Literal.nullValue, null, type);
+                parameters.add(parameter);
+                parametersByName.put(parameterName, parameter);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Visitor that locates and registers all aliased expressions
+     * ('expr AS alias') as named sets. The resulting named sets have scope,
+     * therefore they can only be seen and used within that scope.
+     */
+    private class AliasedExpressionFinder extends MdxVisitorImpl {
+        @Override
+        public Object visit(QueryAxis queryAxis) {
+            registerAlias(queryAxis, queryAxis.getSet());
+            return super.visit(queryAxis);
+        }
+
+        public Object visit(UnresolvedFunCall call) {
+            registerAliasArgs(call);
+            return super.visit(call);
+        }
+
+        public Object visit(ResolvedFunCall call) {
+            registerAliasArgs(call);
+            return super.visit(call);
+        }
+
+        /**
+         * Registers all arguments of a function that are named sets.
+         *
+         * @param call Function call
+         */
+        private void registerAliasArgs(FunCall call) {
+            for (Exp exp : call.getArgs()) {
+                registerAlias((QueryPart) call, exp);
+            }
+        }
+
+        /**
+         * Registers a named set if an expression is of the form "expr AS
+         * alias".
+         *
+         * @param parent Parent node
+         * @param exp Expression that may be an "AS"
+         */
+        private void registerAlias(QueryPart parent, Exp exp) {
+            if (exp instanceof FunCall) {
+                FunCall call2 = (FunCall) exp;
+                if (call2.getSyntax() == Syntax.Infix
+                    && call2.getFunName().equals("AS"))
+                {
+                    // Scope is the function enclosing the 'AS' expression.
+                    // For example, in
+                    //    Filter(Time.Children AS s, x > y)
+                    // the scope of the set 's' is the Filter function.
+                    assert call2.getArgCount() == 2;
+                    final Id id = (Id) call2.getArg(1);
+                    createScopedNamedSet(
+                        id.getSegments().get(0).name,
+                        (QueryPart) parent,
+                        call2.getArg(0));
+                }
+            }
         }
     }
 }

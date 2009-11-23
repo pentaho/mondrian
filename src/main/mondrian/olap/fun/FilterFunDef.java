@@ -45,7 +45,12 @@ class FilterFunDef extends FunDefBase {
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         // Ignore the caller's priority. We prefer to return iterable, because
         // it makes NamedSet.CurrentOrdinal work.
-        final List<ResultStyle> styles = compiler.getAcceptableResultStyles();
+        List<ResultStyle> styles = compiler.getAcceptableResultStyles();
+        if (call.getArg(0) instanceof ResolvedFunCall
+            && ((ResolvedFunCall) call.getArg(0)).getFunName().equals("AS"))
+        {
+            styles = ResultStyle.ITERABLE_ONLY;
+        }
         if (styles.contains(ResultStyle.ITERABLE)
             || styles.contains(ResultStyle.ANY))
         {

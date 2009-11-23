@@ -120,6 +120,8 @@ public class AbstractExpCompiler implements ExpCompiler {
                     return compileHierarchy(exp);
                 } else if (resultType instanceof DimensionType) {
                     return compileDimension(exp);
+                } else if (resultType instanceof ScalarType) {
+                    return compileScalar(exp, false);
                 }
             }
             final Calc calc = compile(exp);
@@ -292,6 +294,7 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public ListCalc compileList(Exp exp, boolean mutable) {
+        assert exp.getType() instanceof SetType : "must be a set: " + exp;
         final List<ResultStyle> resultStyleList;
         if (mutable) {
             resultStyleList = ResultStyle.MUTABLELIST_ONLY;

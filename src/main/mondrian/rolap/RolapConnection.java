@@ -609,11 +609,7 @@ public class RolapConnection extends ConnectionBase {
         assert role != null;
 
         this.role = role;
-        this.schemaReader = new RolapSchemaReader(role, schema) {
-            public Cube getCube() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        this.schemaReader = new RolapSchemaReader(role, schema);
     }
 
     public Role getRole() {

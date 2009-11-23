@@ -19369,6 +19369,14 @@ FROM Sales
                         <CAPTION>AND</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>AS</FUNCTION_NAME>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>AS</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>asc</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
@@ -21642,6 +21650,15 @@ FROM Sales
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>MIRR</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>mod</FUNCTION_NAME>
+                        <DESCRIPTION/>
+                        <PARAMETER_LIST>Value, Value</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>mod</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>month</FUNCTION_NAME>

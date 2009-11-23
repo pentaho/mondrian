@@ -14,6 +14,7 @@ import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.mdx.QueryPrintWriter;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -461,6 +462,82 @@ public class ParserTest extends FoodMartTestCase {
                 + "3, , [Measures].[Unit Sales])}) on columns from [Sales]",
             "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3.0, , [Measures].[Unit Sales])}) ON COLUMNS\n"
             + "from [Sales]\n");
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-648">
+     * MONDRIAN-648, "AS operator has lower precedence than required by MDX
+     * specification"</a>.
+     *
+     * <p>Currently that bug is not fixed. We give the AS operator low
+     * precedence, so CAST works as it should but 'expr AS namedSet' does not.
+     */
+    public void testAsPrecedence() {
+        // low precedence operator (AND) in CAST.
+        assertParseQuery(
+            "select cast(a and b as string) on 0 from cube",
+            "select CAST((a AND b) AS string) ON COLUMNS\n"
+            + "from [cube]\n");
+
+        // medium precedence operator (:) in CAST
+        assertParseQuery(
+            "select cast(a : b as string) on 0 from cube",
+            "select CAST((a : b) AS string) ON COLUMNS\n"
+            + "from [cube]\n");
+
+        // high precedence operator (IS) in CAST
+        assertParseQuery(
+            "select cast(a is b as string) on 0 from cube",
+            "select CAST((a IS b) AS string) ON COLUMNS\n"
+            + "from [cube]\n");
+
+        // low precedence operator in axis expression. According to spec, 'AS'
+        // has higher precedence than '*' but we give it lower. Bug.
+        assertParseQuery(
+            "select a * b as c on 0 from cube",
+            Bug.BugMondrian648Fixed
+                ? "select (a * (b AS c) ON COLUMNS\n"
+                  + "from [cube]\n"
+                : "select ((a * b) AS c) ON COLUMNS\n"
+                  + "from [cube]\n");
+
+        if (Bug.BugMondrian648Fixed) {
+            // Note that 'AS' has higher precedence than '*'.
+            assertParseQuery(
+                "select a * b as c * d on 0 from cube",
+                "select (((a * b) AS c) * d) ON COLUMNS\n"
+                + "from [cube]\n");
+
+        } else {
+            // Bug. Even with MONDRIAN-648, Mondrian should parse this query.
+            assertParseQueryFails(
+                "select a * b as c * d on 0 from cube",
+                "Syntax error at line 1, column 19, token '*'");
+        }
+
+        // Spec says that ':' has a higher precedence than '*'.
+        // Mondrian currently does it wrong.
+        assertParseQuery(
+            "select a : b * c : d on 0 from cube",
+            Bug.BugMondrian648Fixed
+                ? "select ((a : b) * (c : d)) ON COLUMNS\n"
+                  + "from [cube]\n"
+                : "select ((a : (b * c)) : d) ON COLUMNS\n"
+                  + "from [cube]\n");
+
+        if (Bug.BugMondrian648Fixed) {
+            // Note that 'AS' has higher precedence than ':', has higher
+            // precedence than '*'.
+            assertParseQuery(
+                "select a : b as n * c : d as n2 as n3 on 0 from cube",
+                "select (((a : b) as n) * ((c : d) AS n2) as n3) ON COLUMNS\n"
+                + "from [cube]\n");
+        } else {
+            // Bug. Even with MONDRIAN-648, Mondrian should parse this query.
+            assertParseQueryFails(
+                "select a : b as n * c : d as n2 as n3 on 0 from cube",
+                "Syntax error at line 1, column 19, token '*'");
+        }
     }
 
     /**

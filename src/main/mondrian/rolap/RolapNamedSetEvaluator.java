@@ -27,8 +27,7 @@ class RolapNamedSetEvaluator
     implements Evaluator.NamedSetEvaluator
 {
     private final RolapResult.RolapResultEvaluatorRoot rrer;
-    private final String name;
-    private final Exp exp;
+    private final NamedSet namedSet;
 
     /** Value of this named set; set on first use. */
     private List list;
@@ -51,17 +50,14 @@ class RolapNamedSetEvaluator
      * Creates a RolapNamedSetEvaluator.
      *
      * @param rrer Evaluation root context
-     * @param name Name of named set
-     * @param exp Expression to evaluate named set
+     * @param namedSet Named set
      */
     public RolapNamedSetEvaluator(
         RolapResult.RolapResultEvaluatorRoot rrer,
-        String name,
-        Exp exp)
+        NamedSet namedSet)
     {
         this.rrer = rrer;
-        this.name = name;
-        this.exp = exp;
+        this.namedSet = namedSet;
     }
 
     public Iterable<Member> evaluateMemberIterable() {
@@ -226,19 +222,19 @@ class RolapNamedSetEvaluator
                 throw rrer.slicerEvaluator.newEvalException(
                     null,
                     "Illegal attempt to reference value of named set '"
-                    + name + "' while evaluating itself");
+                    + namedSet.getName() + "' while evaluating itself");
             }
             return;
         }
         if (RolapResult.LOGGER.isDebugEnabled()) {
             RolapResult.LOGGER.debug(
-                "Named set " + name + ": starting evaluation");
+                "Named set " + namedSet.getName() + ": starting evaluation");
         }
         list = DUMMY_LIST; // recursion detection
         final RolapEvaluatorRoot root =
             rrer.slicerEvaluator.root;
         final Calc calc =
-            root.getCompiled(exp, false, ResultStyle.ITERABLE);
+            root.getCompiled(namedSet.getExp(), false, ResultStyle.ITERABLE);
         Object o =
             rrer.result.evaluateExp(
                 calc,
@@ -262,7 +258,7 @@ class RolapNamedSetEvaluator
             buf.append(this);
             buf.append(": ");
             buf.append("Named set ");
-            buf.append(name);
+            buf.append(namedSet.getName());
             buf.append(" evaluated to:");
             buf.append(Util.nl);
             int arity = ((SetType) calc.getType()).getArity();

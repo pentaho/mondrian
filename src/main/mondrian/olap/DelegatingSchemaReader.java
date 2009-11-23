@@ -44,6 +44,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getRole();
     }
 
+    public Cube getCube() {
+        return schemaReader.getCube();
+    }
+
     public List<Dimension> getCubeDimensions(Cube cube) {
         return schemaReader.getCubeDimensions(cube);
     }
@@ -226,6 +230,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
 
     public DataSource getDataSource() {
         return schemaReader.getDataSource();
+    }
+
+    public SchemaReader withoutAccessControl() {
+        return schemaReader.withoutAccessControl();
     }
 }
 
