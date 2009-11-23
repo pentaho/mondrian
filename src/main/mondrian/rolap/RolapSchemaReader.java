@@ -41,14 +41,14 @@ import org.eigenbase.util.property.Property;
  * @version $Id$
  * @since Feb 24, 2003
  */
-public abstract class RolapSchemaReader
+public class RolapSchemaReader
     implements SchemaReader,
         RolapNativeSet.SchemaReaderWithMemberReaderAvailable
 {
-    private final Role role;
+    protected final Role role;
     private final Map<Hierarchy, MemberReader> hierarchyReaders =
         new HashMap<Hierarchy, MemberReader>();
-    private final RolapSchema schema;
+    protected final RolapSchema schema;
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
     private static final Logger LOGGER =
@@ -331,12 +331,18 @@ public abstract class RolapSchemaReader
         }
     }
 
-    /**
-     * Returns the default cube in which to look for dimensions etc.
-     *
-     * @return Default cube
-     */
-    public abstract Cube getCube();
+    public Cube getCube() {
+        throw new UnsupportedOperationException();
+    }
+
+    public SchemaReader withoutAccessControl() {
+        assert this.getClass() == RolapSchemaReader.class
+            : "Subclass " + getClass() + " must override";
+        if (role == schema.getDefaultRole()) {
+            return this;
+        }
+        return new RolapSchemaReader(schema.getDefaultRole(), schema);
+    }
 
     public OlapElement getElementChild(OlapElement parent, Id.Segment name) {
         return getElementChild(parent, name, MatchType.EXACT);

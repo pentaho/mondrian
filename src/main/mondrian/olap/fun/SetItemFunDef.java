@@ -71,7 +71,7 @@ class SetItemFunDef extends FunDefBase {
             // All args must be strings.
             for (int i = 1; i < args.length; i++) {
                 if (!validator.canConvert(
-                    args[i], Category.String, conversions))
+                    i, args[i], Category.String, conversions))
                 {
                     return null;
                 }

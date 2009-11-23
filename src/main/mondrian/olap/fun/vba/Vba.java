@@ -235,7 +235,6 @@ public class Vba {
             v--;
         }
         return v;
-
     }
 
     // public String oct$(Object number)

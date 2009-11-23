@@ -415,7 +415,27 @@ public interface SchemaReader {
      */
     Parameter getParameter(String name);
 
+    /**
+     * Returns the data source.
+     *
+     * @return data source
+     */
     DataSource getDataSource();
+
+    /**
+     * Returns a similar schema reader that has no access control.
+     *
+     * @return Schema reader that has a similar perspective (e.g. cube) but
+     * no access control
+     */
+    SchemaReader withoutAccessControl();
+
+    /**
+     * Returns the default cube in which to look for dimensions etc.
+     *
+     * @return Default cube
+     */
+    Cube getCube();
 }
 
 // End SchemaReader.java

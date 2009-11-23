@@ -1304,12 +1304,18 @@ public class RolapResult extends ResultBase {
         }
 
         protected Evaluator.NamedSetEvaluator evaluateNamedSet(
-            final String name,
-            final Exp exp)
+            final NamedSet namedSet,
+            boolean create)
         {
-            RolapNamedSetEvaluator value = namedSetEvaluators.get(name);
+            final String name = namedSet.getNameUniqueWithinQuery();
+            RolapNamedSetEvaluator value;
+            if (namedSet.isDynamic() && !create) {
+                value = null;
+            } else {
+                value = namedSetEvaluators.get(name);
+            }
             if (value == null) {
-                value = new RolapNamedSetEvaluator(this, name, exp);
+                value = new RolapNamedSetEvaluator(this, namedSet);
                 namedSetEvaluators.put(name, value);
             }
             return value;

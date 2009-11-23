@@ -104,10 +104,13 @@ class RolapEvaluatorRoot {
      *
      * <p>The default implementation throws
      * {@link UnsupportedOperationException}.
+     *
+     * @param namedSet Named set
+     * @param create Whether to create named set evaluator if not found
      */
     protected Evaluator.NamedSetEvaluator evaluateNamedSet(
-        String name,
-        Exp exp)
+        NamedSet namedSet,
+        boolean create)
     {
         throw new UnsupportedOperationException();
     }

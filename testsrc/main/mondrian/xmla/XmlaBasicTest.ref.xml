@@ -18975,6 +18975,14 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         <CAPTION>AND</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>AS</FUNCTION_NAME>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>AS</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>asc</FUNCTION_NAME>
                         <DESCRIPTION/>
                         <PARAMETER_LIST>String</PARAMETER_LIST>

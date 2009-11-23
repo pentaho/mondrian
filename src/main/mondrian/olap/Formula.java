@@ -65,7 +65,7 @@ public class Formula extends QueryPart {
         this(true, id, exp, memberProperties, null, null);
     }
 
-    private Formula(
+    Formula(
         boolean isMember,
         Id id,
         Exp exp,
@@ -206,7 +206,7 @@ public class Formula extends QueryPart {
             Util.assertTrue(
                 id.getSegments().size() == 1,
                 "set names must not be compound");
-            mdxSet = new SetBase(id.getSegments().get(0).name, exp);
+            mdxSet = new SetBase(id.getSegments().get(0).name, exp, false);
         }
     }
 
@@ -218,7 +218,6 @@ public class Formula extends QueryPart {
             children, 1, memberProperties.length);
         return children;
     }
-
 
     public void unparse(PrintWriter pw)
     {

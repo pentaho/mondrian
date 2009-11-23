@@ -14,9 +14,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.*;
 
 import mondrian.xmla.SaxWriter;
+import mondrian.util.ArrayStack;
 
 import org.eigenbase.xom.XMLUtil;
 import org.eigenbase.xom.XOMUtil;
@@ -342,41 +342,6 @@ public class DefaultSaxWriter implements SaxWriter {
         }
     }
 
-    /**
-     * Stack implementation based on {@link ArrayList}.
-     *
-     * <p>More efficient than {@link Stack}, which extends {@link Vector} and is
-     * therefore synchronized whether you like it or not.
-     *
-     * @param <E> Element type
-     */
-    private static class ArrayStack<E> extends ArrayList<E> {
-        /**
-         * Analogous to {@link Stack#push}.
-         */
-        public E push(E item) {
-            add(item);
-            return item;
-        }
-
-        /**
-         * Analogous to {@link Stack#pop}.
-         */
-        public E pop() {
-            int len = size();
-            E obj = peek();
-            remove(len - 1);
-            return obj;
-        }
-
-        /**
-         * Analogous to {@link Stack#peek}.
-         */
-        public E peek() {
-            int len = size();
-            return get(len - 1);
-        }
-    }
 }
 
 // End DefaultSaxWriter.java

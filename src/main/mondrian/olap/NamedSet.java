@@ -41,6 +41,30 @@ public interface NamedSet extends OlapElement {
     Exp getExp();
 
     NamedSet validate(Validator validator);
+
+    /**
+     * Returns a name for this set that is unique within the query.
+     *
+     * <p>This is necessary when there are several 'AS' expressions, or an 'AS'
+     * expression overrides a named set defined using 'WITH MEMBER' clause or
+     * against a cube.
+     */
+    String getNameUniqueWithinQuery();
+
+    /**
+     * Returns whether this named set is dynamic.
+     *
+     * <p>Evaluation rules:
+     * <ul>
+     * <li>A dynamic set is evaluated each time it is used, and inherits the
+     *     context in which it is evaluated.
+     * <li>A static set is evaluated only on first use, in the base context of
+     *     the cube.
+     * </ul>
+     *
+     * @return Whether this named set is dynamic
+     */
+    boolean isDynamic();
 }
 
 // End NamedSet.java

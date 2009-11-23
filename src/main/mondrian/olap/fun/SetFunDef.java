@@ -488,7 +488,11 @@ public class SetFunDef extends FunDefBase {
 
     /**
      * Creates a call to the set operator with a given collection of
-     * expressions. There must be at least one expression.
+     * expressions.
+     *
+     * <p>There must be at least one expression. Each expression may be a set of
+     * members/tuples, or may be a member/tuple, but method assumes that
+     * expressions have compatible types.
      *
      * @param args Expressions
      * @return Call to set operator
@@ -503,6 +507,8 @@ public class SetFunDef extends FunDefBase {
             final Type argType = arg.getType();
             if (argType instanceof SetType) {
                 type = ((SetType) argType).getElementType();
+            } else {
+                type = argType;
             }
         }
         return new ResolvedFunCall(
@@ -597,13 +603,99 @@ public class SetFunDef extends FunDefBase {
         }
     }
 
+    /**
+     * Compiled expression that evaluates one or more expressions, each of which
+     * yields a tuple or a set of tuples, and returns the result as an tuple
+     * iterator.
+     */
+    public static class ExprTupleIterCalc extends AbstractTupleIterCalc {
+        private final TupleIterCalc[] iterCalcs;
+
+        public ExprTupleIterCalc(
+            Exp exp,
+            Exp[] args,
+            ExpCompiler compiler,
+            List<ResultStyle> resultStyles)
+        {
+            super(exp, null);
+            final List<Calc> calcList =
+                compileSelf(args, compiler, resultStyles);
+            iterCalcs = calcList.toArray(new TupleIterCalc[calcList.size()]);
+        }
+
+        // override return type
+        public TupleIterCalc[] getCalcs() {
+            return iterCalcs;
+        }
+
+        public Iterable<Member[]> evaluateTupleIterable(
+            final Evaluator evaluator)
+        {
+            return new Iterable<Member[]>() {
+                public Iterator<Member[]> iterator() {
+                    return new Iterator<Member[]>() {
+                        int index = 0;
+                        Iterator<Member[]> currentIterator = null;
+                        Member[] tuple = null;
+
+                        public boolean hasNext() {
+                            if (tuple != null) {
+                                return true;
+                            }
+                            if (currentIterator == null) {
+                                if (index >= iterCalcs.length) {
+                                    return false;
+                                }
+                                TupleIterCalc iterCalc = iterCalcs[index++];
+                                Iterable<Member[]> iter =
+                                    iterCalc.evaluateTupleIterable(evaluator);
+                                currentIterator = iter.iterator();
+                            }
+                            while (true) {
+                                boolean b = currentIterator.hasNext();
+                                while (! b) {
+                                    if (index >= iterCalcs.length) {
+                                        return false;
+                                    }
+                                    TupleIterCalc iterCalc =
+                                        iterCalcs[index++];
+                                    Iterable<Member[]> iter =
+                                        iterCalc.evaluateTupleIterable(
+                                            evaluator);
+                                    currentIterator = iter.iterator();
+                                    b = currentIterator.hasNext();
+                                }
+                                tuple = currentIterator.next();
+                                if (tuple != null) {
+                                    break;
+                                }
+                            }
+                            return true;
+                        }
+
+                        public Member[] next() {
+                            try {
+                                return tuple;
+                            } finally {
+                                tuple = null;
+                            }
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+                    };
+                }
+            };
+        }
+    }
+
     private static class ResolverImpl extends ResolverBase {
         public ResolverImpl() {
             super(
-                    "{}",
-                    "{<Member> [, <Member>...]}",
-                    "Brace operator constructs a set.",
-                    Syntax.Braces);
+                "{}",
+                "{<Member> [, <Member>...]}",
+                "Brace operator constructs a set.",
+                Syntax.Braces);
         }
 
         public FunDef resolve(
@@ -614,21 +706,21 @@ public class SetFunDef extends FunDefBase {
             int[] parameterTypes = new int[args.length];
             for (int i = 0; i < args.length; i++) {
                 if (validator.canConvert(
-                    args[i], Category.Member, conversions))
+                    i, args[i], Category.Member, conversions))
                 {
                     parameterTypes[i] = Category.Member;
                     continue;
                 }
                 if (validator.canConvert(
-                    args[i], Category.Set, conversions))
+                    i, args[i], Category.Tuple, conversions))
                 {
-                    parameterTypes[i] = Category.Set;
+                    parameterTypes[i] = Category.Tuple;
                     continue;
                 }
                 if (validator.canConvert(
-                    args[i], Category.Tuple, conversions))
+                    i, args[i], Category.Set, conversions))
                 {
-                    parameterTypes[i] = Category.Tuple;
+                    parameterTypes[i] = Category.Set;
                     continue;
                 }
                 return null;

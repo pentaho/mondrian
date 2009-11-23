@@ -65,7 +65,7 @@ class SimpleResolver implements Resolver {
         }
         for (int i = 0; i < args.length; i++) {
             if (!validator.canConvert(
-                args[i], parameterTypes[i], conversions))
+                i, args[i], parameterTypes[i], conversions))
             {
                 return null;
             }
