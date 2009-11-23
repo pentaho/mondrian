@@ -2906,7 +2906,7 @@ public class FunUtil extends Util {
      * object which indicates the the cell is not in the cache yet) next,
      * then numbers and strings are compared by value.
      */
-    private static class DescendingValueComparator implements Comparator {
+    public static class DescendingValueComparator implements Comparator {
         /**
          * The singleton.
          */
@@ -3151,3 +3151,4 @@ public class FunUtil extends Util {
 }
 
 // End FunUtil.java
+

@@ -42,7 +42,7 @@ public class DefaultMemberChildrenConstraint
         RolapMember parent)
     {
         SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, baseCube, aggStar, parent, true);
+            sqlQuery, baseCube, aggStar, parent, true);
     }
 
     public void addMemberConstraint(
@@ -51,8 +51,9 @@ public class DefaultMemberChildrenConstraint
         AggStar aggStar,
         List<RolapMember> parents)
     {
+        boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar, parents, true, false);
+            sqlQuery, baseCube, aggStar, parents, true, false, exclude);
     }
 
     public void addLevelConstraint(

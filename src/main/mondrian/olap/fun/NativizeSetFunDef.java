@@ -1,3 +1,11 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2009-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -26,12 +34,12 @@ public class NativizeSetFunDef extends FunDefBase {
     protected static final Logger LOGGER =
         Logger.getLogger(NativizeSetFunDef.class);
 
-    private static final String SENTINAL_PREFIX = "_Nativized_Sentinal_";
+    private static final String SENTINEL_PREFIX = "_Nativized_Sentinel_";
     private static final String MEMBER_NAME_PREFIX = "_Nativized_Member_";
     private static final String SET_NAME_PREFIX = "_Nativized_Set_";
     private static final List<Class<? extends FunDef>> functionWhitelist =
-        Arrays.asList(
-            (Class<? extends FunDef>) CacheFunDef.class,
+        Arrays.<Class<? extends FunDef>>asList(
+            CacheFunDef.class,
             SetFunDef.class,
             CrossJoinFunDef.class,
             NativizeSetFunDef.class);
@@ -260,9 +268,9 @@ public class NativizeSetFunDef extends FunDefBase {
             // Force non-empty to true to create the native list.
             LOGGER.info(
                 "crossjoin reconstituted from simplified list: "
-                    + String.format(
+                + String.format(
                     "%n"
-                        + crossJoin.replaceAll(",", "%n, ")));
+                    + crossJoin.replaceAll(",", "%n, ")));
             List<Member[]> members = analyzer.mergeCalcMembers(
                 evaluateJoinExpression(evaluator.push(true, true), crossJoin));
             evaluator.pop();
@@ -306,11 +314,12 @@ public class NativizeSetFunDef extends FunDefBase {
                         schema.getLevelCardinality(hierarchyLevel, false, true);
                     estimatedCardinality *= levelCardinality;
                     if (estimatedCardinality >= nativizeMinThreshold) {
-                        LOGGER.info(String.format(
-                            "isHighCardinality=%b: "
+                        LOGGER.info(
+                            String.format(
+                                "isHighCardinality=%b: "
                                 + "partial estimate=%,d threshold=%,d",
-                            true,
-                            estimatedCardinality,
+                                true,
+                                estimatedCardinality,
                                 nativizeMinThreshold));
                         return true;
                     }
@@ -320,10 +329,11 @@ public class NativizeSetFunDef extends FunDefBase {
             boolean isHighCardinality
                 = (estimatedCardinality >= nativizeMinThreshold);
 
-            LOGGER.info(String.format(
-                "isHighCardinality=%b: estimate=%,d threshold=%,d",
-                isHighCardinality,
-                estimatedCardinality,
+            LOGGER.info(
+                String.format(
+                    "isHighCardinality=%b: estimate=%,d threshold=%,d",
+                    isHighCardinality,
+                    estimatedCardinality,
                     nativizeMinThreshold));
             return isHighCardinality;
         }
@@ -415,19 +425,19 @@ public class NativizeSetFunDef extends FunDefBase {
 
             for (Dimension dim : dimensions) {
                 Level level = dim.getHierarchy().getLevels()[0];
-                formulas.add(createSentinalFormula(level));
+                formulas.add(createSentinelFormula(level));
             }
 
             query.addFormulas(formulas.toArray(new Formula[formulas.size()]));
         }
 
-        private Formula createSentinalFormula(Level level) {
-            Id memberId = createSentinalId(level);
+        private Formula createSentinelFormula(Level level) {
+            Id memberId = createSentinelId(level);
             Exp memberExpr = query.getConnection()
                 .parseExpression("101010");
 
             LOGGER.debug(
-                "createSentinalFormula memberId="
+                "createSentinelFormula memberId="
                 + memberId
                 + " memberExpr="
                 + memberExpr);
@@ -522,7 +532,7 @@ public class NativizeSetFunDef extends FunDefBase {
         private Object flattenSetFunDef(ResolvedFunCall call) {
             List<Exp> newArgs = new ArrayList<Exp>();
             flattenSetMembers(newArgs, call.getArgs());
-            addSentinalMembers(newArgs);
+            addSentinelMembers(newArgs);
             if (newArgs.size() != call.getArgCount()) {
                 return new ResolvedFunCall(
                     call.getFunDef()
@@ -544,7 +554,7 @@ public class NativizeSetFunDef extends FunDefBase {
             }
         }
 
-        private void addSentinalMembers(List<Exp> args) {
+        private void addSentinelMembers(List<Exp> args) {
             Exp prev = args.get(0);
             for (int i = 1; i < args.size(); i++) {
                 Exp curr = args.get(i);
@@ -557,7 +567,7 @@ public class NativizeSetFunDef extends FunDefBase {
                     }
                     if (element != null) {
                         Level level = element.getHierarchy().getLevels()[0];
-                        Id memberId = createSentinalId(level);
+                        Id memberId = createSentinelId(level);
                         Formula formula =
                             query.findFormula(memberId.toString());
                         args.add(i++, Util.createExpr(formula.getMdxMember()));
@@ -705,8 +715,8 @@ public class NativizeSetFunDef extends FunDefBase {
                     if (substitutionMap.contains(mbr)) {
                         cmdTuple[i] = new ReassemblyCommand(
                             substitutionMap.get(mbr), LEVEL_MEMBERS);
-                    } else if (mbr.getName().startsWith(SENTINAL_PREFIX)) {
-                        cmdTuple[i] = new ReassemblyCommand(mbr, SENTINAL);
+                    } else if (mbr.getName().startsWith(SENTINEL_PREFIX)) {
+                        cmdTuple[i] = new ReassemblyCommand(mbr, SENTINEL);
                     } else {
                         NativeElementType nativeType = !isNativeCompatible(mbr)
                             ? NON_NATIVE
@@ -1031,10 +1041,11 @@ public class NativizeSetFunDef extends FunDefBase {
             // created by HighCardSqlTupleReader are implemented using linked
             // lists, leading to pathologically long run times.
             // This presumes that the ResultStyle is LIST
-            LOGGER.info(String.format(
+            LOGGER.info(
+                String.format(
                     "returning native %s<%s> without copying to new list.",
-                sourceListType,
-                sourceElementType));
+                    sourceListType,
+                    sourceElementType));
             destList = sourceList;
             return destList;
         }
@@ -1058,11 +1069,13 @@ public class NativizeSetFunDef extends FunDefBase {
                     sourceElementType += String.format("Member[%d]", destSize);
                 }
 
-                LOGGER.info(String.format(
-                    "copying native %s<%s> into ArrayList<%s> is starting...",
-                    sourceListType,
-                    sourceElementType,
-                    destElementType));
+                LOGGER.info(
+                    String.format(
+                        "copying native %s<%s> into ArrayList<%s> is "
+                        + "starting...",
+                        sourceListType,
+                        sourceElementType,
+                        destElementType));
 
                 dest.add(adapter.copyOf(element));
                 int size = 1;
@@ -1350,7 +1363,7 @@ public class NativizeSetFunDef extends FunDefBase {
             ReassemblyCommand prev = commands.isEmpty()
                 ? null : commands.get(commands.size() - 1);
 
-            if (prev != null && prev.getMemberType() == SENTINAL) {
+            if (prev != null && prev.getMemberType() == SENTINEL) {
                 commands.set(commands.size() - 1, curr);
             } else if (prev == null
                 || !prev.getElement().equals(curr.getElement()))
@@ -1449,7 +1462,7 @@ public class NativizeSetFunDef extends FunDefBase {
         ENUMERATED_VALUE(true),
         OTHER_NATIVE(true),
         NON_NATIVE(false),
-        SENTINAL(false);
+        SENTINEL(false);
 
         private final boolean isNativeCompatible;
         private NativeElementType(boolean isNativeCompatible) {
@@ -1461,9 +1474,9 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
-    private static Id createSentinalId(Level level) {
+    private static Id createSentinelId(Level level) {
         return createId(level.getDimension().getName(),
-            createMangledName(level, SENTINAL_PREFIX));
+            createMangledName(level, SENTINEL_PREFIX));
     }
 
     private static Id createMemberId(Level level) {
@@ -1496,10 +1509,9 @@ public class NativizeSetFunDef extends FunDefBase {
         LOGGER.info(
             String.format("%s created with %,d rows.", heading, list.size()));
         if (LOGGER.isDebugEnabled()) {
-            String nl = String.format("%n");
-            StringBuilder buf = new StringBuilder(nl);
+            StringBuilder buf = new StringBuilder(Util.nl);
             for (Member[] element : list) {
-                buf.append(Util.commaList(nl, Arrays.asList(element)));
+                buf.append(Util.commaList(Util.nl, Arrays.asList(element)));
             }
             LOGGER.debug(buf.toString());
         }
@@ -1520,6 +1532,6 @@ public class NativizeSetFunDef extends FunDefBase {
         String tokens[] = memberName.split("_");
         return tokens[tokens.length - 1];
     }
-
 }
+
 // End NativizeSetFunDef.java

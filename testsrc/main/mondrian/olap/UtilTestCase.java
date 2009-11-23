@@ -572,6 +572,37 @@ public class UtilTestCase extends TestCase {
         }
         assertTrue(expectedClassNames.toString(), expectedClassNames.isEmpty());
     }
+
+    /**
+     * Tests {@link Util#appendArrays(Object[], Object[][])}.
+     */
+    public void testConcatenateArrays() {
+        String[] a0 = {"a", "b", "c"};
+        String[] a1 = {"foo", "bar"};
+        String[] empty = {};
+
+        final String[] strings1 = Util.appendArrays(a0, a1);
+        assertEquals(5, strings1.length);
+        assertEquals(
+            Arrays.asList("a", "b", "c", "foo", "bar"),
+            Arrays.asList(strings1));
+
+        final String[] strings2 = Util.appendArrays(
+            empty, a0, empty, a1, empty);
+        assertEquals(
+            Arrays.asList("a", "b", "c", "foo", "bar"),
+            Arrays.asList(strings2));
+
+        Number[] n0 = {Math.PI};
+        Integer[] i0 = {123, null, 45};
+        Float[] f0 = {0f};
+
+        final Number[] numbers = Util.appendArrays(n0, i0, f0);
+        assertEquals(5, numbers.length);
+        assertEquals(
+            Arrays.asList((Number) Math.PI, 123, null, 45, 0f),
+            Arrays.asList(numbers));
+    }
 }
 
 // End UtilTestCase.java

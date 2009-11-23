@@ -9,13 +9,10 @@
 */
 package mondrian.rolap;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
@@ -35,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
-import org.eigenbase.util.property.IntegerProperty;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and
@@ -335,213 +331,6 @@ public class NonEmptyTest extends BatchTestCase {
             + "NON EMPTY {[Product].[Product Family].Members} ON ROWS "
             + "from [Warehouse and Sales]");
         c.run();
-    }
-
-
-    public void testNativeFilter() {
-        String query =
-            "select {[Measures].[Store Sales]} ON COLUMNS, "
-            + "NON EMPTY Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
-            + "from [Sales] "
-            + "where ([Time].[1997])";
-
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
-        checkNative(32, 18, query, null, requestFreshConnection);
-    }
-
-    /**
-     * Executes a Filter() whose condition contains a calculated member.
-     */
-    public void testCmNativeFilter() {
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
-        checkNative(
-            0,
-            8,
-            "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
-            + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
-            + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
-            + "from [Sales] "
-            + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])",
-            "Axis #0:\n"
-            + "{[Store].[All Stores].[USA].[CA], [Time].[1997]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Store Cost]}\n"
-            + "{[Measures].[Rendite]}\n"
-            + "{[Measures].[Store Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n"
-            + "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n"
-            + "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n"
-            + "Row #0: 42\n"
-            + "Row #0: 24.06\n"
-            + "Row #0: 1.93\n"
-            + "Row #0: 70.56\n"
-            + "Row #1: 36\n"
-            + "Row #1: 29.02\n"
-            + "Row #1: 1.91\n"
-            + "Row #1: 84.60\n"
-            + "Row #2: 39\n"
-            + "Row #2: 20.55\n"
-            + "Row #2: 1.85\n"
-            + "Row #2: 58.50\n"
-            + "Row #3: 25\n"
-            + "Row #3: 21.76\n"
-            + "Row #3: 1.84\n"
-            + "Row #3: 61.75\n"
-            + "Row #4: 43\n"
-            + "Row #4: 59.62\n"
-            + "Row #4: 1.83\n"
-            + "Row #4: 168.99\n"
-            + "Row #5: 34\n"
-            + "Row #5: 7.20\n"
-            + "Row #5: 1.83\n"
-            + "Row #5: 20.40\n"
-            + "Row #6: 36\n"
-            + "Row #6: 33.10\n"
-            + "Row #6: 1.83\n"
-            + "Row #6: 93.60\n"
-            + "Row #7: 46\n"
-            + "Row #7: 28.34\n"
-            + "Row #7: 1.81\n"
-            + "Row #7: 79.58\n",
-            requestFreshConnection);
-    }
-
-    public void testNonNativeFilterWithNullMeasure() {
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
-        checkNotNative(
-            9,
-            "select Filter([Store].[Store Name].members, "
-            + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
-            + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
-            + "from [Store]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Store Sqft]}\n"
-            + "{[Measures].[Grocery Sqft]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
-            + "Row #0: 36,509\n"
-            + "Row #0: 22,450\n"
-            + "Row #1: \n"
-            + "Row #1: \n"
-            + "Row #2: 30,797\n"
-            + "Row #2: 20,141\n"
-            + "Row #3: \n"
-            + "Row #3: \n"
-            + "Row #4: \n"
-            + "Row #4: \n"
-            + "Row #5: 39,696\n"
-            + "Row #5: 24,390\n"
-            + "Row #6: 33,858\n"
-            + "Row #6: 22,123\n"
-            + "Row #7: \n"
-            + "Row #7: \n"
-            + "Row #8: \n"
-            + "Row #8: \n");
-    }
-
-    public void testNativeFilterWithNullMeasure() {
-        // Currently this behaves differently from the non-native evaluation.
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
-        context.assertQueryReturns(
-            "select Filter([Store].[Store Name].members, "
-            + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
-            + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
-            + "from [Store]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Store Sqft]}\n"
-            + "{[Measures].[Grocery Sqft]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "Row #0: 36,509\n"
-            + "Row #0: 22,450\n"
-            + "Row #1: 30,797\n"
-            + "Row #1: 20,141\n"
-            + "Row #2: 39,696\n"
-            + "Row #2: 24,390\n"
-            + "Row #3: 33,858\n"
-            + "Row #3: 22,123\n");
-    }
-
-    public void testNonNativeFilterWithCalcMember() {
-        // Currently this query cannot run natively
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
-        checkNotNative(
-            3,
-            "with\n"
-            + "member [Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n"
-            + "select\n"
-            + "{[Measures].[Unit Sales]} ON columns,\n"
-            + "Filter ([Store].[Store State].members, [Measures].[Store Cost] > 100) ON rows\n"
-            + "from [Sales]\n"
-            + "where [Time].[Date Range]\n",
-            "Axis #0:\n"
-            + "{[Time].[Date Range]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
-            + "Row #0: 74,748\n"
-            + "Row #1: 67,659\n"
-            + "Row #2: 124,366\n");
-    }
-
-    /**
-     * Verify that filter with Not IsEmpty(storedMeasure) can be natively
-     * evaluated.
-     */
-    public void testNativeFilterNonEmpty() {
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-
-        // Get a fresh connection; Otherwise the mondrian property setting
-        // is not refreshed for this parameter.
-        boolean requestFreshConnection = true;
-        checkNative(
-            0,
-            20,
-            "select Filter(CrossJoin([Store].[Store Name].members, "
-            + "                        [Store Type].[Store Type].members), "
-            + "                        Not IsEmpty([Measures].[Store Sqft])) on rows, "
-            + "{[Measures].[Store Sqft]} on columns "
-            + "from [Store]",
-            null,
-            requestFreshConnection);
     }
 
     /**
@@ -2103,65 +1892,6 @@ public class NonEmptyTest extends BatchTestCase {
         assertEquals("10,281", c.getFormattedValue());
     }
 
-    /**
-     * Runs an MDX query with a predefined resultLimit and checks the number of
-     * positions of the row axis. The reduces resultLimit ensures that the
-     * optimization is present.
-     */
-    class TestCase {
-        /**
-         * Maximum number of rows to be read from SQL. If more than this number
-         * of rows are read, the test will fail.
-         */
-        int resultLimit;
-        /**
-         * MDX query to execute.
-         */
-        String query;
-        /**
-         * Number of positions we expect on rows axis of result.
-         */
-        int rowCount;
-        /**
-         * Mondrian connection.
-         */
-        Connection con;
-
-        public TestCase(int resultLimit, int rowCount, String query) {
-            this.con = getConnection();
-            this.resultLimit = resultLimit;
-            this.rowCount = rowCount;
-            this.query = query;
-        }
-
-        public TestCase(
-            Connection con, int resultLimit, int rowCount, String query)
-        {
-            this.con = con;
-            this.resultLimit = resultLimit;
-            this.rowCount = rowCount;
-            this.query = query;
-        }
-
-        private Result run() {
-            getConnection().getCacheControl(null).flushSchemaCache();
-            IntegerProperty monLimit =
-                MondrianProperties.instance().ResultLimit;
-            int oldLimit = monLimit.get();
-            try {
-                monLimit.set(this.resultLimit);
-                Result result = executeQuery(query, con);
-                // rows are on the last axis.
-                int numAxes = result.getAxes().length;
-                Axis a = result.getAxes()[numAxes - 1];
-                assertEquals(rowCount, a.getPositions().size());
-                return result;
-            } finally {
-                monLimit.set(oldLimit);
-            }
-        }
-    }
-
     public void testLevelMembers() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
@@ -2472,7 +2202,7 @@ public class NonEmptyTest extends BatchTestCase {
             public void foundInCache(TupleEvent e) {
             }
 
-            public void excutingSql(TupleEvent e) {
+            public void executingSql(TupleEvent e) {
                 fail("expected caching");
             }
         });
@@ -3887,10 +3617,12 @@ public class NonEmptyTest extends BatchTestCase {
         // run an mdx query with the default NullMemberRepresentation
         executeQuery(preMdx);
 
-        propSaver.set(MondrianProperties.instance()
-            .NullMemberRepresentation, "~Missing ");
-        propSaver.set(MondrianProperties.instance()
-            .EnableNonEmptyOnAllAxis, true);
+        propSaver.set(
+            MondrianProperties.instance().NullMemberRepresentation,
+            "~Missing ");
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis,
+            true);
         RolapUtil.reloadNullLiteral();
         executeQuery(mdx);
     }
@@ -3930,262 +3662,6 @@ public class NonEmptyTest extends BatchTestCase {
                 + "order by 1 ASC, 2 ASC",
             623);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
-    }
-
-    public void testNonJoiningDimIsNotIncludedInNativeTupleQuery() {
-        String mdxQuery = "select\n"
-            + " non empty {[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]} on 0, "
-            + " non empty Crossjoin([Gender].[Gender].members ,{[Marital Status].[Marital Status].members}) on 1, "
-            + " non empty {[Measures].[Unit Sales]} on 2"
-            + "from [Warehouse and Sales]";
-        SqlPattern[] expectedPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS,
-                "select `customer`.`gender` as `c0`, `customer`.`marital_status` as `c1` "
-                    + "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` "
-                    + "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                    + "group by `customer`.`gender`, `customer`.`marital_status` "
-                    + "order by 1 ASC, 2 ASC", 286)
-        };
-        assertQuerySql(mdxQuery, expectedPatterns);
-    }
-
-    /**
-     * Make sure the mdx runs correctly and not in native mode.
-     *
-     * @param rowCount number of rows returned
-     * @param mdx query
-     */
-    private void checkNotNative(int rowCount, String mdx) {
-        checkNotNative(rowCount, mdx, null);
-    }
-
-    /**
-     * Makes sure an MDX runs correctly and not in native mode.
-     *
-     * @param rowCount number of rows returned
-     * @param mdx MDX query
-     * @param expectedResult expected result string
-     */
-    private void checkNotNative(
-        int rowCount,
-        String mdx,
-        String expectedResult)
-    {
-        mdx = getTestContext().upgradeQuery(mdx);
-
-        getConnection().getCacheControl(null).flushSchemaCache();
-        Connection con = getTestContext().getFoodMartConnection(false);
-        RolapNativeRegistry reg = getRegistry(con);
-        reg.setListener(new Listener() {
-            public void foundEvaluator(NativeEvent e) {
-                fail("should not be executed native");
-            }
-
-            public void foundInCache(TupleEvent e) {
-            }
-
-            public void excutingSql(TupleEvent e) {
-            }
-        });
-
-        TestCase c = new TestCase(con, 0, rowCount, mdx);
-        Result result = c.run();
-
-        if (expectedResult != null) {
-            String nonNativeResult = toString(result);
-            if (!nonNativeResult.equals(expectedResult)) {
-                TestContext.assertEqualsVerbose(
-                    TestContext.fold(expectedResult),
-                    nonNativeResult,
-                    false,
-                    "Non Native implementation returned different result than "
-                    + "expected; MDX=" + mdx);
-            }
-        }
-    }
-
-    RolapNativeRegistry getRegistry(Connection connection) {
-        RolapCube cube = (RolapCube) connection.getSchema().lookupCube(
-            "Sales", true);
-        RolapSchemaReader schemaReader =
-            (RolapSchemaReader) cube.getSchemaReader();
-        return schemaReader.getSchema().getNativeRegistry();
-    }
-
-    /**
-     * Runs a query twice, with native crossjoin optimization enabled and
-     * disabled. If both results are equal, its considered correct.
-     *
-     * @param resultLimit maximum result size of all the MDX operations in this
-     *  query. This might be hard to estimate as it is usually larger than the
-     *  rowCount of the final result. Setting it to 0 will cause this limit to
-     *  be ignored.
-     * @param rowCount number of rows returned
-     * @param mdx query
-     */
-    private void checkNative(
-        int resultLimit,
-        int rowCount,
-        String mdx)
-    {
-        checkNative(resultLimit, rowCount, mdx, null, false);
-    }
-
-    /**
-     * Runs a query twice, with native crossjoin optimization enabled and
-     * disabled. If the results are equal, and both aggree with the expected
-     * result, it is considered correct. Optionally the query could be run with
-     * fresh connection. This is useful if the test case sets its certain
-     * mondrian properties, e.g. native properties like:
-     *   mondrian.native.filter.enable
-     *
-     * @param resultLimit maximum result size of all the MDX operations in this
-     *  query. This might be hard to estimate as it is usually larger than the
-     *  rowCount of the final result. Setting it to 0 will cause this limit to
-     *  be ignored.
-     * @param rowCount number of rows returned
-     * @param mdx query
-     * @param expectedResult expected result string
-     * @param freshConnection set to true if fresh connection is required
-     */
-    private void checkNative(
-        int resultLimit,
-        int rowCount,
-        String mdx,
-        String expectedResult,
-        boolean freshConnection)
-    {
-        // Don't run the test if we're testing expression dependencies.
-        // Expression dependencies cause spurious interval calls to
-        // 'level.getMembers()' which create false negatives in this test.
-        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
-            return;
-        }
-
-        mdx = getTestContext().upgradeQuery(mdx);
-
-        getConnection().getCacheControl(null).flushSchemaCache();
-        try {
-            logger.debug("*** Native: " + mdx);
-            boolean reuseConnection = !freshConnection;
-            Connection con =
-                getTestContext().getFoodMartConnection(reuseConnection);
-            RolapNativeRegistry reg = getRegistry(con);
-            reg.useHardCache(true);
-            TestListener listener = new TestListener();
-            reg.setListener(listener);
-            reg.setEnabled(true);
-            TestCase c = new TestCase(con, resultLimit, rowCount, mdx);
-            Result result = c.run();
-            String nativeResult = toString(result);
-            if (!listener.isFoundEvaluator()) {
-                fail("expected native execution of " + mdx);
-            }
-            if (!listener.isExecuteSql()) {
-                fail("cache is empty: expected SQL query to be executed");
-            }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache
-                .get())
-            {
-                // run once more to make sure that the result comes from cache
-                // now
-                listener.setExecuteSql(false);
-                c.run();
-                if (listener.isExecuteSql()) {
-                    fail("expected result from cache when query runs twice");
-                }
-            }
-            con.close();
-
-            logger.debug("*** Interpreter: " + mdx);
-            getConnection().getCacheControl(null).flushSchemaCache();
-            con = getTestContext().getFoodMartConnection(false);
-            reg = getRegistry(con);
-            listener.setFoundEvaluator(false);
-            reg.setListener(listener);
-            // disable RolapNativeSet
-            reg.setEnabled(false);
-            result = executeQuery(mdx, con);
-            String interpretedResult = toString(result);
-            if (listener.isFoundEvaluator()) {
-                fail("did not expect native executions of " + mdx);
-            }
-
-            if (expectedResult != null) {
-                TestContext.assertEqualsVerbose(
-                    expectedResult,
-                    nativeResult,
-                    false,
-                    "Native implementation returned different result than "
-                    + "expected; MDX=" + mdx);
-                TestContext.assertEqualsVerbose(
-                    expectedResult,
-                    interpretedResult,
-                    false,
-                    "Interpreter implementation returned different result than "
-                    + "expected; MDX=" + mdx);
-            }
-
-            TestContext.assertEqualsVerbose(
-                interpretedResult,
-                nativeResult,
-                false,
-                "Native implementation actual result different from "
-                    + "interpreter-created expected result; MDX=" + mdx);
-        } finally {
-            Connection con = getConnection();
-            RolapNativeRegistry reg = getRegistry(con);
-            reg.setEnabled(true);
-            reg.useHardCache(false);
-        }
-    }
-
-    public static void checkNotNative(String mdx) {
-        NonEmptyTest test = new NonEmptyTest();
-        test.checkNotNative(0, mdx, null);
-    }
-
-    public static void checkNotNative(String mdx, Result expectedResult) {
-        NonEmptyTest test = new NonEmptyTest();
-        test.checkNotNative(
-            getRowCount(expectedResult),
-            mdx,
-            TestContext.toString(expectedResult));
-    }
-
-    public static void checkNative(String mdx) {
-        NonEmptyTest test = new NonEmptyTest();
-        test.checkNative(0, 0, mdx, null, true);
-    }
-
-    public static void checkNative(String mdx, Result expectedResult) {
-        NonEmptyTest test = new NonEmptyTest();
-        test.checkNative(
-            0,
-            getRowCount(expectedResult),
-            mdx,
-            TestContext.toString(expectedResult),
-            true);
-    }
-
-    private static int getRowCount(Result result) {
-        return result.getAxes()[result.getAxes().length - 1]
-            .getPositions().size();
-    }
-
-    Result executeQuery(String mdx, Connection connection) {
-        Query query = connection.parseQuery(mdx);
-        query.setResultStyle(ResultStyle.LIST);
-        return connection.execute(query);
-    }
-
-    private String toString(Result r) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        r.print(pw);
-        pw.close();
-        return sw.toString();
     }
 
     void clearAndHardenCache(MemberCacheHelper helper) {
@@ -4244,58 +3720,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
     }
-
-    /**
-     * gets notified
-     * <ul>
-     *   <li>when a matching native evaluator was found
-     *   <li>when SQL is executed
-     *   <li>when result is found in the cache
-     * </ul>
-     * @author av
-     * @since Nov 22, 2005
-     */
-    static class TestListener implements Listener {
-        boolean foundEvaluator;
-        boolean foundInCache;
-        boolean executeSql;
-
-        boolean isExecuteSql() {
-            return executeSql;
-        }
-
-        void setExecuteSql(boolean executeSql) {
-            this.executeSql = executeSql;
-        }
-
-        boolean isFoundEvaluator() {
-            return foundEvaluator;
-        }
-
-        void setFoundEvaluator(boolean foundEvaluator) {
-            this.foundEvaluator = foundEvaluator;
-        }
-
-        boolean isFoundInCache() {
-            return foundInCache;
-        }
-
-        void setFoundInCache(boolean foundInCache) {
-            this.foundInCache = foundInCache;
-        }
-
-        public void foundEvaluator(NativeEvent e) {
-            this.foundEvaluator = true;
-        }
-
-        public void foundInCache(TupleEvent e) {
-            this.foundInCache = true;
-        }
-
-        public void excutingSql(TupleEvent e) {
-            this.executeSql = true;
-        }
-    }
 }
 
 // End NonEmptyTest.java
+

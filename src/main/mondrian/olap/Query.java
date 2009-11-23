@@ -296,14 +296,7 @@ public class Query extends QueryPart {
      * @param formula Formula to add to query
      */
     public void addFormula(Formula formula) {
-        int formulaCount = 0;
-        if (formulas.length > 0) {
-            formulaCount = formulas.length;
-        }
-        Formula[] newFormulas = new Formula[formulaCount + 1];
-        System.arraycopy(formulas, 0, newFormulas, 0, formulaCount);
-        newFormulas[formulaCount] = formula;
-        formulas = newFormulas;
+        formulas = Util.append(formulas, formula);
         resolve();
     }
 
@@ -316,11 +309,7 @@ public class Query extends QueryPart {
      * @param additions Formulas to add to query
      */
     public void addFormulas(Formula... additions) {
-        int formulaCount = formulas.length;
-        Formula[] temp = new Formula[formulaCount + additions.length];
-        System.arraycopy(formulas, 0, temp, 0, formulaCount);
-        System.arraycopy(additions, 0, temp, formulaCount, additions.length);
-        formulas = temp;
+        formulas = Util.appendArrays(formulas, additions);
         resolve();
     }
 

@@ -164,30 +164,6 @@ public class RolapUtil {
     }
 
     /**
-     * Adds an object to the end of an array.  The resulting array is of the
-     * same type (e.g. <code>String[]</code>) as the input array.
-     */
-    static <T> T[] addElement(T[] a, T o) {
-        Class clazz = a.getClass().getComponentType();
-        T[] a2 = (T[]) Array.newInstance(clazz, a.length + 1);
-        System.arraycopy(a, 0, a2, 0, a.length);
-        a2[a.length] = o;
-        return a2;
-    }
-
-    /**
-     * Adds an array to the end of an array.  The resulting array is of the
-     * same type (e.g. <code>String[]</code>) as the input array.
-     */
-    static <T> T[] addElements(T[] a, T[] b) {
-        Class clazz = a.getClass().getComponentType();
-        T[] c = (T[]) Array.newInstance(clazz, a.length + b.length);
-        System.arraycopy(a, 0, c, 0, a.length);
-        System.arraycopy(b, 0, c, a.length, b.length);
-        return c;
-    }
-
-    /**
      * Executes a query, printing to the trace log if tracing is enabled.
      *
      * <p>If the query fails, it wraps the {@link SQLException} in a runtime

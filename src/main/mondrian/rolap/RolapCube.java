@@ -2415,7 +2415,7 @@ public class RolapCube extends CubeBase {
         dimension.init(xmlCubeDimension);
 
         // add to dimensions array
-        this.dimensions = RolapUtil.addElement(dimensions, dimension);
+        this.dimensions = Util.append(dimensions, dimension);
 
         return dimension;
     }

@@ -1952,6 +1952,57 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Concatenates one or more arrays.
+     *
+     * <p>Resulting array has same element type as first array. Each arrays may
+     * be empty, but must not be null.
+     *
+     * @param a0 First array
+     * @param as Zero or more subsequent arrays
+     * @return Array containing all elements
+     */
+    public static <T> T[] appendArrays(
+        T[] a0,
+        T[]... as)
+    {
+        int n = a0.length;
+        for (T[] a : as) {
+            n += a.length;
+        }
+        // Would use Arrays.copyOf but only exists in JDK 1.6 and higher.
+        //noinspection unchecked
+        T[] copy =
+            (T[]) Array.newInstance(a0.getClass().getComponentType(), n);
+        System.arraycopy(a0, 0, copy, 0, a0.length);
+        n = a0.length;
+        for (T[] a : as) {
+            System.arraycopy(a, 0, copy, n, a.length);
+            n += a.length;
+        }
+        return copy;
+    }
+
+    /**
+     * Adds an object to the end of an array.  The resulting array is of the
+     * same type (e.g. <code>String[]</code>) as the input array.
+     *
+     * @param a Array
+     * @param o Element
+     * @return New array containing original array plus element
+     *
+     * @see #appendArrays
+     */
+    public static <T> T[] append(T[] a, T o) {
+        Class clazz = a.getClass().getComponentType();
+        // Would use Arrays.copyOf but only exists in JDK 1.6 and higher.
+        //noinspection unchecked
+        T[] a2 = (T[]) Array.newInstance(clazz, a.length + 1);
+        System.arraycopy(a, 0, a2, 0, a.length);
+        a2[a.length] = o;
+        return a2;
+    }
+
+    /**
      * Returns the cumulative amount of time spent accessing the database.
      */
     public static long dbTimeMillis() {

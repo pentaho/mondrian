@@ -60,7 +60,7 @@ public abstract class RolapNative {
     interface Listener {
         void foundEvaluator(NativeEvent e);
         void foundInCache(TupleEvent e);
-        void excutingSql(TupleEvent e);
+        void executingSql(TupleEvent e);
     }
 
     protected Listener listener;

@@ -291,6 +291,7 @@ public class Main extends TestSuite {
             }
             if (testNonEmpty) {
                 addTest(suite, NonEmptyTest.class);
+                addTest(suite, FilterTest.class);
                 addTest(suite, NativizeSetFunDefTest.class);
             } else {
                 logger.warn("skipping NonEmptyTests");

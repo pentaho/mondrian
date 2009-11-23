@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.RolapUtil;
 import org.eigenbase.util.property.*;
 
 import java.util.Map;
@@ -125,6 +126,11 @@ public class PropertySaver {
                 properties.remove(entry.getKey().getPath());
             } else {
                 properties.setProperty(entry.getKey().getPath(), value);
+            }
+            if (entry.getKey()
+                == MondrianProperties.instance().NullMemberRepresentation)
+            {
+                RolapUtil.reloadNullLiteral();
             }
         }
     }

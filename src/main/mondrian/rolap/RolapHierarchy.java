@@ -341,7 +341,7 @@ public class RolapHierarchy extends HierarchyBase {
                 "MeasuresLevel", null, null, null, null,
                 null, null, null, RolapProperty.emptyArray, 0, null,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
-        this.levels = RolapUtil.addElement(this.levels, level);
+        this.levels = Util.append(this.levels, level);
         return level;
     }
 
@@ -357,7 +357,7 @@ public class RolapHierarchy extends HierarchyBase {
             return null;
         } else {
             throw Util.newInternal(
-                    "hierarchy's relation is a " + relation.getClass());
+                "hierarchy's relation is a " + relation.getClass());
         }
     }
 
@@ -881,7 +881,7 @@ public class RolapHierarchy extends HierarchyBase {
                 src.getHideMemberCondition(),
                 src.getLevelType(),
                 "");
-        peerHier.levels = RolapUtil.addElement(peerHier.levels, level);
+        peerHier.levels = Util.append(peerHier.levels, level);
 
         // Create lower level.
         // This represents individual items. For example, in the Employee
@@ -907,7 +907,7 @@ public class RolapHierarchy extends HierarchyBase {
             src.getHideMemberCondition(),
             src.getLevelType(),
             "");
-        peerHier.levels = RolapUtil.addElement(peerHier.levels, sublevel);
+        peerHier.levels = Util.append(peerHier.levels, sublevel);
 
         return peerDimension;
     }

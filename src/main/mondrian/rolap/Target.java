@@ -7,16 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
-/*
-// This software is subject to the terms of the Eclipse Public License v1.0
-// Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
-*/
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -190,6 +180,10 @@ public class Target extends TargetBase {
 
                 if (idx == 0) {
                     this.first = getList().get(index);
+
+                    // Above might run into exception which is caught in
+                    // isEmpty(). So can change the state of the object after
+                    // that.
                     this.firstMemberAssigned = true;
                     return this.first;
                 } else {
@@ -251,3 +245,4 @@ public class Target extends TargetBase {
 }
 
 // End Target.java
+

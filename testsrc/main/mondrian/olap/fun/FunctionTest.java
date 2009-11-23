@@ -8589,6 +8589,69 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #4: 3\n");
     }
 
+    public void testRankMembersWithTiedExpr() {
+        assertQueryReturns(
+            "with "
+            + " Set [Beers] as {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} "
+            + "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, [Beers], [Measures].[Unit Sales]) '\n"
+            + "select {[Measures].[Unit Sales], [Measures].[Sales Rank]} on columns,\n"
+            + " Generate([Beers], {[Product].CurrentMember}) on rows\n"
+            + "from [Sales]\n"
+            + "WHERE ([Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Time].[1997].[Q2].[6])",
+            "Axis #0:\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Time].[1997].[Q2].[6]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Sales Rank]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "Row #0: 5\n"
+            + "Row #0: 1\n"
+            + "Row #1: \n"
+            + "Row #1: 5\n"
+            + "Row #2: 3\n"
+            + "Row #2: 3\n"
+            + "Row #3: 5\n"
+            + "Row #3: 1\n"
+            + "Row #4: 3\n"
+            + "Row #4: 3\n");
+    }
+
+    public void testRankTuplesWithTiedExpr() {
+        assertQueryReturns(
+            "with "
+            + " Set [Beers for Store] as 'NonEmptyCrossJoin("
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children, "
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]})' "
+            + "  member [Measures].[Sales Rank] as ' Rank(([Product].CurrentMember,[Store].CurrentMember), [Beers for Store], [Measures].[Unit Sales]) '\n"
+            + "select {[Measures].[Unit Sales], [Measures].[Sales Rank]} on columns,\n"
+            + " Generate([Beers for Store], {([Product].CurrentMember, [Store].CurrentMember)}) on rows\n"
+            + "from [Sales]\n"
+            + "WHERE ([Time].[1997].[Q2].[6])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Sales Rank]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good], [Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth], [Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure], [Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus], [Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "Row #0: 5\n"
+            + "Row #0: 1\n"
+            + "Row #1: 3\n"
+            + "Row #1: 3\n"
+            + "Row #2: 5\n"
+            + "Row #2: 1\n"
+            + "Row #3: 3\n"
+            + "Row #3: 3\n");
+    }
+
     public void testRankWithExpr2() {
         // Data: Unit Sales
         // All gender 266,733
@@ -10483,3 +10546,4 @@ Intel platforms):
 }
 
 // End FunctionTest.java
+

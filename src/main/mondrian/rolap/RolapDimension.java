@@ -185,8 +185,7 @@ class RolapDimension extends DimensionBase {
     {
         RolapHierarchy hierarchy =
             new RolapHierarchy(this, subName, hasAll, closureFor);
-        this.hierarchies = (RolapHierarchy[])
-            RolapUtil.addElement(this.hierarchies, hierarchy);
+        this.hierarchies = Util.append(this.hierarchies, hierarchy);
         return hierarchy;
     }
 

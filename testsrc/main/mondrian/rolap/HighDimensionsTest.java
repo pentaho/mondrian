@@ -108,7 +108,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "from [Sales Ragged]",
             1,
             "Promotions",
-            highCardResults, null, true);
+            highCardResults, null, true, 51);
     }
 
 
@@ -122,7 +122,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            first40HighCardResults, null, true);
+            first40HighCardResults, null, true, 40);
     }
 
     // disabled pending fix of bug MONDRIAN-527
@@ -155,7 +155,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            topcount40HighCardResults, topcount40Cells, false);
+            topcount40HighCardResults, topcount40Cells, false, 40);
         execHighCardTest(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + "TopCount({[Promotions].[Promotion Name].Members},41, "
@@ -163,7 +163,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            topcount41HighCardResults, topcount41Cells, false);
+            topcount41HighCardResults, topcount41Cells, false, 41);
         execHighCardTest(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + "TopCount({[Promotions].[Promotion Name].Members},40, "
@@ -171,7 +171,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            topcount40HighCardResults, topcount40Cells, false);
+            topcount40HighCardResults, topcount40Cells, false, 40);
     }
 
 
@@ -185,7 +185,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            nonEmptyHighCardResults, nonEmptyCells, true);
+            nonEmptyHighCardResults, nonEmptyCells, true, 48);
     }
 
     public void testFilter() throws Exception {
@@ -199,7 +199,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            nonEmptyHighCardResults, nonEmptyCells, true);
+            nonEmptyHighCardResults, nonEmptyCells, true, 48);
 
         execHighCardTest(
             "select [Measures].[Unit Sales] on columns, "
@@ -208,7 +208,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            moreThan4000highCardResults, moreThan4000Cells , true);
+            moreThan4000highCardResults, moreThan4000Cells , true, 3);
     }
 
     //
@@ -225,12 +225,13 @@ public class HighDimensionsTest extends FoodMartTestCase {
         final String highDimensionName,
         final String results,
         final String results2,
-        final boolean shouldForget)
+        final boolean shouldForget,
+        final int resultLimit)
         throws Exception
     {
         final int old = MondrianProperties.instance().ResultLimit.get();
         try {
-            MondrianProperties.instance().ResultLimit.set(40);
+            MondrianProperties.instance().ResultLimit.set(resultLimit);
             final TestContext testContext = TestContext.createSubstitutingCube(
                     "Sales Ragged",
                     "<Dimension name=\"Promotions\" highCardinality=\"true\" "
@@ -485,3 +486,4 @@ public class HighDimensionsTest extends FoodMartTestCase {
 }
 
 // End HighDimensionsTest.java
+
