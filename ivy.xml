@@ -67,6 +67,7 @@
         <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
         <dependency org="xmlunit" name="xmlunit" rev="1.1"/>
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
+        <dependency org="hsqldb" name="hsqldb" rev="1.8.0"/>
 
         <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
         <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-090302">

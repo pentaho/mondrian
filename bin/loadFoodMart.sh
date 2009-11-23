@@ -116,7 +116,21 @@ teradata() {
         -outputJdbcPassword="tduser"
 }
 
+# Load Hsqldb.
+hsqldb() {
+    rm -rf demo/hsqldb/foodmart.*
+    java -Xmx512M -ea -esa -cp "${CP}${PS}lib/hsqldb.jar" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -data -indexes \
+        -jdbcDrivers=org.hsqldb.jdbcDriver \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputJdbcBatchSize=1 \
+        -outputJdbcURL="jdbc:hsqldb:file:demo/hsqldb/foodmart" \
+        -outputJdbcUser="sa" \
+        -outputJdbcPassword=""
+}
+
 cd $(dirname $0)/..
-infobright
+hsqldb
 
 # End loadFoodMart.sh

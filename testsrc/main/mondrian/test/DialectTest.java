@@ -159,6 +159,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \",\" at line 1, column 36.",
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'.",
+                // hsqldb
+                "Unexpected token in statement \\[select count\\(distinct \"customer_id\",\\]",
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
                 // postgres
@@ -371,6 +373,8 @@ public class DialectTest extends TestCase {
                 + "included in an ORDER BY expression\\.",
                 // derby (yes, lame message)
                 "Java exception: ': java.lang.NullPointerException'.",
+                // hsqldb
+                "(?s)Cannot be in ORDER BY clause in statement .*",
                 // oracle
                 "ORA-01785: ORDER BY item must be the number of a SELECT-list "
                 + "expression\n",
@@ -421,6 +425,8 @@ public class DialectTest extends TestCase {
             String[] errs = {
                 // derby
                 "Syntax error: Encountered \"SETS\" at line 6, column 19.",
+                // hsqldb
+                "(?s)Unexpected token: GROUPING in statement .*",
                 // mysql
                 "(?s)You have an error in your SQL syntax; check .*",
                 // access
@@ -449,6 +455,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \",\" at line 3, column 20.",
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
+                // hsqldb
+                "(?s)Unexpected token: , in statement .*",
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
                 // teradata
@@ -611,8 +619,8 @@ public class DialectTest extends TestCase {
         resultSet.close();
         String actualFirst = values.get(0);
         String actualLast = values.get(values.size() - 1);
-        assertEquals(expectedFirst, actualFirst);
-        assertEquals(expectedLast, actualLast);
+        assertEquals(query, expectedFirst, actualFirst);
+        assertEquals(query, expectedLast, actualLast);
     }
 
     private void assertInline(
@@ -792,6 +800,8 @@ public class DialectTest extends TestCase {
                 + "invalid expression. If a SELECT list has a GROUP BY, the "
                 + "list may only contain valid grouping expressions and valid "
                 + "aggregate expressions.  ",
+                // hsqldb
+                "(?s)Not in aggregate function or group by clause: .*",
                 // mysql (if sql_mode contains ONLY_FULL_GROUP_BY)
                 "ERROR 1055 (42000): 'foodmart.time_by_day.the_month' isn't in "
                 + "GROUP BY",
