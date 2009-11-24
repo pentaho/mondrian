@@ -3366,6 +3366,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>AND</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>AS</FUNCTION_NAME>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>AS</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Asc</FUNCTION_NAME>
                         <DESCRIPTION>Returns an Integer representing the
                             character code corresponding to the first
@@ -5764,6 +5772,16 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>MIRR</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Mod</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the remainder of dividing n
+                            by d.</DESCRIPTION>
+                        <PARAMETER_LIST>Value, Value</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Mod</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Month</FUNCTION_NAME>

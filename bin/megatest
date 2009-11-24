@@ -13,7 +13,6 @@
 
 ANT_FLAGS=
 CLEAN=clean
-CLEAN=
 
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
@@ -41,27 +40,27 @@ esac
 
 case ${hostname} in
 branston)
-  databaseList="access derby oracle mysql"
+  databaseList="access derby hsqldb mysql oracle"
   jdkList="jdk1.5 jdk1.6"
   ;;
 mackerel)
-  databaseList="access derby"
+  databaseList="access derby hsqldb"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 mackerel-linux)
-  databaseList="derby"
+  databaseList="derby hsqldb"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 mackerel-winxp)
-  databaseList="access derby teradata"
+  databaseList="access derby hsqldb teradata"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 marmalade)
-  databaseList="oracle mysql"
+  databaseList="hsqldb mysql oracle"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 *)
-  databaseList="derby oracle mysql"
+  databaseList="derby hsqldb mysql oracle"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 esac
@@ -144,8 +143,17 @@ doTest2() {
       jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
-      echo mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  hsqldb)
+    (
+      jdbcURL=jdbc:hsqldb:file:demo/hsqldb/foodmart
+      jdbcDrivers=org.hsqldb.jdbcDriver
+      echo driver.classpath=lib/hsqldb.jar
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)
@@ -314,7 +322,7 @@ chooseJavaHome() {
     case $jdk in
     (jdk1.4) echo /c/j2sdk1.4.2_16 ;;
     (jdk1.5) echo /c/jdk1.5.0_14 ;;
-    (jdk1.6) echo /c/jdk1.6.0_06 ;;
+    (jdk1.6) echo /c/jdk1.6.0_11 ;;
     (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   (branston)

@@ -178,6 +178,9 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
           <SQL dialect="oracle">
 "fname" || ' ' || "lname"
           </SQL>
+          <SQL dialect="hsqldb">
+"fname" || ' ' || "lname"
+          </SQL>
           <SQL dialect="access">
 fname + ' ' + lname
           </SQL>
@@ -208,6 +211,9 @@ fullname
         </NameExpression>
         <OrdinalExpression>
           <SQL dialect="oracle">
+"fname" || ' ' || "lname"
+          </SQL>
+          <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>
           <SQL dialect="access">
@@ -283,6 +289,9 @@ fullname
 Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       </SQL>
       <SQL dialect="oracle">
+(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
+      </SQL>
+      <SQL dialect="hsqldb">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="postgres">
@@ -594,6 +603,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       <Level name="Name" uniqueMembers="true">
         <KeyExpression>
           <SQL dialect="oracle">
+"fname" || ' ' || "lname"
+          </SQL>
+          <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>
           <SQL dialect="access">

@@ -646,7 +646,7 @@ META-INF/**"/>
       description="Runs a few queries using the FoodMart schema."
       depends="set.connectString">
     <java classpathref="project.classpath" classname="mondrian.test.Main"
-        fork="yes">
+        fork="yes" maxmemory="512m">
 
       <sysproperty key="mondrian.jdbcDrivers"
           value="${mondrian.jdbcDrivers}"/>
@@ -690,7 +690,8 @@ in {mondrian.foodmart.jdbcURL}.">
     <java
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"
-        fork="yes">
+        fork="yes"
+        maxmemory="512m">
       <arg value="${test.args}"/>
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
