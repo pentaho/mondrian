@@ -88,18 +88,7 @@
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
-  <!--
-    Set properties that are needed to execute the
-    buildJdk16.sh under CruiseControl.
-  -->
-  <condition property="unix.script" value="${basedir}/buildJdk16.sh">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="unix.script" value="buildJdk16.sh">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
+  <property name="unix.script" value="${basedir}/buildJdk16.sh"/>
   <!--
     Set properties that are needed for the retroweaver tasks
     to run correctly under CruiseControl.
@@ -646,7 +635,7 @@ META-INF/**"/>
       description="Runs a few queries using the FoodMart schema."
       depends="set.connectString">
     <java classpathref="project.classpath" classname="mondrian.test.Main"
-        fork="yes" maxmemory="512m">
+        fork="yes" maxmemory="768m">
 
       <sysproperty key="mondrian.jdbcDrivers"
           value="${mondrian.jdbcDrivers}"/>
@@ -691,7 +680,7 @@ in {mondrian.foodmart.jdbcURL}.">
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"
         fork="yes"
-        maxmemory="512m">
+        maxmemory="768m">
       <arg value="${test.args}"/>
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
