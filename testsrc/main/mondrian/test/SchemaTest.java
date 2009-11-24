@@ -1970,9 +1970,8 @@ public class SchemaTest extends FoodMartTestCase {
         }
     }
 
-
     /**
-     * this test verifies that RolapHierarchy.tableExists() supports views
+     * Verifies that RolapHierarchy.tableExists() supports views.
      */
     public void testLevelTableAttributeAsView() {
         final TestContext testContext = TestContext.create(
@@ -1989,6 +1988,9 @@ public class SchemaTest extends FoodMartTestCase {
               + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
               + "      </SQL>\n"
               + "      <SQL dialect=\"derby\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
+              + "      <SQL dialect=\"hsqldb\">\n"
               + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
               + "      </SQL>\n"
               + "      <SQL dialect=\"luciddb\">\n"

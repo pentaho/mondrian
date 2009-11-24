@@ -335,10 +335,29 @@ public class CompatibilityTest extends FoodMartTestCase {
      * This will map to the #null memeber.
      */
     public void testNullNameColumn() {
-        final Dialect dialect = getTestContext().getDialect();
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case LUCIDDB:
             // TODO jvs 29-Nov-2006:  See corresponding comment in
             // testCaseInsensitiveNullMember
+            return;
+        case HSQLDB:
+            // This test exposes a bug in hsqldb. The following query should
+            // return 1 row, but returns none.
+            //
+            // select "alt_promotion"."promo_id" as "c0",
+            //   "alt_promotion"."promo_name" as "c1"
+            // from (
+            //    select 0 as "promo_id", null as "promo_name"
+            //    from "days" where "day" = 1
+            //    union all
+            //    select 1 as "promo_id", 'Promo1' as "promo_name"
+            //    from "days" where "day" = 1) as "alt_promotion"
+            // where UPPER("alt_promotion"."promo_name") = UPPER('Promo1')
+            // group by "alt_promotion"."promo_id",
+            //    "alt_promotion"."promo_name"
+            // order by
+            //   CASE WHEN "alt_promotion"."promo_id" IS NULL THEN 1 ELSE 0 END,
+            //   "alt_promotion"."promo_id" ASC
             return;
         }
         if (!isDefaultNullMemberRepresentation()) {
@@ -415,6 +434,9 @@ public class CompatibilityTest extends FoodMartTestCase {
             + "           Iif(store_name = 'HQ', null, store_name)\n"
             + "       </SQL>\n"
             + "        <SQL dialect=\"oracle\">\n"
+            + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"
+            + "       </SQL>\n"
+            + "        <SQL dialect=\"hsqldb\">\n"
             + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"
             + "       </SQL>\n"
             + "        <SQL dialect=\"db2\">\n"
