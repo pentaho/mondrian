@@ -204,6 +204,21 @@ public class RolapCubeLevel extends RolapLevel {
         return (RolapCubeLevel) super.getParentLevel();
     }
 
+    public String getCaption() {
+        return rolapLevel.getCaption();
+    }
+
+    public void setCaption(String caption) {
+        // Cannot set the caption on the underlying level; other cube levels
+        // might be using it.
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns the underlying level.
+     *
+     * @return Underlying level
+     */
     public RolapLevel getRolapLevel() {
         return rolapLevel;
     }
