@@ -1072,8 +1072,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + " SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Product].[Product Name].MEMBERS}, {[Customers].[Name].MEMBERS})' "
             + "SELECT {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0),"
             + " NativizeSet([COG_OQP_INT_s4]) DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(1) "
-            + "FROM [Sales] CELL PROPERTIES VALUE, FORMAT_STRING"
-            ,
+            + "FROM [Sales] CELL PROPERTIES VALUE, FORMAT_STRING",
             "with set [COG_OQP_INT_s4] as 'Crossjoin({[Education Level].[All Education Levels].[Graduate Degree]}, [COG_OQP_INT_s3])'\n"
             + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Marital Status].[All Marital Status].[S]}, [COG_OQP_INT_s2])'\n"
             + "  set [COG_OQP_INT_s2] as 'Crossjoin({[Gender].[All Gender].[F]}, [COG_OQP_INT_s1])'\n"
@@ -1113,8 +1112,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "GENERATE({[Marital Status].[All Marital Status].[S]}, CROSSJOIN(HEAD({([Marital Status].CURRENTMEMBER)}, "
             + "IIF(COUNT([COG_OQP_INT_s4], INCLUDEEMPTY) > 0, 1, 0)), [COG_OQP_INT_s3]), ALL)), ALL))"
             + " DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(1)"
-            + " FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING"
-            ,
+            + " FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING",
             "with member [Product].[COG_OQP_INT_umg1] as "
             + "'IIf(([Measures].CurrentMember IS [Measures].[Unit Sales]), ([Product].[COG_OQP_INT_m2], [Measures].[Unit Sales]), "
             + "Aggregate({[Product].[Product Name].Members}))', SOLVE_ORDER = 4.0\n"

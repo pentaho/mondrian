@@ -965,8 +965,8 @@ public class XmlaSupport {
         rootNode.removeChild(schemaNode);
 
         // Convert nodes to Documents.
-        Document schemaDoc = XmlUtil.newDocument(schemaNode , true);
-        Document dataDoc = XmlUtil.newDocument(rootNode , true);
+        Document schemaDoc = XmlUtil.newDocument(schemaNode, true);
+        Document dataDoc = XmlUtil.newDocument(rootNode, true);
 
         String xmlns = XmlUtil.getNamespaceAttributeValue(dataDoc);
         String schemaLocationPropertyValue = xmlns + ' ' + "xmlschema";

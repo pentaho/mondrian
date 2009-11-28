@@ -208,7 +208,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             + "on rows from [Sales Ragged]",
             1,
             "Promotions",
-            moreThan4000highCardResults, moreThan4000Cells , true, 3);
+            moreThan4000highCardResults, moreThan4000Cells, true, 3);
     }
 
     //

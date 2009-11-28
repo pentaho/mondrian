@@ -3362,8 +3362,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertQueryReturns(
             "select non empty {[Warehouse].[Warehouse name].members} on 0,"
             + "{[Measures].[Units Shipped],[Measures].[Unit Sales]} on 1"
-            + " from [Warehouse and Sales]"
-            ,
+            + " from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -3416,8 +3415,8 @@ public class NonEmptyTest extends BatchTestCase {
             "with member [Measures].[vm] as 'ValidMeasure([Measures].[Unit Sales])'"
             + "select non empty {[Warehouse].[Warehouse name].members} on 0,"
             + "{[Measures].[Units Shipped],[Measures].[vm]} on 1"
-            + " from [Warehouse and Sales]"
-            , "Axis #0:\n"
+            + " from [Warehouse and Sales]",
+            "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
@@ -3469,8 +3468,8 @@ public class NonEmptyTest extends BatchTestCase {
             "with member [Measures].[vm] as 'ValidMeasure([Measures].[Unit Sales])'\n"
             + "select non empty Crossjoin([Warehouse].[Warehouse Name].members, [Gender].[Gender].members) on 0,\n"
             + "{[Measures].[Units Shipped],[Measures].[vm]} on 1\n"
-            + "from [Warehouse and Sales]"
-            , "Axis #0:\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "Axis #2:\n"

@@ -191,7 +191,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     }
 
     protected Document fileToDocument(String filename)
-        throws IOException , SAXException
+        throws IOException, SAXException
     {
         String s = getDiffRepos().expand(null, filename);
         if (s.equals(filename)) {

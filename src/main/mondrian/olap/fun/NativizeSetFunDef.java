@@ -535,9 +535,9 @@ public class NativizeSetFunDef extends FunDefBase {
             addSentinelMembers(newArgs);
             if (newArgs.size() != call.getArgCount()) {
                 return new ResolvedFunCall(
-                    call.getFunDef()
-                    , newArgs.toArray(new Exp[newArgs.size()])
-                    , call.getType());
+                    call.getFunDef(),
+                    newArgs.toArray(new Exp[newArgs.size()]),
+                    call.getType());
             }
             return null;
         }
