@@ -983,7 +983,7 @@ public class XmlUtil {
         String docStr,
         String schemaLocationPropertyValue,
         EntityResolver resolver)
-        throws IOException ,
+        throws IOException,
         SAXException
     {
         if (resolver == null) {
