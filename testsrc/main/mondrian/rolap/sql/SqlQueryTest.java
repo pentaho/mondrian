@@ -268,10 +268,10 @@ public class SqlQueryTest extends BatchTestCase {
             + "ALL"
             + ") DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0) \n"
             + "FROM [HR]  CELL PROPERTIES VALUE, FORMAT_STRING";
-        assertQuerySql(
-            mdx
-            , new SqlPattern[]{new SqlPattern(
-            Dialect.DatabaseProduct.ACCESS, sql, sql)});
+        SqlPattern[] sqlPatterns = {
+            new SqlPattern(Dialect.DatabaseProduct.ACCESS, sql, sql)
+        };
+        assertQuerySql(mdx, sqlPatterns);
     }
 
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {

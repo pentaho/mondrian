@@ -198,7 +198,9 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        if (!catalog.equals(LOCALDB_CATALOG_NAME)) {
+        if (catalog != null
+            && !catalog.equals(LOCALDB_CATALOG_NAME))
+        {
             throw new UnsupportedOperationException();
         }
     }
