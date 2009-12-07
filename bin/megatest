@@ -17,7 +17,7 @@ CLEAN=clean
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
 MONDRIAN_DIR=$(cd $(dirname $0)/..; pwd)
-hostname=$(uname -n)
+hostname=$(uname -n | cut -d . -f 1)
 case $(uname) in
 CYGWIN*)
   OPEN_DIR=$(cygpath -m $OPEN_DIR)
@@ -58,6 +58,10 @@ mackerel-winxp)
 marmalade)
   databaseList="hsqldb mysql oracle"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
+ATRHisv1)
+  databaseList="hsqldb neoview"
+  jdkList="jdk1.6"
   ;;
 *)
   databaseList="derby hsqldb mysql oracle"
@@ -154,6 +158,18 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  neoview)
+    (
+      jdbcURL='jdbc:hpt4jdbc://${NEOVIEW_HOST_PORT}/:schema=PENTAHO;serverDataSource=PENTAHO_DataSource'
+      jdbcUser=${NEOVIEW_USER}
+      jdbcPassword=${NEOVIEW_PASSWORD}
+      jdbcDrivers=com.hp.t4jdbc.HPT4Driver
+      echo driver.classpath=${HOME}/dl/hpt4jdbc.jar
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=${NEOVIEW_USER};JdbcPassword=${NEOVIEW_PASSWORD};Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)

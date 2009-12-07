@@ -1021,8 +1021,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         switch (product) {
         case TERADATA:
         case INFOBRIGHT:
-            // On Teradata and Infobright we don't create aggregate tables, so
-            // this test will fail.
+        case NEOVIEW:
+            // On Teradata, Infobright and Neoview we don't create aggregate
+            // tables, so this test will fail.
             return;
         }
         getTestContext().clearConnection();
@@ -1184,6 +1185,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         case TERADATA:
             // Teradata gives "Syntax error: expected something between '(' and
             // the 'select' keyword." in 12.0.
+        case NEOVIEW:
+            // Neoview gives "ERROR[4008] A subquery is not allowed inside an
+            // aggregate function."
         case NETEZZA:
             // Netezza gives an "ERROR:  Correlated Subplan expressions not
             // supported"

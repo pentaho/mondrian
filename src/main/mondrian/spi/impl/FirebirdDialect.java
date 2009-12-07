@@ -38,8 +38,9 @@ public class FirebirdDialect extends JdbcDialectImpl {
         return false;
     }
 
-    public boolean supportsOrderByNullsLast() {
-        return true;
+    @Override
+    protected String generateOrderByNullsLast(String expr, boolean ascending) {
+        return generateOrderByNullsLastAnsi(expr, ascending);
     }
 }
 
