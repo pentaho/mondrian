@@ -1368,6 +1368,34 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from hr");
     }
 
+    public void testCardinalityQueriesOnlyExecuteOnce() {
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                "select count(*) as \"c0\" "
+                    + "from (select "
+                    + "distinct \"customer\".\"gender\" as \"c0\" "
+                    + "from \"customer\" \"customer\") \"init\"",
+                108),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS,
+                "select count(*) as `c0` "
+                    + "from (select "
+                    + "distinct `customer`.`gender` as `c0` "
+                    + "from `customer` as `customer`) as `init`",
+                108)
+        };
+        String mdxQuery =
+            "select"
+                + " non empty"
+                + " NativizeSet(Crossjoin("
+                + "[Gender].[Gender].members,[Marital Status].[Marital Status].members"
+                + ")) on 0 from Sales";
+        getConnection().execute(getConnection().parseQuery(mdxQuery));
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, true, false, false);
+    }
+
     // ~ ====== Helper methods =================================================
 
     private void checkNotNative(String mdx) {

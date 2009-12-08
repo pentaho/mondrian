@@ -311,7 +311,7 @@ public class NativizeSetFunDef extends FunDefBase {
                     Level hierarchyLevel =
                         Util.lookupHierarchyLevel(hierarchy, levelName);
                     long levelCardinality =
-                        schema.getLevelCardinality(hierarchyLevel, false, true);
+                        getLevelCardinality(schema, hierarchyLevel);
                     estimatedCardinality *= levelCardinality;
                     if (estimatedCardinality >= nativizeMinThreshold) {
                         LOGGER.info(
@@ -336,6 +336,17 @@ public class NativizeSetFunDef extends FunDefBase {
                     estimatedCardinality,
                     nativizeMinThreshold));
             return isHighCardinality;
+        }
+
+        private long getLevelCardinality(SchemaReader schema, Level level) {
+            if (cardinalityIsKnown(level)) {
+                return level.getApproxRowCount();
+            }
+            return schema.getLevelCardinality(level, false, true);
+        }
+
+        private boolean cardinalityIsKnown(Level level) {
+            return level.getApproxRowCount() > 0;
         }
 
         private Iterable<?> evaluateJoinExpression(
