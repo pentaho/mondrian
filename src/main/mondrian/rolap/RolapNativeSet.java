@@ -1150,9 +1150,7 @@ public abstract class RolapNativeSet extends RolapNative {
 
         for (int i = 0; i < 2; i++) {
             allArgsOneInput = checkCrossJoinArg(evaluator, args[i], returnAny);
-            if (returnAny) {
-                continue;
-            }
+
             if (allArgsOneInput == null
                 || allArgsOneInput.isEmpty()
                 || allArgsOneInput.get(0) == null)
@@ -1161,6 +1159,9 @@ public abstract class RolapNativeSet extends RolapNative {
             } else {
                 // Collect CJ CrossJoinArg
                 cjArgsBothInputs[i] = allArgsOneInput.get(0);
+            }
+            if (returnAny) {
+                continue;
             }
             if (cjArgsBothInputs[i] == null) {
                 return null;

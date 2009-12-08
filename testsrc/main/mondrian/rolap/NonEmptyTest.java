@@ -3647,7 +3647,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
-        SqlPattern pattern = new SqlPattern(
+        SqlPattern accessPattern = new SqlPattern(
             Dialect.DatabaseProduct.ACCESS,
             "select `time_by_day`.`the_year` as `c0`, `promotion`.`promotion_name` as `c1` "
                 + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `promotion` as `promotion`, `customer` as `customer` "
@@ -3660,7 +3660,21 @@ public class NonEmptyTest extends BatchTestCase {
                 + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name` "
                 + "order by 1 ASC, 2 ASC",
             623);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        SqlPattern oraclePattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select \"time_by_day\".\"the_year\" as \"c0\", \"promotion\".\"promotion_name\" as \"c1\" "
+                + "from \"time_by_day\" \"time_by_day\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\", "
+                + "\"promotion\" \"promotion\", \"customer\" \"customer\" "
+                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" = 'F') and (\"time_by_day\".\"the_year\" = 1997) "
+                + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
+                + "order by 1 ASC, 2 ASC",
+            611);
+        assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
     }
 
     void clearAndHardenCache(MemberCacheHelper helper) {
