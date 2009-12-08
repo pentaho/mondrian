@@ -1368,6 +1368,25 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from hr");
     }
 
+    public void testAggregatedCrossjoinWithZeroMembersInNativeList() {
+        propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 0);
+        checkNative(
+            "with"
+                + " member [gender].[agg] as"
+                + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
+                + " member [Marital Status].[agg] as"
+                + "  'aggregate({[Marital Status].[Marital Status].members},[measures].[unit sales])'"
+                + "select"
+                + " non empty "
+                + " NativizeSet("
+                + "Crossjoin("
+                + "{[Marital Status].[Marital Status].members,[Marital Status].[agg]},"
+                + "{[Gender].[Gender].members,[gender].[agg]}"
+                + ")) on 0 "
+                + " from sales "
+                + " where [Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]");
+    }
+
     public void testCardinalityQueriesOnlyExecuteOnce() {
         SqlPattern[] patterns = {
             new SqlPattern(

@@ -935,7 +935,11 @@ public class NativizeSetFunDef extends FunDefBase {
                 switch (command.getMemberType()) {
                 case NON_NATIVE:
                     tempTuple[col] = command.getMember();
-                    appendTuple(range.getTuple(), tempTuple, history);
+                    if (range.isEmpty()) {
+                        appendTuple(tempTuple, history);
+                    } else {
+                        appendTuple(range.getTuple(), tempTuple, history);
+                    }
                     break;
                 case ENUMERATED_VALUE:
                     Member value = command.getMember();
@@ -955,6 +959,16 @@ public class NativizeSetFunDef extends FunDefBase {
                 default:
                     throw Util.unexpected(command.getMemberType());
                 }
+            }
+        }
+
+        private void appendTuple(
+            Member[] nonNatives,
+            Set<List<Member>> history)
+        {
+            Member[] copy = nonNatives.clone();
+            if (history.add(Arrays.asList(copy))) {
+                appendTuple(copy);
             }
         }
 
