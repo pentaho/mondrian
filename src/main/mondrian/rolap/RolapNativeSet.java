@@ -49,6 +49,8 @@ public abstract class RolapNativeSet extends RolapNative {
 
     private SmartCache<Object, List<List<RolapMember>>> cache =
         new SoftSmartCache<Object, List<List<RolapMember>>>();
+    private List<String> cheapFuns =
+        Arrays.asList("LastChild", "FirstChild", "Lag");
 
     /**
      * Returns whether certain member types(e.g. calculated members) should
@@ -1215,7 +1217,7 @@ public abstract class RolapNativeSet extends RolapNative {
     {
         ExpCompiler compiler = evaluator.getQuery().createCompiler();
         CrossJoinArg[] arg0 = null;
-        if (MondrianProperties.instance().ExpandNonNative.get()) {
+        if (shouldExpandNonEmpty(exp)) {
             ListCalc listCalc0 = compiler.compileList(exp);
             List<RolapMember> list0 =
                 Util.cast(listCalc0.evaluateList(evaluator));
@@ -1231,6 +1233,37 @@ public abstract class RolapNativeSet extends RolapNative {
             }
         }
         return arg0;
+    }
+
+    private boolean shouldExpandNonEmpty(Exp exp) {
+        return MondrianProperties.instance().ExpandNonNative.get()
+            || isCheapSet(exp);
+    }
+
+    private boolean isCheapSet(Exp exp) {
+        return isSet(exp) && allArgsCheapToExpand(exp);
+    }
+
+    private boolean allArgsCheapToExpand(Exp exp) {
+        if (exp instanceof NamedSetExpr) {
+            exp = ((NamedSetExpr) exp).getNamedSet().getExp();
+        }
+        for (Exp arg : ((ResolvedFunCall) exp).getArgs()) {
+            if (arg instanceof ResolvedFunCall) {
+                if (!cheapFuns.contains(((ResolvedFunCall) arg).getFunName())) {
+                    return false;
+                }
+            } else if (!(arg instanceof MemberExpr)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSet(Exp exp) {
+        return ((exp instanceof ResolvedFunCall)
+            && ((ResolvedFunCall) exp).getFunName().equals("{}"))
+            || (exp instanceof NamedSetExpr);
     }
 
     /**
