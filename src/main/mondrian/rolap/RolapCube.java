@@ -570,24 +570,30 @@ public class RolapCube extends CubeBase {
 
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
 
-
-        // Remove from the calculated members array those members that weren't
-        // originally defined on this virtual cube.
-        List<Formula> calculatedMemberListCopy =
-            new ArrayList<Formula>(calculatedMemberList);
-        calculatedMemberList.clear();
-        for (Formula calculatedMember : calculatedMemberListCopy) {
-            if (findOriginalMembers(
-                calculatedMember,
-                origCalcMeasureList,
-                calculatedMemberList))
-            {
-                continue;
+        List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList =
+                Arrays.asList(xmlVirtualCube.calculatedMembers);
+        if (!vcHasAllCalcMembers(
+            origCalcMeasureList, xmlVirtualCubeCalculatedMemberList))
+        {
+            // Remove from the calculated members array
+            // those members that weren't originally defined
+            // on this virtual cube.
+            List<Formula> calculatedMemberListCopy =
+                new ArrayList<Formula>(calculatedMemberList);
+            calculatedMemberList.clear();
+            for (Formula calculatedMember : calculatedMemberListCopy) {
+                if (findOriginalMembers(
+                    calculatedMember,
+                    origCalcMeasureList,
+                    calculatedMemberList))
+                {
+                    continue;
+                }
+                findOriginalMembers(
+                    calculatedMember,
+                    xmlVirtualCubeCalculatedMemberList,
+                    calculatedMemberList);
             }
-            findOriginalMembers(
-                calculatedMember,
-                Arrays.asList(xmlVirtualCube.calculatedMembers),
-                calculatedMemberList);
         }
 
         for (Formula calcMember : calculatedMemberList) {
@@ -601,6 +607,15 @@ public class RolapCube extends CubeBase {
         }
 
         // Note: virtual cubes do not get aggregate
+    }
+
+    private boolean vcHasAllCalcMembers(
+        List<MondrianDef.CalculatedMember> origCalcMeasureList,
+        List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList)
+    {
+        return calculatedMemberList.size()
+            == (origCalcMeasureList.size()
+            + xmlVirtualCubeCalculatedMemberList.size());
     }
 
     private boolean findOriginalMembers(
