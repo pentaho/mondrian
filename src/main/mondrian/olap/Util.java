@@ -2604,6 +2604,33 @@ public class Util extends XOMUtil {
                 resultSize, Integer.MAX_VALUE);
         }
     }
+
+    /**
+     * Converts an olap4j connect string into a legacy mondrian connect string.
+     *
+     * <p>For example,
+     * "jdbc:mondrian:Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     * becomes
+     * "Provider=Mondrian;
+     * Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     *
+     * <p>This method is intended to allow legacy applications (such as JPivot
+     * and Mondrian's XMLA server) to continue to create connections using
+     * Mondrian's legacy connection API even when they are handed an olap4j
+     * connect string.
+     *
+     * @param url olap4j connect string
+     * @return mondrian connect string, or null if cannot be converted
+     */
+    public static String convertOlap4jConnectStringToNativeMondrian(
+        String url)
+    {
+        if (url.startsWith("jdbc:mondrian:")) {
+            return "Provider=Mondrian; "
+                   + url.substring("jdbc:mondrian:".length());
+        }
+        return null;
+    }
 }
 
 // End Util.java

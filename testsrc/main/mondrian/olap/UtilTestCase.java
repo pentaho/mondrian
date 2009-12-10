@@ -290,6 +290,18 @@ public class UtilTestCase extends TestCase {
         }
     }
 
+    /**
+     * Unit test for {@link Util#convertOlap4jConnectStringToNativeMondrian}.
+     */
+    public void testConvertConnectString() {
+        assertEquals(
+            "Provider=Mondrian; Datasource=jdbc/SampleData;"
+            + "Catalog=foodmart/FoodMart.xml;",
+            Util.convertOlap4jConnectStringToNativeMondrian(
+                "jdbc:mondrian:Datasource=jdbc/SampleData;"
+                + "Catalog=foodmart/FoodMart.xml;"));
+    }
+
     public void testQuoteMdxIdentifier() {
         assertEquals(
             "[San Francisco]", Util.quoteMdxIdentifier("San Francisco"));

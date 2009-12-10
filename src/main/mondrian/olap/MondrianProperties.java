@@ -888,6 +888,17 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property that defines
+     * the name of the plugin class that resolves data source names to
+     * {@link javax.sql.DataSource} objects. The class must implement the
+     * {@link mondrian.spi.DataSourceResolver} interface. If not specified,
+     * the default implementation uses JNDI to perform resolution.
+     */
+    public transient final StringProperty DataSourceResolverClass =
+        new StringProperty(
+            this, "mondrian.spi.dataSourceResolverClass", null);
+
+    /**
+     * Property that defines
      * the timeout value (in seconds) for queries; 0, the default, indicates no
      * timeout.
      */
