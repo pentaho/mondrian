@@ -214,7 +214,7 @@ public class Formula extends QueryPart {
                     null,
                     exp,
                     false,
-                    Collections.<String, Object>emptyMap());
+                    Collections.<String, Annotation>emptyMap());
         }
     }
 
