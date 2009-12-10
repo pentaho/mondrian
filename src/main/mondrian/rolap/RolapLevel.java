@@ -89,8 +89,10 @@ public class RolapLevel extends LevelBase {
      */
     RolapLevel(
         RolapHierarchy hierarchy,
-        int depth,
         String name,
+        String caption,
+        String description,
+        int depth,
         MondrianDef.Expression keyExp,
         MondrianDef.Expression nameExp,
         MondrianDef.Expression captionExp,
@@ -105,7 +107,7 @@ public class RolapLevel extends LevelBase {
         LevelType levelType,
         String approxRowCount)
     {
-        super(hierarchy, name, depth, levelType);
+        super(hierarchy, name, caption, description, depth, levelType);
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(
             hideMemberCondition != null,
@@ -299,7 +301,12 @@ public class RolapLevel extends LevelBase {
         MondrianDef.Level xmlLevel)
     {
         this(
-            hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
+            hierarchy,
+            xmlLevel.name,
+            xmlLevel.caption,
+            xmlLevel.description,
+            depth,
+            xmlLevel.getKeyExp(),
             xmlLevel.getNameExp(),
             xmlLevel.getCaptionExp(),
             xmlLevel.getOrdinalExp(),

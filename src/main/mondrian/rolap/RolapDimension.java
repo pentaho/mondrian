@@ -65,12 +65,14 @@ class RolapDimension extends DimensionBase {
     RolapDimension(
         Schema schema,
         String name,
+        String caption,
+        String description,
         DimensionType dimensionType,
         final boolean highCardinality)
     {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
-        super(name, dimensionType, highCardinality);
+        super(name, caption, description, dimensionType, highCardinality);
         this.schema = schema;
         this.hierarchies = new RolapHierarchy[0];
     }
@@ -89,6 +91,8 @@ class RolapDimension extends DimensionBase {
         this(
             schema,
             xmlDimension.name,
+            xmlDimension.caption,
+            xmlDimension.description,
             xmlDimension.getDimensionType(),
             xmlDimension.highCardinality);
 
@@ -176,7 +180,8 @@ class RolapDimension extends DimensionBase {
     }
 
     RolapHierarchy newHierarchy(String subName, boolean hasAll) {
-        RolapHierarchy hierarchy = new RolapHierarchy(this, subName, hasAll);
+        RolapHierarchy hierarchy = new RolapHierarchy(this, subName,
+            caption, description, hasAll);
         this.hierarchies = (RolapHierarchy[])
             RolapUtil.addElement(this.hierarchies, hierarchy);
         return hierarchy;

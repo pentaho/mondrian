@@ -37,6 +37,11 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name of this schema</Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this schema.
+            </Doc>
+        </Attribute>
         <Attribute name="measuresCaption" required="false">
             <Doc>
                 Label for the measures dimension.
@@ -115,6 +120,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="foreignKey">
             <Doc>
                 The name of the column in the fact table which joins
@@ -159,6 +170,12 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this cube.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -241,6 +258,12 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this virtual cube.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -411,6 +434,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="usagePrefix" required="false">
             <Doc>
                 If present, then this is prepended to the Dimension column
@@ -506,6 +535,12 @@ Revision is $Id$
             <Doc>
                 A string to be displayed in the user interface.
                 If not specified, the hierarchy's name is used.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this hierarchy.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -656,7 +691,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this level.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="captionColumn" required="false">
             <Doc>
                 The name of the column which holds the caption for
@@ -791,6 +831,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="dependsOnLevelValue" required="false" type="Boolean">
             <Doc>
 		        Should be set to true if the value of the property is functionally dependent on
@@ -855,6 +901,12 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this measure.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="visible" type="Boolean" required="false">
             <Doc>
                 Whether this member is visible in the user-interface.
@@ -885,6 +937,12 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -939,7 +997,14 @@ Revision is $Id$
         </Attribute>
          <Attribute name="caption" required="false">
             <Doc>
-                A string being displayed instead of the Properties's name.
+                A string being displayed instead of the name of this calculated
+                member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member property.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -981,6 +1046,18 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>
                 Name of this named set.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                Caption of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this named set.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="formula" required="false">

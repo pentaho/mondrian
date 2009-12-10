@@ -40,7 +40,17 @@ public class RolapCubeDimension extends RolapDimension {
         int cubeOrdinal,
         final boolean highCardinality)
     {
-        super(null, name, null, highCardinality);
+        super(
+            null,
+            name,
+            cubeDim.caption != null
+                ? cubeDim.caption
+                : rolapDim.getCaption(),
+            cubeDim.caption != null
+                ? cubeDim.description
+                : rolapDim.getDescription(),
+            null,
+            highCardinality);
         this.xmlDimension = cubeDim;
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;

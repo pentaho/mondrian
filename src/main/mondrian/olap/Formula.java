@@ -206,7 +206,13 @@ public class Formula extends QueryPart {
             Util.assertTrue(
                 id.getSegments().size() == 1,
                 "set names must not be compound");
-            mdxSet = new SetBase(id.getSegments().get(0).name, exp, false);
+            mdxSet =
+                new SetBase(
+                    id.getSegments().get(0).name,
+                    null, // TODO:
+                    null, // TODO:
+                    exp,
+                    false);
         }
     }
 

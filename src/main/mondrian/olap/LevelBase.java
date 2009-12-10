@@ -26,11 +26,10 @@ public abstract class LevelBase
     extends OlapElementBase
     implements Level
 {
-
     protected final Hierarchy hierarchy;
     protected final String name;
     protected final String uniqueName;
-    protected String description;
+    protected final String description;
     protected final int depth;
     protected final LevelType levelType;
     protected MemberFormatter memberFormatter;
@@ -39,11 +38,15 @@ public abstract class LevelBase
     protected LevelBase(
         Hierarchy hierarchy,
         String name,
+        String caption,
+        String description,
         int depth,
         LevelType levelType)
     {
         this.hierarchy = hierarchy;
         this.name = name;
+        this.caption = caption;
+        this.description = description;
         this.uniqueName = Util.makeFqName(hierarchy, name);
         this.depth = depth;
         this.levelType = levelType;

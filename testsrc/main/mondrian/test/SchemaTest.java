@@ -20,6 +20,10 @@ import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Property;
+import mondrian.olap.NamedSet;
 import mondrian.spi.Dialect;
 
 import java.io.StringWriter;
@@ -2565,6 +2569,160 @@ public class SchemaTest extends FoodMartTestCase {
                 e,
                 "Value 'TimeUnspecified' of attribute 'levelType' has illegal value 'TimeUnspecified'.  Legal values: {Regular, TimeYears, ");
         }
+    }
+
+    /**
+     * Test for descriptions and captions of various schema elements.
+     */
+    public void testDescription() {
+        final String schemaName = "Description schema";
+        final String cubeName = "DescSales";
+        final TestContext testContext = TestContext.create(
+            "<Schema name=\"" + schemaName + "\"\n"
+            + " description=\"Schema to test descriptions and captions\">\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\"\n"
+            + "      caption=\"Time shared caption\"\n"
+            + "      description=\"Time shared description\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"" + cubeName + "\"\n"
+            + "    description=\"Cube description\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\"\n"
+            + "      caption=\"Dimension caption\"\n"
+            + "      description=\"Dimension description\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\"\n"
+            + "        caption=\"Hierarchy caption\"\n"
+            + "        description=\"Hierarchy description\">\n"
+            + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"store\"/>\n"
+            + "        <Join leftKey=\"sales_district_id\" rightKey=\"promotion_id\">\n"
+            + "          <Table name=\"region\"/>\n"
+            + "          <Table name=\"promotion\"/>\n"
+            + "        </Join>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Store Country\" table=\"store\" column=\"store_country\"\n"
+            + "          description=\"Level description\""
+            + "          caption=\"Level caption\"/>\n"
+            + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_region\" />\n"
+            + "      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" />\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <DimensionUsage name=\"Time1\"\n"
+            + "    caption=\"Time usage caption\"\n"
+            + "    description=\"Time usage description\"\n"
+            + "    source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <DimensionUsage name=\"Time2\"\n"
+            + "    source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\"\n"
+            + "    aggregator=\"sum\" formatString=\"Standard\"\n"
+            + "    caption=\"Measure caption\"\n"
+            + "    description=\"Measure description\"/>\n"
+            + "<CalculatedMember name=\"Foo\" dimension=\"Measures\" \n"
+            + "    caption=\"Calc member caption\"\n"
+            + "    description=\"Calc member description\">\n"
+            + "    <Formula>[Measures].[Unit Sales] + 1</Formula>\n"
+            + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
+            + "  </CalculatedMember>\n"
+            + "  <NamedSet name=\"Top Periods\"\n"
+            + "      caption=\"Named set caption\"\n"
+            + "      description=\"Named set description\">\n"
+            + "    <Formula>TopCount([Time1].MEMBERS, 5, [Measures].[Foo])</Formula>\n"
+            + "  </NamedSet>\n"
+            + "</Cube>\n"
+            + "</Schema>");
+        final Result result =
+            testContext.executeQuery("select from [" + cubeName + "]");
+        final Cube cube = result.getQuery().getCube();
+        assertEquals("Cube description", cube.getDescription());
+        final Dimension dimension = cube.getDimensions()[1];
+        assertEquals("Dimension description", dimension.getDescription());
+        assertEquals("Dimension caption", dimension.getCaption());
+        final Hierarchy hierarchy = dimension.getHierarchies()[0];
+        assertEquals("Hierarchy description", hierarchy.getDescription());
+        assertEquals("Hierarchy caption", hierarchy.getCaption());
+        final mondrian.olap.Level level = hierarchy.getLevels()[1];
+        assertEquals("Level description", level.getDescription());
+        assertEquals("Level caption", level.getCaption());
+        final List<Member> memberList =
+            cube.getSchemaReader(null).getLevelMembers(level, false);
+        final Member member = memberList.get(0);
+        assertEquals("Canada", member.getName());
+        assertEquals("Canada", member.getCaption());
+
+        // All member. Caption defaults to name; description is null.
+        final Member allMember = member.getParentMember();
+        assertEquals("All Stores", allMember.getName());
+        assertEquals("All Stores", allMember.getCaption());
+        assertNull(allMember.getDescription());
+
+        // All level.
+        final mondrian.olap.Level allLevel = hierarchy.getLevels()[0];
+        assertEquals("(All)", allLevel.getName());
+        assertNull(allLevel.getDescription());
+        assertEquals(allLevel.getName(), allLevel.getCaption());
+
+        // the first time dimension overrides the caption and description of the
+        // shared time dimension
+        final Dimension timeDimension = cube.getDimensions()[2];
+        assertEquals("Time1", timeDimension.getName());
+        assertEquals("Time usage description", timeDimension.getDescription());
+        assertEquals("Time usage caption", timeDimension.getCaption());
+
+        // the second time dimension does not overrides caption and description
+        final Dimension time2Dimension = cube.getDimensions()[3];
+        assertEquals("Time2", time2Dimension.getName());
+        assertEquals("Time shared description", time2Dimension.getDescription());
+        assertEquals("Time shared caption", time2Dimension.getCaption());
+
+        final Dimension measuresDimension = cube.getDimensions()[0];
+        final Hierarchy measuresHierarchy =
+            measuresDimension.getHierarchies()[0];
+        final mondrian.olap.Level measuresLevel =
+            measuresHierarchy.getLevels()[0];
+        final SchemaReader schemaReader = cube.getSchemaReader(null);
+        final List<Member> measures =
+            schemaReader.getLevelMembers(measuresLevel, true);
+        final Member measure = measures.get(0);
+        assertEquals("Unit Sales", measure.getName());
+        assertEquals("Measure caption", measure.getCaption());
+        assertEquals("Measure description", measure.getDescription());
+        assertEquals(
+            measure.getDescription(),
+            measure.getPropertyValue(Property.DESCRIPTION.name));
+        assertEquals(
+            measure.getCaption(),
+            measure.getPropertyValue(Property.CAPTION.name));
+        assertEquals(
+            measure.getCaption(),
+            measure.getPropertyValue(Property.MEMBER_CAPTION.name));
+
+        final Member calcMeasure = measures.get(1);
+        assertEquals("Foo", calcMeasure.getName());
+        assertEquals("Calc member caption", calcMeasure.getCaption());
+        assertEquals("Calc member description", calcMeasure.getDescription());
+        assertEquals(
+            calcMeasure.getDescription(),
+            calcMeasure.getPropertyValue(Property.DESCRIPTION.name));
+        assertEquals(
+            calcMeasure.getCaption(),
+            calcMeasure.getPropertyValue(Property.CAPTION.name));
+        assertEquals(
+            calcMeasure.getCaption(),
+            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION.name));
+
+        final NamedSet namedSet = cube.getNamedSets()[0];
+        assertEquals("Top Periods", namedSet.getName());
+        assertEquals("Named set caption", namedSet.getCaption());
+        assertEquals("Named set description", namedSet.getDescription());
     }
 
     /**

@@ -24,11 +24,12 @@ import org.apache.log4j.Logger;
  * @since 6 August, 2001
  * @version $Id$
  */
-class SetBase extends OlapElementBase implements NamedSet {
+public class SetBase extends OlapElementBase implements NamedSet {
 
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
     private String name;
+    private String description;
     private final String uniqueName;
     private Exp exp;
     private boolean validated;
@@ -37,11 +38,21 @@ class SetBase extends OlapElementBase implements NamedSet {
      * Creates a SetBase.
      *
      * @param name Name
+     * @param caption Caption
+     * @param description Description
      * @param exp Expression
      * @param validated Whether has been validated
      */
-    SetBase(String name, Exp exp, boolean validated) {
+    SetBase(
+        String name,
+        String caption,
+        String description,
+        Exp exp,
+        boolean validated)
+    {
         this.name = name;
+        this.caption = caption;
+        this.description = description;
         this.exp = exp;
         this.validated = validated;
         this.uniqueName = "[" + name + "]";
@@ -56,7 +67,8 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public Object clone() {
-        return new SetBase(name, (Exp) exp.clone(), validated);
+        return new SetBase(
+            name, caption, description, (Exp) exp.clone(), validated);
     }
 
     protected Logger getLogger() {
@@ -76,7 +88,7 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public String getDescription() {
-        return null;
+        return description;
     }
 
     public Hierarchy getHierarchy() {
@@ -95,6 +107,10 @@ class SetBase extends OlapElementBase implements NamedSet {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Exp getExp() {

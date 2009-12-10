@@ -64,7 +64,12 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         RolapHierarchy rolapHierarchy,
         String subName)
     {
-        super(dimension, subName, rolapHierarchy.hasAll());
+        super(
+            dimension,
+            subName,
+            rolapHierarchy.getCaption(),
+            rolapHierarchy.getDescription(),
+            rolapHierarchy.hasAll());
 
         if (!dimension.getCube().isVirtual()) {
             this.usage =

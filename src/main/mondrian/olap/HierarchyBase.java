@@ -53,15 +53,20 @@ public abstract class HierarchyBase
     protected HierarchyBase(
         Dimension dimension,
         String subName,
+        String caption,
+        String description,
         boolean hasAll)
     {
         this.dimension = dimension;
         this.hasAll = hasAll;
-        if (subName == null) {
+        if (caption != null) {
+            this.caption = caption;
+        } else if (subName == null) {
             this.caption = dimension.getCaption();
         } else {
             this.caption = subName;
         }
+        this.description = description;
 
         String name = dimension.getName();
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {

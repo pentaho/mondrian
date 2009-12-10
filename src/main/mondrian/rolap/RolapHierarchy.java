@@ -76,8 +76,14 @@ public class RolapHierarchy extends HierarchyBase {
     private RolapMember allMember;
     private static final String ALL_LEVEL_CARDINALITY = "1";
 
-    RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
-        super(dimension, subName, hasAll);
+    RolapHierarchy(
+        RolapDimension dimension,
+        String subName,
+        String caption,
+        String description,
+        boolean hasAll)
+    {
+        super(dimension, subName, caption, description, hasAll);
         this.allLevelName = "(All)";
         this.allMemberName =
             subName != null
@@ -90,8 +96,10 @@ public class RolapHierarchy extends HierarchyBase {
             this.levels[0] =
                 new RolapLevel(
                     this,
-                    0,
                     this.allLevelName,
+                    null,
+                    null,
+                    0,
                     null,
                     null,
                     null,
@@ -114,8 +122,10 @@ public class RolapHierarchy extends HierarchyBase {
         this.nullLevel =
             new RolapLevel(
                 this,
-                0,
                 this.allLevelName,
+                null,
+                null,
+                0,
                 null,
                 null,
                 null,
@@ -144,7 +154,12 @@ public class RolapHierarchy extends HierarchyBase {
         MondrianDef.Hierarchy xmlHierarchy,
         MondrianDef.CubeDimension xmlCubeDimension)
     {
-        this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
+        this(
+            dimension,
+            xmlHierarchy.name,
+            xmlHierarchy.caption,
+            xmlHierarchy.description,
+            xmlHierarchy.hasAll);
 
         assert !(this instanceof RolapCubeHierarchy);
 
@@ -168,7 +183,8 @@ public class RolapHierarchy extends HierarchyBase {
             this.allLevelName = xmlHierarchy.allLevelName;
         }
         RolapLevel allLevel = new RolapLevel(
-            this, 0, this.allLevelName, null, null, null, null, null, null,
+            this, this.allLevelName, null, null, 0,
+            null, null, null, null, null, null,
             null, RolapProperty.emptyArray,
             RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
             null,
@@ -313,10 +329,24 @@ public class RolapHierarchy extends HierarchyBase {
     RolapLevel newMeasuresLevel() {
         RolapLevel level =
             new RolapLevel(
-                this, this.levels.length,
-                "MeasuresLevel", null, null, null, null,
-                null, null, null, RolapProperty.emptyArray, 0, null,
-                RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
+                this,
+                "MeasuresLevel",
+                null,
+                null,
+                this.levels.length,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                RolapProperty.emptyArray,
+                0,
+                null,
+                RolapLevel.HideMemberCondition.Never,
+                LevelType.Regular,
+                "");
         this.levels = RolapUtil.addElement(this.levels, level);
         return level;
     }
@@ -814,6 +844,8 @@ public class RolapHierarchy extends HierarchyBase {
         RolapDimension peerDimension = new RolapDimension(
             dimension.getSchema(),
             dimension.getName() + "$Closure",
+            null,
+            "Closure dimension for parent-child hierarchy " + getName(),
             DimensionType.StandardDimension,
             dimension.isHighCardinality());
 
@@ -840,8 +872,7 @@ public class RolapHierarchy extends HierarchyBase {
 
         RolapLevel level =
             new RolapLevel(
-                peerHier, index++,
-                "Closure",
+                peerHier, "Closure", caption, description, index++,
                 keyExp, null, null, null,
                 null, null,  // no longer a parent-child hierarchy
                 null,
@@ -862,8 +893,10 @@ public class RolapHierarchy extends HierarchyBase {
         keyExp = new MondrianDef.Column(clos.table.name, clos.childColumn);
         RolapLevel sublevel = new RolapLevel(
             peerHier,
-            index++,
             "Item",
+            null,
+            null,
+            index++,
             keyExp,
             null,
             null,

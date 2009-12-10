@@ -61,6 +61,8 @@ public class RolapBaseCubeMeasure
      * @param parentMember Parent member
      * @param level Level this member belongs to
      * @param name Name of this member
+     * @param caption Caption
+     * @param description Description
      * @param formatString Format string
      * @param expression Expression
      * @param aggregatorName Aggregator
@@ -71,6 +73,8 @@ public class RolapBaseCubeMeasure
         RolapMember parentMember,
         RolapLevel level,
         String name,
+        String caption,
+        String description,
         String formatString,
         MondrianDef.Expression expression,
         String aggregatorName,
@@ -78,7 +82,13 @@ public class RolapBaseCubeMeasure
     {
         super(parentMember, level, name, null, MemberType.MEASURE);
         this.cube = cube;
+        this.caption = caption;
         this.expression = expression;
+        if (description != null) {
+            setProperty(
+                Property.DESCRIPTION.name,
+                description);
+        }
         if (formatString == null) {
             formatString = "";
         }
