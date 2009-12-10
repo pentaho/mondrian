@@ -18,7 +18,7 @@ import java.util.List;
  * @author jhyde
  * @version $Id$
  */
-public interface Schema {
+public interface Schema extends Annotated {
 
     /**
      * Returns the name of this schema.

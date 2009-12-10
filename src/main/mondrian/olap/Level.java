@@ -13,11 +13,13 @@
 
 package mondrian.olap;
 
+import java.util.Map;
+
 /**
  * A <code>Level</code> is a group of {@link Member}s in a {@link Hierarchy},
  * all with the same attributes and at the same depth in the hierarchy.
  */
-public interface Level extends OlapElement {
+public interface Level extends OlapElement, Annotated {
 
     /**
      * Returns the depth of this level.

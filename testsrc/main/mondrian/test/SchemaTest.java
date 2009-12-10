@@ -24,10 +24,11 @@ import mondrian.olap.Dimension;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Property;
 import mondrian.olap.NamedSet;
+import mondrian.olap.Schema;
 import mondrian.spi.Dialect;
 
 import java.io.StringWriter;
-import java.util.List;
+import java.util.*;
 import java.sql.SQLException;
 
 /**
@@ -2572,17 +2573,23 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * Test for descriptions and captions of various schema elements.
+     * Test for descriptions, captions and annotations of various schema
+     * elements.
      */
-    public void testDescription() {
+    public void testCaptionDescriptionAndAnnotation() {
         final String schemaName = "Description schema";
         final String cubeName = "DescSales";
         final TestContext testContext = TestContext.create(
             "<Schema name=\"" + schemaName + "\"\n"
             + " description=\"Schema to test descriptions and captions\">\n"
+            + "  <Annotations>\n"
+            + "    <Annotation name=\"a\">Schema</Annotation>\n"
+            + "    <Annotation name=\"b\">Xyz</Annotation>\n"
+            + "  </Annotations>\n"
             + "  <Dimension name=\"Time\" type=\"TimeDimension\"\n"
             + "      caption=\"Time shared caption\"\n"
             + "      description=\"Time shared description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Time shared</Annotation></Annotations>\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
             + "      <Table name=\"time_by_day\"/>\n"
             + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
@@ -2595,13 +2602,16 @@ public class SchemaTest extends FoodMartTestCase {
             + "  </Dimension>\n"
             + "  <Cube name=\"" + cubeName + "\"\n"
             + "    description=\"Cube description\">\n"
+            + "  <Annotations><Annotation name=\"a\">Cube</Annotation></Annotations>\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
             + "  <Dimension name=\"Store\" foreignKey=\"store_id\"\n"
             + "      caption=\"Dimension caption\"\n"
             + "      description=\"Dimension description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Dimension</Annotation></Annotations>\n"
             + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\"\n"
             + "        caption=\"Hierarchy caption\"\n"
             + "        description=\"Hierarchy description\">\n"
+            + "      <Annotations><Annotation name=\"a\">Hierarchy</Annotation></Annotations>\n"
             + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
             + "        <Table name=\"store\"/>\n"
             + "        <Join leftKey=\"sales_district_id\" rightKey=\"promotion_id\">\n"
@@ -2611,7 +2621,9 @@ public class SchemaTest extends FoodMartTestCase {
             + "      </Join>\n"
             + "      <Level name=\"Store Country\" table=\"store\" column=\"store_country\"\n"
             + "          description=\"Level description\""
-            + "          caption=\"Level caption\"/>\n"
+            + "          caption=\"Level caption\">\n"
+            + "        <Annotations><Annotation name=\"a\">Level</Annotation></Annotations>\n"
+            + "      </Level>\n"
             + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_region\" />\n"
             + "      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" />\n"
             + "    </Hierarchy>\n"
@@ -2619,22 +2631,28 @@ public class SchemaTest extends FoodMartTestCase {
             + "  <DimensionUsage name=\"Time1\"\n"
             + "    caption=\"Time usage caption\"\n"
             + "    description=\"Time usage description\"\n"
-            + "    source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    source=\"Time\" foreignKey=\"time_id\">\n"
+            + "    <Annotations><Annotation name=\"a\">Time usage</Annotation></Annotations>\n"
+            + "  </DimensionUsage>\n"
             + "  <DimensionUsage name=\"Time2\"\n"
             + "    source=\"Time\" foreignKey=\"time_id\"/>\n"
             + "<Measure name=\"Unit Sales\" column=\"unit_sales\"\n"
             + "    aggregator=\"sum\" formatString=\"Standard\"\n"
             + "    caption=\"Measure caption\"\n"
-            + "    description=\"Measure description\"/>\n"
+            + "    description=\"Measure description\">\n"
+            + "  <Annotations><Annotation name=\"a\">Measure</Annotation></Annotations>\n"
+            + "</Measure>\n"
             + "<CalculatedMember name=\"Foo\" dimension=\"Measures\" \n"
             + "    caption=\"Calc member caption\"\n"
             + "    description=\"Calc member description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Calc member</Annotation></Annotations>\n"
             + "    <Formula>[Measures].[Unit Sales] + 1</Formula>\n"
             + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
             + "  </CalculatedMember>\n"
             + "  <NamedSet name=\"Top Periods\"\n"
             + "      caption=\"Named set caption\"\n"
             + "      description=\"Named set description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Named set</Annotation></Annotations>\n"
             + "    <Formula>TopCount([Time1].MEMBERS, 5, [Measures].[Foo])</Formula>\n"
             + "  </NamedSet>\n"
             + "</Cube>\n"
@@ -2643,20 +2661,38 @@ public class SchemaTest extends FoodMartTestCase {
             testContext.executeQuery("select from [" + cubeName + "]");
         final Cube cube = result.getQuery().getCube();
         assertEquals("Cube description", cube.getDescription());
+        checkAnnotations(cube.getAnnotationMap(), "a", "Cube");
+
+        final Schema schema = cube.getSchema();
+        checkAnnotations(schema.getAnnotationMap(), "a", "Schema", "b", "Xyz");
+
         final Dimension dimension = cube.getDimensions()[1];
         assertEquals("Dimension description", dimension.getDescription());
         assertEquals("Dimension caption", dimension.getCaption());
+        checkAnnotations(dimension.getAnnotationMap(), "a", "Dimension");
+
         final Hierarchy hierarchy = dimension.getHierarchies()[0];
         assertEquals("Hierarchy description", hierarchy.getDescription());
         assertEquals("Hierarchy caption", hierarchy.getCaption());
+        checkAnnotations(hierarchy.getAnnotationMap(), "a", "Hierarchy");
+
         final mondrian.olap.Level level = hierarchy.getLevels()[1];
         assertEquals("Level description", level.getDescription());
         assertEquals("Level caption", level.getCaption());
+        checkAnnotations(level.getAnnotationMap(), "a", "Level");
+
+        // Caption comes from the CAPTION member property, defaults to name.
+        // Description comes from the DESCRIPTION member property.
+        // Annotations are always empty for regular members.
         final List<Member> memberList =
             cube.getSchemaReader(null).getLevelMembers(level, false);
         final Member member = memberList.get(0);
         assertEquals("Canada", member.getName());
         assertEquals("Canada", member.getCaption());
+        assertNull(member.getDescription());
+        final Map<String, Object> emptyAnnotationMap =
+            Collections.<String, Object>emptyMap();
+        checkAnnotations(member.getAnnotationMap());
 
         // All member. Caption defaults to name; description is null.
         final Member allMember = member.getParentMember();
@@ -2669,6 +2705,7 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals("(All)", allLevel.getName());
         assertNull(allLevel.getDescription());
         assertEquals(allLevel.getName(), allLevel.getCaption());
+        checkAnnotations(allLevel.getAnnotationMap());
 
         // the first time dimension overrides the caption and description of the
         // shared time dimension
@@ -2676,12 +2713,15 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals("Time1", timeDimension.getName());
         assertEquals("Time usage description", timeDimension.getDescription());
         assertEquals("Time usage caption", timeDimension.getCaption());
+        checkAnnotations(timeDimension.getAnnotationMap(), "a", "Time usage");
 
         // the second time dimension does not overrides caption and description
         final Dimension time2Dimension = cube.getDimensions()[3];
         assertEquals("Time2", time2Dimension.getName());
-        assertEquals("Time shared description", time2Dimension.getDescription());
+        assertEquals(
+            "Time shared description", time2Dimension.getDescription());
         assertEquals("Time shared caption", time2Dimension.getCaption());
+        checkAnnotations(time2Dimension.getAnnotationMap());
 
         final Dimension measuresDimension = cube.getDimensions()[0];
         final Hierarchy measuresHierarchy =
@@ -2704,6 +2744,7 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals(
             measure.getCaption(),
             measure.getPropertyValue(Property.MEMBER_CAPTION.name));
+        checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
         final Member calcMeasure = measures.get(1);
         assertEquals("Foo", calcMeasure.getName());
@@ -2718,11 +2759,27 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals(
             calcMeasure.getCaption(),
             calcMeasure.getPropertyValue(Property.MEMBER_CAPTION.name));
+        checkAnnotations(calcMeasure.getAnnotationMap(), "a", "Calc member");
 
         final NamedSet namedSet = cube.getNamedSets()[0];
         assertEquals("Top Periods", namedSet.getName());
         assertEquals("Named set caption", namedSet.getCaption());
         assertEquals("Named set description", namedSet.getDescription());
+        checkAnnotations(namedSet.getAnnotationMap(), "a", "Named set");
+    }
+
+    private static void checkAnnotations(
+        Map<String, Annotation> annotationMap,
+        String... nameVal)
+    {
+        assertNotNull(annotationMap);
+        assertEquals(0, nameVal.length % 2);
+        assertEquals(nameVal.length / 2, annotationMap.size());
+        int i = 0;
+        for (Map.Entry<String, Annotation> entry : annotationMap.entrySet()) {
+            assertEquals(nameVal[i++], entry.getKey());
+            assertEquals(nameVal[i++], entry.getValue().getValue());
+        }
     }
 
     /**

@@ -28,7 +28,11 @@
 ######################## -->
 <ol>
   	<li><a href="#What_is_a_schema">What is a schema?</a></li>
-  	<li><a href="#Schema_files">Schema files</a></li>
+  	<li><a href="#Schema_files">Schema files</a>
+		<ol>
+			<li><a href="#Annotation">Annotation</a></li>
+	    </ol>
+	</li>
   	<li><a href="#Cubes_and_dimensions">Logical model</a>
 		<ol>
 			<li><a href="#Cube">Cube</a></li>
@@ -210,6 +214,41 @@ the rest of the schema will be ignored.</p>
 <a href="#Appendix_A_XML_elements">Appendix A</a> and in the <a href="xml_schema.html">XML schema</a>.</p>
 
 <!--
+##########################
+##  2.1 Annotations  #####
+########################## -->
+<h1>2.1 Annotation<a name="Annotation">&nbsp;</a></h1>
+<p>The major element types (schema, cube, virtual cube, shared dimension, 
+dimension, hierarchy, level, measure, calculated member) support annotations. An 
+annotation is a way of associating a user-defined property with a metadata 
+element, and in particular, allows tools to add metadata without extending the 
+official Mondrian schema.</p>
+
+<p>Create an 
+<code><a href="#XML_Annotations">&lt;Annotations&gt;</a></code> element as a child of the element you wish to
+annotate (generally it is the first child element, but check the schema
+definition for details), then include a number of 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> elements. 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> Annotation 
+elements' names must be unique within their element. If you are adding 
+annotations to support a particular tool that you maintain, choose annotation 
+names carefully, to ensure that they do not clash with annotations used by other 
+tools.</p>
+
+<p>The following example shows &quot;Author&quot; and &quot;Date&quot; annotations attached to a <code><a href="#XML_Schema">&lt;Schema&gt;</a></code> object.</p>
+
+<blockquote style="text-indent: -20px">
+	<code>
+  		<div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot;&gt;</div>
+			<div style="padding-left:40px;;">&lt;<a href="#XML_Annotations">Annotations</a>&gt;</div>
+			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Author"&gt;Fred Flintstone&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
+			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Date"&gt;10,000 BC&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
+			<div style="padding-left:40px;;">&lt;/<a href="#XML_Annotations">Annotations</a>&gt;</div>
+			<div style="padding-left:40px;;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+			<div style="padding-left:60px;;">...</div>
+</code>
+</blockquote>
+<!--
 ###########################
 ##  3. Logical model  #####
 ########################### -->
@@ -303,6 +342,7 @@ of those dimensions. The results are as follows:</p>
 	</table>
 </blockquote>
 <p>Now let's look at the schema definition in more detail.</p>
+
 <!--
 ########################
 ##  3.1 Cube       #####
@@ -3286,6 +3326,14 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     </tr>
     <tr>
       	<td colspan="2"><i><br>Miscellaneous</i></td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a href="xml_schema.html#Annotations" name="XML_Annotations">Annotations</a>&gt;</code></td>
+      	<td>Holder for annotations.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a href="xml_schema.html#Annotation" name="XML_Annotation">Annotation</a>&gt;</code></td>
+      	<td>User-defined property attached to a metadata element.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a href="xml_schema.html#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td>

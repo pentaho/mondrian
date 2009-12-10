@@ -424,6 +424,12 @@ public class RolapMember extends MemberBase {
         return (RolapMember) super.getParentMember();
     }
 
+    // Regular members do not have annotations. Measures and calculated members
+    // do, so they override this method.
+    public Map<String, Annotation> getAnnotationMap() {
+        return Collections.emptyMap();
+    }
+
     public int hashCode() {
         return getUniqueName().hashCode();
     }

@@ -15,6 +15,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import java.util.Map;
+import java.util.Collections;
+
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a
  * {@link Formula}.
@@ -28,6 +31,7 @@ import mondrian.olap.*;
  */
 public class RolapCalculatedMember extends RolapMember {
     private final Formula formula;
+    private Map<String, Annotation> annotationMap;
 
     /**
      * Creates a RolapCalculatedMember.
@@ -47,6 +51,7 @@ public class RolapCalculatedMember extends RolapMember {
         // overrides MEASURE.
         super(parentMember, level, name, null, MemberType.FORMULA);
         this.formula = formula;
+        this.annotationMap = Collections.emptyMap();
     }
 
     // override RolapMember
@@ -86,6 +91,16 @@ public class RolapCalculatedMember extends RolapMember {
 
     public Formula getFormula() {
         return formula;
+    }
+
+    @Override
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
+    }
+
+    void setAnnotationMap(Map<String, Annotation> annotationMap) {
+        assert annotationMap != null;
+        this.annotationMap = annotationMap;
     }
 }
 

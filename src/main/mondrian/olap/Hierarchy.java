@@ -13,10 +13,12 @@
 
 package mondrian.olap;
 
+import java.util.Map;
+
 /**
  * A <code>Hierarchy</code> is a set of members, organized into levels.
  */
-public interface Hierarchy extends OlapElement {
+public interface Hierarchy extends OlapElement, Annotated {
     /**
      * Returns the dimension this hierarchy belongs to.
      */

@@ -14,8 +14,7 @@ import mondrian.olap.*;
 
 import junit.framework.TestCase;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <code>MemberHelperTest</code> tests {@link MemberHelper}.
@@ -247,6 +246,10 @@ public class MemberHelperTest extends TestCase {
 
         public int getSolveOrder() {
             return -1;
+        }
+
+        public Map<String, Annotation> getAnnotationMap() {
+            return Collections.emptyMap();
         }
     }
 }

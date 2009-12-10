@@ -13,10 +13,12 @@
 
 package mondrian.olap;
 
+import java.util.Map;
+
 /**
  * A <code>Dimension</code> represents a dimension of a cube.
  */
-public interface Dimension extends OlapElement {
+public interface Dimension extends OlapElement, Annotated {
     final String MEASURES_UNIQUE_NAME = "[Measures]";
     final String MEASURES_NAME = "Measures";
 

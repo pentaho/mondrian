@@ -27,7 +27,7 @@ import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
 
-import java.util.List;
+import java.util.*;
 import java.io.PrintWriter;
 
 /**
@@ -75,15 +75,18 @@ public class RolapHierarchy extends HierarchyBase {
      */
     private RolapMember allMember;
     private static final String ALL_LEVEL_CARDINALITY = "1";
+    private final Map<String, Annotation> annotationMap;
 
     RolapHierarchy(
         RolapDimension dimension,
         String subName,
         String caption,
         String description,
-        boolean hasAll)
+        boolean hasAll,
+        Map<String, Annotation> annotationMap)
     {
         super(dimension, subName, caption, description, hasAll);
+        this.annotationMap = annotationMap;
         this.allLevelName = "(All)";
         this.allMemberName =
             subName != null
@@ -112,7 +115,8 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     RolapLevel.HideMemberCondition.Never,
                     LevelType.Regular,
-                    "");
+                    "",
+                    Collections.<String, Annotation>emptyMap());
         } else {
             this.levels = new RolapLevel[0];
         }
@@ -138,7 +142,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Null,
-                "");
+                "",
+                Collections.<String, Annotation>emptyMap());
     }
 
     /**
@@ -159,7 +164,8 @@ public class RolapHierarchy extends HierarchyBase {
             xmlHierarchy.name,
             xmlHierarchy.caption,
             xmlHierarchy.description,
-            xmlHierarchy.hasAll);
+            xmlHierarchy.hasAll,
+            createAnnotationMap(xmlHierarchy.annotations));
 
         assert !(this instanceof RolapCubeHierarchy);
 
@@ -182,14 +188,26 @@ public class RolapHierarchy extends HierarchyBase {
         if (xmlHierarchy.allLevelName != null) {
             this.allLevelName = xmlHierarchy.allLevelName;
         }
-        RolapLevel allLevel = new RolapLevel(
-            this, this.allLevelName, null, null, 0,
-            null, null, null, null, null, null,
-            null, RolapProperty.emptyArray,
-            RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
-            null,
-            RolapLevel.HideMemberCondition.Never,
-            LevelType.Regular, ALL_LEVEL_CARDINALITY);
+        RolapLevel allLevel =
+            new RolapLevel(
+                this,
+                this.allLevelName,
+                null,
+                null,
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                RolapProperty.emptyArray,
+                RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
+                null,
+                RolapLevel.HideMemberCondition.Never,
+                LevelType.Regular, ALL_LEVEL_CARDINALITY,
+                Collections.<String, Annotation>emptyMap());
         allLevel.init(xmlCubeDimension);
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.MemberType.ALL);
@@ -242,6 +260,36 @@ public class RolapHierarchy extends HierarchyBase {
             setCaption(xmlHierarchy.caption);
         }
         defaultMemberName = xmlHierarchy.defaultMember;
+    }
+
+    public static Map<String, Annotation> createAnnotationMap(
+        MondrianDef.Annotations annotations)
+    {
+        if (annotations == null
+            || annotations.array == null
+            || annotations.array.length == 0)
+        {
+            return Collections.emptyMap();
+        }
+        // Use linked hash map because it retains order.
+        final Map<String, Annotation> map =
+            new LinkedHashMap<String, Annotation>();
+        for (MondrianDef.Annotation annotation : annotations.array) {
+            final String name = annotation.name;
+            final String value = annotation.cdata;
+            map.put(
+                annotation.name,
+                new Annotation() {
+                    public String getName() {
+                        return name;
+                    }
+
+                    public Object getValue() {
+                        return value;
+                    }
+                });
+        }
+        return map;
     }
 
     protected Logger getLogger() {
@@ -326,6 +374,10 @@ public class RolapHierarchy extends HierarchyBase {
         return memberReader;
     }
 
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
+    }
+
     RolapLevel newMeasuresLevel() {
         RolapLevel level =
             new RolapLevel(
@@ -346,7 +398,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Regular,
-                "");
+                "",
+                Collections.<String, Annotation>emptyMap());
         this.levels = RolapUtil.addElement(this.levels, level);
         return level;
     }
@@ -847,7 +900,8 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             "Closure dimension for parent-child hierarchy " + getName(),
             DimensionType.StandardDimension,
-            dimension.isHighCardinality());
+            dimension.isHighCardinality(),
+            Collections.<String, Annotation>emptyMap());
 
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(null, true);
@@ -881,7 +935,8 @@ public class RolapHierarchy extends HierarchyBase {
                 src.getDatatype(),
                 src.getHideMemberCondition(),
                 src.getLevelType(),
-                "");
+                "",
+                Collections.<String, Annotation>emptyMap());
         peerHier.levels = RolapUtil.addElement(peerHier.levels, level);
 
         // Create lower level.
@@ -909,7 +964,8 @@ public class RolapHierarchy extends HierarchyBase {
             src.getDatatype(),
             src.getHideMemberCondition(),
             src.getLevelType(),
-            "");
+            "",
+            Collections.<String, Annotation>emptyMap());
         peerHier.levels = RolapUtil.addElement(peerHier.levels, sublevel);
 
         return peerDimension;

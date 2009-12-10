@@ -21,13 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import mondrian.olap.Formula;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Property;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -69,7 +63,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             subName,
             rolapHierarchy.getCaption(),
             rolapHierarchy.getDescription(),
-            rolapHierarchy.hasAll());
+            rolapHierarchy.hasAll(),
+            rolapHierarchy.getAnnotationMap());
 
         if (!dimension.getCube().isVirtual()) {
             this.usage =

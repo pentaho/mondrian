@@ -17,6 +17,8 @@ import mondrian.olap.type.*;
 
 import org.apache.log4j.Logger;
 
+import java.util.Map;
+
 /**
  * Skeleton implementation of {@link NamedSet} interface.
  *
@@ -29,6 +31,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
     private String name;
+    private Map<String, Annotation> annotationMap;
     private String description;
     private final String uniqueName;
     private Exp exp;
@@ -42,20 +45,27 @@ public class SetBase extends OlapElementBase implements NamedSet {
      * @param description Description
      * @param exp Expression
      * @param validated Whether has been validated
+     * @param annotationMap Annotations
      */
     SetBase(
         String name,
         String caption,
         String description,
         Exp exp,
-        boolean validated)
+        boolean validated,
+        Map<String, Annotation> annotationMap)
     {
         this.name = name;
+        this.annotationMap = annotationMap;
         this.caption = caption;
         this.description = description;
         this.exp = exp;
         this.validated = validated;
         this.uniqueName = "[" + name + "]";
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
     }
 
     public String getNameUniqueWithinQuery() {
@@ -68,7 +78,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
 
     public Object clone() {
         return new SetBase(
-            name, caption, description, (Exp) exp.clone(), validated);
+            name, caption, description, exp.clone(), validated, annotationMap);
     }
 
     protected Logger getLogger() {
@@ -111,6 +121,10 @@ public class SetBase extends OlapElementBase implements NamedSet {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setAnnotationMap(Map<String, Annotation> annotationMap) {
+        this.annotationMap = annotationMap;
     }
 
     public Exp getExp() {

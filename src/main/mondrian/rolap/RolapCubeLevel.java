@@ -51,7 +51,8 @@ public class RolapCubeLevel extends RolapLevel {
             level.getDatatype(),
             level.getHideMemberCondition(),
             level.getLevelType(),
-            "" + level.getApproxRowCount());
+            "" + level.getApproxRowCount(),
+            level.getAnnotationMap());
 
         this.rolapLevel = level;
         MondrianDef.RelationOrJoin hierarchyRel = hierarchy.getRelation();
