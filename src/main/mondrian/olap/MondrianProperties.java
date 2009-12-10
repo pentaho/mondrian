@@ -1167,7 +1167,7 @@ public class MondrianProperties extends TriggerableProperties {
         new IntegerProperty(
                 this,
                 "mondrian.native.NativizeMinThreshold",
-                200000);
+                100000);
 
     /**
      */
