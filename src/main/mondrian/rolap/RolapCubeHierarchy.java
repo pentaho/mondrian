@@ -61,8 +61,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         super(
             dimension,
             subName,
-            rolapHierarchy.getCaption(),
-            rolapHierarchy.getDescription(),
+            applyPrefix(cubeDim, rolapHierarchy.getCaption()),
+            applyPrefix(cubeDim, rolapHierarchy.getDescription()),
             rolapHierarchy.hasAll(),
             rolapHierarchy.getAnnotationMap());
 
@@ -135,6 +135,48 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
         }
+    }
+
+    /**
+     * Applies a prefix to a caption or description of a hierarchy in a shared
+     * dimension. Ensures that if a dimension is used more than once in the same
+     * cube then the hierarchies are distinguishable.
+     *
+     * <p>For example, if the [Time] dimension is imported as [Order Time] and
+     * [Ship Time], then the [Time].[Weekly] hierarchy would have caption
+     * "Order Time.Weekly caption" and description "Order Time.Weekly
+     * description".
+     *
+     * <p>If the dimension usage has a caption, it overrides.
+     *
+     * <p>If the dimension usage has a null name, or the name is the same
+     * as the dimension, and no caption, then no prefix is applied.
+     *
+     * @param cubeDim Cube dimension (maybe a usage of a shared dimension)
+     * @param caption Caption or description
+     * @return Caption or description, possibly prefixed by dimension role name
+     */
+    private static String applyPrefix(
+        MondrianDef.CubeDimension cubeDim,
+        String caption)
+    {
+        if (caption == null) {
+            return null;
+        }
+        if (cubeDim instanceof MondrianDef.DimensionUsage) {
+            final MondrianDef.DimensionUsage dimensionUsage =
+                (MondrianDef.DimensionUsage) cubeDim;
+            if (dimensionUsage.name != null
+                && !dimensionUsage.name.equals(dimensionUsage.source))
+            {
+                if (dimensionUsage.caption != null) {
+                    return dimensionUsage.caption + "." + caption;
+                } else {
+                    return dimensionUsage.name + "." + caption;
+                }
+            }
+        }
+        return caption;
     }
 
     public String getAllMemberName() {
@@ -295,21 +337,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      */
     public RolapCubeMember getAllMember() {
         return currentAllMember;
-    }
-
-    /**
-     * Returns the display name of this catalog element.
-     * If no caption is defined, the name is returned.
-     */
-    public String getCaption() {
-        return rolapHierarchy.getCaption();
-    }
-
-    /**
-     * Sets the display name of this catalog element.
-     */
-    public void setCaption(String caption) {
-        rolapHierarchy.setCaption(caption);
     }
 
     void setMemberReader(MemberReader memberReader) {

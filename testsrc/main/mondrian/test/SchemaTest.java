@@ -2590,7 +2590,9 @@ public class SchemaTest extends FoodMartTestCase {
             + "      caption=\"Time shared caption\"\n"
             + "      description=\"Time shared description\">\n"
             + "    <Annotations><Annotation name=\"a\">Time shared</Annotation></Annotations>\n"
-            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\"\n"
+            + "        caption=\"Time shared hierarchy caption\"\n"
+            + "        description=\"Time shared hierarchy description\">\n"
             + "      <Table name=\"time_by_day\"/>\n"
             + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
             + "          levelType=\"TimeYears\"/>\n"
@@ -2690,8 +2692,6 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals("Canada", member.getName());
         assertEquals("Canada", member.getCaption());
         assertNull(member.getDescription());
-        final Map<String, Object> emptyAnnotationMap =
-            Collections.<String, Object>emptyMap();
         checkAnnotations(member.getAnnotationMap());
 
         // All member. Caption defaults to name; description is null.
@@ -2715,6 +2715,26 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals("Time usage caption", timeDimension.getCaption());
         checkAnnotations(timeDimension.getAnnotationMap(), "a", "Time usage");
 
+        // Time1 is a usage of a shared dimension Time.
+        // Now look at the hierarchy usage within that dimension usage.
+        // Because the dimension usage has a name, use that as a prefix for
+        // name, caption and description of the hierarchy usage.
+        final Hierarchy timeHierarchy = timeDimension.getHierarchies()[0];
+        // The hierarchy in the shared dimension does not have a name, so the
+        // hierarchy usage inherits the name of the dimension usage, Time1.
+        assertEquals("Time1", timeHierarchy.getName());
+        // The description is prefixed by the dimension usage name.
+        assertEquals(
+            "Time usage caption.Time shared hierarchy description",
+            timeHierarchy.getDescription());
+        // The hierarchy caption is prefixed by the caption of the dimension
+        // usage.
+        assertEquals(
+            "Time usage caption.Time shared hierarchy caption",
+            timeHierarchy.getCaption());
+        // No annotations.
+        checkAnnotations(timeHierarchy.getAnnotationMap());
+
         // the second time dimension does not overrides caption and description
         final Dimension time2Dimension = cube.getDimensions()[3];
         assertEquals("Time2", time2Dimension.getName());
@@ -2722,6 +2742,23 @@ public class SchemaTest extends FoodMartTestCase {
             "Time shared description", time2Dimension.getDescription());
         assertEquals("Time shared caption", time2Dimension.getCaption());
         checkAnnotations(time2Dimension.getAnnotationMap());
+
+        final Hierarchy time2Hierarchy = time2Dimension.getHierarchies()[0];
+        // The hierarchy in the shared dimension does not have a name, so the
+        // hierarchy usage inherits the name of the dimension usage, Time2.
+        assertEquals("Time2", time2Hierarchy.getName());
+        // The description is prefixed by the dimension usage name (because
+        // dimension usage has no caption).
+        assertEquals(
+            "Time2.Time shared hierarchy description",
+            time2Hierarchy.getDescription());
+        // The hierarchy caption is prefixed by the dimension usage name
+        // (because the dimension usage has no caption.
+        assertEquals(
+            "Time2.Time shared hierarchy caption",
+            time2Hierarchy.getCaption());
+        // No annotations.
+        checkAnnotations(time2Hierarchy.getAnnotationMap());
 
         final Dimension measuresDimension = cube.getDimensions()[0];
         final Hierarchy measuresHierarchy =
