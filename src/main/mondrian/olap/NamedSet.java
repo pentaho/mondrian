@@ -24,7 +24,7 @@ import mondrian.olap.type.Type;
  * @since 6 August, 2001
  * @version $Id$
  */
-public interface NamedSet extends OlapElement {
+public interface NamedSet extends OlapElement, Annotated {
     /**
      * Sets the name of this named set.
      */

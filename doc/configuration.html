@@ -1163,6 +1163,19 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       mondrian.rolap.SqlMemberSource.ValuePoolFactory</a>.
       </td>
     </tr>
+    <tr>
+      <td><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#DataSourceResolverClass">
+      mondrian.spi.dataSourceResolverClass</a></code></td>
+
+      <td>string</td>
+      <td><code><a href="api/mondrian/spi/impl/JndiDataSourceResolver.html">
+		mondrian.spi.impl.JndiDataSourceResolver</a></code></td>
+      <td>
+      If set, the specified plugin is used to resolve data source names in the 
+		connect string into JDBC data source (javax.sql.DataSource) objects. If 
+		not set, the default implementation uses JDNI to resolve.</td>
+    </tr>
 </table>
 
 <h3>Limit properties<a name="Limit_properties">&nbsp;</a></h3>
@@ -1572,7 +1585,7 @@ readable.</p>
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified January, 2008.<br/>
+    Author: Julian Hyde; last modified December, 2009.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2009 Julian Hyde

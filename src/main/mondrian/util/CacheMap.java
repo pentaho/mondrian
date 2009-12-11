@@ -1,19 +1,13 @@
 /*
- * (c) 2007 Tasecurity Group S.L, Spain
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007 Tasecurity Group S.L, Spain
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.util;
 
 import java.lang.ref.WeakReference;
@@ -30,6 +24,7 @@ import java.util.WeakHashMap;
  * Map with limited size to be used as cache.
  *
  * @author lcanals, www.tasecurity.net
+ * @version $Id$
  */
 public class CacheMap<S, T> implements Map<S, T> {
     private LinkedNode head;
@@ -269,4 +264,3 @@ public class CacheMap<S, T> implements Map<S, T> {
 }
 
 // End CacheMap.java
-

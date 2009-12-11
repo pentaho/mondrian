@@ -78,6 +78,7 @@ public class RolapLevel extends LevelBase {
     /** Condition under which members are hidden. */
     private final HideMemberCondition hideMemberCondition;
     protected final MondrianDef.Closure xmlClosure;
+    private final Map<String, Annotation> annotationMap;
 
     /**
      * Creates a level.
@@ -89,8 +90,10 @@ public class RolapLevel extends LevelBase {
      */
     RolapLevel(
         RolapHierarchy hierarchy,
-        int depth,
         String name,
+        String caption,
+        String description,
+        int depth,
         MondrianDef.Expression keyExp,
         MondrianDef.Expression nameExp,
         MondrianDef.Expression captionExp,
@@ -103,9 +106,11 @@ public class RolapLevel extends LevelBase {
         Dialect.Datatype datatype,
         HideMemberCondition hideMemberCondition,
         LevelType levelType,
-        String approxRowCount)
+        String approxRowCount,
+        Map<String, Annotation> annotationMap)
     {
-        super(hierarchy, name, depth, levelType);
+        super(hierarchy, name, caption, description, depth, levelType);
+        assert annotationMap != null;
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(
             hideMemberCondition != null,
@@ -115,6 +120,7 @@ public class RolapLevel extends LevelBase {
         if (keyExp instanceof MondrianDef.Column) {
             checkColumn((MondrianDef.Column) keyExp);
         }
+        this.annotationMap = annotationMap;
         this.approxRowCount = loadApproxRowCount(approxRowCount);
         this.flags = flags;
         this.datatype = datatype;
@@ -205,6 +211,10 @@ public class RolapLevel extends LevelBase {
 
     public RolapHierarchy getHierarchy() {
         return (RolapHierarchy) hierarchy;
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
     }
 
     private int loadApproxRowCount(String approxRowCount) {
@@ -302,7 +312,12 @@ public class RolapLevel extends LevelBase {
         MondrianDef.Level xmlLevel)
     {
         this(
-            hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
+            hierarchy,
+            xmlLevel.name,
+            xmlLevel.caption,
+            xmlLevel.description,
+            depth,
+            xmlLevel.getKeyExp(),
             xmlLevel.getNameExp(),
             xmlLevel.getCaptionExp(),
             xmlLevel.getOrdinalExp(),
@@ -311,7 +326,9 @@ public class RolapLevel extends LevelBase {
             (xmlLevel.uniqueMembers ? FLAG_UNIQUE : 0),
             xmlLevel.getDatatype(),
             HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
-            LevelType.valueOf(xmlLevel.levelType), xmlLevel.approxRowCount);
+            LevelType.valueOf(xmlLevel.levelType),
+            xmlLevel.approxRowCount,
+            RolapHierarchy.createAnnotationMap(xmlLevel.annotations));
 
         if (!Util.isEmpty(xmlLevel.caption)) {
             setCaption(xmlLevel.caption);

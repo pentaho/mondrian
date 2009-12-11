@@ -39,6 +39,7 @@ public class RolapCube extends CubeBase {
     private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
 
     private final RolapSchema schema;
+    private final Map<String, Annotation> annotationMap;
     private final RolapHierarchy measuresHierarchy;
 
     /** For SQL generator. Fact table. */
@@ -94,21 +95,31 @@ public class RolapCube extends CubeBase {
      * @param schema Schema cube belongs to
      * @param name Name of cube
      * @param caption Caption
+     * @param description Description
      * @param fact Definition of fact table
+     * @param annotationMap Annotations
      */
     private RolapCube(
         RolapSchema schema,
         MondrianDef.Schema xmlSchema,
         String name,
         String caption,
+        String description,
         boolean isCache,
         MondrianDef.Relation fact,
         MondrianDef.CubeDimension[] dimensions,
-        boolean load)
+        boolean load,
+        Map<String, Annotation> annotationMap)
     {
-        super(name, new RolapDimension[dimensions.length + 1]);
+        super(
+            name,
+            caption,
+            description,
+            new RolapDimension[dimensions.length + 1]);
 
+        assert annotationMap != null;
         this.schema = schema;
+        this.annotationMap = annotationMap;
         this.caption = caption;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList<HierarchyUsage>();
@@ -133,11 +144,15 @@ public class RolapCube extends CubeBase {
             }
         }
 
-        RolapDimension measuresDimension = new RolapDimension(
+        RolapDimension measuresDimension =
+            new RolapDimension(
                 schema,
                 Dimension.MEASURES_NAME,
+                null,
+                null,
                 DimensionType.MeasuresDimension,
-                false);
+                false,
+                Collections.<String, Annotation>emptyMap());
 
         this.dimensions[0] = measuresDimension;
 
@@ -186,8 +201,16 @@ public class RolapCube extends CubeBase {
         boolean load)
     {
         this(
-            schema, xmlSchema, xmlCube.name, xmlCube.caption, xmlCube.cache,
-            xmlCube.fact, xmlCube.dimensions, load);
+            schema,
+            xmlSchema,
+            xmlCube.name,
+            xmlCube.caption,
+            xmlCube.description,
+            xmlCube.cache,
+            xmlCube.fact,
+            xmlCube.dimensions,
+            load,
+            RolapHierarchy.createAnnotationMap(xmlCube.annotations));
 
         if (fact == null) {
             throw Util.newError(
@@ -304,8 +327,10 @@ public class RolapCube extends CubeBase {
         final RolapBaseCubeMeasure measure =
             new RolapBaseCubeMeasure(
                 this, null, measuresLevel, xmlMeasure.name,
+                xmlMeasure.caption, xmlMeasure.description,
                 xmlMeasure.formatString, measureExp,
-                aggregator, xmlMeasure.datatype);
+                aggregator, xmlMeasure.datatype,
+                RolapHierarchy.createAnnotationMap(xmlMeasure.annotations));
 
         try {
             CellFormatter cellFormatter =
@@ -408,8 +433,16 @@ public class RolapCube extends CubeBase {
         boolean load)
     {
         this(
-            schema, xmlSchema, xmlVirtualCube.name, xmlVirtualCube.caption,
-            true, null, xmlVirtualCube.dimensions, load);
+            schema,
+            xmlSchema,
+            xmlVirtualCube.name,
+            xmlVirtualCube.caption,
+            xmlVirtualCube.description,
+            true,
+            null,
+            xmlVirtualCube.dimensions,
+            load,
+            RolapHierarchy.createAnnotationMap(xmlVirtualCube.annotations));
 
         // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot
         // be treated as the same, measure creation cannot be done in a common
@@ -644,6 +677,10 @@ public class RolapCube extends CubeBase {
         return LOGGER;
     }
 
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
+    }
+
     public boolean hasAggGroup() {
         return aggGroup != null;
     }
@@ -848,6 +885,22 @@ public class RolapCube extends CubeBase {
         MondrianDef.NamedSet xmlNamedSet = xmlNamedSets.get(i);
         Util.discard(xmlNamedSet);
         Formula formula = queryExp.formulas[offset + i];
+        final SetBase namedSet = (SetBase) formula.getNamedSet();
+        if (xmlNamedSet.caption != null
+            && xmlNamedSet.caption.length() > 0)
+        {
+            namedSet.setCaption(xmlNamedSet.caption);
+        }
+
+        if (xmlNamedSet.description != null
+            && xmlNamedSet.description.length() > 0)
+        {
+            namedSet.setDescription(xmlNamedSet.description);
+        }
+
+        namedSet.setAnnotationMap(
+            RolapHierarchy.createAnnotationMap(xmlNamedSet.annotations));
+
         namedSetList.add(formula);
         formulaList.add(formula);
     }
@@ -889,14 +942,31 @@ public class RolapCube extends CubeBase {
         }
         member.setProperty(Property.VISIBLE.name, visible);
 
-        if ((xmlCalcMember.caption != null)
+        if (xmlCalcMember.caption != null
             && xmlCalcMember.caption.length() > 0)
         {
             member.setProperty(
                 Property.CAPTION.name, xmlCalcMember.caption);
         }
 
-        memberList.add((RolapMember) formula.getMdxMember());
+        if (xmlCalcMember.description != null
+            && xmlCalcMember.description.length() > 0)
+        {
+            member.setProperty(
+                Property.DESCRIPTION.name, xmlCalcMember.description);
+        }
+
+        // Remove RolapCubeMember wrapper.
+        final Member member1;
+        if (member instanceof RolapCubeMember) {
+            member1 = ((RolapCubeMember) member).getRolapMember();
+        } else {
+            member1 = member;
+        }
+        ((RolapCalculatedMember) member1).setAnnotationMap(
+            RolapHierarchy.createAnnotationMap(xmlCalcMember.annotations));
+
+        memberList.add((RolapMember) member);
     }
 
     private void preCalcMember(

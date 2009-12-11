@@ -17,33 +17,13 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import javax.sql.DataSource;
 
-import mondrian.olap.Access;
-import mondrian.olap.Category;
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.Exp;
-import mondrian.olap.Formula;
-import mondrian.olap.FunTable;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.NamedSet;
-import mondrian.olap.Parameter;
-import mondrian.olap.Role;
-import mondrian.olap.RoleImpl;
-import mondrian.olap.Schema;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Syntax;
-import mondrian.olap.Util;
-import mondrian.olap.Id;
+import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.NumericType;
@@ -58,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
 
 import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -169,6 +150,7 @@ public class RolapSchema implements Schema {
      * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
      */
     private final List<Exception> warningList = new ArrayList<Exception>();
+    private Map<String, Annotation> annotationMap;
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -362,6 +344,10 @@ public class RolapSchema implements Schema {
         return name;
     }
 
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
+    }
+
     /**
      * Returns this schema's SQL dialect.
      *
@@ -381,6 +367,8 @@ public class RolapSchema implements Schema {
             throw Util.newError("<Schema> name must be set");
         }
 
+        this.annotationMap =
+            RolapHierarchy.createAnnotationMap(xmlSchema.annotations);
         // Validate user-defined functions. Must be done before we validate
         // calculated members, because calculated members will need to use the
         // function table.

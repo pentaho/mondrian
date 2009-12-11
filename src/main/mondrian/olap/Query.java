@@ -1786,6 +1786,10 @@ public class Query extends QueryPart {
             return expr.getType();
         }
 
+        public Map<String, Annotation> getAnnotationMap() {
+            return Collections.emptyMap();
+        }
+
         public NamedSet validate(Validator validator) {
             Exp newExpr = expr.accept(validator);
             final Type type = newExpr.getType();

@@ -17,6 +17,8 @@ import mondrian.olap.type.*;
 
 import org.apache.log4j.Logger;
 
+import java.util.Map;
+
 /**
  * Skeleton implementation of {@link NamedSet} interface.
  *
@@ -24,11 +26,13 @@ import org.apache.log4j.Logger;
  * @since 6 August, 2001
  * @version $Id$
  */
-class SetBase extends OlapElementBase implements NamedSet {
+public class SetBase extends OlapElementBase implements NamedSet {
 
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
     private String name;
+    private Map<String, Annotation> annotationMap;
+    private String description;
     private final String uniqueName;
     private Exp exp;
     private boolean validated;
@@ -37,14 +41,31 @@ class SetBase extends OlapElementBase implements NamedSet {
      * Creates a SetBase.
      *
      * @param name Name
+     * @param caption Caption
+     * @param description Description
      * @param exp Expression
      * @param validated Whether has been validated
+     * @param annotationMap Annotations
      */
-    SetBase(String name, Exp exp, boolean validated) {
+    SetBase(
+        String name,
+        String caption,
+        String description,
+        Exp exp,
+        boolean validated,
+        Map<String, Annotation> annotationMap)
+    {
         this.name = name;
+        this.annotationMap = annotationMap;
+        this.caption = caption;
+        this.description = description;
         this.exp = exp;
         this.validated = validated;
         this.uniqueName = "[" + name + "]";
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
     }
 
     public String getNameUniqueWithinQuery() {
@@ -56,7 +77,8 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public Object clone() {
-        return new SetBase(name, (Exp) exp.clone(), validated);
+        return new SetBase(
+            name, caption, description, exp.clone(), validated, annotationMap);
     }
 
     protected Logger getLogger() {
@@ -76,7 +98,7 @@ class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public String getDescription() {
-        return null;
+        return description;
     }
 
     public Hierarchy getHierarchy() {
@@ -95,6 +117,14 @@ class SetBase extends OlapElementBase implements NamedSet {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setAnnotationMap(Map<String, Annotation> annotationMap) {
+        this.annotationMap = annotationMap;
     }
 
     public Exp getExp() {

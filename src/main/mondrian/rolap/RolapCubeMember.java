@@ -13,18 +13,11 @@
 
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Exp;
-import mondrian.olap.Id;
-import mondrian.olap.MatchType;
-import mondrian.olap.Member;
-import mondrian.olap.OlapElement;
-import mondrian.olap.Property;
-import mondrian.olap.SchemaReader;
+import mondrian.olap.*;
 
 /**
  * RolapCubeMember wraps RolapMembers and binds them to a specific cube.
@@ -116,6 +109,10 @@ public class RolapCubeMember extends RolapMember {
 
     public RolapMember getRolapMember() {
         return rolapMember;
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return rolapMember.getAnnotationMap();
     }
 
     /**

@@ -20,10 +20,15 @@ import mondrian.util.Bug;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Property;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Schema;
 import mondrian.spi.Dialect;
 
 import java.io.StringWriter;
-import java.util.List;
+import java.util.*;
 import java.sql.SQLException;
 
 /**
@@ -1996,6 +2001,9 @@ public class SchemaTest extends FoodMartTestCase {
               + "      <SQL dialect=\"luciddb\">\n"
               + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
               + "      </SQL>\n"
+              + "      <SQL dialect=\"neoview\">\n"
+              + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+              + "      </SQL>\n"
               + "      <SQL dialect=\"netezza\">\n"
               + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
               + "      </SQL>\n"
@@ -2561,6 +2569,253 @@ public class SchemaTest extends FoodMartTestCase {
             TestContext.checkThrowable(
                 e,
                 "Value 'TimeUnspecified' of attribute 'levelType' has illegal value 'TimeUnspecified'.  Legal values: {Regular, TimeYears, ");
+        }
+    }
+
+    /**
+     * Test for descriptions, captions and annotations of various schema
+     * elements.
+     */
+    public void testCaptionDescriptionAndAnnotation() {
+        final String schemaName = "Description schema";
+        final String cubeName = "DescSales";
+        final TestContext testContext = TestContext.create(
+            "<Schema name=\"" + schemaName + "\"\n"
+            + " description=\"Schema to test descriptions and captions\">\n"
+            + "  <Annotations>\n"
+            + "    <Annotation name=\"a\">Schema</Annotation>\n"
+            + "    <Annotation name=\"b\">Xyz</Annotation>\n"
+            + "  </Annotations>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\"\n"
+            + "      caption=\"Time shared caption\"\n"
+            + "      description=\"Time shared description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Time shared</Annotation></Annotations>\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\"\n"
+            + "        caption=\"Time shared hierarchy caption\"\n"
+            + "        description=\"Time shared hierarchy description\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"" + cubeName + "\"\n"
+            + "    description=\"Cube description\">\n"
+            + "  <Annotations><Annotation name=\"a\">Cube</Annotation></Annotations>\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\"\n"
+            + "      caption=\"Dimension caption\"\n"
+            + "      description=\"Dimension description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Dimension</Annotation></Annotations>\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\"\n"
+            + "        caption=\"Hierarchy caption\"\n"
+            + "        description=\"Hierarchy description\">\n"
+            + "      <Annotations><Annotation name=\"a\">Hierarchy</Annotation></Annotations>\n"
+            + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"store\"/>\n"
+            + "        <Join leftKey=\"sales_district_id\" rightKey=\"promotion_id\">\n"
+            + "          <Table name=\"region\"/>\n"
+            + "          <Table name=\"promotion\"/>\n"
+            + "        </Join>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Store Country\" table=\"store\" column=\"store_country\"\n"
+            + "          description=\"Level description\""
+            + "          caption=\"Level caption\">\n"
+            + "        <Annotations><Annotation name=\"a\">Level</Annotation></Annotations>\n"
+            + "      </Level>\n"
+            + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_region\" />\n"
+            + "      <Level name=\"Store Name\" table=\"store\" column=\"store_name\" />\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <DimensionUsage name=\"Time1\"\n"
+            + "    caption=\"Time usage caption\"\n"
+            + "    description=\"Time usage description\"\n"
+            + "    source=\"Time\" foreignKey=\"time_id\">\n"
+            + "    <Annotations><Annotation name=\"a\">Time usage</Annotation></Annotations>\n"
+            + "  </DimensionUsage>\n"
+            + "  <DimensionUsage name=\"Time2\"\n"
+            + "    source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\"\n"
+            + "    aggregator=\"sum\" formatString=\"Standard\"\n"
+            + "    caption=\"Measure caption\"\n"
+            + "    description=\"Measure description\">\n"
+            + "  <Annotations><Annotation name=\"a\">Measure</Annotation></Annotations>\n"
+            + "</Measure>\n"
+            + "<CalculatedMember name=\"Foo\" dimension=\"Measures\" \n"
+            + "    caption=\"Calc member caption\"\n"
+            + "    description=\"Calc member description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Calc member</Annotation></Annotations>\n"
+            + "    <Formula>[Measures].[Unit Sales] + 1</Formula>\n"
+            + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
+            + "  </CalculatedMember>\n"
+            + "  <NamedSet name=\"Top Periods\"\n"
+            + "      caption=\"Named set caption\"\n"
+            + "      description=\"Named set description\">\n"
+            + "    <Annotations><Annotation name=\"a\">Named set</Annotation></Annotations>\n"
+            + "    <Formula>TopCount([Time1].MEMBERS, 5, [Measures].[Foo])</Formula>\n"
+            + "  </NamedSet>\n"
+            + "</Cube>\n"
+            + "</Schema>");
+        final Result result =
+            testContext.executeQuery("select from [" + cubeName + "]");
+        final Cube cube = result.getQuery().getCube();
+        assertEquals("Cube description", cube.getDescription());
+        checkAnnotations(cube.getAnnotationMap(), "a", "Cube");
+
+        final Schema schema = cube.getSchema();
+        checkAnnotations(schema.getAnnotationMap(), "a", "Schema", "b", "Xyz");
+
+        final Dimension dimension = cube.getDimensions()[1];
+        assertEquals("Dimension description", dimension.getDescription());
+        assertEquals("Dimension caption", dimension.getCaption());
+        checkAnnotations(dimension.getAnnotationMap(), "a", "Dimension");
+
+        final Hierarchy hierarchy = dimension.getHierarchies()[0];
+        assertEquals("Hierarchy description", hierarchy.getDescription());
+        assertEquals("Hierarchy caption", hierarchy.getCaption());
+        checkAnnotations(hierarchy.getAnnotationMap(), "a", "Hierarchy");
+
+        final mondrian.olap.Level level = hierarchy.getLevels()[1];
+        assertEquals("Level description", level.getDescription());
+        assertEquals("Level caption", level.getCaption());
+        checkAnnotations(level.getAnnotationMap(), "a", "Level");
+
+        // Caption comes from the CAPTION member property, defaults to name.
+        // Description comes from the DESCRIPTION member property.
+        // Annotations are always empty for regular members.
+        final List<Member> memberList =
+            cube.getSchemaReader(null).getLevelMembers(level, false);
+        final Member member = memberList.get(0);
+        assertEquals("Canada", member.getName());
+        assertEquals("Canada", member.getCaption());
+        assertNull(member.getDescription());
+        checkAnnotations(member.getAnnotationMap());
+
+        // All member. Caption defaults to name; description is null.
+        final Member allMember = member.getParentMember();
+        assertEquals("All Stores", allMember.getName());
+        assertEquals("All Stores", allMember.getCaption());
+        assertNull(allMember.getDescription());
+
+        // All level.
+        final mondrian.olap.Level allLevel = hierarchy.getLevels()[0];
+        assertEquals("(All)", allLevel.getName());
+        assertNull(allLevel.getDescription());
+        assertEquals(allLevel.getName(), allLevel.getCaption());
+        checkAnnotations(allLevel.getAnnotationMap());
+
+        // the first time dimension overrides the caption and description of the
+        // shared time dimension
+        final Dimension timeDimension = cube.getDimensions()[2];
+        assertEquals("Time1", timeDimension.getName());
+        assertEquals("Time usage description", timeDimension.getDescription());
+        assertEquals("Time usage caption", timeDimension.getCaption());
+        checkAnnotations(timeDimension.getAnnotationMap(), "a", "Time usage");
+
+        // Time1 is a usage of a shared dimension Time.
+        // Now look at the hierarchy usage within that dimension usage.
+        // Because the dimension usage has a name, use that as a prefix for
+        // name, caption and description of the hierarchy usage.
+        final Hierarchy timeHierarchy = timeDimension.getHierarchies()[0];
+        // The hierarchy in the shared dimension does not have a name, so the
+        // hierarchy usage inherits the name of the dimension usage, Time1.
+        assertEquals("Time1", timeHierarchy.getName());
+        // The description is prefixed by the dimension usage name.
+        assertEquals(
+            "Time usage caption.Time shared hierarchy description",
+            timeHierarchy.getDescription());
+        // The hierarchy caption is prefixed by the caption of the dimension
+        // usage.
+        assertEquals(
+            "Time usage caption.Time shared hierarchy caption",
+            timeHierarchy.getCaption());
+        // No annotations.
+        checkAnnotations(timeHierarchy.getAnnotationMap());
+
+        // the second time dimension does not overrides caption and description
+        final Dimension time2Dimension = cube.getDimensions()[3];
+        assertEquals("Time2", time2Dimension.getName());
+        assertEquals(
+            "Time shared description", time2Dimension.getDescription());
+        assertEquals("Time shared caption", time2Dimension.getCaption());
+        checkAnnotations(time2Dimension.getAnnotationMap());
+
+        final Hierarchy time2Hierarchy = time2Dimension.getHierarchies()[0];
+        // The hierarchy in the shared dimension does not have a name, so the
+        // hierarchy usage inherits the name of the dimension usage, Time2.
+        assertEquals("Time2", time2Hierarchy.getName());
+        // The description is prefixed by the dimension usage name (because
+        // dimension usage has no caption).
+        assertEquals(
+            "Time2.Time shared hierarchy description",
+            time2Hierarchy.getDescription());
+        // The hierarchy caption is prefixed by the dimension usage name
+        // (because the dimension usage has no caption.
+        assertEquals(
+            "Time2.Time shared hierarchy caption",
+            time2Hierarchy.getCaption());
+        // No annotations.
+        checkAnnotations(time2Hierarchy.getAnnotationMap());
+
+        final Dimension measuresDimension = cube.getDimensions()[0];
+        final Hierarchy measuresHierarchy =
+            measuresDimension.getHierarchies()[0];
+        final mondrian.olap.Level measuresLevel =
+            measuresHierarchy.getLevels()[0];
+        final SchemaReader schemaReader = cube.getSchemaReader(null);
+        final List<Member> measures =
+            schemaReader.getLevelMembers(measuresLevel, true);
+        final Member measure = measures.get(0);
+        assertEquals("Unit Sales", measure.getName());
+        assertEquals("Measure caption", measure.getCaption());
+        assertEquals("Measure description", measure.getDescription());
+        assertEquals(
+            measure.getDescription(),
+            measure.getPropertyValue(Property.DESCRIPTION.name));
+        assertEquals(
+            measure.getCaption(),
+            measure.getPropertyValue(Property.CAPTION.name));
+        assertEquals(
+            measure.getCaption(),
+            measure.getPropertyValue(Property.MEMBER_CAPTION.name));
+        checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
+
+        final Member calcMeasure = measures.get(1);
+        assertEquals("Foo", calcMeasure.getName());
+        assertEquals("Calc member caption", calcMeasure.getCaption());
+        assertEquals("Calc member description", calcMeasure.getDescription());
+        assertEquals(
+            calcMeasure.getDescription(),
+            calcMeasure.getPropertyValue(Property.DESCRIPTION.name));
+        assertEquals(
+            calcMeasure.getCaption(),
+            calcMeasure.getPropertyValue(Property.CAPTION.name));
+        assertEquals(
+            calcMeasure.getCaption(),
+            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION.name));
+        checkAnnotations(calcMeasure.getAnnotationMap(), "a", "Calc member");
+
+        final NamedSet namedSet = cube.getNamedSets()[0];
+        assertEquals("Top Periods", namedSet.getName());
+        assertEquals("Named set caption", namedSet.getCaption());
+        assertEquals("Named set description", namedSet.getDescription());
+        checkAnnotations(namedSet.getAnnotationMap(), "a", "Named set");
+    }
+
+    private static void checkAnnotations(
+        Map<String, Annotation> annotationMap,
+        String... nameVal)
+    {
+        assertNotNull(annotationMap);
+        assertEquals(0, nameVal.length % 2);
+        assertEquals(nameVal.length / 2, annotationMap.size());
+        int i = 0;
+        for (Map.Entry<String, Annotation> entry : annotationMap.entrySet()) {
+            assertEquals(nameVal[i++], entry.getKey());
+            assertEquals(nameVal[i++], entry.getValue().getValue());
         }
     }
 

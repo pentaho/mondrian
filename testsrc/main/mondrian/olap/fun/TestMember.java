@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -173,6 +174,10 @@ public class TestMember implements Member {
         return new MockDimension();
     }
 
+    public Map<String, Annotation> getAnnotationMap() {
+        throw new UnsupportedOperationException();
+    }
+
     private static class MockDimension implements Dimension {
         public Hierarchy[] getHierarchies() {
             throw new UnsupportedOperationException();
@@ -226,6 +231,10 @@ public class TestMember implements Member {
         }
 
         public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Map<String, Annotation> getAnnotationMap() {
             throw new UnsupportedOperationException();
         }
     }

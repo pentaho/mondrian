@@ -35,7 +35,7 @@ import java.util.List;
  * <p> Members can have member properties. Their {@link Level#getProperties}
  * defines which are allowed.
  */
-public interface Member extends OlapElement, Comparable {
+public interface Member extends OlapElement, Comparable, Annotated {
 
     /**
      * Returns this member's parent, or null (not the 'null member', as

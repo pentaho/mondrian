@@ -35,8 +35,10 @@ public class RolapCubeLevel extends RolapLevel {
     public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy hierarchy) {
         super(
             hierarchy,
-            level.getDepth(),
             level.getName(),
+            level.getCaption(),
+            level.getDescription(),
+            level.getDepth(),
             level.getKeyExp(),
             level.getNameExp(),
             level.getCaptionExp(),
@@ -49,7 +51,8 @@ public class RolapCubeLevel extends RolapLevel {
             level.getDatatype(),
             level.getHideMemberCondition(),
             level.getLevelType(),
-            "" + level.getApproxRowCount());
+            "" + level.getApproxRowCount(),
+            level.getAnnotationMap());
 
         this.rolapLevel = level;
         MondrianDef.RelationOrJoin hierarchyRel = hierarchy.getRelation();
@@ -205,6 +208,21 @@ public class RolapCubeLevel extends RolapLevel {
         return (RolapCubeLevel) super.getParentLevel();
     }
 
+    public String getCaption() {
+        return rolapLevel.getCaption();
+    }
+
+    public void setCaption(String caption) {
+        // Cannot set the caption on the underlying level; other cube levels
+        // might be using it.
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns the underlying level.
+     *
+     * @return Underlying level
+     */
     public RolapLevel getRolapLevel() {
         return rolapLevel;
     }

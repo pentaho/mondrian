@@ -28,7 +28,11 @@
 ######################## -->
 <ol>
   	<li><a href="#What_is_a_schema">What is a schema?</a></li>
-  	<li><a href="#Schema_files">Schema files</a></li>
+  	<li><a href="#Schema_files">Schema files</a>
+		<ol>
+			<li><a href="#Annotation">Annotation</a></li>
+	    </ol>
+	</li>
   	<li><a href="#Cubes_and_dimensions">Logical model</a>
 		<ol>
 			<li><a href="#Cube">Cube</a></li>
@@ -210,6 +214,41 @@ the rest of the schema will be ignored.</p>
 <a href="#Appendix_A_XML_elements">Appendix A</a> and in the <a href="xml_schema.html">XML schema</a>.</p>
 
 <!--
+##########################
+##  2.1 Annotations  #####
+########################## -->
+<h1>2.1 Annotation<a name="Annotation">&nbsp;</a></h1>
+<p>The major element types (schema, cube, virtual cube, shared dimension, 
+dimension, hierarchy, level, measure, calculated member) support annotations. An 
+annotation is a way of associating a user-defined property with a metadata 
+element, and in particular, allows tools to add metadata without extending the 
+official Mondrian schema.</p>
+
+<p>Create an 
+<code><a href="#XML_Annotations">&lt;Annotations&gt;</a></code> element as a child of the element you wish to
+annotate (generally it is the first child element, but check the schema
+definition for details), then include a number of 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> elements. 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> Annotation 
+elements' names must be unique within their element. If you are adding 
+annotations to support a particular tool that you maintain, choose annotation 
+names carefully, to ensure that they do not clash with annotations used by other 
+tools.</p>
+
+<p>The following example shows &quot;Author&quot; and &quot;Date&quot; annotations attached to a <code><a href="#XML_Schema">&lt;Schema&gt;</a></code> object.</p>
+
+<blockquote style="text-indent: -20px">
+	<code>
+  		<div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot;&gt;</div>
+			<div style="padding-left:40px;;">&lt;<a href="#XML_Annotations">Annotations</a>&gt;</div>
+			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Author"&gt;Fred Flintstone&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
+			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Date"&gt;10,000 BC&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
+			<div style="padding-left:40px;;">&lt;/<a href="#XML_Annotations">Annotations</a>&gt;</div>
+			<div style="padding-left:40px;;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
+			<div style="padding-left:60px;;">...</div>
+</code>
+</blockquote>
+<!--
 ###########################
 ##  3. Logical model  #####
 ########################### -->
@@ -303,6 +342,7 @@ of those dimensions. The results are as follows:</p>
 	</table>
 </blockquote>
 <p>Now let's look at the schema definition in more detail.</p>
+
 <!--
 ########################
 ##  3.1 Cube       #####
@@ -2550,14 +2590,19 @@ dimension would have the caption "Product" in English and "Produit" in French.</
 
 <p>It is unwise to translate the actual names of the schema objects, because then the MDX
 statements would need to be changed also. All that you need to change is the caption. Every
-schema object (schema, cube, dimension, level, measure) has a caption attribute, and user
-interfaces such as JPivot display the caption rather than the real name. Additionally:</p>
+schema object (schema, cube, virtual cube, dimension, hierarchy, level, measure, 
+named set) has a caption attribute, and user
+interfaces such as JPivot and Pentaho Analyzer display the caption rather than the real name. Additionally:</p>
 
 <ul>
-  <li>A hierarchy can have an <code>allMemberCaption</code> attribute
+  <li>Every schema object has a description attribute.</li>
+	<li>A hierarchy can have an <code>allMemberCaption</code> attribute
 as display value of the "All" member. </li>
   <li>For the schema we can set a display value of the "measures"
 dimension by the <code>measuresCaption</code> attribute. </li>
+	<li>A calculated member has properties CAPTION and DESCRIPTION that appear 
+	as caption and description if the member is a measure (that is, a member of 
+	the <code>Measures</code> dimension).</li>
 </ul>
 
 <p>One way to create an internationalized application is to create a
@@ -2573,21 +2618,33 @@ substitution on a single schema file.</p>
 <h1>7.1 Localizing schema processor</h1>
 
 <p>First, write your schema using variables as values for <code>caption</code>,
+<code>description</code>,
 <code>allMemberCaption</code> and <code>measuresCaption</code> attributes as follows:</p>
 
 <blockquote style="text-indent: -20px">
     <code>
         <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> measuresCaption="%{foodmart.measures.caption}"&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Store" caption="%{foodmart.dimension.store.caption}"&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Stores" allMemberCaption="%{foodmart.dimension.store.allmember.caption =All Stores}" primaryKey="store_id"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Store" caption="%{foodmart.dimension.store.caption}" 
+				description=&quot;%{foodmart.dimension.store.description}&quot;&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Stores" allMemberCaption="%{foodmart.dimension.store.allmember.caption =All Stores}" primaryKey="store_id"&nbsp; 
+					caption=&quot;%{foodmart.hierarchy.store.country.caption}" 
+					description=&quot;%{foodmart.hierararchy.store.country.description}&gt;</div>
                     <div style="padding-left:80px">&lt;<a href="#XML_Table">Table</a> name="store"/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Country" column="store_country" uniqueMembers="true" caption="%{foodmart.dimension.store.country.caption}"/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store State" column="store_state" uniqueMembers="true" caption="%{foodmart.dimension.store.state.caption}"/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store City" column="store_city" uniqueMembers="false" caption="%{foodmart.dimension.store.city.caption}"/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Name" column="store_name" uniqueMembers="true" caption="%{foodmart.dimension.store.name.caption}"&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Type" column="store_type" caption="%{foodmart.dimension.store. name.property_type.caption}"/&gt;</div>
-        				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Manager" column="store_manager" caption="%{foodmart.dimension.store. name.property_manager.caption}"/&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Sqft" column="store_sqft" type="Numeric" caption="%{foodmart.dimension.store. name.property_storesqft.caption}"/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Country" column="store_country" uniqueMembers="true" caption="%{foodmart.dimension.store.country.caption}" 
+						description=&quot;%{foodmart.dimension.store.country.description}&quot;/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store State" column="store_state" uniqueMembers="true" caption="%{foodmart.dimension.store.state.caption}" 
+						description=&quot;%{foodmart.dimension.store.state.description}&quot;/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store City" column="store_city" uniqueMembers="false" caption="%{foodmart.dimension.store.city.caption}" 
+						description=&quot;%{foodmart.dimension.store.city.description}&quot;/&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Level">Level</a> name="Store Name" column="store_name" uniqueMembers="true" caption="%{foodmart.dimension.store.name.caption}" 
+						description=&quot;%{foodmart.dimension.store.name.description}&quot;&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Type" column="store_type" caption="%{foodmart.dimension.store. name.property_type.caption}" 
+							description=&quot;%{foodmart.dimension.store. name.property_type.description}&quot;/&gt;</div>
+        				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Manager" column="store_manager" caption="%{foodmart.dimension.store. name.property_manager.caption}" 
+							description=&quot;%{foodmart.dimension.store. name.property_manager.description}&quot;/&gt;</div>
+                        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Store Sqft" column="store_sqft" type="Numeric" caption="%{foodmart.dimension.store. name.property_storesqft.caption}" 
+							description=&quot;%{foodmart.dimension.store. 
+							name.property_storesqft.description}&quot;/&gt;</div>
         				<div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Grocery Sqft" column="grocery_sqft" type="Numeric"/&gt;</div>
 				        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Frozen Sqft" column="frozen_sqft" type="Numeric"/&gt;</div>
 				        <div style="padding-left:100px">&lt;<a href="#XML_Property">Property</a> name="Meat Sqft" column="meat_sqft" type="Numeric"/&gt;</div>
@@ -2597,11 +2654,15 @@ substitution on a single schema file.</p>
     			<div style="padding-left:60px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
             <div style="padding-left:40px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
 <br>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales" caption="%{foodmart.cube.sales.caption}"&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a> name="Sales" caption="%{foodmart.cube.sales.caption}" 
+				description=&quot;%{foodmart.cube.sales.description}&quot;&gt;</div>
                 <div style="padding-left:60px;">...</div>
-    			<div style="padding-left:60px">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store" source="Store" foreignKey="store_id"/&gt;</div>
+    			<div style="padding-left:60px">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name="Store" source="Store" foreignKey="store_id"&nbsp; 
+					caption=&quot;%{foodmart.cube.sales.name.caption}&quot; 
+					description=&quot;%{foodmart.cube.sales.name.description}&quot;/&gt;</div>
                 <div style="padding-left:60px;">...</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" caption="%{foodmart.cube.sales.measure.unitsales}"&gt;</div>
+                <div style="padding-left:60px">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" caption="%{foodmart.cube.sales.measure.unitsales.caption}" 
+					description=&quot;%{foodmart.cube.sales.measure.unitsales.description}&quot;/&gt;</div>
             <div style="padding-left:40px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
         <div style="padding-left:10px;">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
     </code>
@@ -3267,6 +3328,14 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
       	<td colspan="2"><i><br>Miscellaneous</i></td>
     </tr>
     <tr>
+      	<td><code>&lt;<a href="xml_schema.html#Annotations" name="XML_Annotations">Annotations</a>&gt;</code></td>
+      	<td>Holder for annotations.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a href="xml_schema.html#Annotation" name="XML_Annotation">Annotation</a>&gt;</code></td>
+      	<td>User-defined property attached to a metadata element.</td>
+    </tr>
+    <tr>
       	<td><code>&lt;<a href="xml_schema.html#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td>
       	<td>Part of the definition of a Hierarchy; passed to a MemberReader, if present.</td>
     </tr>
@@ -3310,7 +3379,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified July 2009.<br/>
+<p>Author: Julian Hyde; last modified December 2009.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>

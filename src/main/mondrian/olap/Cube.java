@@ -13,10 +13,15 @@
 
 package mondrian.olap;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public interface Cube extends OlapElement {
+/**
+ * Cube.
+ *
+ * @version $Id$
+ * @author jhyde
+ */
+public interface Cube extends OlapElement, Annotated {
 
     String getName();
 

@@ -2657,7 +2657,33 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * <p>Copied from commons-lang
+     * Converts an olap4j connect string into a legacy mondrian connect string.
+     *
+     * <p>For example,
+     * "jdbc:mondrian:Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     * becomes
+     * "Provider=Mondrian;
+     * Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     *
+     * <p>This method is intended to allow legacy applications (such as JPivot
+     * and Mondrian's XMLA server) to continue to create connections using
+     * Mondrian's legacy connection API even when they are handed an olap4j
+     * connect string.
+     *
+     * @param url olap4j connect string
+     * @return mondrian connect string, or null if cannot be converted
+     */
+    public static String convertOlap4jConnectStringToNativeMondrian(
+        String url)
+    {
+        if (url.startsWith("jdbc:mondrian:")) {
+            return "Provider=Mondrian; "
+                + url.substring("jdbc:mondrian:".length());
+        }
+        return null;
+    }
+
+    /**
      * Checks if a String is whitespace, empty ("") or null.</p>
      *
      * <pre>
@@ -2668,9 +2694,10 @@ public class Util extends XOMUtil {
      * StringUtils.isBlank(" bob ") = false
      * </pre>
      *
+     * <p>(Copied from commons-lang.)
+     *
      * @param str the String to check, may be null
      * @return <code>true</code> if the String is null, empty or whitespace
-     * @since 2.0
      */
     public static boolean isBlank(String str) {
         int strLen;

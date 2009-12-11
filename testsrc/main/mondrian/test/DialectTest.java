@@ -54,6 +54,8 @@ public class DialectTest extends TestCase {
         + " Optimizer. Either restructure the query with supported syntax, or"
         + " enable the MySQL Query Path in the brighthouse.ini file to execute"
         + " the query with reduced performance.";
+    private static final String NEOVIEW_SYNTAX_ERROR =
+        "(?s).* ERROR\\[15001\\] A syntax error occurred at or before: .*";
 
     /**
      * Creates a DialectTest.
@@ -163,6 +165,8 @@ public class DialectTest extends TestCase {
                 "Unexpected token in statement \\[select count\\(distinct \"customer_id\",\\]",
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
+                // neoview
+                ".* ERROR\\[3129\\] Function COUNT DISTINCT accepts exactly one operand\\. .*",
                 // postgres
                 "ERROR: function count\\(integer, integer\\) does not exist",
                 // LucidDb
@@ -302,7 +306,11 @@ public class DialectTest extends TestCase {
                 // postgres
                 "ERROR: subquery in FROM must have an alias",
                 // teradata
-                ".*Syntax error, expected something like a name or a Unicode delimited identifier or an 'UDFCALLNAME' keyword between '\\)' and ';'\\.",
+                ".*Syntax error, expected something like a name or a Unicode "
+                + "delimited identifier or an 'UDFCALLNAME' keyword between "
+                + "'\\)' and ';'\\.",
+                // neoview
+                NEOVIEW_SYNTAX_ERROR,
                 // netezza
                 "(?s).*ERROR:  sub-SELECT in FROM must have an alias.*",
             };
@@ -322,6 +330,8 @@ public class DialectTest extends TestCase {
             final String[] errs = {
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
+                // neoview
+                NEOVIEW_SYNTAX_ERROR,
             };
             assertQueryFails(sql, errs);
         } else {
@@ -375,6 +385,8 @@ public class DialectTest extends TestCase {
                 "Java exception: ': java.lang.NullPointerException'.",
                 // hsqldb
                 "(?s)Cannot be in ORDER BY clause in statement .*",
+                // neoview
+                NEOVIEW_SYNTAX_ERROR,
                 // oracle
                 "ORA-01785: ORDER BY item must be the number of a SELECT-list "
                 + "expression\n",
@@ -397,6 +409,8 @@ public class DialectTest extends TestCase {
             final String[] errs = {
                 // mysql
                 "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY",
+                // neoview
+                ".* ERROR\\[4197\\] This expression cannot be used in the GROUP BY clause\\. .*",
             };
             assertQueryFails(sql, errs);
         }
@@ -433,6 +447,8 @@ public class DialectTest extends TestCase {
                 "(?s)\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression 'GROUPING SETS.*",
                 // postgres
                 "ERROR: syntax error at or near \"SETS\"",
+                // neoview
+                NEOVIEW_SYNTAX_ERROR,
                 // netezza
                 "(?s).*found \"SETS\" \\(at char 135\\) expecting `EXCEPT' or `FOR' or `INTERSECT' or `ORDER' or `UNION'.*",
             };
@@ -459,6 +475,8 @@ public class DialectTest extends TestCase {
                 "(?s)Unexpected token: , in statement .*",
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
+                // neoview
+                NEOVIEW_SYNTAX_ERROR,
                 // teradata
                 ".*Syntax error, expected something like a 'SELECT' keyword or '\\(' between '\\(' and the integer '1'\\.",
                 // netezza
@@ -598,6 +616,11 @@ public class DialectTest extends TestCase {
             assertFirstLast(query, "Brown", null);
         } else {
             // Largest value comes first, null comes last.
+            switch (dialect.getDatabaseProduct()) {
+            case NEOVIEW:
+                // Neoview cannot force nulls to appear last
+                return;
+            }
             assertFirstLast(query, "Williams", null);
         }
     }
@@ -809,6 +832,9 @@ public class DialectTest extends TestCase {
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] You tried "
                 + "to execute a query that does not include the specified "
                 + "expression 'the_month' as part of an aggregate function.",
+                // neoview
+                ".* ERROR\\[4005\\] Column reference \"the_month\" must be a "
+                + "grouping column or be specified within an aggregate. .*",
                 // teradata
                 ".*Selected non-aggregate values must be part of the "
                 + "associated group.",

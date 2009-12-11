@@ -274,6 +274,11 @@ public class RolapConnectionTest extends TestCase {
     }
 
     public void testJndiConnection() throws NamingException {
+        // Cannot guarantee that this test will work if they have chosen to
+        // resolve data sources other than by JNDI.
+        if (MondrianProperties.instance().DataSourceResolverClass.isSet()) {
+            return;
+        }
         // get a regular connection
         Util.PropertyList properties =
             TestContext.instance().getFoodMartConnectionProperties();

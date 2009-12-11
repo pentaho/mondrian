@@ -3060,6 +3060,10 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
+        public Map<String, Annotation> getAnnotationMap() {
+            throw new UnsupportedOperationException();
+        }
+
         public int compareTo(Object o) {
             throw new UnsupportedOperationException();
         }

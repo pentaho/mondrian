@@ -711,8 +711,7 @@ public class JdbcDialectImpl implements Dialect {
                 // For ASC, we need to reverse the order.
                 // Use the SQL standard syntax 'ORDER BY x ASC NULLS LAST'.
                 if (ascending) {
-                    return expr + " ASC"
-                       + (supportsOrderByNullsLast() ? " NULLS LAST" : "");
+                    return generateOrderByNullsLast(expr, ascending);
                 } else {
                     return expr + " DESC";
                 }
@@ -720,8 +719,7 @@ public class JdbcDialectImpl implements Dialect {
                 if (ascending) {
                     return expr + " ASC";
                 } else {
-                    return expr + " DESC"
-                       + (supportsOrderByNullsLast() ? " NULLS LAST" : "");
+                    return generateOrderByNullsLast(expr, ascending);
                 }
             default:
                 throw Util.unexpected(collateLast);
@@ -736,20 +734,45 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     /**
-     * Returns whether this dialect supports "ASC NULLS LAST" and "DESC NULLS
-     * LAST" applied to an item in the ORDER BY clause.
+     * Generates SQL to force null values to collate last.
      *
-     * <p>This feature is in standard SQL but is not supported by many
-     * databases, therefore the default implementation returns {@code false}.
+     * <p>ANSI SQL provides the syntax "ASC NULLS LAST" and "DESC
+     * NULLS LAST". Since this is not supported by many databases, the
+     * default implementation returns just "expr direction".
+     *
+     * <p>If your database supports the ANSI syntax, implement this
+     * method by calling {@link #generateOrderByNullsLastAnsi}.
      *
      * <p>This method is only called from
      * {@link #generateOrderItem(String, boolean, boolean)}. Some dialects
      * override that method and therefore never call this method.
      *
-     * @return Whether this dialect supports "ORDER BY ... NULLS LAST".
+     * @param expr Expression
+     * @param ascending Whether ascending
+     * @return Expression to force null values to collate last
      */
-    public boolean supportsOrderByNullsLast() {
-        return false;
+    protected String generateOrderByNullsLast(
+        String expr,
+        boolean ascending)
+    {
+        // default implementation makes no attempt to force nulls to
+        // collate last
+        return expr + (ascending ? " ASC" : " DESC");
+    }
+
+    /**
+     * Implementation for the {@link #generateOrderByNullsLast} method
+     * that uses the ANSI syntax "expr direction NULLS LAST".
+     *
+     * @param expr Expression
+     * @param ascending Whether ascending
+     * @return Expression "expr direction NULLS LAST"
+     */
+    protected final String generateOrderByNullsLastAnsi(
+        String expr,
+        boolean ascending)
+    {
+        return expr + (ascending ? " ASC" : " DESC") + " NULLS LAST";
     }
 
     public boolean supportsGroupByExpressions() {

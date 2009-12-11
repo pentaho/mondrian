@@ -42,12 +42,15 @@ public abstract class DimensionBase
      */
     protected DimensionBase(
         String name,
+        String caption,
+        String description,
         DimensionType dimensionType,
-        final boolean highCardinality)
+        boolean highCardinality)
     {
         this.name = name;
+        this.caption = caption;
         this.uniqueName = Util.makeFqName(name);
-        this.description = null;
+        this.description = description;
         this.dimensionType = dimensionType;
         this.highCardinality = highCardinality;
     }

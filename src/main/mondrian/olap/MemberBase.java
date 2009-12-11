@@ -142,7 +142,7 @@ public abstract class MemberBase
     }
 
     public String getDescription() {
-        return null;
+        return (String) getPropertyValue(Property.DESCRIPTION.name);
     }
 
     public boolean isMeasure() {

@@ -20,8 +20,6 @@ import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
@@ -30,8 +28,10 @@ import mondrian.util.FilteredIterableList;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
 import mondrian.util.Pair;
-import mondrian.spi.Dialect;
-import mondrian.spi.DialectManager;
+import mondrian.spi.*;
+import mondrian.spi.impl.JndiDataSourceResolver;
+
+import org.eigenbase.util.property.StringProperty;
 
 import org.apache.log4j.Logger;
 
@@ -67,6 +67,7 @@ public class RolapConnection extends ConnectionBase {
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
+    private static DataSourceResolver dataSourceResolver;
 
     /**
      * Creates a connection.
@@ -339,9 +340,10 @@ public class RolapConnection extends ConnectionBase {
             RolapUtil.loadDrivers(jdbcDriversProp);
 
             Properties jdbcProperties = getJdbcProperties(connectInfo);
-            for (Map.Entry<Object, Object> entry : jdbcProperties.entrySet()) {
+            final Map<String, String> map = Util.toMap(jdbcProperties);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
                 // FIXME ordering is non-deterministic
-                appendKeyValue(buf, (String) entry.getKey(), entry.getValue());
+                appendKeyValue(buf, entry.getKey(), entry.getValue());
             }
 
             if (jdbcUser != null) {
@@ -395,10 +397,10 @@ public class RolapConnection extends ConnectionBase {
                     "false").equalsIgnoreCase("true");
 
             // Get connection from datasource.
+            DataSourceResolver dataSourceResolver = getDataSourceResolver();
             try {
-                dataSource =
-                    (DataSource) new InitialContext().lookup(dataSourceName);
-            } catch (NamingException e) {
+                dataSource = dataSourceResolver.lookup(dataSourceName);
+            } catch (Exception e) {
                 throw Util.newInternal(
                     e,
                     "Error while looking up data source ("
@@ -423,6 +425,43 @@ public class RolapConnection extends ConnectionBase {
                 + "' must contain either '" + RolapConnectionProperties.Jdbc
                 + "' or '" + RolapConnectionProperties.DataSource + "'");
         }
+    }
+
+    /**
+     * Returns the instance of the {@link mondrian.spi.DataSourceResolver}
+     * plugin.
+     *
+     * @return data source resolver
+     */
+    private static synchronized DataSourceResolver getDataSourceResolver() {
+        if (dataSourceResolver == null) {
+            final StringProperty property =
+                MondrianProperties.instance().DataSourceResolverClass;
+            final String className =
+                property.get(
+                    JndiDataSourceResolver.class.getName());
+            try {
+                final Class<?> clazz;
+                clazz = Class.forName(className);
+                if (!DataSourceResolver.class.isAssignableFrom(clazz)) {
+                    throw Util.newInternal(
+                        "Plugin class specified by property "
+                        + property.getPath() + " must implement "
+                        + DataSourceResolver.class.getName());
+                }
+                dataSourceResolver = (DataSourceResolver) clazz.newInstance();
+            } catch (ClassNotFoundException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            } catch (IllegalAccessException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            } catch (InstantiationException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            }
+        }
+        return dataSourceResolver;
     }
 
     /**

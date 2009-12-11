@@ -425,6 +425,12 @@ public class RolapMember extends MemberBase {
         return (RolapMember) super.getParentMember();
     }
 
+    // Regular members do not have annotations. Measures and calculated members
+    // do, so they override this method.
+    public Map<String, Annotation> getAnnotationMap() {
+        return Collections.emptyMap();
+    }
+
     public int hashCode() {
         return getUniqueName().hashCode();
     }
@@ -632,11 +638,9 @@ public class RolapMember extends MemberBase {
                 parentMember = getParentMember();
                 return parentMember == null ? 0 : 1;
 
-            case Property.DESCRIPTION_ORDINAL:
-                return getDescription();
-
             case Property.VISIBLE_ORDINAL:
                 break;
+
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
                 return this == this.getHierarchy().getAllMember()

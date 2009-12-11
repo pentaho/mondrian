@@ -585,6 +585,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             case HSQLDB:
             case INFOBRIGHT:
             case NETEZZA:
+            case NEOVIEW:
             case MYSQL:
             case TERADATA:
                 content = Util.replace(

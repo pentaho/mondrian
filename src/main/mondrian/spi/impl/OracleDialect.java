@@ -53,8 +53,9 @@ public class OracleDialect extends JdbcDialectImpl {
         return true;
     }
 
-    public boolean supportsOrderByNullsLast() {
-        return true;
+    @Override
+    public String generateOrderByNullsLast(String expr, boolean ascending) {
+        return generateOrderByNullsLastAnsi(expr, ascending);
     }
 }
 
