@@ -234,7 +234,6 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     static class DteRoot extends RolapResult.RolapResultEvaluatorRoot {
         final int expDeps;
-        final RolapResult result;
         int callCount;
         int fakeCallCount;
         int fakeCount;
@@ -246,7 +245,6 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         DteRoot(RolapResult result, int expDeps) {
             super(result);
             this.expDeps = expDeps;
-            this.result = result;
         }
 
         /**

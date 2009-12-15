@@ -15,7 +15,6 @@ package mondrian.rolap;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
 import mondrian.spi.Dialect;
 
@@ -86,14 +85,14 @@ public class RolapEvaluator implements Evaluator {
         AGG_SCOPE,
         CUBE_SCOPE,
         QUERY_SCOPE
-    };
+    }
 
     /**
-     * Creates an evaluator.
+     * Creates a non-root evaluator.
      *
      * @param root Root context for stack of evaluators (contains information
      *   which does not change during the evaluation)
-     * @param parent Parent evaluator, or null if this is the root
+     * @param parent Parent evaluator, not null
      */
     protected RolapEvaluator(
         RolapEvaluatorRoot root,
@@ -101,79 +100,54 @@ public class RolapEvaluator implements Evaluator {
     {
         this.iterationLength = 1;
         this.root = root;
+        assert parent != null;
         this.parent = parent;
 
-        if (parent == null) {
-            depth = 0;
-            nonEmpty = false;
-            nativeEnabled =
-                MondrianProperties.instance().EnableNativeNonEmpty.get();
-            evalAxes = false;
-            cellReader = null;
-            final int hierarchyCount = root.cube.getHierarchies().size();
-            currentMembers = new RolapMember[hierarchyCount];
-            calcMembers = new RolapCalculation[hierarchyCount];
-            calcMemberCount = 0;
-            slicerMembers = new ArrayList<Member>();
-            aggregationLists = null;
+        depth = parent.depth + 1;
+        nonEmpty = parent.nonEmpty;
+        nativeEnabled = parent.nativeEnabled;
+        evalAxes = parent.evalAxes;
+        cellReader = parent.cellReader;
+        currentMembers = parent.currentMembers.clone();
+        calcMembers = parent.calcMembers.clone();
+        calcMemberCount = parent.calcMemberCount;
+        slicerMembers = new ArrayList<Member>(parent.slicerMembers);
+        if (parent.aggregationLists != null) {
+            aggregationLists =
+                new ArrayList<List<Member[]>>(parent.aggregationLists);
         } else {
-            depth = parent.depth + 1;
-            nonEmpty = parent.nonEmpty;
-            nativeEnabled = parent.nativeEnabled;
-            evalAxes = parent.evalAxes;
-            cellReader = parent.cellReader;
-            currentMembers = parent.currentMembers.clone();
-            calcMembers = parent.calcMembers.clone();
-            calcMemberCount = parent.calcMemberCount;
-            slicerMembers = new ArrayList<Member>(parent.slicerMembers);
-            if (parent.aggregationLists != null) {
-                aggregationLists =
-                    new ArrayList<List<Member[]>>(parent.aggregationLists);
-            } else {
-                aggregationLists = null;
-            }
-            expandingMember = parent.expandingMember;
+            aggregationLists = null;
         }
+        expandingMember = parent.expandingMember;
     }
 
     /**
-     * Creates an evaluator with no parent.
+     * Creates a root evaluator.
      *
      * @param root Shared context between this evaluator and its children
      */
     public RolapEvaluator(RolapEvaluatorRoot root) {
-        this(root, null);
-
-        // we expect client to set CellReader
-
-        final SchemaReader scr = this.root.schemaReader;
-        final List<RolapHierarchy> hierarchies =
-            this.root.cube.getHierarchies();
-        for (final RolapHierarchy hierarchy : hierarchies) {
-            final int ordinal = hierarchy.getOrdinalInCube();
-
-            final RolapMember member =
-                (RolapMember) scr.getHierarchyDefaultMember(hierarchy);
-
-            // If there is no member, we cannot continue.
-            if (member == null) {
-                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
-                    hierarchy.getUniqueName());
-            }
-
-            // This fragment is a concurrency bottleneck, so use a cache of
-            // hierarchy usages.
-            final HierarchyUsage hierarchyUsage =
-                this.root.cube.getFirstUsage(hierarchy);
-            if (hierarchyUsage != null) {
-                member.makeUniqueName(hierarchyUsage);
-            }
-
-            currentMembers[ordinal] = member;
+        this.iterationLength = 1;
+        this.root = root;
+        this.parent = null;
+        depth = 0;
+        nonEmpty = false;
+        nativeEnabled =
+            MondrianProperties.instance().EnableNativeNonEmpty.get();
+        evalAxes = false;
+        cellReader = null;
+        currentMembers = root.defaultMembers.clone();
+        calcMembers = new RolapCalculation[currentMembers.length];
+        calcMemberCount = 0;
+        slicerMembers = new ArrayList<Member>();
+        aggregationLists = null;
+        for (RolapMember member : currentMembers) {
             if (member.isEvaluated()) {
                 addCalcMember(new RolapMemberCalculation(member));
             }
         }
+
+        // we expect client to set CellReader
 
         root.init(this);
     }
@@ -721,9 +695,7 @@ public class RolapEvaluator implements Evaluator {
         // "NON EMPTY [Customer].[Name].members" may return different results
         // for 1997-01 and 1997-02
         if (nonEmpty) {
-            for (int i = 0; i < currentMembers.length; i++) {
-                key.add(currentMembers[i]);
-            }
+            key.addAll(Arrays.asList(currentMembers));
             return key;
         }
 

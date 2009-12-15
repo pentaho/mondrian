@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
@@ -64,9 +65,23 @@ class RolapEvaluatorRoot {
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
         for (RolapHierarchy hierarchy : cube.getHierarchies()) {
-            list.add(
-                (RolapMember) schemaReader.getHierarchyDefaultMember(
-                    hierarchy));
+            final RolapMember member =
+                (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
+
+            // If there is no member, we cannot continue.
+            if (member == null) {
+                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
+                    hierarchy.getUniqueName());
+            }
+
+            list.add(member);
+
+            // This fragment is a concurrency bottleneck, so use a cache of
+            // hierarchy usages.
+            final HierarchyUsage hierarchyUsage = cube.getFirstUsage(hierarchy);
+            if (hierarchyUsage != null) {
+                member.makeUniqueName(hierarchyUsage);
+            }
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =
