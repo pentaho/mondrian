@@ -2637,7 +2637,7 @@ public class RolapCube extends CubeBase {
      * @param name Name of member
      * @param calc Compiled expression
      */
-    void createCalculatedMember(
+    RolapMember createCalculatedMember(
         RolapHierarchy hierarchy,
         String name,
         Calc calc)
@@ -2663,6 +2663,7 @@ public class RolapCube extends CubeBase {
                 false);
         query.createValidator().validate(formula);
         calculatedMemberList.add(formula);
+        return (RolapMember) formula.getMdxMember();
     }
 
     /**

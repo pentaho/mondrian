@@ -65,23 +65,30 @@ class RolapEvaluatorRoot {
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
         for (RolapHierarchy hierarchy : cube.getHierarchies()) {
-            final RolapMember member =
+            RolapMember defaultMember =
                 (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
 
             // If there is no member, we cannot continue.
-            if (member == null) {
+            if (defaultMember == null) {
                 throw MondrianResource.instance().InvalidHierarchyCondition.ex(
                     hierarchy.getUniqueName());
             }
 
-            list.add(member);
+            if (ScenarioImpl.isScenario(hierarchy)
+                && connection.getScenario() != null)
+            {
+                defaultMember =
+                    ((ScenarioImpl) connection.getScenario()).getMember();
+            }
 
             // This fragment is a concurrency bottleneck, so use a cache of
             // hierarchy usages.
             final HierarchyUsage hierarchyUsage = cube.getFirstUsage(hierarchy);
             if (hierarchyUsage != null) {
-                member.makeUniqueName(hierarchyUsage);
+                defaultMember.makeUniqueName(hierarchyUsage);
             }
+
+            list.add(defaultMember);
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =

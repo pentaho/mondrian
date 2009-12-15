@@ -34,6 +34,7 @@ import mondrian.spi.impl.JndiDataSourceResolver;
 import org.eigenbase.util.property.StringProperty;
 
 import org.apache.log4j.Logger;
+import org.olap4j.Scenario;
 
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
@@ -67,6 +68,8 @@ public class RolapConnection extends ConnectionBase {
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
+    private Scenario scenario;
+
     private static DataSourceResolver dataSourceResolver;
 
     /**
@@ -655,6 +658,14 @@ public class RolapConnection extends ConnectionBase {
         Util.assertPostcondition(role != null, "role != null");
 
         return role;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
     }
 
     /**

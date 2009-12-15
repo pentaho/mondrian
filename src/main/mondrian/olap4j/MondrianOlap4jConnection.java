@@ -77,7 +77,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private String roleName;
     private boolean autoCommit;
     private boolean readOnly;
-    private Scenario scenario;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -134,11 +133,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setScenario(Scenario scenario) {
-        this.scenario = scenario;
+        ((RolapConnection) connection).setScenario(scenario);
     }
 
     public Scenario getScenario() {
-        return scenario;
+        return ((RolapConnection) connection).getScenario();
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {

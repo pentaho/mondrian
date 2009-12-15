@@ -127,8 +127,11 @@ public interface Cell {
      *
      * <li>Otherwise, the context member is the default member of that
      * dimension (usually the 'all' member).</ul>
+     *
+     * @param hierarchy Hierarchy
+     * @return current member of given hierarchy
      */
-    Member getContextMember(Dimension dimension);
+    Member getContextMember(Hierarchy hierarchy);
 
     /**
      * Helper method to implement {@link org.olap4j.Cell#setValue}.

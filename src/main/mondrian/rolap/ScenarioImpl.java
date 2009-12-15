@@ -36,6 +36,8 @@ public final class ScenarioImpl implements Scenario {
     private final List<WritebackCell> writebackCells =
         new ArrayList<WritebackCell>();
 
+    private RolapMember member;
+
     private static int nextId;
 
     /**
@@ -64,6 +66,7 @@ public final class ScenarioImpl implements Scenario {
     /**
      * Sets the value of a cell.
      *
+     * @param connection Connection (not currently used)
      * @param members Coordinates of cell
      * @param newValue New value
      * @param currentValue Current value
@@ -192,10 +195,12 @@ public final class ScenarioImpl implements Scenario {
         for (RolapCube cube : schema.getCubeList()) {
             for (RolapHierarchy hierarchy : cube.getHierarchies()) {
                 if (isScenario(hierarchy)) {
-                    cube.createCalculatedMember(
-                        hierarchy,
-                        getId() + "",
-                        new ScenarioCalc(this));
+                    member =
+                        cube.createCalculatedMember(
+                            hierarchy,
+                            getId() + "",
+                            new ScenarioCalc(this));
+                    assert member != null;
                 }
             }
         }
@@ -280,6 +285,20 @@ public final class ScenarioImpl implements Scenario {
         final Result result = connection.execute(query);
         final Object o = result.getCell(new int[0]).getValue();
         return ((Number) o).doubleValue();
+    }
+
+    /**
+     * Returns the member of the [Scenario] dimension that represents this
+     * scenario. Including that member in the slicer will automatically use
+     * this scenario.
+     *
+     * <p>The result is not null, provided that {@link #register(RolapSchema)}
+     * has been called.
+     *
+     * @return Scenario member
+     */
+    public RolapMember getMember() {
+        return member;
     }
 
     /**
@@ -458,10 +477,13 @@ public final class ScenarioImpl implements Scenario {
             // terms of the writeback cells.
 
             // First, evaluate in the null scenario.
-            final Object o = evaluator.evaluateCurrent();
+            final Member defaultMember =
+                scenario.member.getHierarchy().getDefaultMember();
+            final Evaluator evaluator1 = evaluator.push(defaultMember);
+            final Object o = evaluator1.evaluateCurrent();
             double d = ((Number) o).doubleValue();
 
-            final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
+            final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator1;
 
             // Look for writeback cells which are equal to, ancestors of, or
             // descendants of, the current cell. Modify the value accordingly.
@@ -473,7 +495,7 @@ public final class ScenarioImpl implements Scenario {
                 : scenario.writebackCells)
             {
                 CellRelation relation =
-                    writebackCell.getRelationTo(evaluator.getMembers());
+                    writebackCell.getRelationTo(evaluator1.getMembers());
                 switch (relation) {
                 case ABOVE:
                     // This cell is below the writeback cell. Value is

@@ -210,7 +210,8 @@ public class ScenarioTest extends FoodMartTestCase {
                 "<Measure name='Atomic Cell Count' aggregator='count'/>")
                 .withScenario();
         final OlapConnection connection = testContext.getOlap4jConnection();
-        String id = connection.getScenario().getId();
+        final Scenario scenario = connection.getScenario();
+        String id = scenario.getId();
         final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
             "select {[Measures].[Unit Sales]} on 0,\n"
             + "{[Product].Children} on 1\n"
@@ -218,7 +219,7 @@ public class ScenarioTest extends FoodMartTestCase {
             + "where [Scenario].["
             + id
             + "]");
-        final CellSet cellSet = pstmt.executeQuery();
+        CellSet cellSet = pstmt.executeQuery();
 
         // Update ([Product].[Drink], [Measures].[Unit Sales])
         // from 24,597 to 23,597.
@@ -302,6 +303,70 @@ public class ScenarioTest extends FoodMartTestCase {
         // Row #9: 655
         // Row #10: 735
         // Row #11: 647
+
+        // Create a new scenario, and show that the scenario in the slicer
+        // overrides.
+        final Scenario scenario2 = connection.createScenario();
+        final String id2 = scenario2.getId();
+
+        // Connection has scenario1,
+        // slicer has scenario2,
+        // slicer wins.
+        String value;
+        final OlapStatement stmt = connection.createStatement();
+        cellSet =
+            stmt.executeOlapQuery(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "{[Product].Children} on 1\n"
+                + "from [Sales]\n"
+                + "where [Scenario].["
+                + id2
+                + "]");
+        cellSet.getCell(Arrays.asList(0, 0)).setValue(100, allocationPolicy);
+
+        // With slicer=scenario1, value as per scenario1.
+        cellSet =
+            stmt.executeOlapQuery(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "{[Product].Children} on 1\n"
+                + "from [Sales]\n"
+                + "where [Scenario].["
+                + id
+                + "]");
+        value = cellSet.getCell(Arrays.asList(0, 0)).getFormattedValue();
+        assertEquals("23,597", value);
+
+        // With slicer=scenario2, value as per scenario2.
+        cellSet =
+            stmt.executeOlapQuery(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "{[Product].Children} on 1\n"
+                + "from [Sales]\n"
+                + "where [Scenario].["
+                + id2
+                + "]");
+        value = cellSet.getCell(Arrays.asList(0, 0)).getFormattedValue();
+        assertEquals("100", value);
+
+        // With no slicer, value as per connection's scenario, scenario1.
+        assert connection.getScenario() == scenario;
+        cellSet =
+            stmt.executeOlapQuery(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "{[Product].Children} on 1\n"
+                + "from [Sales]\n");
+        value = cellSet.getCell(Arrays.asList(0, 0)).getFormattedValue();
+        assertEquals("23,597", value);
+
+        // Set connection's scenario to null, and we get the unmodified value.
+        connection.setScenario(null);
+        cellSet =
+            stmt.executeOlapQuery(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "{[Product].Children} on 1\n"
+                + "from [Sales]\n");
+        value = cellSet.getCell(Arrays.asList(0, 0)).getFormattedValue();
+        assertEquals("24,597", value);
     }
 
     // TODO: test whether it is valid for two connections to have the same

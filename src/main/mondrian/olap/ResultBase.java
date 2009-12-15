@@ -112,9 +112,13 @@ public abstract class ResultBase implements Result {
     }
 
     /**
-     * Returns the current member of a given dimension at a given location.
+     * Returns the current member of a given hierarchy at a given location.
+     *
+     * @param pos Coordinates in cell set
+     * @param hierarchy Hierarchy
+     * @return current member of given hierarchy
      */
-    public Member getMember(int[] pos, Dimension dimension) {
+    public Member getMember(int[] pos, Hierarchy hierarchy) {
         for (int i = -1; i < axes.length; i++) {
             Axis axis = slicerAxis;
             int index = 0;
@@ -125,12 +129,12 @@ public abstract class ResultBase implements Result {
             List<Position> positions = axis.getPositions();
             Position position = positions.get(index);
             for (Member member : position) {
-                if (member.getDimension() == dimension) {
+                if (member.getHierarchy() == hierarchy) {
                     return member;
                 }
             }
         }
-        return dimension.getHierarchy().getDefaultMember();
+        return hierarchy.getHierarchy().getDefaultMember();
     }
 
     public void close() {

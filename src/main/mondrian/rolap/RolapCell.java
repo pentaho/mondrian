@@ -231,8 +231,8 @@ class RolapCell implements Cell {
         return getEvaluator().getProperty(propertyName, defaultValue);
     }
 
-    public Member getContextMember(Dimension dimension) {
-        return result.getMember(pos, dimension);
+    public Member getContextMember(Hierarchy hierarchy) {
+        return result.getMember(pos, hierarchy);
     }
 
     public void setValue(
@@ -267,6 +267,12 @@ class RolapCell implements Cell {
             allocationArgs = new Object[0];
         }
         final Object currentValue = getValue();
+        if (!(currentValue instanceof Number)) {
+            // Cell is not a number. Likely it is a string or a
+            // MondrianEvaluationException. Do not attempt to change the value
+            // in this case. (REVIEW: Is this the correct behavior?)
+            return;
+        }
         double doubleCurrentValue = ((Number) currentValue).doubleValue();
         double doubleNewValue = ((Number) newValue).doubleValue();
         ((ScenarioImpl) scenario).setCellValue(

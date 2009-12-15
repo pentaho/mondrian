@@ -1030,6 +1030,51 @@ public class BasicQueryTest extends FoodMartTestCase {
                 }).getFormattedValue());
     }
 
+    /**
+     * Unit test for the {@link Cell#getContextMember(mondrian.olap.Hierarchy)}
+     * method.
+     */
+    public void testGetContext() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        Result result =
+            getTestContext().executeQuery(
+                "select [Gender].Members on 0,\n"
+                + "[Time].[Weekly].[1997].[6].Children on 1\n"
+                + "from [Sales]\n"
+                + "where [Marital Status].[S]");
+        final Cell cell = result.getCell(new int[]{0, 0});
+        final Map<String, Hierarchy> hierarchyMap =
+            new HashMap<String, Hierarchy>();
+        for (Dimension dimension : result.getQuery().getCube().getDimensions())
+        {
+            for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                hierarchyMap.put(hierarchy.getUniqueName(), hierarchy);
+            }
+        }
+        assertEquals(
+            "[Measures].[Unit Sales]",
+            cell.getContextMember(hierarchyMap.get("[Measures]"))
+                .getUniqueName());
+        assertEquals(
+            "[Time].[1997]",
+            cell.getContextMember(hierarchyMap.get("[Time]"))
+                .getUniqueName());
+        assertEquals(
+            "[Time].[Weekly].[All Weeklys].[1997].[6].[1]",
+            cell.getContextMember(hierarchyMap.get("[Time].[Weekly]"))
+                .getUniqueName());
+        assertEquals(
+            "[Gender].[All Gender]",
+            cell.getContextMember(hierarchyMap.get("[Gender]"))
+                .getUniqueName());
+        assertEquals(
+            "[Marital Status].[All Marital Status].[S]",
+            cell.getContextMember(hierarchyMap.get("[Marital Status]"))
+                .getUniqueName());
+    }
+
     public void testNonEmpty1() {
         assertSize(
             "select\n"
