@@ -10,10 +10,11 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.type.SetType;
 
 import java.util.*;
 
@@ -42,57 +43,94 @@ class IntersectFunDef extends FunDefBase
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
-        final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
         final String literalArg = getLiteralArg(call, 2, "", ReservedWords);
         final boolean all = literalArg.equalsIgnoreCase("ALL");
+        final int arity = ((SetType) call.getType()).getArity();
 
-        // todo: optimize for member lists vs. tuple lists
-        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-            public List evaluateList(Evaluator evaluator) {
-                List left = listCalc1.evaluateList(evaluator);
-                if (left == null || left.isEmpty()) {
-                    return Collections.EMPTY_LIST;
-                }
-                Collection right = listCalc2.evaluateList(evaluator);
-                if (right == null || right.isEmpty()) {
-                    return Collections.EMPTY_LIST;
-                }
-                right = buildSearchableCollection(right);
-                List result = new ArrayList();
-
-                for (Object leftObject : left) {
-                    Object resultObject = leftObject;
-
-                    if (leftObject instanceof Object[]) {
-                        leftObject = new ArrayHolder((Object[]) leftObject);
+        if (arity == 1) {
+            final MemberListCalc listCalc1 =
+                (MemberListCalc) compiler.compileList(call.getArg(0));
+            final MemberListCalc listCalc2 =
+                (MemberListCalc) compiler.compileList(call.getArg(1));
+            return new AbstractMemberListCalc(
+                call, new Calc[] {listCalc1, listCalc2})
+            {
+                public List<Member> evaluateMemberList(Evaluator evaluator) {
+                    List<Member> leftList =
+                        listCalc1.evaluateMemberList(evaluator);
+                    if (leftList.isEmpty()) {
+                        return Collections.emptyList();
                     }
-
-                    if (right.contains(leftObject)) {
-                        if (all || !result.contains(leftObject)) {
-                            result.add(resultObject);
+                    List<Member> rightList =
+                        listCalc2.evaluateMemberList(evaluator);
+                    if (rightList.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    final Set<Member> rightSet = new HashSet<Member>(rightList);
+                    final List<Member> result = new ArrayList<Member>();
+                    final Set<Member> resultSet =
+                        all ? null : new HashSet<Member>();
+                    for (Member leftMember : leftList) {
+                        if (rightSet.contains(leftMember)) {
+                            if (resultSet == null
+                                || resultSet.add(leftMember))
+                            {
+                                result.add(leftMember);
+                            }
                         }
                     }
+                    return result;
                 }
-                return result;
-            }
-        };
-    }
+            };
+        } else {
+            final TupleListCalc listCalc1 =
+                (TupleListCalc) compiler.compileList(call.getArg(0));
+            final TupleListCalc listCalc2 =
+                (TupleListCalc) compiler.compileList(call.getArg(1));
+            return new AbstractTupleListCalc(
+                call, new Calc[] {listCalc1, listCalc2})
+            {
+                public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+                    List<Member[]> leftList =
+                        listCalc1.evaluateTupleList(evaluator);
+                    if (leftList.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    final List<Member[]> rightList =
+                        listCalc2.evaluateTupleList(evaluator);
+                    if (rightList.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    Set<List<Member>> rightSet =
+                        buildSearchableCollection(rightList);
+                    final List<Member[]> result = new ArrayList<Member[]>();
+                    final Set<List<Member>> resultSet =
+                        all ? null : new HashSet<List<Member>>();
+                    for (Member[] leftTuple : leftList) {
+                        List<Member> leftKey = Arrays.asList(leftTuple);
+                        if (rightSet.contains(leftKey)) {
+                            if (resultSet == null
+                                || resultSet.add(leftKey))
+                            {
+                                result.add(leftTuple);
+                            }
+                        }
+                    }
+                    return result;
+                }
 
-    private static Collection buildSearchableCollection(Collection right) {
-        Iterator iter = right.iterator();
-        Set result = new HashSet(right.size(), 1);
-        while (iter.hasNext()) {
-            Object element = iter.next();
-
-            if (element instanceof Object[]) {
-                element = new ArrayHolder((Object[])element);
-            }
-
-            result.add(element);
+                private Set<List<Member>> buildSearchableCollection(
+                    List<Member[]> tuples)
+                {
+                    Set<List<Member>> result =
+                        new HashSet<List<Member>>(tuples.size(), 1);
+                    for (Member[] tuple : tuples) {
+                        result.add(Arrays.asList(tuple));
+                    }
+                    return result;
+                }
+            };
         }
-
-        return result;
     }
 }
 

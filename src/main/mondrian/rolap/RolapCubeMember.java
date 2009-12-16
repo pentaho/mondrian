@@ -147,9 +147,16 @@ public class RolapCubeMember extends RolapMember {
     }
 
     public boolean equals(Object o) {
-        return (o == this)
-               || ((o instanceof RolapCubeMember)
-                   && equals((RolapCubeMember) o));
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof RolapCubeMember) {
+            return equals((RolapCubeMember) o);
+        }
+        if (o instanceof Member) {
+            return getUniqueName().equals(((Member) o).getUniqueName());
+        }
+        return false;
     }
 
     public boolean equals(OlapElement o) {
