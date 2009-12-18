@@ -1233,6 +1233,152 @@ public class TestAggregationManager extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
+    public void testOrdinalExprAggTuplesAndChildren() {
+        // this verifies that we can load properties, ordinals, etc out of
+        // agg tables in member lookups (tuples and children)
+        if (!(MondrianProperties.instance().UseAggregates.get()
+                && MondrianProperties.instance().ReadAggregates.get()))
+        {
+            return;
+        }
+        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+
+        String cube = "<Cube name=\"Sales_Prod_Ord\">\n"
+        + "  <Table name=\"sales_fact_1997\"/>\n"
+        + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+        + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+        + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+        + "        <Table name=\"product\"/>\n"
+        + "        <Table name=\"product_class\"/>\n"
+        + "      </Join>\n"
+        + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+        + "          uniqueMembers=\"true\"/>\n"
+        + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+        + "          uniqueMembers=\"false\"/>\n"
+        + "      <Level name=\"Product Category\" table=\"product_class\" captionColumn=\"product_department\" column=\"product_category\"\n"
+        + "          uniqueMembers=\"false\"/>\n"
+        + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+        + "          uniqueMembers=\"false\"/>\n"
+        + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+        + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+        + "          uniqueMembers=\"true\"/>\n"
+        + "    </Hierarchy>\n"
+        + "  </Dimension>\n"
+        + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+        + "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n"
+        + "    <Table name=\"customer\"/>\n"
+        + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+        + "    </Hierarchy>\n"
+        + "  </Dimension>"
+        + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+        + "      formatString=\"Standard\" visible=\"false\"/>\n"
+        + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+        + "      formatString=\"#,###.00\"/>\n"
+        + "</Cube>";
+
+        TestContext testContext =
+            TestContext.create(
+                null,
+                cube,
+                null,
+                null,
+                null,
+                null);
+
+        String query =
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty CrossJoin({[Product].[Food].[Deli].[Meat]},{[Gender].[M]}) on rows "
+            + "from [Sales_Prod_Ord] ";
+
+        // first check that the sql is generated correctly
+
+        SqlPattern[] patterns = {
+                new SqlPattern(
+                    ACCESS_MYSQL,
+                    "select "
+                    + "`product_class`.`product_family` as `c0`, "
+                    + "`product_class`.`product_department` as `c1`, "
+                    + "`product_class`.`product_category` as `c2`, "
+                    + "`product_class`.`product_department` as `c3`, "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` "
+                    + "from "
+                    + "`agg_g_ms_pcat_sales_fact_1997` as "
+                    + "`agg_g_ms_pcat_sales_fact_1997`, "
+                    + "`product_class` as `product_class` "
+                    + "where "
+                    + "`product_class`.`product_family` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_family` "
+                    + "and `product_class`.`product_department` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department` "
+                    + "and `product_class`.`product_category` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_category` "
+                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`product_category`"
+                    + " = 'Meat' "
+                    + "and "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department`"
+                    + " = 'Deli' "
+                    + "and `agg_g_ms_pcat_sales_fact_1997`.`product_family`"
+                    + " = 'Food') "
+                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') "
+                    + "group by "
+                    + "`product_class`.`product_family`, "
+                    + "`product_class`.`product_department`, "
+                    + "`product_class`.`product_category`, "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` "
+                    + "order by ISNULL(`product_class`.`product_family`), "
+                    + "`product_class`.`product_family` ASC, "
+                    + "ISNULL(`product_class`.`product_department`), "
+                    + "`product_class`.`product_department` ASC, "
+                    + "ISNULL(`product_class`.`product_category`), "
+                    + "`product_class`.`product_category` ASC, "
+                    + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
+                    ,
+                    null)
+            };
+
+        assertQuerySqlOrNot(
+                testContext, query, patterns, false, false, false);
+
+        testContext.assertQueryReturns(
+                query,
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[All Products].[Food].[Deli].[Meat], [Gender].[M]}\n"
+                + "Row #0: 4,705\n");
+
+        Result result = testContext.executeQuery(query);
+        // this verifies that the caption for meat is deli
+        assertEquals(
+                "Meat",
+                result.getAxes()[1].getPositions().get(0).get(0).getName());
+        assertEquals(
+                "Deli",
+                result.getAxes()[1].getPositions().get(0).get(0).getCaption());
+
+        // Test children
+        query =
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty [Product].[Food].[Deli].Children on rows "
+            + "from [Sales_Prod_Ord] ";
+
+        testContext.assertQueryReturns(
+                query,
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
+                + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
+                + "Row #0: 4,728\n"
+                + "Row #1: 1,262\n"
+            );
+    }
+
     public void testAggregatingTuples() {
         if (!(MondrianProperties.instance().UseAggregates.get()
                 && MondrianProperties.instance().ReadAggregates.get()))
@@ -1242,7 +1388,7 @@ public class TestAggregationManager extends BatchTestCase {
 
         // flush cache, to be sure sql is executed
 
-        getConnection().getCacheControl(null).flushSchemaCache();
+        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
 
         // This first query verifies that simple collapsed levels in aggregate
         // tables load as tuples correctly.  The collapsed levels appear
@@ -1351,7 +1497,7 @@ public class TestAggregationManager extends BatchTestCase {
         }
 
         // flush cache to be sure sql is executed
-        getConnection().getCacheControl(null).flushSchemaCache();
+        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -1361,7 +1507,9 @@ public class TestAggregationManager extends BatchTestCase {
                 + "from `agg_g_ms_pcat_sales_fact_1997` "
                 + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender`",
+                + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
+                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
+                ,
                 null)
         };
 

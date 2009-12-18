@@ -570,58 +570,95 @@ RME is this right
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
-        boolean collapsedLevel =
+        boolean levelCollapsed =
             (aggStar != null)
             && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
 
-        if (!collapsedLevel) {
-            hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-            String q = level.getKeyExp().getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(q);
+        boolean multipleCols =
+            SqlMemberSource.levelContainsMultipleColumns(level);
 
-            // in non empty mode the level table must be joined to the fact
-            // table
-            constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
-
-            if (level.hasCaptionColumn()) {
-                MondrianDef.Expression captionExp = level.getCaptionExp();
-                hierarchy.addToFrom(sqlQuery, captionExp);
-                String captionSql = captionExp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(captionSql);
-            }
-
-            hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
-            String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-            sqlQuery.addOrderBy(orderBy, true, false, true);
-            if (!orderBy.equals(q)) {
-                sqlQuery.addSelectGroupBy(orderBy);
-            }
-
-            RolapProperty[] properties = level.getProperties();
-            for (RolapProperty property : properties) {
-                final MondrianDef.Expression exp = property.getExp();
-                hierarchy.addToFrom(sqlQuery, exp);
-                final String s = exp.getExpression(sqlQuery);
-                String alias = sqlQuery.addSelect(s);
-                // Some dialects allow us to eliminate properties from the
-                // group by that are functionally dependent on the level value
-                if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
-                    || !property.dependsOnLevelValue())
-                {
-                    sqlQuery.addGroupBy(s, alias);
-                }
-            }
-        } else {
-            // an earlier check was made in getAggStar() to verify
-            // that this is a single column level, so there is no
-
+        if (levelCollapsed && !multipleCols) {
+            // if this is a single column collapsed level, there is
+            // no need to join it with dimension tables
             RolapStar.Column starColumn =
-                ((RolapCubeLevel)level).getStarKeyColumn();
+                ((RolapCubeLevel) level).getStarKeyColumn();
             int bitPos = starColumn.getBitPosition();
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
             String q = aggColumn.generateExprString(sqlQuery);
             sqlQuery.addSelectGroupBy(q);
+            sqlQuery.addOrderBy(q, true, false, true);
             aggColumn.getTable().addToFrom(sqlQuery, false, true);
+            return sqlQuery.toString();
+        }
+
+        hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+        String q = level.getKeyExp().getExpression(sqlQuery);
+        sqlQuery.addSelectGroupBy(q);
+
+        // in non empty mode the level table must be joined to the fact
+        // table
+        constraint.addLevelConstraint(sqlQuery, null, aggStar, level);
+
+        if (levelCollapsed) {
+            // if this is a collapsed level, add a join between key and aggstar
+            RolapStar.Column starColumn =
+                ((RolapCubeLevel) level).getStarKeyColumn();
+            int bitPos = starColumn.getBitPosition();
+            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+            RolapStar.Condition condition =
+                new RolapStar.Condition(level.getKeyExp(),
+                        aggColumn.getExpression());
+            sqlQuery.addWhere(condition.toString(sqlQuery));
+            hierarchy.addToFromInverse(sqlQuery, level.getKeyExp());
+
+            // also may need to join parent levels to make selection unique
+            RolapCubeLevel parentLevel = (RolapCubeLevel)level.getParentLevel();
+            boolean isUnique = level.isUnique();
+            while (parentLevel != null && !parentLevel.isAll() && !isUnique) {
+                hierarchy.addToFromInverse(sqlQuery, parentLevel.getKeyExp());
+                starColumn = parentLevel.getStarKeyColumn();
+                bitPos = starColumn.getBitPosition();
+                aggColumn = aggStar.lookupColumn(bitPos);
+                condition =
+                    new RolapStar.Condition(parentLevel.getKeyExp(),
+                            aggColumn.getExpression());
+                sqlQuery.addWhere(condition.toString(sqlQuery));
+                parentLevel = parentLevel.getParentLevel();
+            }
+        }
+
+        if (level.hasCaptionColumn()) {
+            MondrianDef.Expression captionExp = level.getCaptionExp();
+            if (!levelCollapsed) {
+                hierarchy.addToFrom(sqlQuery, captionExp);
+            }
+            String captionSql = captionExp.getExpression(sqlQuery);
+            sqlQuery.addSelectGroupBy(captionSql);
+        }
+        if (!levelCollapsed) {
+            hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
+        }
+        String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
+        sqlQuery.addOrderBy(orderBy, true, false, true);
+        if (!orderBy.equals(q)) {
+            sqlQuery.addSelectGroupBy(orderBy);
+        }
+
+        RolapProperty[] properties = level.getProperties();
+        for (RolapProperty property : properties) {
+            final MondrianDef.Expression exp = property.getExp();
+            if (!levelCollapsed) {
+                hierarchy.addToFrom(sqlQuery, exp);
+            }
+            final String s = exp.getExpression(sqlQuery);
+            String alias = sqlQuery.addSelect(s);
+            // Some dialects allow us to eliminate properties from the
+            // group by that are functionally dependent on the level value
+            if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                || !property.dependsOnLevelValue())
+            {
+                sqlQuery.addGroupBy(s, alias);
+            }
         }
         return sqlQuery.toString();
     }
@@ -630,10 +667,10 @@ RME is this right
         MemberChildrenConstraint constraint,
         RolapMember member)
     {
-        if (!(constraint instanceof SqlContextConstraint)) {
+        if (!MondrianProperties.instance().UseAggregates.get()
+                || !(constraint instanceof SqlContextConstraint)) {
             return null;
         }
-
         SqlContextConstraint contextConstraint =
                 (SqlContextConstraint) constraint;
         Evaluator evaluator = contextConstraint.getEvaluator();
@@ -695,21 +732,6 @@ RME is this right
         AggStar aggStar = AggregationManager.instance().findAgg(
                 star, levelBitKey, measureBitKey, new boolean[]{ false });
 
-        if (aggStar == null) {
-            return null;
-        }
-
-        // verify that the selected member level can fully populate the
-        // member objects
-
-        if (!childLevel.isAll()) {
-            if (isLevelCollapsed(aggStar, (RolapCubeLevel)childLevel)
-                && levelContainsMultipleColumns(childLevel))
-            {
-                return null;
-            }
-        }
-
         return aggStar;
     }
 
@@ -720,7 +742,10 @@ RME is this right
      * @param level the level to check
      * @return true if multiple relational columns are involved in this level
      */
-    private static boolean levelContainsMultipleColumns(RolapLevel level) {
+    public static boolean levelContainsMultipleColumns(RolapLevel level) {
+        if (level.isAll()) {
+            return false;
+        }
         MondrianDef.Expression keyExp = level.getKeyExp();
         MondrianDef.Expression ordinalExp = level.getOrdinalExp();
         MondrianDef.Expression captionExp = level.getCaptionExp();
@@ -752,7 +777,7 @@ RME is this right
      * @param level level
      * @return true if agg table has level or not
      */
-    private static boolean isLevelCollapsed(
+    public static boolean isLevelCollapsed(
             AggStar aggStar,
             RolapCubeLevel level)
     {

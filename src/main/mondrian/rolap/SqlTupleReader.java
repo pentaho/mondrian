@@ -928,115 +928,20 @@ public class SqlTupleReader implements TupleReader {
         // Determine if the aggregate table contains the collapsed level
         boolean levelCollapsed =
             (aggStar != null)
-            && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+            && SqlMemberSource.isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+
+        boolean multipleCols =
+            SqlMemberSource.levelContainsMultipleColumns(level);
 
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel currLevel = levels[i];
             if (currLevel.isAll()) {
                 continue;
             }
-            if (!levelCollapsed) {
-                MondrianDef.Expression keyExp = currLevel.getKeyExp();
-                MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
-                MondrianDef.Expression captionExp = currLevel.getCaptionExp();
-                MondrianDef.Expression parentExp = currLevel.getParentExp();
 
-                if (parentExp != null) {
-                    hierarchy.addToFrom(sqlQuery, parentExp);
-                    String parentSql = parentExp.getExpression(sqlQuery);
-                    sqlQuery.addSelectGroupBy(parentSql);
-                    if (whichSelect.equals(WhichSelect.LAST)
-                        || whichSelect.equals(WhichSelect.ONLY))
-                    {
-                        sqlQuery.addOrderBy(parentSql, true, false, true);
-                    }
-                }
-
-                String keySql = keyExp.getExpression(sqlQuery);
-                String ordinalSql = ordinalExp.getExpression(sqlQuery);
-
-                hierarchy.addToFrom(sqlQuery, keyExp);
-                hierarchy.addToFrom(sqlQuery, ordinalExp);
-
-                String captionSql = null;
-                if (captionExp != null) {
-                    captionSql = captionExp.getExpression(sqlQuery);
-                    hierarchy.addToFrom(sqlQuery, captionExp);
-                }
-
-                String alias = sqlQuery.addSelect(keySql);
-                if (needsGroupBy) {
-                    sqlQuery.addGroupBy(keySql, alias);
-                }
-
-                if (!ordinalSql.equals(keySql)) {
-                    alias = sqlQuery.addSelect(ordinalSql);
-                    if (needsGroupBy) {
-                        sqlQuery.addGroupBy(ordinalSql, alias);
-                    }
-                }
-
-                if (captionSql != null) {
-                    alias = sqlQuery.addSelect(captionSql);
-                    if (needsGroupBy) {
-                        sqlQuery.addGroupBy(captionSql, alias);
-                    }
-                }
-
-
-                constraint.addLevelConstraint(
-                    sqlQuery, baseCube, aggStar, currLevel);
-
-                // If this is a select on a virtual cube, the query will be
-                // a union, so the order by columns need to be numbers,
-                // not column name strings or expressions.
-                switch (whichSelect) {
-                case LAST:
-                    boolean nullable = true;
-                    final Dialect dialect = sqlQuery.getDialect();
-                    if (dialect.requiresUnionOrderByExprToBeInSelectClause()
-                        || dialect.requiresUnionOrderByOrdinal())
-                    {
-                        // If the expression is nullable and the dialect
-                        // sorts NULL values first, the dialect will try to
-                        // add an expression 'Iif(expr IS NULL, 1, 0)' into
-                        // the ORDER BY clause, and that is not allowed by this
-                        // dialect. So, pretend that the expression is not
-                        // nullable. NULL values, if present, will be sorted
-                        // wrong, but that's better than generating an invalid
-                        // query.
-                        nullable = false;
-                    }
-                    sqlQuery.addOrderBy(
-                        Integer.toString(
-                            sqlQuery.getCurrentSelectListSize()),
-                        true, false, nullable);
-
-                    break;
-                case ONLY:
-                    sqlQuery.addOrderBy(ordinalSql, true, false, true);
-                    break;
-                }
-
-                RolapProperty[] properties = currLevel.getProperties();
-                for (RolapProperty property : properties) {
-                    String propSql = property.getExp().getExpression(sqlQuery);
-                    alias = sqlQuery.addSelect(propSql);
-                    if (needsGroupBy) {
-                        // Certain dialects allow us to eliminate properties
-                        // from the group by that are functionally dependent
-                        // on the level value
-                        if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
-                            || !property.dependsOnLevelValue())
-                        {
-                            sqlQuery.addGroupBy(propSql, alias);
-                        }
-                    }
-                }
-            } else {
-                // an earlier check was made in chooseAggStar() to verify
-                // that this is a single column level
-
+            if (levelCollapsed && !multipleCols) {
+                // if this is a single column collapsed level, there is
+                // no need to join it with dimension tables
                 RolapStar.Column starColumn =
                     ((RolapCubeLevel) currLevel).getStarKeyColumn();
                 int bitPos = starColumn.getBitPosition();
@@ -1045,6 +950,125 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addSelectGroupBy(q);
                 sqlQuery.addOrderBy(q, true, false, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
+                continue;
+            }
+
+            MondrianDef.Expression keyExp = currLevel.getKeyExp();
+            MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
+            MondrianDef.Expression captionExp = currLevel.getCaptionExp();
+            MondrianDef.Expression parentExp = currLevel.getParentExp();
+
+            if (parentExp != null) {
+                if (!levelCollapsed) {
+                    hierarchy.addToFrom(sqlQuery, parentExp);
+                }
+                String parentSql = parentExp.getExpression(sqlQuery);
+                sqlQuery.addSelectGroupBy(parentSql);
+                if (whichSelect.equals(WhichSelect.LAST)
+                    || whichSelect.equals(WhichSelect.ONLY))
+                {
+                    sqlQuery.addOrderBy(parentSql, true, false, true);
+                }
+            }
+
+            String keySql = keyExp.getExpression(sqlQuery);
+            String ordinalSql = ordinalExp.getExpression(sqlQuery);
+
+            if (!levelCollapsed) {
+                hierarchy.addToFrom(sqlQuery, keyExp);
+                hierarchy.addToFrom(sqlQuery, ordinalExp);
+            }
+            String captionSql = null;
+            if (captionExp != null) {
+                captionSql = captionExp.getExpression(sqlQuery);
+                if (!levelCollapsed) {
+                    hierarchy.addToFrom(sqlQuery, captionExp);
+                }
+            }
+
+            String alias = sqlQuery.addSelect(keySql);
+            if (needsGroupBy) {
+                sqlQuery.addGroupBy(keySql, alias);
+            }
+
+            if (!ordinalSql.equals(keySql)) {
+                alias = sqlQuery.addSelect(ordinalSql);
+                if (needsGroupBy) {
+                    sqlQuery.addGroupBy(ordinalSql, alias);
+                }
+            }
+
+            if (captionSql != null) {
+                alias = sqlQuery.addSelect(captionSql);
+                if (needsGroupBy) {
+                    sqlQuery.addGroupBy(captionSql, alias);
+                }
+            }
+
+            constraint.addLevelConstraint(
+                sqlQuery, baseCube, aggStar, currLevel);
+
+            if (levelCollapsed) {
+                // add join between key and aggstar
+                // join to dimension tables starting
+                // at the lowest granularity and working
+                // towards the fact table
+                hierarchy.addToFromInverse(sqlQuery, keyExp);
+
+                RolapStar.Column starColumn =
+                    ((RolapCubeLevel) currLevel).getStarKeyColumn();
+                int bitPos = starColumn.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                RolapStar.Condition condition =
+                    new RolapStar.Condition(keyExp, aggColumn.getExpression());
+                sqlQuery.addWhere(condition.toString(sqlQuery));
+            }
+
+            // If this is a select on a virtual cube, the query will be
+            // a union, so the order by columns need to be numbers,
+            // not column name strings or expressions.
+            switch (whichSelect) {
+            case LAST:
+                boolean nullable = true;
+                final Dialect dialect = sqlQuery.getDialect();
+                if (dialect.requiresUnionOrderByExprToBeInSelectClause()
+                    || dialect.requiresUnionOrderByOrdinal())
+                {
+                    // If the expression is nullable and the dialect
+                    // sorts NULL values first, the dialect will try to
+                    // add an expression 'Iif(expr IS NULL, 1, 0)' into
+                    // the ORDER BY clause, and that is not allowed by this
+                    // dialect. So, pretend that the expression is not
+                    // nullable. NULL values, if present, will be sorted
+                    // wrong, but that's better than generating an invalid
+                    // query.
+                    nullable = false;
+                }
+                sqlQuery.addOrderBy(
+                    Integer.toString(
+                        sqlQuery.getCurrentSelectListSize()),
+                    true, false, nullable);
+
+                break;
+            case ONLY:
+                sqlQuery.addOrderBy(ordinalSql, true, false, true);
+                break;
+            }
+
+            RolapProperty[] properties = currLevel.getProperties();
+            for (RolapProperty property : properties) {
+                String propSql = property.getExp().getExpression(sqlQuery);
+                alias = sqlQuery.addSelect(propSql);
+                if (needsGroupBy) {
+                    // Certain dialects allow us to eliminate properties
+                    // from the group by that are functionally dependent
+                    // on the level value
+                    if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
+                        || !property.dependsOnLevelValue())
+                    {
+                        sqlQuery.addGroupBy(propSql, alias);
+                    }
+                }
             }
         }
     }
@@ -1075,62 +1099,6 @@ public class SqlTupleReader implements TupleReader {
     }
 
     /**
-     * Determine if a level contains more than a single column for its
-     * data, such as an ordinal column or property column
-     *
-     * @param level the level to check
-     * @return true if multiple relational columns are involved in this level
-     */
-    protected boolean levelContainsMultipleColumns(RolapLevel level) {
-        MondrianDef.Expression keyExp = level.getKeyExp();
-        MondrianDef.Expression ordinalExp = level.getOrdinalExp();
-        MondrianDef.Expression captionExp = level.getCaptionExp();
-
-        if (!keyExp.equals(ordinalExp)) {
-            return true;
-        }
-
-        if (captionExp != null && !keyExp.equals(captionExp)) {
-            return true;
-        }
-
-        RolapProperty[] properties = level.getProperties();
-        for (RolapProperty property : properties) {
-            if (!property.getExp().equals(keyExp)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Determine if the given aggregate table has the dimension level
-     * specified within in (AggStar.FactTable) it, aka collapsed,
-     * or associated with foreign keys (AggStar.DimTable)
-     *
-     * @param aggStar aggregate star if exists
-     * @param level level
-     * @return true if agg table has level or not
-     */
-    protected boolean isLevelCollapsed(
-        AggStar aggStar,
-        RolapCubeLevel level)
-    {
-        boolean levelCollapsed = false;
-        if (level.isAll()) {
-            return levelCollapsed;
-        }
-        RolapStar.Column starColumn = level.getStarKeyColumn();
-        int bitPos = starColumn.getBitPosition();
-        AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-        if (aggColumn.getTable() instanceof AggStar.FactTable) {
-            levelCollapsed = true;
-        }
-        return levelCollapsed;
-    }
-
-    /**
      * Obtains the AggStar instance which corresponds to an aggregate table
      * which can be used to support the member constraint.
      *
@@ -1139,6 +1107,11 @@ public class SqlTupleReader implements TupleReader {
      * @return AggStar for aggregate table
      */
     AggStar chooseAggStar(Evaluator evaluator) {
+
+        if (!MondrianProperties.instance().UseAggregates.get()) {
+            return null;
+        }
+
         if (evaluator == null) {
             return null;
         }
@@ -1199,32 +1172,6 @@ public class SqlTupleReader implements TupleReader {
         // find the aggstar using the masks
         AggStar aggStar = AggregationManager.instance().findAgg(
             star, levelBitKey, measureBitKey, new boolean[]{ false });
-
-        if (aggStar == null) {
-            return null;
-        }
-
-        // determine if any collapsed levels contain more than one column, if
-        // so, the aggStar is not compatible.
-        //
-        // In the future, this feature could be improved by:
-        // 1. changing the sql generation to join the collapsed level to its
-        // dimension table(s) to select the additional columns.
-        // 2. Create members that are missing these values and populate the
-        // values at a later time.
-        // 3. extend agg tables to support additional level columns
-
-        for (TargetBase target : targets) {
-            RolapLevel level = target.level;
-            if (!level.isAll()) {
-                if (isLevelCollapsed(aggStar, (RolapCubeLevel)level)
-                    && levelContainsMultipleColumns(level))
-                {
-                    return null;
-                }
-            }
-        }
-
         return aggStar;
     }
 

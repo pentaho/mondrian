@@ -1,0 +1,67 @@
+# multiple_cols_in_tuple_agg_tbls.csv
+# @version  $Id:$
+## TableName: fact
+## ColumnNames: prod_id,store_id,amount
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 16
+1,10,6
+1,11,3
+2,10,4
+2,11,2
+3,10,6
+3,11,3
+4,10,6
+4,11,3
+5,10,6
+5,11,3
+6,10,6
+6,11,2
+7,10,6
+7,11,2
+8,10,6
+8,11,2
+# aggregate over prod_id 
+## TableName: test_lp_xxx_fact
+## ColumnNames: category,product_category,amount,fact_count
+## ColumnTypes: INTEGER,VARCHAR(30),INTEGER,INTEGER
+## NosOfRows: 4
+1,Prod Cat One,15,4
+1,Prod Cat Two,18,4
+2,Prod Cat One,17,4
+2,Prod Cat Two,16,4
+# store dimension
+## TableName: store_csv
+## ColumnNames: store_id,value
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 2
+10,4
+11,5
+# product dimension t1
+## TableName: product_csv
+## ColumnNames: prod_id,prod_cat,name1
+## ColumnTypes: INTEGER,INTEGER,VARCHAR(30)
+## NosOfRows: 8
+1,1,One
+2,1,Two
+3,2,Three
+4,2,Four
+5,3,Five
+6,3,Six
+7,4,Seven
+8,4,Eight
+# product dimension t2
+## TableName: product_cat
+## ColumnNames: prod_cat,cat,name2,ord,cap
+## ColumnTypes: INTEGER,INTEGER,VARCHAR(30),INTEGER,VARCHAR(30)
+## NosOfRows: 4
+1,1,Prod Cat One,4,PCOne
+2,1,Prod Cat Two,3,PCTwo
+3,2,Prod Cat One,2,PCThree
+4,2,Prod Cat Two,1,PCFour
+# product dimension t3
+## TableName: cat
+## ColumnNames: cat,name3,ord,cap
+## ColumnTypes: INTEGER,VARCHAR(30),INTEGER,VARCHAR(30)
+## NosOfRows: 2
+1,Cat One,2,COne
+2,Cat Two,1,CTwo

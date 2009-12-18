@@ -442,21 +442,32 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     boolean tableExists(String tableName) {
-        return (relation != null) && tableExists(tableName, relation);
+        return (relation != null) && getTable(tableName, relation) != null;
     }
 
-    private static boolean tableExists(
+    MondrianDef.Relation getTable(String tableName) {
+        return relation == null ? null : getTable(tableName, relation);
+    }
+
+    private static MondrianDef.Relation getTable(
         String tableName,
         MondrianDef.RelationOrJoin relationOrJoin)
     {
         if (relationOrJoin instanceof MondrianDef.Relation) {
             MondrianDef.Relation relation =
                 (MondrianDef.Relation) relationOrJoin;
-            return relation.getAlias().equals(tableName);
+            if (relation.getAlias().equals(tableName)) {
+                return relation;
+            } else {
+                return null;
+            }
         } else {
             MondrianDef.Join join = (MondrianDef.Join) relationOrJoin;
-            return tableExists(tableName, join.left)
-                || tableExists(tableName, join.right);
+            MondrianDef.Relation rel = getTable(tableName, join.left);
+            if (rel != null) {
+                return rel;
+            }
+            return getTable(tableName, join.right);
         }
     }
 
@@ -554,6 +565,37 @@ public class RolapHierarchy extends HierarchyBase {
 
     /**
      * Adds to the FROM clause of the query the tables necessary to access the
+     * members of this hierarchy in an inverse join order, used with agg tables.
+     * If <code>expression</code> is not null, adds the tables necessary to
+     * compute that expression.
+     *
+     * <p> This method is idempotent: if you call it more than once, it only
+     * adds the table(s) to the FROM clause once.
+     *
+     * @param query Query to add the hierarchy to
+     * @param expression Level to qualify up to; if null, qualifies up to the
+     *    topmost ('all') expression, which may require more columns and more
+     *    joins
+     */
+    void addToFromInverse(SqlQuery query, MondrianDef.Expression expression) {
+        if (relation == null) {
+            throw Util.newError(
+                "cannot add hierarchy " + getUniqueName()
+                + " to query: it does not have a <Table>, <View> or <Join>");
+        }
+        final boolean failIfExists = false;
+        MondrianDef.RelationOrJoin subRelation = relation;
+        if (relation instanceof MondrianDef.Join) {
+            if (expression != null) {
+                subRelation =
+                    relationSubsetInverse(relation, expression.getTableAlias());
+            }
+        }
+        query.addFrom(subRelation, null, failIfExists);
+    }
+
+    /**
+     * Adds to the FROM clause of the query the tables necessary to access the
      * members of this hierarchy. If <code>expression</code> is not null, adds
      * the tables necessary to compute that expression.
      *
@@ -632,6 +674,40 @@ public class RolapHierarchy extends HierarchyBase {
             if (joinCondition != null) {
                 query.addWhere(joinCondition);
             }
+        }
+    }
+
+    /**
+     * Returns the smallest subset of <code>relation</code> which contains
+     * the relation <code>alias</code>, or null if these is no relation with
+     * such an alias, in inverse join order, used for agg tables.
+     *
+     * @param relation the relation in which to look for table by its alias
+     * @param alias table alias to search for
+     * @return the smallest containing relation or null if no matching table
+     * is found in <code>relation</code>
+     */
+    private static MondrianDef.RelationOrJoin relationSubsetInverse(
+        MondrianDef.RelationOrJoin relation,
+        String alias)
+    {
+        if (relation instanceof MondrianDef.Relation) {
+            MondrianDef.Relation table =
+                (MondrianDef.Relation) relation;
+            return table.getAlias().equals(alias)
+                ? relation
+                : null;
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+            MondrianDef.RelationOrJoin leftRelation =
+                relationSubsetInverse(join.left, alias);
+            return (leftRelation == null)
+                ? relationSubsetInverse(join.right, alias)
+                : join;
+
+        } else {
+            throw Util.newInternal("bad relation type " + relation);
         }
     }
 
