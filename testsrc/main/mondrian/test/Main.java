@@ -37,6 +37,8 @@ import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
 import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
+import mondrian.rolap.aggmatcher.MultipleColsInTupleAggTest;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -279,6 +281,7 @@ public class Main extends TestSuite {
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
             addTest(suite, SteelWheelsTestCase.class);
+            addTest(suite, MultipleColsInTupleAggTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
