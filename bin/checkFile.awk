@@ -22,13 +22,13 @@ function isJava(fname) {
     return !isCpp(fname);
 }
 function push(val) {
-   switchStack[switchStackLen++] = val;
+    switchStack[switchStackLen++] = val;
 }
 function pop() {
-   --switchStackLen
-   val = switchStack[switchStackLen];
-   delete switchStack[switchStackLen];
-   return val;
+    --switchStackLen
+    val = switchStack[switchStackLen];
+    delete switchStack[switchStackLen];
+    return val;
 }
 BEGIN {
     # pre-compute regexp for single-quoted strings
@@ -163,36 +163,47 @@ s ~ /\<(if|while|for|switch)\>/ {
 s ~ /[[:alnum:]]\(/ &&
 s !~ /\<(if|while|for|switch|assert)\>/ {
     ss = s;
-    gsub(/.*[[:alnum:]]\(/, "(", ss);
-    opens = ss;
-    gsub(/[^(]/, "", opens);
-    closes = ss;
-    gsub(/[^)]/, "", closes);
-    if (length(opens) > length(closes)) {
-        if (s ~ /,$/) {
-            bras = s;
-            gsub(/[^<]/, "", bras);
-            kets = s;
-            gsub(/[^>]/, "", kets);
-            if (length(bras) > length(kets)) {
-                # Ignore case like 'for (Map.Entry<Foo,{nl} Bar> entry : ...'
-            } else if (s ~ / for /) {
-                # Ignore case like 'for (int i = 1,{nl} j = 2; i < j; ...'
+    while (match(ss, /[[:alnum:]]\(/)) {
+        ss = substr(ss, RSTART + RLENGTH - 1);
+        parens = ss;
+        gsub(/[^()]/, "", parens);
+        while (substr(parens, 1, 2) == "()") {
+            parens = substr(parens, 3);
+        }
+        opens = parens;
+        gsub(/[^(]/, "", opens);
+        closes = parens;
+        gsub(/[^)]/, "", closes);
+        if (length(opens) > length(closes)) {
+            if (ss ~ /,$/) {
+                bras = ss;
+                gsub(/[^<]/, "", bras);
+                kets = ss;
+                gsub(/->/, "", kets);
+                gsub(/[^>]/, "", kets);
+                if (length(bras) > length(kets)) {
+                    # Ignore case like 'for (Map.Entry<Foo,{nl} Bar> entry : ...'
+                } else if (s ~ / for /) {
+                    # Ignore case like 'for (int i = 1,{nl} j = 2; i < j; ...'
+                } else {
+                    error(                                              \
+                        fname, FNR,                                     \
+                        "multi-line parameter list should start with newline");
+                    break;
+                }
+            } else if (s ~ /[;(]( *\\)?$/) {
+                # If open paren is at end of line (with optional backslash
+                # for macros), we're fine.
+            } else if (s ~ /@.*\({/) {
+                # Ignore Java annotations.
             } else {
                 error(                                                  \
                     fname, FNR,                                         \
-                    "multi-line parameter list should start with newline");
+                    "Open parenthesis should be at end of line (function call spans several lines)");
+                break;
             }
-        } else if (s ~ /[;(]( *\\)?$/) {
-            # If open paren is at end of line (with optional backslash
-            # for macros), we're fine.
-        } else if (s ~ /@.*\({/) {
-            # Ignore Java annotations.
-        } else {
-            error(                                                      \
-                fname, FNR,                                             \
-                "Open parenthesis should be at end of line (function call spans several lines)");
         }
+        ss = substr(ss, 2); # remove initial "("
     }
 }
 s ~ /\<switch\>/ {
@@ -309,6 +320,13 @@ match(s, /([]A-Za-z0-9() ] *)(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\|
     else if (lenient && fname ~ /(fennel)/ && a[1] = ",") {} # not enabled yet
     else {
         error(fname, FNR, "operator '" a[2] "' must be followed by space");
+    }
+}
+match(s, /( )(,)/, a) {
+    # < and > are not handled here - they have special treatment below
+    if (!matchFile(fname)) {}
+    else {
+        error(fname, FNR, "operator '" a[2] "' must not be preceded by space");
     }
 }
 match(s, / (+|-|\*|\/|==|>=|<=|!=|<<|<<<|>>|&|&&|\|\||\?|:)$/, a) || \
