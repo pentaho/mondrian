@@ -443,8 +443,10 @@ public class SqlQuery {
         String left = joinCondition.getLeft().getTableAlias();
         String right = joinCondition.getRight().getTableAlias();
         if (fromAliases.contains(left) && fromAliases.contains(right)) {
-            addWhere(joinCondition.getLeft(this),
-                " = ", joinCondition.getRight(this));
+            addWhere(
+                joinCondition.getLeft(this),
+                " = ",
+                joinCondition.getRight(this));
         }
     }
 

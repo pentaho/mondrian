@@ -113,34 +113,41 @@ public class MondrianTestRunner extends BaseTestRunner {
         // Set up a timit limit if specified
         if (getTimeLimit() > 0) {
             Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                public void run() {
-                    setStopReason(
-                        "Test stopped because the time limit expired.");
-                    result.stop();
-                }
-            }, 1000L * (long)getTimeLimit());
+            timer.schedule(
+                new TimerTask() {
+                    public void run() {
+                        setStopReason(
+                            "Test stopped because the time limit expired.");
+                        result.stop();
+                    }
+                },
+                1000L * (long)getTimeLimit());
         }
 
         // Start a new thread for each virtual user
         Thread threads[] = new Thread[getVUsers()];
         for (int i = 0; i < getVUsers(); i++) {
-            threads[i] = new Thread(new Runnable() {
-                public void run() {
-                    for (int j = 0; getIterations() == 0 || j < getIterations();
-                         j++)
-                    {
-                        suite.run(result);
-                        if (!result.wasSuccessful()) {
-                            setStopReason("Test stopped due to errors.");
-                            result.stop();
+            threads[i] =
+                new Thread(
+                    new Runnable() {
+                        public void run() {
+                            for (int j = 0;
+                                getIterations() == 0 || j < getIterations();
+                                j++)
+                            {
+                                suite.run(result);
+                                if (!result.wasSuccessful()) {
+                                    setStopReason(
+                                        "Test stopped due to errors.");
+                                    result.stop();
+                                }
+                                if (result.shouldStop()) {
+                                    break;
+                                }
+                            }
                         }
-                        if (result.shouldStop()) {
-                            break;
-                        }
-                    }
-                }
-            }, "Test thread " + i);
+                    },
+                    "Test thread " + i);
             threads[i].start();
         }
         System.out.println("All " + getVUsers() + " thread(s) started.");

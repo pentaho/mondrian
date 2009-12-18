@@ -2195,17 +2195,18 @@ public class NonEmptyTest extends BatchTestCase {
         // now we run the same query again, this time everything must come out
         // of the cache
         RolapNativeRegistry reg = getRegistry(con);
-        reg.setListener(new Listener() {
-            public void foundEvaluator(NativeEvent e) {
-            }
+        reg.setListener(
+            new Listener() {
+                public void foundEvaluator(NativeEvent e) {
+                }
 
-            public void foundInCache(TupleEvent e) {
-            }
+                public void foundInCache(TupleEvent e) {
+                }
 
-            public void executingSql(TupleEvent e) {
-                fail("expected caching");
-            }
-        });
+                public void executingSql(TupleEvent e) {
+                    fail("expected caching");
+                }
+            });
         try {
             c.run();
         } finally {

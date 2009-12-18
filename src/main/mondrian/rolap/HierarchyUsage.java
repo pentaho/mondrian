@@ -223,7 +223,8 @@ public class HierarchyUsage {
             init(cube, hierarchy, null);
         }
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug(toString()
+            getLogger().debug(
+                toString()
                 + ", cubeDim="
                 + cubeDim.getClass().getName());
         }

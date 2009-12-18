@@ -2617,23 +2617,23 @@ public class FunctionTest extends FoodMartTestCase {
         Result result =
             executeQuery(
                 "select {[Gender].[F].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(
-            result.getAxes()[0].getPositions().get(0).get(0).getName()
-                .equals("M"));
+        assertEquals(
+            "M",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testFirstInLevel2() {
         Result result =
             executeQuery(
                 "select {[Gender].[M].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
+        assertEquals(0, result.getAxes()[0].getPositions().size());
     }
 
     public void testAll2() {
         Result result =
             executeQuery("select {[Gender].PrevMember} ON COLUMNS from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
+        assertEquals(0, result.getAxes()[0].getPositions().size());
     }
 
 
@@ -2642,9 +2642,9 @@ public class FunctionTest extends FoodMartTestCase {
             executeQuery(
                 "select{ [Product].[All Products].[Drink].Parent} on columns "
                 + "from Sales");
-        Assert.assertTrue(
-            result.getAxes()[0].getPositions().get(0).get(0).getName()
-                .equals("All Products"));
+        assertEquals(
+            "All Products",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testFirstInLevel5() {
@@ -2652,8 +2652,9 @@ public class FunctionTest extends FoodMartTestCase {
             executeQuery(
                 "select {[Time].[1997].[Q2].[4].Parent} on columns,"
                 + "{[Gender].[M]} on rows from Sales");
-        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0)
-            .getName().equals("Q2"));
+        assertEquals(
+            "Q2",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testAll5() {
@@ -2662,32 +2663,32 @@ public class FunctionTest extends FoodMartTestCase {
                 "select {[Time].[1997].[Q2].Parent} on columns,"
                 + "{[Gender].[M]} on rows from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(
-            result.getAxes()[0].getPositions().get(0).get(0).getName()
-                .equals("1997"));
+        assertEquals(
+            "1997",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testBasic() {
         Result result =
             executeQuery(
                 "select {[Gender].[M].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(
-            result.getAxes()[0].getPositions().get(0).get(0).getName()
-                .equals("F"));
+        assertEquals(
+            "F",
+            result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testFirstInLevel() {
         Result result =
             executeQuery(
                 "select {[Gender].[F].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
+        assertEquals(0, result.getAxes()[0].getPositions().size());
     }
 
     public void testAll() {
         Result result =
             executeQuery("select {[Gender].PrevMember} ON COLUMNS from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
+        assertEquals(0, result.getAxes()[0].getPositions().size());
     }
 
     public void testAggregateDepends() {
@@ -6453,7 +6454,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "from Sales\n"
             + "where ([Time].[1997].[Q1])");
         List<Position> rows = result.getAxes()[1].getPositions();
-        Assert.assertTrue(rows.size() == 3);
+        Assert.assertEquals(3, rows.size());
         Assert.assertEquals("F", rows.get(0).get(0).getName());
         Assert.assertEquals("WA", rows.get(0).get(1).getName());
         Assert.assertEquals("M", rows.get(1).get(0).getName());

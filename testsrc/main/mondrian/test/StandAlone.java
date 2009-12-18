@@ -396,7 +396,8 @@ public class StandAlone {
 
     private static void printDimension(Dimension dim) {
         DimensionType dimensionType = dim.getDimensionType();
-        System.out.println("\tDimension " + dim.getName()
+        System.out.println(
+            "\tDimension " + dim.getName()
             + " type: " + dimensionType.name());
 
         System.out.println("\t    Description: " + dim.getDescription());

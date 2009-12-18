@@ -1500,12 +1500,14 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
     private static Id createSentinelId(Level level) {
-        return createId(level.getDimension().getName(),
+        return createId(
+            level.getDimension().getName(),
             createMangledName(level, SENTINEL_PREFIX));
     }
 
     private static Id createMemberId(Level level) {
-        return createId(level.getDimension().getName(),
+        return createId(
+            level.getDimension().getName(),
             createMangledName(level, MEMBER_NAME_PREFIX));
     }
 

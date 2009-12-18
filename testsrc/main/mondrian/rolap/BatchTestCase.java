@@ -650,17 +650,18 @@ public class BatchTestCase extends FoodMartTestCase {
         getConnection().getCacheControl(null).flushSchemaCache();
         Connection con = getTestContext().getFoodMartConnection(false);
         RolapNativeRegistry reg = getRegistry(con);
-        reg.setListener(new Listener() {
-            public void foundEvaluator(NativeEvent e) {
-                fail("should not be executed native");
-            }
+        reg.setListener(
+            new Listener() {
+                public void foundEvaluator(NativeEvent e) {
+                    fail("should not be executed native");
+                }
 
-            public void foundInCache(TupleEvent e) {
-            }
+                public void foundInCache(TupleEvent e) {
+                }
 
-            public void executingSql(TupleEvent e) {
-            }
-        });
+                public void executingSql(TupleEvent e) {
+                }
+            });
 
         TestCase c = new TestCase(con, 0, rowCount, mdx);
         Result result = c.run();

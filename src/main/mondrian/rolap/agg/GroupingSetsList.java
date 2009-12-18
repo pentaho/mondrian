@@ -79,8 +79,8 @@ class GroupingSetsList {
         List<RolapStar.Column[]> groupingColumns =
             new ArrayList<RolapStar.Column[]>();
         for (GroupingSet aggBatchDetail : groupingSets) {
-            groupingColumns.add(aggBatchDetail.getSegments()[0]
-                .aggregation.getColumns());
+            groupingColumns.add(
+                aggBatchDetail.getSegments()[0].aggregation.getColumns());
         }
         return groupingColumns;
     }

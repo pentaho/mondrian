@@ -1086,8 +1086,9 @@ RME is this right
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '"
-            + level + "' must be unique");
+        Util.assertTrue(
+            level.isUnique(),
+            "parent-child level '" + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
         String parentId = level.getParentExp().getExpression(sqlQuery);
@@ -1158,8 +1159,9 @@ RME is this right
         RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '"
-            + level + "' must be unique");
+        Util.assertTrue(
+            level.isUnique(),
+            "parent-child level '" + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
         String parentId = level.getParentExp().getExpression(sqlQuery);

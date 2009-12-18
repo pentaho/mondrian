@@ -446,7 +446,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         key.set(1);
         assertEquals(key, bitKeysList.get(1));
 
-        assertTrue(new GroupingSetsList(new ArrayList<GroupingSet>())
+        assertTrue(
+            new GroupingSetsList(
+                new ArrayList<GroupingSet>())
             .getRollupColumnsBitKeyList().isEmpty());
     }
 
