@@ -207,6 +207,13 @@ public class TestContext {
         return getFoodMartConnection();
     }
 
+    public synchronized void flushSchemaCache() {
+        // it's pointless to flush the schema cache if we
+        // have a handle on the connection object already
+        clearConnection();
+        getConnection().getCacheControl(null).flushSchemaCache();
+    }
+
     public synchronized void clearConnection() {
         if (foodMartConnection != null) {
             try {

@@ -2644,7 +2644,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-46">MONDRIAN-46</a>.
      */
     public void testBugMondrian46() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         assertQueryReturns(
             "select {[Measures].[Customer Count]} ON columns,\n"
             + "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows\n"
@@ -3583,7 +3583,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * test has been known to fail when run standalone.
      */
     public void testBasketAnalysisAfterFlush() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         testBasketAnalysis();
     }
 
@@ -4784,8 +4784,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                                 QueryAndResult query = queries.get(queryIndex);
                                 assertQueryReturns(query.query, query.result);
                                 if (flush && i == 0) {
-                                    getConnection().getCacheControl(null)
-                                        .flushSchemaCache();
+                                    TestContext.instance().flushSchemaCache();
                                 }
                                 synchronized (executeCount) {
                                     executeCount[0]++;
@@ -4913,7 +4912,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * were used in filters.
      */
     public void testFilteredCrossJoin() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Measures].[Store Sales]} on columns,\n"
             + "  NON EMPTY Crossjoin(\n"
@@ -4946,7 +4945,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             // memory.
             return;
         }
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Measures].[Store Sales]} on columns,\n"
             + "  NON EMPTY Crossjoin(\n"
@@ -4969,7 +4968,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * (see http://blogs.msdn.com/bi_systems/articles/162841.aspx)
      */
     public void testNonEmptyNonEmptyCrossJoin1() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n"
             + "   CrossJoin(\n"
@@ -4983,7 +4982,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin2() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n"
             + "   NonEmptyCrossJoin(\n"
@@ -4997,7 +4996,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin3() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n"
             + "   Non Empty CrossJoin(\n"
@@ -5011,7 +5010,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyNonEmptyCrossJoin4() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
             "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns,\n"
             + "   Non Empty NonEmptyCrossJoin(\n"

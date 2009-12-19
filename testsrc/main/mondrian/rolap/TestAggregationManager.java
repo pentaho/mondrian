@@ -1241,7 +1241,7 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
 
         String cube = "<Cube name=\"Sales_Prod_Ord\">\n"
         + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1385,8 +1385,7 @@ public class TestAggregationManager extends BatchTestCase {
         }
 
         // flush cache, to be sure sql is executed
-
-        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
 
         // This first query verifies that simple collapsed levels in aggregate
         // tables load as tuples correctly.  The collapsed levels appear
@@ -1495,7 +1494,7 @@ public class TestAggregationManager extends BatchTestCase {
         }
 
         // flush cache to be sure sql is executed
-        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
 
         SqlPattern[] patterns = {
             new SqlPattern(
