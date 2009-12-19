@@ -1487,6 +1487,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "    <AggExclude pattern=\"agg_l_03_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n"
+                + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
                 + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
                 + "      <AggFactCount column=\"fact_count\"/>\n"
                 + "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
@@ -1563,6 +1564,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n"
+                + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
                 + "    <AggName name=\"agg_l_03_sales_fact_1997\">\n"
                 + "      <AggFactCount column=\"fact_count\"/>\n"
                 + "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
@@ -2443,6 +2445,12 @@ public class SchemaTest extends FoodMartTestCase {
             && TestContext.instance().getDialect().getDatabaseProduct()
             != Dialect.DatabaseProduct.MYSQL)
         {
+            return;
+        }
+
+        // skip this test if using aggregates, the agg tables do not
+        // enforce the SQL element in the fact table
+        if (MondrianProperties.instance().UseAggregates.booleanValue()) {
             return;
         }
 

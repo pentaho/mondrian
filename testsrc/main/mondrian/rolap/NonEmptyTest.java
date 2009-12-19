@@ -924,7 +924,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testExpandWithTwoEmptyInputs() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         // Query should return empty result.
         checkNotNative(
@@ -1873,7 +1873,7 @@ public class NonEmptyTest extends BatchTestCase {
      * is not evaluated in NON EMPTY context.
      */
     public void testCalcMemberWithNonEmptyCrossJoin() {
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Result result = executeQuery(
                 "with member [Measures].[CustomerCount] as \n"
                 + "'Count(CrossJoin({[Product].[All Products]}, [Customers].[Name].Members))'\n"
@@ -1929,7 +1929,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         private Result run() {
-            getConnection().getCacheControl(null).flushSchemaCache();
+            TestContext.instance().flushSchemaCache();
             IntegerProperty monLimit =
                 MondrianProperties.instance().ResultLimit;
             int oldLimit = monLimit.get();
@@ -2250,7 +2250,8 @@ public class NonEmptyTest extends BatchTestCase {
         // now we run the same query again, this time everything must come out
         // of the cache
         RolapNativeRegistry reg = getRegistry(con);
-        reg.setListener(new Listener() {
+        reg.setListener(
+                new Listener() {
             public void foundEvaluator(NativeEvent e) {
             }
 
@@ -3664,10 +3665,11 @@ public class NonEmptyTest extends BatchTestCase {
     {
         mdx = TestContext.instance().upgradeQuery(mdx);
 
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         Connection con = getTestContext().getFoodMartConnection(false);
         RolapNativeRegistry reg = getRegistry(con);
-        reg.setListener(new Listener() {
+        reg.setListener(
+                new Listener() {
             public void foundEvaluator(NativeEvent e) {
                 fail("should not be executed native");
             }
@@ -3755,7 +3757,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         mdx = TestContext.instance().upgradeQuery(mdx);
 
-        getConnection().getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
         try {
             logger.debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
@@ -3789,7 +3791,7 @@ public class NonEmptyTest extends BatchTestCase {
             con.close();
 
             logger.debug("*** Interpreter: " + mdx);
-            getConnection().getCacheControl(null).flushSchemaCache();
+            TestContext.instance().flushSchemaCache();
             con = getTestContext().getFoodMartConnection(false);
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);

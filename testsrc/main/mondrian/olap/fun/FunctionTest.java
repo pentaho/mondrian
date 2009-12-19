@@ -2638,8 +2638,9 @@ public class FunctionTest extends FoodMartTestCase {
             executeQuery(
                 "select {[Time].[1997].[Q2].[4].Parent} on columns,"
                 + "{[Gender].[M]} on rows from Sales");
-        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0)
-            .getName().equals("Q2"));
+        Assert.assertTrue(
+                result.getAxes()[0].getPositions().get(0).get(0)
+                .getName().equals("Q2"));
     }
 
     public void testAll5() {
@@ -6818,7 +6819,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // clear the cache so that future tests don't fail that expect a
         // specific set of cubes
-        connection.getCacheControl(null).flushSchemaCache();
+        TestContext.instance().flushSchemaCache();
     }
 
     public void testIntersect() {
