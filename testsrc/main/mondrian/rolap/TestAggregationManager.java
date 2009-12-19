@@ -1234,7 +1234,7 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testOrdinalExprAggTuplesAndChildren() {
-        // this verifies that we can load properties, ordinals, etc out of 
+        // this verifies that we can load properties, ordinals, etc out of
         // agg tables in member lookups (tuples and children)
         if (!(MondrianProperties.instance().UseAggregates.get()
                 && MondrianProperties.instance().ReadAggregates.get()))
@@ -1290,37 +1290,49 @@ public class TestAggregationManager extends BatchTestCase {
             + "non empty CrossJoin({[Product].[Food].[Deli].[Meat]},{[Gender].[M]}) on rows "
             + "from [Sales_Prod_Ord] ";
 
-        // first check that the sql is generated correctly 
+        // first check that the sql is generated correctly
 
         SqlPattern[] patterns = {
                 new SqlPattern(
                     ACCESS_MYSQL,
-                    "select " +
-                    "`product_class`.`product_family` as `c0`, " +
-                    "`product_class`.`product_department` as `c1`, " +
-                    "`product_class`.`product_category` as `c2`, " +
-                    "`product_class`.`product_department` as `c3`, " +
-                    "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` " +
-                    "from " +
-                    "`agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`, " +
-                    "`product_class` as `product_class` " +
-                    "where " +
-                    "`product_class`.`product_family` = `agg_g_ms_pcat_sales_fact_1997`.`product_family` " +
-                    "and `product_class`.`product_department` = `agg_g_ms_pcat_sales_fact_1997`.`product_department` " +
-                    "and `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category` " +
-                    "and (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' " +
-                    "and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' " +
-                    "and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food') " +
-                    "and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') " +
-                    "group by " +
-                    "`product_class`.`product_family`, `product_class`.`product_department`, " +
-                    "`product_class`.`product_category`, `agg_g_ms_pcat_sales_fact_1997`.`gender` " +
-                    "order by ISNULL(`product_class`.`product_family`), " +
-                    "`product_class`.`product_family` ASC, ISNULL(`product_class`.`product_department`), " +
-                    "`product_class`.`product_department` ASC, ISNULL(`product_class`.`product_category`), " +
-                    "`product_class`.`product_category` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), " +
-                    "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
-                    ,
+                    "select "
+                    + "`product_class`.`product_family` as `c0`, "
+                    + "`product_class`.`product_department` as `c1`, "
+                    + "`product_class`.`product_category` as `c2`, "
+                    + "`product_class`.`product_department` as `c3`, "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` "
+                    + "from "
+                    + "`agg_g_ms_pcat_sales_fact_1997` as "
+                    + "`agg_g_ms_pcat_sales_fact_1997`, "
+                    + "`product_class` as `product_class` "
+                    + "where "
+                    + "`product_class`.`product_family` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_family` "
+                    + "and `product_class`.`product_department` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department` "
+                    + "and `product_class`.`product_category` = "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_category` "
+                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`product_category`"
+                    + " = 'Meat' "
+                    + "and "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department`"
+                    + " = 'Deli' "
+                    + "and `agg_g_ms_pcat_sales_fact_1997`.`product_family`"
+                    + " = 'Food') "
+                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') "
+                    + "group by "
+                    + "`product_class`.`product_family`, "
+                    + "`product_class`.`product_department`, "
+                    + "`product_class`.`product_category`, "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` "
+                    + "order by ISNULL(`product_class`.`product_family`), "
+                    + "`product_class`.`product_family` ASC, "
+                    + "ISNULL(`product_class`.`product_department`), "
+                    + "`product_class`.`product_department` ASC, "
+                    + "ISNULL(`product_class`.`product_category`), "
+                    + "`product_class`.`product_category` ASC, "
+                    + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), "
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                     null)
             };
 
@@ -1339,8 +1351,12 @@ public class TestAggregationManager extends BatchTestCase {
 
         Result result = testContext.executeQuery(query);
         // this verifies that the caption for meat is deli
-        assertEquals("Meat", result.getAxes()[1].getPositions().get(0).get(0).getName());
-        assertEquals("Deli", result.getAxes()[1].getPositions().get(0).get(0).getCaption());
+        assertEquals(
+                "Meat",
+                result.getAxes()[1].getPositions().get(0).get(0).getName());
+        assertEquals(
+                "Deli",
+                result.getAxes()[1].getPositions().get(0).get(0).getCaption());
 
         // Test children
         query =
@@ -1358,10 +1374,9 @@ public class TestAggregationManager extends BatchTestCase {
                 + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
                 + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
                 + "Row #0: 4,728\n"
-                + "Row #1: 1,262\n"
-            );
+                + "Row #1: 1,262\n");
     }
-    
+
     public void testAggregatingTuples() {
         if (!(MondrianProperties.instance().UseAggregates.get()
                 && MondrianProperties.instance().ReadAggregates.get()))
@@ -1491,8 +1506,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
-                ,
+                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 

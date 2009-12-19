@@ -545,7 +545,7 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Adds to the FROM clause of the query the tables necessary to access the
      * members of this hierarchy in an inverse join order, used with agg tables.
-     * If <code>expression</code> is not null, adds the tables necessary to 
+     * If <code>expression</code> is not null, adds the tables necessary to
      * compute that expression.
      *
      * <p> This method is idempotent: if you call it more than once, it only
@@ -654,7 +654,7 @@ public class RolapHierarchy extends HierarchyBase {
      * Returns the smallest subset of <code>relation</code> which contains
      * the relation <code>alias</code>, or null if these is no relation with
      * such an alias, in inverse join order, used for agg tables.
-     * 
+     *
      * @param relation the relation in which to look for table by its alias
      * @param alias table alias to search for
      * @return the smallest containing relation or null if no matching table

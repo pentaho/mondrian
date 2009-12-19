@@ -606,7 +606,8 @@ RME is this right
             int bitPos = starColumn.getBitPosition();
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
             RolapStar.Condition condition =
-                new RolapStar.Condition(level.getKeyExp(), 
+                new RolapStar.Condition(
+                        level.getKeyExp(),
                         aggColumn.getExpression());
             sqlQuery.addWhere(condition.toString(sqlQuery));
             hierarchy.addToFromInverse(sqlQuery, level.getKeyExp());
@@ -620,7 +621,8 @@ RME is this right
                 bitPos = starColumn.getBitPosition();
                 aggColumn = aggStar.lookupColumn(bitPos);
                 condition =
-                    new RolapStar.Condition(parentLevel.getKeyExp(), 
+                    new RolapStar.Condition(
+                            parentLevel.getKeyExp(),
                             aggColumn.getExpression());
                 sqlQuery.addWhere(condition.toString(sqlQuery));
                 parentLevel = parentLevel.getParentLevel();
@@ -667,8 +669,9 @@ RME is this right
         MemberChildrenConstraint constraint,
         RolapMember member)
     {
-        if (!MondrianProperties.instance().UseAggregates.get() || 
-                !(constraint instanceof SqlContextConstraint)) {
+        if (!MondrianProperties.instance().UseAggregates.get()
+                || !(constraint instanceof SqlContextConstraint))
+        {
             return null;
         }
         SqlContextConstraint contextConstraint =
@@ -1086,8 +1089,9 @@ RME is this right
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '"
-            + level + "' must be unique");
+        Util.assertTrue(
+                level.isUnique(), "parent-child level '"
+                + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
         String parentId = level.getParentExp().getExpression(sqlQuery);
@@ -1158,8 +1162,9 @@ RME is this right
         RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '"
-            + level + "' must be unique");
+        Util.assertTrue(
+                level.isUnique(), "parent-child level '"
+                + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
         String parentId = level.getParentExp().getExpression(sqlQuery);

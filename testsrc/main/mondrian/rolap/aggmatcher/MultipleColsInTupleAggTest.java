@@ -53,7 +53,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         Result aresult = getCubeTestContext().executeQuery(mdx2);
         Object av = aresult.getCell(new int[]{0}).getValue();
 
-        // unless there is a way to flush the cache, I'm skeptical about these results
+        // unless there is a way to flush the cache,
+        // I'm skeptical about these results
         props.UseAggregates.setString("true");
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
@@ -72,13 +73,15 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             return;
         }
 
-        String mdx = "select " +
-        	"{[Measures].[Total]} on columns, " +
-        	"non empty CrossJoin({[Product].[Cat One].[Prod Cat One]},{[Store].[All Stores]}) on rows " +
-        	"from [Fact]";
+        String mdx =
+            "select "
+            + "{[Measures].[Total]} on columns, "
+            + "non empty CrossJoin({[Product].[Cat One].[Prod Cat One]},"
+            + "{[Store].[All Stores]}) on rows "
+            + "from [Fact]";
 
         getCubeTestContext().assertQueryReturns(
-                mdx,                             
+                mdx,
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
@@ -93,9 +96,10 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             return;
         }
 
-        String mdx = "select {[Measures].[Total]} on columns, non empty [Product].[Cat One].Children on rows from [Fact]";
+        String mdx = "select {[Measures].[Total]} on columns, "
+            + "non empty [Product].[Cat One].Children on rows from [Fact]";
         getCubeTestContext().assertQueryReturns(
-                mdx,                             
+                mdx,
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
@@ -109,37 +113,47 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
     protected String getCubeDescription() {
         return "<Cube name='Fact'>\n"
-               + "<Table name='fact'>\n"
-               + " <AggName name='test_lp_xxx_fact'>\n"
-               + "  <AggFactCount column='fact_count'/>\n" 
-               + "  <AggMeasure column='amount' name='[Measures].[Total]'/>\n" 
-               + "  <AggLevel column='category' name='[Product].[Category]'/>\n"
-               + "  <AggLevel column='product_category' name='[Product].[Product Category]'/>\n" 
-               + " </AggName>\n"
-               + "</Table>"
-               + "<Dimension name='Store' foreignKey='store_id'>\n"
-               + " <Hierarchy hasAll='true' primaryKey='store_id'>\n"
-               + "  <Table name='store_csv'/>\n"
-               + "  <Level name='Store Value' column='value' uniqueMembers='true'/>\n"
-               + " </Hierarchy>\n"
-               + "</Dimension>\n"
-               + "<Dimension name='Product' foreignKey='prod_id'>\n"
-               + " <Hierarchy hasAll='true' primaryKey='prod_id' primaryKeyTable='product_csv'>\n"
-               + " <Join leftKey='prod_cat' rightAlias='product_cat' rightKey='prod_cat'>\n"
-               + "  <Table name='product_csv'/>\n" 
-               + "  <Join leftKey='cat' rightKey='cat'>\n"
-               + "   <Table name='product_cat'/>\n"
-               + "   <Table name='cat'/>\n"
-               + "  </Join>"
-               + " </Join>\n"
-               + " <Level name='Category' table='cat' column='cat' ordinalColumn='ord' captionColumn='cap' nameColumn='name3' uniqueMembers='false'/>\n"
-               + " <Level name='Product Category' table='product_cat' column='name2' ordinalColumn='ord' captionColumn='cap' uniqueMembers='false'/>\n"
-               + " <Level name='Product Name' table='product_csv' column='name1' uniqueMembers='true'/>\n"
-               + " </Hierarchy>\n"
-               + "</Dimension>\n"
-               + "<Measure name='Total' \n"
-               + "    column='amount' aggregator='sum'\n"
-               + "   formatString='#,###'/>\n"
-               + "</Cube>";
+           + "<Table name='fact'>\n"
+           + " <AggName name='test_lp_xxx_fact'>\n"
+           + "  <AggFactCount column='fact_count'/>\n"
+           + "  <AggMeasure column='amount' name='[Measures].[Total]'/>\n"
+           + "  <AggLevel column='category' name='[Product].[Category]'/>\n"
+           + "  <AggLevel column='product_category' "
+           + "            name='[Product].[Product Category]'/>\n"
+           + " </AggName>\n"
+           + "</Table>"
+           + "<Dimension name='Store' foreignKey='store_id'>\n"
+           + " <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+           + "  <Table name='store_csv'/>\n"
+           + "  <Level name='Store Value' column='value' "
+           + "         uniqueMembers='true'/>\n"
+           + " </Hierarchy>\n"
+           + "</Dimension>\n"
+           + "<Dimension name='Product' foreignKey='prod_id'>\n"
+           + " <Hierarchy hasAll='true' primaryKey='prod_id' "
+           + "primaryKeyTable='product_csv'>\n"
+           + " <Join leftKey='prod_cat' rightAlias='product_cat' "
+           + "rightKey='prod_cat'>\n"
+           + "  <Table name='product_csv'/>\n"
+           + "  <Join leftKey='cat' rightKey='cat'>\n"
+           + "   <Table name='product_cat'/>\n"
+           + "   <Table name='cat'/>\n"
+           + "  </Join>"
+           + " </Join>\n"
+           + " <Level name='Category' table='cat' column='cat' "
+           + "ordinalColumn='ord' captionColumn='cap' nameColumn='name3' "
+           + "uniqueMembers='false'/>\n"
+           + " <Level name='Product Category' table='product_cat' "
+           + "column='name2' ordinalColumn='ord' captionColumn='cap' "
+           + "uniqueMembers='false'/>\n"
+           + " <Level name='Product Name' table='product_csv' column='name1' "
+           + "uniqueMembers='true'/>\n"
+           + " </Hierarchy>\n"
+           + "</Dimension>\n"
+           + "<Measure name='Total' \n"
+           + "    column='amount' aggregator='sum'\n"
+           + "   formatString='#,###'/>\n"
+           + "</Cube>";
     }
 }
+// End MultipleColsInTupleAggTest.java

@@ -957,7 +957,7 @@ public class SqlTupleReader implements TupleReader {
             MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
             MondrianDef.Expression captionExp = currLevel.getCaptionExp();
             MondrianDef.Expression parentExp = currLevel.getParentExp();
-            
+
             if (parentExp != null) {
                 if (!levelCollapsed) {
                     hierarchy.addToFrom(sqlQuery, parentExp);
@@ -1015,7 +1015,7 @@ public class SqlTupleReader implements TupleReader {
                     ((RolapCubeLevel) currLevel).getStarKeyColumn();
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-                RolapStar.Condition condition = 
+                RolapStar.Condition condition =
                     new RolapStar.Condition(keyExp, aggColumn.getExpression());
                 sqlQuery.addWhere(condition.toString(sqlQuery));
             }
@@ -1103,11 +1103,10 @@ public class SqlTupleReader implements TupleReader {
      * @return AggStar for aggregate table
      */
     AggStar chooseAggStar(Evaluator evaluator) {
-
         if (!MondrianProperties.instance().UseAggregates.get()) {
             return null;
         }
-        
+
         if (evaluator == null) {
             return null;
         }
@@ -1168,16 +1167,6 @@ public class SqlTupleReader implements TupleReader {
         // find the aggstar using the masks
         AggStar aggStar = AggregationManager.instance().findAgg(
             star, levelBitKey, measureBitKey, new boolean[]{ false });
-
-//        System.out.println(levelBitKey + " - LBK" );
-//        System.out.println(measureBitKey + " - MBK");
-//        for (AggStar agg : star.getAggStars()) {
-//            System.out.println(agg.getBitKey() + " - " + agg.getFactTable().getName());
-//            if (agg.getFactTable().getName().equals("agg_g_ms_pcat_sales_fact_1997")) {
-//                System.out.println(agg);
-//            }
-//        }
-        
         return aggStar;
     }
 
