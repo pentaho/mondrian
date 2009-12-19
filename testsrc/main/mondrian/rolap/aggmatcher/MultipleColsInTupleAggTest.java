@@ -158,3 +158,4 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
            + "</Cube>";
     }
 }
+// End MultipleColsInTupleAggTest.java

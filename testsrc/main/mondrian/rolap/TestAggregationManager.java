@@ -1332,8 +1332,7 @@ public class TestAggregationManager extends BatchTestCase {
                     + "ISNULL(`product_class`.`product_category`), "
                     + "`product_class`.`product_category` ASC, "
                     + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
-                    ,
+                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                     null)
             };
 
@@ -1375,8 +1374,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
                 + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
                 + "Row #0: 4,728\n"
-                + "Row #1: 1,262\n"
-            );
+                + "Row #1: 1,262\n");
     }
 
     public void testAggregatingTuples() {
@@ -1508,8 +1506,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"
-                ,
+                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 

@@ -1107,7 +1107,6 @@ public class SqlTupleReader implements TupleReader {
      * @return AggStar for aggregate table
      */
     AggStar chooseAggStar(Evaluator evaluator) {
-
         if (!MondrianProperties.instance().UseAggregates.get()) {
             return null;
         }
