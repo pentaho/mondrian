@@ -13,6 +13,8 @@ import java.util.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.CrossJoinArg;
+import mondrian.rolap.sql.MemberListCrossJoinArg;
 
 /**
  * Creates a {@link mondrian.olap.NativeEvaluator} that evaluates NON EMPTY
@@ -101,7 +103,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         RolapCube cube = evaluator.getCube();
 
         List<CrossJoinArg[]> allArgs =
-            checkCrossJoin(evaluator, fun, args, false);
+            crossJoinArgFactory()
+                .checkCrossJoin(evaluator, fun, args, false);
 
         // checkCrossJoinArg returns a list of CrossJoinArg arrays.  The first
         // array is the CrossJoin dimensions.  The second array, if any,
@@ -161,8 +164,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
 
         // Verify that args are valid
         List<RolapLevel> levels = new ArrayList<RolapLevel>();
-        for (int i = 0; i < cjArgs.length; i++) {
-            RolapLevel level = cjArgs[i].getLevel();
+        for (CrossJoinArg cjArg : cjArgs) {
+            RolapLevel level = cjArg.getLevel();
             if (level != null) {
                 // Only add non null levels. These levels have real
                 // constraints.
@@ -269,32 +272,13 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         final RolapEvaluator evaluator, final CrossJoinArg[] cargs)
     {
         Set<CrossJoinArg> joinArgs =
-            buildConstraintFromAllAxes(
-                evaluator, evaluator.getQuery().getAxes());
+            crossJoinArgFactory().buildConstraintFromAllAxes(evaluator);
         joinArgs.addAll(Arrays.asList(cargs));
         return joinArgs.toArray(new CrossJoinArg[joinArgs.size()]);
     }
 
     private boolean safeToConstrainByOtherAxes(final FunDef fun) {
         return !(fun instanceof NonEmptyCrossJoinFunDef);
-    }
-
-    private Set<CrossJoinArg> buildConstraintFromAllAxes(
-        final RolapEvaluator evaluator, final QueryAxis[] axes)
-    {
-        Set<CrossJoinArg> joinArgs = new HashSet<CrossJoinArg>();
-        for (QueryAxis ax : axes) {
-            List<CrossJoinArg[]> axesArgs =
-                checkCrossJoinArg(evaluator, ax.getSet(), true);
-            if (axesArgs != null) {
-                for (CrossJoinArg[] axesArg : axesArgs) {
-                    for (CrossJoinArg axisArg : axesArg) {
-                        joinArgs.add(axisArg);
-                    }
-                }
-            }
-        }
-        return joinArgs;
     }
 
     private void alertCrossJoinNonNative(

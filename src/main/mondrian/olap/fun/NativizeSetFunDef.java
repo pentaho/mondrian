@@ -90,9 +90,13 @@ public class NativizeSetFunDef extends FunDefBase {
         } else if (arity == 1) {
             Calc calc = funArg.accept(compiler);
             if (calc instanceof MemberListCalc) {
-                return new NonNativeMemberListCalc((MemberListCalc) calc);
+                return new NonNativeMemberListCalc(
+                    (MemberListCalc) calc,
+                    isHighCardinality(funArg, compiler.getEvaluator()));
             } else if (calc instanceof MemberIterCalc) {
-                return new NonNativeMemberIterCalc((MemberIterCalc) calc);
+                return new NonNativeMemberIterCalc(
+                    (MemberIterCalc) calc,
+                    isHighCardinality(funArg, compiler.getEvaluator()));
             }
             return calc;
         } else if (substitutionMap.isEmpty()) {
@@ -112,15 +116,49 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
+    private boolean isHighCardinality(Exp funArg, Evaluator evaluator) {
+        Level level = findLevel(funArg);
+        if (level != null) {
+            int cardinality =
+                evaluator.getSchemaReader()
+                    .getLevelCardinality(level, false, true);
+            return cardinality >
+                MondrianProperties.instance()
+                    .NativizeMinThreshold.get();
+        }
+        return false;
+    }
+
+    private Level findLevel(Exp exp) {
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+            if (call.getFunDef() instanceof LevelMembersFunDef) {
+                Exp arg = call.getArg(0);
+                if (arg instanceof LevelExpr) {
+                    return ((LevelExpr) arg).getLevel();
+                }
+            } else if (call.getFunDef() instanceof SetFunDef
+                && call.getArgCount() == 1)
+            {
+                return findLevel(call.getArg(0));
+            }
+        } else if (exp instanceof NamedSetExpr) {
+            return findLevel(((NamedSetExpr) exp).getNamedSet().getExp());
+        }
+        return null;
+    }
+
     static class NonNativeCalc implements Calc {
         final Calc parent;
+        final boolean nativeEnabled;
 
-        protected NonNativeCalc(Calc parent) {
+        protected NonNativeCalc(Calc parent, final boolean nativeEnabled) {
             this.parent = parent;
+            this.nativeEnabled = nativeEnabled;
         }
 
         public Object evaluate(final Evaluator evaluator) {
-            evaluator.setNativeEnabled(false);
+            evaluator.setNativeEnabled(nativeEnabled);
             return parent.evaluate(evaluator);
         }
 
@@ -145,8 +183,10 @@ public class NativizeSetFunDef extends FunDefBase {
         implements MemberListCalc
     {
 
-        protected NonNativeMemberListCalc(MemberListCalc parent) {
-            super(parent);
+        protected NonNativeMemberListCalc(
+            MemberListCalc parent, final boolean nativeEnabled)
+        {
+            super(parent, nativeEnabled);
         }
 
         MemberListCalc parent() {
@@ -154,12 +194,12 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         public List<Member> evaluateMemberList(final Evaluator evaluator) {
-            evaluator.setNativeEnabled(false);
+            evaluator.setNativeEnabled(nativeEnabled);
             return parent().evaluateMemberList(evaluator);
         }
 
         public List evaluateList(final Evaluator evaluator) {
-            evaluator.setNativeEnabled(false);
+            evaluator.setNativeEnabled(nativeEnabled);
             return parent().evaluateList(evaluator);
         }
     }
@@ -167,8 +207,10 @@ public class NativizeSetFunDef extends FunDefBase {
     static class NonNativeMemberIterCalc extends NonNativeCalc
         implements MemberIterCalc
     {
-        protected NonNativeMemberIterCalc(MemberIterCalc parent) {
-            super(parent);
+        protected NonNativeMemberIterCalc(
+            MemberIterCalc parent, final boolean nativeEnabled)
+        {
+            super(parent, nativeEnabled);
         }
 
         MemberIterCalc parent() {
@@ -182,12 +224,12 @@ public class NativizeSetFunDef extends FunDefBase {
         public Iterable<Member> evaluateMemberIterable(
             final Evaluator evaluator)
         {
-            evaluator.setNativeEnabled(false);
+            evaluator.setNativeEnabled(nativeEnabled);
             return parent().evaluateMemberIterable(evaluator);
         }
 
         public Iterable evaluateIterable(final Evaluator evaluator) {
-            evaluator.setNativeEnabled(false);
+            evaluator.setNativeEnabled(nativeEnabled);
             return parent().evaluateIterable(evaluator);
         }
     }

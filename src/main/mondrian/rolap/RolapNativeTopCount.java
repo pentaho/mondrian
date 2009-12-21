@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.CrossJoinArg;
 import mondrian.spi.Dialect;
 import mondrian.mdx.MemberExpr;
 
@@ -143,7 +144,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
 
         // extract the set expression
-        List<CrossJoinArg[]> allArgs = checkCrossJoinArg(evaluator, args[0]);
+        List<CrossJoinArg[]> allArgs =
+            crossJoinArgFactory().checkCrossJoinArg(evaluator, args[0]);
 
         // checkCrossJoinArg returns a list of CrossJoinArg arrays.  The first
         // array is the CrossJoin dimensions.  The second array, if any,

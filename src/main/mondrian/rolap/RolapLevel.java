@@ -478,6 +478,57 @@ public class RolapLevel extends LevelBase {
     }
 
     /**
+     * Indicates that level is not ragged and not a parent/child level.
+     */
+    public boolean isSimple() {
+        // most ragged hierarchies are not simple -- see isTooRagged.
+        if (isTooRagged()) {
+            return false;
+        }
+        if (isParentChild()) {
+            return false;
+        }
+        // does not work for measures
+        if (isMeasure()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Determines whether the specified level is too ragged for native
+     * evaluation, which is able to handle one special case of a ragged
+     * hierarchy: when the level specified in the query is the leaf level of
+     * the hierarchy and HideMemberCondition for the level is IfBlankName.
+     * This is true even if higher levels of the hierarchy can be hidden
+     * because even in that case the only column that needs to be read is the
+     * column that holds the leaf. IfParentsName can't be handled even at the
+     * leaf level because in the general case we aren't reading the column
+     * that holds the parent. Also, IfBlankName can't be handled for non-leaf
+     * levels because we would have to read the column for the next level
+     * down for members with blank names.
+     *
+     * @return true if the specified level is too ragged for native
+     *         evaluation.
+     */
+    private boolean isTooRagged() {
+        // Is this the special case of raggedness that native evaluation
+        // is able to handle?
+        if (getDepth() == getHierarchy().getLevels().length - 1) {
+            switch (getHideMemberCondition()) {
+            case Never:
+            case IfBlankName:
+                return false;
+            default:
+                return true;
+            }
+        }
+        // Handle the general case in the traditional way.
+        return getHierarchy().isRagged();
+    }
+
+
+    /**
      * Returns true when the level is part of a parent/child hierarchy and has
      * an equivalent closed level.
      */

@@ -14,8 +14,11 @@ import mondrian.olap.Level;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.CrossJoinArg;
+import mondrian.rolap.sql.CrossJoinArgFactory;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Creates the right constraint for common tasks.
@@ -90,6 +93,17 @@ public class SqlConstraintFactory {
             context, false, levels, false))
         {
             return DefaultTupleConstraint.instance();
+        }
+        if (context.isNonEmpty()) {
+            Set<CrossJoinArg> joinArgs =
+                new CrossJoinArgFactory(false).buildConstraintFromAllAxes(
+                (RolapEvaluator) context);
+            if (joinArgs.size() > 0) {
+                return new RolapNativeCrossJoin.NonEmptyCrossJoinConstraint(
+                    joinArgs.toArray(
+                        new CrossJoinArg[joinArgs.size()]),
+                    (RolapEvaluator) context);
+            }
         }
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }

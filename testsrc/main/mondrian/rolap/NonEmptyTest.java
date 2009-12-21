@@ -3677,6 +3677,38 @@ public class NonEmptyTest extends BatchTestCase {
             611);
         assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
     }
+    public void testLevelMembersWillConstrainUsingArgsFromAllAxes() {
+            String mdx = "select "
+                + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
+                + "non empty [Promotions].[Promotions].members on 1"
+                + " from [Warehouse and Sales]";
+            SqlPattern accessPattern = new SqlPattern(
+                Dialect.DatabaseProduct.ACCESS,
+                "select `promotion`.`promotion_name` as `c0` "
+                    + "from `promotion` as `promotion`, "
+                    + "`sales_fact_1997` as `sales_fact_1997`, "
+                    + "`customer` as `customer` "
+                    + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
+                    + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+                    + "and (`customer`.`gender` = 'F') "
+                    + "group by `promotion`.`promotion_name` "
+                    + "order by 1 ASC",
+                357);
+            SqlPattern oraclePattern = new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                "select \"promotion\".\"promotion_name\" as \"c0\" "
+                    + "from \"promotion\" \"promotion\", "
+                    + "\"sales_fact_1997\" \"sales_fact_1997\", "
+                    + "\"customer\" \"customer\" "
+                    + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+                    + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                    + "and (\"customer\".\"gender\" = 'F') "
+                    + "group by \"pomotion\".\"promotion_name\" "
+                    + "order by 1 ASC",
+                347);
+            assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
+        }
+
 
     public void testNativeCrossjoinWillExpandFirstLastChild() {
         String mdx = "select "

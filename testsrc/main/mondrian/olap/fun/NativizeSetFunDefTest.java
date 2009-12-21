@@ -1415,6 +1415,43 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             getTestContext(), mdxQuery, patterns, true, false, false);
     }
 
+    public void testSingleLevelDotMembersIsNativelyEvaluated() {
+        String mdx1 =
+            "select non empty NativizeSet([Customers].[name].members) on 0,"
+                + "non empty NativizeSet("
+                + "Crossjoin({[Gender].[Gender].[M]},"
+                + "[Measures].[Unit Sales])) on 1 "
+                + "from Sales";
+        String mdx2 =
+            "select non empty NativizeSet({[Customers].[name].members}) on 0,"
+                + "non empty NativizeSet("
+                + "Crossjoin({[Gender].[Gender].[M]},"
+                + "[Measures].[Unit Sales])) on 1 "
+                + "from Sales";
+
+        String sql = "select \"customer\".\"country\" as \"c0\", "
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" = 'M') "
+            + "group by \"customer\".\"country\", \"customer\".\"state_province\", "
+            + "\"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
+            + "\"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", "
+            + "\"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC, "
+            + "\"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, "
+            + "\"fname\" || ' ' || \"lname\" ASC";
+        SqlPattern oraclePattern =
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, sql, 852);
+        assertQuerySql(mdx1, new SqlPattern[]{oraclePattern});
+        assertQuerySql(mdx2, new SqlPattern[]{oraclePattern});
+    }
+
     // ~ ====== Helper methods =================================================
 
     private void checkNotNative(String mdx) {
