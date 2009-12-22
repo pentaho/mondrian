@@ -375,6 +375,9 @@ Revision is $Id$
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
     </Element>
 
     <!-- DimensionUsage =================================================== -->

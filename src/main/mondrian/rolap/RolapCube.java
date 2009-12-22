@@ -507,7 +507,9 @@ public class RolapCube extends CubeBase {
                             new RolapVirtualCubeMeasure(
                                 null,
                                 measuresLevel,
-                                (RolapStoredMeasure) cubeMeasure);
+                                (RolapStoredMeasure) cubeMeasure,
+                                RolapHierarchy.createAnnotationMap(
+                                    xmlMeasure.annotations));
 
                         // Set member's visibility, default true.
                         Boolean visible = xmlMeasure.visible;
@@ -2829,7 +2831,8 @@ public class RolapCube extends CubeBase {
                     new RolapVirtualCubeMeasure(
                         null,
                         measuresLevel,
-                        baseMeasure);
+                        baseMeasure,
+                        Collections.<String, Annotation>emptyMap());
                 if (!measuresFound.contains(virtualCubeMeasure)) {
                     measuresFound.add(virtualCubeMeasure);
                 }

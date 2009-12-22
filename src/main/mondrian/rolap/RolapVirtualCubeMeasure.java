@@ -9,8 +9,9 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianDef;
-import mondrian.olap.CellFormatter;
+import mondrian.olap.*;
+
+import java.util.Map;
 
 /**
  * Measure which is defined in a virtual cube, and based on a stored measure
@@ -28,14 +29,17 @@ public class RolapVirtualCubeMeasure
      * The measure in the underlying cube.
      */
     private final RolapStoredMeasure cubeMeasure;
+    private final Map<String, Annotation> annotationMap;
 
     public RolapVirtualCubeMeasure(
         RolapMember parentMember,
         RolapLevel level,
-        RolapStoredMeasure cubeMeasure)
+        RolapStoredMeasure cubeMeasure,
+        Map<String, Annotation> annotationMap)
     {
         super(parentMember, level, cubeMeasure.getName());
         this.cubeMeasure = cubeMeasure;
+        this.annotationMap = annotationMap;
     }
 
     public Object getPropertyValue(String propertyName, boolean matchCase) {
@@ -68,6 +72,10 @@ public class RolapVirtualCubeMeasure
 
     public CellFormatter getFormatter() {
         return cubeMeasure.getFormatter();
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return annotationMap;
     }
 }
 
