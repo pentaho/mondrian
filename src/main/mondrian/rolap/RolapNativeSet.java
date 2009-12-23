@@ -195,7 +195,7 @@ public abstract class RolapNativeSet extends RolapNative {
             // execute sql and store the result
             if (result == null && listener != null) {
                 TupleEvent e = new TupleEvent(this, tr);
-                listener.excutingSql(e);
+                listener.executingSql(e);
             }
 
             // if we don't have a cached result in the case where we have
