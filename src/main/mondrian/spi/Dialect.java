@@ -722,6 +722,7 @@ public interface Dialect {
         DB2_AS400,
         DB2,
         FIREBIRD,
+        GREENPLUM,
         HSQLDB,
         INFORMIX,
         INFOBRIGHT,

@@ -215,6 +215,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         boolean countOnly)
     {
         final Dialect dialect = outerSqlQuery.getDialect();
+        final Dialect.DatabaseProduct databaseProduct =
+            dialect.getDatabaseProduct();
         // Generate something like
         //
         //  select d0, d1, count(m0)
@@ -235,8 +237,11 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         //    and dim2.k = f.k2) as dummyname
 
         final SqlQuery innerSqlQuery = newSqlQuery();
-        innerSqlQuery.setDistinct(true);
-
+        if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
+            innerSqlQuery.setDistinct(false);
+        } else {
+            innerSqlQuery.setDistinct(true);
+        }
         // add constraining dimensions
         RolapStar.Column[] columns = getColumns();
         int arity = columns.length;
@@ -263,6 +268,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);
+            if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
+                innerSqlQuery.addGroupBy(expr, alias);
+            }
             final String quotedAlias = dialect.quoteIdentifier(alias);
             outerSqlQuery.addSelectGroupBy(quotedAlias);
         }
@@ -280,7 +288,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             String alias = getMeasureAlias(i);
             String expr = measure.generateExprString(outerSqlQuery);
             innerSqlQuery.addSelect(expr, alias);
-
+            if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
+                innerSqlQuery.addGroupBy(expr, alias);
+            }
             outerSqlQuery.addSelect(
                 measure.getAggregator().getNonDistinctAggregator()
                     .getExpression(
