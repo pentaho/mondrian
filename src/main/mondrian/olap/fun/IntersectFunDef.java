@@ -66,17 +66,33 @@ class IntersectFunDef extends FunDefBase
                     if (rightList.isEmpty()) {
                         return Collections.emptyList();
                     }
-                    final Set<Member> rightSet = new HashSet<Member>(rightList);
+                    // Set of members from the right side of the intersect.
+                    // We use a RetrievableSet because distinct keys
+                    // (regular members and visual totals members) compare
+                    // identical using hashCode and equals, we want to retrieve
+                    // the actual key, and java.util.Set only has containsKey.
+                    final RetrievableSet<Member> rightSet =
+                        new RetrievableHashSet<Member>();
+                    for (Member member : rightList) {
+                        rightSet.add(member);
+                    }
                     final List<Member> result = new ArrayList<Member>();
                     final Set<Member> resultSet =
                         all ? null : new HashSet<Member>();
                     for (Member leftMember : leftList) {
-                        if (rightSet.contains(leftMember)) {
-                            if (resultSet == null
-                                || resultSet.add(leftMember))
-                            {
-                                result.add(leftMember);
-                            }
+                        final Member rightMember = rightSet.getKey(leftMember);
+                        if (rightMember == null) {
+                            continue;
+                        }
+                        if (resultSet != null && !resultSet.add(leftMember)) {
+                            continue;
+                        }
+                        if (rightMember
+                            instanceof VisualTotalsFunDef.VisualTotalMember)
+                        {
+                            result.add(rightMember);
+                        } else {
+                            result.add(leftMember);
                         }
                     }
                     return result;
@@ -101,29 +117,70 @@ class IntersectFunDef extends FunDefBase
                     if (rightList.isEmpty()) {
                         return Collections.emptyList();
                     }
-                    Set<List<Member>> rightSet =
+                    RetrievableSet<List<Member>> rightSet =
                         buildSearchableCollection(rightList);
                     final List<Member[]> result = new ArrayList<Member[]>();
                     final Set<List<Member>> resultSet =
                         all ? null : new HashSet<List<Member>>();
                     for (Member[] leftTuple : leftList) {
                         List<Member> leftKey = Arrays.asList(leftTuple);
-                        if (rightSet.contains(leftKey)) {
-                            if (resultSet == null
-                                || resultSet.add(leftKey))
-                            {
-                                result.add(leftTuple);
-                            }
+                        List<Member> rightKey = rightSet.getKey(leftKey);
+                        if (rightKey == null) {
+                            continue;
                         }
+                        if (resultSet != null && !resultSet.add(leftKey)) {
+                            continue;
+                        }
+                        result.add(
+                            copyTupleWithVisualTotalsMembersOverriding(
+                                leftTuple, rightKey));
                     }
                     return result;
                 }
 
-                private Set<List<Member>> buildSearchableCollection(
+                /**
+                 * Constructs a tuple consisting of members from
+                 * {@code leftTuple}, but overridden by any corresponding
+                 * members from {@code rightKey} that happen to be visual totals
+                 * members.
+                 *
+                 * <p>Returns the original tuple if there are no visual totals
+                 * members on the RHS.
+                 *
+                 * @param leftTuple Original tuple
+                 * @param rightKey Right tuple
+                 * @return Copy of original tuple, with any VisualTotalMembers
+                 *   from right tuple overriding
+                 */
+                private Member[] copyTupleWithVisualTotalsMembersOverriding(
+                    Member[] leftTuple,
+                    List<Member> rightKey)
+                {
+                    Member[] tuple = leftTuple;
+                    for (int i = 0; i < rightKey.size(); i++) {
+                        Member member = rightKey.get(i);
+                        if (!(tuple[i]
+                            instanceof VisualTotalsFunDef.VisualTotalMember)
+                            && member instanceof
+                            VisualTotalsFunDef.VisualTotalMember)
+                        {
+                            if (tuple == leftTuple) {
+                                // clone on first VisualTotalMember -- to avoid
+                                // alloc/copy in the common case where there are
+                                // no VisualTotalMembers
+                                tuple = leftTuple.clone();
+                            }
+                            tuple[i] = member;
+                        }
+                    }
+                    return tuple;
+                }
+
+                private RetrievableSet<List<Member>> buildSearchableCollection(
                     List<Member[]> tuples)
                 {
-                    Set<List<Member>> result =
-                        new HashSet<List<Member>>(tuples.size(), 1);
+                    RetrievableSet<List<Member>> result =
+                        new RetrievableHashSet<List<Member>>(tuples.size());
                     for (Member[] tuple : tuples) {
                         result.add(Arrays.asList(tuple));
                     }
@@ -131,6 +188,93 @@ class IntersectFunDef extends FunDefBase
                 }
             };
         }
+    }
+
+    /**
+     * Interface similar to the Set interface that allows key values to be
+     * returned.
+     *
+     * <p>Useful if multiple objects can compare equal (using
+     * {@link Object#equals(Object)} and {@link Object#hashCode()}, per the
+     * set contract) and you wish to distinguish them after they have been added
+     * to the set.
+     *
+     * @param <E> element type
+     */
+    private interface RetrievableSet<E> {
+        /**
+         * Returns the key in this set that compares equal to a given object,
+         * or null if there is no such key.
+         *
+         * @param e Key value
+         * @return Key in the set equal to given key value
+         */
+        E getKey(E e);
+
+        /**
+         * Analogous to {@link Set#add(Object)}.
+         */
+        boolean add(E e);
+    }
+
+    private static class RetrievableHashSet<E>
+        extends HashMap<E, E>
+    implements RetrievableSet<E>
+    {
+        public RetrievableHashSet(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        public RetrievableHashSet() {
+            super();
+        }
+
+        public E getKey(E e) {
+            return super.get(e);
+        }
+
+        /*
+        public boolean contains(Object o) {
+            return super.containsKey(o);
+        }
+
+        public Iterator<E> iterator() {
+            return super.keySet().iterator();
+        }
+
+        public Object[] toArray() {
+            return super.keySet().toArray();
+        }
+
+        public <T> T[] toArray(T[] a) {
+            return super.keySet().toArray(a);
+        }
+        */
+
+        public boolean add(E e) {
+            return super.put(e, e) == null;
+        }
+
+        /*
+        public boolean containsAll(Collection<?> c) {
+            return super.keySet().containsAll(c);
+        }
+
+        public boolean addAll(Collection<? extends E> c) {
+            for (E e : c) {
+                put(e, e);
+            }
+            return c.size() > 0;
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            return super.keySet().retainAll(c);
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            return super.keySet().removeAll(c);
+        }
+        */
     }
 }
 

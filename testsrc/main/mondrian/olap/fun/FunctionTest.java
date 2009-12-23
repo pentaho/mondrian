@@ -10017,6 +10017,62 @@ Intel platforms):
             + "Row #1: 565,238.13\n");
     }
 
+    /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-668">
+     * bug MONDRIAN-668, "Intersect should return any VisualTotals members in
+     * right-hand set"</a>.
+     */
+    public void testVisualTotalsWithNamedSetAndPivotSameAxis() {
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[All Stores].[USA].[CA]),\n"
+            + "        Descendants([Store].[All Stores].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores].[USA]})},\n"
+            + "      [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [Sales] "
+            + "where [Measures].[Sales count]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Sales Count]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "Row #0: 24,442\n"
+            + "Row #0: 24,442\n");
+
+        // now with tuples
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[All Stores].[USA].[CA]),\n"
+            + "        Descendants([Store].[All Stores].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "     [Marital Status].[M]\n"
+            + "     * {DrilldownLevel({[Store].[All Stores].[USA]})}\n"
+            + "     * [Gender].[F],\n"
+            + "     [Marital Status].[M]\n"
+            + "     * [XL_Row_Dim_0]\n"
+            + "     * [Gender].[F])) ON COLUMNS\n"
+            + "from [Sales] "
+            + "where [Measures].[Sales count]\n",
+            "Axis #0:\n"
+                + "{[Measures].[Sales Count]}\n"
+                + "Axis #1:\n"
+                + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n"
+                + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n"
+                + "Row #0: 6,054\n"
+                + "Row #0: 6,054\n");
+    }
+
     public void testCalculatedChild() {
         // Construct calculated children with the same name for both [Drink] and
         // [Non-Consumable].  Then, create a metric to select the calculated
