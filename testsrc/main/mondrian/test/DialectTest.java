@@ -126,7 +126,8 @@ public class DialectTest extends TestCase {
             // Dialect has identified that it is PostgreSQL.
             assertTrue(dialect instanceof PostgreSqlDialect);
             assertFalse(dialect instanceof NetezzaDialect);
-            assertTrue(databaseMetaData.getDatabaseProductName()
+            assertTrue(
+                databaseMetaData.getDatabaseProductName()
                     .indexOf("PostgreSQL") >= 0);
             break;
         case NETEZZA:
@@ -134,7 +135,8 @@ public class DialectTest extends TestCase {
             // PostgreSql.
             assertTrue(dialect instanceof PostgreSqlDialect);
             assertTrue(dialect instanceof NetezzaDialect);
-            assertTrue(databaseMetaData.getDatabaseProductName()
+            assertTrue(
+                databaseMetaData.getDatabaseProductName()
                     .indexOf("Netezza") >= 0);
             break;
         default:

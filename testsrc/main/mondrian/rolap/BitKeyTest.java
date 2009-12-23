@@ -407,158 +407,164 @@ public class BitKeyTest extends TestCase {
      * Tests the 'or' operation on BitKeys
      */
     public void testOr() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                BitKey bitKey1 = makeAndSet(size1, positions1);
-                BitKey bitKey = bitKey0.or(bitKey1);
-                int max = 0;
-                for (int i = 0; i < positions0.length; i++) {
-                    max = Math.max(max, positions0[i]);
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    BitKey bitKey = bitKey0.or(bitKey1);
+                    int max = 0;
+                    for (int i = 0; i < positions0.length; i++) {
+                        max = Math.max(max, positions0[i]);
+                    }
+                    for (int i = 0; i < positions1.length; i++) {
+                        max = Math.max(max, positions1[i]);
+                    }
+                    for (int pos = 0; pos <= max; pos++) {
+                        boolean expected = contains(positions0, pos)
+                            || contains(positions1, pos);
+                        assertEquals(expected, bitKey.get(pos));
+                    }
                 }
-                for (int i = 0; i < positions1.length; i++) {
-                    max = Math.max(max, positions1[i]);
-                }
-                for (int pos = 0; pos <= max; pos++) {
-                    boolean expected = contains(positions0, pos)
-                        || contains(positions1, pos);
-                    assertEquals(expected, bitKey.get(pos));
-                }
-            }
-        });
+            });
     }
 
     /**
      * Tests the 'and' operation on BitKeys
      */
     public void testAnd() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                BitKey bitKey1 = makeAndSet(size1, positions1);
-                BitKey bitKey = bitKey0.and(bitKey1);
-                int max = 0;
-                for (int i = 0; i < positions0.length; i++) {
-                    max = Math.max(max, positions0[i]);
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    BitKey bitKey = bitKey0.and(bitKey1);
+                    int max = 0;
+                    for (int i = 0; i < positions0.length; i++) {
+                        max = Math.max(max, positions0[i]);
+                    }
+                    for (int i = 0; i < positions1.length; i++) {
+                        max = Math.max(max, positions1[i]);
+                    }
+                    for (int pos = 0; pos <= max; pos++) {
+                        boolean expected =
+                            contains(positions0, pos)
+                            && contains(positions1, pos);
+                        assertEquals(expected, bitKey.get(pos));
+                    }
                 }
-                for (int i = 0; i < positions1.length; i++) {
-                    max = Math.max(max, positions1[i]);
-                }
-                for (int pos = 0; pos <= max; pos++) {
-                    boolean expected =
-                        contains(positions0, pos)
-                        && contains(positions1, pos);
-                    assertEquals(expected, bitKey.get(pos));
-                }
-            }
-        });
+            });
     }
 
     /**
      * Tests the {@link BitKey#andNot(BitKey)} operation.
      */
     public void testAndNot() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                BitKey bitKey1 = makeAndSet(size1, positions1);
-                BitKey bitKey = bitKey0.andNot(bitKey1);
-                int max = 0;
-                for (int i = 0; i < positions0.length; i++) {
-                    max = Math.max(max, positions0[i]);
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    BitKey bitKey = bitKey0.andNot(bitKey1);
+                    int max = 0;
+                    for (int i = 0; i < positions0.length; i++) {
+                        max = Math.max(max, positions0[i]);
+                    }
+                    for (int i = 0; i < positions1.length; i++) {
+                        max = Math.max(max, positions1[i]);
+                    }
+                    for (int pos = 0; pos <= max; pos++) {
+                        boolean expected =
+                            contains(positions0, pos)
+                            && !contains(positions1, pos);
+                        assertEquals(expected, bitKey.get(pos));
+                    }
                 }
-                for (int i = 0; i < positions1.length; i++) {
-                    max = Math.max(max, positions1[i]);
-                }
-                for (int pos = 0; pos <= max; pos++) {
-                    boolean expected =
-                        contains(positions0, pos)
-                        && !contains(positions1, pos);
-                    assertEquals(expected, bitKey.get(pos));
-                }
-            }
-        });
+            });
     }
 
     /**
      * Tests the 'intersects' operation on BitKeys
      */
     public void testIntersects() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                BitKey bitKey1 = makeAndSet(size1, positions1);
-                boolean result = bitKey0.intersects(bitKey1);
-                boolean expected = false;
-                for (int i = 0; i < positions0.length; i++) {
-                    for (int j = 0; j < positions1.length; j++) {
-                        if (positions0[i] == positions1[j]) {
-                            expected = true;
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    boolean result = bitKey0.intersects(bitKey1);
+                    boolean expected = false;
+                    for (int i = 0; i < positions0.length; i++) {
+                        for (int j = 0; j < positions1.length; j++) {
+                            if (positions0[i] == positions1[j]) {
+                                expected = true;
+                            }
                         }
                     }
+                    assertEquals(expected, result);
                 }
-                assertEquals(expected, result);
-            }
-        });
+            });
     }
 
     /**
      * Tests the {@link BitKey#toBitSet()} method.
      */
     public void testToBitSet() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                final BitSet bitSet = bitKey0.toBitSet();
-                int j = 0;
-                for (int i = bitSet.nextSetBit(0);
-                     i >= 0;
-                     i = bitSet.nextSetBit(i + 1))
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
                 {
-                    assertTrue(i == positions0[j++]);
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    final BitSet bitSet = bitKey0.toBitSet();
+                    int j = 0;
+                    for (int i = bitSet.nextSetBit(0);
+                        i >= 0;
+                        i = bitSet.nextSetBit(i + 1))
+                    {
+                        assertTrue(i == positions0[j++]);
+                    }
+                    assertTrue(j == positions0.length);
                 }
-                assertTrue(j == positions0.length);
-            }
-        });
+            });
     }
 
     /**
      * Tests the 'compareTo' operation on BitKeys
      */
     public void testCompareTo() {
-        doTestOp(new Checker() {
-            public void check(
-                int size0, int[] positions0, int size1, int[] positions1)
-            {
-                BitKey bitKey0 = makeAndSet(size0, positions0);
-                BitKey bitKey1 = makeAndSet(size1, positions1);
-                int c = bitKey0.compareTo(bitKey1);
-                final String s0 = bitKey0.toString();
-                final String s1 = bitKey1.toString();
-                String ps0 = s0.substring("0x".length());
-                String ps1 = s1.substring("0x".length());
-                while (ps0.length() < ps1.length()) {
-                    ps0 = "0" + ps0;
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    int c = bitKey0.compareTo(bitKey1);
+                    final String s0 = bitKey0.toString();
+                    final String s1 = bitKey1.toString();
+                    String ps0 = s0.substring("0x".length());
+                    String ps1 = s1.substring("0x".length());
+                    while (ps0.length() < ps1.length()) {
+                        ps0 = "0" + ps0;
+                    }
+                    while (ps1.length() < ps0.length()) {
+                        ps1 = "0" + ps1;
+                    }
+                    assertEquals(c, sign(ps0.compareTo(ps1)));
+                    assertEquals(-c, bitKey1.compareTo(bitKey0));
+                    assertEquals(0, bitKey0.compareTo(bitKey0));
+                    assertEquals(0, bitKey1.compareTo(bitKey1));
                 }
-                while (ps1.length() < ps0.length()) {
-                    ps1 = "0" + ps1;
-                }
-                assertEquals(c, sign(ps0.compareTo(ps1)));
-                assertEquals(-c, bitKey1.compareTo(bitKey0));
-                assertEquals(0, bitKey0.compareTo(bitKey0));
-                assertEquals(0, bitKey1.compareTo(bitKey1));
-            }
-        });
+            });
     }
 
     private static int sign(int c) {

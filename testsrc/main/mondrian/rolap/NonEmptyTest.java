@@ -2251,17 +2251,17 @@ public class NonEmptyTest extends BatchTestCase {
         // of the cache
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(
-                new Listener() {
-            public void foundEvaluator(NativeEvent e) {
-            }
+            new Listener() {
+                public void foundEvaluator(NativeEvent e) {
+                }
 
-            public void foundInCache(TupleEvent e) {
-            }
+                public void foundInCache(TupleEvent e) {
+                }
 
-            public void excutingSql(TupleEvent e) {
-                fail("expected caching");
-            }
-        });
+                public void executingSql(TupleEvent e) {
+                    fail("expected caching");
+                }
+            });
         try {
             c.run();
         } finally {
@@ -3677,7 +3677,7 @@ public class NonEmptyTest extends BatchTestCase {
             public void foundInCache(TupleEvent e) {
             }
 
-            public void excutingSql(TupleEvent e) {
+            public void executingSql(TupleEvent e) {
             }
         });
 
@@ -3953,7 +3953,7 @@ public class NonEmptyTest extends BatchTestCase {
             this.foundInCache = true;
         }
 
-        public void excutingSql(TupleEvent e) {
+        public void executingSql(TupleEvent e) {
             this.executeSql = true;
         }
     }

@@ -221,8 +221,8 @@ public class CacheControlImpl implements CacheControl {
         if (RolapSchema.class.isInstance(schema)) {
             RolapSchema.Pool.instance().remove((RolapSchema)schema);
         } else {
-            throw new UnsupportedOperationException(schema.getClass().getName()+
-                    " cannot be flushed");
+            throw new UnsupportedOperationException(
+                schema.getClass().getName() + " cannot be flushed");
         }
     }
 
