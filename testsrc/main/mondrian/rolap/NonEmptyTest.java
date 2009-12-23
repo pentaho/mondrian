@@ -3703,7 +3703,7 @@ public class NonEmptyTest extends BatchTestCase {
                     + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
                     + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
                     + "and (\"customer\".\"gender\" = 'F') "
-                    + "group by \"pomotion\".\"promotion_name\" "
+                    + "group by \"promotion\".\"promotion_name\" "
                     + "order by 1 ASC",
                 347);
             assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
