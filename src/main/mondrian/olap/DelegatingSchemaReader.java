@@ -97,7 +97,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
                 uniqueNameParts, failIfNotFound, matchType);
     }
 
-    public OlapElement lookupCompound(
+    public final OlapElement lookupCompound(
         OlapElement parent, List<Id.Segment> names,
         boolean failIfNotFound, int category)
     {

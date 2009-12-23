@@ -1525,25 +1525,17 @@ public class Query extends QueryPart {
             OlapElement parent,
             List<Id.Segment> names,
             boolean failIfNotFound,
-            int category)
-        {
-            OlapElement oe = lookupCompound(
-                parent, names, failIfNotFound, category,
-                MatchType.EXACT_SCHEMA);
-            if (oe == null) {
-                oe = lookupCompound(
-                    parent, names, failIfNotFound, category, MatchType.EXACT);
-            }
-            return oe;
-        }
-
-        public OlapElement lookupCompound(
-            OlapElement parent,
-            List<Id.Segment> names,
-            boolean failIfNotFound,
             int category,
             MatchType matchType)
         {
+            if (matchType == MatchType.EXACT) {
+                OlapElement oe = lookupCompound(
+                    parent, names, failIfNotFound, category,
+                    MatchType.EXACT_SCHEMA);
+                if (oe != null) {
+                    return oe;
+                }
+            }
             // First look to ourselves.
             switch (category) {
             case Category.Unknown:
