@@ -1,3 +1,12 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.sql;
 
 import mondrian.rolap.*;
@@ -8,8 +17,10 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
-     * Represents an enumeration {member1, member2, ...}.
+ * Represents an enumeration {member1, member2, ...}.
  * All members must to the same level and are non-calculated.
+ *
+ * @version $Id$
  */
 public class MemberListCrossJoinArg implements CrossJoinArg {
     private final List<RolapMember> members;
@@ -271,4 +282,5 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         return true;
     }
 }
+
 // End MemberListCrossJoinArg.java

@@ -1,3 +1,12 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.sql;
 
 import mondrian.calc.ExpCompiler;
@@ -17,7 +26,7 @@ import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
- * <p>Creates CrossJoinArgs for use in constraining sql queries<p/>
+ * Creates CrossJoinArgs for use in constraining SQL queries.
  *
  * @author kwalker
  * @version $Id$
@@ -93,7 +102,6 @@ public class CrossJoinArgFactory {
         final ResolvedFunCall funCall = (ResolvedFunCall) exp;
         FunDef fun = funCall.getFunDef();
         Exp[] args = funCall.getArgs();
-
 
         final Role role = evaluator.getSchemaReader().getRole();
         CrossJoinArg[] cjArgs;
@@ -781,4 +789,5 @@ public class CrossJoinArgFactory {
             || (exp instanceof NamedSetExpr);
     }
 }
+
 // End CrossJoinArgFactory.java

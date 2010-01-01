@@ -6,6 +6,7 @@
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
+// Copyright (C) 2008-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
