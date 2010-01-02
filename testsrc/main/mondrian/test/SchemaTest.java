@@ -2151,8 +2151,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testVirtualCubeNamedSetSupportInSchema() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Warehouse and Sales",
-            null,
-            null,
+            null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
             + "formula=\"EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
         testContext.assertQueryReturns(
@@ -2195,8 +2194,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testVirtualCubeNamedSetSupportInSchemaError() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Warehouse and Sales",
-            null,
-            null,
+            null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
             + "formula=\"EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
         try {
@@ -2387,7 +2385,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
                 + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
                 + "    </Hierarchy>\n"
-                + "  </Dimension>\n", null, null);
+                + "  </Dimension>\n",
+                null, null, null);
         testContext.assertQueryReturns(
             "select non empty {[Measures].[Unit Sales]} on 0,\n"
                 + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
@@ -2421,7 +2420,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
                 + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
                 + "    </Hierarchy>\n"
-                + "  </Dimension>\n", null, null);
+                + "  </Dimension>\n",
+                null, null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
