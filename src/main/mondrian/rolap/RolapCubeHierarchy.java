@@ -38,7 +38,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     private final RolapCubeDimension parentDimension;
     private final RolapHierarchy rolapHierarchy;
     private final RolapCubeLevel currentNullLevel;
-    private RolapNullMember currentNullMember;
+    private RolapNullCubeMember currentNullMember;
     private RolapCubeMember currentAllMember;
     private final MondrianDef.RelationOrJoin currentRelation;
     private final RolapCubeHierarchyMemberReader reader;
@@ -327,7 +327,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     public Member getNullMember() {
         // use lazy initialization to get around bootstrap issues
         if (currentNullMember == null) {
-            currentNullMember = new RolapNullMember(currentNullLevel);
+            currentNullMember =
+                new RolapNullCubeMember(
+                    currentNullLevel,
+                    (RolapMember) rolapHierarchy.getNullMember());
         }
         return currentNullMember;
     }
@@ -1133,6 +1136,19 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return memberCacheLock;
         }
     }
+
+    /**
+     * Variant of {@link mondrian.rolap.RolapHierarchy.RolapNullMember} but
+     * extends {@link mondrian.rolap.RolapCubeMember} and therefore belongs to
+     * a cube.
+     */
+    static class RolapNullCubeMember extends RolapCubeMember {
+        RolapNullCubeMember(final RolapCubeLevel level, RolapMember nullMember) {
+            super(null, nullMember, level, level.getCube());
+            assert level != null;
+        }
+    }
+
 }
 
 // End RolapCubeHierarchy.java
