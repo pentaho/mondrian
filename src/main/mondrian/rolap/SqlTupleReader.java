@@ -663,9 +663,9 @@ public class SqlTupleReader implements TupleReader {
         if (constraint instanceof SqlContextConstraint) {
             SqlContextConstraint sqlConstraint =
                 (SqlContextConstraint) constraint;
+            Query query = constraint.getEvaluator().getQuery();
+            cube = (RolapCube) query.getCube();
             if (sqlConstraint.isJoinRequired()) {
-                Query query = constraint.getEvaluator().getQuery();
-                cube = (RolapCube) query.getCube();
                 virtualCube = cube.isVirtual();
             }
         }

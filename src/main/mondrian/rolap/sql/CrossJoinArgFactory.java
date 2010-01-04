@@ -16,11 +16,10 @@ import mondrian.mdx.MemberExpr;
 import mondrian.mdx.NamedSetExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.fun.TupleFunDef;
 import mondrian.olap.type.HierarchyType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -123,6 +122,12 @@ public class CrossJoinArgFactory {
         if (cjArgs != null) {
             return Collections.singletonList(cjArgs);
         }
+
+        cjArgs = checkConstrainedMeasures(evaluator, fun, args);
+        if (cjArgs != null) {
+            return Collections.singletonList(cjArgs);
+        }
+
         List<CrossJoinArg[]> allArgs =
             checkDimensionFilter(evaluator, fun, args);
         if (allArgs != null) {
@@ -137,6 +142,106 @@ public class CrossJoinArgFactory {
             return checkCrossJoinArg(evaluator, args[0], returnAny);
         }
         return checkCrossJoin(evaluator, fun, args, returnAny);
+    }
+
+    private CrossJoinArg[] checkConstrainedMeasures(
+        RolapEvaluator evaluator, FunDef fun, Exp[] args)
+    {
+        if (isSetOfConstrainedMeasures(fun, args)) {
+            HashMap<Dimension, List<RolapMember>> memberLists =
+                new HashMap<Dimension, List<RolapMember>>();
+            for (Exp arg : args) {
+                addConstrainingMembersToMap(arg, memberLists);
+            }
+            return memberListCrossJoinArgArray(memberLists, args, evaluator);
+        }
+        return null;
+    }
+
+    private boolean isSetOfConstrainedMeasures(FunDef fun, Exp[] args) {
+        return fun.getName().equals("{}") && allArgsConstrainedMeasure(args);
+    }
+
+    private boolean allArgsConstrainedMeasure(Exp[] args) {
+        for (Exp arg : args) {
+            if (!isConstrainedMeasure(arg)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isConstrainedMeasure(Exp arg) {
+        if (!(arg instanceof MemberExpr
+            && ((MemberExpr) arg).getMember().isMeasure()))
+        {
+            return false;
+        }
+        Member member = ((MemberExpr) arg).getMember();
+        if (member instanceof RolapCalculatedMember) {
+            Exp calcExp =
+                ((RolapCalculatedMember) member).getFormula().getExpression();
+            return (calcExp instanceof ResolvedFunCall
+                && ((ResolvedFunCall) calcExp).getFunDef()
+                instanceof TupleFunDef);
+        }
+        return false;
+    }
+
+    private void addConstrainingMembersToMap(
+        Exp arg, HashMap<Dimension, List<RolapMember>> memberLists)
+    {
+        Exp[] tupleArgs = getCalculatedTupleArgs(arg);
+        for (Exp tupleArg : tupleArgs) {
+            Dimension dimension = tupleArg.getType().getDimension();
+            if (!dimension.isMeasures()) {
+                List<RolapMember> members;
+                if (memberLists.containsKey(dimension)) {
+                    members = memberLists.get(dimension);
+                } else {
+                    members = new ArrayList<RolapMember>();
+                }
+                members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
+                memberLists.put(dimension, members);
+            }
+        }
+    }
+
+    private Exp[] getCalculatedTupleArgs(Exp arg) {
+        if (arg instanceof MemberExpr) {
+            Member member = ((MemberExpr) arg).getMember();
+            if (member instanceof RolapCalculatedMember) {
+                Exp formulaExp =
+                    ((RolapCalculatedMember) member)
+                        .getFormula().getExpression();
+                if (formulaExp instanceof ResolvedFunCall) {
+                    return ((ResolvedFunCall) formulaExp).getArgs();
+                }
+            }
+        }
+        return new Exp[0];
+    }
+
+    private CrossJoinArg[] memberListCrossJoinArgArray(
+        Map<Dimension, List<RolapMember>> memberLists,
+        Exp[] args,
+        RolapEvaluator evaluator)
+    {
+        List<CrossJoinArg> argList = new ArrayList<CrossJoinArg>();
+        for (List<RolapMember> memberList : memberLists.values()) {
+            if (memberList.size() == args.length) {
+                //when the memberList and args list have the same length
+                //it means there must have been a constraint on each measure
+                //for this dimension.
+                final CrossJoinArg cjArg =
+                    MemberListCrossJoinArg.create(
+                        evaluator, memberList, restrictMemberTypes(), false);
+                if (cjArg != null) {
+                    argList.add(cjArg);
+                }
+            }
+        }
+        return argList.toArray(new CrossJoinArg[argList.size()]);
     }
 
     /**

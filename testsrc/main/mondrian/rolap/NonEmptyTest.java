@@ -3756,6 +3756,115 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
+    public void testConstrainedMeasureGetsOptimized() {
+        String mdx =
+            "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
+                + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
+                + "select {[Measures].[unit sales Male], [Measures].[unit sales Female]} on 0, "
+                + "[Customers].[name].members on 1 "
+                + "from Sales";
+        final SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select \"customer\".\"country\" as \"c0\", "
+                + "\"customer\".\"state_province\" as \"c1\", "
+                + "\"customer\".\"city\" as \"c2\", "
+                + "\"customer\".\"customer_id\" as \"c3\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+                + "\"customer\".\"gender\" as \"c6\", "
+                + "\"customer\".\"marital_status\" as \"c7\", "
+                + "\"customer\".\"education\" as \"c8\", "
+                + "\"customer\".\"yearly_income\" as \"c9\" "
+                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" in ('M', 'F')) "
+                + "group by \"customer\".\"country\", "
+                + "\"customer\".\"state_province\", "
+                + "\"customer\".\"city\", "
+                + "\"customer\".\"customer_id\", "
+                + "\"fname\" || ' ' || \"lname\", "
+                + "\"customer\".\"gender\", "
+                + "\"customer\".\"marital_status\", "
+                + "\"customer\".\"education\", "
+                + "\"customer\".\"yearly_income\" "
+                + "order by \"customer\".\"country\" ASC,"
+                + " \"customer\".\"state_province\" ASC,"
+                + " \"customer\".\"city\" ASC, "
+                + "\"fname\" || ' ' || \"lname\" ASC",
+            852);
+        assertQuerySql(mdx, new SqlPattern[]{pattern});
+    }
+
+    public void testNonUniformConstraintsAreNotUsedForOptimization() {
+        String mdx =
+            "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
+                + "member [Measures].[unit sales Married] as '([Measures].[Unit Sales],[Marital Status].[Marital Status].[M])' "
+                + "select {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
+                + "[Customers].[name].members on 1 "
+                + "from Sales";
+        final SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select \"customer\".\"country\" as \"c0\", "
+                + "\"customer\".\"state_province\" as \"c1\", "
+                + "\"customer\".\"city\" as \"c2\", "
+                + "\"customer\".\"customer_id\" as \"c3\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+                + "\"customer\".\"gender\" as \"c6\", "
+                + "\"customer\".\"marital_status\" as \"c7\", "
+                + "\"customer\".\"education\" as \"c8\", "
+                + "\"customer\".\"yearly_income\" as \"c9\" "
+                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"marital_status\" = 'M') and (\"customer\".\"gender\" = 'M') "
+                + "group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", "
+                + "\"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
+                + "\"customer\".\"gender\", \"customer\".\"marital_status\", "
+                + "\"customer\".\"education\", \"customer\".\"yearly_income\" "
+                + "order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, "
+                + "\"customer\".\"city\" ASC, "
+                + "\"fname\" || ' ' || \"lname\" ASC",
+            892);
+        assertQuerySqlOrNot(
+            getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
+    }
+
+    public void testContextAtAllWorksWithConstraint() {
+        TestContext ctx = TestContext.create(
+            null,
+            "<Cube name=\"onlyGender\"> \n"
+                + "  <Table name=\"sales_fact_1997\"/> \n"
+                + "<Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+                + "</Cube> \n",
+            null,
+            null,
+            null,
+            null);
+
+        String mdx =
+            " select "
+            + " NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, "
+            + " NON EMPTY {[Gender].[Gender].Members} ON ROWS "
+            + " from [onlyGender] ";
+        ctx.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Gender].[All Gender].[F]}\n"
+                + "{[Gender].[All Gender].[M]}\n"
+                + "Row #0: 131,558\n"
+                + "Row #1: 135,215\n");
+    }
+
     void clearAndHardenCache(MemberCacheHelper helper) {
         helper.mapLevelToMembers.setCache(
                 new HardSmartCache<
