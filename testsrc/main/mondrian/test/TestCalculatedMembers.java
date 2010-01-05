@@ -1483,7 +1483,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * "Stack trace when grand total turned on". The cause of the problem were
      * negative SOLVE_ORDER values. We were incorrectly populating
      * RolapEvaluator.expandingMember from the parent evaluator, which made it
-     * look like two evaluation contexts were expanding the same member. 
+     * look like two evaluation contexts were expanding the same member.
      */
     public void testCycleFalsePositive() {
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
