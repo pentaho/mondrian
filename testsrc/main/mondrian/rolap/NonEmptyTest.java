@@ -3760,8 +3760,9 @@ public class NonEmptyTest extends BatchTestCase {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
                 + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
-                + "select {[Measures].[unit sales Male], [Measures].[unit sales Female]} on 0, "
-                + "[Customers].[name].members on 1 "
+                + "select "
+                + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Female]} on 0, "
+                + "non empty [Customers].[name].members on 1 "
                 + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
@@ -3799,8 +3800,9 @@ public class NonEmptyTest extends BatchTestCase {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
                 + "member [Measures].[unit sales Married] as '([Measures].[Unit Sales],[Marital Status].[Marital Status].[M])' "
-                + "select {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
-                + "[Customers].[name].members on 1 "
+                + "select "
+                + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
+                + "non empty [Customers].[name].members on 1 "
                 + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
