@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2008-2009 Julian Hyde
+  == Copyright (C) 2008-2010 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -55,7 +55,7 @@
         <dependency org="javax.servlet" name="jsp-api" rev="2.0"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4"/>
         <dependency org="log4j" name="log4j" rev="1.2.9"/>
-        <dependency org="org.olap4j" name="olap4j" rev="0.9.7.277"
+        <dependency org="org.olap4j" name="olap4j" rev="0.9.7.296"
                 conf="default->default" changing="true">
             <artifact name="olap4j"/>
             <artifact name="olap4j" type="source" ext="jar"

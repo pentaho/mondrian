@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,6 +17,7 @@ import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.UnmodifiableArrayList;
 import org.olap4j.mdx.*;
 import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
@@ -547,6 +548,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public String getRoleName() {
         return roleName;
+    }
+
+    public List<String> getAvailableRoleNames() {
+        return UnmodifiableArrayList.of(
+            ((RolapSchema) connection.getSchema()).roleNames());
     }
 
     // inner classes
