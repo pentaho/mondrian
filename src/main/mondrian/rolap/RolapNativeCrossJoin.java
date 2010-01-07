@@ -83,9 +83,14 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
         RolapCube cube = evaluator.getCube();
 
-        CrossJoinArg[] cargs = checkCrossJoin(evaluator, fun, args);
+        List<CrossJoinArg[]> allArgs = checkCrossJoin(evaluator, fun, args);
 
-        if (cargs == null) {
+        // checkCrossJoinArg returns a list of CrossJoinArg arrays.
+        // The first array is the CrossJoin dimensions
+        // The second array, if any, contains additional constraints on the 
+        // dimensions. If either the list or the first array is null, then 
+        // native cross join is not feasible.
+        if (allArgs == null || allArgs.isEmpty() || allArgs.get(0) == null) {
             // Something in the arguments to the crossjoin prevented
             // native evaluation; may need to alert
             alertCrossJoinNonNative(
@@ -95,6 +100,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             return null;
         }
 
+        CrossJoinArg[] cjArgs = allArgs.get(0);
+
         // check if all CrossJoinArgs are "All" members or Calc members
         // "All" members do not have relational expression, and Calc members
         // in the input could produce incorrect results.
@@ -103,21 +110,21 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         // then sql evaluation is not possible.
         int countNonNativeInputArg = 0;
 
-        for (CrossJoinArg arg : cargs) {
+        for (CrossJoinArg arg : cjArgs) {
             if (arg instanceof MemberListCrossJoinArg) {
                 MemberListCrossJoinArg cjArg =
                     (MemberListCrossJoinArg)arg;
                 if (cjArg.hasAllMember() || cjArg.isEmptyCrossJoinArg()) {
-                        ++countNonNativeInputArg;
+                    ++countNonNativeInputArg;
                 }
                 if (cjArg.hasCalcMembers()) {
-                    countNonNativeInputArg = cargs.length;
+                    countNonNativeInputArg = cjArgs.length;
                     break;
                 }
             }
         }
 
-        if (countNonNativeInputArg == cargs.length) {
+        if (countNonNativeInputArg == cjArgs.length) {
             // If all inputs contain "All" members; or
             // if all inputs are MemberListCrossJoinArg with empty member list
             // content, then native evaluation is not feasible.
@@ -129,16 +136,17 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             return null;
         }
 
-        if (isPreferInterpreter(cargs, true)) {
+        if (isPreferInterpreter(cjArgs, true)) {
             // Native evaluation wouldn't buy us anything, so no
             // need to alert
             return null;
         }
 
+        // Verify that args are valid
         List<RolapLevel> levels = new ArrayList<RolapLevel>();
 
-        for (int i = 0; i < cargs.length; i++) {
-            RolapLevel level = cargs[i].getLevel();
+        for (int i = 0; i < cjArgs.length; i++) {
+            RolapLevel level = cjArgs[i].getLevel();
             if (level != null) {
                 // Only add non null levels. These levels have real
                 // constraints.
@@ -158,6 +166,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 "not all functions on [Measures] dimension supported");
             return null;
         }
+
         if (!NonEmptyCrossJoinConstraint.isValidContext(
                 evaluator,
                 false,
@@ -198,10 +207,33 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
         evaluator.setContext(evalMembers);
 
-        TupleConstraint constraint =
+        // Use the combined CrossJoinArg for the tuple constraint, which will be
+        // translated to the SQL WHERE clause.
+        CrossJoinArg[] cargs = combineArgs(allArgs);
+
+        // Now construct the TupleConstraint that contains both the CJ
+        // dimensions and the additional filter on them.
+        TupleConstraint constraint = 
             new NonEmptyCrossJoinConstraint(cargs, evaluator);
-        SchemaReader schemaReader = evaluator.getSchemaReader();
-        return new SetEvaluator(cargs, schemaReader, constraint);
+        final SchemaReader schemaReader = evaluator.getSchemaReader();
+        
+        // Use the just the CJ CrossJoiArg for the evaluator context, which will
+        // be translated to select list in sql.
+        return new SetEvaluator(cjArgs, schemaReader, constraint);
+    }
+
+    CrossJoinArg[] combineArgs(
+        List<CrossJoinArg[]> allArgs)
+    {
+        CrossJoinArg[] cjArgs = allArgs.get(0);
+        if (allArgs.size() == 2) {
+            CrossJoinArg[] predicateArgs = allArgs.get(1);
+            if (predicateArgs != null) {
+                // Combine the CJ and the additional predicate args.
+                return Util.appendArrays(cjArgs, predicateArgs);
+            }
+        }
+        return cjArgs;
     }
 
     private void alertCrossJoinNonNative(

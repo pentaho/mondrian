@@ -105,11 +105,19 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         // extract the set expression
-        CrossJoinArg[] cargs = checkCrossJoinArg(evaluator, args[0]);
-        if (cargs == null) {
+        List<CrossJoinArg[]> allArgs = checkCrossJoinArg(evaluator, args[0]);
+        
+        // checkCrossJoinArg returns a list of CrossJoinArg arrays.
+        // The first array is the CrossJoin dimensions
+        // The second array, if any, contains additional constraints on the 
+        // dimensions. If either the list or the first array is null, then 
+        // native cross join is not feasible.
+        if (allArgs == null || allArgs.isEmpty() || allArgs.get(0) == null) {
             return null;
         }
-        if (isPreferInterpreter(cargs, false)) {
+        
+        CrossJoinArg[] cjArgs = allArgs.get(0);
+        if (isPreferInterpreter(cjArgs, false)) {
             return null;
         }
 
@@ -123,8 +131,9 @@ public class RolapNativeFilter extends RolapNativeSet {
         // condition could change to use an aggregate table later in evaulation
         SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
         RolapNativeSql sql = new RolapNativeSql(sqlQuery, null);
-        String filterExpr = sql.generateFilterCondition(args[1]);
-        if (filterExpr == null) {
+        final Exp filterExpr = args[1];
+        String filterExprStr = sql.generateFilterCondition(args[1]);
+        if (filterExprStr == null) {
             return null;
         }
 
@@ -139,13 +148,24 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         LOGGER.debug("using native filter");
 
-        evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
+        evaluator = overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+
+        // Now construct the TupleConstraint that contains both the CJ
+        // dimensions and the additional filter on them.
+        CrossJoinArg[] combinedArgs = cjArgs;
+        if (allArgs.size() == 2) {
+            CrossJoinArg[] predicateArgs = allArgs.get(1);
+            if (predicateArgs != null) {
+                // Combined the CJ and the additional predicate args.
+                combinedArgs =
+                    Util.appendArrays(cjArgs, predicateArgs);
+            }
+        }
 
         TupleConstraint constraint =
-            new FilterConstraint(cargs, evaluator, args[1]);
-        return new SetEvaluator(cargs, schemaReader, constraint);
+            new FilterConstraint(combinedArgs, evaluator, filterExpr);
+        return new SetEvaluator(cjArgs, schemaReader, constraint);
     }
-
 }
 
 // End RolapNativeFilter.java

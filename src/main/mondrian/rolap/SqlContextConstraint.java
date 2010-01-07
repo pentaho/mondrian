@@ -257,8 +257,9 @@ public class SqlContextConstraint
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
+        boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar, parents, true, false);
+            sqlQuery, baseCube, aggStar, parents, true, false, exclude);
     }
 
     /**

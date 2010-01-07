@@ -1,3 +1,4 @@
+
 /*
 // $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
@@ -12,12 +13,21 @@ package mondrian.rolap;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
+import mondrian.rolap.RolapNative.Listener;
+import mondrian.rolap.RolapNative.NativeEvent;
+import mondrian.rolap.RolapNative.TupleEvent;
 import mondrian.rolap.agg.*;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.spi.Dialect;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
+import org.eigenbase.util.property.IntegerProperty;
 
 /**
  * To support all <code>Batch</code> related tests.
@@ -619,6 +629,241 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     /**
+     * Make sure the mdx runs correctly and not in native mode.
+     *
+     * @param rowCount number of rows returned
+     * @param mdx      query
+     */
+    protected void checkNotNative(int rowCount, String mdx) {
+        checkNotNative(rowCount, mdx, null);
+    }
+
+    /**
+     * Make sure the mdx runs correctly and not in native mode.
+     *
+     * @param rowCount       number of rows returned
+     * @param mdx            query
+     * @param expectedResult expected result string
+     */
+    protected void checkNotNative(int rowCount, String mdx, String expectedResult) {
+        getConnection().getCacheControl(null).flushSchemaCache();
+        Connection con = getTestContext().getFoodMartConnection(false);
+        RolapNativeRegistry reg = getRegistry(con);
+        reg.setListener(new Listener() {
+            public void foundEvaluator(NativeEvent e) {
+                fail("should not be executed native");
+            }
+
+            public void foundInCache(TupleEvent e) {
+            }
+
+            public void executingSql(TupleEvent e) {
+            }
+        });
+
+        TestCase c = new TestCase(con, 0, rowCount, mdx);
+        Result result = c.run();
+
+        if (expectedResult != null) {
+            String nonNativeResult = toString(result);
+            if (!nonNativeResult.equals(expectedResult)) {
+                TestContext.assertEqualsVerbose(
+                        expectedResult, nonNativeResult, false,
+                        "Non Native implementation returned different result than " +
+                                "expected; MDX=" + mdx);
+            }
+        }
+    }
+
+    RolapNativeRegistry getRegistry(Connection connection) {
+        RolapCube cube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
+        RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
+        return schemaReader.getSchema().getNativeRegistry();
+    }
+
+    /**
+     * Runs a query twice, with native crossjoin optimization enabled and
+     * disabled. If both results are equal, its considered correct.
+     *
+     * @param resultLimit maximum result size of all the MDX operations in this
+     *                    query. This might be hard to estimate as it is usually larger than the
+     *                    rowCount of the final result. Setting it to 0 will cause this limit to
+     *                    be ignored.
+     * @param rowCount    number of rows returned
+     * @param mdx         query
+     */
+    protected void checkNative(
+            int resultLimit, int rowCount, String mdx) {
+        checkNative(resultLimit, rowCount, mdx, null, false);
+    }
+
+    /**
+     * Runs a query twice, with native crossjoin optimization enabled and
+     * disabled. If both results are equal,and both aggree with the expected
+     * result, its considered correct. Optionally the query could be run with
+     * fresh connection. This is useful if the test case sets its certain
+     * mondrian properties, e.g. native properties like:
+     * mondrian.native.filter.enable
+     *
+     * @param resultLimit     maximum result size of all the MDX operations in this
+     *                        query. This might be hard to estimate as it is usually larger than the
+     *                        rowCount of the final result. Setting it to 0 will cause this limit to
+     *                        be ignored.
+     * @param rowCount        number of rows returned
+     * @param mdx             query
+     * @param expectedResult  expected result string
+     * @param freshConnection set to true if fresh connection is required
+     */
+    protected void checkNative(
+            int resultLimit, int rowCount, String mdx, String expectedResult,
+            boolean freshConnection) {
+        // Don't run the test if we're testing expression dependencies.
+        // Expression dependencies cause spurious interval calls to
+        // 'level.getMembers()' which create false negatives in this test.
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            return;
+        }
+
+        getConnection().getCacheControl(null).flushSchemaCache();
+        try {
+        	Logger.getLogger(getClass()).debug("*** Native: " + mdx);            
+            boolean reuseConnection = !freshConnection;
+            Connection con =
+                    getTestContext().getFoodMartConnection(reuseConnection);
+            RolapNativeRegistry reg = getRegistry(con);
+            reg.useHardCache(true);
+            TestListener listener = new TestListener();
+            reg.setListener(listener);
+            reg.setEnabled(true);
+            TestCase c = new TestCase(con, resultLimit, rowCount, mdx);
+            Result result = c.run();
+            String nativeResult = toString(result);
+            if (!listener.isFoundEvaluator()) {
+                fail("expected native execution of " + mdx);
+            }
+            if (!listener.isExecuteSql()) {
+                fail("cache is empty: expected SQL query to be executed");
+            }
+            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
+                // run once more to make sure that the result comes from cache
+                // now
+                listener.setExecuteSql(false);
+                c.run();
+                if (listener.isExecuteSql()) {
+                    fail("expected result from cache when query runs twice");
+                }
+            }
+            con.close();
+
+        	Logger.getLogger(getClass()).debug("*** Interpreter: " + mdx);
+            
+            getConnection().getCacheControl(null).flushSchemaCache();
+            con = getTestContext().getFoodMartConnection(false);
+            reg = getRegistry(con);
+            listener.setFoundEvaluator(false);
+            reg.setListener(listener);
+            // disable RolapNativeSet
+            reg.setEnabled(false);
+            result = executeQuery(mdx, con);
+            String interpretedResult = toString(result);
+            if (listener.isFoundEvaluator()) {
+                fail("did not expect native executions of " + mdx);
+            }
+
+            if (expectedResult != null) {
+                TestContext.assertEqualsVerbose(
+                        expectedResult, nativeResult, false,
+                        "Native implementation returned different result than expected; MDX=" + mdx);
+                TestContext.assertEqualsVerbose(
+                        expectedResult, interpretedResult, false,
+                        "Interpreter implementation returned different result than expected; MDX=" + mdx);
+            }
+
+            if (!nativeResult.equals(interpretedResult)) {
+                TestContext.assertEqualsVerbose(
+                        interpretedResult, nativeResult, false,
+                        "Native implementation returned different result than interpreter; MDX=" + mdx);
+            }
+        } finally {
+            Connection con = getConnection();
+            RolapNativeRegistry reg = getRegistry(con);
+            reg.setEnabled(true);
+            reg.useHardCache(false);
+        }
+    }
+    
+    protected Result executeQuery(String mdx, Connection connection) {
+        Query query = connection.parseQuery(mdx);
+        query.setResultStyle(ResultStyle.LIST);
+        return connection.execute(query);
+    }
+
+    private String toString(Result r) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        r.print(pw);
+        pw.close();
+        return sw.toString();
+    }
+    
+    /**
+     * runs a MDX query with a predefined resultLimit and checks the number of positions
+     * of the row axis. The reduces resultLimit ensures that the optimization is present.
+     */
+    protected class TestCase {
+        /**
+         * Maximum number of rows to be read from SQL. If more than this number
+         * of rows are read, the test will fail.
+         */
+        int resultLimit;
+        /**
+         * MDX query to execute.
+         */
+        String query;
+        /**
+         * Number of positions we expect on rows axis of result.
+         */
+        int rowCount;
+        /**
+         * Mondrian connection.
+         */
+        Connection con;
+
+        public TestCase(int resultLimit, int rowCount, String query) {
+            this.con = getConnection();
+            this.resultLimit = resultLimit;
+            this.rowCount = rowCount;
+            this.query = query;
+        }
+
+        public TestCase(Connection con, int resultLimit, int rowCount, String query) {
+            this.con = con;
+            this.resultLimit = resultLimit;
+            this.rowCount = rowCount;
+            this.query = query;
+        }
+
+        protected Result run() {
+            getConnection().getCacheControl(null).flushSchemaCache();
+            IntegerProperty monLimit = MondrianProperties.instance().ResultLimit;
+            int oldLimit = monLimit.get();
+            try {
+                monLimit.set(this.resultLimit);
+                Result result = executeQuery(query, con);
+                /*
+                 * rows are on the last axis.
+                 */
+                int numAxes = result.getAxes().length;
+                Axis a = result.getAxes()[numAxes - 1];
+                assertEquals(rowCount, a.getPositions().size());
+                return result;
+            } finally {
+                monLimit.set(oldLimit);
+            }
+        }
+    }
+
+    /**
      * Fake exception to interrupt the test when we see the desired query.
      * It is an {@link Error} because we need it to be unchecked
      * ({@link Exception} is checked), and we don't want handlers to handle
@@ -705,6 +950,59 @@ public class BatchTestCase extends FoodMartTestCase {
                 : new OrPredicate(orPredList);
         }
     }
+    
+    /**
+     * gets notified
+     * <ul>
+     * <li>when a matching native evaluator was found
+     * <li>when SQL is executed
+     * <li>when result is found in the cache
+     * </ul>
+     *
+     * @author av
+     * @since Nov 22, 2005
+     */
+    static class TestListener implements Listener {
+        boolean foundEvaluator;
+        boolean foundInCache;
+        boolean executeSql;
+
+        boolean isExecuteSql() {
+            return executeSql;
+        }
+
+        void setExecuteSql(boolean executeSql) {
+            this.executeSql = executeSql;
+        }
+
+        boolean isFoundEvaluator() {
+            return foundEvaluator;
+        }
+
+        void setFoundEvaluator(boolean foundEvaluator) {
+            this.foundEvaluator = foundEvaluator;
+        }
+
+        boolean isFoundInCache() {
+            return foundInCache;
+        }
+
+        void setFoundInCache(boolean foundInCache) {
+            this.foundInCache = foundInCache;
+        }
+
+        public void foundEvaluator(NativeEvent e) {
+            this.foundEvaluator = true;
+        }
+
+        public void foundInCache(TupleEvent e) {
+            this.foundInCache = true;
+        }
+
+        public void executingSql(TupleEvent e) {
+            this.executeSql = true;
+        }
+    }    
 }
 
 // End BatchTestCase.java

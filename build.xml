@@ -415,7 +415,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <ivy:retrieve symlink="${symlink}" type="jar,war"
           pattern="${lib.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
-          pattern="${lib.dir}/[module]-[type].[ext]"/>
+          pattern="${lib.dir}/[module]-[type].[ext]"/> 
   </target>
 
   <target name="cmdrunner" depends="jar">

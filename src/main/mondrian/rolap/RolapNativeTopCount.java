@@ -36,7 +36,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
     static class TopCountConstraint extends SetConstraint {
         Exp orderByExpr;
         boolean ascending;
-        Integer count;
+        Integer topCount;
 
         public TopCountConstraint(
             int count,
@@ -46,7 +46,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             super(args, evaluator, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;
-            this.count = new Integer(count);
+            this.topCount = new Integer(count);
         }
 
         /**
@@ -86,7 +86,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 key.add(orderByExpr.toString());
             }
             key.add(ascending);
-            key.add(count);
+            key.add(topCount);
             return key;
         }
     }
@@ -123,12 +123,21 @@ public class RolapNativeTopCount extends RolapNativeSet {
         if (args.length < 2 || args.length > 3) {
             return null;
         }
+
         // extract the set expression
-        CrossJoinArg[] cargs = checkCrossJoinArg(evaluator, args[0]);
-        if (cargs == null) {
+        List<CrossJoinArg[]> allArgs = checkCrossJoinArg(evaluator, args[0]);
+
+        // checkCrossJoinArg returns a list of CrossJoinArg arrays.
+        // The first array is the CrossJoin dimensions
+        // The second array, if any, contains additional constraints on the 
+        // dimensions. If either the list or the first array is null, then 
+        // native cross join is not feasible.
+        if (allArgs == null || allArgs.isEmpty() || allArgs.get(0) == null) {
             return null;
         }
-        if (isPreferInterpreter(cargs, false)) {
+
+        CrossJoinArg[] cjArgs = allArgs.get(0);
+        if (isPreferInterpreter(cjArgs, false)) {
             return null;
         }
 
@@ -157,12 +166,26 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
         }
         LOGGER.debug("using native topcount");
-        evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
+        evaluator = overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+
+        CrossJoinArg[] predicateArgs = null;
+        if (allArgs.size() == 2) {
+            predicateArgs = allArgs.get(1);
+        }
+
+        CrossJoinArg[] combinedArgs = cjArgs;
+
+        if (predicateArgs != null) {
+            // Combined the CJ and the additional predicate args to form the TupleConstraint.
+            combinedArgs = new CrossJoinArg[cjArgs.length + predicateArgs.length];
+            System.arraycopy(cjArgs, 0, combinedArgs, 0, cjArgs.length);
+            System.arraycopy(predicateArgs, 0, combinedArgs, cjArgs.length, predicateArgs.length);        	
+        }
 
         TupleConstraint constraint =
             new TopCountConstraint(
-                count, cargs, evaluator, orderByExpr, ascending);
-        SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
+                count, combinedArgs, evaluator, orderByExpr, ascending);
+        SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;
     }
