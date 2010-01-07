@@ -271,7 +271,7 @@ public class FilterTest extends BatchTestCase {
             "Row #8: 84\n" +
             "Row #9: 278\n";          
         
-        checkNative(0, 10, query, fold(result), requestFreshConnection);
+        checkNative(0, 10, query, result, requestFreshConnection);
     }
 
     /**
@@ -325,7 +325,7 @@ public class FilterTest extends BatchTestCase {
             "Row #7: 84\n" +
             "Row #8: 278\n";          
         
-        checkNative(0, 9, query, fold(result), requestFreshConnection);
+        checkNative(0, 9, query, result, requestFreshConnection);
     }
 
     /**
@@ -333,6 +333,11 @@ public class FilterTest extends BatchTestCase {
      * that contain multiple levels, but none being null.
      */
     public void testNotInMultiLevelMemberConstraintNonNullParent() {
+
+        if (MondrianProperties.instance().UseAggregates.get()) {
+            return;
+        }
+
         String query =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' " +
@@ -395,6 +400,10 @@ public class FilterTest extends BatchTestCase {
      * the same parent.
      */
     public void testNotInMultiLevelMemberConstraintNonNullSameParent() {
+        if (MondrianProperties.instance().UseAggregates.get()) {
+            return;
+        }
+
         String query =
             "With " +
             "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' " +
@@ -481,7 +490,7 @@ public class FilterTest extends BatchTestCase {
             "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co]," +
             " [Warehouse2].[971-555-6213].[3377 Coachman Place].[Jones International]})' " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Warehouse2]";
+            "select [NECJ] on 0 from [Warehouse2]";
 
         String necjSqlDerby =
             "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", " +
@@ -588,7 +597,7 @@ public class FilterTest extends BatchTestCase {
             "set [Filtered Warehouse Set] as 'Filter([Warehouse2].[name].Members, [Warehouse2].CurrentMember Not In" +
             "{[Warehouse2].[#null].[234 West Covina Pkwy].[Freeman And Co]})' " +
             "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) " +
-            "select [NECJ] on rows from [Warehouse2]";
+            "select [NECJ] on 0 from [Warehouse2]";
 
         String necjSqlDerby =
             "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", " +
@@ -781,7 +790,7 @@ public class FilterTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(0, 8, query, fold(result), requestFreshConnection);
+        checkNative(0, 8, query, result, requestFreshConnection);
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
@@ -833,7 +842,7 @@ public class FilterTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(false);
 
-        checkNotNative(9, query, fold(result));
+        checkNotNative(9, query, result);
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
@@ -875,7 +884,7 @@ public class FilterTest extends BatchTestCase {
         // is not refreshed for this parameter.
         Connection conn = getTestContext().getFoodMartConnection(false);
         TestContext context = getTestContext(conn);
-        context.assertQueryReturns(query, fold(result));
+        context.assertQueryReturns(query, result);
 
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
@@ -909,7 +918,7 @@ public class FilterTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeFilter.get();
         MondrianProperties.instance().EnableNativeFilter.set(false);
 
-        checkNotNative(3, query, fold(result));
+        checkNotNative(3, query, result);
         MondrianProperties.instance().EnableNativeFilter.set(origNativeFilter);
     }
 
