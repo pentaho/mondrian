@@ -313,7 +313,7 @@ public class RolapCubeLevel extends RolapLevel {
             }
 
             final StarColumnPredicate predicate;
-            if (member.isCalculated()) {
+            if (member.isCalculated() && !member.isParentChildLeaf()) {
                 predicate = null;
             } else {
                 predicate =

@@ -16,6 +16,8 @@ import mondrian.mdx.MemberExpr;
 import mondrian.mdx.NamedSetExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.fun.ParenthesesFunDef;
+import mondrian.olap.fun.SetFunDef;
 import mondrian.olap.fun.TupleFunDef;
 import mondrian.olap.type.HierarchyType;
 import mondrian.olap.type.Type;
@@ -44,8 +46,7 @@ public class CrossJoinArgFactory {
         final RolapEvaluator evaluator)
     {
         Set<CrossJoinArg> joinArgs =
-            new HashSet<CrossJoinArg>();
-
+            new LinkedHashSet<CrossJoinArg>();
         for (QueryAxis ax : evaluator.getQuery().getAxes()) {
             List<CrossJoinArg[]> axesArgs =
                 checkCrossJoinArg(evaluator, ax.getSet(), true);
@@ -147,9 +148,9 @@ public class CrossJoinArgFactory {
     private CrossJoinArg[] checkConstrainedMeasures(
         RolapEvaluator evaluator, FunDef fun, Exp[] args)
     {
-        if (isSetOfConstrainedMeasures(fun, args)) {
+            if (isSetOfConstrainedMeasures(fun, args)) {
             HashMap<Dimension, List<RolapMember>> memberLists =
-                new HashMap<Dimension, List<RolapMember>>();
+                new LinkedHashMap<Dimension, List<RolapMember>>();
             for (Exp arg : args) {
                 addConstrainingMembersToMap(arg, memberLists);
             }
@@ -175,22 +176,37 @@ public class CrossJoinArgFactory {
         if (!(arg instanceof MemberExpr
             && ((MemberExpr) arg).getMember().isMeasure()))
         {
+            if (arg instanceof ResolvedFunCall) {
+                ResolvedFunCall call = (ResolvedFunCall) arg;
+                if (call.getFunDef() instanceof SetFunDef
+                    || call.getFunDef() instanceof ParenthesesFunDef)
+                {
+                    return allArgsConstrainedMeasure(call.getArgs());
+                }
+            }
             return false;
         }
         Member member = ((MemberExpr) arg).getMember();
         if (member instanceof RolapCalculatedMember) {
             Exp calcExp =
                 ((RolapCalculatedMember) member).getFormula().getExpression();
-            return (calcExp instanceof ResolvedFunCall
+            return ((calcExp instanceof ResolvedFunCall
                 && ((ResolvedFunCall) calcExp).getFunDef()
-                instanceof TupleFunDef);
+                instanceof TupleFunDef))
+                || calcExp instanceof Literal;
         }
         return false;
     }
 
     private void addConstrainingMembersToMap(
-        Exp arg, HashMap<Dimension, List<RolapMember>> memberLists)
+        Exp arg, Map<Dimension, List<RolapMember>> memberLists)
     {
+        if (arg instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) arg;
+            for (Exp callArg : call.getArgs()) {
+                addConstrainingMembersToMap(callArg, memberLists);
+            }
+        }
         Exp[] tupleArgs = getCalculatedTupleArgs(arg);
         for (Exp tupleArg : tupleArgs) {
             Dimension dimension = tupleArg.getType().getDimension();
@@ -203,6 +219,8 @@ public class CrossJoinArgFactory {
                 }
                 members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
                 memberLists.put(dimension, members);
+            } else if (isConstrainedMeasure(tupleArg)) {
+                addConstrainingMembersToMap(tupleArg, memberLists);
             }
         }
     }
@@ -229,19 +247,52 @@ public class CrossJoinArgFactory {
     {
         List<CrossJoinArg> argList = new ArrayList<CrossJoinArg>();
         for (List<RolapMember> memberList : memberLists.values()) {
-            if (memberList.size() == args.length) {
+            if (memberList.size() == countNonLiteralMeasures(args)) {
                 //when the memberList and args list have the same length
                 //it means there must have been a constraint on each measure
                 //for this dimension.
                 final CrossJoinArg cjArg =
                     MemberListCrossJoinArg.create(
-                        evaluator, memberList, restrictMemberTypes(), false);
+                        evaluator,
+                        removeDuplicates(memberList),
+                        restrictMemberTypes(), false);
                 if (cjArg != null) {
                     argList.add(cjArg);
                 }
             }
         }
-        return argList.toArray(new CrossJoinArg[argList.size()]);
+        if (argList.size() > 0) {
+            return argList.toArray(new CrossJoinArg[argList.size()]);
+        }
+        return null;
+    }
+
+    private List<RolapMember> removeDuplicates(List<RolapMember> list)
+    {
+        Set<RolapMember> set = new HashSet<RolapMember>();
+        List<RolapMember> uniqueList = new ArrayList<RolapMember>();
+        for (RolapMember element : list) {
+            if (set.add(element)) {
+                uniqueList.add(element);
+            }
+        }
+        return uniqueList;
+    }
+
+    private int countNonLiteralMeasures(Exp[] length) {
+        int count = 0;
+        for (Exp exp : length) {
+            if (exp instanceof MemberExpr) {
+                Exp calcExp = ((MemberExpr) exp).getMember().getExpression();
+                if (!(calcExp instanceof Literal)) {
+                    count++;
+                }
+            } else if (exp instanceof ResolvedFunCall) {
+                count +=
+                    countNonLiteralMeasures(((ResolvedFunCall) exp).getArgs());
+            }
+        }
+        return count;
     }
 
     /**

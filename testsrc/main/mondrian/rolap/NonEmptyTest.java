@@ -3650,33 +3650,42 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         SqlPattern accessPattern = new SqlPattern(
             Dialect.DatabaseProduct.ACCESS,
-            "select `time_by_day`.`the_year` as `c0`, `promotion`.`promotion_name` as `c1` "
-                + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `promotion` as `promotion`, `customer` as `customer` "
-                + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            "select `time_by_day`.`the_year` as `c0`, "
+                + "`promotion`.`promotion_name` as `c1` "
+                + "from `time_by_day` as `time_by_day`, "
+                + "`sales_fact_1997` as `sales_fact_1997`, "
+                + "`promotion` as `promotion`, "
+                + "`customer` as `customer` "
+                + "where "
+                + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
                 + "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-                + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
                 + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
                 + "and (`customer`.`gender` = 'F') "
                 + "and (`time_by_day`.`the_year` = 1997) "
-                + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name` "
-                + "order by 1 ASC, 2 ASC",
+                + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
+                + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name`"
+                + " order by 1 ASC, 2 ASC",
             623);
         SqlPattern oraclePattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", \"promotion\".\"promotion_name\" as \"c1\" "
+            "select \"time_by_day\".\"the_year\" as \"c0\", "
+                + "\"promotion\".\"promotion_name\" as \"c1\" "
                 + "from \"time_by_day\" \"time_by_day\", "
                 + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"promotion\" \"promotion\", \"customer\" \"customer\" "
+                + "\"promotion\" \"promotion\", "
+                + "\"customer\" \"customer\" "
                 + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
                 + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = 'F') and (\"time_by_day\".\"the_year\" = 1997) "
+                + "and (\"customer\".\"gender\" = 'F') "
+                + "and (\"time_by_day\".\"the_year\" = 1997) "
+                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
                 + "order by 1 ASC, 2 ASC",
             611);
         assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
     }
+
     public void testLevelMembersWillConstrainUsingArgsFromAllAxes() {
             String mdx = "select "
                 + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
@@ -3719,13 +3728,16 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", "
                 + "\"promotion\".\"promotion_name\" as \"c1\" "
-                + "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"promotion\" \"promotion\", \"customer\" \"customer\" "
+                + "from \"time_by_day\" \"time_by_day\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\", "
+                + "\"promotion\" \"promotion\", "
+                + "\"customer\" \"customer\" "
                 + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
                 + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
                 + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
                 + "and (\"customer\".\"gender\" in ('F', 'M')) "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "and (\"time_by_day\".\"the_year\" = 1997) "
+                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
                 + "order by 1 ASC, 2 ASC",
             611);
@@ -3743,13 +3755,16 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", "
                 + "\"promotion\".\"promotion_name\" as \"c1\" "
-                + "from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\", \"promotion\" \"promotion\", \"customer\" \"customer\" "
+                + "from \"time_by_day\" \"time_by_day\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\", "
+                + "\"promotion\" \"promotion\", "
+                + "\"customer\" \"customer\" "
                 + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
                 + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
                 + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
                 + "and (\"customer\".\"gender\" in ('F', 'M')) "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "and (\"time_by_day\".\"the_year\" = 1997) "
+                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
                 + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
                 + "order by 1 ASC, 2 ASC",
             611);
@@ -3760,8 +3775,94 @@ public class NonEmptyTest extends BatchTestCase {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
                 + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
+                + "member [Measures].[store sales Female] as '([Measures].[Store Sales],[Gender].[Gender].[F])' "
+                + "member [Measures].[literal one] as '1' "
                 + "select "
-                + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Female]} on 0, "
+                + "non empty {{[Measures].[unit sales Male]}, {([Measures].[literal one])}, "
+                + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
+                + "non empty [Customers].[name].members on 1 "
+                + "from Sales";
+        final SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select \"customer\".\"country\" as \"c0\", "
+                + "\"customer\".\"state_province\" as \"c1\", "
+                + "\"customer\".\"city\" as \"c2\", "
+                + "\"customer\".\"customer_id\" as \"c3\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+                + "\"customer\".\"gender\" as \"c6\", "
+                + "\"customer\".\"marital_status\" as \"c7\", "
+                + "\"customer\".\"education\" as \"c8\", "
+                + "\"customer\".\"yearly_income\" as \"c9\" "
+                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" in ('M', 'F')) "
+                + "group by \"customer\".\"country\", "
+                + "\"customer\".\"state_province\", "
+                + "\"customer\".\"city\", "
+                + "\"customer\".\"customer_id\", "
+                + "\"fname\" || ' ' || \"lname\", "
+                + "\"customer\".\"gender\", "
+                + "\"customer\".\"marital_status\", "
+                + "\"customer\".\"education\", "
+                + "\"customer\".\"yearly_income\" "
+                + "order by \"customer\".\"country\" ASC,"
+                + " \"customer\".\"state_province\" ASC,"
+                + " \"customer\".\"city\" ASC, "
+                + "\"fname\" || ' ' || \"lname\" ASC",
+            860);
+        assertQuerySql(mdx, new SqlPattern[]{pattern});
+    }
+
+    public void testNestedMeasureConstraintsGetOptimized() {
+        String mdx =
+            "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
+                + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
+                + "select "
+                + "non empty {[Measures].[unit sales Male Married]} on 0, "
+                + "non empty [Customers].[name].members on 1 "
+                + "from Sales";
+        SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select \"customer\".\"country\" as \"c0\", "
+                + "\"customer\".\"state_province\" as \"c1\", "
+                + "\"customer\".\"city\" as \"c2\", "
+                + "\"customer\".\"customer_id\" as \"c3\", "
+                + "\"fname\" || \" \" || \"lname\" as \"c4\", "
+                + "\"fname\" || \" \" || \"lname\" as \"c5\", "
+                + "\"customer\".\"gender\" as \"c6\", "
+                + "\"customer\".\"marital_status\" as \"c7\", "
+                + "\"customer\".\"education\" as \"c8\", "
+                + "\"customer\".\"yearly_income\" as \"c9\" "
+                + "from \"customer\" \"customer\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" = \"M\") "
+                + "and (\"customer\".\"marital_status\" = \"M\") "
+                + "group by \"customer\".\"country\", "
+                + "\"customer\".\"state_province\", "
+                + "\"customer\".\"city\", "
+                + "\"customer\".\"customer_id\", "
+                + "\"fname\" || \" \" || \"lname\", "
+                + "\"customer\".\"gender\", "
+                + "\"customer\".\"marital_status\", "
+                + "\"customer\".\"education\", "
+                + "\"customer\".\"yearly_income\" "
+                + "order by \"customer\".\"country\" ASC, "
+                + "\"customer\".\"state_province\" ASC, "
+                + "\"customer\".\"city\" ASC, "
+                + "\"fname\" || \" \" || \"lname\" ASC",
+            892);
+        assertQuerySql(mdx, new SqlPattern[]{pattern});
+    }
+
+    public void testNonUniformNestedMeasureConstraintsGetOptimized() {
+        String mdx =
+            "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
+                + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
+                + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
+                + "select "
+                + "non empty {[Measures].[unit sales Male Married],[Measures].[unit sales Female]} on 0, "
                 + "non empty [Customers].[name].members on 1 "
                 + "from Sales";
         final SqlPattern pattern = new SqlPattern(
