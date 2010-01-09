@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1416,7 +1416,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // SSAS gives 626866, 626866, 626866.
         assertQueryReturns(
             "select crossjoin([Products].DefaultMember, [Gender].Members) on 0\n"
-                + "from [Warehouse and Sales]",
+            + "from [Warehouse and Sales]",
             "xx");
     }
 

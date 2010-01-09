@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde
+// Copyright (C) 2004-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -328,11 +328,11 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             TestContext testContext = TestContext.createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
-                    + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-                    + "      <Table name=\"customer\"/>\n"
-                    + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" hideMemberIf=\"IfBlankName\">\n"
-                    + "         <NameExpression> "
-                    + " <SQL dialect='generic'> "
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" hideMemberIf=\"IfBlankName\">\n"
+                + "         <NameExpression> "
+                + " <SQL dialect='generic'> "
                     +           "case \"gender\" "
                     +           "when 'F' then ' ' "
                     +           "when 'M' then 'M' "
@@ -344,13 +344,13 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                     + "  </Dimension>");
             testContext.assertQueryReturns(
                 " select {[Gender4].[Gender].members} "
-                    + "on COLUMNS "
-                    + "from sales",
+                + "on COLUMNS "
+                + "from sales",
                 "Axis #0:\n"
-                    + "{}\n"
-                    + "Axis #1:\n"
-                    + "{[Gender4].[All Gender].[M]}\n"
-                    + "Row #0: 135,215\n");
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Gender4].[All Gender].[M]}\n"
+                + "Row #0: 135,215\n");
         }
     }
 }

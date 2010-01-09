@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -32,19 +32,19 @@ public class IndexedValuesTest extends FoodMartTestCase {
 
         // Query using name
         final String queryStr1 =
-                "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
-                    + "ON COLUMNS, "
-                    + "{[Employees].[Sheri Nowmer]} "
-                    + "ON ROWS FROM [HR]";
+            "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
+            + "ON COLUMNS, "
+            + "{[Employees].[Sheri Nowmer]} "
+            + "ON ROWS FROM [HR]";
         final Query query1 = conn.parseQuery(queryStr1);
         final Result result1 = conn.execute(query1);
 
         // Query using key
         final String queryStr2 =
-                "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
-                    + "ON COLUMNS, "
-                    + "{[Employees].&[1]} "
-                    + "ON ROWS FROM [HR]";
+            "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
+            + "ON COLUMNS, "
+            + "{[Employees].&[1]} "
+            + "ON ROWS FROM [HR]";
         final Query query2 = conn.parseQuery(queryStr2);
         final Result result2 = conn.execute(query2);
 

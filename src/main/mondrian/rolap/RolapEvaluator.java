@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -394,7 +394,7 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.setContext: member == null "
-                         + " , count=" + i);
+                        + " , count=" + i);
                 }
                 assert false;
                 continue;
@@ -410,8 +410,8 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.setContext: "
-                            + "member == null, memberList: "
-                            + Arrays.asList(members));
+                        + "member == null, memberList: "
+                        + Arrays.asList(members));
                 }
                 assert false;
                 continue;
@@ -535,7 +535,7 @@ public class RolapEvaluator implements Evaluator {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(
                             "RolapEvaluator.checkRecursion: member == null "
-                             + " , count=" + i);
+                            + " , count=" + i);
                     }
                     continue;
                 }
@@ -597,7 +597,7 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.getProperty: member == null "
-                         + " , count=" + i);
+                        + " , count=" + i);
                 }
                 continue;
             }

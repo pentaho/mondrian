@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1028,11 +1028,11 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testHierarchizeNamedSetImmutable() {
         assertQueryReturns(
             "with set necj as\n"
-                + "NonEmptyCrossJoin([Customers].[Name].members,[Store].[Store Name].members)\n"
-                + "select\n"
-                + "{[Measures].[Unit Sales]} on columns,\n"
-                + "Tail(hierarchize(necj),5) on rows\n"
-                + "from sales",
+            + "NonEmptyCrossJoin([Customers].[Name].members,[Store].[Store Name].members)\n"
+            + "select\n"
+            + "{[Measures].[Unit Sales]} on columns,\n"
+            + "Tail(hierarchize(necj),5) on rows\n"
+            + "from sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

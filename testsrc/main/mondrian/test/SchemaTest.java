@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -132,18 +132,18 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Product with no all\" foreignKey=\"product_id\">\n"
-                + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
-                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
-                + "        <Table name=\"product\"/>\n"
-                + "        <Table name=\"product_class\"/>\n"
-                + "      </Join>\n"
-                + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
-                + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
-                + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-                + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
-                + "          uniqueMembers=\"true\"/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n");
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
+            + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
         // note that default member name has no 'all' and has a name not an id
         testContext.assertQueryReturns(
             "select {[Product with no all]} on columns from [Sales]",
@@ -1658,15 +1658,15 @@ public class SchemaTest extends FoodMartTestCase {
             TestContext.create(
                 null,
                 "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">"
-                    + "  <Table name=\"sales_fact_1997\">\n"
-                    + "  </Table>\n"
-                    + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
-                    + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
-                    + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
-                    + "      formatString=\"Standard\"/>\n"
-                    + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
-                    + "      formatString=\"#,###.00\"/>\n"
-                    + "</Cube>",
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "  </Table>\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###.00\"/>\n"
+                + "</Cube>",
                 null, null, null, null);
 
         // With bug, and with aggregates enabled, query against Sales returns
@@ -1829,13 +1829,13 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"Cube with caption\" caption=\"Cube with name\">"
-                + "  <Table name='sales_fact_1997'/>"
-                + "</Cube>\n",
+            + "  <Table name='sales_fact_1997'/>"
+            + "</Cube>\n",
             "<VirtualCube name=\"Warehouse and Sales with caption\" "
-                + " caption=\"Warehouse and Sales with name\" "
-                + "defaultMeasure=\"Store Sales\">\n"
-                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
-                + "</VirtualCube>",
+            + " caption=\"Warehouse and Sales with name\" "
+            + "defaultMeasure=\"Store Sales\">\n"
+            + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+            + "</VirtualCube>",
             null, null, null);
         final NamedList<org.olap4j.metadata.Cube> cubes =
             testContext.getOlap4jConnection().getSchema().getCubes();
@@ -2040,14 +2040,14 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
-                + "  <SchemaGrant access=\"invalid\"/>\n"
-                + "</Role>")
+            + "  <SchemaGrant access=\"invalid\"/>\n"
+            + "</Role>")
             .withRole("Role1");
         testContext.assertQueryThrows(
             "select from [Sales]",
             "In Schema: In Role: In SchemaGrant: "
-                + "Value 'invalid' of attribute 'access' has illegal value 'invalid'.  "
-                + "Legal values: {all, custom, none, all_dimensions}");
+            + "Value 'invalid' of attribute 'access' has illegal value 'invalid'.  "
+            + "Legal values: {all, custom, none, all_dimensions}");
     }
 
     public void testAllMemberNoStringReplace() {
@@ -2088,23 +2088,23 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role2\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role1Plus2\">\n"
-                + "  <Union>\n"
-                + "    <RoleUsage roleName=\"Role1\"/>\n"
-                + "    <RoleUsage roleName=\"Role2\"/>\n"
-                + "  </Union>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role1Plus2Plus1\">\n"
-                + "  <Union>\n"
-                + "    <RoleUsage roleName=\"Role1Plus2\"/>\n"
-                + "    <RoleUsage roleName=\"Role1\"/>\n"
-                + "  </Union>\n"
-                + "</Role>\n").withRole("Role1Plus2Plus1");
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role1Plus2\">\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n"
+            + "    <RoleUsage roleName=\"Role2\"/>\n"
+            + "  </Union>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role1Plus2Plus1\">\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"Role1Plus2\"/>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n"
+            + "  </Union>\n"
+            + "</Role>\n").withRole("Role1Plus2Plus1");
         testContext.assertQueryReturns(
             "select from [Sales]",
             "Axis #0:\n"
@@ -2116,15 +2116,15 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role1Plus2\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "  <Union>\n"
-                + "    <RoleUsage roleName=\"Role1\"/>\n"
-                + "    <RoleUsage roleName=\"Role1\"/>\n"
-                + "  </Union>\n"
-                + "</Role>\n").withRole("Role1Plus2");
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role1Plus2\">\n"
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n"
+            + "  </Union>\n"
+            + "</Role>\n").withRole("Role1Plus2");
         testContext.assertQueryThrows(
             "select from [Sales]", "Union role must not contain grants");
     }
@@ -2133,17 +2133,17 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role1Plus2\">\n"
-                + "  <Union>\n"
-                + "    <RoleUsage roleName=\"Role1\"/>\n"
-                + "    <RoleUsage roleName=\"Role2\"/>\n"
-                + "  </Union>\n"
-                + "</Role>\n"
-                + "<Role name=\"Role2\">\n"
-                + "  <SchemaGrant access=\"all\"/>\n"
-                + "</Role>").withRole("Role1Plus2");
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role1Plus2\">\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n"
+            + "    <RoleUsage roleName=\"Role2\"/>\n"
+            + "  </Union>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>").withRole("Role1Plus2");
         testContext.assertQueryThrows(
             "select from [Sales]", "Unknown role 'Role2'");
     }
@@ -2230,11 +2230,11 @@ public class SchemaTest extends FoodMartTestCase {
             TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store Size in SQFT\">\n"
-                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
-                + "      <Table name=\"store\"/>\n"
-                + "      <Level name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>");
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
         final List<Exception> exceptionList = testContext.getSchemaWarnings();
         assertContains(exceptionList, "todo xxxxx");
     }
@@ -2335,35 +2335,35 @@ public class SchemaTest extends FoodMartTestCase {
         // TODO: schema syntax to create attribute hierarchy
         assertQueryReturns(
             "WITH \n"
-                + " MEMBER\n"
-                + "  Measures.SalesPerWorkingDay AS \n"
-                + "    IIF(\n"
-                + "     Count(\n"
-                + "      Filter(\n"
-                + "        Descendants(\n"
-                + "          [Date].[Calendar].CurrentMember\n"
-                + "          ,[Date].[Calendar].[Date]\n"
-                + "          ,SELF)\n"
-                + "       ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
-                + "      )\n"
-                + "    ) = 0\n"
-                + "     ,NULL\n"
-                + "     ,[Measures].[Internet Sales Amount]\n"
-                + "      /\n"
-                + "       Count(\n"
-                + "         Filter(\n"
-                + "           Descendants(\n"
-                + "             [Date].[Calendar].CurrentMember\n"
-                + "             ,[Date].[Calendar].[Date]\n"
-                + "             ,SELF)\n"
-                + "          ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
-                + "         )\n"
-                + "       )\n"
-                + "    )\n"
-                + "   '\n"
-                + "SELECT [Measures].[SalesPerWorkingDay]  ON 0\n"
-                + ", [Date].[Calendar].[Month].MEMBERS ON 1\n"
-                + "FROM [Adventure Works]",
+            + " MEMBER\n"
+            + "  Measures.SalesPerWorkingDay AS \n"
+            + "    IIF(\n"
+            + "     Count(\n"
+            + "      Filter(\n"
+            + "        Descendants(\n"
+            + "          [Date].[Calendar].CurrentMember\n"
+            + "          ,[Date].[Calendar].[Date]\n"
+            + "          ,SELF)\n"
+            + "       ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
+            + "      )\n"
+            + "    ) = 0\n"
+            + "     ,NULL\n"
+            + "     ,[Measures].[Internet Sales Amount]\n"
+            + "      /\n"
+            + "       Count(\n"
+            + "         Filter(\n"
+            + "           Descendants(\n"
+            + "             [Date].[Calendar].CurrentMember\n"
+            + "             ,[Date].[Calendar].[Date]\n"
+            + "             ,SELF)\n"
+            + "          ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
+            + "         )\n"
+            + "       )\n"
+            + "    )\n"
+            + "   '\n"
+            + "SELECT [Measures].[SalesPerWorkingDay]  ON 0\n"
+            + ", [Date].[Calendar].[Month].MEMBERS ON 1\n"
+            + "FROM [Adventure Works]",
             "x");
     }
 
@@ -2390,8 +2390,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "  </Dimension>\n", null, null);
         testContext.assertQueryReturns(
             "select non empty {[Measures].[Unit Sales]} on 0,\n"
-                + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
-                + "from [Sales]",
+            + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
+            + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1372,19 +1372,19 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().NativizeMinThreshold, 0);
         checkNative(
             "with"
-                + " member [gender].[agg] as"
-                + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
-                + " member [Marital Status].[agg] as"
-                + "  'aggregate({[Marital Status].[Marital Status].members},[measures].[unit sales])'"
-                + "select"
-                + " non empty "
-                + " NativizeSet("
-                + "Crossjoin("
-                + "{[Marital Status].[Marital Status].members,[Marital Status].[agg]},"
-                + "{[Gender].[Gender].members,[gender].[agg]}"
-                + ")) on 0 "
-                + " from sales "
-                + " where [Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]");
+            + " member [gender].[agg] as"
+            + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
+            + " member [Marital Status].[agg] as"
+            + "  'aggregate({[Marital Status].[Marital Status].members},[measures].[unit sales])'"
+            + "select"
+            + " non empty "
+            + " NativizeSet("
+            + "Crossjoin("
+            + "{[Marital Status].[Marital Status].members,[Marital Status].[agg]},"
+            + "{[Gender].[Gender].members,[gender].[agg]}"
+            + ")) on 0 "
+            + " from sales "
+            + " where [Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]");
     }
 
     public void testCardinalityQueriesOnlyExecuteOnce() {
@@ -1392,24 +1392,24 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
                 "select count(*) as \"c0\" "
-                    + "from (select "
-                    + "distinct \"customer\".\"gender\" as \"c0\" "
-                    + "from \"customer\" \"customer\") \"init\"",
+                + "from (select "
+                + "distinct \"customer\".\"gender\" as \"c0\" "
+                + "from \"customer\" \"customer\") \"init\"",
                 108),
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
                 "select count(*) as `c0` "
-                    + "from (select "
-                    + "distinct `customer`.`gender` as `c0` "
-                    + "from `customer` as `customer`) as `init`",
+                + "from (select "
+                + "distinct `customer`.`gender` as `c0` "
+                + "from `customer` as `customer`) as `init`",
                 108)
         };
         String mdxQuery =
             "select"
-                + " non empty"
-                + " NativizeSet(Crossjoin("
-                + "[Gender].[Gender].members,[Marital Status].[Marital Status].members"
-                + ")) on 0 from Sales";
+            + " non empty"
+            + " NativizeSet(Crossjoin("
+            + "[Gender].[Gender].members,[Marital Status].[Marital Status].members"
+            + ")) on 0 from Sales";
         getConnection().execute(getConnection().parseQuery(mdxQuery));
         assertQuerySqlOrNot(
             getTestContext(), mdxQuery, patterns, true, false, false);
@@ -1418,16 +1418,16 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     public void testSingleLevelDotMembersIsNativelyEvaluated() {
         String mdx1 =
             "select non empty NativizeSet([Customers].[name].members) on 0,"
-                + "non empty NativizeSet("
-                + "Crossjoin({[Gender].[Gender].[M]},"
-                + "[Measures].[Unit Sales])) on 1 "
-                + "from Sales";
+            + "non empty NativizeSet("
+            + "Crossjoin({[Gender].[Gender].[M]},"
+            + "[Measures].[Unit Sales])) on 1 "
+            + "from Sales";
         String mdx2 =
             "select non empty NativizeSet({[Customers].[name].members}) on 0,"
-                + "non empty NativizeSet("
-                + "Crossjoin({[Gender].[Gender].[M]},"
-                + "[Measures].[Unit Sales])) on 1 "
-                + "from Sales";
+            + "non empty NativizeSet("
+            + "Crossjoin({[Gender].[Gender].[M]},"
+            + "[Measures].[Unit Sales])) on 1 "
+            + "from Sales";
 
         String sql = "select \"customer\".\"country\" as \"c0\", "
             + "\"customer\".\"state_province\" as \"c1\", "

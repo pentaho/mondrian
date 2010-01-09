@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde and others
+// Copyright (C) 2003-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1920,7 +1920,7 @@ public class FunctionTest extends FoodMartTestCase {
         result =
             executeQuery(
                 "select {[Time.Weekly].DefaultMember} on columns\n"
-                 + "from Sales");
+                + "from Sales");
         Assert.assertEquals(
             MondrianProperties.instance().SsasCompatibleNaming.get()
                 ? "All Weeklys"
@@ -4133,20 +4133,20 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCrossjoinResolve() {
         assertQueryReturns(
             "with\n"
-                + "member [Measures].[Filtered Unit Sales] as\n"
-                + " 'IIf((([Measures].[Unit Sales] > 50000.0)\n"
-                + "      OR ([Product].CurrentMember.Level.UniqueName <>\n"
-                + "          \"[Product].[Product Family]\")),\n"
-                + "      IIf(((Count([Product].CurrentMember.Children) = 0.0)),\n"
-                + "          [Measures].[Unit Sales],\n"
-                + "          Sum([Product].CurrentMember.Children,\n"
-                + "              [Measures].[Filtered Unit Sales])),\n"
-                + "      NULL)'\n"
-                + "select NON EMPTY {crossjoin({[Measures].[Filtered Unit Sales]},\n"
-                + "{[Gender].[M], [Gender].[F]})} ON COLUMNS,\n"
-                + "NON EMPTY {[Product].[All Products]} ON ROWS\n"
-                + "from [Sales]\n"
-                + "where [Time].[1997]",
+            + "member [Measures].[Filtered Unit Sales] as\n"
+            + " 'IIf((([Measures].[Unit Sales] > 50000.0)\n"
+            + "      OR ([Product].CurrentMember.Level.UniqueName <>\n"
+            + "          \"[Product].[Product Family]\")),\n"
+            + "      IIf(((Count([Product].CurrentMember.Children) = 0.0)),\n"
+            + "          [Measures].[Unit Sales],\n"
+            + "          Sum([Product].CurrentMember.Children,\n"
+            + "              [Measures].[Filtered Unit Sales])),\n"
+            + "      NULL)'\n"
+            + "select NON EMPTY {crossjoin({[Measures].[Filtered Unit Sales]},\n"
+            + "{[Gender].[M], [Gender].[F]})} ON COLUMNS,\n"
+            + "NON EMPTY {[Product].[All Products]} ON ROWS\n"
+            + "from [Sales]\n"
+            + "where [Time].[1997]",
             "Axis #0:\n"
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
@@ -4165,12 +4165,12 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCrossjoinOrder() {
         assertQueryReturns(
             "WITH\n"
-                + "\n"
-                + "SET [S1] AS 'CROSSJOIN({[Time].[1997]}, {[Gender].[Gender].MEMBERS})'\n"
-                + "\n"
-                + "SELECT CROSSJOIN(ORDER([S1], [Measures].[Unit Sales], BDESC),\n"
-                + "{[Measures].[Unit Sales]}) ON AXIS(0)\n"
-                + "FROM [Sales]",
+            + "\n"
+            + "SET [S1] AS 'CROSSJOIN({[Time].[1997]}, {[Gender].[Gender].MEMBERS})'\n"
+            + "\n"
+            + "SELECT CROSSJOIN(ORDER([S1], [Measures].[Unit Sales], BDESC),\n"
+            + "{[Measures].[Unit Sales]}) ON AXIS(0)\n"
+            + "FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6609,24 +6609,24 @@ public class FunctionTest extends FoodMartTestCase {
     public void testHeadBug() {
         assertQueryReturns(
             "SELECT\n"
-                + "                        UNION(\n"
-                + "                            {([Customers].CURRENTMEMBER)},\n"
-                + "                            HEAD(\n"
-                + "                                {([Customers].CURRENTMEMBER)},\n"
-                + "                                IIF(\n"
-                + "                                    COUNT(\n"
-                + "                                        FILTER(\n"
-                + "                                            DESCENDANTS(\n"
-                + "                                                [Customers].CURRENTMEMBER,\n"
-                + "                                                [Customers].[Country]),\n"
-                + "                                            [Measures].[Unit Sales] >= 66),\n"
-                + "                                        INCLUDEEMPTY)> 0,\n"
-                + "                                    1,\n"
-                + "                                    0)),\n"
-                + "                            ALL)\n"
-                + "    ON AXIS(0)\n"
-                + "FROM\n"
-                + "    [Sales]\n",
+            + "                        UNION(\n"
+            + "                            {([Customers].CURRENTMEMBER)},\n"
+            + "                            HEAD(\n"
+            + "                                {([Customers].CURRENTMEMBER)},\n"
+            + "                                IIF(\n"
+            + "                                    COUNT(\n"
+            + "                                        FILTER(\n"
+            + "                                            DESCENDANTS(\n"
+            + "                                                [Customers].CURRENTMEMBER,\n"
+            + "                                                [Customers].[Country]),\n"
+            + "                                            [Measures].[Unit Sales] >= 66),\n"
+            + "                                        INCLUDEEMPTY)> 0,\n"
+            + "                                    1,\n"
+            + "                                    0)),\n"
+            + "                            ALL)\n"
+            + "    ON AXIS(0)\n"
+            + "FROM\n"
+            + "    [Sales]\n",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6637,28 +6637,28 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertQueryReturns(
             "WITH\n"
-                + "    MEMBER\n"
-                + "        [Customers].[COG_OQP_INT_t2]AS '1',\n"
-                + "        SOLVE_ORDER = 65535\n"
-                + "SELECT\n"
-                + "                        UNION(\n"
-                + "                            {([Customers].[COG_OQP_INT_t2])},\n"
-                + "                            HEAD(\n"
-                + "                                {([Customers].CURRENTMEMBER)},\n"
-                + "                                IIF(\n"
-                + "                                    COUNT(\n"
-                + "                                        FILTER(\n"
-                + "                                            DESCENDANTS(\n"
-                + "                                                [Customers].CURRENTMEMBER,\n"
-                + "                                                [Customers].[Country]),\n"
-                + "                                            [Measures].[Unit Sales]>= 66),\n"
-                + "                                        INCLUDEEMPTY)> 0,\n"
-                + "                                    1,\n"
-                + "                                    0)),\n"
-                + "                            ALL)\n"
-                + "    ON AXIS(0)\n"
-                + "FROM\n"
-                + "    [Sales]",
+            + "    MEMBER\n"
+            + "        [Customers].[COG_OQP_INT_t2]AS '1',\n"
+            + "        SOLVE_ORDER = 65535\n"
+            + "SELECT\n"
+            + "                        UNION(\n"
+            + "                            {([Customers].[COG_OQP_INT_t2])},\n"
+            + "                            HEAD(\n"
+            + "                                {([Customers].CURRENTMEMBER)},\n"
+            + "                                IIF(\n"
+            + "                                    COUNT(\n"
+            + "                                        FILTER(\n"
+            + "                                            DESCENDANTS(\n"
+            + "                                                [Customers].CURRENTMEMBER,\n"
+            + "                                                [Customers].[Country]),\n"
+            + "                                            [Measures].[Unit Sales]>= 66),\n"
+            + "                                        INCLUDEEMPTY)> 0,\n"
+            + "                                    1,\n"
+            + "                                    0)),\n"
+            + "                            ALL)\n"
+            + "    ON AXIS(0)\n"
+            + "FROM\n"
+            + "    [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6670,12 +6670,12 @@ public class FunctionTest extends FoodMartTestCase {
         // More minimal test case. Also demonstrates similar problem with Tail.
         assertAxisReturns(
             "Union(\n"
-                + "  Union(\n"
-                + "    Tail([Customers].[USA].[CA].Children, 2),\n"
-                + "    Head([Customers].[USA].[WA].Children, 2),\n"
-                + "    ALL),\n"
-                + "  Tail([Customers].[USA].[OR].Children, 2),"
-                + "  ALL)",
+            + "  Union(\n"
+            + "    Tail([Customers].[USA].[CA].Children, 2),\n"
+            + "    Head([Customers].[USA].[WA].Children, 2),\n"
+            + "    ALL),\n"
+            + "  Tail([Customers].[USA].[OR].Children, 2),"
+            + "  ALL)",
             "[Customers].[All Customers].[USA].[CA].[West Covina]\n"
             + "[Customers].[All Customers].[USA].[CA].[Woodland Hills]\n"
             + "[Customers].[All Customers].[USA].[WA].[Anacortes]\n"
@@ -10065,12 +10065,12 @@ Intel platforms):
             + "from [Sales] "
             + "where [Measures].[Sales count]\n",
             "Axis #0:\n"
-                + "{[Measures].[Sales Count]}\n"
-                + "Axis #1:\n"
-                + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n"
-                + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n"
-                + "Row #0: 6,054\n"
-                + "Row #0: 6,054\n");
+            + "{[Measures].[Sales Count]}\n"
+            + "Axis #1:\n"
+            + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA], [Gender].[All Gender].[F]}\n"
+            + "{[Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA].[CA], [Gender].[All Gender].[F]}\n"
+            + "Row #0: 6,054\n"
+            + "Row #0: 6,054\n");
     }
 
     public void testCalculatedChild() {
@@ -10513,9 +10513,9 @@ Intel platforms):
     public void testMidFunctionWithoutLength() {
         assertQueryReturns(
             "select filter([Store].MEMBERS,"
-                + "[Store].CURRENTMEMBER.Name = \"Bellingham\""
-                + "And Mid(\"Bellingham\", 2) = \"ellingham\")"
-                + "on 0 from sales",
+            + "[Store].CURRENTMEMBER.Name = \"Bellingham\""
+            + "And Mid(\"Bellingham\", 2) = \"ellingham\")"
+            + "on 0 from sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

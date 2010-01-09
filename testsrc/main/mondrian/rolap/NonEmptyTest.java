@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -75,9 +75,9 @@ public class NonEmptyTest extends BatchTestCase {
                 4,
                 4,
                 "SELECT non empty { CrossJoin( "
-                    + "  {Gender.M, Gender.F}, "
-                    + "  { [Marital Status].[Marital Status].members } "
-                    + ") } on 0 from sales");
+                + "  {Gender.M, Gender.F}, "
+                + "  { [Marital Status].[Marital Status].members } "
+                + ") } on 0 from sales");
         }
     }
 
@@ -897,15 +897,15 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testResultIsModifyableCopy() {
         checkNative(
-                3,
-                3,
-                "select {[Measures].[Store Sales]} on columns,"
-                        + "  NON EMPTY Order("
-                        + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                        + "        [Measures].[Store Sales]) ON ROWS"
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            3,
+            3,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Order("
+            + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+            + "        [Measures].[Store Sales]) ON ROWS"
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1068,28 +1068,28 @@ public class NonEmptyTest extends BatchTestCase {
             9999,  // Don't know why resultLimit needs to be so high.
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product Ragged].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product Ragged].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersWithHideIfBlankLeaf() {
         setTestContext(TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-                + "    <Table name=\"product\"/>\n"
-                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-                + "        hideMemberIf=\"IfBlankName\""
-                + "        />\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>"));
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+            + "        hideMemberIf=\"IfBlankName\""
+            + "        />\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
 
         // [Product Name] can be hidden if it is blank, but native evaluation
         // should be able to handle the query.
@@ -1097,56 +1097,56 @@ public class NonEmptyTest extends BatchTestCase {
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product Ragged].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product Ragged].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersWithHideIfParentsNameLeaf() {
         setTestContext(TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-                + "    <Table name=\"product\"/>\n"
-                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-                + "        hideMemberIf=\"IfParentsName\""
-                + "        />\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>"));
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+            + "        hideMemberIf=\"IfParentsName\""
+            + "        />\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
 
         // [Product Name] can be hidden if it it matches its parent name, so
         // native evaluation can not handle this query.
         checkNotNative(
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product Ragged].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product Ragged].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersWithHideIfBlankNameAncestor() {
         setTestContext(TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-                + "    <Table name=\"product\"/>\n"
-                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
-                + "        hideMemberIf=\"IfBlankName\""
-                + "        />\n"
-                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>"));
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+            + "        hideMemberIf=\"IfBlankName\""
+            + "        />\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
 
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
@@ -1154,28 +1154,28 @@ public class NonEmptyTest extends BatchTestCase {
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product Ragged].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product Ragged].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersWithHideIfParentsNameAncestor() {
         setTestContext(TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-                + "    <Table name=\"product\"/>\n"
-                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
-                + "        hideMemberIf=\"IfParentsName\""
-                + "        />\n"
-                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>"));
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+            + "        hideMemberIf=\"IfParentsName\""
+            + "        />\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
 
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
@@ -1183,28 +1183,28 @@ public class NonEmptyTest extends BatchTestCase {
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        [Product Ragged].[Product Name].Members), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        [Product Ragged].[Product Name].Members), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjEnumWithHideIfBlankLeaf() {
         setTestContext(TestContext.createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-                + "    <Table name=\"product\"/>\n"
-                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-                + "        hideMemberIf=\"IfBlankName\""
-                + "        />\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>"));
+            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+            + "    <Table name=\"product\"/>\n"
+            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+            + "        hideMemberIf=\"IfBlankName\""
+            + "        />\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>"));
 
         // [Product Name] can be hidden if it is blank, but native evaluation
         // should be able to handle the query.
@@ -1216,20 +1216,20 @@ public class NonEmptyTest extends BatchTestCase {
             999,
             7,
             "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin("
-                + "    Crossjoin("
-                + "        [Customers].[Name].Members,"
-                + "        { [Product Ragged].[Kiwi].[Kiwi Scallops],"
-                + "          [Product Ragged].[Fast].[Fast Avocado Dip],"
-                + "          [Product Ragged].[High Top].[High Top Lemons],"
-                + "          [Product Ragged].[Moms].[Moms Sliced Turkey],"
-                + "          [Product Ragged].[High Top].[High Top Cauliflower],"
-                + "          [Product Ragged].[Sphinx].[Sphinx Bagels]"
-                + "        }), "
-                + "    [Promotions].[Promotion Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            + "  NON EMPTY Crossjoin("
+            + "    Crossjoin("
+            + "        [Customers].[Name].Members,"
+            + "        { [Product Ragged].[Kiwi].[Kiwi Scallops],"
+            + "          [Product Ragged].[Fast].[Fast Avocado Dip],"
+            + "          [Product Ragged].[High Top].[High Top Lemons],"
+            + "          [Product Ragged].[Moms].[Moms Sliced Turkey],"
+            + "          [Product Ragged].[High Top].[High Top Cauliflower],"
+            + "          [Product Ragged].[Sphinx].[Sphinx Bagels]"
+            + "        }), "
+            + "    [Promotions].[Promotion Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1360,29 +1360,29 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersDescendants() {
         checkNative(
-                67,
-                67,
-                "select {[Measures].[Store Sales]} on columns,"
-                        + " NON EMPTY Crossjoin("
-                        + "  [Product].[Product Name].Members,"
-                        + "  Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])) ON rows "
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + " NON EMPTY Crossjoin("
+            + "  [Product].[Product Name].Members,"
+            + "  Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     // testcase for bug MONDRIAN-506
     public void testCjMembersDescendantsWithNumericArgument() {
         checkNative(
-                67,
-                67,
-                "select {[Measures].[Store Sales]} on columns,"
-                        + " NON EMPTY Crossjoin("
-                        + "  {[Product].[Product Name].Members},"
-                        + "  {Descendants([Customers].[All Customers].[USA].[CA], 2)}) ON rows "
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + " NON EMPTY Crossjoin("
+            + "  {[Product].[Product Name].Members},"
+            + "  {Descendants([Customers].[All Customers].[USA].[CA], 2)}) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjChildrenMembers() {
@@ -1417,15 +1417,15 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenChildren() {
         checkNative(
-                3,
-                3,
-                "select {[Measures].[Store Sales]} on columns, "
-                        + "  NON EMPTY Crossjoin("
-                        + "    [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].children, "
-                        + "    [Customers].[All Customers].[USA].[CA].CHILDREN) ON rows"
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            3,
+            3,
+            "select {[Measures].[Store Sales]} on columns, "
+            + "  NON EMPTY Crossjoin("
+            + "    [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].children, "
+            + "    [Customers].[All Customers].[USA].[CA].CHILDREN) ON rows"
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -2024,13 +2024,13 @@ public class NonEmptyTest extends BatchTestCase {
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
         TestCase c = new TestCase(
-                34,
-                34,
-                "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY [Customers].Members ON rows\n"
-                        + "from [Sales]\n"
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            34,
+            34,
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY [Customers].Members ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         c.run();
     }
 
@@ -2039,13 +2039,13 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenOfRolapMember() {
         TestCase c = new TestCase(
-                50,
-                4,
-                "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY [Customers].[All Customers].[USA].[CA].[Palo Alto].Children ON rows\n"
-                        + "from [Sales]\n"
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            50,
+            4,
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY [Customers].[All Customers].[USA].[CA].[Palo Alto].Children ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         c.run();
     }
 
@@ -3608,11 +3608,11 @@ public class NonEmptyTest extends BatchTestCase {
 
         String mdx =
             "SELECT \n"
-                + "  [Gender].[Gender].MEMBERS ON ROWS\n"
-                + " ,{[Measures].[Unit Sales]} ON COLUMNS\n"
-                + "FROM [Sales]\n"
-                + "WHERE \n"
-                + "  [Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
+            + "  [Gender].[Gender].MEMBERS ON ROWS\n"
+            + " ,{[Measures].[Unit Sales]} ON COLUMNS\n"
+            + "FROM [Sales]\n"
+            + "WHERE \n"
+            + "  [Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
 
         // run an mdx query with the default NullMemberRepresentation
         executeQuery(preMdx);
@@ -3651,37 +3651,37 @@ public class NonEmptyTest extends BatchTestCase {
         SqlPattern accessPattern = new SqlPattern(
             Dialect.DatabaseProduct.ACCESS,
             "select `time_by_day`.`the_year` as `c0`, "
-                + "`promotion`.`promotion_name` as `c1` "
-                + "from `time_by_day` as `time_by_day`, "
-                + "`sales_fact_1997` as `sales_fact_1997`, "
-                + "`promotion` as `promotion`, "
-                + "`customer` as `customer` "
-                + "where "
-                + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-                + "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-                + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                + "and (`customer`.`gender` = 'F') "
-                + "and (`time_by_day`.`the_year` = 1997) "
-                + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
-                + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name`"
-                + " order by 1 ASC, 2 ASC",
+            + "`promotion`.`promotion_name` as `c1` "
+            + "from `time_by_day` as `time_by_day`, "
+            + "`sales_fact_1997` as `sales_fact_1997`, "
+            + "`promotion` as `promotion`, "
+            + "`customer` as `customer` "
+            + "where "
+            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
+            + "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
+            + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+            + "and (`customer`.`gender` = 'F') "
+            + "and (`time_by_day`.`the_year` = 1997) "
+            + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
+            + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name`"
+            + " order by 1 ASC, 2 ASC",
             623);
         SqlPattern oraclePattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", "
-                + "\"promotion\".\"promotion_name\" as \"c1\" "
-                + "from \"time_by_day\" \"time_by_day\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"promotion\" \"promotion\", "
-                + "\"customer\" \"customer\" "
-                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = 'F') "
-                + "and (\"time_by_day\".\"the_year\" = 1997) "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-                + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-                + "order by 1 ASC, 2 ASC",
+            + "\"promotion\".\"promotion_name\" as \"c1\" "
+            + "from \"time_by_day\" \"time_by_day\", "
+            + "\"sales_fact_1997\" \"sales_fact_1997\", "
+            + "\"promotion\" \"promotion\", "
+            + "\"customer\" \"customer\" "
+            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" = 'F') "
+            + "and (\"time_by_day\".\"the_year\" = 1997) "
+            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
+            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
+            + "order by 1 ASC, 2 ASC",
             611);
         assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
     }
@@ -3694,26 +3694,26 @@ public class NonEmptyTest extends BatchTestCase {
             SqlPattern accessPattern = new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
                 "select `promotion`.`promotion_name` as `c0` "
-                    + "from `promotion` as `promotion`, "
-                    + "`sales_fact_1997` as `sales_fact_1997`, "
-                    + "`customer` as `customer` "
-                    + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-                    + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                    + "and (`customer`.`gender` = 'F') "
-                    + "group by `promotion`.`promotion_name` "
-                    + "order by 1 ASC",
+                + "from `promotion` as `promotion`, "
+                + "`sales_fact_1997` as `sales_fact_1997`, "
+                + "`customer` as `customer` "
+                + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
+                + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+                + "and (`customer`.`gender` = 'F') "
+                + "group by `promotion`.`promotion_name` "
+                + "order by 1 ASC",
                 357);
             SqlPattern oraclePattern = new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
                 "select \"promotion\".\"promotion_name\" as \"c0\" "
-                    + "from \"promotion\" \"promotion\", "
-                    + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                    + "\"customer\" \"customer\" "
-                    + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                    + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                    + "and (\"customer\".\"gender\" = 'F') "
-                    + "group by \"promotion\".\"promotion_name\" "
-                    + "order by 1 ASC",
+                + "from \"promotion\" \"promotion\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\", "
+                + "\"customer\" \"customer\" "
+                + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" = 'F') "
+                + "group by \"promotion\".\"promotion_name\" "
+                + "order by 1 ASC",
                 347);
             assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
         }
@@ -3727,19 +3727,19 @@ public class NonEmptyTest extends BatchTestCase {
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", "
-                + "\"promotion\".\"promotion_name\" as \"c1\" "
-                + "from \"time_by_day\" \"time_by_day\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"promotion\" \"promotion\", "
-                + "\"customer\" \"customer\" "
-                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" in ('F', 'M')) "
-                + "and (\"time_by_day\".\"the_year\" = 1997) "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-                + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-                + "order by 1 ASC, 2 ASC",
+            + "\"promotion\".\"promotion_name\" as \"c1\" "
+            + "from \"time_by_day\" \"time_by_day\", "
+            + "\"sales_fact_1997\" \"sales_fact_1997\", "
+            + "\"promotion\" \"promotion\", "
+            + "\"customer\" \"customer\" "
+            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" in ('F', 'M')) "
+            + "and (\"time_by_day\".\"the_year\" = 1997) "
+            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
+            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
+            + "order by 1 ASC, 2 ASC",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -3747,26 +3747,26 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNativeCrossjoinWillExpandLagInNamedSet() {
         String mdx =
             "with set [blah] as '{[Gender].lastChild.lag(1),[Gender].[M]}' "
-                + "select "
-                + "non empty Crossjoin([blah],{[Measures].[Unit Sales]}) on 0,"
-                + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
-                + " from [Warehouse and Sales]";
+            + "select "
+            + "non empty Crossjoin([blah],{[Measures].[Unit Sales]}) on 0,"
+            + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
+            + " from [Warehouse and Sales]";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"time_by_day\".\"the_year\" as \"c0\", "
-                + "\"promotion\".\"promotion_name\" as \"c1\" "
-                + "from \"time_by_day\" \"time_by_day\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"promotion\" \"promotion\", "
-                + "\"customer\" \"customer\" "
-                + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" in ('F', 'M')) "
-                + "and (\"time_by_day\".\"the_year\" = 1997) "
-                + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-                + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-                + "order by 1 ASC, 2 ASC",
+            + "\"promotion\".\"promotion_name\" as \"c1\" "
+            + "from \"time_by_day\" \"time_by_day\", "
+            + "\"sales_fact_1997\" \"sales_fact_1997\", "
+            + "\"promotion\" \"promotion\", "
+            + "\"customer\" \"customer\" "
+            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" in ('F', 'M')) "
+            + "and (\"time_by_day\".\"the_year\" = 1997) "
+            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
+            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
+            + "order by 1 ASC, 2 ASC",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -3774,42 +3774,42 @@ public class NonEmptyTest extends BatchTestCase {
     public void testConstrainedMeasureGetsOptimized() {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
-                + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
-                + "member [Measures].[store sales Female] as '([Measures].[Store Sales],[Gender].[Gender].[F])' "
-                + "member [Measures].[literal one] as '1' "
-                + "select "
-                + "non empty {{[Measures].[unit sales Male]}, {([Measures].[literal one])}, "
-                + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
-                + "non empty [Customers].[name].members on 1 "
-                + "from Sales";
+            + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
+            + "member [Measures].[store sales Female] as '([Measures].[Store Sales],[Gender].[Gender].[F])' "
+            + "member [Measures].[literal one] as '1' "
+            + "select "
+            + "non empty {{[Measures].[unit sales Male]}, {([Measures].[literal one])}, "
+            + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
+            + "non empty [Customers].[name].members on 1 "
+            + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" in ('M', 'F')) "
-                + "group by \"customer\".\"country\", "
-                + "\"customer\".\"state_province\", "
-                + "\"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", "
-                + "\"fname\" || ' ' || \"lname\", "
-                + "\"customer\".\"gender\", "
-                + "\"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", "
-                + "\"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC,"
-                + " \"customer\".\"state_province\" ASC,"
-                + " \"customer\".\"city\" ASC, "
-                + "\"fname\" || ' ' || \"lname\" ASC",
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+            + "\"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", "
+            + "\"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" in ('M', 'F')) "
+            + "group by \"customer\".\"country\", "
+            + "\"customer\".\"state_province\", "
+            + "\"customer\".\"city\", "
+            + "\"customer\".\"customer_id\", "
+            + "\"fname\" || ' ' || \"lname\", "
+            + "\"customer\".\"gender\", "
+            + "\"customer\".\"marital_status\", "
+            + "\"customer\".\"education\", "
+            + "\"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC,"
+            + " \"customer\".\"state_province\" ASC,"
+            + " \"customer\".\"city\" ASC, "
+            + "\"fname\" || ' ' || \"lname\" ASC",
             860);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -3817,41 +3817,41 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNestedMeasureConstraintsGetOptimized() {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
-                + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
-                + "select "
-                + "non empty {[Measures].[unit sales Male Married]} on 0, "
-                + "non empty [Customers].[name].members on 1 "
-                + "from Sales";
+            + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
+            + "select "
+            + "non empty {[Measures].[unit sales Male Married]} on 0, "
+            + "non empty [Customers].[name].members on 1 "
+            + "from Sales";
         SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || \" \" || \"lname\" as \"c4\", "
-                + "\"fname\" || \" \" || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = \"M\") "
-                + "and (\"customer\".\"marital_status\" = \"M\") "
-                + "group by \"customer\".\"country\", "
-                + "\"customer\".\"state_province\", "
-                + "\"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", "
-                + "\"fname\" || \" \" || \"lname\", "
-                + "\"customer\".\"gender\", "
-                + "\"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", "
-                + "\"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC, "
-                + "\"customer\".\"state_province\" ASC, "
-                + "\"customer\".\"city\" ASC, "
-                + "\"fname\" || \" \" || \"lname\" ASC",
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", "
+            + "\"fname\" || \" \" || \"lname\" as \"c4\", "
+            + "\"fname\" || \" \" || \"lname\" as \"c5\", "
+            + "\"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", "
+            + "\"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", "
+            + "\"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" = \"M\") "
+            + "and (\"customer\".\"marital_status\" = \"M\") "
+            + "group by \"customer\".\"country\", "
+            + "\"customer\".\"state_province\", "
+            + "\"customer\".\"city\", "
+            + "\"customer\".\"customer_id\", "
+            + "\"fname\" || \" \" || \"lname\", "
+            + "\"customer\".\"gender\", "
+            + "\"customer\".\"marital_status\", "
+            + "\"customer\".\"education\", "
+            + "\"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC, "
+            + "\"customer\".\"state_province\" ASC, "
+            + "\"customer\".\"city\" ASC, "
+            + "\"fname\" || \" \" || \"lname\" ASC",
             892);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -3859,40 +3859,40 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
-                + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
-                + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
-                + "select "
-                + "non empty {[Measures].[unit sales Male Married],[Measures].[unit sales Female]} on 0, "
-                + "non empty [Customers].[name].members on 1 "
-                + "from Sales";
+            + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
+            + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
+            + "select "
+            + "non empty {[Measures].[unit sales Male Married],[Measures].[unit sales Female]} on 0, "
+            + "non empty [Customers].[name].members on 1 "
+            + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" in ('M', 'F')) "
-                + "group by \"customer\".\"country\", "
-                + "\"customer\".\"state_province\", "
-                + "\"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", "
-                + "\"fname\" || ' ' || \"lname\", "
-                + "\"customer\".\"gender\", "
-                + "\"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", "
-                + "\"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC,"
-                + " \"customer\".\"state_province\" ASC,"
-                + " \"customer\".\"city\" ASC, "
-                + "\"fname\" || ' ' || \"lname\" ASC",
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+            + "\"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", "
+            + "\"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" in ('M', 'F')) "
+            + "group by \"customer\".\"country\", "
+            + "\"customer\".\"state_province\", "
+            + "\"customer\".\"city\", "
+            + "\"customer\".\"customer_id\", "
+            + "\"fname\" || ' ' || \"lname\", "
+            + "\"customer\".\"gender\", "
+            + "\"customer\".\"marital_status\", "
+            + "\"customer\".\"education\", "
+            + "\"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC,"
+            + " \"customer\".\"state_province\" ASC,"
+            + " \"customer\".\"city\" ASC, "
+            + "\"fname\" || ' ' || \"lname\" ASC",
             852);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -3900,33 +3900,33 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNonUniformConstraintsAreNotUsedForOptimization() {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
-                + "member [Measures].[unit sales Married] as '([Measures].[Unit Sales],[Marital Status].[Marital Status].[M])' "
-                + "select "
-                + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
-                + "non empty [Customers].[name].members on 1 "
-                + "from Sales";
+            + "member [Measures].[unit sales Married] as '([Measures].[Unit Sales],[Marital Status].[Marital Status].[M])' "
+            + "select "
+            + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
+            + "non empty [Customers].[name].members on 1 "
+            + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"marital_status\" = 'M') and (\"customer\".\"gender\" = 'M') "
-                + "group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
-                + "\"customer\".\"gender\", \"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", \"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, "
-                + "\"customer\".\"city\" ASC, "
-                + "\"fname\" || ' ' || \"lname\" ASC",
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+            + "\"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", "
+            + "\"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"marital_status\" = 'M') and (\"customer\".\"gender\" = 'M') "
+            + "group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", "
+            + "\"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
+            + "\"customer\".\"gender\", \"customer\".\"marital_status\", "
+            + "\"customer\".\"education\", \"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, "
+            + "\"customer\".\"city\" ASC, "
+            + "\"fname\" || ' ' || \"lname\" ASC",
             892);
         assertQuerySqlOrNot(
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
@@ -3936,15 +3936,15 @@ public class NonEmptyTest extends BatchTestCase {
         TestContext ctx = TestContext.create(
             null,
             "<Cube name=\"onlyGender\"> \n"
-                + "  <Table name=\"sales_fact_1997\"/> \n"
-                + "<Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
-                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-                + "      <Table name=\"customer\"/>\n"
-                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>"
-                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
-                + "</Cube> \n",
+            + "  <Table name=\"sales_fact_1997\"/> \n"
+            + "<Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+            + "</Cube> \n",
             null,
             null,
             null,
@@ -3958,14 +3958,14 @@ public class NonEmptyTest extends BatchTestCase {
         ctx.assertQueryReturns(
             mdx,
             "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Gender].[All Gender].[F]}\n"
-                + "{[Gender].[All Gender].[M]}\n"
-                + "Row #0: 131,558\n"
-                + "Row #1: 135,215\n");
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #1: 135,215\n");
     }
 
     void clearAndHardenCache(MemberCacheHelper helper) {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // Copyright (C) 2005-2006 Thomson Medstat, Inc, Ann Arbor, MI.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -32,48 +32,48 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
         final String MDX_QUERY =
             "select {[Country].[USA].[OR].Children} on 0,"
-                + " {[Promotions].Members} on 1 "
-                + "from [Sales] "
-                + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
+            + " {[Promotions].Members} on 1 "
+            + "from [Sales] "
+            + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]";
         final String EXPECTED_RESULT =
             "Axis #0:\n"
-                + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-                + "Axis #1:\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Albany]}\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Corvallis]}\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Lake Oswego]}\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Lebanon]}\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Portland]}\n"
-                + "{[Customers].[All Customers].[USA].[OR].[Woodburn]}\n"
-                + "Axis #2:\n"
-                + "{[Promotions].[All Promotions]}\n"
-                + "{[Promotions].[All Promotions].[Cash Register Lottery]}\n"
-                + "{[Promotions].[All Promotions].[No Promotion]}\n"
-                + "{[Promotions].[All Promotions].[Saving Days]}\n"
-                + "Row #0: 4\n"
-                + "Row #0: 6\n"
-                + "Row #0: 5\n"
-                + "Row #0: 10\n"
-                + "Row #0: 6\n"
-                + "Row #0: 3\n"
-                + "Row #1: \n"
-                + "Row #1: 2\n"
-                + "Row #1: \n"
-                + "Row #1: 2\n"
-                + "Row #1: \n"
-                + "Row #1: \n"
-                + "Row #2: 4\n"
-                + "Row #2: 4\n"
-                + "Row #2: 3\n"
-                + "Row #2: 8\n"
-                + "Row #2: 6\n"
-                + "Row #2: 3\n"
-                + "Row #3: \n"
-                + "Row #3: \n"
-                + "Row #3: 2\n"
-                + "Row #3: \n"
-                + "Row #3: \n"
-                + "Row #3: \n";
+            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Albany]}\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Corvallis]}\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Lake Oswego]}\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Lebanon]}\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Portland]}\n"
+            + "{[Customers].[All Customers].[USA].[OR].[Woodburn]}\n"
+            + "Axis #2:\n"
+            + "{[Promotions].[All Promotions]}\n"
+            + "{[Promotions].[All Promotions].[Cash Register Lottery]}\n"
+            + "{[Promotions].[All Promotions].[No Promotion]}\n"
+            + "{[Promotions].[All Promotions].[Saving Days]}\n"
+            + "Row #0: 4\n"
+            + "Row #0: 6\n"
+            + "Row #0: 5\n"
+            + "Row #0: 10\n"
+            + "Row #0: 6\n"
+            + "Row #0: 3\n"
+            + "Row #1: \n"
+            + "Row #1: 2\n"
+            + "Row #1: \n"
+            + "Row #1: 2\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #2: 4\n"
+            + "Row #2: 4\n"
+            + "Row #2: 3\n"
+            + "Row #2: 8\n"
+            + "Row #2: 6\n"
+            + "Row #2: 3\n"
+            + "Row #3: \n"
+            + "Row #3: \n"
+            + "Row #3: 2\n"
+            + "Row #3: \n"
+            + "Row #3: \n"
+            + "Row #3: \n";
         assertQueryReturns(MDX_QUERY, EXPECTED_RESULT);
     }
 
