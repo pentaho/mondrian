@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -854,15 +854,15 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testResultIsModifyableCopy() {
         checkNative(
-                3,
-                3,
-                "select {[Measures].[Store Sales]} on columns,"
-                        + "  NON EMPTY Order("
-                        + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                        + "        [Measures].[Store Sales]) ON ROWS"
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            3,
+            3,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Order("
+            + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+            + "        [Measures].[Store Sales]) ON ROWS"
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1134,15 +1134,15 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersDescendants() {
         checkNative(
-                67,
-                67,
-                "select {[Measures].[Store Sales]} on columns,"
-                        + " NON EMPTY Crossjoin("
-                        + "  [Product].[Product Name].Members,"
-                        + "  Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])) ON rows "
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + " NON EMPTY Crossjoin("
+            + "  [Product].[Product Name].Members,"
+            + "  Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name])) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjChildrenMembers() {
@@ -1177,15 +1177,15 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenChildren() {
         checkNative(
-                3,
-                3,
-                "select {[Measures].[Store Sales]} on columns, "
-                        + "  NON EMPTY Crossjoin("
-                        + "    [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].children, "
-                        + "    [Customers].[All Customers].[USA].[CA].CHILDREN) ON rows"
-                        + " from [Sales] where ("
-                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                        + "  [Time].[1997].[Q1].[1])");
+            3,
+            3,
+            "select {[Measures].[Store Sales]} on columns, "
+            + "  NON EMPTY Crossjoin("
+            + "    [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].children, "
+            + "    [Customers].[All Customers].[USA].[CA].CHILDREN) ON rows"
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     /**
@@ -1784,13 +1784,13 @@ public class NonEmptyTest extends BatchTestCase {
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
         TestCase c = new TestCase(
-                34,
-                34,
-                "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY [Customers].Members ON rows\n"
-                        + "from [Sales]\n"
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            34,
+            34,
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY [Customers].Members ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         c.run();
     }
 
@@ -1799,13 +1799,13 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenOfRolapMember() {
         TestCase c = new TestCase(
-                50,
-                4,
-                "select \n"
-                        + "{[Measures].[Unit Sales]} ON columns,\n"
-                        + "NON EMPTY [Customers].[All Customers].[USA].[CA].[Palo Alto].Children ON rows\n"
-                        + "from [Sales]\n"
-                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            50,
+            4,
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY [Customers].[All Customers].[USA].[CA].[Palo Alto].Children ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         c.run();
     }
 

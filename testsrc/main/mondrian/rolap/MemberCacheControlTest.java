@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -61,23 +61,23 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             // Reduced size Store dimension. Omits the 'Store Country' level,
             // and adds properties to non-leaf levels.
             "  <Dimension name=\"Retail\" foreignKey=\"store_id\">\n"
-                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
-                + "      <Table name=\"store\"/>\n"
-                + "      <Level name=\"State\" column=\"store_state\" uniqueMembers=\"true\">\n"
-                + "        <Property name=\"Country\" column=\"store_country\"/>\n"
-                + "      </Level>\n"
-                + "      <Level name=\"City\" column=\"store_city\" uniqueMembers=\"true\">\n"
-                + "        <Property name=\"Population\" column=\"store_postal_code\"/>\n"
-                + "      </Level>\n"
-                + "      <Level name=\"Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
-                + "        <Property name=\"Store Type\" column=\"store_type\"/>\n"
-                + "        <Property name=\"Store Manager\" column=\"store_manager\"/>\n"
-                + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
-                + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n"
-                + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n"
-                + "      </Level>\n"
-                + "    </Hierarchy>\n"
-                + "   </Dimension>");
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"State\" column=\"store_state\" uniqueMembers=\"true\">\n"
+            + "        <Property name=\"Country\" column=\"store_country\"/>\n"
+            + "      </Level>\n"
+            + "      <Level name=\"City\" column=\"store_city\" uniqueMembers=\"true\">\n"
+            + "        <Property name=\"Population\" column=\"store_postal_code\"/>\n"
+            + "      </Level>\n"
+            + "      <Level name=\"Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "        <Property name=\"Store Type\" column=\"store_type\"/>\n"
+            + "        <Property name=\"Store Manager\" column=\"store_manager\"/>\n"
+            + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
+            + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n"
+            + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "   </Dimension>");
     }
 
     /**
@@ -271,8 +271,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         } catch (IllegalArgumentException e) {
             assertEquals(
                 "Member cache control operations are not allowed unless "
-                    + "property mondrian.rolap.EnableRolapCubeMemberCache is "
-                    + "false",
+                + "property mondrian.rolap.EnableRolapCubeMemberCache is "
+                + "false",
                 e.getMessage());
         }
     }

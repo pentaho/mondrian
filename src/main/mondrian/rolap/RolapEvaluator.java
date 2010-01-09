@@ -402,7 +402,7 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.setContext: member == null "
-                         + " , count=" + i);
+                        + " , count=" + i);
                 }
                 assert false;
                 continue;
@@ -418,8 +418,8 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.setContext: "
-                            + "member == null, memberList: "
-                            + Arrays.asList(members));
+                        + "member == null, memberList: "
+                        + Arrays.asList(members));
                 }
                 assert false;
                 continue;
@@ -541,7 +541,7 @@ public class RolapEvaluator implements Evaluator {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(
                             "RolapEvaluator.checkRecursion: member == null "
-                             + " , count=" + i);
+                            + " , count=" + i);
                     }
                     continue;
                 }
@@ -601,7 +601,7 @@ public class RolapEvaluator implements Evaluator {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.getProperty: member == null "
-                         + " , count=" + i);
+                        + " , count=" + i);
                 }
                 continue;
             }

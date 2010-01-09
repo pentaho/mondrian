@@ -850,10 +850,10 @@ public class TestCalculatedMembers extends BatchTestCase {
         // calc measure defined in query
         assertQueryReturns(
             "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
-                + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter' \n"
-                + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
-                + " {[Store].Children} on rows\n"
-                + "from [Sales]",
+            + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter' \n"
+            + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
+            + " {[Store].Children} on rows\n"
+            + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -905,9 +905,9 @@ public class TestCalculatedMembers extends BatchTestCase {
         // the MDX spec. -- jhyde, 2007/9/5.
         assertQueryReturns(
             "with member [Store].[CA or OR] as ' Aggregate({[Store].[USA].[CA], [Store].[USA].[OR]}) ',\n"
-                + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter'\n"
-                + "select {[Store].[USA], [Store].[CA or OR]} on columns\n"
-                + "from [Sales]",
+            + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter'\n"
+            + "select {[Store].[USA], [Store].[CA or OR]} on columns\n"
+            + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -969,8 +969,8 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "</CalculatedMember>\n");
         testContext.assertQueryThrows(
             "select {[Measures].[Unit Sales], [Measures].[Profit Formatted]} on 0,\n"
-                + " {[Store].Children} on rows\n"
-                + "from [Sales]",
+            + " {[Store].Children} on rows\n"
+            + "from [Sales]",
             "Failed to load formatter class 'mondrian.test.NonExistentCellFormatter' for member '[Measures].[Profit Formatted]'.");
     }
 
@@ -1002,8 +1002,8 @@ public class TestCalculatedMembers extends BatchTestCase {
         // same result if calc member is defined in query
         TestContext.instance().assertQueryReturns(
             "with member [Measures].[My Tuple] as\n"
-                + " 'StrToTuple(\"([Gender].[M], [Marital Status].[S])\", [Gender], [Marital Status])'\n"
-                + "select {[Measures].[My Tuple]} on 0 from [Sales]",
+            + " 'StrToTuple(\"([Gender].[M], [Marital Status].[S])\", [Gender], [Marital Status])'\n"
+            + "select {[Measures].[My Tuple]} on 0 from [Sales]",
             desiredResult);
     }
 
