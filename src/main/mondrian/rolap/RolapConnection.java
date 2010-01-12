@@ -749,18 +749,6 @@ public class RolapConnection extends ConnectionBase {
     }
 
     /**
-     * Helper method to allow olap4j wrappers to implement
-     * {@link org.olap4j.OlapConnection#createScenario()}.
-     *
-     * @return new Scenario
-     */
-    public ScenarioImpl createScenario() {
-        final ScenarioImpl scenario = new ScenarioImpl();
-        scenario.register(schema);
-        return scenario;
-    }
-
-    /**
      * A <code>NonEmptyResult</code> filters a result by removing empty rows
      * on a particular axis.
      */

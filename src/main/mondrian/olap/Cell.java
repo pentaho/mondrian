@@ -13,9 +13,6 @@
 
 package mondrian.olap;
 
-import org.olap4j.Scenario;
-import org.olap4j.AllocationPolicy;
-
 import java.util.List;
 
 /**
@@ -129,20 +126,6 @@ public interface Cell {
      * dimension (usually the 'all' member).</ul>
      */
     Member getContextMember(Dimension dimension);
-
-    /**
-     * Helper method to implement {@link org.olap4j.Cell#setValue}.
-     *
-     * @param scenario Scenario
-     * @param newValue New value
-     * @param allocationPolicy Allocation policy
-     * @param allocationArgs Arguments for allocation policy
-     */
-    void setValue(
-        Scenario scenario,
-        Object newValue,
-        AllocationPolicy allocationPolicy,
-        Object... allocationArgs);
 }
 
 // End Cell.java

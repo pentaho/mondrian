@@ -148,9 +148,7 @@ class MondrianOlap4jCell implements Cell {
         AllocationPolicy allocationPolicy,
         Object... allocationArgs)
     {
-        Scenario scenario =
-            olap4jCellSet.olap4jStatement.olap4jConnection.getScenario();
-        cell.setValue(scenario, newValue, allocationPolicy, allocationArgs);
+        throw new UnsupportedOperationException("writeback not yet supported");
     }
 
     // must be public for reflection to work

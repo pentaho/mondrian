@@ -647,7 +647,8 @@ public class RolapMember extends MemberBase {
                     : getKey();
 
             case Property.SCENARIO_ORDINAL:
-                return ScenarioImpl.forMember(this);
+                throw new UnsupportedOperationException(
+                    "writeback not yet supported");
 
             default:
                 break;

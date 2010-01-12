@@ -191,7 +191,10 @@ public class Main extends TestSuite {
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);
-            addTest(suite, ScenarioTest.class);
+            if (false) {
+                // Scenarios are not implemented until mondrian-3.2.
+                addTest(suite, ScenarioTest.class);
+            }
             addTest(suite, BasicQueryTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");

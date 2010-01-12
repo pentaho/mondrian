@@ -242,11 +242,13 @@ public class RolapCube extends CubeBase {
         }
 
         boolean writebackEnabled = false;
+        /*
         for (Dimension dimension : dimensions) {
             if (ScenarioImpl.isScenario(dimension)) {
                 writebackEnabled = true;
             }
         }
+        */
 
         // If writeback is enabled, ensure that cube has an atomic cell count
         // measure even if the schema does not contain one.

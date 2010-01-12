@@ -130,8 +130,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return new MondrianOlap4jStatement(this);
     }
 
-    public ScenarioImpl createScenario() {
-        return ((RolapConnection) connection).createScenario();
+    public Scenario createScenario() {
+        throw new UnsupportedOperationException("writeback not yet supported");
     }
 
     public void setScenario(Scenario scenario) {
