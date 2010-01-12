@@ -31,8 +31,9 @@ function pop() {
     return val;
 }
 BEGIN {
-    # pre-compute regexp for single-quoted strings
+    # pre-compute regexp for quotes, linefeed
     apos = sprintf("%c", 39);
+    quot = sprintf("%c", 34);
     lf = sprintf("%c", 13);
     pattern = apos "(\\" apos "|[^" apos "])" apos;
     if (0) printf "maxLineLength=%s lenient=%s\n", maxLineLength, lenient;
@@ -79,6 +80,20 @@ FNR == 1 {
     }
     # mask out // comments
     gsub(/\/\/.*$/, "// comment", s);
+    # line starts with string or plus?
+    if (s ~ /^ *string/ \
+        && s !~ /)/)
+    {
+        stringCol = index(s, "string");
+    } else if (s ~ /^ *[+] string/) {
+        if (stringCol != 0 && index(s, "+") != stringCol) {
+            error(fname, FNR, "String '+' must be aligned with string on line above");
+        }
+    } else if (s ~ /comment/) {
+        # in comment; string target carries forward
+    } else {
+        stringCol = 0;
+    }
 }
 / $/ {
     error(fname, FNR, "Line ends in space");
