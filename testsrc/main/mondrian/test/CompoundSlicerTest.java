@@ -642,6 +642,55 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #0: 1,175\n"
             + "Row #1: 352\n");
     }
+
+    /**
+     * Tests compound slicer, and other rollups, with AVG function.
+     *
+     * <p>Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-675">
+     * Bug MONDRIAN-675,
+     * "Allow rollup of measures based on AVG aggregate function"</a>.
+     */
+    public void testRollupAvg() {
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                null,
+                "<Measure name='Avg Unit Sales' aggregator='avg' column='unit_sales'/>",
+                null,
+                null);
+        // basic query with avg
+        testContext.assertQueryReturns(
+            "select from [Sales]\n"
+            + "where [Measures].[Avg Unit Sales]",
+            "Axis #0:\n"
+            + "{[Measures].[Avg Unit Sales]}\n"
+            + "3.072");
+
+        // roll up using compound slicer
+        // (should give a real value, not an error)
+        testContext.assertQueryReturns(
+            "select from [Sales]\n"
+            + "where [Measures].[Avg Unit Sales]\n"
+            + "   * {[Customers].[USA].[OR], [Customers].[USA].[CA]}",
+            Bug.BugMondrian675Fixed
+            ? "what?"
+            : "Axis #0:\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[All Customers].[USA].[OR]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[All Customers].[USA].[CA]}\n"
+            + "#ERR: mondrian.olap.fun.MondrianEvaluationException: Don't know how to rollup aggregator 'avg'");
+
+        // roll up using a named set
+        testContext.assertQueryReturns(
+            "with member [Customers].[OR and CA] as Aggregate(\n"
+            + " {[Customers].[USA].[OR], [Customers].[USA].[CA]})\n"
+            + "select from [Sales]\n"
+            + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
+            Bug.BugMondrian675Fixed
+            ? "what?"
+            : "Axis #0:\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
+            + "#ERR: mondrian.olap.fun.MondrianEvaluationException: Don't know how to rollup aggregator 'avg'");
+    }
 }
 
 // End CompoundSlicerTest.java

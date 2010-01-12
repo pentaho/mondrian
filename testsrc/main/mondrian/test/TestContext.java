@@ -424,7 +424,7 @@ public class TestContext {
         String memberDefs)
     {
         return getFoodMartSchemaSubstitutingCube(
-            cubeName, dimensionDefs, memberDefs, null);
+            cubeName, dimensionDefs, null, memberDefs, null);
     }
 
     /**
@@ -434,6 +434,7 @@ public class TestContext {
     public String getFoodMartSchemaSubstitutingCube(
         String cubeName,
         String dimensionDefs,
+        String measureDefs,
         String memberDefs,
         String namedSetDefs)
     {
@@ -459,6 +460,17 @@ public class TestContext {
             int i = s.indexOf("<Dimension ", h);
             s = s.substring(0, i)
                 + dimensionDefs
+                + s.substring(i);
+        }
+
+        // Add measure definitions, if specified.
+        if (measureDefs != null) {
+            int i = s.indexOf("<Measure", h);
+            if (i < 0 || i > end) {
+                i = end;
+            }
+            s = s.substring(0, i)
+                + measureDefs
                 + s.substring(i);
         }
 
@@ -1713,7 +1725,7 @@ public class TestContext {
         final String memberDefs)
     {
         return createSubstitutingCube(
-            cubeName, dimensionDefs, memberDefs, null);
+            cubeName, dimensionDefs, null, memberDefs, null);
     }
 
 
@@ -1723,6 +1735,7 @@ public class TestContext {
      *
      * @param cubeName Name of a cube in the schema (cube must exist)
      * @param dimensionDefs String defining dimensions, or null
+     * @param measureDefs String defining measures, or null
      * @param memberDefs String defining calculated members, or null
      * @param namedSetDefs String defining named set definitions, or null
      * @return TestContext with modified cube defn
@@ -1730,6 +1743,7 @@ public class TestContext {
     public static TestContext createSubstitutingCube(
         final String cubeName,
         final String dimensionDefs,
+        final String measureDefs,
         final String memberDefs,
         final String namedSetDefs)
     {
@@ -1737,7 +1751,8 @@ public class TestContext {
             public Util.PropertyList getFoodMartConnectionProperties() {
                 final String schema =
                     getFoodMartSchemaSubstitutingCube(
-                        cubeName, dimensionDefs, memberDefs, namedSetDefs);
+                        cubeName, dimensionDefs,
+                        measureDefs, memberDefs, namedSetDefs);
                 Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
                 properties.put(

@@ -102,6 +102,8 @@ public class JdbcDialectImpl implements Dialect {
      * same.</p>
      *
      * @param connection Connection
+     *
+     * @throws java.sql.SQLException on error
      */
     public JdbcDialectImpl(
         Connection connection)
@@ -194,11 +196,11 @@ public class JdbcDialectImpl implements Dialect {
         DatabaseMetaData databaseMetaData)
     {
         Set<List<Integer>> supports = new HashSet<List<Integer>>();
-        try {
-            for (int type : RESULT_SET_TYPE_VALUES) {
-                for (int concurrency : CONCURRENCY_VALUES) {
+        for (int type : RESULT_SET_TYPE_VALUES) {
+            for (int concurrency : CONCURRENCY_VALUES) {
+                try {
                     if (databaseMetaData.supportsResultSetConcurrency(
-                            type, concurrency))
+                        type, concurrency))
                     {
                         String driverName =
                             databaseMetaData.getDriverName();
@@ -218,12 +220,15 @@ public class JdbcDialectImpl implements Dialect {
                             new ArrayList<Integer>(
                                 Arrays.asList(type, concurrency)));
                     }
+                } catch (SQLException e) {
+                    // DB2 throws "com.ibm.db2.jcc.b.SqlException: Unknown type
+                    // or Concurrency" for certain values of type/concurrency.
+                    // No harm in interpreting all such exceptions as 'this
+                    // database does not support this type/concurrency
+                    // combination'.
+                    Util.discard(e);
                 }
             }
-        } catch (SQLException e11) {
-            throw Util.newInternal(
-                e11,
-                "while detecting result set concurrency");
         }
         return supports;
     }
@@ -238,7 +243,7 @@ public class JdbcDialectImpl implements Dialect {
       *
       * @param conn The database connection
       * @return Whether the feature is enabled.
-      * @throws SQLException
+      * @throws SQLException on error
       */
     protected boolean deduceSupportsSelectNotInGroupBy(Connection conn)
         throws SQLException

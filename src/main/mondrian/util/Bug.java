@@ -166,6 +166,14 @@ public class Bug {
     public static final boolean BugMondrian648Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-675">bug MONDRIAN-675,
+     * "Allow rollup of measures based on AVG aggregate function"</a>
+     * is fixed.
+     */
+    public static final boolean BugMondrian675Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *

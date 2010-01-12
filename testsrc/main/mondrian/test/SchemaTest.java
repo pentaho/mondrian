@@ -2151,8 +2151,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testVirtualCubeNamedSetSupportInSchema() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Warehouse and Sales",
-            null,
-            null,
+            null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
             + "formula=\"EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
         testContext.assertQueryReturns(
@@ -2195,8 +2194,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testVirtualCubeNamedSetSupportInSchemaError() {
         final TestContext testContext = TestContext.createSubstitutingCube(
             "Warehouse and Sales",
-            null,
-            null,
+            null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
             + "formula=\"EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
         try {
@@ -2387,7 +2385,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
                 + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
                 + "    </Hierarchy>\n"
-                + "  </Dimension>\n", null, null);
+                + "  </Dimension>\n",
+                null, null, null);
         testContext.assertQueryReturns(
             "select non empty {[Measures].[Unit Sales]} on 0,\n"
             + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
@@ -2421,7 +2420,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "      <Level name=\"Product Class\" table=\"product_class\" nameColumn=\"product_subcategory\"\n"
                 + "          column=\"product_class_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
                 + "    </Hierarchy>\n"
-                + "  </Dimension>\n", null, null);
+                + "  </Dimension>\n",
+                null, null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -2586,7 +2586,9 @@ public class SchemaTest extends FoodMartTestCase {
      */
     public void testCaptionDescriptionAndAnnotation() {
         final String schemaName = "Description schema";
-        final String cubeName = "DescSales";
+        final String salesCubeName = "DescSales";
+        final String virtualCubeName = "DescWarehouseAndSales";
+        final String warehouseCubeName = "Warehouse";
         final TestContext testContext = TestContext.create(
             "<Schema name=\"" + schemaName + "\"\n"
             + " description=\"Schema to test descriptions and captions\">\n"
@@ -2610,7 +2612,17 @@ public class SchemaTest extends FoodMartTestCase {
             + "          levelType=\"TimeMonths\"/>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
-            + "  <Cube name=\"" + cubeName + "\"\n"
+            + "  <Dimension name=\"Warehouse\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n"
+            + "      <Table name=\"warehouse\"/>\n"
+            + "      <Level name=\"Country\" column=\"warehouse_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"State Province\" column=\"warehouse_state_province\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"City\" column=\"warehouse_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Warehouse Name\" column=\"warehouse_name\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"" + salesCubeName + "\"\n"
             + "    description=\"Cube description\">\n"
             + "  <Annotations><Annotation name=\"a\">Cube</Annotation></Annotations>\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2666,9 +2678,34 @@ public class SchemaTest extends FoodMartTestCase {
             + "    <Formula>TopCount([Time1].MEMBERS, 5, [Measures].[Foo])</Formula>\n"
             + "  </NamedSet>\n"
             + "</Cube>\n"
+            + "<Cube name=\"" + warehouseCubeName + "\">\n"
+            + "  <Table name=\"inventory_fact_1997\"/>\n"
+            + "\n"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <DimensionUsage name=\"Warehouse\" source=\"Warehouse\" foreignKey=\"warehouse_id\"/>\n"
+            + "\n"
+            + "  <Measure name=\"Units Shipped\" column=\"units_shipped\" aggregator=\"sum\" formatString=\"#.0\"/>\n"
+            + "</Cube>\n"
+            + "<VirtualCube name=\"" + virtualCubeName + "\"\n"
+            + "    caption=\"Virtual cube caption\"\n"
+            + "    description=\"Virtual cube description\">\n"
+            + "  <Annotations><Annotation name=\"a\">Virtual cube</Annotation></Annotations>\n"
+            + "  <VirtualCubeDimension name=\"Time\"/>\n"
+            + "  <VirtualCubeDimension cubeName=\"" + warehouseCubeName
+            + "\" name=\"Warehouse\"/>\n"
+            + "  <VirtualCubeMeasure cubeName=\"" + salesCubeName
+            + "\" name=\"[Measures].[Unit Sales]\">\n"
+            + "    <Annotations><Annotation name=\"a\">Virtual cube measure</Annotation></Annotations>\n"
+            + "  </VirtualCubeMeasure>\n"
+            + "  <VirtualCubeMeasure cubeName=\"" + warehouseCubeName
+            + "\" name=\"[Measures].[Units Shipped]\"/>\n"
+            + "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n"
+            + "    <Formula>1 / [Measures].[Units Shipped]</Formula>\n"
+            + "  </CalculatedMember>\n"
+            + "</VirtualCube>"
             + "</Schema>");
         final Result result =
-            testContext.executeQuery("select from [" + cubeName + "]");
+            testContext.executeQuery("select from [" + salesCubeName + "]");
         final Cube cube = result.getQuery().getCube();
         assertEquals("Cube description", cube.getDescription());
         checkAnnotations(cube.getAnnotationMap(), "a", "Cube");
@@ -2730,7 +2767,14 @@ public class SchemaTest extends FoodMartTestCase {
         final Hierarchy timeHierarchy = timeDimension.getHierarchies()[0];
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time1.
-        assertEquals("Time1", timeHierarchy.getName());
+        final boolean ssasCompatibleNaming =
+            MondrianProperties.instance().SsasCompatibleNaming.get();
+        if (ssasCompatibleNaming) {
+            assertEquals("Time", timeHierarchy.getName());
+            assertEquals("Time1", timeHierarchy.getDimension().getName());
+        } else {
+            assertEquals("Time1", timeHierarchy.getName());
+        }
         // The description is prefixed by the dimension usage name.
         assertEquals(
             "Time usage caption.Time shared hierarchy description",
@@ -2754,7 +2798,12 @@ public class SchemaTest extends FoodMartTestCase {
         final Hierarchy time2Hierarchy = time2Dimension.getHierarchies()[0];
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time2.
-        assertEquals("Time2", time2Hierarchy.getName());
+        if (ssasCompatibleNaming) {
+            assertEquals("Time", time2Hierarchy.getName());
+            assertEquals("Time2", time2Hierarchy.getDimension().getName());
+        } else {
+            assertEquals("Time2", time2Hierarchy.getName());
+        }
         // The description is prefixed by the dimension usage name (because
         // dimension usage has no caption).
         assertEquals(
@@ -2811,6 +2860,36 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals("Named set caption", namedSet.getCaption());
         assertEquals("Named set description", namedSet.getDescription());
         checkAnnotations(namedSet.getAnnotationMap(), "a", "Named set");
+
+        final Result result2 =
+            testContext.executeQuery("select from [" + virtualCubeName + "]");
+        final Cube cube2 = result2.getQuery().getCube();
+        assertEquals("Virtual cube description", cube2.getDescription());
+        checkAnnotations(cube2.getAnnotationMap(), "a", "Virtual cube");
+
+        final SchemaReader schemaReader2 = cube2.getSchemaReader(null);
+        final Dimension measuresDimension2 = cube2.getDimensions()[0];
+        final Hierarchy measuresHierarchy2 =
+            measuresDimension2.getHierarchies()[0];
+        final mondrian.olap.Level measuresLevel2 =
+            measuresHierarchy2.getLevels()[0];
+        final List<Member> measures2 =
+            schemaReader2.getLevelMembers(measuresLevel2, true);
+        final Member measure2 = measures2.get(0);
+        assertEquals("Unit Sales", measure2.getName());
+        assertEquals("Measure caption", measure2.getCaption());
+        assertEquals("Measure description", measure2.getDescription());
+        assertEquals(
+            measure2.getDescription(),
+            measure2.getPropertyValue(Property.DESCRIPTION.name));
+        assertEquals(
+            measure2.getCaption(),
+            measure2.getPropertyValue(Property.CAPTION.name));
+        assertEquals(
+            measure2.getCaption(),
+            measure2.getPropertyValue(Property.MEMBER_CAPTION.name));
+        checkAnnotations(
+            measure2.getAnnotationMap(), "a", "Virtual cube measure");
     }
 
     private static void checkAnnotations(

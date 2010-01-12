@@ -1160,8 +1160,10 @@ public class TestCalculatedMembers extends BatchTestCase {
 
 
     /**
-     * test case for bug #1801069, Issues with calculated members
-     * verify that the calculated member [Product].[Food].[Test]
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-335">MONDRIAN-335</a>,
+     * "Issues with calculated members".
+     * Verify that the calculated member [Product].[Food].[Test]
      * definition does not throw errors and returns expected
      * results.
      */
@@ -1194,8 +1196,10 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     /**
-     * test case for bug #1801069, Issues with calculated members
-     * verify that the calculated member [Product].[Test]
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-335">MONDRIAN-335</a>,
+     * "Issues with calculated members".
+     * Verify that the calculated member [Product].[Test]
      * returns an empty children list vs. invalid behavior
      * of returning [All Products].Children
      */
@@ -1488,6 +1492,107 @@ public class TestCalculatedMembers extends BatchTestCase {
             System.out.println(
                 "For n=" + n + ", took " + (t1 - t0) + " millis");
         }
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-638">MONDRIAN-638</a>,
+     * "Stack trace when grand total turned on". The cause of the problem were
+     * negative SOLVE_ORDER values. We were incorrectly populating
+     * RolapEvaluator.expandingMember from the parent evaluator, which made it
+     * look like two evaluation contexts were expanding the same member.
+     */
+    public void testCycleFalsePositive() {
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // This test uses old-style [dimension.hierarchy] names.
+            return;
+        }
+        final TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"Store5\"> \n"
+            + "  <Table name=\"store\"/> \n"
+            + "  <!-- We could have used the shared dimension \"Store Type\", but we \n"
+            + "     want to test private dimensions without primary key. --> \n"
+            + "  <Dimension name=\"Store Type\"> \n"
+            + "    <Hierarchy name=\"Store Types Hierarchy\" allMemberName=\"All Store Types Member Name\" hasAll=\"true\"> \n"
+            + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "\n"
+            + "  <Dimension name=\"Country\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            + "      <Level name=\"Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "\n"
+            + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\" \n"
+            + "      formatString=\"#,###\"/> \n"
+            + "  <Measure name=\"Grocery Sqft\" column=\"grocery_sqft\" aggregator=\"sum\" \n"
+            + "      formatString=\"#,###\" description=\"Grocery Sqft Description...\"> \n"
+            + "    <Annotations> \n"
+            + "        <Annotation name=\"AnalyzerBusinessGroup\">Numbers</Annotation> \n"
+            + "    </Annotations> \n"
+            + "  </Measure> \n"
+            + "  <CalculatedMember \n"
+            + "      name=\"Constant 1\" description=\"Constant 1 Description...\" \n"
+            + "      dimension=\"Measures\"> \n"
+            + "    <Annotations> \n"
+            + "        <Annotation name=\"AnalyzerBusinessGroup\">Numbers</Annotation> \n"
+            + "    </Annotations> \n"
+            + "    <Formula>1</Formula> \n"
+            + "  </CalculatedMember> \n"
+            + "</Cube> ",
+            null,
+            null,
+            null,
+            null);
+        testContext.assertQueryReturns(
+            "With \n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Country],[*BASE_MEMBERS_Store Type.Store Types Hierarchy])' \n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Country].CurrentMember.OrderKey,BASC,[Store Type.Store Types Hierarchy].CurrentMember.OrderKey,BASC)' \n"
+            + "Set [*BASE_MEMBERS_Country] as '[Country].[Country].Members' \n"
+            + "Set [*NATIVE_MEMBERS_Country] as 'Generate([*NATIVE_CJ_SET], {[Country].CurrentMember})' \n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Country].currentMember,[Store Type.Store Types Hierarchy].currentMember)})' \n"
+            + "Set [*BASE_MEMBERS_Store Type.Store Types Hierarchy] as '[Store Type.Store Types Hierarchy].[Store Type].Members' \n"
+            + "Set [*NATIVE_MEMBERS_Store Type.Store Types Hierarchy] as 'Generate([*NATIVE_CJ_SET], {[Store Type.Store Types Hierarchy].CurrentMember})' \n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
+            + "Member [Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Store Type.Store Types Hierarchy].[All Store Types Member Name]})', SOLVE_ORDER=-101 \n"
+            + "Member [Country].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Country].[All Countrys]})', SOLVE_ORDER=-100 \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400 \n"
+            + "Select \n"
+            + "[*BASE_MEMBERS_Measures] on columns, \n"
+            + "Non Empty Union(NonEmptyCrossJoin({[Country].[*TOTAL_MEMBER_SEL~SUM]},{[Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM]}),[*SORTED_ROW_AXIS]) on rows \n"
+            + "From [Store5] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Country].[*TOTAL_MEMBER_SEL~SUM], [Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM]}\n"
+            + "{[Country].[All Countrys].[Canada], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
+            + "{[Country].[All Countrys].[Canada], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Mid-Size Grocery]}\n"
+            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
+            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Gourmet Supermarket]}\n"
+            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Mid-Size Grocery]}\n"
+            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Small Grocery]}\n"
+            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Supermarket]}\n"
+            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
+            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Gourmet Supermarket]}\n"
+            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Small Grocery]}\n"
+            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Supermarket]}\n"
+            + "Row #0: 571,596\n"
+            + "Row #1: 23,112\n"
+            + "Row #2: 34,452\n"
+            + "Row #3: 61,381\n"
+            + "Row #4: 23,759\n"
+            + "Row #5: 74,891\n"
+            + "Row #6: 24,597\n"
+            + "Row #7: 58,384\n"
+            + "Row #8: 61,552\n"
+            + "Row #9: 23,688\n"
+            + "Row #10: 50,684\n"
+            + "Row #11: 135,096\n");
     }
 }
 

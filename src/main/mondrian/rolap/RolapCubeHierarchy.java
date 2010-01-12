@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,7 +38,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     private final RolapCubeDimension parentDimension;
     private final RolapHierarchy rolapHierarchy;
     private final RolapCubeLevel currentNullLevel;
-    private RolapNullMember currentNullMember;
+    private RolapNullCubeMember currentNullMember;
     private RolapCubeMember currentAllMember;
     private final MondrianDef.RelationOrJoin currentRelation;
     private final RolapCubeHierarchyMemberReader reader;
@@ -343,7 +343,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     public Member getNullMember() {
         // use lazy initialization to get around bootstrap issues
         if (currentNullMember == null) {
-            currentNullMember = new RolapNullMember(currentNullLevel);
+            currentNullMember =
+                new RolapNullCubeMember(
+                    currentNullLevel,
+                    (RolapMember) rolapHierarchy.getNullMember());
         }
         return currentNullMember;
     }
@@ -1149,6 +1152,19 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return memberCacheLock;
         }
     }
+
+    /**
+     * Variant of {@link mondrian.rolap.RolapHierarchy.RolapNullMember} but
+     * extends {@link mondrian.rolap.RolapCubeMember} and therefore belongs to
+     * a cube.
+     */
+    static class RolapNullCubeMember extends RolapCubeMember {
+        RolapNullCubeMember(RolapCubeLevel level, RolapMember nullMember) {
+            super(null, nullMember, level, level.getCube());
+            assert level != null;
+        }
+    }
+
 }
 
 // End RolapCubeHierarchy.java
