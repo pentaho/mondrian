@@ -1148,6 +1148,7 @@
                 <li>infobright</li>
                 <li>luciddb</li>
                 <li>vertica</li>
+                <li>neoview</li>
                 </ul>
             </Doc>
             <Value>generic</Value>
@@ -1166,6 +1167,7 @@
             <Value>infobright</Value>
             <Value>luciddb</Value>
             <Value>vertica</Value>
+            <Value>neoview</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
