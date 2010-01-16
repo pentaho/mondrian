@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -105,7 +105,7 @@ enum RowsetDefinition {
                         "xsd:element",
                         "sql:field", column.name,
                         "name", name,
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.startElement("xsd:complexType");
                     writer.startElement("xsd:sequence");
@@ -127,34 +127,34 @@ enum RowsetDefinition {
                 } else {
                     final String xsdType = column.type.columnType;
 
-                    String[] attrs;
+                    Object[] attrs;
                     if (column.nullable) {
                         if (column.unbounded) {
-                            attrs = new String[]{
+                            attrs = new Object[]{
                                 "sql:field", column.name,
                                 "name", name,
                                 "type", xsdType,
-                                "minOccurs", "0",
+                                "minOccurs", 0,
                                 "maxOccurs", "unbounded"
                             };
                         } else {
-                            attrs = new String[]{
+                            attrs = new Object[]{
                                 "sql:field", column.name,
                                 "name", name,
                                 "type", xsdType,
-                                "minOccurs", "0"
+                                "minOccurs", 0
                             };
                         }
                     } else {
                         if (column.unbounded) {
-                            attrs = new String[]{
+                            attrs = new Object[]{
                                 "sql:field", column.name,
                                 "name", name,
                                 "type", xsdType,
                                 "maxOccurs", "unbounded"
                             };
                         } else {
-                            attrs = new String[]{
+                            attrs = new Object[]{
                                 "sql:field", column.name,
                                 "name", name,
                                 "type", xsdType
@@ -1169,7 +1169,7 @@ enum RowsetDefinition {
             "xsd:element",
             "name", "row",
             "type", "row",
-            "minOccurs", "0",
+            "minOccurs", 0,
             "maxOccurs", "unbounded");
         writer.endElement(); // xsd:sequence
         writer.endElement(); // xsd:complexType
@@ -1200,34 +1200,34 @@ enum RowsetDefinition {
             final String name = XmlaUtil.encodeElementName(column.name);
             final String xsdType = column.type.columnType;
 
-            String[] attrs;
+            Object[] attrs;
             if (column.nullable) {
                 if (column.unbounded) {
-                    attrs = new String[]{
+                    attrs = new Object[]{
                         "sql:field", column.name,
                         "name", name,
                         "type", xsdType,
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded"
                     };
                 } else {
-                    attrs = new String[]{
+                    attrs = new Object[]{
                         "sql:field", column.name,
                         "name", name,
                         "type", xsdType,
-                        "minOccurs", "0"
+                        "minOccurs", 0
                     };
                 }
             } else {
                 if (column.unbounded) {
-                    attrs = new String[]{
+                    attrs = new Object[]{
                         "sql:field", column.name,
                         "name", name,
                         "type", xsdType,
                         "maxOccurs", "unbounded"
                     };
                 } else {
-                    attrs = new String[]{
+                    attrs = new Object[]{
                         "sql:field", column.name,
                         "name", name,
                         "type", xsdType

@@ -11395,6 +11395,15 @@ Native: The client does not request a specific format, so the provider may retur
                         <Value>Native</Value>
                     </row>
                     <row>
+                        <PropertyName>Language</PropertyName>
+                        <PropertyDescription>Language for RPC requests;
+                            SOAP by default.</PropertyDescription>
+                        <PropertyType>EnumString</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>None</Value>
+                    </row>
+                    <row>
                         <PropertyName>LocaleIdentifier</PropertyName>
                         <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific.
 For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
@@ -17460,6 +17469,501 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testExecuteSlicerJson">
+        <Resource name="response">
+            <![CDATA["cxmla:ExecuteResponse": {
+  "xmlns:cxmla": "urn:schemas-microsoft-com:xml-analysis",
+  "cxmla:return": {
+    "root": {
+      "xmlns": "urn:schemas-microsoft-com:xml-analysis:mddataset",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+      "xmlns:EX": "urn:schemas-microsoft-com:xml-analysis:exception",
+      "OlapInfo": {
+        "CubeInfo": {
+          "Cube": {
+            "CubeName": "Sales"
+          }
+        },
+        "AxesInfo": [
+          {
+            "name": "Axis0",
+            "HierarchyInfo": [
+              {
+                "name": "Customers",
+                "UName": {
+                  "name": "[Customers].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Customers].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Customers].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Customers].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Customers].[DISPLAY_INFO]"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Axis1",
+            "HierarchyInfo": [
+              {
+                "name": "Gender",
+                "UName": {
+                  "name": "[Gender].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Gender].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Gender].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Gender].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Gender].[DISPLAY_INFO]"
+                }
+              }
+            ]
+          },
+          {
+            "name": "SlicerAxis",
+            "HierarchyInfo": [
+              {
+                "name": "Measures",
+                "UName": {
+                  "name": "[Measures].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Measures].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Measures].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Measures].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Measures].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Store",
+                "UName": {
+                  "name": "[Store].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Store].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Store].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Store].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Store].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Store Size in SQFT",
+                "UName": {
+                  "name": "[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Store Size in SQFT].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Store Size in SQFT].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Store Size in SQFT].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Store Type",
+                "UName": {
+                  "name": "[Store Type].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Store Type].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Store Type].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Store Type].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Store Type].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Time",
+                "UName": {
+                  "name": "[Time].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Time].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Time].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Time].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Time].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Product",
+                "UName": {
+                  "name": "[Product].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Product].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Product].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Product].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Product].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Promotion Media",
+                "UName": {
+                  "name": "[Promotion Media].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Promotion Media].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Promotion Media].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Promotion Media].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Promotion Media].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Promotions",
+                "UName": {
+                  "name": "[Promotions].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Promotions].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Promotions].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Promotions].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Promotions].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Education Level",
+                "UName": {
+                  "name": "[Education Level].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Education Level].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Education Level].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Education Level].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Education Level].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Marital Status",
+                "UName": {
+                  "name": "[Marital Status].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Marital Status].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Marital Status].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Marital Status].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Marital Status].[DISPLAY_INFO]"
+                }
+              },
+              {
+                "name": "Yearly Income",
+                "UName": {
+                  "name": "[Yearly Income].[MEMBER_UNIQUE_NAME]"
+                },
+                "Caption": {
+                  "name": "[Yearly Income].[MEMBER_CAPTION]"
+                },
+                "LName": {
+                  "name": "[Yearly Income].[LEVEL_UNIQUE_NAME]"
+                },
+                "LNum": {
+                  "name": "[Yearly Income].[LEVEL_NUMBER]"
+                },
+                "DisplayInfo": {
+                  "name": "[Yearly Income].[DISPLAY_INFO]"
+                }
+              }
+            ]
+          }
+        ],
+        "CellInfo": {
+          "Value": {
+            "name": "VALUE"
+          },
+          "FmtValue": {
+            "name": "FORMATTED_VALUE"
+          },
+          "FormatString": {
+            "name": "FORMAT_STRING"
+          }
+        }
+      },
+      "Axes": [
+        {
+          "name": "Axis0",
+          "Tuples": [
+            [
+              {
+                "Hierarchy": "Customers",
+                "UName": "[Customers].[All Customers].[Canada]",
+                "Caption": "Canada",
+                "LName": "[Customers].[Country]",
+                "LNum": 1,
+                "DisplayInfo": 1
+              }
+            ],
+            [
+              {
+                "Hierarchy": "Customers",
+                "UName": "[Customers].[All Customers].[Mexico]",
+                "Caption": "Mexico",
+                "LName": "[Customers].[Country]",
+                "LNum": 1,
+                "DisplayInfo": 131081
+              }
+            ],
+            [
+              {
+                "Hierarchy": "Customers",
+                "UName": "[Customers].[All Customers].[USA]",
+                "Caption": "USA",
+                "LName": "[Customers].[Country]",
+                "LNum": 1,
+                "DisplayInfo": 131075
+              }
+            ]
+          ]
+        },
+        {
+          "name": "Axis1",
+          "Tuples": [
+            [
+              {
+                "Hierarchy": "Gender",
+                "UName": "[Gender].[All Gender].[F]",
+                "Caption": "F",
+                "LName": "[Gender].[Gender]",
+                "LNum": 1,
+                "DisplayInfo": 0
+              }
+            ],
+            [
+              {
+                "Hierarchy": "Gender",
+                "UName": "[Gender].[All Gender].[M]",
+                "Caption": "M",
+                "LName": "[Gender].[Gender]",
+                "LNum": 1,
+                "DisplayInfo": 131072
+              }
+            ]
+          ]
+        },
+        {
+          "name": "SlicerAxis",
+          "Tuples": [
+            [
+              {
+                "Hierarchy": "Measures",
+                "UName": "[Measures].[Store Sales]",
+                "Caption": "Store Sales",
+                "LName": "[Measures].[MeasuresLevel]",
+                "LNum": 0,
+                "DisplayInfo": 0
+              },
+              {
+                "Hierarchy": "Store",
+                "UName": "[Store].[All Stores]",
+                "Caption": "All Stores",
+                "LName": "[Store].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 3
+              },
+              {
+                "Hierarchy": "Store Size in SQFT",
+                "UName": "[Store Size in SQFT].[All Store Size in SQFTs]",
+                "Caption": "All Store Size in SQFTs",
+                "LName": "[Store Size in SQFT].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 21
+              },
+              {
+                "Hierarchy": "Store Type",
+                "UName": "[Store Type].[All Store Types]",
+                "Caption": "All Store Types",
+                "LName": "[Store Type].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 6
+              },
+              {
+                "Hierarchy": "Time",
+                "UName": "[Time].[1997].[Q2]",
+                "Caption": "Q2",
+                "LName": "[Time].[Quarter]",
+                "LNum": 1,
+                "DisplayInfo": 3
+              },
+              {
+                "Hierarchy": "Product",
+                "UName": "[Product].[All Products]",
+                "Caption": "All Products",
+                "LName": "[Product].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 3
+              },
+              {
+                "Hierarchy": "Promotion Media",
+                "UName": "[Promotion Media].[All Media]",
+                "Caption": "All Media",
+                "LName": "[Promotion Media].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 14
+              },
+              {
+                "Hierarchy": "Promotions",
+                "UName": "[Promotions].[All Promotions]",
+                "Caption": "All Promotions",
+                "LName": "[Promotions].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 51
+              },
+              {
+                "Hierarchy": "Education Level",
+                "UName": "[Education Level].[All Education Levels]",
+                "Caption": "All Education Levels",
+                "LName": "[Education Level].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 5
+              },
+              {
+                "Hierarchy": "Marital Status",
+                "UName": "[Marital Status].[All Marital Status]",
+                "Caption": "All Marital Status",
+                "LName": "[Marital Status].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 111
+              },
+              {
+                "Hierarchy": "Yearly Income",
+                "UName": "[Yearly Income].[All Yearly Incomes]",
+                "Caption": "All Yearly Incomes",
+                "LName": "[Yearly Income].[(All)]",
+                "LNum": 0,
+                "DisplayInfo": 8
+              }
+            ]
+          ]
+        }
+      ],
+      "CellData": [
+        {
+          "CellOrdinal": 0,
+          "FmtValue": "",
+          "FormatString": "#,###.00"
+        },
+        {
+          "CellOrdinal": 2,
+          "Value": 65857.14,
+          "FmtValue": "65,857.14",
+          "FormatString": "#,###.00"
+        },
+        {
+          "CellOrdinal": 5,
+          "Value": 66809.13,
+          "FmtValue": "66,809.13",
+          "FormatString": "#,###.00"
+        }
+      ]
+    }
+  }
+}]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement>
+SELECT {[Customers].Children} ON 0,
+{[Gender].Children} ON 1
+FROM Sales
+WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
+         </Statement>
+        </Command>
+        <Properties>
+          <PropertyList>
+            <Catalog>${catalog}</Catalog>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Format>${format}</Format>
+            <AxisFormat>TupleFormat</AxisFormat>
+            <Language>JSON</Language>
+          </PropertyList>
+        </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="${response}">
+            <![CDATA[
+
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testExecuteSlicerContentDataOmitDefaultSlicer">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
@@ -23195,6 +23699,139 @@ FROM Sales
     </Discover>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testMDCubesJson">
+        <Resource name="response">
+            <![CDATA["cxmla:DiscoverResponse": {
+  "xmlns:cxmla": "urn:schemas-microsoft-com:xml-analysis",
+  "cxmla:return": {
+    "root": {
+      "xmlns": "urn:schemas-microsoft-com:xml-analysis:rowset",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+      "xmlns:EX": "urn:schemas-microsoft-com:xml-analysis:exception",
+      "row": [
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "HR",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - HR Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Sales",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Sales Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Sales 2",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Sales 2 Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Sales Ragged",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Sales Ragged Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Store",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Store Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Warehouse",
+          "CUBE_TYPE": "CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Warehouse Cube"
+        },
+        {
+          "CATALOG_NAME": "FoodMart",
+          "SCHEMA_NAME": "FoodMart",
+          "CUBE_NAME": "Warehouse and Sales",
+          "CUBE_TYPE": "VIRTUAL CUBE",
+          "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "IS_DRILLTHROUGH_ENABLED": true,
+          "IS_WRITE_ENABLED": false,
+          "IS_LINKABLE": false,
+          "IS_SQL_ENABLED": false,
+          "DESCRIPTION": "FoodMart Schema - Warehouse and Sales Cube"
+        }
+      ]
+    }
+  }
+}]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        <RequestType>${request.type}</RequestType>
+        <Restrictions>
+          <RestrictionList>
+          </RestrictionList>
+        </Restrictions>
+        <Properties>
+          <PropertyList>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Catalog>${catalog}</Catalog>
+            <Format>${format}</Format>
+            <Language>JSON</Language>
+            <Content>${content}</Content>
+          </PropertyList>
+        </Properties>
+    </Discover>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="${response}">
+            <![CDATA[
+
 ]]>
         </Resource>
     </TestCase>

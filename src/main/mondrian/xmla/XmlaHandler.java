@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,10 +26,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 import java.io.*;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 
 
 /**
@@ -572,13 +569,7 @@ public class XmlaHandler implements XmlaConstants {
         // Check response's rowset format in request
         final Map<String, String> properties = request.getProperties();
         if (request.isDrillThrough()) {
-            final String formatName =
-                properties.get(PropertyDefinition.Format.name());
-            Enumeration.Format format =
-                valueOf(
-                    Enumeration.Format.class,
-                    formatName,
-                    null);
+            Enumeration.Format format = getFormat(request, null);
             if (format != Enumeration.Format.Tabular) {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
@@ -592,8 +583,7 @@ public class XmlaHandler implements XmlaConstants {
             final String formatName =
                 properties.get(PropertyDefinition.Format.name());
             if (formatName != null) {
-                Enumeration.Format format = valueOf(
-                    Enumeration.Format.class, formatName, null);
+                Enumeration.Format format = getFormat(request, null);
                 if (format != Enumeration.Format.Multidimensional
                     && format != Enumeration.Format.Tabular)
                 {
@@ -605,7 +595,7 @@ public class XmlaHandler implements XmlaConstants {
             final String axisFormatName =
                 properties.get(PropertyDefinition.AxisFormat.name());
             if (axisFormatName != null) {
-                Enumeration.AxisFormat axisFormat = valueOf(
+                Enumeration.AxisFormat axisFormat = Util.lookup(
                     Enumeration.AxisFormat.class, axisFormatName, null);
 
                 if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
@@ -622,11 +612,19 @@ public class XmlaHandler implements XmlaConstants {
         throws XmlaException
     {
         final Map<String, String> properties = request.getProperties();
+
+        // Default language is SOAP.
+        Enumeration.Language language = getLanguage(request);
+
+        // Default value is SchemaData, or Data for JSON responses.
         final String contentName =
             properties.get(PropertyDefinition.Content.name());
-        // default value is SchemaData
-        Enumeration.Content content =
-            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
+        Enumeration.Content content = Util.lookup(
+            Enumeration.Content.class,
+            contentName,
+            language == Enumeration.Language.JSON
+                ? Enumeration.Content.Data
+                : Enumeration.Content.DEFAULT);
 
         // Handle execute
         QueryResult result;
@@ -766,7 +764,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement(
             "xsd:sequence",
             "maxOccurs", "unbounded",
-            "minOccurs", "0");
+            "minOccurs", 0);
         writer.element(
             "xsd:any",
             "processContents", "lax",
@@ -847,7 +845,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement("xsd:sequence");
         writer.startElement(
             "xsd:choice",
-            "minOccurs", "0",
+            "minOccurs", 0,
             "maxOccurs", "unbounded");
         writer.element(
             "xsd:element",
@@ -920,7 +918,7 @@ public class XmlaHandler implements XmlaConstants {
                     writer.startElement(
                         "xsd:element",
                         "name", "HierarchyInfo",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.startElement("xsd:complexType");
                     writer.startElement("xsd:sequence");
@@ -947,13 +945,13 @@ public class XmlaHandler implements XmlaConstants {
                         "xsd:element",
                         "name", "DisplayInfo",
                         "type", "PropType",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     if (false) writer.element(
                         "xsd:element",
                         "name", "PARENT_MEMBER_NAME",
                         "type", "PropType",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
@@ -962,7 +960,7 @@ public class XmlaHandler implements XmlaConstants {
                     writer.element(
                         "xsd:any",
                         "processContents", "lax",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
@@ -998,7 +996,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("xsd:sequence");
             writer.startElement(
                 "xsd:sequence",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.startElement("xsd:choice");
             writer.element(
@@ -1058,7 +1056,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "xsd:sequence",
                 "maxOccurs", "unbounded",
-                "minOccurs", "0");
+                "minOccurs", 0);
             writer.element(
                 "xsd:any",
                 "processContents", "lax",
@@ -1087,7 +1085,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("xsd:complexType");
             writer.startElement(
                 "xsd:choice",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.element(
                 "xsd:element",
@@ -1122,7 +1120,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "xsd:element",
                 "name", "Cell",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.startElement("xsd:complexType");
             writer.startElement(
@@ -1580,7 +1578,7 @@ public class XmlaHandler implements XmlaConstants {
                 writer.element(
                     "xsd:element",
                     "maxOccurs", "unbounded",
-                    "minOccurs", "0",
+                    "minOccurs", 0,
                     "name", "row",
                     "type", "row");
                 writer.endElement(); // xsd:sequence
@@ -1610,7 +1608,7 @@ public class XmlaHandler implements XmlaConstants {
                 for (Column column : columns) {
                     writer.element(
                         "xsd:element",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "name", column.encodedName,
                         "sql:field", column.name,
                         "type", column.xsdType);
@@ -1702,32 +1700,50 @@ public class XmlaHandler implements XmlaConstants {
                     ex);
             }
 
-            final String formatName =
-                request.getProperties().get(
-                    PropertyDefinition.Format.name());
-            Enumeration.Format format =
-                valueOf(
-                    Enumeration.Format.class,
-                    formatName,
-                    null);
-
+            final Enumeration.Format format = getFormat(request, null);
+            final Enumeration.Content content = getContent(request);
+            final Enumeration.Language language = getLanguage(request);
             if (format == Enumeration.Format.Multidimensional) {
-                final String contentName =
-                    request.getProperties()
-                        .get(PropertyDefinition.Content.name());
-                Enumeration.Content content =
-                    valueOf(
-                        Enumeration.Content.class,
-                        contentName,
-                        CONTENT_DEFAULT);
-                final boolean omitDefaultSlicer =
-                    (content == Enumeration.Content.DataOmitDefaultSlicer);
-                return
-                    new MDDataSet_Multidimensional(result, omitDefaultSlicer);
+                return new MDDataSet_Multidimensional(
+                    result,
+                    content == Enumeration.Content.DataOmitDefaultSlicer,
+                    language == Enumeration.Language.JSON);
             } else {
                 return new MDDataSet_Tabular(result);
             }
         }
+    }
+
+    private static Enumeration.Format getFormat(
+        XmlaRequest request,
+        Enumeration.Format defaultValue)
+    {
+        final String formatName =
+            request.getProperties().get(
+                PropertyDefinition.Format.name());
+        return Util.lookup(
+            Enumeration.Format.class,
+            formatName, defaultValue);
+    }
+
+    private static Enumeration.Content getContent(XmlaRequest request) {
+        final String contentName =
+            request.getProperties().get(
+                PropertyDefinition.Content.name());
+        return Util.lookup(
+            Enumeration.Content.class,
+            contentName,
+            Enumeration.Content.DEFAULT);
+    }
+
+    private static Enumeration.Language getLanguage(XmlaRequest request) {
+        final String languageName =
+            request.getProperties().get(
+                PropertyDefinition.Language.name());
+        return Util.lookup(
+            Enumeration.Language.class,
+            languageName,
+            Enumeration.Language.SOAP);
     }
 
     static abstract class MDDataSet implements QueryResult {
@@ -1770,17 +1786,17 @@ public class XmlaHandler implements XmlaConstants {
 
     static class MDDataSet_Multidimensional extends MDDataSet {
         private List<Hierarchy> slicerAxisHierarchies;
-        private boolean omitDefaultSlicerInfo;
-
-        protected MDDataSet_Multidimensional(Result result) {
-            this(result, false);
-        }
+        private final boolean omitDefaultSlicerInfo;
+        private final boolean json;
 
         protected MDDataSet_Multidimensional(
-            Result result, boolean isDataOmitDefaultSlicerContentType)
+            Result result,
+            boolean omitDefaultSlicerInfo,
+            boolean json)
         {
             super(result);
-            this.omitDefaultSlicerInfo = isDataOmitDefaultSlicerContentType;
+            this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
+            this.json = json;
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1796,15 +1812,13 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("OlapInfo");
             writer.startElement("CubeInfo");
             writer.startElement("Cube");
-            writer.startElement("CubeName");
-            writer.characters(result.getQuery().getCube().getName());
-            writer.endElement();
+            writer.textElement("CubeName", cube.getName());
             writer.endElement();
             writer.endElement(); // CubeInfo
 
             // create AxesInfo for axes
             // -----------
-            writer.startElement("AxesInfo");
+            writer.startSequence("AxesInfo", "AxisInfo");
             final Axis[] axes = result.getAxes();
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
@@ -1844,7 +1858,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 writer.startElement(
                     "AxisInfo",
-                    new String[] { "name", "SlicerAxis"});
+                    "name", "SlicerAxis");
                 writeHierarchyInfo(
                     writer, hierarchies, getProps(slicerQueryAxis));
                 writer.endElement(); // AxisInfo
@@ -1853,8 +1867,8 @@ public class XmlaHandler implements XmlaConstants {
             //
             ///////////////////////////////////////////////
 
+            writer.endSequence(); // AxesInfo
 
-            writer.endElement(); // AxesInfo
             // -----------
             writer.startElement("CellInfo");
             if (shouldReturnCellProperty(Property.VALUE.getName())) {
@@ -1914,6 +1928,7 @@ public class XmlaHandler implements XmlaConstants {
             List<Hierarchy> hierarchies,
             String[] props)
         {
+            writer.startSequence(null, "HierarchyInfo");
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
                     "HierarchyInfo",
@@ -1924,11 +1939,12 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 writer.endElement(); // HierarchyInfo
             }
+            writer.endSequence(); // "HierarchyInfo"
         }
 
-        private String[] getAttributes(String prop, Hierarchy hierarchy) {
+        private Object[] getAttributes(String prop, Hierarchy hierarchy) {
             String actualPropName = getPropertyName(prop);
-            List<String> values = new ArrayList<String>();
+            List<Object> values = new ArrayList<Object>();
             values.add("name");
             values.add(
                 hierarchy.getUniqueName() + "." + Util.quoteMdxIdentifier(
@@ -1938,7 +1954,7 @@ public class XmlaHandler implements XmlaConstants {
                 values.add("type");
                 values.add(getXsdType(actualPropName));
             }
-            return values.toArray(new String[values.size()]);
+            return values.toArray();
         }
 
         private String getXsdType(String prop) {
@@ -1964,7 +1980,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void axes(SaxWriter writer) {
-            writer.startElement("Axes");
+            writer.startSequence("Axes", "Axis");
             //axis(writer, result.getSlicerAxis(), "SlicerAxis");
             final Axis[] axes = result.getAxes();
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
@@ -1994,8 +2010,8 @@ public class XmlaHandler implements XmlaConstants {
                 writer.startElement(
                     "Axis",
                     "name", "SlicerAxis");
-                writer.startElement("Tuples");
-                writer.startElement("Tuple");
+                writer.startSequence("Tuples", "Tuple");
+                writer.startSequence("Tuple", "Member");
 
                 Map<String, Integer> memberMap = new HashMap<String, Integer>();
                 Member positionMember;
@@ -2050,15 +2066,15 @@ public class XmlaHandler implements XmlaConstants {
                             + hierarchy.getUniqueName());
                     }
                 }
-                writer.endElement(); // Tuple
-                writer.endElement(); // Tuples
+                writer.endSequence(); // Tuple
+                writer.endSequence(); // Tuples
                 writer.endElement(); // Axis
             }
 
             //
             ////////////////////////////////////////////
 
-            writer.endElement(); // Axes
+            writer.endSequence(); // Axes
         }
 
         private String[] getProps(QueryAxis queryAxis) {
@@ -2088,7 +2104,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "Axis",
                 "name", axisName);
-            writer.startElement("Tuples");
+            writer.startSequence("Tuples", "Tuple");
 
             List<Position> positions = axis.getPositions();
             Iterator<Position> pit = positions.iterator();
@@ -2096,18 +2112,18 @@ public class XmlaHandler implements XmlaConstants {
             Position position = pit.hasNext() ? pit.next() : null;
             Position nextPosition = pit.hasNext() ? pit.next() : null;
             while (position != null) {
-                writer.startElement("Tuple");
+                writer.startSequence("Tuple", "Member");
                 int k = 0;
                 for (Member member : position) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }
-                writer.endElement(); // Tuple
+                writer.endSequence(); // Tuple
                 prevPosition = position;
                 position = nextPosition;
                 nextPosition = pit.hasNext() ? pit.next() : null;
             }
-            writer.endElement(); // Tuples
+            writer.endSequence(); // Tuples
             writer.endElement(); // Axis
         }
 
@@ -2141,9 +2157,7 @@ public class XmlaHandler implements XmlaConstants {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.startElement(prop); // Properties
-                    writer.characters(value.toString());
-                    writer.endElement(); // Properties
+                    writer.textElement(prop, value);
                 }
             }
             writer.endElement(); // Member
@@ -2181,9 +2195,7 @@ public class XmlaHandler implements XmlaConstants {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.startElement(prop); // Properties
-                    writer.characters(value.toString());
-                    writer.endElement(); // Properties
+                    writer.textElement(prop, value);
                 }
             }
             writer.endElement(); // Member
@@ -2217,7 +2229,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void cellData(SaxWriter writer) {
-            writer.startElement("CellData");
+            writer.startSequence("CellData", "Cell");
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
@@ -2226,7 +2238,7 @@ public class XmlaHandler implements XmlaConstants {
             int axisOrdinal = axisCount - 1;
             recurse(writer, pos, axisOrdinal, evaluator, cellOrdinal);
 
-            writer.endElement(); // CellData
+            writer.endSequence(); // CellData
         }
 
         private void recurse(
@@ -2262,7 +2274,7 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.startElement(
                 "Cell",
-                "CellOrdinal", Integer.toString(ordinal));
+                "CellOrdinal", ordinal);
             for (int i = 0; i < cellProps.length; i++) {
                 String cellPropLong = cellPropLongs[i];
                 Object value = cell.getPropertyValue(cellPropLong);
@@ -2296,9 +2308,8 @@ public class XmlaHandler implements XmlaConstants {
                 if (! shouldReturnCellProperty(cellPropLong)) {
                     continue;
                 }
-                boolean isDecimal = false;
 
-                if (cellPropLong.equals(Property.VALUE.name)) {
+                if (!json && cellPropLong.equals(Property.VALUE.name)) {
                     if (cell.isNull()) {
                         // Return cell without value as in case of AS2005
                         continue;
@@ -2308,23 +2319,23 @@ public class XmlaHandler implements XmlaConstants {
                             Property.DATATYPE.getName(), null);
                     final ValueInfo vi = new ValueInfo(dataType, value);
                     final String valueType = vi.valueType;
-                    value = vi.value;
-                    isDecimal = vi.isDecimal;
+                    final String valueString;
+                    if (vi.isDecimal) {
+                        valueString =
+                            XmlaUtil.normalizeNumericString(
+                                vi.value.toString());
+                    } else {
+                        valueString = vi.value.toString();
+                    }
 
                     writer.startElement(
                         cellProps[i],
-                        new String[] {"xsi:type", valueType});
+                        "xsi:type", valueType);
+                    writer.characters(valueString);
+                    writer.endElement();
                 } else {
-                    writer.startElement(cellProps[i]);
+                    writer.textElement(cellProps[i], value);
                 }
-                String valueString = value.toString();
-
-                if (isDecimal) {
-                    valueString = XmlaUtil.normalizeNumericString(valueString);
-                }
-
-                writer.characters(valueString);
-                writer.endElement();
             }
             writer.endElement(); // Cell
         }
@@ -2364,7 +2375,7 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.element(
                 "xsd:element",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "name", encodedName,
                 "sql:field", name);
         }
@@ -2433,7 +2444,7 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.element(
                 "xsd:element",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "name", encodedName,
                 "sql:field", name,
                 "type", XSD_STRING);
@@ -2600,7 +2611,7 @@ public class XmlaHandler implements XmlaConstants {
                 writer.element(
                     "xsd:element",
                     "maxOccurs", "unbounded",
-                    "minOccurs", "0",
+                    "minOccurs", 0,
                     "name", "row",
                     "type", "row");
                 writer.endElement(); // xsd:sequence
@@ -2730,13 +2741,8 @@ public class XmlaHandler implements XmlaConstants {
             RowsetDefinition.valueOf(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
 
-        final String formatName =
-            request.getProperties().get(PropertyDefinition.Format.name());
         Enumeration.Format format =
-            valueOf(
-                Enumeration.Format.class,
-                formatName,
-                Enumeration.Format.Tabular);
+            getFormat(request, Enumeration.Format.Tabular);
         if (format != Enumeration.Format.Tabular) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2746,11 +2752,7 @@ public class XmlaHandler implements XmlaConstants {
                     "<Format>: only 'Tabular' allowed in Discover method "
                     + "type"));
         }
-        final String contentName =
-            request.getProperties().get(PropertyDefinition.Content.name());
-        // default value is SchemaData
-        Enumeration.Content content =
-            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
+        final Enumeration.Content content = getContent(request);
 
         SaxWriter writer = response.getWriter();
         writer.startDocument();
@@ -2794,29 +2796,6 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         writer.endDocument();
-    }
-
-    /**
-     * Returns enum constant of the specified enum type with the given name.
-     *
-     * @param enumType Enumerated type
-     * @param name Name of constant
-     * @param defaultValue Default value if constant is not found
-     * @return Value, or null if name is null or value does not exist
-     */
-    private <E extends Enum<E>> E valueOf(
-        Class<E> enumType,
-        String name, E defaultValue)
-    {
-        if (name == null) {
-            return defaultValue;
-        } else {
-            try {
-                return Enum.valueOf(enumType, name);
-            } catch (IllegalArgumentException e) {
-                return defaultValue;
-            }
-        }
     }
 
     /**

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -410,6 +410,10 @@ way too noisy
                     public int drillThroughFirstRowset() {
                         throw new UnsupportedOperationException();
                     }
+
+                    public Enumeration.Format getFormat() {
+                        throw new UnsupportedOperationException();
+                    }
                 },
                 new XmlaHandler(
                     dataSources,
@@ -430,7 +434,8 @@ way too noisy
         rowset.populate(
             new DefaultXmlaResponse(
                 new ByteArrayOutputStream(),
-                Charset.defaultCharset().name()),
+                Charset.defaultCharset().name(),
+                null),
             rowList);
         MetadataRowset result = new MetadataRowset();
         for (Rowset.Row row : rowList) {

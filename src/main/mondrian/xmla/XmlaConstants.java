@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -67,6 +67,8 @@ public interface XmlaConstants {
     public static final String CONTEXT_ROLE_NAME   = "role_name";
     // context key for role storage
     public static final String CONTEXT_ROLE   = "role";
+    // context key for language (SOAP or JSON)
+    public static final String CONTEXT_LANGUAGE = "language";
     // context key for session id storage
     public static final String CONTEXT_XMLA_SESSION_ID   = "session_id";
 
@@ -84,11 +86,7 @@ public interface XmlaConstants {
     public static final int METHOD_DISCOVER = 1;
     public static final int METHOD_EXECUTE = 2;
 
-    /** The content type default value - shared across more than one file */
-    public static final Enumeration.Content CONTENT_DEFAULT =
-        Enumeration.Content.SchemaData;
-
-   /*************************************************************************
+    /*************************************************************************
     *
     * The following are XMLA exception fault codes used as faultcode entries
     * in the SOAP Fault element.

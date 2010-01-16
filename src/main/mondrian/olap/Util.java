@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -162,13 +162,19 @@ public class Util extends XOMUtil {
      */
     public static String quoteForMdx(String val) {
         StringBuilder buf = new StringBuilder(val.length() + 20);
-        buf.append("\"");
+        quoteForMdx(buf, val);
+        return buf.toString();
+    }
 
+    /**
+     * Appends a double-quoted string to a string builder.
+     */
+    public static StringBuilder quoteForMdx(StringBuilder buf, String val) {
+        buf.append("\"");
         String s0 = replace(val, "\"", "\"\"");
         buf.append(s0);
-
         buf.append("\"");
-        return buf.toString();
+        return buf;
     }
 
     /**
@@ -2447,19 +2453,30 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Looks up an enumeration by name, returning null if not valid.
+     * Looks up an enumeration by name, returning null if null or not valid.
+     *
+     * @param clazz Enumerated type
+     * @param name Name of constant
      */
     public static <E extends Enum<E>> E lookup(Class<E> clazz, String name) {
         return lookup(clazz, name, null);
     }
 
     /**
-     * Looks up an enumeration by name, returning a given default value if not
-     * valid.
+     * Looks up an enumeration by name, returning a given default value if null
+     * or not valid.
+     *
+     * @param clazz Enumerated type
+     * @param name Name of constant
+     * @param defaultValue Default value if constant is not found
+     * @return Value, or null if name is null or value does not exist
      */
     public static <E extends Enum<E>> E lookup(
         Class<E> clazz, String name, E defaultValue)
     {
+        if (name == null) {
+            return defaultValue;
+        }
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {

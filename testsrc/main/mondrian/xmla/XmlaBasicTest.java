@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,16 +41,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     // content
     public static final String CONTENT_PROP     = "content";
-    public static final String CONTENT_NONE     =
-                Enumeration.Content.None.name();
-    public static final String CONTENT_DATA     =
-                Enumeration.Content.Data.name();
-    public static final String CONTENT_SCHEMA   =
-                Enumeration.Content.Schema.name();
-    public static final String CONTENT_SCHEMADATA =
-                Enumeration.Content.SchemaData.name();
-    public static final String CONTENT_DATAOMITDEFAULTSLICER =
-                Enumeration.Content.DataOmitDefaultSlicer.name();
 
     public XmlaBasicTest() {
     }
@@ -63,50 +53,8 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         return DiffRepository.lookup(XmlaBasicTest.class);
     }
 
-/*
-    static class R extends RoleImpl {
-        public R() {
-        }
-        public Access getAccess(Cube cube) {
-            if (cube.getName().equals("Sales")) {
-                return Access.NONE;
-            } else {
-                return super.getAccess(cube);
-            }
-        }
-    }
-    static class CallBack implements XmlaRequestCallback {
-        public CallBack() {
-        }
-        public void init(ServletConfig servletConfig) throws ServletException {
-        }
-        public boolean processHttpHeader(
-                HttpServletRequest request,
-                HttpServletResponse response,
-                Map<String, Object> context) throws Exception {
-            return true;
-        }
-        public void preAction(
-            HttpServletRequest request,
-            Element[] requestSoapParts,
-            Map<String, Object> context) throws Exception {
-        }
-        public String generateSessionId(Map<String, Object> context) {
-            return null;
-        }
-        public void postAction(HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
-        }
-    }
-*/
     protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
         return null;
-/*
-System.out.println("XmlaBasicTest.getServletCallbackClass");
-        return CallBack.class;
-*/
     }
 
     protected String extractSoapResponse(
@@ -222,6 +170,18 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
     }
 
     public void testMDCubes() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDCubesJson() throws Exception {
         String requestType = "MDSCHEMA_CUBES";
 
         Properties props = new Properties();
@@ -618,6 +578,12 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testExecuteSlicerJson() throws Exception {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testExecuteSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
@@ -887,7 +853,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTests(
             requestText, props,
             testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_DATAOMITDEFAULTSLICER, null);
+            expectedDoc, Enumeration.Content.DataOmitDefaultSlicer, null);
     }
 
     protected String getSessionId(Action action) {

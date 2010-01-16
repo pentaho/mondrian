@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,15 +25,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import mondrian.xmla.SaxWriter;
-import mondrian.xmla.XmlaRequest;
-import mondrian.xmla.XmlaResponse;
-import mondrian.xmla.XmlaServlet;
-import mondrian.xmla.XmlaUtil;
+import mondrian.xmla.*;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
-import mondrian.xmla.XmlaRequestCallback;
-import mondrian.xmla.XmlaException;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
@@ -400,7 +394,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             String roleName = (String) context.get(CONTEXT_ROLE_NAME);
             Role role = (Role) context.get(CONTEXT_ROLE);
 
-            XmlaRequest xmlaReq = null;
+            XmlaRequest xmlaReq;
             if (role != null) {
                 xmlaReq = new DefaultXmlaRequest(xmlaReqElem, role);
             } else if (roleName != null) {
@@ -409,7 +403,14 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 xmlaReq = new DefaultXmlaRequest(xmlaReqElem);
             }
 
-            XmlaResponse xmlaRes = new DefaultXmlaResponse(osBuf, encoding);
+            Enumeration.Language language =
+                Util.lookup(
+                    Enumeration.Language.class,
+                    xmlaReq.getProperties().get("Language"),
+                    Enumeration.Language.SOAP);
+            context.put(CONTEXT_LANGUAGE, language);
+            XmlaResponse xmlaRes =
+                new DefaultXmlaResponse(osBuf, encoding, language);
 
             try {
                 getXmlaHandler().process(xmlaReq, xmlaRes);
@@ -437,13 +438,16 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
     protected void marshallSoapMessage(
         HttpServletResponse response,
-        byte[][] responseSoapParts)
+        byte[][] responseSoapParts,
+        Enumeration.Language language)
         throws XmlaException
     {
         try {
             // If CharacterEncoding was set in web.xml, use this value
-            String encoding = (charEncoding != null)
-                    ? charEncoding : response.getCharacterEncoding();
+            String encoding =
+                (charEncoding != null)
+                    ? charEncoding
+                    : response.getCharacterEncoding();
 
             /*
              * Since we just reset response, encoding and content-type were
@@ -452,7 +456,15 @@ public class DefaultXmlaServlet extends XmlaServlet {
             if (charEncoding != null) {
                 response.setCharacterEncoding(charEncoding);
             }
-            response.setContentType("text/xml");
+            switch (language) {
+            case JSON:
+                response.setContentType("application/json");
+                break;
+            case SOAP:
+            default:
+                response.setContentType("text/xml");
+                break;
+            }
 
             /*
              * The setCharacterEncoding, setContentType, or setLocale method
@@ -467,61 +479,41 @@ public class DefaultXmlaServlet extends XmlaServlet {
             byte[] soapHeader = responseSoapParts[0];
             byte[] soapBody = responseSoapParts[1];
 
-            Object[] byteChunks = new Object[5];
+            Object[] byteChunks = null;
 
             try {
-                StringBuilder buf = new StringBuilder(500);
-                buf.append("<?xml version=\"1.0\" encoding=\"");
-                buf.append(encoding);
-                buf.append("\"?>");
-                buf.append(nl);
+                switch (language) {
+                case JSON:
+                    byteChunks = new Object[] {
+                        soapBody,
+                    };
+                    break;
 
-                buf.append("<");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Envelope xmlns:");
-                buf.append(SOAP_PREFIX);
-                buf.append("=\"");
-                buf.append(NS_SOAP_ENV_1_1);
-                buf.append("\" ");
-                buf.append(SOAP_PREFIX);
-                buf.append(":encodingStyle=\"");
-                buf.append(NS_SOAP_ENC_1_1);
-                buf.append("\" >");
-                buf.append(nl);
-                buf.append("<");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Header>");
-                buf.append(nl);
-                byteChunks[0] = buf.toString().getBytes(encoding);
+                case SOAP:
+                default:
+                    String s0 =
+                        "<?xml version=\"1.0\" encoding=\"" + encoding
+                        + "\"?>\n<" + SOAP_PREFIX + ":Envelope xmlns:"
+                        + SOAP_PREFIX + "=\"" + NS_SOAP_ENV_1_1 + "\" "
+                        + SOAP_PREFIX + ":encodingStyle=\""
+                        + NS_SOAP_ENC_1_1 + "\" >" + "\n<" + SOAP_PREFIX
+                        + ":Header>\n";
+                    String s2 =
+                        "</" + SOAP_PREFIX + ":Header>\n<" + SOAP_PREFIX
+                        + ":Body>\n";
+                    String s4 =
+                        "\n</" + SOAP_PREFIX + ":Body>\n</" + SOAP_PREFIX
+                        + ":Envelope>\n";
 
-                byteChunks[1] = soapHeader;
-
-                buf.setLength(0);
-                buf.append("</");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Header>");
-                buf.append(nl);
-                buf.append("<");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Body>");
-                buf.append(nl);
-
-                byteChunks[2] = buf.toString().getBytes(encoding);
-
-                byteChunks[3] = soapBody;
-
-                buf.setLength(0);
-                buf.append(nl);
-                buf.append("</");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Body>");
-                buf.append(nl);
-                buf.append("</");
-                buf.append(SOAP_PREFIX);
-                buf.append(":Envelope>");
-                buf.append(nl);
-
-                byteChunks[4] = buf.toString().getBytes(encoding);
+                    byteChunks = new Object[] {
+                        s0.getBytes(encoding),
+                        soapHeader,
+                        s2.getBytes(encoding),
+                        soapBody,
+                        s4.getBytes(encoding),
+                    };
+                    break;
+                }
             } catch (UnsupportedEncodingException uee) {
                 LOGGER.warn(
                     "This should be handled at begin of processing request",

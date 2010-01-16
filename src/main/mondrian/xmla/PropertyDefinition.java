@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,7 +23,7 @@ import java.util.Set;
  * @version $Id$
  * @since May 2, 2003
  */
-enum PropertyDefinition {
+public enum PropertyDefinition {
     AxisFormat(
         RowsetDefinition.Type.Enumeration,
         Util.enumSetAllOf(Enumeration.AxisFormat.class),
@@ -56,7 +56,7 @@ enum PropertyDefinition {
         RowsetDefinition.Type.EnumString,
         Util.enumSetAllOf(Enumeration.Content.class),
         Enumeration.Access.Write,
-        XmlaConstants.CONTENT_DEFAULT.name(),
+        Enumeration.Content.DEFAULT.name(),
         Enumeration.Methods.discoverAndExecute,
         "An enumerator that specifies what type of data is returned in the result set.\n"
         + "None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on.\n"
@@ -98,6 +98,14 @@ enum PropertyDefinition {
         + "Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.\n"
         + "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only).\n"
         + "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)"),
+
+    Language(
+        RowsetDefinition.Type.EnumString,
+        Util.enumSetAllOf(Enumeration.Language.class),
+        Enumeration.Access.ReadWrite,
+        "None",
+        Enumeration.Methods.discoverAndExecute,
+        "Language for RPC requests; SOAP by default."),
 
     LocaleIdentifier(
         RowsetDefinition.Type.UnsignedInteger,

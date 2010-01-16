@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,14 +12,9 @@ package mondrian.tui;
 
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
-import mondrian.xmla.DataSourcesConfig;
+import mondrian.xmla.*;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
-import mondrian.xmla.XmlaConstants;
-import mondrian.xmla.XmlaHandler;
-import mondrian.xmla.XmlaRequest;
-import mondrian.xmla.XmlaResponse;
-import mondrian.xmla.XmlaServlet;
 import mondrian.xmla.impl.DefaultXmlaServlet;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
@@ -267,10 +262,7 @@ public class XmlaSupport {
         final Parser xmlParser = XOMUtil.createDefaultParser();
         final DOMWrapper def = xmlParser.parse(dsConfigReader);
 
-        DataSourcesConfig.DataSources datasources =
-            new DataSourcesConfig.DataSources(def);
-
-        return datasources;
+        return new DataSourcesConfig.DataSources(def);
     }
 
     /**
@@ -860,7 +852,7 @@ public class XmlaSupport {
         String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
 
-        XmlaRequest request = null;
+        XmlaRequest request;
         if (role != null) {
             request = new DefaultXmlaRequest(requestElem, role);
         } else if (roleName != null) {
@@ -871,7 +863,13 @@ public class XmlaSupport {
 
         // make response
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-        XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
+        Enumeration.Language language =
+            Util.lookup(
+                Enumeration.Language.class,
+                request.getProperties().get("Language"),
+                Enumeration.Language.SOAP);
+        XmlaResponse response =
+            new DefaultXmlaResponse(resBuf, "UTF-8", language);
 
         handler.process(request, response);
 

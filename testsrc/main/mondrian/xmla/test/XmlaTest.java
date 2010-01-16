@@ -10,6 +10,7 @@
 package mondrian.xmla.test;
 
 import mondrian.xmla.*;
+import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
 import mondrian.olap.*;
@@ -139,7 +140,8 @@ public class XmlaTest extends TestCase {
                 XmlaTestContext.CATALOG_LOCATOR,
                 "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem);
-        XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
+        XmlaResponse response =
+            new DefaultXmlaResponse(resBuf, "UTF-8", Enumeration.Language.SOAP);
         handler.process(request, response);
 
         return XmlaUtil.stream2Element(

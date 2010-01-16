@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -274,13 +274,24 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         Role role)
         throws Exception
     {
-        Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
-            : null;
-
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
 
+        boolean xml = !requestText.contains("JSON");
+        if (!xml) {
+            String responseStr = (respFileName != null)
+                ? fileToString(respFileName)
+                : null;
+            doTestsJson(
+                requestText, props,
+                testContext, connectString, catalogNameUrls,
+                responseStr, Enumeration.Content.Data, role);
+            return;
+        }
+
+        final Document responseDoc = (respFileName != null)
+            ? fileToDocument(respFileName)
+            : null;
         Document expectedDoc;
 
         // Test 'schemadata' first, so that if it fails, we will be able to
@@ -293,7 +304,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         doTests(
             requestText, props,
             testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_SCHEMADATA, role);
+            expectedDoc, Enumeration.Content.SchemaData, role);
 
         if (requestType.equals("EXECUTE")) {
             return;
@@ -303,11 +314,10 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "none"}}, ns)
             : null;
-
         doTests(
             requestText, props,
             testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_NONE, role);
+            expectedDoc, Enumeration.Content.None, role);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -316,7 +326,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         doTests(
             requestText, props,
             testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_DATA, role);
+            expectedDoc, Enumeration.Content.Data, role);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -325,7 +335,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         doTests(
             requestText, props,
             testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_SCHEMA, role);
+            expectedDoc, Enumeration.Content.Schema, role);
     }
 
     protected void doTests(
@@ -336,11 +346,11 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         String connectString,
         Map<String, String> catalogNameUrls,
         Document expectedDoc,
-        String content,
+        Enumeration.Content content,
         Role role) throws Exception
     {
         if (content != null) {
-            props.setProperty(XmlaBasicTest.CONTENT_PROP, content);
+            props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
         }
         soapRequestText = Util.replaceProperties(
             soapRequestText, Util.toMap(props));
@@ -394,7 +404,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             }
         }
 
-        Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
+        Document gotDoc = XmlUtil.parse(bytes);
+        gotDoc = ignoreLastUpdateDate(gotDoc);
         String gotStr = XmlUtil.toString(gotDoc, true);
         gotStr = Util.maskVersion(gotStr);
         gotStr = testContext.upgradeActual(gotStr);
@@ -408,7 +419,7 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
             try {
                 XMLAssert.assertXMLEqual(expectedStr, gotStr);
             } catch (AssertionFailedError e) {
-                if (content.equals(XmlaBasicTest.CONTENT_SCHEMADATA)) {
+                if (content == Enumeration.Content.SchemaData) {
                     // Let DiffRepository do the comparison. It will output
                     // a textual difference, and will update the logfile,
                     // XmlaBasicTest.log.xml. If you agree with the change,
@@ -422,9 +433,90 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
                 }
             }
         } else {
-            if (content.equals(XmlaBasicTest.CONTENT_SCHEMADATA)) {
+            if (content == Enumeration.Content.SchemaData) {
                 getDiffRepos().amend("${response}", gotStr);
             }
+        }
+    }
+
+    protected void doTestsJson(
+        String soapRequestText,
+        Properties props,
+        TestContext testContext,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String expectedStr,
+        Enumeration.Content content,
+        Role role) throws Exception
+    {
+        if (content != null) {
+            props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
+        }
+        soapRequestText = Util.replaceProperties(
+            soapRequestText, Util.toMap(props));
+
+        Document soapReqDoc = XmlUtil.parseString(soapRequestText);
+        Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
+
+        // do XMLA
+        byte[] bytes =
+            XmlaSupport.processXmla(
+                xmlaReqDoc, connectString, catalogNameUrls, role);
+        String response = new String(bytes);
+        if (XmlUtil.supportsValidation()) {
+            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
+                if (DEBUG) {
+                    System.out.println(
+                        "XmlaBaseTestCase.doTests: XML Data is Valid");
+                }
+            }
+        }
+
+        // do SOAP-XMLA
+        try {
+            String callBackClassName = CallBack.class.getName();
+            if (role != null) {
+                roles.set(role);
+            }
+            bytes = XmlaSupport.processSoapXmla(
+                soapReqDoc,
+                connectString,
+                catalogNameUrls,
+                callBackClassName);
+        } finally {
+            if (role != null) {
+                // Java4 does not support the ThreadLocal remove() method
+                // so we use the set(null).
+                roles.set(null);
+            }
+        }
+        response = new String(bytes);
+        if (DEBUG) {
+            System.out.println(
+                "XmlaBaseTestCase.doTests: soap response=" + response);
+        }
+        if (XmlUtil.supportsValidation()) {
+            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
+                if (DEBUG) {
+                    System.out.println(
+                        "XmlaBaseTestCase.doTests: XML Data is Valid");
+                }
+            }
+        }
+
+        String gotStr = new String(bytes);
+        gotStr = ignoreLastUpdateDate(gotStr);
+        gotStr = Util.maskVersion(gotStr);
+        gotStr = testContext.upgradeActual(gotStr);
+        if (expectedStr != null) {
+            // Let DiffRepository do the comparison. It will output
+            // a textual difference, and will update the logfile,
+            // XmlaBasicTest.log.xml. If you agree with the change,
+            // copy this file to XmlaBasicTest.ref.xml.
+            getDiffRepos().assertEquals(
+                "response",
+                "${response}",
+                gotStr);
         }
     }
 
@@ -434,6 +526,12 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
             removeNode(elements.item(i - 1));
         }
         return document;
+    }
+
+    private String ignoreLastUpdateDate(String document) {
+        return document.replaceAll(
+            "\"LAST_SCHEMA_UPDATE\": \"....-..-..T..:..:..\"",
+            "\"LAST_SCHEMA_UPDATE\": \"xxxx-xx-xxTxx:xx:xx\"");
     }
 
     private void removeNode(Node node) {
