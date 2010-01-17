@@ -33,6 +33,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
+import org.olap4j.impl.ArrayMap;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -2522,6 +2523,51 @@ public class Util extends XOMUtil {
         Class<E> elementType)
     {
         return compatible.enumSetAllOf(elementType);
+    }
+
+    /**
+     * Returns a map with given contents.
+     *
+     * <p>TODO: Replace with {@link org.olap4j.impl.Olap4jUtil}.mapOf next time
+     * we upgrade olap4j.
+     *
+     * @param key First key
+     * @param value First value
+     * @param keyValues Second and sequent key/value pairs
+     * @param <K> Key type
+     * @param <V> Value type
+     * @return Map with given contents
+     */
+    public static <K, V> Map<K, V> mapOf(K key, V value, Object... keyValues)
+    {
+        final Map<K, V> map = new HashMap<K, V>(1 + keyValues.length);
+        map.put(key, value);
+        for (int i = 0; i < keyValues.length;) {
+            //noinspection unchecked
+            map.put((K) keyValues[i++], (V) keyValues[i++]);
+        }
+        return map;
+    }
+
+    /**
+     * Returns an array map with given contents.
+     *
+     * <p>TODO: Replace with {@link org.olap4j.impl.ArrayMap}.of next time we
+     * upgrade olap4j.
+     *
+     * @param key First key
+     * @param value First value
+     * @param keyValues Second and sequent key/value pairs
+     * @param <K> Key type
+     * @param <V> Value type
+     * @return Map with given contents
+     */
+    public static <K, V> Map<K, V> arrayMapOf(
+        K key,
+        V value,
+        Object... keyValues)
+    {
+        return new ArrayMap<K, V>(mapOf(key, value, keyValues));
     }
 
     /**

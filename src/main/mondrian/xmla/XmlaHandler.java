@@ -613,8 +613,9 @@ public class XmlaHandler implements XmlaConstants {
     {
         final Map<String, String> properties = request.getProperties();
 
-        // Default language is SOAP.
-        Enumeration.Language language = getLanguage(request);
+        // Default responseMimeType is SOAP.
+        Enumeration.ResponseMimeType responseMimeType =
+            getResponseMimeType(request);
 
         // Default value is SchemaData, or Data for JSON responses.
         final String contentName =
@@ -622,7 +623,7 @@ public class XmlaHandler implements XmlaConstants {
         Enumeration.Content content = Util.lookup(
             Enumeration.Content.class,
             contentName,
-            language == Enumeration.Language.JSON
+            responseMimeType == Enumeration.ResponseMimeType.JSON
                 ? Enumeration.Content.Data
                 : Enumeration.Content.DEFAULT);
 
@@ -1702,12 +1703,13 @@ public class XmlaHandler implements XmlaConstants {
 
             final Enumeration.Format format = getFormat(request, null);
             final Enumeration.Content content = getContent(request);
-            final Enumeration.Language language = getLanguage(request);
+            final Enumeration.ResponseMimeType responseMimeType =
+                getResponseMimeType(request);
             if (format == Enumeration.Format.Multidimensional) {
                 return new MDDataSet_Multidimensional(
                     result,
                     content == Enumeration.Content.DataOmitDefaultSlicer,
-                    language == Enumeration.Language.JSON);
+                    responseMimeType == Enumeration.ResponseMimeType.JSON);
             } else {
                 return new MDDataSet_Tabular(result);
             }
@@ -1736,14 +1738,17 @@ public class XmlaHandler implements XmlaConstants {
             Enumeration.Content.DEFAULT);
     }
 
-    private static Enumeration.Language getLanguage(XmlaRequest request) {
-        final String languageName =
-            request.getProperties().get(
-                PropertyDefinition.Language.name());
-        return Util.lookup(
-            Enumeration.Language.class,
-            languageName,
-            Enumeration.Language.SOAP);
+    private static Enumeration.ResponseMimeType getResponseMimeType(
+        XmlaRequest request)
+    {
+        Enumeration.ResponseMimeType mimeType =
+            Enumeration.ResponseMimeType.MAP.get(
+                request.getProperties().get(
+                    PropertyDefinition.ResponseMimeType.name()));
+        if (mimeType == null) {
+            mimeType = Enumeration.ResponseMimeType.SOAP;
+        }
+        return mimeType;
     }
 
     static abstract class MDDataSet implements QueryResult {

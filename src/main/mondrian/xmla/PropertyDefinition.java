@@ -99,13 +99,19 @@ public enum PropertyDefinition {
         + "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only).\n"
         + "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)"),
 
-    Language(
-        RowsetDefinition.Type.EnumString,
-        Util.enumSetAllOf(Enumeration.Language.class),
+    /**
+     * @see Enumeration.ResponseMimeType
+     */
+    ResponseMimeType(
+        RowsetDefinition.Type.String,
+        null,
         Enumeration.Access.ReadWrite,
         "None",
         Enumeration.Methods.discoverAndExecute,
-        "Language for RPC requests; SOAP by default."),
+        "Accepted mime type for RPC response; accepted are 'text/xml' "
+        + "(default), 'application/xml' (equivalent to 'text/xml'), or "
+        + "'application/json'. If not specified, value in the 'Accept' header "
+        + "of the HTTP request is used."),
 
     LocaleIdentifier(
         RowsetDefinition.Type.UnsignedInteger,

@@ -29,10 +29,10 @@ public class DefaultXmlaResponse implements XmlaResponse  {
     public DefaultXmlaResponse(
         OutputStream outputStream,
         String encoding,
-        Enumeration.Language language)
+        Enumeration.ResponseMimeType responseMimeType)
     {
         try {
-            switch (language) {
+            switch (responseMimeType) {
             case JSON:
                 writer = new JsonSaxWriter(outputStream);
                 break;

@@ -68,7 +68,7 @@ public interface XmlaConstants {
     // context key for role storage
     public static final String CONTEXT_ROLE   = "role";
     // context key for language (SOAP or JSON)
-    public static final String CONTEXT_LANGUAGE = "language";
+    public static final String CONTEXT_MIME_TYPE = "language";
     // context key for session id storage
     public static final String CONTEXT_XMLA_SESSION_ID   = "session_id";
 

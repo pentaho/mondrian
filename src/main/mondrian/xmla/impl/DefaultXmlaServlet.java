@@ -403,14 +403,24 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 xmlaReq = new DefaultXmlaRequest(xmlaReqElem);
             }
 
-            Enumeration.Language language =
-                Util.lookup(
-                    Enumeration.Language.class,
-                    xmlaReq.getProperties().get("Language"),
-                    Enumeration.Language.SOAP);
-            context.put(CONTEXT_LANGUAGE, language);
+            // "ResponseMimeType" may be in the context if the "Accept" HTTP
+            // header was specified. But override if the SOAP request has the
+            // "ResponseMimeType" property.
+            Enumeration.ResponseMimeType responseMimeType =
+                Enumeration.ResponseMimeType.SOAP;
+            final String responseMimeTypeName =
+                xmlaReq.getProperties().get("ResponseMimeType");
+            if (responseMimeTypeName != null) {
+                responseMimeType =
+                    Enumeration.ResponseMimeType.MAP.get(
+                        responseMimeTypeName);
+                if (responseMimeType != null) {
+                    context.put(CONTEXT_MIME_TYPE, responseMimeType);
+                }
+            }
+
             XmlaResponse xmlaRes =
-                new DefaultXmlaResponse(osBuf, encoding, language);
+                new DefaultXmlaResponse(osBuf, encoding, responseMimeType);
 
             try {
                 getXmlaHandler().process(xmlaReq, xmlaRes);
@@ -439,7 +449,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
     protected void marshallSoapMessage(
         HttpServletResponse response,
         byte[][] responseSoapParts,
-        Enumeration.Language language)
+        Enumeration.ResponseMimeType responseMimeType)
         throws XmlaException
     {
         try {
@@ -456,7 +466,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             if (charEncoding != null) {
                 response.setCharacterEncoding(charEncoding);
             }
-            switch (language) {
+            switch (responseMimeType) {
             case JSON:
                 response.setContentType("application/json");
                 break;
@@ -482,7 +492,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Object[] byteChunks = null;
 
             try {
-                switch (language) {
+                switch (responseMimeType) {
                 case JSON:
                     byteChunks = new Object[] {
                         soapBody,

@@ -861,15 +861,18 @@ public class XmlaSupport {
             request = new DefaultXmlaRequest(requestElem);
         }
 
+        Enumeration.ResponseMimeType responseMimeType =
+            Enumeration.ResponseMimeType.MAP.get(
+                request.getProperties().get(
+                    PropertyDefinition.ResponseMimeType.name()));
+        if (responseMimeType == null) {
+            responseMimeType = Enumeration.ResponseMimeType.SOAP;
+        }
+
         // make response
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-        Enumeration.Language language =
-            Util.lookup(
-                Enumeration.Language.class,
-                request.getProperties().get("Language"),
-                Enumeration.Language.SOAP);
         XmlaResponse response =
-            new DefaultXmlaResponse(resBuf, "UTF-8", language);
+            new DefaultXmlaResponse(resBuf, "UTF-8", responseMimeType);
 
         handler.process(request, response);
 

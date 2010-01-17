@@ -11395,10 +11395,14 @@ Native: The client does not request a specific format, so the provider may retur
                         <Value>Native</Value>
                     </row>
                     <row>
-                        <PropertyName>Language</PropertyName>
-                        <PropertyDescription>Language for RPC requests;
-                            SOAP by default.</PropertyDescription>
-                        <PropertyType>EnumString</PropertyType>
+                        <PropertyName>ResponseMimeType</PropertyName>
+                        <PropertyDescription>Accepted mime type for RPC
+                            response; accepted are 'text/xml' (default),
+                            'application/xml' (equivalent to
+                            'text/xml'), or 'application/json'. If not
+                            specified, value in the 'Accept' header of
+                            the HTTP request is used.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>
                         <Value>None</Value>
@@ -17950,17 +17954,12 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             <DataSourceInfo>${data.source.info}</DataSourceInfo>
             <Format>${format}</Format>
             <AxisFormat>TupleFormat</AxisFormat>
-            <Language>JSON</Language>
+            <ResponseMimeType>application/json</ResponseMimeType>
           </PropertyList>
         </Properties>
 </Execute>
 </soapenv:Body>
 </soapenv:Envelope>
-]]>
-        </Resource>
-        <Resource name="${response}">
-            <![CDATA[
-
 ]]>
         </Resource>
     </TestCase>
@@ -23820,7 +23819,7 @@ FROM Sales
             <DataSourceInfo>${data.source.info}</DataSourceInfo>
             <Catalog>${catalog}</Catalog>
             <Format>${format}</Format>
-            <Language>JSON</Language>
+            <ResponseMimeType>application/json</ResponseMimeType>
             <Content>${content}</Content>
           </PropertyList>
         </Properties>

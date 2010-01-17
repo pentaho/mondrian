@@ -141,7 +141,7 @@ public class XmlaTest extends TestCase {
                 "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem);
         XmlaResponse response =
-            new DefaultXmlaResponse(resBuf, "UTF-8", Enumeration.Language.SOAP);
+            new DefaultXmlaResponse(resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
         handler.process(request, response);
 
         return XmlaUtil.stream2Element(

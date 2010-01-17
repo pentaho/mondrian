@@ -277,7 +277,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
 
-        boolean xml = !requestText.contains("JSON");
+        boolean xml = !requestText.contains("application/json");
         if (!xml) {
             String responseStr = (respFileName != null)
                 ? fileToString(respFileName)

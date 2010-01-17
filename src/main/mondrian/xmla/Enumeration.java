@@ -11,8 +11,9 @@
 */
 package mondrian.xmla;
 
-import java.util.List;
-import java.util.ArrayList;
+import mondrian.olap.Util;
+
+import java.util.*;
 
 /**
  * Contains inner classes which define enumerations used in XML for Analysis.
@@ -145,9 +146,27 @@ public class Enumeration {
         public static final Content DEFAULT = SchemaData;
     }
 
-    public enum Language {
-        SOAP,
-        JSON
+    public enum ResponseMimeType {
+        SOAP("text/xml"),
+        JSON("application/json");
+
+        public static final Map<String, ResponseMimeType> MAP =
+            Collections.unmodifiableMap(
+                Util.arrayMapOf(
+                    "application/soap+xml", SOAP,
+                    "application/xml", SOAP,
+                    "text/xml", SOAP,
+                    "application/json", JSON));
+
+        private final String mimeType;
+
+        ResponseMimeType(String mimeType) {
+            this.mimeType = mimeType;
+        }
+
+        public String getMimeType() {
+            return mimeType;
+        }
     }
 
     enum MdxSupport {
