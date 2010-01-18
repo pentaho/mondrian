@@ -178,12 +178,14 @@ class JsonSaxWriter implements SaxWriter {
         ++indent;
         if (indent >= indentStrings.length) {
             final int newLength = indentStrings.length * 2 + 1;
-            char[] chars = new char[newLength];
+            final int INDENT = 2;
+            assert indentStrings[1].length() == INDENT;
+            char[] chars = new char[newLength * INDENT];
             Arrays.fill(chars, ' ');
             String s = new String(chars);
             indentStrings = new String[newLength];
             for (int i = 0; i < newLength; ++i) {
-                indentStrings[i] = s.substring(0, i);
+                indentStrings[i] = s.substring(0, i * INDENT);
             }
         }
         indentString = indentStrings[indent];

@@ -80,6 +80,17 @@ public enum PropertyDefinition {
         Enumeration.Methods.discoverAndExecute,
         "A string containing provider specific information, required to access the data source."),
 
+    // Mondrian-specific extension to XMLA.
+    Deep(
+        RowsetDefinition.Type.Boolean,
+        null,
+        Enumeration.Access.ReadWrite,
+        "",
+        Enumeration.Methods.discover,
+        "In an MDSCHEMA_CUBES request, whether to include sub-elements "
+        + "(dimensions, hierarchies, levels, measures, named sets) of each "
+        + "cube."),
+
     EndRange(
         RowsetDefinition.Type.Integer,
         null,
@@ -98,20 +109,6 @@ public enum PropertyDefinition {
         + "Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.\n"
         + "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only).\n"
         + "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)"),
-
-    /**
-     * @see Enumeration.ResponseMimeType
-     */
-    ResponseMimeType(
-        RowsetDefinition.Type.String,
-        null,
-        Enumeration.Access.ReadWrite,
-        "None",
-        Enumeration.Methods.discoverAndExecute,
-        "Accepted mime type for RPC response; accepted are 'text/xml' "
-        + "(default), 'application/xml' (equivalent to 'text/xml'), or "
-        + "'application/json'. If not specified, value in the 'Accept' header "
-        + "of the HTTP request is used."),
 
     LocaleIdentifier(
         RowsetDefinition.Type.UnsignedInteger,
@@ -153,6 +150,21 @@ public enum PropertyDefinition {
         MondrianServer.forConnection(null).getVersion().getVersionString(),
         Enumeration.Methods.discover,
         "The version of the Mondrian XMLA Provider"),
+
+    // Mondrian-specific extension to XMLA.
+    /**
+     * @see Enumeration.ResponseMimeType
+     */
+    ResponseMimeType(
+        RowsetDefinition.Type.String,
+        null,
+        Enumeration.Access.ReadWrite,
+        "None",
+        Enumeration.Methods.discoverAndExecute,
+        "Accepted mime type for RPC response; accepted are 'text/xml' "
+        + "(default), 'application/xml' (equivalent to 'text/xml'), or "
+        + "'application/json'. If not specified, value in the 'Accept' header "
+        + "of the HTTP request is used."),
 
     StateSupport(
         RowsetDefinition.Type.EnumString,

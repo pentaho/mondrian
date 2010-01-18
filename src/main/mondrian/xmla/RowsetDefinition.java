@@ -544,7 +544,10 @@ enum RowsetDefinition {
             MdschemaCubesRowset.IsWriteEnabled,
             MdschemaCubesRowset.IsLinkable,
             MdschemaCubesRowset.IsSqlEnabled,
-            MdschemaCubesRowset.Description
+            MdschemaCubesRowset.Description,
+            MdschemaCubesRowset.Dimensions,
+            MdschemaCubesRowset.Sets,
+            MdschemaCubesRowset.Measures
         },
         new Column[] {
             MdschemaCubesRowset.CatalogName,
@@ -599,6 +602,7 @@ enum RowsetDefinition {
             MdschemaDimensionsRowset.DimensionUniqueSettings,
             MdschemaDimensionsRowset.DimensionMasterUniqueName,
             MdschemaDimensionsRowset.DimensionIsVisible,
+            MdschemaDimensionsRowset.Hierarchies,
         },
         new Column[] {
             MdschemaDimensionsRowset.CatalogName,
@@ -711,6 +715,7 @@ enum RowsetDefinition {
             MdschemaHierarchiesRowset.HierarchyOrdinal,
             MdschemaHierarchiesRowset.DimensionIsShared,
             MdschemaHierarchiesRowset.ParentChild,
+            MdschemaHierarchiesRowset.Levels,
         },
         new Column[] {
             MdschemaHierarchiesRowset.CatalogName,
@@ -1256,6 +1261,7 @@ enum RowsetDefinition {
         Integer("xsd:int"),
         UnsignedInteger("xsd:unsignedInt"),
         DateTime("xsd:dateTime"),
+        Rowset(null),
         Short("xsd:short"),
         UUID("uuid"),
         UnsignedShort("xsd:unsignedShort"),
@@ -3691,6 +3697,30 @@ TODO: see above
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A user-friendly description of the dimension.");
+        private static final Column Dimensions =
+            new Column(
+                "DIMENSIONS",
+                Type.Rowset,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "Dimensions in this cube.");
+        private static final Column Sets =
+            new Column(
+                "SETS",
+                Type.Rowset,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "Sets in this cube.");
+        private static final Column Measures =
+            new Column(
+                "MEASURES",
+                Type.Rowset,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "Measures in this cube.");
 
         public void populate(
             XmlaResponse response,
@@ -3761,6 +3791,47 @@ TODO: see above
                     String formattedDate =
                         formatter.format(schema.getSchemaLoadDate());
                     row.set(LastSchemaUpdate.name, formattedDate);
+                    if (deep) {
+                        row.set(
+                            Dimensions.name,
+                            new MdschemaDimensionsRowset(
+                                wrapRequest(
+                                    request,
+                                    Util.mapOf(
+                                        MdschemaDimensionsRowset.CatalogName,
+                                        catalogName,
+                                        MdschemaDimensionsRowset.SchemaName,
+                                        schema.getName(),
+                                        MdschemaDimensionsRowset.CubeName,
+                                        cube.getName())),
+                                handler));
+                        row.set(
+                            Sets.name,
+                            new MdschemaSetsRowset(
+                                wrapRequest(
+                                    request,
+                                    Util.mapOf(
+                                        MdschemaSetsRowset.CatalogName,
+                                        catalogName,
+                                        MdschemaSetsRowset.SchemaName,
+                                        schema.getName(),
+                                        MdschemaSetsRowset.CubeName,
+                                        cube.getName())),
+                                handler));
+                        row.set(
+                            Measures.name,
+                            new MdschemaMeasuresRowset(
+                                wrapRequest(
+                                    request,
+                                    Util.mapOf(
+                                        MdschemaMeasuresRowset.CatalogName,
+                                        catalogName,
+                                        MdschemaMeasuresRowset.SchemaName,
+                                        schema.getName(),
+                                        MdschemaMeasuresRowset.CubeName,
+                                        cube.getName())),
+                                handler));
+                    }
                     addRow(row, rows);
                 }
             }
@@ -3947,6 +4018,14 @@ TODO: see above
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "Always TRUE.");
+        private static final Column Hierarchies =
+            new Column(
+                "HIERARCHIES",
+                Type.Rowset,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "Hierarchies in this dimension.");
 
         public void populate(
             XmlaResponse response,
@@ -4090,6 +4169,23 @@ TODO: see above
             // How are they mapped to specific column numbers?
             row.set(DimensionUniqueSettings.name, 0);
             row.set(DimensionIsVisible.name, true);
+            if (deep) {
+                row.set(
+                    Hierarchies.name,
+                    new MdschemaHierarchiesRowset(
+                        wrapRequest(
+                            request,
+                            Util.mapOf(
+                                MdschemaHierarchiesRowset.CatalogName,
+                                catalogName,
+                                MdschemaHierarchiesRowset.SchemaName,
+                                cube.getSchema().getName(),
+                                MdschemaHierarchiesRowset.CubeName,
+                                cube.getName(),
+                                MdschemaHierarchiesRowset.DimensionUniqueName,
+                                dimension.getUniqueName())),
+                        handler));
+            }
 
             addRow(row, rows);
         }
@@ -4562,6 +4658,14 @@ TODO: see above
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Always returns true.");
+        private static final Column Levels =
+            new Column(
+                "LEVELS",
+                Type.Rowset,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "Levels in this hierarchy.");
 
 
         /*
@@ -4754,6 +4858,25 @@ TODO: see above
                 (RolapLevel) hierarchy.getLevels()[
                     (hierarchy.hasAll() ? 1 : 0)];
             row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
+            if (deep) {
+                row.set(
+                    Levels.name,
+                    new MdschemaLevelsRowset(
+                        wrapRequest(
+                            request,
+                            Util.mapOf(
+                                MdschemaLevelsRowset.CatalogName,
+                                catalogName,
+                                MdschemaLevelsRowset.SchemaName,
+                                cube.getSchema().getName(),
+                                MdschemaLevelsRowset.CubeName,
+                                cube.getName(),
+                                MdschemaLevelsRowset.DimensionUniqueName,
+                                dimension.getUniqueName(),
+                                MdschemaLevelsRowset.HierarchyUniqueName,
+                                hierarchy.getUniqueName())),
+                        handler));
+            }
             addRow(row, rows);
         }
 
@@ -6644,6 +6767,73 @@ TODO: see above
                 hierarchy.getDimension().getName() + "." + hierarchyName;
         }
         return hierarchyName;
+    }
+
+    private static XmlaRequest wrapRequest(
+        XmlaRequest request, Map<Column, String> map)
+    {
+        final Map<String, Object> restrictionsMap =
+            new HashMap<String, Object>(request.getRestrictions());
+        for (Map.Entry<Column, String> entry : map.entrySet()) {
+            restrictionsMap.put(
+                entry.getKey().name,
+                Collections.singletonList(entry.getValue()));
+        }
+
+        return new DelegatingXmlaRequest(request) {
+            @Override
+            public Map<String, Object> getRestrictions() {
+                return restrictionsMap;
+            }
+        };
+    }
+
+    private static class DelegatingXmlaRequest implements XmlaRequest {
+        protected final XmlaRequest request;
+
+        public DelegatingXmlaRequest(XmlaRequest request) {
+            this.request = request;
+        }
+
+        public int getMethod() {
+            return request.getMethod();
+        }
+
+        public Map<String, String> getProperties() {
+            return request.getProperties();
+        }
+
+        public Map<String, Object> getRestrictions() {
+            return request.getRestrictions();
+        }
+
+        public String getStatement() {
+            return request.getStatement();
+        }
+
+        public String getRoleName() {
+            return request.getRoleName();
+        }
+
+        public Role getRole() {
+            return request.getRole();
+        }
+
+        public String getRequestType() {
+            return request.getRequestType();
+        }
+
+        public boolean isDrillThrough() {
+            return request.isDrillThrough();
+        }
+
+        public int drillThroughMaxRows() {
+            return request.drillThroughMaxRows();
+        }
+
+        public int drillThroughFirstRowset() {
+            return request.drillThroughFirstRowset();
+        }
     }
 }
 

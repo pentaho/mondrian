@@ -655,6 +655,9 @@
             <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
             <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -731,6 +734,9 @@
             <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
             <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -883,6 +889,7 @@
             <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
             <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -967,6 +974,7 @@
             <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
             <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1260,6 +1268,7 @@
             <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
             <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1374,6 +1383,7 @@
             <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
             <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>

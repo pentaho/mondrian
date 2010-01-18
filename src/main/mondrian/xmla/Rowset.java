@@ -37,6 +37,7 @@ abstract class Rowset implements XmlaConstants {
     protected final XmlaRequest request;
     protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
+    protected final boolean deep;
 
     /**
      * Creates a Rowset.
@@ -100,6 +101,7 @@ abstract class Rowset implements XmlaConstants {
         this.restrictedColumns =
             list.toArray(
                 new RowsetDefinition.Column[list.size()]);
+        boolean deep = false;
         for (Map.Entry<String, String> propertyEntry : properties.entrySet()) {
             String propertyName = propertyEntry.getKey();
             final PropertyDefinition propertyDef =
@@ -111,7 +113,11 @@ abstract class Rowset implements XmlaConstants {
             }
             final String propertyValue = propertyEntry.getValue();
             setProperty(propertyDef, propertyValue);
+            if (propertyDef == PropertyDefinition.Deep) {
+                deep = Boolean.valueOf(propertyValue);
+            }
         }
+        this.deep = deep;
     }
 
     protected ArrayList<RowsetDefinition.Column> pruneRestrictions(
@@ -245,6 +251,15 @@ abstract class Rowset implements XmlaConstants {
                         writer.endElement();
                     }
                 }
+            } else if (value instanceof Rowset) {
+                Rowset rowset = (Rowset) value;
+                final List<Row> rows = new ArrayList<Row>();
+                rowset.populate(response, rows);
+                writer.startSequence(column.name, "row");
+                for (Row row1 : rows) {
+                    rowset.emit(row1, response);
+                }
+                writer.endSequence();
             } else {
                 writer.textElement(column.name, value);
             }

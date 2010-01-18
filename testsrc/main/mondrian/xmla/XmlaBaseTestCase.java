@@ -40,9 +40,8 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class XmlaBaseTestCase extends FoodMartTestCase {
-    protected static final String LAST_SCHEMA_UPDATE_DATE_PROP =
-        "last.schema.update.date";
-    protected static final String LAST_SCHEMA_UPDATE_DATE = "somedate";
+    protected static final String LAST_SCHEMA_UPDATE_DATE =
+        "xxxx-xx-xxTxx:xx:xx";
     private static final String LAST_SCHEMA_UPDATE_NODE_NAME =
         "LAST_SCHEMA_UPDATE";
     protected SortedMap<String, String> catalogNameUrls = null;
@@ -63,7 +62,6 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String CATALOG          = "FoodMart";// cube
     public static final String CUBE_NAME_PROP   = "cube.name";
     public static final String SALES_CUBE       = "Sales";// format
-    public static final String HR_CUBE          = "HR";
     public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
     protected static final boolean DEBUG = false;
@@ -106,34 +104,54 @@ System.out.println("requestText=" + requestText);
         return requestText;
     }
 
-    protected void validate(byte[] bytes, Document expectedDoc)
+    protected void validate(
+        byte[] bytes,
+        Document expectedDoc,
+        TestContext testContext,
+        boolean replace)
         throws Exception
     {
-if (DEBUG) {
-        String response = new String(bytes);
-System.out.println("response=" + response);
-}
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-if (DEBUG) {
-                System.out.println("XML Data is Valid");
-}
+                if (DEBUG) {
+                    System.out.println("XML Data is Valid");
+                }
             }
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        String gotStr =
-            XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
-        String expectedStr =
-            XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
-if (DEBUG) {
-System.out.println("GOT:\n" + gotStr);
-System.out.println("EXPECTED:\n" + expectedStr);
-System.out.println("XXXXXXX");
-}
+        gotDoc = replaceLastSchemaUpdateDate(gotDoc);
+        String gotStr = XmlUtil.toString(gotDoc, true);
         gotStr = Util.maskVersion(gotStr);
-        gotStr = TestContext.instance().upgradeActual(gotStr);
-        XMLAssert.assertXMLEqual(expectedStr, gotStr);
+        gotStr = testContext.upgradeActual(gotStr);
+        if (expectedDoc == null) {
+            if (replace) {
+                getDiffRepos().amend("${response}", gotStr);
+            }
+            return;
+        }
+        expectedDoc = replaceLastSchemaUpdateDate(expectedDoc);
+        String expectedStr = XmlUtil.toString(expectedDoc, true);
+        try {
+            XMLAssert.assertXMLEqual(expectedStr, gotStr);
+        } catch (AssertionFailedError e) {
+            // Let DiffRepository do the comparison. It will output
+            // a textual difference, and will update the logfile,
+            // XmlaBasicTest.log.xml. If you agree with the change,
+            // copy this file to XmlaBasicTest.ref.xml.
+            if (replace) {
+                gotStr =
+                    gotStr.replaceAll(
+                        " SessionId=\"[^\"]*\" ",
+                        " SessionId=\"\\${session.id}\" ");
+                getDiffRepos().assertEquals(
+                    "response",
+                    "${response}",
+                    gotStr);
+            } else {
+                throw e;
+            }
+        }
     }
 
     public void doTest(Properties props) throws Exception {
@@ -145,7 +163,7 @@ System.out.println("XXXXXXX");
 
         String expectedStr = generateExpectedString(props);
         Document expectedDoc = XmlUtil.parseString(expectedStr);
-        validate(bytes, expectedDoc);
+        validate(bytes, expectedDoc, TestContext.instance(), true);
     }
 
     protected void doTest(
@@ -165,7 +183,7 @@ System.out.println("XXXXXXX");
             byte[] bytes = res.toByteArray();
             String expectedStr = generateExpectedString(props);
             Document expectedDoc = XmlUtil.parseString(expectedStr);
-            validate(bytes, expectedDoc);
+            validate(bytes, expectedDoc, TestContext.instance(), true);
 
         } else if (statusCode == HttpServletResponse.SC_CONTINUE) {
             // remove the Expect header from request and try again
@@ -183,7 +201,7 @@ System.out.println("Got CONTINUE");
                 byte[] bytes = res.toByteArray();
                 String expectedStr = generateExpectedString(props);
                 Document expectedDoc = XmlUtil.parseString(expectedStr);
-                validate(bytes, expectedDoc);
+                validate(bytes, expectedDoc, TestContext.instance(), true);
 
             } else {
                 fail("Bad status code: "  + statusCode);
@@ -280,14 +298,18 @@ System.out.println("Got CONTINUE");
     protected Document replaceLastSchemaUpdateDate(Document doc) {
         NodeList elements =
             doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
-        if (elements.getLength() == 0) {
-            return doc;
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node node = elements.item(i);
+            node.getFirstChild().setNodeValue(
+                LAST_SCHEMA_UPDATE_DATE);
         }
-
-        Node lastSchemaUpdateNode = elements.item(0);
-        lastSchemaUpdateNode.getFirstChild().setNodeValue(
-            LAST_SCHEMA_UPDATE_DATE);
         return doc;
+    }
+
+    private String ignoreLastUpdateDate(String document) {
+        return document.replaceAll(
+            "\"LAST_SCHEMA_UPDATE\": \"....-..-..T..:..:..\"",
+            "\"LAST_SCHEMA_UPDATE\": \"" + LAST_SCHEMA_UPDATE_DATE + "\"");
     }
 
     protected Map<String, String> getCatalogNameUrls(TestContext testContext) {
@@ -378,6 +400,7 @@ System.out.println("Got CONTINUE");
      * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
      * @param props Properties for request
      * @param testContext Test context
+     * @throws Exception on error
      */
     public void doTest(
         String requestType,
@@ -510,7 +533,6 @@ System.out.println("Got CONTINUE");
         byte[] bytes =
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role);
-        String response = new String(bytes);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -538,53 +560,17 @@ System.out.println("Got CONTINUE");
                 roles.set(null);
             }
         }
-        response = new String(bytes);
+
         if (DEBUG) {
             System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + response);
-        }
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
-            }
+                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
         }
 
-        Document gotDoc = XmlUtil.parse(bytes);
-        gotDoc = ignoreLastUpdateDate(gotDoc);
-        String gotStr = XmlUtil.toString(gotDoc, true);
-        gotStr = Util.maskVersion(gotStr);
-        gotStr = testContext.upgradeActual(gotStr);
-        if (expectedDoc != null) {
-            String expectedStr = XmlUtil.toString(expectedDoc, true);
-if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: GOT:\n" + gotStr);
-System.out.println("XmlaBaseTestCase.doTests: EXPECTED:\n" + expectedStr);
-System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
-}
-            try {
-                XMLAssert.assertXMLEqual(expectedStr, gotStr);
-            } catch (AssertionFailedError e) {
-                if (content == Enumeration.Content.SchemaData) {
-                    // Let DiffRepository do the comparison. It will output
-                    // a textual difference, and will update the logfile,
-                    // XmlaBasicTest.log.xml. If you agree with the change,
-                    // copy this file to XmlaBasicTest.ref.xml.
-                    getDiffRepos().assertEquals(
-                        "response",
-                        "${response}",
-                        gotStr);
-                } else {
-                    throw e;
-                }
-            }
-        } else {
-            if (content == Enumeration.Content.SchemaData) {
-                getDiffRepos().amend("${response}", gotStr);
-            }
-        }
+        validate(
+            bytes,
+            expectedDoc,
+            testContext,
+            content == Enumeration.Content.SchemaData);
     }
 
     protected void doTestsJson(
@@ -610,7 +596,6 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
         byte[] bytes =
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role);
-        String response = new String(bytes);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -638,10 +623,9 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
                 roles.set(null);
             }
         }
-        response = new String(bytes);
         if (DEBUG) {
             System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + response);
+                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
         }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
@@ -666,25 +650,6 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
                 "${response}",
                 gotStr);
         }
-    }
-
-    private Document ignoreLastUpdateDate(Document document) {
-        NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
-        for (int i = elements.getLength(); i > 0; i--) {
-            removeNode(elements.item(i - 1));
-        }
-        return document;
-    }
-
-    private String ignoreLastUpdateDate(String document) {
-        return document.replaceAll(
-            "\"LAST_SCHEMA_UPDATE\": \"....-..-..T..:..:..\"",
-            "\"LAST_SCHEMA_UPDATE\": \"xxxx-xx-xxTxx:xx:xx\"");
-    }
-
-    private void removeNode(Node node) {
-        Node parentNode = node.getParentNode();
-        parentNode.removeChild(node);
     }
 
     enum Action {
