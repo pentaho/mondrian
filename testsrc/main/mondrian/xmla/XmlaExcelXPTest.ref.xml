@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <Root>
     <TestCase name="test01">
-        <Resource name="excel_XP_01_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header/>
@@ -21,7 +21,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_01_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -86,7 +86,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test02">
-        <Resource name="excel_XP_02_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -110,7 +110,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_02_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -641,7 +641,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test03">
-        <Resource name="excel_XP_03_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -664,7 +664,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_03_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -723,7 +723,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test04">
-        <Resource name="excel_XP_04_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -750,7 +750,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_04_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -814,7 +814,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test05">
-        <Resource name="excel_XP_05_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -841,7 +841,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_05_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -907,7 +907,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test06">
-        <Resource name="excel_XP_06_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -929,7 +929,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_06_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -958,7 +958,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test07">
-        <Resource name="excel_XP_07_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -981,7 +981,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_07_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1010,7 +1010,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test08">
-        <Resource name="excel_XP_08_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1038,7 +1038,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_08_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1113,7 +1113,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test09">
-        <Resource name="excel_XP_09_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1141,7 +1141,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_09_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1239,7 +1239,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test10">
-        <Resource name="excel_XP_10_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1267,7 +1267,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_10_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1356,7 +1356,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test11">
-        <Resource name="excel_XP_11_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1384,7 +1384,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_11_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1453,7 +1453,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test12">
-        <Resource name="excel_XP_12_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1481,7 +1481,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_12_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1724,7 +1724,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test13">
-        <Resource name="excel_XP_13_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1752,7 +1752,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_13_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1831,7 +1831,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test14">
-        <Resource name="excel_XP_14_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1859,7 +1859,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_14_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2171,7 +2171,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test15">
-        <Resource name="excel_XP_15_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2199,7 +2199,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_15_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2297,7 +2297,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test16">
-        <Resource name="excel_XP_16_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2325,7 +2325,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_16_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2402,7 +2402,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test17">
-        <Resource name="excel_XP_17_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2431,7 +2431,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_17_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2559,7 +2559,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test19">
-        <Resource name="excel_XP_19_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2587,7 +2587,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_19_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2685,7 +2685,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test20">
-        <Resource name="excel_XP_20_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2714,7 +2714,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_20_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2876,7 +2876,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test23">
-        <Resource name="excel_XP_23_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2899,7 +2899,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_23_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2928,7 +2928,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test24">
-        <Resource name="excel_XP_24_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2954,7 +2954,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_24_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -3589,7 +3589,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect01">
-        <Resource name="excel_XP_01_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header/>
@@ -3609,7 +3609,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_01_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -3674,7 +3674,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect02">
-        <Resource name="excel_XP_02_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -3698,7 +3698,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_02_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4229,7 +4229,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect03">
-        <Resource name="excel_XP_03_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4252,7 +4252,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_03_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4311,7 +4311,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect04">
-        <Resource name="excel_XP_04_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4338,7 +4338,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_04_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4402,7 +4402,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect05">
-        <Resource name="excel_XP_05_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4429,7 +4429,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_05_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4495,7 +4495,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect06">
-        <Resource name="excel_XP_06_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4517,7 +4517,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_06_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">

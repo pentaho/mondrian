@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <Root>
-    <TestCase name="testJunk">
-        <Resource name="Junk_in.error">
+    <TestCase name="request">
+        <Resource name="request">
             <![CDATA[
 this is just junk
 ]]>
         </Resource>
     </TestCase>
     <TestCase name="testBadXml01">
-        <Resource name="BadXml01_in.error">
+        <Resource name="request">
             <![CDATA[
 <soapenv:FOOEnvelope 
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -31,7 +31,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadXml02">
-        <Resource name="BadXml02_in.error">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope 
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelopeFOO/" 
@@ -54,7 +54,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadAction01">
-        <Resource name="BadAction01_in.error">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope 
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -77,7 +77,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadAction02">
-        <Resource name="BadAction02_in.error">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope 
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -110,7 +110,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadAction03">
-        <Resource name="BadAction03_in.error">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope 
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -145,7 +145,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadSoap01">
-        <Resource name="DoubleHeader.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -170,7 +170,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadSoap02">
-        <Resource name="DoubleBody.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -207,7 +207,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testAuth01">
-        <Resource name="EmptyExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -230,7 +230,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testAuth02">
-        <Resource name="EmptyExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -253,7 +253,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testAuth03">
-        <Resource name="EmptyExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -276,7 +276,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testAuth04">
-        <Resource name="EmptyExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -299,7 +299,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testAuth05">
-        <Resource name="EmptyExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -322,7 +322,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadHeader01">
-        <Resource name="MustUnderstand.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -347,7 +347,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody01">
-        <Resource name="DiscoveryExecute.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -382,7 +382,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody02">
-        <Resource name="BadMethod.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -406,7 +406,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody03">
-        <Resource name="BadMethodNS.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -430,7 +430,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody04">
-        <Resource name="Discovery01.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -454,7 +454,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody05">
-        <Resource name="Discovery02.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -478,7 +478,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody06">
-        <Resource name="Discovery03.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -502,7 +502,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody07">
-        <Resource name="Execute01.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -526,7 +526,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody08">
-        <Resource name="Execute02.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -550,7 +550,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody09">
-        <Resource name="Discovery04.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -575,7 +575,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody10">
-        <Resource name="Discovery05.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -600,7 +600,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody11">
-        <Resource name="Execute03.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -625,7 +625,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody12">
-        <Resource name="Execute04.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -650,7 +650,7 @@ this is just junk
         </Resource>
     </TestCase>
     <TestCase name="testBadBody13">
-        <Resource name="Execute05.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -680,7 +680,7 @@ FROM Sales
         </Resource>
     </TestCase>
     <TestCase name="testBadBody14">
-        <Resource name="Execute06.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -710,7 +710,7 @@ FROM Sales
         </Resource>
     </TestCase>
     <TestCase name="testBadBody15">
-        <Resource name="Execute07.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>

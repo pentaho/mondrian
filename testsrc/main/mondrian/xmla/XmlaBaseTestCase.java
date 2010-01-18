@@ -12,8 +12,7 @@ package mondrian.xmla;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
-import mondrian.tui.XmlaSupport;
-import mondrian.tui.XmlUtil;
+import mondrian.tui.*;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
 import mondrian.rolap.RolapConnectionProperties;
@@ -67,10 +66,159 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String HR_CUBE          = "HR";
     public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
-    private static final boolean DEBUG = false;
+    protected static final boolean DEBUG = false;
 
     // Associate a Role with a query
     private static final ThreadLocal<Role> roles = new ThreadLocal<Role>();
+
+    protected String generateExpectedString(Properties props)
+        throws Exception
+    {
+        String expectedStr = fileToString("response");
+        if (props != null) {
+            // YES, duplicate the above
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
+            }
+            expectedStr = Util.replaceProperties(
+                expectedStr, Util.toMap(props));
+        }
+        return expectedStr;
+    }
+
+    protected String generateRequestString(Properties props)
+        throws Exception
+    {
+        String requestText = fileToString("request");
+
+        if (props != null) {
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
+            }
+            requestText = Util.replaceProperties(
+                requestText, Util.toMap(props));
+        }
+if (DEBUG) {
+System.out.println("requestText=" + requestText);
+}
+        return requestText;
+    }
+
+    protected void validate(byte[] bytes, Document expectedDoc)
+        throws Exception
+    {
+if (DEBUG) {
+        String response = new String(bytes);
+System.out.println("response=" + response);
+}
+        if (XmlUtil.supportsValidation()) {
+            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
+if (DEBUG) {
+                System.out.println("XML Data is Valid");
+}
+            }
+        }
+
+        Document gotDoc = XmlUtil.parse(bytes);
+        String gotStr =
+            XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String expectedStr =
+            XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
+if (DEBUG) {
+System.out.println("GOT:\n" + gotStr);
+System.out.println("EXPECTED:\n" + expectedStr);
+System.out.println("XXXXXXX");
+}
+        gotStr = Util.maskVersion(gotStr);
+        gotStr = TestContext.instance().upgradeActual(gotStr);
+        XMLAssert.assertXMLEqual(expectedStr, gotStr);
+    }
+
+    public void doTest(Properties props) throws Exception {
+        String requestText = generateRequestString(props);
+        Document reqDoc = XmlUtil.parseString(requestText);
+
+        Servlet servlet = getServlet(getTestContext());
+        byte[] bytes = XmlaSupport.processSoapXmla(reqDoc, servlet);
+
+        String expectedStr = generateExpectedString(props);
+        Document expectedDoc = XmlUtil.parseString(expectedStr);
+        validate(bytes, expectedDoc);
+    }
+
+    protected void doTest(
+        MockHttpServletRequest req,
+        Properties props) throws Exception
+    {
+        String requestText = generateRequestString(props);
+
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        res.setCharacterEncoding("UTF-8");
+
+        Servlet servlet = getServlet(getTestContext());
+        servlet.service(req, res);
+
+        int statusCode = res.getStatusCode();
+        if (statusCode == HttpServletResponse.SC_OK) {
+            byte[] bytes = res.toByteArray();
+            String expectedStr = generateExpectedString(props);
+            Document expectedDoc = XmlUtil.parseString(expectedStr);
+            validate(bytes, expectedDoc);
+
+        } else if (statusCode == HttpServletResponse.SC_CONTINUE) {
+            // remove the Expect header from request and try again
+if (DEBUG) {
+System.out.println("Got CONTINUE");
+}
+
+            req.clearHeader(XmlaRequestCallback.EXPECT);
+            req.setBodyContent(requestText);
+
+            servlet.service(req, res);
+
+            statusCode = res.getStatusCode();
+            if (statusCode == HttpServletResponse.SC_OK) {
+                byte[] bytes = res.toByteArray();
+                String expectedStr = generateExpectedString(props);
+                Document expectedDoc = XmlUtil.parseString(expectedStr);
+                validate(bytes, expectedDoc);
+
+            } else {
+                fail("Bad status code: "  + statusCode);
+            }
+        } else {
+            fail("Bad status code: "  + statusCode);
+        }
+    }
+
+    protected void helperTestExpect(boolean doSessionId)
+        throws Exception
+    {
+        if (doSessionId) {
+            Util.discard(getSessionId(Action.CREATE));
+        }
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setMethod("POST");
+        req.setContentType("text/xml");
+        req.setHeader(
+            XmlaRequestCallback.EXPECT,
+            XmlaRequestCallback.EXPECT_100_CONTINUE);
+
+        Properties props = new Properties();
+        doTest(req, props);
+    }
+
+    protected void helperTest(boolean doSessionId)
+        throws Exception
+    {
+        if (doSessionId) {
+            getSessionId(Action.CREATE);
+        }
+        Properties props = new Properties();
+        doTest(props);
+    }
 
     static class CallBack implements XmlaRequestCallback {
         public CallBack() {
@@ -578,6 +726,67 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
 
         default:
             throw new UnsupportedOperationException();
+        }
+    }
+
+    protected static abstract class XmlaRequestCallbackImpl
+        implements XmlaRequestCallback
+    {
+        private static final String MY_SESSION_ID = "my_session_id";
+        private final String name;
+
+        protected XmlaRequestCallbackImpl(String name) {
+            this.name = name;
+        }
+
+        public void init(ServletConfig servletConfig) throws ServletException {
+        }
+
+        public boolean processHttpHeader(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, Object> context)
+            throws Exception
+        {
+            String expect = request.getHeader(XmlaRequestCallback.EXPECT);
+            if ((expect != null)
+                && expect.equalsIgnoreCase(
+                    XmlaRequestCallback.EXPECT_100_CONTINUE))
+            {
+                Helper.generatedExpectResponse(
+                    request, response, context);
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public void preAction(
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context)
+            throws Exception
+        {
+        }
+
+        private void setSessionId(Map<String, Object> context) {
+            context.put(
+                MY_SESSION_ID,
+                getSessionId(name, Action.CREATE));
+        }
+
+        public String generateSessionId(Map<String, Object> context) {
+            setSessionId(context);
+            return (String) context.get(MY_SESSION_ID);
+        }
+
+        public void postAction(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context)
+            throws Exception
+        {
         }
     }
 }
