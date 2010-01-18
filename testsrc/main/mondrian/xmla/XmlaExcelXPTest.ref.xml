@@ -3013,15 +3013,15 @@ The default value for this property is an empty string.</PropertyDescription>
 ]]>
         </Resource>
         <Resource name="response">
-            <![CDATA[
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-  <SOAP-ENV:Header>
-    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
-  </SOAP-ENV:Header>
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header>
+        <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+    </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -3128,11 +3128,11 @@ The default value for this property is an empty string.</PropertyDescription>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
+
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
                                     </xsd:complexType>
-
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -3267,7 +3267,8 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Measures].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Measures].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Measures].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="Axis1">
@@ -3277,86 +3278,8 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Store Size in SQFT">
-                                    <UName name="[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store Size in SQFT].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store Size in SQFT].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store Size in SQFT].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Store Type">
-                                    <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store Type].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store Type].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Time">
-                                    <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Product">
-                                    <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Product].[MEMBER_CAPTION]"/>
-                                    <LName name="[Product].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Product].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Product].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Promotion Media">
-                                    <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
-                                    <LName name="[Promotion Media].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Promotion Media].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Promotion Media].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Promotions">
-                                    <UName name="[Promotions].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Promotions].[MEMBER_CAPTION]"/>
-                                    <LName name="[Promotions].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Promotions].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Promotions].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Customers">
-                                    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Customers].[MEMBER_CAPTION]"/>
-                                    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Customers].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Education Level">
-                                    <UName name="[Education Level].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Education Level].[MEMBER_CAPTION]"/>
-                                    <LName name="[Education Level].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Education Level].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Education Level].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Gender">
-                                    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Gender].[MEMBER_CAPTION]"/>
-                                    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Gender].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Marital Status">
-                                    <UName name="[Marital Status].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Marital Status].[MEMBER_CAPTION]"/>
-                                    <LName name="[Marital Status].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Marital Status].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Marital Status].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Yearly Income">
-                                    <UName name="[Yearly Income].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Yearly Income].[MEMBER_CAPTION]"/>
-                                    <LName name="[Yearly Income].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Yearly Income].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Yearly Income].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                         </AxesInfo>
@@ -3452,12 +3375,21 @@ The default value for this property is an empty string.</PropertyDescription>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</UName>
+                                    <UName>[Store].[All
+                                    Stores].[USA].[OR].[Salem].[Store 13]</UName>
                                     <Caption>Store 13</Caption>
                                     <LName>[Store].[Store Name]</LName>
                                     <LNum>4</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
+                                    <Store>Deluxe Supermarket</Store>
+                                    <Store>Inmon</Store>
+                                    <Store>27694</Store>
+                                    <Store>18670</Store>
+                                    <Store>5415</Store>
+                                    <Store>3610</Store>
+                                    <Store>1</Store>
+                                    <Store>5179 Valley Ave</Store>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -3468,89 +3400,6 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LNum>2</LNum>
                                     <DisplayInfo>7</DisplayInfo>
                                     <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
-                                    <Caption>All Store Size in SQFTs</Caption>
-                                    <LName>[Store Size in SQFT].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>21</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Store Type">
-                                    <UName>[Store Type].[All Store Types]</UName>
-                                    <Caption>All Store Types</Caption>
-                                    <LName>[Store Type].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>6</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time">
-                                    <UName>[Time].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time].[Year]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products]</UName>
-                                    <Caption>All Products</Caption>
-                                    <LName>[Product].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Promotion Media">
-                                    <UName>[Promotion Media].[All Media]</UName>
-                                    <Caption>All Media</Caption>
-                                    <LName>[Promotion Media].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>14</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Promotions">
-                                    <UName>[Promotions].[All Promotions]</UName>
-                                    <Caption>All Promotions</Caption>
-                                    <LName>[Promotions].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>51</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers]</UName>
-                                    <Caption>All Customers</Caption>
-                                    <LName>[Customers].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All Education Levels]</UName>
-                                    <Caption>All Education Levels</Caption>
-                                    <LName>[Education Level].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>5</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender]</UName>
-                                    <Caption>All Gender</Caption>
-                                    <LName>[Gender].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>2</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All Marital Status]</UName>
-                                    <Caption>All Marital Status</Caption>
-                                    <LName>[Marital Status].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>111</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
-                                    <Caption>All Yearly Incomes</Caption>
-                                    <LName>[Yearly Income].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>8</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -3639,8 +3488,8 @@ The default value for this property is an empty string.</PropertyDescription>
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>

@@ -140,7 +140,8 @@ public class Enumeration {
         Schema,
         Data,
         SchemaData,
-        DataOmitDefaultSlicer;
+        DataOmitDefaultSlicer,
+        DataIncludeDefaultSlicer;
 
         /** The content type default value - shared across more than one file */
         public static final Content DEFAULT = SchemaData;

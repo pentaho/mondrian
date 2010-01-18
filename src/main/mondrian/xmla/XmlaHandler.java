@@ -689,13 +689,15 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         try {
-            if ((content == Enumeration.Content.Data)
-                || (content == Enumeration.Content.SchemaData)
-                || (content == Enumeration.Content.DataOmitDefaultSlicer))
-            {
+            switch (content) {
+            case Data:
+            case SchemaData:
+            case DataOmitDefaultSlicer:
+            case DataIncludeDefaultSlicer:
                 if (result != null) {
                     result.unparse(writer);
                 }
+                break;
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -1708,7 +1710,7 @@ public class XmlaHandler implements XmlaConstants {
             if (format == Enumeration.Format.Multidimensional) {
                 return new MDDataSet_Multidimensional(
                     result,
-                    content == Enumeration.Content.DataOmitDefaultSlicer,
+                    content != Enumeration.Content.DataIncludeDefaultSlicer,
                     responseMimeType == Enumeration.ResponseMimeType.JSON);
             } else {
                 return new MDDataSet_Tabular(result);
@@ -2163,6 +2165,49 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 if (value != null) {
                     writer.textElement(prop, value);
+                }
+            }
+
+            // Excel 2007 property display support
+            // Only write properties when slicer has members
+            final List<Member> slicerMembers =
+                result.getSlicerAxis().getPositions().get(0);
+
+            boolean outputMemberProperties = false;
+            for (Member slicerMember : slicerMembers) {
+                if (slicerMember.getName().equals(member.getName())) {
+                    outputMemberProperties = true;
+                    break;
+                }
+            }
+
+            if (outputMemberProperties) {
+                LOGGER.info("slicer contains member, skip properties");
+            } else {
+                LOGGER.info("looking for properties to write");
+
+                Property[] properties = member.getLevel().getProperties();
+                String propertyValue;
+                for (Property property : properties) {
+                    Object propertyObject =
+                        member.getPropertyValue(property.getName());
+                    if (propertyObject == null) {
+                        propertyValue = "Null";
+                    } else {
+                        propertyValue = propertyObject.toString();
+                    }
+
+                    LOGGER.debug(
+                        "LevelProperty dimension="
+                        + member.getHierarchy().getName()
+                        + " name="
+                        + property.getName()
+                        + " value="
+                        + propertyValue);
+
+                    writer.startElement(member.getHierarchy().getName());
+                    writer.characters(propertyValue);
+                    writer.endElement(); // Properties
                 }
             }
             writer.endElement(); // Member

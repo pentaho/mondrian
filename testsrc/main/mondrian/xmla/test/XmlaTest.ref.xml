@@ -453,41 +453,6 @@
               <LNum name="[Time].[LEVEL_NUMBER]"/>
               <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
             </HierarchyInfo>
-            <HierarchyInfo name="Store">
-              <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Store].[MEMBER_CAPTION]"/>
-              <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Store].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Pay Type">
-              <UName name="[Pay Type].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Pay Type].[MEMBER_CAPTION]"/>
-              <LName name="[Pay Type].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Pay Type].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Pay Type].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Store Type">
-              <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Store Type].[MEMBER_CAPTION]"/>
-              <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Store Type].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Position">
-              <UName name="[Position].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Position].[MEMBER_CAPTION]"/>
-              <LName name="[Position].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Position].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Position].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Department">
-              <UName name="[Department].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Department].[MEMBER_CAPTION]"/>
-              <LName name="[Department].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Department].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Department].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
           </AxisInfo>
         </AxesInfo>
         <CellInfo>
@@ -528,6 +493,13 @@
                 <LName>[Employees].[Employee Id]</LName>
                 <LNum>1</LNum>
                 <DisplayInfo>7</DisplayInfo>
+                <Employees>Sheri Nowmer</Employees>
+                <Employees>S</Employees>
+                <Employees>President</Employees>
+                <Employees>F</Employees>
+                <Employees>80000</Employees>
+                <Employees>Graduate Degree</Employees>
+                <Employees>Senior Management</Employees>
               </Member>
             </Tuple>
           </Tuples>
@@ -541,41 +513,6 @@
                 <LName>[Time].[Year]</LName>
                 <LNum>0</LNum>
                 <DisplayInfo>4</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Store">
-                <UName>[Store].[All Stores]</UName>
-                <Caption>All Stores</Caption>
-                <LName>[Store].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>3</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Pay Type">
-                <UName>[Pay Type].[All Pay Types]</UName>
-                <Caption>All Pay Types</Caption>
-                <LName>[Pay Type].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>2</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Store Type">
-                <UName>[Store Type].[All Store Types]</UName>
-                <Caption>All Store Types</Caption>
-                <LName>[Store Type].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>6</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Position">
-                <UName>[Position].[All Position]</UName>
-                <Caption>All Position</Caption>
-                <LName>[Position].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>5</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Department">
-                <UName>[Department].[All Departments]</UName>
-                <Caption>All Departments</Caption>
-                <LName>[Department].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>12</DisplayInfo>
               </Member>
             </Tuple>
           </Tuples>

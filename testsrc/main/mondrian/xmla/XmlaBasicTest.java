@@ -613,13 +613,25 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testExecuteSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContentDataOmitDefaultSlicer();
+        doTestExecuteContent(Enumeration.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContentDataOmitDefaultSlicer();
+        doTestExecuteContent(Enumeration.Content.DataOmitDefaultSlicer);
+    }
+
+    public void testExecuteSlicerContentDataIncludeDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(Enumeration.Content.DataIncludeDefaultSlicer);
+    }
+
+    public void testExecuteNoSlicerContentDataIncludeDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(Enumeration.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteWithoutCellProperties() throws Exception
@@ -854,16 +866,16 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, testContext);
     }
 
-    private void doTestExecuteContentDataOmitDefaultSlicer() throws Exception {
+    private void doTestExecuteContent(
+        Enumeration.Content content)
+        throws Exception
+    {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
         String requestText = fileToString("request");
         TestContext testContext = TestContext.instance();
         requestText = testContext.upgradeQuery(requestText);
-        String respFileName = "${response}";
-        Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
-            : null;
+        Document responseDoc = fileToDocument("${response}");
 
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
@@ -874,12 +886,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
             responseDoc,
-            new String[][] {{"content", "DataOmitDefaultSlicer"}}, ns)
+            new String[][] {{"content", content.name()}}, ns)
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.DataOmitDefaultSlicer, null);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, content, null, true);
     }
 
     protected String getSessionId(Action action) {

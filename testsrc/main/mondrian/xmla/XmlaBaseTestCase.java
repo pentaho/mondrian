@@ -474,8 +474,8 @@ System.out.println("Got CONTINUE");
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.SchemaData, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, Enumeration.Content.SchemaData, role, true);
 
         if (requestType.equals("EXECUTE")) {
             return;
@@ -487,8 +487,8 @@ System.out.println("Got CONTINUE");
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.None, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, Enumeration.Content.None, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -496,8 +496,8 @@ System.out.println("Got CONTINUE");
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.Data, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, Enumeration.Content.Data, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -505,20 +505,39 @@ System.out.println("Got CONTINUE");
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.Schema, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, Enumeration.Content.Schema, role, false);
     }
 
+    /**
+     * Executes a SOAP request.
+     *
+     * @param soapRequestText SOAP request
+     * @param props Name/value pairs to substitute in the request
+     * @param testContext Test context
+     * @param connectString Connect string
+     * @param catalogNameUrls Map from catalog names to URL
+     * @param expectedDoc Expected SOAP output
+     * @param content Content type
+     * @param role Role in which to execute query, or null
+     * @param replace Whether to generate a replacement reference log into
+     *    TestName.log.xml if there is an exception. If you are running the same
+     *    request with different content types and the same reference log, you
+     *    should pass {@code true} for the content type that has the most
+     *    information (generally
+     *    {@link mondrian.xmla.Enumeration.Content#SchemaData})
+     * @throws Exception on error
+     */
     protected void doTests(
         String soapRequestText,
         Properties props,
         TestContext testContext,
-        String soapResponseText,
         String connectString,
         Map<String, String> catalogNameUrls,
         Document expectedDoc,
         Enumeration.Content content,
-        Role role) throws Exception
+        Role role,
+        boolean replace) throws Exception
     {
         if (content != null) {
             props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
@@ -566,11 +585,7 @@ System.out.println("Got CONTINUE");
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
         }
 
-        validate(
-            bytes,
-            expectedDoc,
-            testContext,
-            content == Enumeration.Content.SchemaData);
+        validate(bytes, expectedDoc, testContext, replace);
     }
 
     protected void doTestsJson(

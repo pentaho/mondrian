@@ -231,6 +231,7 @@ public class Main extends TestSuite {
             addTest(suite, XmlaErrorTest.class);
             addTest(suite, XmlaExcel2000Test.class);
             addTest(suite, XmlaExcelXPTest.class);
+            addTest(suite, XmlaExcel2007Test.class);
             addTest(suite, XmlaCognosTest.class);
             addTest(suite, XmlaTabularTest.class);
             addTest(suite, XmlaTests.class);

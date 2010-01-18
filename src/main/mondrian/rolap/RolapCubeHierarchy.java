@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -528,13 +529,16 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
             // extract RolapMembers from their RolapCubeMember objects
             // populate lookup for reconnecting parents and children
-            final List<RolapCubeMember> parentRolapCubeMemberList =
-                Util.cast(parentMembers);
-            for (RolapCubeMember member : parentRolapCubeMemberList) {
+            for (RolapMember member : parentMembers) {
+                if (member instanceof VisualTotalsFunDef.VisualTotalMember) {
+                    continue;
+                }
+                final RolapCubeMember cubeMember = (RolapCubeMember) member;
                 lookup.put(
                     getUniqueNameForMemberWithoutHierarchy(
-                        member.getRolapMember()), member);
-                rolapParents.add(member.getRolapMember());
+                        cubeMember.getRolapMember()),
+                    cubeMember);
+                rolapParents.add(cubeMember.getRolapMember());
             }
 
             // get member children from shared member reader if possible,

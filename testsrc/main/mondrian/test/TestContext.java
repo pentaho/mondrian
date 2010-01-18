@@ -854,6 +854,14 @@ public class TestContext {
                 actual,
                 "[TIME.CALENDAR]",
                 "[TIME].[CALENDAR]");
+            actual = Util.replace(
+                actual,
+                "<Store>true</Store>",
+                "<Store>1</Store>");
+            actual = Util.replace(
+                actual,
+                "<Employees>80000.0000</Employees>",
+                "<Employees>80000</Employees>");
         }
         return actual;
     }

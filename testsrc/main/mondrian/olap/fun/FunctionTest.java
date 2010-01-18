@@ -10073,6 +10073,47 @@ Intel platforms):
             + "Row #0: 6,054\n");
     }
 
+    /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-678">
+     * bug MONDRIAN-678, "VisualTotals gives UnsupportedOperationException
+     * calling getOrdinal"</a>. Key difference from previous test is that there
+     * are multiple hierarchies in Named set.
+     */
+    public void testVisualTotalsWithNamedSetOfTuples() {
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Customers].[All Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]),\n"
+            + "        Descendants([Customers].[All Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]),\n"
+            + "        Ascendants([Customers].[All Customers].[Mexico]),\n"
+            + "        Descendants([Customers].[All Customers].[Mexico])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      (DrilldownMember(\n"
+            + "        {{DrilldownMember(\n"
+            + "          {{DrilldownLevel(\n"
+            + "            {[Customers].[All Customers]})}},\n"
+            + "          {[Customers].[All Customers].[USA]})}},\n"
+            + "        {[Customers].[All Customers].[USA].[CA]})),\n"
+            + "        [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [Sales]\n"
+            + "where [Measures].[Sales count]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Sales Count]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[All Customers].[USA]}\n"
+            + "{[Customers].[All Customers].[USA].[CA]}\n"
+            + "{[Customers].[All Customers].[USA].[CA].[Beverly Hills]}\n"
+            + "Row #0: 4\n"
+            + "Row #0: 4\n"
+            + "Row #0: 4\n"
+            + "Row #0: 4\n");
+    }
+
     public void testCalculatedChild() {
         // Construct calculated children with the same name for both [Drink] and
         // [Non-Consumable].  Then, create a metric to select the calculated
