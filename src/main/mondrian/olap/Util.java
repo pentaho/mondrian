@@ -1678,7 +1678,7 @@ public class Util extends XOMUtil {
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
     public static class PropertyList
-        implements Iterable<Pair<String, String>>
+        implements Iterable<Pair<String, String>>, Serializable
     {
         List<Pair<String, String>> list =
             new ArrayList<Pair<String, String>>();
