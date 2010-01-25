@@ -330,6 +330,29 @@ public class FormatTest extends TestCase {
         checkFormat(null, new BigDecimal("-0.0"), "#0.0", "0.0");
     }
 
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-686">
+     * MONDRIAN-686</a>, "Regression: JPivot output invalid - New Variance
+     * Percent column".
+     */
+    public void testNegativePercentWithStyle() {
+        checkFormat(
+            null,
+            new BigDecimal("0.0364"),
+            "|#.00%|style='green'",
+            "|3.64%|style='green'");
+        checkFormat(
+            null,
+            new BigDecimal("-0.0364"),
+            "|#.00%|style='red'",
+            "-|3.64%|style='red'"); // confirmed on SSAS 2005
+    }
+
+    public void testNegativePercent() {
+        checkFormat(null, new BigDecimal("-0.0364"), "#.00%", "-3.64%");
+        checkFormat(null, new BigDecimal("0.0364"), "#.00%", "3.64%");
+    }
+
     public void testNumberRoundingBug() {
         checkFormat(null, new BigDecimal("0.50"), "0", "1");
         checkFormat(null, new BigDecimal("-1.5"), "0", "-2");

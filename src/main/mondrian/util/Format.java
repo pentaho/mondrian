@@ -2371,22 +2371,6 @@ public class Format {
             haveSeenNumber = true;
         }
 
-        // Merge adjacent literal formats.
-        for (int i = 0; i < formatList.size(); ++i) {
-            if (i > 0
-                && formatList.get(i) instanceof LiteralFormat
-                && formatList.get(i - 1) instanceof LiteralFormat)
-            {
-                formatList.set(
-                    i - 1,
-                    new LiteralFormat(
-                        ((LiteralFormat) formatList.get(i - 1)).s
-                        + ((LiteralFormat) formatList.get(i)).s));
-                formatList.remove(i);
-                --i;
-            }
-        }
-
         // If they used some symbol like 'AM/PM' in the format string, tell all
         // date formats to use twelve hour clock.  Likewise, figure out the
         // multiplier implied by their use of "%" or ",".
@@ -2449,6 +2433,26 @@ public class Format {
                     ((NumericFormat) formatList.get(i)).decimalShift
                         = decimalShift;
                 }
+            }
+        }
+
+        // Merge adjacent literal formats.
+        //
+        // Must do this AFTER adjusting for percent. Otherwise '%' and following
+        // '|' might be merged into a plain literal, and '%' would lose its
+        // special powers.
+        for (int i = 0; i < formatList.size(); ++i) {
+            if (i > 0
+                && formatList.get(i) instanceof LiteralFormat
+                && formatList.get(i - 1) instanceof LiteralFormat)
+            {
+                formatList.set(
+                    i - 1,
+                    new LiteralFormat(
+                        ((LiteralFormat) formatList.get(i - 1)).s
+                        + ((LiteralFormat) formatList.get(i)).s));
+                formatList.remove(i);
+                --i;
             }
         }
 
