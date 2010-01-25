@@ -243,8 +243,7 @@ public abstract class XmlaServlet
                 // are they asking for a JSON response?
                 String accept = request.getHeader("Accept");
                 if (accept != null) {
-                    mimeType =
-                        Enumeration.ResponseMimeType.MAP.get(accept);
+                    mimeType = XmlaUtil.chooseResponseMimeType(accept);
                     if (mimeType == null) {
                         throw new IllegalArgumentException(
                             "Accept header '" + accept + "' is not a supported"

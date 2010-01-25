@@ -487,6 +487,33 @@ way too noisy
     }
 
     /**
+     * Chooses the appropriate response mime type given an HTTP "Accept" header.
+     *
+     * <p>The header can contain a list of mime types and optional qualities,
+     * for example "text/html,application/xhtml+xml,application/xml;q=0.9"
+     *
+     * @param accept Accept header
+     * @return Mime type, or null if none is acceptable
+     */
+    public static Enumeration.ResponseMimeType chooseResponseMimeType(
+        String accept)
+    {
+        for (String s : accept.split(",")) {
+            s = s.trim();
+            final int semicolon = s.indexOf(";");
+            if (semicolon >= 0) {
+                s = s.substring(0, semicolon);
+            }
+            Enumeration.ResponseMimeType mimeType =
+                Enumeration.ResponseMimeType.MAP.get(s);
+            if (mimeType != null) {
+                return mimeType;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Result of a metadata query.
      */
     public static class MetadataRowset {
