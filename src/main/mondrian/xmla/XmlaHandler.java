@@ -1943,8 +1943,9 @@ public class XmlaHandler {
                     "HierarchyInfo",
                     "name", hierarchy.getName());
                 for (final String prop : props) {
+                    final String encodedProp = XmlaUtil.encodeElementName(prop);
                     writer.element(
-                        prop, getAttributes(prop, hierarchy));
+                        encodedProp, getAttributes(encodedProp, hierarchy));
                 }
                 writer.endElement(); // HierarchyInfo
             }
@@ -2098,8 +2099,12 @@ public class XmlaHandler {
                 new String[defaultProps.length + dimensionProperties.length];
             System.arraycopy(defaultProps, 0, props, 0, defaultProps.length);
             for (int i = 0; i < dimensionProperties.length; i++) {
+                // If a property is compound [Foo].[Bar], use only the last
+                // segment "Bar".
+                final List<Id.Segment> segmentList =
+                    dimensionProperties[i].getSegments();
                 props[defaultProps.length + i] =
-                        dimensionProperties[i].toStringArray()[0];
+                    segmentList.get(segmentList.size() - 1).name;
             }
             return props;
         }
@@ -2166,52 +2171,10 @@ public class XmlaHandler {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.textElement(prop, value);
+                    writer.textElement(XmlaUtil.encodeElementName(prop), value);
                 }
             }
 
-            // Excel 2007 property display support
-            // Only write properties when slicer has members
-            final List<Member> slicerMembers =
-                result.getSlicerAxis().getPositions().get(0);
-
-            boolean outputMemberProperties = false;
-            for (Member slicerMember : slicerMembers) {
-                if (slicerMember.getName().equals(member.getName())) {
-                    outputMemberProperties = true;
-                    break;
-                }
-            }
-
-            if (outputMemberProperties) {
-                LOGGER.info("slicer contains member, skip properties");
-            } else {
-                LOGGER.info("looking for properties to write");
-
-                Property[] properties = member.getLevel().getProperties();
-                String propertyValue;
-                for (Property property : properties) {
-                    Object propertyObject =
-                        member.getPropertyValue(property.getName());
-                    if (propertyObject == null) {
-                        propertyValue = "Null";
-                    } else {
-                        propertyValue = propertyObject.toString();
-                    }
-
-                    LOGGER.debug(
-                        "LevelProperty dimension="
-                        + member.getHierarchy().getName()
-                        + " name="
-                        + property.getName()
-                        + " value="
-                        + propertyValue);
-
-                    writer.startElement(member.getHierarchy().getName());
-                    writer.characters(propertyValue);
-                    writer.endElement(); // Properties
-                }
-            }
             writer.endElement(); // Member
         }
 

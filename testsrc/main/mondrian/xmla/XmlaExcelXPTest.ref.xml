@@ -3387,14 +3387,6 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LNum>4</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
-                                    <Store>Deluxe Supermarket</Store>
-                                    <Store>Inmon</Store>
-                                    <Store>27694</Store>
-                                    <Store>18670</Store>
-                                    <Store>5415</Store>
-                                    <Store>3610</Store>
-                                    <Store>1</Store>
-                                    <Store>5179 Valley Ave</Store>
                                     </Member>
                                 </Tuple>
                                 <Tuple>

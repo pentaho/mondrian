@@ -15791,11 +15791,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum>4</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <MEMBER_KEY>4422</MEMBER_KEY>
-                                    <Customers>Alice Cantrell</Customers>
-                                    <Customers>F</Customers>
-                                    <Customers>M</Customers>
-                                    <Customers>Partial College</Customers>
-                                    <Customers>$30K - $50K</Customers>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -16443,11 +16438,6 @@ FROM Sales
                                     <LNum>4</LNum>
                                     <DisplayInfo>0</DisplayInfo>
                                     <KEY>4422</KEY>
-                                    <Customers>Alice Cantrell</Customers>
-                                    <Customers>F</Customers>
-                                    <Customers>M</Customers>
-                                    <Customers>Partial College</Customers>
-                                    <Customers>$30K - $50K</Customers>
                                     </Member>
                                 </Tuple>
                             </Tuples>

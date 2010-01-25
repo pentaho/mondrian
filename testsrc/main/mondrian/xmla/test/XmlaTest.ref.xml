@@ -493,13 +493,6 @@
                 <LName>[Employees].[Employee Id]</LName>
                 <LNum>1</LNum>
                 <DisplayInfo>7</DisplayInfo>
-                <Employees>Sheri Nowmer</Employees>
-                <Employees>S</Employees>
-                <Employees>President</Employees>
-                <Employees>F</Employees>
-                <Employees>80000</Employees>
-                <Employees>Graduate Degree</Employees>
-                <Employees>Senior Management</Employees>
               </Member>
             </Tuple>
           </Tuples>
