@@ -17,6 +17,9 @@ import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.Dialect;
 import mondrian.xmla.impl.DefaultSaxWriter;
+import static mondrian.xmla.XmlaConstants.*;
+
+import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -28,7 +31,6 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 
-
 /**
  * An <code>XmlaHandler</code> responds to XML for Analysis (XML/A) requests.
  *
@@ -36,7 +38,7 @@ import java.io.*;
  * @version $Id$
  * @since 27 April, 2003
  */
-public class XmlaHandler implements XmlaConstants {
+public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
     private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
@@ -540,14 +542,14 @@ public class XmlaHandler implements XmlaConstants {
     public void process(XmlaRequest request, XmlaResponse response)
         throws XmlaException
     {
-        int method = request.getMethod();
+        Method method = request.getMethod();
         long start = System.currentTimeMillis();
 
         switch (method) {
-        case METHOD_DISCOVER:
+        case DISCOVER:
             discover(request, response);
             break;
-        case METHOD_EXECUTE:
+        case EXECUTE:
             execute(request, response);
             break;
         default:
@@ -569,8 +571,8 @@ public class XmlaHandler implements XmlaConstants {
         // Check response's rowset format in request
         final Map<String, String> properties = request.getProperties();
         if (request.isDrillThrough()) {
-            Enumeration.Format format = getFormat(request, null);
-            if (format != Enumeration.Format.Tabular) {
+            Format format = getFormat(request, null);
+            if (format != Format.Tabular) {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     HSB_DRILL_THROUGH_FORMAT_CODE,
@@ -583,9 +585,9 @@ public class XmlaHandler implements XmlaConstants {
             final String formatName =
                 properties.get(PropertyDefinition.Format.name());
             if (formatName != null) {
-                Enumeration.Format format = getFormat(request, null);
-                if (format != Enumeration.Format.Multidimensional
-                    && format != Enumeration.Format.Tabular)
+                Format format = getFormat(request, null);
+                if (format != Format.Multidimensional
+                    && format != Format.Tabular)
                 {
                     throw new UnsupportedOperationException(
                         "<Format>: only 'Multidimensional', 'Tabular' "
@@ -595,10 +597,10 @@ public class XmlaHandler implements XmlaConstants {
             final String axisFormatName =
                 properties.get(PropertyDefinition.AxisFormat.name());
             if (axisFormatName != null) {
-                Enumeration.AxisFormat axisFormat = Util.lookup(
-                    Enumeration.AxisFormat.class, axisFormatName, null);
+                AxisFormat axisFormat = Util.lookup(
+                    AxisFormat.class, axisFormatName, null);
 
-                if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
+                if (axisFormat != AxisFormat.TupleFormat) {
                     throw new UnsupportedOperationException(
                         "<AxisFormat>: only 'TupleFormat' currently supported");
                 }
@@ -620,12 +622,12 @@ public class XmlaHandler implements XmlaConstants {
         // Default value is SchemaData, or Data for JSON responses.
         final String contentName =
             properties.get(PropertyDefinition.Content.name());
-        Enumeration.Content content = Util.lookup(
-            Enumeration.Content.class,
+        Content content = Util.lookup(
+            Content.class,
             contentName,
             responseMimeType == Enumeration.ResponseMimeType.JSON
-                ? Enumeration.Content.Data
-                : Enumeration.Content.DEFAULT);
+                ? Content.Data
+                : Content.DEFAULT);
 
         // Handle execute
         QueryResult result;
@@ -652,7 +654,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement(prefix + ":return");
         boolean rowset =
             request.isDrillThrough()
-            || Enumeration.Format.Tabular.name().equals(
+            || Format.Tabular.name().equals(
                 request.getProperties().get(
                     PropertyDefinition.Format.name()));
         writer.startElement(
@@ -667,8 +669,8 @@ public class XmlaHandler implements XmlaConstants {
             "xmlns:xsd", NS_XSD,
             "xmlns:EX", NS_XMLA_EX);
 
-        if ((content == Enumeration.Content.Schema)
-            || (content == Enumeration.Content.SchemaData))
+        if ((content == Content.Schema)
+            || (content == Content.SchemaData))
         {
             if (result != null) {
                 if (result instanceof MDDataSet_Tabular) {
@@ -726,15 +728,15 @@ public class XmlaHandler implements XmlaConstants {
     static void writeDatasetXmlSchema(SaxWriter writer, SetType settype) {
         String setNsXmla =
             (settype == SetType.ROW_SET)
-            ? XmlaConstants.NS_XMLA_ROWSET
-            : XmlaConstants.NS_XMLA_MDDATASET;
+            ? NS_XMLA_ROWSET
+            : NS_XMLA_MDDATASET;
 
         writer.startElement(
             "xsd:schema",
-            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "xmlns:xsd", NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:xsi", NS_XSI,
             "xmlns:sql", NS_XML_SQL,
             "elementFormDefault", "qualified");
 
@@ -1223,13 +1225,13 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     static void writeEmptyDatasetXmlSchema(SaxWriter writer, SetType setType) {
-        String setNsXmla = XmlaConstants.NS_XMLA_ROWSET;
+        String setNsXmla = NS_XMLA_ROWSET;
         writer.startElement(
             "xsd:schema",
-            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "xmlns:xsd", NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:xsi", NS_XSI,
             "xmlns:sql", NS_XML_SQL,
             "elementFormDefault", "qualified");
 
@@ -1565,10 +1567,10 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.startElement(
                 "xsd:schema",
-                "xmlns:xsd", XmlaConstants.NS_XSD,
+                "xmlns:xsd", NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
-                "xmlns:xsi", XmlaConstants.NS_XSI,
+                "xmlns:xsi", NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
                 "elementFormDefault", "qualified");
 
@@ -1703,14 +1705,14 @@ public class XmlaHandler implements XmlaConstants {
                     ex);
             }
 
-            final Enumeration.Format format = getFormat(request, null);
-            final Enumeration.Content content = getContent(request);
+            final Format format = getFormat(request, null);
+            final Content content = getContent(request);
             final Enumeration.ResponseMimeType responseMimeType =
                 getResponseMimeType(request);
-            if (format == Enumeration.Format.Multidimensional) {
+            if (format == Format.Multidimensional) {
                 return new MDDataSet_Multidimensional(
                     result,
-                    content != Enumeration.Content.DataIncludeDefaultSlicer,
+                    content != Content.DataIncludeDefaultSlicer,
                     responseMimeType == Enumeration.ResponseMimeType.JSON);
             } else {
                 return new MDDataSet_Tabular(result);
@@ -1718,26 +1720,26 @@ public class XmlaHandler implements XmlaConstants {
         }
     }
 
-    private static Enumeration.Format getFormat(
+    private static Format getFormat(
         XmlaRequest request,
-        Enumeration.Format defaultValue)
+        Format defaultValue)
     {
         final String formatName =
             request.getProperties().get(
                 PropertyDefinition.Format.name());
         return Util.lookup(
-            Enumeration.Format.class,
+            Format.class,
             formatName, defaultValue);
     }
 
-    private static Enumeration.Content getContent(XmlaRequest request) {
+    private static Content getContent(XmlaRequest request) {
         final String contentName =
             request.getProperties().get(
                 PropertyDefinition.Content.name());
         return Util.lookup(
-            Enumeration.Content.class,
+            Content.class,
             contentName,
-            Enumeration.Content.DEFAULT);
+            Content.DEFAULT);
     }
 
     private static Enumeration.ResponseMimeType getResponseMimeType(
@@ -2645,10 +2647,10 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.startElement(
                 "xsd:schema",
-                "xmlns:xsd", XmlaConstants.NS_XSD,
+                "xmlns:xsd", NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
-                "xmlns:xsi", XmlaConstants.NS_XSI,
+                "xmlns:xsi", NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
                 "elementFormDefault", "qualified");
 
@@ -2791,9 +2793,8 @@ public class XmlaHandler implements XmlaConstants {
             RowsetDefinition.valueOf(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
 
-        Enumeration.Format format =
-            getFormat(request, Enumeration.Format.Tabular);
-        if (format != Enumeration.Format.Tabular) {
+        Format format = getFormat(request, Format.Tabular);
+        if (format != Format.Tabular) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_DISCOVER_FORMAT_CODE,
@@ -2802,7 +2803,7 @@ public class XmlaHandler implements XmlaConstants {
                     "<Format>: only 'Tabular' allowed in Discover method "
                     + "type"));
         }
-        final Enumeration.Content content = getContent(request);
+        final Content content = getContent(request);
 
         SaxWriter writer = response.getWriter();
         writer.startDocument();
@@ -2818,15 +2819,15 @@ public class XmlaHandler implements XmlaConstants {
             "xmlns:xsd", NS_XSD,
             "xmlns:EX", NS_XMLA_EX);
 
-        if ((content == Enumeration.Content.Schema)
-            || (content == Enumeration.Content.SchemaData))
+        if ((content == Content.Schema)
+            || (content == Content.SchemaData))
         {
             rowset.rowsetDefinition.writeRowsetXmlSchema(writer);
         }
 
         try {
-            if ((content == Enumeration.Content.Data)
-                || (content == Enumeration.Content.SchemaData))
+            if ((content == Content.Data)
+                || (content == Content.SchemaData))
             {
                 rowset.unparse(response);
             }

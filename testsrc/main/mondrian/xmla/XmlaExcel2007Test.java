@@ -64,6 +64,26 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
     public void testMemberPropertiesAndSlicer() throws Exception {
         helperTestExpect(false);
     }
+
+    /**
+     * Test that executes MDSCHEMA_PROPERTIES with
+     * {@link org.olap4j.metadata.Property.TypeFlag#MEMBER}.
+     *
+     * @throws Exception on error
+     */
+    public void testMdschemaPropertiesMember() throws Exception {
+        helperTest(false);
+    }
+
+    /**
+     * Test that executes MDSCHEMA_PROPERTIES with
+     * {@link org.olap4j.metadata.Property.TypeFlag#CELL}.
+     *
+     * @throws Exception on error
+     */
+    public void testMdschemaPropertiesCell() throws Exception {
+        helperTest(false);
+    }
 }
 
 // End XmlaExcel2007Test.java

@@ -10,11 +10,19 @@
 package mondrian.xmla;
 
 import mondrian.olap.*;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Schema;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
 import mondrian.spi.Dialect;
 
+import org.olap4j.metadata.XmlaConstants;
 import org.w3c.dom.Document;
 
 import java.util.Properties;
@@ -59,7 +67,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     protected String extractSoapResponse(
         Document responseDoc,
-        Enumeration.Content content)
+        XmlaConstants.Content content)
     {
         Document partialDoc = null;
         switch (content) {
@@ -540,7 +548,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         String content)
     {
         if (testCaseName.startsWith("testDrillThrough")
-            && filename.equals("${response}"))
+            && filename.equals("response"))
         {
             // Different databases have slightly different column types, which
             // results in slightly different inferred xml schema for the drill-
@@ -613,25 +621,25 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testExecuteSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContent(Enumeration.Content.DataOmitDefaultSlicer);
+        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContent(Enumeration.Content.DataOmitDefaultSlicer);
+        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteSlicerContentDataIncludeDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContent(Enumeration.Content.DataIncludeDefaultSlicer);
+        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteNoSlicerContentDataIncludeDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContent(Enumeration.Content.DataIncludeDefaultSlicer);
+        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteWithoutCellProperties() throws Exception
@@ -721,7 +729,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             + "</soapenv:Envelope>";
         Properties props = getDefaultRequestProperties(requestType);
         doTestInline(
-            requestType, request, "${response}", props, TestContext.instance());
+            requestType, request, "response", props, TestContext.instance());
     }
 
     /**
@@ -848,13 +856,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         Properties props = getDefaultRequestProperties(requestType);
         doTestInline(
-            requestType, request, "${response}",
+            requestType, request, "response",
             props, TestContext.instance(), role);
     }
-
-    /*
-     * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
-     */
 
     public void doTestRT(String requestType, TestContext testContext)
         throws Exception
@@ -867,7 +871,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     }
 
     private void doTestExecuteContent(
-        Enumeration.Content content)
+        XmlaConstants.Content content)
         throws Exception
     {
         String requestType = "EXECUTE";
@@ -875,7 +879,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         String requestText = fileToString("request");
         TestContext testContext = TestContext.instance();
         requestText = testContext.upgradeQuery(requestText);
-        Document responseDoc = fileToDocument("${response}");
+        Document responseDoc = fileToDocument("response");
 
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);

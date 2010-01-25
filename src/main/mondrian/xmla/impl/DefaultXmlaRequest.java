@@ -16,8 +16,8 @@ import mondrian.olap.Util;
 import mondrian.olap.Role;
 import mondrian.xmla.*;
 
-import mondrian.xmla.Enumeration;
-import mondrian.xmla.PropertyDefinition;
+import static org.olap4j.metadata.XmlaConstants.*;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -43,7 +43,7 @@ public class DefaultXmlaRequest
         "FIRSTROWSET isn't positive integer";
 
     /* common content */
-    private int method;
+    private Method method;
     private Map<String, String> properties;
     private final String roleName;
     private final Role role;
@@ -88,7 +88,7 @@ public class DefaultXmlaRequest
 
     /* Interface implmentation */
 
-    public int getMethod() {
+    public Method getMethod() {
         return method;
     }
 
@@ -97,7 +97,7 @@ public class DefaultXmlaRequest
     }
 
     public Map<String, Object> getRestrictions() {
-        if (method != METHOD_DISCOVER) {
+        if (method != Method.DISCOVER) {
             throw new IllegalStateException(
                 "Only METHOD_DISCOVER has restrictions");
         }
@@ -105,7 +105,7 @@ public class DefaultXmlaRequest
     }
 
     public String getStatement() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE has statement");
         }
@@ -127,7 +127,7 @@ public class DefaultXmlaRequest
 */
 
     public String getRequestType() {
-        if (method != METHOD_DISCOVER) {
+        if (method != Method.DISCOVER) {
             throw new IllegalStateException(
                 "Only METHOD_DISCOVER has requestType");
         }
@@ -135,7 +135,7 @@ public class DefaultXmlaRequest
     }
 
     public boolean isDrillThrough() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE determines drillthrough");
         }
@@ -143,7 +143,7 @@ public class DefaultXmlaRequest
     }
 
     public int drillThroughMaxRows() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE determines drillthrough");
         }
@@ -151,7 +151,7 @@ public class DefaultXmlaRequest
     }
 
     public int drillThroughFirstRowset() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE determines drillthrough");
         }
@@ -163,10 +163,10 @@ public class DefaultXmlaRequest
         if (NS_XMLA.equals(xmlaRoot.getNamespaceURI())) {
             String lname = xmlaRoot.getLocalName();
             if ("Discover".equals(lname)) {
-                method = METHOD_DISCOVER;
+                method = Method.DISCOVER;
                 initDiscover(xmlaRoot);
             } else if ("Execute".equals(lname)) {
-                method = METHOD_EXECUTE;
+                method = Method.EXECUTE;
                 initExecute(xmlaRoot);
             } else {
                 // Note that is code will never be reached because

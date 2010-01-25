@@ -81,11 +81,6 @@ public interface XmlaConstants {
     public static final String CONTEXT_XMLA_SESSION_STATE_END =
         "SessionStateEnd";
 
-
-    /* XMLA protocol constants */
-    public static final int METHOD_DISCOVER = 1;
-    public static final int METHOD_EXECUTE = 2;
-
     /*************************************************************************
     *
     * The following are XMLA exception fault codes used as faultcode entries

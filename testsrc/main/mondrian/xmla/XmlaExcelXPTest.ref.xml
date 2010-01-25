@@ -1473,6 +1473,8 @@ The default value for this property is an empty string.</PropertyDescription>
                   sql:field="LEVELS_LIST" type="xsd:string"/>
                 <xsd:element minOccurs="0" name="DESCRIPTION"
                   sql:field="DESCRIPTION" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DEFAULT_FORMAT_STRING"
+                  sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:schema>
@@ -1576,6 +1578,9 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DEFAULT_FORMAT_STRING"
+                                    sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>

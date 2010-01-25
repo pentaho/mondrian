@@ -10012,6 +10012,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DEFAULT_FORMAT_STRING"
+                                    sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -10726,15 +10729,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element minOccurs="0"
                                     name="SCHEMA_NAME"
                                     sql:field="SCHEMA_NAME" type="xsd:string"/>
-                                <xsd:element name="CUBE_NAME"
+                                <xsd:element minOccurs="0"
+                                    name="CUBE_NAME"
                                     sql:field="CUBE_NAME" type="xsd:string"/>
-                                <xsd:element
+                                <xsd:element minOccurs="0"
                                     name="DIMENSION_UNIQUE_NAME"
                                     sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element
+                                <xsd:element minOccurs="0"
                                     name="HIERARCHY_UNIQUE_NAME"
                                     sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element name="LEVEL_UNIQUE_NAME"
+                                <xsd:element minOccurs="0"
+                                    name="LEVEL_UNIQUE_NAME"
                                     sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="MEMBER_UNIQUE_NAME"
@@ -11988,7 +11993,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_CHILDREN</ElementName>
-                        <ElementDescription>Returns only the immediate children</ElementDescription>
+                        <ElementDescription>Tree operation which returns only the immediate children.</ElementDescription>
                         <ElementValue>1</ElementValue>
                     </row>
                     <row>
@@ -11996,7 +12001,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_SIBLINGS</ElementName>
-                        <ElementDescription>Returns members on the same level</ElementDescription>
+                        <ElementDescription>Tree operation which returns members on the same level.</ElementDescription>
                         <ElementValue>2</ElementValue>
                     </row>
                     <row>
@@ -12004,7 +12009,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_PARENT</ElementName>
-                        <ElementDescription>Returns only the immediate parent</ElementDescription>
+                        <ElementDescription>Tree operation which returns only the immediate parent.</ElementDescription>
                         <ElementValue>4</ElementValue>
                     </row>
                     <row>
@@ -12012,7 +12017,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_SELF</ElementName>
-                        <ElementDescription>Returns the immediate member in the list of returned rows</ElementDescription>
+                        <ElementDescription>Tree operation which returns itself in the list of returned rows.</ElementDescription>
                         <ElementValue>8</ElementValue>
                     </row>
                     <row>
@@ -12020,7 +12025,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_DESCENDANTS</ElementName>
-                        <ElementDescription>Returns all descendants</ElementDescription>
+                        <ElementDescription>Tree operation which returns all of the descendants.</ElementDescription>
                         <ElementValue>16</ElementValue>
                     </row>
                     <row>
@@ -12028,7 +12033,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_ANCESTORS</ElementName>
-                        <ElementDescription>Returns all ancestors</ElementDescription>
+                        <ElementDescription>Tree operation which returns all of the ancestors.</ElementDescription>
                         <ElementValue>32</ElementValue>
                     </row>
                 </root>

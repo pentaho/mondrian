@@ -13,6 +13,9 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.xmla.impl.DefaultXmlaResponse;
+
+import static org.olap4j.metadata.XmlaConstants.*;
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -371,8 +374,8 @@ way too noisy
         Rowset rowset =
             rowsetDefinition.getRowset(
                 new XmlaRequest() {
-                    public int getMethod() {
-                        return METHOD_DISCOVER;
+                    public Method getMethod() {
+                        return Method.DISCOVER;
                     }
 
                     public Map<String, String> getProperties() {
@@ -411,7 +414,7 @@ way too noisy
                         throw new UnsupportedOperationException();
                     }
 
-                    public Enumeration.Format getFormat() {
+                    public Format getFormat() {
                         throw new UnsupportedOperationException();
                     }
                 },

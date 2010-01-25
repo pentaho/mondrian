@@ -17,6 +17,12 @@ import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapMember;
 
+import static mondrian.xmla.XmlaConstants.*;
+
+import org.olap4j.metadata.Member.TreeOp;
+import org.olap4j.metadata.XmlaConstant;
+import org.olap4j.metadata.XmlaConstants;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -850,6 +856,7 @@ enum RowsetDefinition {
             MdschemaMeasuresRowset.MeasureIsVisible,
             MdschemaMeasuresRowset.LevelsList,
             MdschemaMeasuresRowset.Description,
+            MdschemaMeasuresRowset.FormatString,
         },
         new Column[] {
             MdschemaMeasuresRowset.CatalogName,
@@ -916,7 +923,7 @@ enum RowsetDefinition {
             MdschemaMembersRowset.ParentLevel,
             MdschemaMembersRowset.ParentUniqueName,
             MdschemaMembersRowset.ParentCount,
-            MdschemaMembersRowset.TreeOp,
+            MdschemaMembersRowset.TreeOp_,
             MdschemaMembersRowset.Depth,
         },
         new Column[] {
@@ -1158,11 +1165,11 @@ enum RowsetDefinition {
     protected void writeRowsetXmlSchemaTop(SaxWriter writer) {
         writer.startElement(
             "xsd:schema",
-            "xmlns:xsd", XmlaConstants.NS_XSD,
-            "xmlns", XmlaConstants.NS_XMLA_ROWSET,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:xsd", NS_XSD,
+            "xmlns", NS_XMLA_ROWSET,
+            "xmlns:xsi", NS_XSI,
             "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
-            "targetNamespace", XmlaConstants.NS_XMLA_ROWSET,
+            "targetNamespace", NS_XMLA_ROWSET,
             "elementFormDefault", "qualified");
 
         writer.startElement(
@@ -1285,130 +1292,18 @@ enum RowsetDefinition {
         }
     }
 
-    private static DBType getDBTypeFromProperty(Property prop) {
+    private static XmlaConstants.DBType getDBTypeFromProperty(Property prop) {
         switch (prop.getType()) {
         case TYPE_STRING:
-            return DBType.WSTR;
+            return XmlaConstants.DBType.WSTR;
         case TYPE_NUMERIC:
-            return DBType.R8;
+            return XmlaConstants.DBType.R8;
         case TYPE_BOOLEAN:
-            return DBType.BOOL;
+            return XmlaConstants.DBType.BOOL;
         case TYPE_OTHER:
         default:
             // TODO: what type is it really, its not a string
-            return DBType.WSTR;
-        }
-    }
-
-    /**
-     * The only OLE DB Types Indicators returned by SQL Server are thoses coded
-     * below.
-     */
-
-    enum DBType {
-        /*
-        * The following values exactly match VARENUM
-        * in Automation and may be used in VARIANT.
-        */
-        I4(
-            "INTEGER", 3, "DBTYPE_I4", "A four-byte, signed integer: INTEGER"),
-
-        R8(
-            "DOUBLE", 5, "DBTYPE_R8",
-            "A double-precision floating-point value: Double"),
-
-        CY(
-            "CURRENCY", 6, "DBTYPE_CY",
-            "A currency value: LARGE_INTEGER, Currency is a fixed-point number "
-            + "with four digits to the right of the decimal point. It is "
-            + "stored in an eight-byte signed integer, scaled by 10,000."),
-
-        BOOL(
-            "BOOLEAN", 11, "DBTYPE_BOOL",
-            "A Boolean value stored in the same way as in Automation: "
-            + "VARIANT_BOOL; 0 means false and ~0 (bitwise, the value is not "
-            + "0; that is, all bits are set to 1) means true."),
-
-        /**
-         * Used by SQL Server for value.
-         */
-        VARIANT(
-            "VARIANT", 12, "DBTYPE_VARIANT", "An Automation VARIANT"),
-
-        /**
-         * Used by SQL Server for font size.
-         */
-        UI2("UNSIGNED_SHORT", 18, "DBTYPE_UI2", "A two-byte, unsigned integer"),
-
-        /**
-         * Used by SQL Server for colors, font flags and cell ordinal.
-         */
-        UI4(
-            "UNSIGNED_INTEGER", 19, "DBTYPE_UI4",
-            "A four-byte, unsigned integer"),
-
-        /*
-        * The following values exactly match VARENUM
-        * in Automation but cannot be used in VARIANT.
-        */
-        I8(
-            "LARGE_INTEGER", 20, "DBTYPE_I8",
-            "An eight-byte, signed integer: LARGE_INTEGER"),
-
-        /*
-        * The following values are not in VARENUM in OLE.
-        */
-        WSTR(
-            "STRING", 130, "DBTYPE_WSTR",
-            "A null-terminated Unicode character string: wchar_t[length]; If "
-            + "DBTYPE_WSTR is used by itself, the number of bytes allocated "
-            + "for the string, including the null-termination character, is "
-            + "specified by cbMaxLen in the DBBINDING structure. If "
-            + "DBTYPE_WSTR is combined with DBTYPE_BYREF, the number of bytes "
-            + "allocated for the string, including the null-termination "
-            + "character, is at least the length of the string plus two. In "
-            + "either case, the actual length of the string is determined from "
-            + "the bound length value. The maximum length of the string is the "
-            + "number of allocated bytes divided by sizeof(wchar_t) and "
-            + "truncated to the nearest integer.");
-
-
-        /**
-         * The length of a non-numeric column or parameter that refers to either
-         * the maximum or the length defined for this type by the provider. For
-         * character data, this is the maximum or defined length in characters.
-         * For DateTime data types, this is the length of the string
-         * representation (assuming the maximum allowed precision of the
-         * fractional seconds component).
-         *
-         * If the data type is numeric, this is the upper bound on the maximum
-         * precision of the data type.
-         int columnSize;
-         */
-
-        private final String userName;
-        private final int userOrdinal;
-        /**
-         *  A Boolean that indicates whether the data type is nullable.
-         *  VARIANT_TRUE indicates that the data type is nullable.
-         *  VARIANT_FALSE indicates that the data type is not nullable.
-         *  NULL-- indicates that it is not known whether the data type is
-         *  nullable.
-         boolean isNullable;
-         */
-
-        String dbTypeIndicator;
-
-        DBType(
-            String userName,
-            int userOrdinal,
-            String dbTypeIndicator,
-            String description)
-        {
-            this.userName = userName;
-            this.userOrdinal = userOrdinal;
-            Util.discard(description);
-            this.dbTypeIndicator = dbTypeIndicator;
+            return XmlaConstants.DBType.WSTR;
         }
     }
 
@@ -1633,7 +1528,7 @@ enum RowsetDefinition {
             new Column(
                 "ProviderType",
                 Type.EnumerationArray,
-                Enumeration.ProviderType.enumeration,
+                Enumeration.PROVIDER_TYPE,
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 Column.UNBOUNDED,
@@ -1648,7 +1543,7 @@ enum RowsetDefinition {
             new Column(
                 "AuthenticationMode",
                 Type.EnumString,
-                Enumeration.AuthenticationMode.enumeration,
+                Enumeration.AUTHENTICATION_MODE,
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "Specification of what type of security mode the data source "
@@ -1851,7 +1746,7 @@ enum RowsetDefinition {
             new Column(
                 "PropertyAccessType",
                 Type.EnumString,
-                Enumeration.Access.enumeration,
+                Enumeration.ACCESS,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Access for the property. The value can be Read, Write, or "
@@ -1970,9 +1865,8 @@ enum RowsetDefinition {
         {
             List<Enumeration> enumerators = getEnumerators();
             for (Enumeration enumerator : enumerators) {
-                final String[] valueNames = enumerator.getNames();
-                for (String valueName : valueNames) {
-                    final Enum<?> value = enumerator.getValue(valueName);
+                final List<? extends Enum> values = enumerator.getValues();
+                for (Enum<?> value : values) {
                     Row row = new Row();
                     row.set(EnumName.name, enumerator.name);
                     row.set(EnumDescription.name, enumerator.description);
@@ -1982,16 +1876,22 @@ enum RowsetDefinition {
                     // it self.
                     row.set(EnumType.name, "string");
 
-                    String name =
-                        value instanceof Enumeration.EnumWithName
-                        ? ((Enumeration.EnumWithName) value).userName()
-                        : value.name();
+                    final String name =
+                        (value instanceof XmlaConstant)
+                            ? ((XmlaConstant) value).xmlaName()
+                            : value.name();
                     row.set(ElementName.name, name);
 
-                    if (value instanceof Enumeration.EnumWithDesc) {
-                        String description =
-                            ((Enumeration.EnumWithDesc) value).getDescription();
-                        row.set(ElementDescription.name, description);
+                    final String description =
+                     (value instanceof XmlaConstant)
+                        ? ((XmlaConstant) value).getDescription()
+                         : (value instanceof XmlaConstants.EnumWithDesc)
+                        ? ((XmlaConstants.EnumWithDesc) value).getDescription()
+                             : null;
+                    if (description != null) {
+                        row.set(
+                            ElementDescription.name,
+                            description);
                     }
 
                     switch (enumerator.type) {
@@ -2000,10 +1900,10 @@ enum RowsetDefinition {
                         // these don't have ordinals
                         break;
                     default:
-                        int ordinal =
-                            value instanceof Enumeration.EnumWithOrdinal
-                                ? ((Enumeration.EnumWithOrdinal) value)
-                                .userOrdinal()
+                        final int ordinal =
+                            (value instanceof XmlaConstant
+                             && ((XmlaConstant) value).xmlaOrdinal() != -1)
+                                ? ((XmlaConstant) value).xmlaOrdinal()
                                 : value.ordinal();
                         row.set(ElementValue.name, ordinal);
                         break;
@@ -2146,12 +2046,12 @@ enum RowsetDefinition {
             throws XmlaException
         {
             populate(
-                Enumeration.Literal.class,
+                XmlaConstants.Literal.class,
                 rows,
-                new Comparator<Enumeration.Literal>() {
+                new Comparator<XmlaConstants.Literal>() {
                 public int compare(
-                    Enumeration.Literal o1,
-                    Enumeration.Literal o2)
+                    XmlaConstants.Literal o1,
+                    XmlaConstants.Literal o2)
                 {
                     return o1.name().compareTo(o2.name());
                 }
@@ -2485,7 +2385,9 @@ enum RowsetDefinition {
                         // type of the column - since these are all
                         // Measures, aggregate Measures??, maybe they
                         // are all numeric? (or currency)
-                        row.set(DataType.name, DBType.R8.userOrdinal);
+                        row.set(
+                            DataType.name,
+                            XmlaConstants.DBType.R8.xmlaOrdinal());
                         // TODO: 16/255 seems to be what MS SQL Server
                         // always returns.
                         row.set(NumericPrecision.name, 16);
@@ -2521,7 +2423,7 @@ enum RowsetDefinition {
                 row.set(ColumnFlags.name, 0);
                 row.set(IsNullable.name, false);
                 // names are always WSTR
-                row.set(DataType.name, DBType.WSTR.userOrdinal);
+                row.set(DataType.name, XmlaConstants.DBType.WSTR.xmlaOrdinal());
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
                 addRow(row, rows);
@@ -2535,7 +2437,7 @@ enum RowsetDefinition {
                 row.set(ColumnFlags.name, 0);
                 row.set(IsNullable.name, false);
                 // names are always WSTR
-                row.set(DataType.name, DBType.WSTR.userOrdinal);
+                row.set(DataType.name, XmlaConstants.DBType.WSTR.xmlaOrdinal());
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
                 addRow(row, rows);
@@ -2552,7 +2454,8 @@ enum RowsetDefinition {
                     row.set(ColumnFlags.name, 0);
                     row.set(IsNullable.name, false);
                     // names are always BOOL
-                    row.set(DataType.name, DBType.BOOL.userOrdinal);
+                    row.set(
+                        DataType.name, XmlaConstants.DBType.BOOL.xmlaOrdinal());
                     row.set(NumericPrecision.name, 255);
                     row.set(NumericScale.name, 255);
                     addRow(row, rows);
@@ -2589,7 +2492,7 @@ enum RowsetDefinition {
             row.set(ColumnFlags.name, 0);
             row.set(IsNullable.name, false);
             // names are always WSTR
-            row.set(DataType.name, DBType.WSTR.userOrdinal);
+            row.set(DataType.name, XmlaConstants.DBType.WSTR.xmlaOrdinal());
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
             addRow(row, rows);
@@ -2605,7 +2508,7 @@ enum RowsetDefinition {
             row.set(ColumnFlags.name, 0);
             row.set(IsNullable.name, false);
             // names are always WSTR
-            row.set(DataType.name, DBType.WSTR.userOrdinal);
+            row.set(DataType.name, XmlaConstants.DBType.WSTR.xmlaOrdinal());
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
             addRow(row, rows);
@@ -2642,8 +2545,8 @@ TODO: see above
                 row.set(ColumnFlags.name, 0);
                 row.set(IsNullable.name, false);
 
-                DBType dbType = getDBTypeFromProperty(prop);
-                row.set(DataType.name, dbType.userOrdinal);
+                XmlaConstants.DBType dbType = getDBTypeFromProperty(prop);
+                row.set(DataType.name, dbType.xmlaOrdinal());
 
                 switch (prop.getType()) {
                 case TYPE_STRING:
@@ -2828,10 +2731,10 @@ TODO: see above
             Row row;
 
             // i4
-            Integer dt = DBType.I4.userOrdinal;
+            Integer dt = XmlaConstants.DBType.I4.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.I4.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.I4.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 8);
                 row.set(IsNullable.name, true);
@@ -2845,10 +2748,10 @@ TODO: see above
             }
 
             // R8
-            dt = DBType.R8.userOrdinal;
+            dt = XmlaConstants.DBType.R8.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.R8.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.R8.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 16);
                 row.set(IsNullable.name, true);
@@ -2862,10 +2765,10 @@ TODO: see above
             }
 
             // CY
-            dt = DBType.CY.userOrdinal;
+            dt = XmlaConstants.DBType.CY.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.CY.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.CY.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 8);
                 row.set(IsNullable.name, true);
@@ -2879,10 +2782,10 @@ TODO: see above
             }
 
             // BOOL
-            dt = DBType.BOOL.userOrdinal;
+            dt = XmlaConstants.DBType.BOOL.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.BOOL.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.BOOL.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 1);
                 row.set(IsNullable.name, true);
@@ -2896,10 +2799,10 @@ TODO: see above
             }
 
             // I8
-            dt = DBType.I8.userOrdinal;
+            dt = XmlaConstants.DBType.I8.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.I8.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.I8.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 16);
                 row.set(IsNullable.name, true);
@@ -2913,10 +2816,10 @@ TODO: see above
             }
 
             // WSTR
-            dt = DBType.WSTR.userOrdinal;
+            dt = XmlaConstants.DBType.WSTR.xmlaOrdinal();
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.WSTR.userName);
+                row.set(TypeName.name, XmlaConstants.DBType.WSTR.userName);
                 row.set(DataType.name, dt);
                 // how big are the string columns in the db
                 row.set(ColumnSize.name, 255);
@@ -3655,7 +3558,7 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "User ID of the person who last updated the data. ");
+                "User ID of the person who last updated the data.");
         private static final Column IsDrillthroughEnabled =
             new Column(
                 "IS_DRILLTHROUGH_ENABLED",
@@ -3797,7 +3700,7 @@ TODO: see above
                             new MdschemaDimensionsRowset(
                                 wrapRequest(
                                     request,
-                                    Util.mapOf(
+                                    org.olap4j.impl.Olap4jUtil.mapOf(
                                         MdschemaDimensionsRowset.CatalogName,
                                         catalogName,
                                         MdschemaDimensionsRowset.SchemaName,
@@ -3810,7 +3713,7 @@ TODO: see above
                             new MdschemaSetsRowset(
                                 wrapRequest(
                                     request,
-                                    Util.mapOf(
+                                    org.olap4j.impl.Olap4jUtil.mapOf(
                                         MdschemaSetsRowset.CatalogName,
                                         catalogName,
                                         MdschemaSetsRowset.SchemaName,
@@ -3823,7 +3726,7 @@ TODO: see above
                             new MdschemaMeasuresRowset(
                                 wrapRequest(
                                     request,
-                                    Util.mapOf(
+                                    org.olap4j.impl.Olap4jUtil.mapOf(
                                         MdschemaMeasuresRowset.CatalogName,
                                         catalogName,
                                         MdschemaMeasuresRowset.SchemaName,
@@ -3901,7 +3804,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
-                "The name of the dimension. ");
+                "The name of the dimension.");
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
@@ -4175,7 +4078,7 @@ TODO: see above
                     new MdschemaHierarchiesRowset(
                         wrapRequest(
                             request,
-                            Util.mapOf(
+                            org.olap4j.impl.Olap4jUtil.mapOf(
                                 MdschemaHierarchiesRowset.CatalogName,
                                 catalogName,
                                 MdschemaHierarchiesRowset.SchemaName,
@@ -4523,7 +4426,7 @@ TODO: see above
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "The unique name of the dimension to which this hierarchy "
-                + "belongs. ");
+                + "belongs.");
         private static final Column HierarchyName =
             new Column(
                 "HIERARCHY_NAME",
@@ -4566,7 +4469,7 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "The type of the dimension. ");
+                "The type of the dimension.");
         private static final Column HierarchyCardinality =
             new Column(
                 "HIERARCHY_CARDINALITY",
@@ -4582,7 +4485,7 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "The default member for this hierarchy. ");
+                "The default member for this hierarchy.");
         private static final Column AllMember =
             new Column(
                 "ALL_MEMBER",
@@ -4864,7 +4767,7 @@ TODO: see above
                     new MdschemaLevelsRowset(
                         wrapRequest(
                             request,
-                            Util.mapOf(
+                            org.olap4j.impl.Olap4jUtil.mapOf(
                                 MdschemaLevelsRowset.CatalogName,
                                 catalogName,
                                 MdschemaLevelsRowset.SchemaName,
@@ -5351,7 +5254,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
-                "The name of the catalog to which this measure belongs. ");
+                "The name of the catalog to which this measure belongs.");
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
@@ -5391,7 +5294,7 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "A label or caption associated with the measure. ");
+                "A label or caption associated with the measure.");
         private static final Column MeasureGuid =
             new Column(
                 "MEASURE_GUID",
@@ -5407,7 +5310,7 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "How a measure was derived. ");
+                "How a measure was derived.");
         private static final Column DataType =
             new Column(
                 "DATA_TYPE",
@@ -5441,7 +5344,15 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "A human-readable description of the measure. ");
+                "A human-readable description of the measure.");
+        private static final Column FormatString =
+            new Column(
+                "DEFAULT_FORMAT_STRING",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "The default format string for the measure.");
 
         public void populate(
             XmlaResponse response,
@@ -5573,6 +5484,8 @@ TODO: see above
                     cube.getName() + " Cube - "
                     + member.getName() + " Member";
             }
+            final String formatString =
+                (String) member.getPropertyValue(Property.FORMAT_STRING.name);
 
             Row row = new Row();
             row.set(CatalogName.name, catalogName);
@@ -5606,19 +5519,19 @@ TODO: see above
             row.set(MeasureAggregator.name, aggNumber);
 
             // DATA_TYPE DBType best guess is string
-            int dbType = DBType.WSTR.userOrdinal;
+            XmlaConstants.DBType dbType = XmlaConstants.DBType.WSTR;
             String datatype = (String)
                 member.getPropertyValue(Property.DATATYPE.getName());
             if (datatype != null) {
                 if (datatype.equals("Integer")) {
-                    dbType = DBType.I4.userOrdinal;
+                    dbType = XmlaConstants.DBType.I4;
                 } else if (datatype.equals("Numeric")) {
-                    dbType = DBType.R8.userOrdinal;
+                    dbType = XmlaConstants.DBType.R8;
                 } else {
-                    dbType = DBType.WSTR.userOrdinal;
+                    dbType = XmlaConstants.DBType.WSTR;
                 }
             }
-            row.set(DataType.name, dbType);
+            row.set(DataType.name, dbType.xmlaOrdinal());
             row.set(MeasureIsVisible.name, visible);
 
             if (levelListStr != null) {
@@ -5626,6 +5539,7 @@ TODO: see above
             }
 
             row.set(Description.name, desc);
+            row.set(FormatString.name, formatString);
             addRow(row, rows);
         }
 
@@ -5670,7 +5584,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
-                "The name of the catalog to which this member belongs. ");
+                "The name of the catalog to which this member belongs.");
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
@@ -5678,7 +5592,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
-                "The name of the schema to which this member belongs. ");
+                "The name of the schema to which this member belongs.");
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
@@ -5694,7 +5608,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
-                "Unique name of the dimension to which this member belongs. ");
+                "Unique name of the dimension to which this member belongs.");
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
@@ -5806,11 +5720,11 @@ TODO: see above
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Number of parents that this member has.");
-        private static final Column TreeOp =
+        private static final Column TreeOp_ =
             new Column(
                 "TREE_OP",
                 Type.Enumeration,
-                Enumeration.TreeOp.enumeration,
+                Enumeration.TREE_OP,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
                 "Tree Operation");
@@ -6021,11 +5935,11 @@ TODO: see above
             List<Row> rows)
         {
             // Visit node itself.
-            if (mask(treeOp, Enumeration.TreeOp.Self.userOrdinal())) {
+            if (mask(treeOp, TreeOp.SELF.xmlaOrdinal())) {
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
             // Visit node's siblings (not including itself).
-            if (mask(treeOp, Enumeration.TreeOp.Siblings.userOrdinal())) {
+            if (mask(treeOp, TreeOp.SIBLINGS.xmlaOrdinal())) {
                 final Member parent =
                     schemaReader.getMemberParent(member);
                 final List<Member> siblings =
@@ -6041,23 +5955,23 @@ TODO: see above
                     populateMember(
                         schemaReader, catalogName,
                         cube, sibling,
-                        Enumeration.TreeOp.Self.userOrdinal(), rows);
+                        TreeOp.SELF.xmlaOrdinal(), rows);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Descendants.userOrdinal())) {
+            if (mask(treeOp, TreeOp.DESCENDANTS.xmlaOrdinal())) {
                 final List<Member> children =
                     schemaReader.getMemberChildren(member);
                 for (Member child : children) {
                     populateMember(
                         schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.userOrdinal() |
-                        Enumeration.TreeOp.Descendants.userOrdinal(),
+                        TreeOp.SELF.xmlaOrdinal() |
+                        TreeOp.DESCENDANTS.xmlaOrdinal(),
                         rows);
                 }
             } else if (mask(
-                treeOp, Enumeration.TreeOp.Children.userOrdinal()))
+                treeOp, TreeOp.CHILDREN.xmlaOrdinal()))
             {
                 final List<Member> children =
                     schemaReader.getMemberChildren(member);
@@ -6065,26 +5979,26 @@ TODO: see above
                     populateMember(
                         schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.userOrdinal(), rows);
+                        TreeOp.SELF.xmlaOrdinal(), rows);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Ancestors.userOrdinal())) {
+            if (mask(treeOp, TreeOp.ANCESTORS.xmlaOrdinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
                     populateMember(
                         schemaReader, catalogName,
                         cube, parent,
-                        Enumeration.TreeOp.Self.userOrdinal() |
-                        Enumeration.TreeOp.Ancestors.userOrdinal(), rows);
+                        TreeOp.SELF.xmlaOrdinal() |
+                        TreeOp.ANCESTORS.xmlaOrdinal(), rows);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Parent.userOrdinal())) {
+            } else if (mask(treeOp, TreeOp.PARENT.xmlaOrdinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
                     populateMember(
                         schemaReader, catalogName,
                         cube, parent,
-                        Enumeration.TreeOp.Self.userOrdinal(), rows);
+                        TreeOp.SELF.xmlaOrdinal(), rows);
                 }
             }
         }
@@ -6094,8 +6008,8 @@ TODO: see above
             // the result on TreeOp (because it's not an output column) or
             // on MemberUniqueName (because TreeOp will have caused us to
             // generate other members than the one asked for).
-            if (list.contains(TreeOp)) {
-                list.remove(TreeOp);
+            if (list.contains(TreeOp_)) {
+                list.remove(TreeOp_);
                 list.remove(MemberUniqueName);
             }
             return list;
@@ -6136,8 +6050,8 @@ TODO: see above
                 if (member == null) {
                     return;
                 }
-                if (isRestricted(TreeOp)) {
-                    int treeOp = getRestrictionValueAsInt(TreeOp);
+                if (isRestricted(TreeOp_)) {
+                    int treeOp = getRestrictionValueAsInt(TreeOp_);
                     if (treeOp == -1) {
                         return;
                     }
@@ -6401,13 +6315,6 @@ TODO: see above
             propertyNameRT = getRestrictionTest(PropertyName);
         }
 
-        private static final int MDPROP_MEMBER = 0x01;
-        private static final int MDPROP_CELL = 0x02;
-        private static final int MDPROP_SYSTEM = 0x04;
-        private static final int MDPROP_BLOB = 0x08;
-
-        private static final int MD_PROPTYPE_REGULAR = 0x00;
-
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
@@ -6430,7 +6337,7 @@ TODO: see above
                 Type.String,
                 null,
                 Column.RESTRICTION,
-                Column.REQUIRED,
+                Column.OPTIONAL,
                 "The name of the cube.");
         private static final Column DimensionUniqueName =
             new Column(
@@ -6438,7 +6345,7 @@ TODO: see above
                 Type.String,
                 null,
                 Column.RESTRICTION,
-                Column.REQUIRED,
+                Column.OPTIONAL,
                 "The unique name of the dimension.");
         private static final Column HierarchyUniqueName =
             new Column(
@@ -6446,7 +6353,7 @@ TODO: see above
                 Type.String,
                 null,
                 Column.RESTRICTION,
-                Column.REQUIRED,
+                Column.OPTIONAL,
                 "The unique name of the hierarchy.");
         private static final Column LevelUniqueName =
             new Column(
@@ -6454,7 +6361,7 @@ TODO: see above
                 Type.String,
                 null,
                 Column.RESTRICTION,
-                Column.REQUIRED,
+                Column.OPTIONAL,
                 "The unique name of the level to which this property belongs.");
         // According to MS this should not be nullable
         private static final Column MemberUniqueName =
@@ -6505,7 +6412,7 @@ TODO: see above
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
-                "The type of the property. ");
+                "The type of the property.");
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
@@ -6513,12 +6420,9 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "A human-readable description of the measure. ");
+                "A human-readable description of the measure.");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
-            throws XmlaException
+        private void populate2(List<Row> rows)
         {
             DataSourcesConfig.DataSource ds =
                 handler.getDataSource(request);
@@ -6541,6 +6445,60 @@ TODO: see above
                 if (catalogRT.passes(catalogName)) {
                     populateCatalog(connection, catalogName, rows);
                 }
+            }
+        }
+
+        public void populate(
+            XmlaResponse response,
+            List<Row> rows)
+            throws XmlaException
+        {
+            // Default PROPERTY_TYPE is MDPROP_MEMBER.
+            @SuppressWarnings({"unchecked"})
+            final List<String> list =
+                (List<String>) restrictions.get(PropertyType.name);
+            Set<org.olap4j.metadata.Property.TypeFlag> typeFlags;
+            if (list == null) {
+                typeFlags =
+                    Util.enumSetOf(
+                        org.olap4j.metadata.Property.TypeFlag.MEMBER);
+            } else {
+                typeFlags =
+                    org.olap4j.metadata.Property.TypeFlag.getDictionary()
+                        .forMask(
+                        Integer.valueOf(list.get(0)));
+            }
+
+            for (org.olap4j.metadata.Property.TypeFlag typeFlag : typeFlags) {
+                switch (typeFlag) {
+                case MEMBER:
+                    populate2(rows);
+                    break;
+                case CELL:
+                    populateCell(rows);
+                    break;
+                case SYSTEM:
+                case BLOB:
+                default:
+                    break;
+                }
+            }
+        }
+
+        private void populateCell(List<Row> rows) {
+            for (org.olap4j.metadata.Property.StandardCellProperty property
+                : org.olap4j.metadata.Property.StandardCellProperty.values())
+            {
+                Row row = new Row();
+                row.set(
+                    PropertyType.name,
+                    org.olap4j.metadata.Property.TypeFlag.getDictionary()
+                        .toMask(
+                            property.getType()));
+                row.set(PropertyName.name, property.name());
+                row.set(PropertyCaption.name, property.getCaption(null));
+                row.set(DataType.name, property.getDatatype().xmlaOrdinal());
+                addRow(row, rows);
             }
         }
 
@@ -6682,11 +6640,15 @@ TODO: see above
 
             row.set(PropertyName.name, propertyName);
             // Only member properties now
-            row.set(PropertyType.name, MDPROP_MEMBER);
-            row.set(PropertyContentType.name, MD_PROPTYPE_REGULAR);
+            row.set(
+                PropertyType.name,
+                org.olap4j.metadata.Property.TypeFlag.MEMBER.xmlaOrdinal());
+            row.set(
+                PropertyContentType.name,
+                org.olap4j.metadata.Property.ContentType.REGULAR.xmlaOrdinal());
             row.set(PropertyCaption.name, property.getCaption());
-            DBType dbType = getDBTypeFromProperty(property);
-            row.set(DataType.name, dbType.userOrdinal);
+            XmlaConstants.DBType dbType = getDBTypeFromProperty(property);
+            row.set(DataType.name, dbType.xmlaOrdinal());
 
             String desc =
                 cube.getName() + " Cube - "
@@ -6795,7 +6757,7 @@ TODO: see above
             this.request = request;
         }
 
-        public int getMethod() {
+        public XmlaConstants.Method getMethod() {
             return request.getMethod();
         }
 

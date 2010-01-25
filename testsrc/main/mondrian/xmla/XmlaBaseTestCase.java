@@ -9,27 +9,26 @@
 */
 package mondrian.xmla;
 
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.DiffRepository;
-import mondrian.test.TestContext;
-import mondrian.tui.*;
-import mondrian.olap.Util;
 import mondrian.olap.Role;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnectionProperties;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
+import mondrian.test.*;
+import mondrian.tui.*;
+
+import org.olap4j.metadata.XmlaConstants;
+
 import junit.framework.AssertionFailedError;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+
+import org.custommonkey.xmlunit.XMLAssert;
+
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.w3c.dom.Element;
-import java.io.IOException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -252,7 +251,7 @@ System.out.println("Got CONTINUE");
         {
             Role role = roles.get();
             if (role != null) {
-                context.put(XmlaConstants.CONTEXT_ROLE, role);
+                context.put(mondrian.xmla.XmlaConstants.CONTEXT_ROLE, role);
             }
             return true;
         }
@@ -363,9 +362,11 @@ System.out.println("Got CONTINUE");
     protected Document fileToDocument(String filename)
         throws IOException, SAXException
     {
-        String s = getDiffRepos().expand(null, filename);
+        final String var = "${" + filename + "}";
+        String s = getDiffRepos().expand(null, var);
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
+            getDiffRepos().amend(var, s);
         }
         // Give derived class a chance to change the content.
         s = filter(getDiffRepos().getCurrentTestCaseName(true), filename, s);
@@ -419,7 +420,7 @@ System.out.println("Got CONTINUE");
         String requestText = fileToString("request");
         requestText = testContext.upgradeQuery(requestText);
         doTestInline(
-            requestType, requestText, "${response}",
+            requestType, requestText, "response",
             props, testContext, role);
     }
 
@@ -456,7 +457,7 @@ System.out.println("Got CONTINUE");
             doTestsJson(
                 requestText, props,
                 testContext, connectString, catalogNameUrls,
-                responseStr, Enumeration.Content.Data, role);
+                responseStr, XmlaConstants.Content.Data, role);
             return;
         }
 
@@ -475,7 +476,7 @@ System.out.println("Got CONTINUE");
         doTests(
             requestText, props,
             testContext, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.SchemaData, role, true);
+            expectedDoc, XmlaConstants.Content.SchemaData, role, true);
 
         if (requestType.equals("EXECUTE")) {
             return;
@@ -488,7 +489,7 @@ System.out.println("Got CONTINUE");
         doTests(
             requestText, props,
             testContext, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.None, role, false);
+            expectedDoc, XmlaConstants.Content.None, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -497,7 +498,7 @@ System.out.println("Got CONTINUE");
         doTests(
             requestText, props,
             testContext, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.Data, role, false);
+            expectedDoc, XmlaConstants.Content.Data, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -506,7 +507,7 @@ System.out.println("Got CONTINUE");
         doTests(
             requestText, props,
             testContext, connectString, catalogNameUrls,
-            expectedDoc, Enumeration.Content.Schema, role, false);
+            expectedDoc, XmlaConstants.Content.Schema, role, false);
     }
 
     /**
@@ -525,7 +526,7 @@ System.out.println("Got CONTINUE");
      *    request with different content types and the same reference log, you
      *    should pass {@code true} for the content type that has the most
      *    information (generally
-     *    {@link mondrian.xmla.Enumeration.Content#SchemaData})
+     *    {@link org.olap4j.metadata.XmlaConstants.Content#SchemaData})
      * @throws Exception on error
      */
     protected void doTests(
@@ -535,7 +536,7 @@ System.out.println("Got CONTINUE");
         String connectString,
         Map<String, String> catalogNameUrls,
         Document expectedDoc,
-        Enumeration.Content content,
+        XmlaConstants.Content content,
         Role role,
         boolean replace) throws Exception
     {
@@ -595,7 +596,7 @@ System.out.println("Got CONTINUE");
         String connectString,
         Map<String, String> catalogNameUrls,
         String expectedStr,
-        Enumeration.Content content,
+        XmlaConstants.Content content,
         Role role) throws Exception
     {
         if (content != null) {
