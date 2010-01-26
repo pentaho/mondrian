@@ -354,6 +354,29 @@ public class Format {
                     } else {
                         i = 0;
                         if (formats[0].isApplicableTo(n)) {
+                            if (!Bug.BugMondrian687Fixed) {
+                                // Special case for format strings with style,
+                                // like "|#|style='red'". JPivot expects the
+                                // '-' to immediately precede the digits, viz
+                                // "|-6|style='red'|", not "-|6|style='red'|".
+                                // This is not consistent with SSAS 2005, hence
+                                // the bug.
+                                //
+                                // But for other formats, we want '-' to precede
+                                // literals, viz '-$6' not '$-6'. This is SSAS
+                                // 2005's behavior too.
+                                int size = buf.length();
+                                buf.append('-');
+                                n = -n;
+                                formats[i].format(n, buf);
+                                if (buf.substring(size, size + 2).equals(
+                                    "-|"))
+                                {
+                                    buf.setCharAt(size, '|');
+                                    buf.setCharAt(size + 1, '-');
+                                }
+                                return;
+                            }
                             buf.append('-');
                             n = -n;
                         } else {
@@ -399,6 +422,29 @@ public class Format {
                     } else {
                         i = 0;
                         if (formats[0].isApplicableTo(n)) {
+                            if (!Bug.BugMondrian687Fixed) {
+                                // Special case for format strings with style,
+                                // like "|#|style='red'". JPivot expects the
+                                // '-' to immediately precede the digits, viz
+                                // "|-6|style='red'|", not "-|6|style='red'|".
+                                // This is not consistent with SSAS 2005, hence
+                                // the bug.
+                                //
+                                // But for other formats, we want '-' to precede
+                                // literals, viz '-$6' not '$-6'. This is SSAS
+                                // 2005's behavior too.
+                                final int size = buf.length();
+                                buf.append('-');
+                                n = -n;
+                                formats[i].format(n, buf);
+                                if (buf.substring(size, size + 2).equals(
+                                    "-|"))
+                                {
+                                    buf.setCharAt(size, '|');
+                                    buf.setCharAt(size + 1, '-');
+                                }
+                                return;
+                            }
                             buf.append('-');
                             n = -n;
                         } else {
@@ -1180,7 +1226,7 @@ public class Format {
         return new Token(code, flags, token);
     }
 
-    public static final List<Token> getTokenList()
+    public static List<Token> getTokenList()
     {
         return Collections.unmodifiableList(Arrays.asList(tokens));
     }
