@@ -1,10 +1,10 @@
-Mondrian 3.1.5.13307 production release notes
+Mondrian 3.1.6.13364 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1.5.13307 is a minor release version of the leading
+Mondrian 3.1.6.13364 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -82,6 +82,10 @@ API changes from 3.0 to 3.1
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed since mondrian 3.1.6.13364
+----------------------------------------------------------
+MONDRIAN-686 - Regression: JPivot output invalid - New Variance Percent column
 
 Bugs and feature requests fixed since mondrian 3.1.5.13307
 ----------------------------------------------------------
