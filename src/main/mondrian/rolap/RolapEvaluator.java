@@ -53,6 +53,7 @@ public class RolapEvaluator implements Evaluator {
     private static final Object nullResult = new Object();
 
     private final RolapMember[] currentMembers;
+    private TreeMap<Integer, RolapMember> nonAllMemberMap;
     private final RolapEvaluator parent;
     protected CellReader cellReader;
     private final int depth;
@@ -110,6 +111,8 @@ public class RolapEvaluator implements Evaluator {
         evalAxes = parent.evalAxes;
         cellReader = parent.cellReader;
         currentMembers = parent.currentMembers.clone();
+        nonAllMemberMap =
+            (TreeMap<Integer, RolapMember>) parent.nonAllMemberMap.clone();
         calcMembers = parent.calcMembers.clone();
         calcMemberCount = parent.calcMemberCount;
         slicerMembers = new ArrayList<Member>(parent.slicerMembers);
@@ -138,6 +141,8 @@ public class RolapEvaluator implements Evaluator {
         evalAxes = false;
         cellReader = null;
         currentMembers = root.defaultMembers.clone();
+        nonAllMemberMap =
+            (TreeMap<Integer, RolapMember>) root.nonAllDefaultMembers.clone();
         calcMembers = new RolapCalculation[currentMembers.length];
         calcMemberCount = 0;
         slicerMembers = new ArrayList<Member>();
@@ -219,6 +224,11 @@ public class RolapEvaluator implements Evaluator {
 
     public final Member[] getMembers() {
         return currentMembers;
+    }
+
+    public final Member[] getNonAllMembers() {
+        final Collection<RolapMember> members = nonAllMemberMap.values();
+        return members.toArray(new Member[members.size()]);
     }
 
     public final List<List<Member[]>> getAggregationLists() {
@@ -381,6 +391,11 @@ public class RolapEvaluator implements Evaluator {
             removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
+        if (m.isAll()) {
+            nonAllMemberMap.remove(m.getHierarchy().getOrdinalInCube());
+        } else {
+            nonAllMemberMap.put(m.getHierarchy().getOrdinalInCube(), m);
+        }
         if (m.isEvaluated()) {
             addCalcMember(new RolapMemberCalculation(m));
         }
@@ -597,9 +612,9 @@ public class RolapEvaluator implements Evaluator {
     public final Object getProperty(String name, Object defaultValue) {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
-        for (int i = 0; i < currentMembers.length; i++) {
-            final Member member = currentMembers[i];
-
+        int i = -1;
+        for (RolapMember member : nonAllMemberMap.values()) {
+            i++;
             // more than one usage
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {

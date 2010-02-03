@@ -225,6 +225,11 @@ public interface Evaluator {
     Member[] getMembers();
 
     /**
+     * Returns an array of the non-All members which make up the current context
+     */
+    Member[] getNonAllMembers();
+
+    /**
      * Returns the number of times that this evaluator has told a lie when
      * retrieving cell values.
      */

@@ -54,7 +54,7 @@ public class SqlConstraintUtils {
         boolean restrictMemberTypes)
     {
         // Add constraint using the current evaluator context
-        Member[] members = evaluator.getMembers();
+        Member[] members = evaluator.getNonAllMembers();
 
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {

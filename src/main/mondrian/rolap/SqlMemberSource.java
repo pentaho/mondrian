@@ -685,7 +685,7 @@ RME is this right
 
         // Convert global ordinal to cube based ordinal (the 0th dimension
         // is always [Measures])
-        final Member[] members = evaluator.getMembers();
+        final Member[] members = evaluator.getNonAllMembers();
 
         // if measure is calculated, we can't continue
         if (!(members[0] instanceof RolapBaseCubeMeasure)) {
