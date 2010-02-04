@@ -191,13 +191,17 @@ public abstract class RolapAggregationManager {
             if (cube == null) {
                 return null;
             }
-            if (members[0] instanceof RolapStoredMeasure) {
+            if (members.length > 0
+                && members[0] instanceof RolapStoredMeasure)
+            {
                 measure = (RolapStoredMeasure) members[0];
             } else {
                 measure = (RolapStoredMeasure) cube.getMeasures().get(0);
             }
         } else {
-            if (members[0] instanceof RolapStoredMeasure) {
+            if (members.length > 0
+                && members[0] instanceof RolapStoredMeasure)
+            {
                 measure = (RolapStoredMeasure) members[0];
             } else {
                 return null;

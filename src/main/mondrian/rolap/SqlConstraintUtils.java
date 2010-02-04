@@ -147,8 +147,12 @@ public class SqlConstraintUtils {
      */
     private static List<Member> removeDefaultMembers(List<Member> members) {
         List<Member> result = new ArrayList<Member>();
-        result.add(members.get(0)); // add the measure
-        for (int i = 1; i < members.size(); i++) {
+        int startIndex = 0;
+        if (members.size() > 0 && members.get(0).isMeasure()) {
+            result.add(members.get(0)); // add the measure
+            startIndex = 1;
+        }
+        for (int i = startIndex; i < members.size(); i++) {
             Member m = members.get(i);
             if (m.getHierarchy().getDefaultMember().equals(m)) {
                 continue;

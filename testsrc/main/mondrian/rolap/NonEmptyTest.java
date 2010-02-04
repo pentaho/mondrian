@@ -3968,6 +3968,68 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 135,215\n");
     }
 
+    /***
+     * Before the fix this test would throw an IndexOutOfBounds exception
+     * in SqlConstraintUtils.removeDefaultMembers.  The method assumed that the
+     * first member in the list would exist and be a measure.  But, when the
+     * default measure is calculated, it would have already been removed from
+     * the list by removeCalculatedMembers, and thus the assumption was wrong.
+     */
+    public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
+        propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
+        final TestContext context =
+            TestContext.create(
+                "<Schema name=\"FoodMart\">"
+                + "  <Dimension name=\"Store\">"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">"
+                + "      <Table name=\"store\" />"
+                + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\" />"
+                + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\" />"
+                + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\" />"
+                + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">"
+                + "        <Property name=\"Store Type\" column=\"store_type\" />"
+                + "        <Property name=\"Store Manager\" column=\"store_manager\" />"
+                + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Grocery Sqft\" column=\"grocery_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Frozen Sqft\" column=\"frozen_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Meat Sqft\" column=\"meat_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\" />"
+                + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\" />"
+                + "      </Level>"
+                + "    </Hierarchy>"
+                + "  </Dimension>"
+                + "  <Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">"
+                + "    <Table name=\"sales_fact_1997\" />"
+                + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\" />"
+                + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\" />"
+                + "    <CalculatedMember name=\"dummyMeasure\" dimension=\"Measures\">"
+                + "      <Formula>1</Formula>"
+                + "    </CalculatedMember>"
+                + "  </Cube>"
+                + "  <VirtualCube defaultMeasure=\"dummyMeasure\" name=\"virtual\">"
+                + "    <VirtualCubeDimension name=\"Store\" />"
+                + "    <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\" />"
+                + "    <VirtualCubeMeasure name=\"[Measures].[dummyMeasure]\" cubeName=\"Sales\" />"
+                + "  </VirtualCube>"
+                + "</Schema>");
+        context.assertQueryReturns(
+            "select "
+            + " [Measures].[Unit Sales] on COLUMNS, "
+            + " NON EMPTY {[Store].[Store State].Members} ON ROWS "
+            + " from [virtual] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #1: 67,659\n"
+            + "Row #2: 124,366\n");
+    }
+
     void clearAndHardenCache(MemberCacheHelper helper) {
         helper.mapLevelToMembers.setCache(
                 new HardSmartCache<
