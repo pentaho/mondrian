@@ -32,8 +32,8 @@ import java.text.*;
 public class Vba {
     private static final long MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000;
 
-    private static final DateFormatSymbols DATE_FORMAT_SYMBOLS
-        = new DateFormatSymbols(Locale.getDefault());
+    private static final DateFormatSymbols DATE_FORMAT_SYMBOLS =
+        new DateFormatSymbols(Locale.getDefault());
 
     // Conversion
 

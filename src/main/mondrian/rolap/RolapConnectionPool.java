@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2006 Robin Bagot and others
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -203,8 +203,8 @@ class RolapConnectionPool {
             // Flag to log stack traces for application code which abandoned a
             // Statement or Connection
             abandonedConfig.setLogAbandoned(true);
-            PoolableConnectionFactory poolableConnectionFactory
-                = new PoolableConnectionFactory(
+            PoolableConnectionFactory poolableConnectionFactory =
+                new PoolableConnectionFactory(
                     // the connection factory
                     connectionFactory,
                     // the object pool

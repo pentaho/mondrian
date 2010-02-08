@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -368,8 +368,8 @@ public class NativizeSetFunDef extends FunDefBase {
                 }
             }
 
-            boolean isHighCardinality
-                = (estimatedCardinality >= nativizeMinThreshold);
+            boolean isHighCardinality =
+                (estimatedCardinality >= nativizeMinThreshold);
 
             LOGGER.info(
                 String.format(
@@ -785,8 +785,8 @@ public class NativizeSetFunDef extends FunDefBase {
         }
 
         private List<Collection<String>> findNativeMembers() {
-            List<Collection<String>> nativeMembers
-                = new ArrayList<Collection<String>>(tupleSize);
+            List<Collection<String>> nativeMembers =
+                new ArrayList<Collection<String>>(tupleSize);
 
             for (int i = 0; i < tupleSize; i++) {
                 nativeMembers.add(new LinkedHashSet<String>());
@@ -1400,8 +1400,8 @@ public class NativizeSetFunDef extends FunDefBase {
 
     private static class ReassemblyGuide {
         private final int index;
-        private final List<ReassemblyCommand> commands
-            = new ArrayList<ReassemblyCommand>();
+        private final List<ReassemblyCommand> commands =
+            new ArrayList<ReassemblyCommand>();
 
         public ReassemblyGuide(int index) {
             this.index = index;

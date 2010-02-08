@@ -356,6 +356,9 @@ match(s, /(\.|->)$/, a) {
         error(fname, FNR, "operator '" a[1] "' must not be at end of line");
     }
 }
+match(s, /^ *(=) /, a) {
+    error(fname, FNR, "operator '" a[1] "' must not be at start of line");
+}
 s ~ /\<[[:digit:][:lower:]][[:alnum:]_]*</ {
     # E.g. "p<" but not "Map<"
     if (!matchFile(fname)) {}

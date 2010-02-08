@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -95,8 +95,9 @@ public class TupleFunDef extends FunDefBase {
         public Member[] evaluateTuple(Evaluator evaluator) {
             final Member[] members = new Member[memberCalcs.length];
             for (int i = 0; i < members.length; i++) {
-                final Member member = members[i]
-                        = memberCalcs[i].evaluateMember(evaluator);
+                final Member member =
+                    members[i] =
+                    memberCalcs[i].evaluateMember(evaluator);
                 if (member == null || member.isNull()) {
                     return null;
                 }
