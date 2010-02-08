@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -461,9 +461,9 @@ public class Aggregation {
             for (int i = 0; i < columns.length; i++) {
                 final Axis axis = segment.axes[i];
                 int keyCount = axis.getKeys().length;
-                final BitSet axisKeepBitSet
-                        = axisKeepBitSets[i]
-                        = new BitSet(keyCount);
+                final BitSet axisKeepBitSet =
+                    axisKeepBitSets[i] =
+                    new BitSet(keyCount);
                 final StarColumnPredicate predicate = axis.predicate;
                 assert predicate != null;
 

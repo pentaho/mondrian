@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -724,8 +724,8 @@ public class Format {
 
         void format(long n, StringBuilder buf)
         {
-            mondrian.util.Format.FloatingDecimal fd
-                = new mondrian.util.Format.FloatingDecimal(n);
+            mondrian.util.Format.FloatingDecimal fd =
+                new mondrian.util.Format.FloatingDecimal(n);
             fd.shift(decimalShift);
             String s = fd.toJavaFormatString(
                 zeroesLeftOfPoint,
@@ -2446,8 +2446,8 @@ public class Format {
         if (decimalShift != 0) {
             for (int i = 0; i < formatList.size(); i++) {
                 if (formatList.get(i) instanceof NumericFormat) {
-                    ((NumericFormat) formatList.get(i)).decimalShift
-                        = decimalShift;
+                    ((NumericFormat) formatList.get(i)).decimalShift =
+                        decimalShift;
                 }
             }
         }

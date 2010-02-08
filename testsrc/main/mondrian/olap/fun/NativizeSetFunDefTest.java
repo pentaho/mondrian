@@ -157,13 +157,13 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     public void testNativeResultLimitDuringMerge() {
         // This query will return exactly 6 rows:
         // {Female,Male,Agg}x{Married,Single}
-        String mdx
-            = "with  member [gender].[agg] as"
-              + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
-              + "select NativizeSet(CrossJoin( "
-              + "{gender.gender.members, gender.agg}, "
-              + "{[marital status].[marital status].members}"
-              + ")) on 0 from sales";
+        String mdx =
+            "with  member [gender].[agg] as"
+            + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
+            + "select NativizeSet(CrossJoin( "
+            + "{gender.gender.members, gender.agg}, "
+            + "{[marital status].[marital status].members}"
+            + ")) on 0 from sales";
 
         // Set limit to exact size of result
         propSaver.set(MondrianProperties.instance().NativizeMaxResults, 6);
