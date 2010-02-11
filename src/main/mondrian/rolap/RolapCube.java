@@ -88,6 +88,8 @@ public class RolapCube extends CubeBase {
 
     final List<RolapHierarchy> hierarchyList =
         new ArrayList<RolapHierarchy>();
+    private Map<RolapLevel, RolapCubeLevel> virtualToBaseMap =
+        new HashMap<RolapLevel, RolapCubeLevel>();
 
     /**
      * Private constructor used by both normal cubes and virtual cubes.
@@ -2434,6 +2436,9 @@ public class RolapCube extends CubeBase {
      * @return base cube level if found
      */
     public RolapCubeLevel findBaseCubeLevel(RolapLevel level) {
+        if (virtualToBaseMap.containsKey(level)) {
+            return virtualToBaseMap.get(level);
+        }
         String levelDimName = level.getDimension().getName();
         String levelHierName = level.getHierarchy().getName();
 
@@ -2456,25 +2461,29 @@ public class RolapCube extends CubeBase {
                 levelHierName.substring(0, levelHierName.length() - 8);
         }
 
-        for (int i = 0; i < getDimensions().length; i++) {
-            Dimension dimension = getDimensions()[i];
-            if (dimension.getName().equals(levelDimName)
-                || (isClosure && dimension.getName().equals(closDimName)))
+        for (Dimension dimension : getDimensions()) {
+            final String dimensionName = dimension.getName();
+            if (dimensionName.equals(levelDimName)
+                || (isClosure && dimensionName.equals(closDimName)))
             {
-                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
-                    Hierarchy hier = dimension.getHierarchies()[j];
-                    if (hier.getName().equals(levelHierName)
-                        || (isClosure && hier.getName().equals(closHierName)))
+                for (Hierarchy hier : dimension.getHierarchies()) {
+                    final String hierarchyName = hier.getName();
+                    if (hierarchyName.equals(levelHierName)
+                        || (isClosure && hierarchyName.equals(closHierName)))
                     {
                         if (isClosure) {
-                            return (RolapCubeLevel)
-                                ((RolapCubeLevel) hier.getLevels()[1])
-                                .getClosedPeer();
+                            final RolapCubeLevel baseLevel =
+                                ((RolapCubeLevel)
+                                    hier.getLevels()[1]).getClosedPeer();
+                            virtualToBaseMap.put(level, baseLevel);
+                            return baseLevel;
                         }
-                        for (int k = 0; k < hier.getLevels().length; k++) {
-                            Level lvl = hier.getLevels()[k];
+                        for (Level lvl : hier.getLevels()) {
                             if (lvl.getName().equals(level.getName())) {
-                                return (RolapCubeLevel)lvl;
+                                final RolapCubeLevel baseLevel =
+                                    (RolapCubeLevel) lvl;
+                                virtualToBaseMap.put(level, baseLevel);
+                                return baseLevel;
                             }
                         }
                     }

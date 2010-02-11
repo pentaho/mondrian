@@ -392,9 +392,9 @@ public class RolapEvaluator implements Evaluator {
         }
         currentMembers[ordinal] = m;
         if (m.isAll()) {
-            nonAllMemberMap.remove(m.getHierarchy().getOrdinalInCube());
+            nonAllMemberMap.remove(ordinal);
         } else {
-            nonAllMemberMap.put(m.getHierarchy().getOrdinalInCube(), m);
+            nonAllMemberMap.put(ordinal, m);
         }
         if (m.isEvaluated()) {
             addCalcMember(new RolapMemberCalculation(m));
