@@ -214,6 +214,14 @@ public class RolapEvaluator implements Evaluator {
         return nativeEnabled;
     }
 
+    public boolean currentIsEmpty() {
+        final RolapEvaluator eval2 = push(getCube().getFactCountMeasure());
+        final Object o = eval2.evaluateCurrent();
+        return o == null
+               || (o instanceof Number
+                   && ((Number) o).intValue() == 0);
+    }
+
     public void setNativeEnabled(final Boolean nativeEnabled) {
         this.nativeEnabled = nativeEnabled;
     }

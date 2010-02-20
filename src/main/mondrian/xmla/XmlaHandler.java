@@ -1483,10 +1483,12 @@ public class XmlaHandler {
                 // populate data
                 rows = new ArrayList<Object[]>();
                 maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
+                final List<SqlStatement.Accessor> accessors =
+                    stmt.getAccessors();
                 do {
                     Object[] row = new Object[columnCount];
                     for (int i = 0; i < columnCount; i++) {
-                        row[i] = rs.getObject(i + 1);
+                        row[i] = accessors.get(i).get();
                     }
                     rows.add(row);
                 } while (rs.next() && --maxRows > 0);

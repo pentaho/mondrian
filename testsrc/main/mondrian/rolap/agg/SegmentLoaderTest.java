@@ -3,16 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
+import mondrian.util.DelegatingInvocationHandler;
 
+import java.lang.reflect.Proxy;
+import java.sql.*;
 import java.util.*;
-import java.sql.SQLException;
 
 /**
  * <p>Test for <code>SegmentLoader</code></p>
@@ -43,12 +45,12 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList)
                 throws SQLException
             {
-                return getData(true);
+                return toResultSet(getData(true));
             }
         };
         loader.load(groupingSets, null, null);
@@ -57,13 +59,41 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyProductFamilyAxis(axes[1]);
         verifyProductDepartmentAxis(axes[2]);
         verifyGenderAxis(axes[3]);
-        verifyUnitSalesDetailed(groupingSets.get(0).getSegments()[0]);
+        verifyUnitSalesDetailed(groupingSets.get(0).getSegments().get(0));
 
         axes = groupingSets.get(0).getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
         verifyProductDepartmentAxis(axes[2]);
-        verifyUnitSalesAggregate(groupingSets.get(1).getSegments()[0]);
+        verifyUnitSalesAggregate(groupingSets.get(1).getSegments().get(0));
+    }
+
+    private ResultSet toResultSet(final List<Object[]> list) {
+        final MyDelegatingInvocationHandler handler =
+            new MyDelegatingInvocationHandler(list);
+        Object o =
+            Proxy.newProxyInstance(
+                null,
+                new Class[] {ResultSet.class, ResultSetMetaData.class},
+                handler);
+        handler.resultSetMetaData = (ResultSetMetaData) o;
+        return (ResultSet) o;
+    }
+
+    private SegmentLoader.RowList toRowList2(List<Object[]> list) {
+        final SegmentLoader.RowList rowList =
+            new SegmentLoader.RowList(
+                Collections.nCopies(
+                    list.get(0).length,
+                    SqlStatement.Type.OBJECT));
+        for (Object[] objects : list) {
+            rowList.createRow();
+            for (int i = 0; i < objects.length; i++) {
+                Object object = objects[i];
+                rowList.setObject(i, object);
+            }
+        }
+        return rowList;
     }
 
     /**
@@ -86,16 +116,16 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList)
                 throws SQLException
             {
-                return getDataWithNullInRollupColumn(true);
+                return toResultSet(getDataWithNullInRollupColumn(true));
             }
         };
         loader.load(groupingSets, null, null);
-        Segment detailedSegment = groupingSets.get(0).getSegments()[0];
+        Segment detailedSegment = groupingSets.get(0).getSegments().get(0);
         assertEquals(3, detailedSegment.getCellCount());
     }
 
@@ -117,15 +147,15 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList) throws
                 SQLException
             {
-                return getData(true);
+                return toResultSet(getData(true));
             }
 
-            boolean useSparse(boolean sparse, int n, List<Object[]> rows) {
+            boolean useSparse(boolean sparse, int n, RowList rows) {
                 return true;
             }
         };
@@ -135,14 +165,15 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyProductFamilyAxis(axes[1]);
         verifyProductDepartmentAxis(axes[2]);
         verifyGenderAxis(axes[3]);
-        verifyUnitSalesDetailedForSparse(groupingSets.get(0).getSegments()[0]);
+        verifyUnitSalesDetailedForSparse(
+            groupingSets.get(0).getSegments().get(0));
 
         axes = groupingSets.get(0).getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
         verifyProductDepartmentAxis(axes[2]);
         verifyUnitSalesAggregateForSparse(
-            groupingSets.get(1).getSegments()[0]);
+            groupingSets.get(1).getSegments().get(0));
     }
 
     public void testLoadWithMockResultsForLoadingOnlyDetailedSegments() {
@@ -158,12 +189,12 @@ public class SegmentLoaderTest extends BatchTestCase {
                 return null;
             }
 
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList)
                 throws SQLException
             {
-                return getData(false);
+                return toResultSet(getData(false));
             }
         };
         loader.load(groupingSets, null, null);
@@ -172,7 +203,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         verifyProductFamilyAxis(axes[1]);
         verifyProductDepartmentAxis(axes[2]);
         verifyGenderAxis(axes[3]);
-        verifyUnitSalesDetailed(groupingSetsInfo.getSegments()[0]);
+        verifyUnitSalesDetailed(groupingSetsInfo.getSegments().get(0));
     }
 
     public void
@@ -188,12 +219,12 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
 
         SegmentLoader loader = new SegmentLoader() {
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList) throws
                 SQLException
             {
-                return getData(true);
+                return toResultSet(getData(true));
             }
         };
         int axisCount = 4;
@@ -201,21 +232,23 @@ public class SegmentLoaderTest extends BatchTestCase {
             loader.getDistinctValueWorkspace(axisCount);
         boolean[] axisContainsNull = new boolean[axisCount];
 
-        List<Object[]> list =
+        SegmentLoader.RowList list =
             loader.processData(
                 null, axisContainsNull,
                 axisValueSet, new GroupingSetsList(groupingSets));
         int totalNoOfRows = 12;
         int lengthOfRowWithBitKey = 6;
-        Object[] detailedRow = list.get(0);
         assertEquals(totalNoOfRows, list.size());
-        assertEquals(lengthOfRowWithBitKey, detailedRow.length);
-        assertEquals(BitKey.Factory.makeBitKey(0), detailedRow[5]);
+        assertEquals(lengthOfRowWithBitKey, list.getTypes().size());
+        list.first();
+        list.next();
+        assertEquals(BitKey.Factory.makeBitKey(0), list.getObject(5));
 
         BitKey bitKeyForSummaryRow = BitKey.Factory.makeBitKey(0);
         bitKeyForSummaryRow.set(0);
-        Object[] summaryRow = list.get(2);
-        assertEquals(bitKeyForSummaryRow, summaryRow[5]);
+        list.next();
+        list.next();
+        assertEquals(bitKeyForSummaryRow, list.getObject(5));
 
         SortedSet<Comparable<?>> yearAxis = axisValueSet[0];
         assertEquals(1, yearAxis.size());
@@ -233,7 +266,7 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private GroupingSet getGroupingSetRollupOnGender() {
-        GroupingSet groupableSetsInfo =
+        return
             getGroupingSet(
                 new String[]{tableTime, tableProductClass, tableProductClass},
                 new String[]{
@@ -244,7 +277,6 @@ public class SegmentLoaderTest extends BatchTestCase {
                     fieldValueProductDepartment},
                 cubeNameSales,
                 measureUnitSales);
-        return groupableSetsInfo;
     }
 
     public void testProcessDataForSettingNullAxis()
@@ -253,12 +285,12 @@ public class SegmentLoaderTest extends BatchTestCase {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
 
         SegmentLoader loader = new SegmentLoader() {
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList) throws
                 SQLException
             {
-                return getDataWithNullInAxisColumn(false);
+                return toResultSet(getDataWithNullInAxisColumn(false));
             }
         };
         int axisCount = 4;
@@ -284,7 +316,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
 
         SegmentLoader loader = new SegmentLoader() {
-            List<Object[]> loadData(
+            ResultSet loadData(
                 SqlStatement stmt,
                 GroupingSetsList groupingSetsList)
                 throws SQLException
@@ -296,7 +328,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                     new Object[] {
                         "1997", "Food", "Canned_Products", "F", "867"});
 
-                return data;
+                return toResultSet(data);
             }
         };
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
@@ -304,7 +336,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SortedSet<Comparable<?>>[] axisValueSet =
             loader.getDistinctValueWorkspace(4);
-        List<Object[]> list =
+        SegmentLoader.RowList list =
             loader.processData(
                 null, new boolean[4],
                 axisValueSet,
@@ -312,7 +344,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         int totalNoOfRows = 3;
         assertEquals(totalNoOfRows, list.size());
         int lengthOfRowWithoutBitKey = 5;
-        assertEquals(lengthOfRowWithoutBitKey, list.get(0).length);
+        assertEquals(lengthOfRowWithoutBitKey, list.getTypes().size());
 
         SortedSet<Comparable<?>> yearAxis = axisValueSet[0];
         assertEquals(1, yearAxis.size());
@@ -396,26 +428,37 @@ public class SegmentLoaderTest extends BatchTestCase {
         }
     }
 
-    public void testGetGroupingBitKey() {
+    public void testGetGroupingBitKey() throws SQLException {
         Object[] data = {
             "1997", "Food", "Deli", "M", "6047", 0, 0, 0, 0
         };
+        ResultSet rowList =
+            toResultSet(Collections.singletonList(data));
+        assertTrue(rowList.next());
         assertEquals(
             BitKey.Factory.makeBitKey(4),
-            new SegmentLoader().getRollupBitKey(4, data, 5));
+            new SegmentLoader().getRollupBitKey(4, rowList, 5));
 
         data = new Object[]{
-            "1997", "Food", "Deli", null, "12037", 0, 0, 0, 1};
+            "1997", "Food", "Deli", null, "12037", 0, 0, 0, 1
+        };
+        rowList = toResultSet(Collections.singletonList(data));
         BitKey key = BitKey.Factory.makeBitKey(4);
         key.set(3);
-        assertEquals(key, new SegmentLoader().getRollupBitKey(4, data, 5));
+        assertEquals(
+            key,
+            new SegmentLoader().getRollupBitKey(4, rowList, 5));
 
-        data = new Object[]{"1997", null, "Deli", null, "12037", 0,
-            1, 0, 1};
+        data = new Object[] {
+            "1997", null, "Deli", null, "12037", 0, 1, 0, 1
+        };
+        rowList = toResultSet(Collections.singletonList(data));
         key = BitKey.Factory.makeBitKey(4);
         key.set(1);
         key.set(3);
-        assertEquals(key, new SegmentLoader().getRollupBitKey(4, data, 5));
+        assertEquals(
+            key,
+            new SegmentLoader().getRollupBitKey(4, rowList, 5));
     }
 
     public void testGroupingSetsUtilForMissingGroupingBitKeys() {
@@ -625,11 +668,9 @@ public class SegmentLoaderTest extends BatchTestCase {
 
 
         RolapStar.Column[] detailedColumns =
-            groupingSetsInfo.getSegments()[0].aggregation.getColumns();
+            groupingSetsInfo.getSegments().get(0).aggregation.getColumns();
         RolapStar.Column[] summaryColumns =
-            groupableSetsInfo.getSegments()[0].aggregation.getColumns();
-        List<GroupingSet> summayAggs = new ArrayList<GroupingSet>();
-        summayAggs.add(groupableSetsInfo);
+            groupableSetsInfo.getSegments().get(0).aggregation.getColumns();
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
         groupingSets.add(groupableSetsInfo);
@@ -769,6 +810,76 @@ public class SegmentLoaderTest extends BatchTestCase {
         data.add(
             new Object[]{"1997", "Food", null, "F", "867", 0});
         return data;
+    }
+
+    public static class MyDelegatingInvocationHandler
+        extends DelegatingInvocationHandler
+    {
+        int row;
+        public boolean wasNull;
+        ResultSetMetaData resultSetMetaData;
+        private final List<Object[]> list;
+
+        public MyDelegatingInvocationHandler(List<Object[]> list) {
+            this.list = list;
+            row = -1;
+        }
+
+        protected Object getTarget() {
+            return null;
+        }
+
+        public ResultSetMetaData getMetaData() {
+            return resultSetMetaData;
+        }
+
+        // implement ResultSetMetaData
+        public int getColumnCount() {
+            return list.get(0).length;
+        }
+
+        // implement ResultSetMetaData
+        public int getColumnType(int column) {
+            return Types.VARCHAR;
+        }
+
+        public boolean next() {
+            if (row < list.size() - 1) {
+                ++row;
+                return true;
+            }
+            return false;
+        }
+
+        public Object getObject(int column) {
+            return list.get(row)[column - 1];
+        }
+
+        public int getInt(int column) {
+            final Object o = list.get(row)[column - 1];
+            if (o == null) {
+                wasNull = true;
+                return 0;
+            } else {
+                wasNull = false;
+                return ((Number) o).intValue();
+            }
+        }
+
+        public double getDouble(int column) {
+            final Object o = list.get(row)[column - 1];
+            if (o == null) {
+                wasNull = true;
+                return 0D;
+            } else {
+                wasNull = false;
+                return ((Number) o).doubleValue();
+            }
+        }
+
+        public boolean wasNull() {
+            return wasNull;
+        }
     }
 }
 

@@ -108,7 +108,7 @@ public class Aggregation {
     }
 
     private CopyOnWriteArrayList<SoftReference<Segment>>
-        getThreadSafeListImplementation()
+    getThreadSafeListImplementation()
     {
         return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
@@ -156,7 +156,7 @@ public class Aggregation {
         for (int i = 0; i < axisCount; i++) {
             axes[i] = new Aggregation.Axis(predicates[i]);
         }
-        Segment[] segments =
+        List<Segment> segments =
             addSegmentsToAggregation(
                 measures, measureBitKey, axes, pinnedSegments);
         // The constrained columns are simply the level and foreign columns
@@ -176,21 +176,18 @@ public class Aggregation {
         }
     }
 
-    private Segment[] addSegmentsToAggregation(
+    private List<Segment> addSegmentsToAggregation(
         RolapStar.Measure[] measures,
         BitKey measureBitKey,
         Axis[] axes,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        Segment[] segments = new Segment[measures.length];
-        for (int i = 0; i < measures.length; i++) {
-            RolapStar.Measure measure = measures[i];
+        List<Segment> segments = new ArrayList<Segment>(measures.length);
+        for (RolapStar.Measure measure : measures) {
             measureBitKey.set(measure.getBitPosition());
-            Segment segment =
-                new Segment(
-                    this, measure, axes,
-                    Collections.<Segment.Region>emptyList());
-            segments[i] = segment;
+            Segment segment = new Segment(
+                this, measure, axes, Collections.<Segment.Region>emptyList());
+            segments.add(segment);
             SoftReference<Segment> ref = new SoftReference<Segment>(segment);
             segmentRefs.add(ref);
             ((AggregationManager.PinSetImpl) pinnedSegments).add(segment);
@@ -232,9 +229,9 @@ public class Aggregation {
             }
 
             final ListColumnPredicate newPredicate =
-                    (ListColumnPredicate) newPredicates[i];
+                (ListColumnPredicate) newPredicates[i];
             final List<StarColumnPredicate> predicateList =
-                    newPredicate.getPredicates();
+                newPredicate.getPredicates();
             final int valueCount = predicateList.size();
             if (valueCount < 2) {
                 bloats[i] = 0.0;
@@ -258,7 +255,7 @@ public class Aggregation {
                 Object value = predicateList.get(j);
                 if (value instanceof MemberColumnPredicate) {
                     MemberColumnPredicate memberColumnPredicate =
-                            (MemberColumnPredicate) value;
+                        (MemberColumnPredicate) value;
                     Member m = memberColumnPredicate.getMember();
                     if (j == 0) {
                         parent = m.getParentMember();
@@ -388,12 +385,12 @@ public class Aggregation {
 
         // Sort segments, to make order deterministic.
         Collections.sort(
-                segmentList,
-                new Comparator<Segment>() {
-                    public int compare(Segment o1, Segment o2) {
-                        return o1.id - o2.id;
-                    }
-                });
+            segmentList,
+            new Comparator<Segment>() {
+                public int compare(Segment o1, Segment o2) {
+                    return o1.id - o2.id;
+                }
+            });
 
         for (Segment segment : segmentList) {
             segment.print(pw);
@@ -431,12 +428,12 @@ public class Aggregation {
         //  - Column in flush request, not in segment. Ignore it.
         //  - Column not in flush request, in segment. Ignore it.
         final boolean bitmapsIntersect =
-                cacheRegion.getConstrainedColumnsBitKey().intersects(
-                        getConstrainedColumnsBitKey());
+            cacheRegion.getConstrainedColumnsBitKey().intersects(
+                getConstrainedColumnsBitKey());
 
         // New list of segments - will replace segmentRefs when we're done.
         List<SoftReference<Segment>> newSegmentRefs =
-                new ArrayList<SoftReference<Segment>>();
+            new ArrayList<SoftReference<Segment>>();
         segmentLoop:
         for (SoftReference<Segment> segmentRef : segmentRefs) {
             Segment segment = segmentRef.get();
@@ -475,7 +472,7 @@ public class Aggregation {
                     continue;
                 }
                 StarColumnPredicate flushPredicate =
-                        cacheRegion.getPredicate(column.getBitPosition());
+                    cacheRegion.getPredicate(column.getBitPosition());
 
                 // If the flush request is not constrained on this column, move
                 // on to the next column.
@@ -528,10 +525,10 @@ public class Aggregation {
             // values which are always blocked by a given predicate.
             for (StarPredicate predicate : cacheRegion.getPredicates()) {
                 ValuePruner pruner =
-                        new ValuePruner(
-                                predicate,
-                                segment.axes,
-                                segment.getData());
+                    new ValuePruner(
+                        predicate,
+                        segment.axes,
+                        segment.getData());
                 pruner.go(axisKeepBitSets);
             }
 
@@ -548,7 +545,7 @@ public class Aggregation {
                 final int bitPosition = column.getBitPosition();
                 if (!cacheRegion.getConstrainedColumnsBitKey().get(
                     bitPosition))
-                    {
+                {
                     continue;
                 }
 
@@ -577,14 +574,14 @@ public class Aggregation {
 
             // Come up with an estimate of how many cells this region contains.
             List<StarColumnPredicate> regionPredicates =
-                    new ArrayList<StarColumnPredicate>();
+                new ArrayList<StarColumnPredicate>();
             int cellCount = 1;
             for (int i = 0; i < this.columns.length; i++) {
                 RolapStar.Column column = this.columns[i];
                 Axis axis = segment.axes[i];
                 final int pos = column.getBitPosition();
                 StarColumnPredicate flushPredicate =
-                        cacheRegion.getPredicate(pos);
+                    cacheRegion.getPredicate(pos);
                 int keysMatched;
                 if (flushPredicate == null) {
                     flushPredicate = LiteralStarPredicate.TRUE;
@@ -623,7 +620,7 @@ public class Aggregation {
             // the predicates on the axes, then don't add it to the exclusion
             // list.
             final List<Segment.Region> excludedRegions =
-                    new ArrayList<Segment.Region>(segment.getExcludedRegions());
+                new ArrayList<Segment.Region>(segment.getExcludedRegions());
             if (!excludedRegions.contains(region)) {
                 excludedRegions.add(region);
             }
@@ -634,23 +631,23 @@ public class Aggregation {
                 RolapStar.Column column = columns[bestColumn];
                 final int bitPosition = column.getBitPosition();
                 StarColumnPredicate flushPredicate =
-                        cacheRegion.getPredicate(bitPosition);
+                    cacheRegion.getPredicate(bitPosition);
                 final Axis axis = segment.axes[bestColumn];
                 bestColumnPredicate = axis.predicate;
                 if (flushPredicate != null) {
                     bestColumnPredicate =
-                            bestColumnPredicate.minus(flushPredicate);
+                        bestColumnPredicate.minus(flushPredicate);
                 }
             } else {
                 bestColumnPredicate = null;
             }
 
             final Segment newSegment =
-                    segment.createSubSegment(
-                            axisKeepBitSets,
-                            bestColumn,
-                            bestColumnPredicate,
-                            excludedRegions);
+                segment.createSubSegment(
+                    axisKeepBitSets,
+                    bestColumn,
+                    bestColumnPredicate,
+                    excludedRegions);
 
             newSegmentRefs.add(new SoftReference<Segment>(newSegment));
         }
@@ -787,14 +784,15 @@ public class Aggregation {
          *                  key is assumed to have a null value.)
          * @param keys      Keys
          */
-        Axis(StarColumnPredicate predicate, Comparable<?>[] keys) {
+        Axis(StarColumnPredicate predicate, Comparable[] keys) {
             this(predicate);
             this.keys = keys;
             for (int i = 0; i < keys.length; i++) {
                 Comparable<?> key = keys[i];
                 mapKeyToOffset.put(key, i);
+                //noinspection unchecked
                 assert i == 0
-                   || ((Comparable) keys[i - 1]).compareTo(keys[i]) < 0;
+                       || keys[i - 1].compareTo(keys[i]) < 0;
             }
         }
 
@@ -991,9 +989,9 @@ public class Aggregation {
             // of that column.
             for (int i = 0; i < arity; i++) {
                 RolapStar.Column column =
-                        flushPredicate.getConstrainedColumnList().get(i);
+                    flushPredicate.getConstrainedColumnList().get(i);
                 int axisOrdinal =
-                        findAxis(segmentAxes, column.getBitPosition());
+                    findAxis(segmentAxes, column.getBitPosition());
                 if (axisOrdinal < 0) {
                     this.axes[i] = null;
                     values[i] = StarPredicate.WILDCARD;
@@ -1062,7 +1060,9 @@ public class Aggregation {
                 // {year=1997, quarter=Q1, month=12}. This cell would never have
                 // data, so there's no point keeping it.
                 if (!flushPredicate.evaluate(valueList)) {
-                    if (data.get(cellKey) != null) {
+                    // REVIEW: getObject forces an int or double dataset to
+                    // create a boxed object; use exists() instead?
+                    if (data.getObject(cellKey) != null) {
                         for (int k = 0; k < arity; k++) {
                             keepBitSets[k].set(ordinals[k]);
                         }
@@ -1074,8 +1074,8 @@ public class Aggregation {
                     evaluatePredicate(axisOrdinal + 1);
                 } else {
                     for (int keyOrdinal = 0;
-                         keyOrdinal < axis.keys.length;
-                         keyOrdinal++)
+                        keyOrdinal < axis.keys.length;
+                        keyOrdinal++)
                     {
                         Object key = axis.keys[keyOrdinal];
                         values[axisOrdinal] = key;
@@ -1103,8 +1103,8 @@ public class Aggregation {
             double bloat0 = bloats[o0];
             double bloat1 = bloats[o1];
             return (bloat0 == bloat1)
-                    ? 0
-                    : (bloat0 < bloat1)
+                ? 0
+                : (bloat0 < bloat1)
                     ? 1
                     : -1;
         }

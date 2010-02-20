@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,8 +15,7 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Definition of the <code>TopPercent</code>, <code>BottomPercent</code>,
@@ -160,10 +159,11 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                     list = list.subList(0, i);
                     break;
                 }
-                Object o = (isMember)
-                    ? mapMemberToValue.get(list.get(i))
-                    : mapMemberToValue.get(
-                        new ArrayHolder<Member>((Member []) list.get(i)));
+                final Object key =
+                    isMember
+                        ? list.get(i)
+                        : Util.flatList((Member []) list.get(i));
+                final Object o = mapMemberToValue.get(key);
                 if (o == Util.nullValue) {
                     nullCount++;
                 } else if (o instanceof Number) {

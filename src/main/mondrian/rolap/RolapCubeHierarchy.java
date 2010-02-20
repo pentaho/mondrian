@@ -12,7 +12,6 @@
 */
 package mondrian.rolap;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1121,7 +1120,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             Object value,
             Object captionValue,
             boolean parentChild,
-            ResultSet resultSet,
+            SqlStatement stmt,
             Object key,
             int columnOffset)
             throws SQLException
@@ -1134,7 +1133,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 super.makeMember(
                     parent,
                     ((RolapCubeLevel)childLevel).getRolapLevel(),
-                    value, captionValue, parentChild, resultSet, key,
+                    value, captionValue, parentChild, stmt, key,
                     columnOffset);
             return
                 memberReader.lookupCubeMember(

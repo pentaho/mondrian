@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -79,9 +79,17 @@ public abstract class TargetBase {
         return level.getUniqueName();
     }
 
-    public int addRow(ResultSet resultSet, int column) throws SQLException {
+    /**
+     * Adds a row to the collection.
+     *
+     * @param stmt Statement
+     * @param column Column ordinal (0-based)
+     * @return Ordinal of next unconsumed column
+     * @throws SQLException On error
+     */
+    public final int addRow(SqlStatement stmt, int column) throws SQLException {
         synchronized (cacheLock) {
-            return internalAddRow(resultSet, column);
+            return internalAddRow(stmt, column);
         }
     }
 
@@ -89,7 +97,7 @@ public abstract class TargetBase {
 
     public abstract List<RolapMember> close();
 
-    abstract int internalAddRow(ResultSet resultSet, int column)
+    abstract int internalAddRow(SqlStatement stmt, int column)
         throws SQLException;
 
     public void add(final RolapMember member) {

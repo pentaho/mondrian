@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -290,6 +290,7 @@ class SqlMemberSource
                 dataSource, sql, "SqlMemberSource.getMembers",
                 "while building member cache");
         try {
+            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
             Map<MemberKey, RolapMember> map =
                 new HashMap<MemberKey, RolapMember>();
@@ -316,7 +317,7 @@ class SqlMemberSource
                     if (level.isAll()) {
                         continue;
                     }
-                    Object value = resultSet.getObject(column + 1);
+                    Object value = accessors.get(column).get();
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
@@ -345,7 +346,7 @@ RME is this right
 
                     if (!level.getOrdinalExp().equals(level.getKeyExp())) {
                         if (assignOrderKeys) {
-                            Object orderKey = resultSet.getObject(column + 1);
+                            Object orderKey = accessors.get(column).get();
                             setOrderKey(member, orderKey);
                         }
                         column++;
@@ -361,7 +362,7 @@ RME is this right
                          */
                         member.setProperty(
                             property.getName(),
-                            resultSet.getObject(column + 1));
+                            accessors.get(column).get());
                         column++;
                     }
                 }
@@ -527,9 +528,9 @@ RME is this right
     // implement MemberSource
     public List<RolapMember> getRootMembers() {
         return getMembersInLevel(
-                (RolapLevel) hierarchy.getLevels()[0],
-                0,
-                Integer.MAX_VALUE);
+            (RolapLevel) hierarchy.getLevels()[0],
+            0,
+            Integer.MAX_VALUE);
     }
 
     /**
@@ -930,6 +931,7 @@ RME is this right
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
 
+            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
             while (resultSet.next()) {
                 ++stmt.rowCount;
@@ -939,28 +941,27 @@ RME is this right
                         .ex(limit);
                 }
 
-                Object value = resultSet.getObject(1);
+                Object value = accessors.get(0).get();
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;
                 }
                 Object captionValue;
-                int columnOffset;
+                int columnOffset = 1;
                 if (childLevel.hasCaptionColumn()) {
                     // The columnOffset needs to take into account
                     // the caption column if one exists
-                    columnOffset = 2;
-                    captionValue = resultSet.getObject(columnOffset);
+                    captionValue = accessors.get(columnOffset++).get();
                 } else {
-                    columnOffset = 1;
                     captionValue = null;
                 }
                 Object key = cache.makeKey(parentMember, value);
                 RolapMember member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
-                    member = makeMember(
+                    member =
+                        makeMember(
                             parentMember, childLevel, value, captionValue,
-                            parentChild, resultSet, key, columnOffset);
+                            parentChild, stmt, key, columnOffset);
                 }
                 if (value == RolapUtil.sqlNullValue) {
                     children.toArray();
@@ -982,7 +983,7 @@ RME is this right
         Object value,
         Object captionValue,
         boolean parentChild,
-        ResultSet resultSet,
+        SqlStatement stmt,
         Object key,
         int columnOffset)
         throws SQLException
@@ -1010,9 +1011,10 @@ RME is this right
             member = parentChildMember;
         }
         Property[] properties = childLevel.getProperties();
+        final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             if (assignOrderKeys) {
-                Object orderKey = resultSet.getObject(columnOffset + 1);
+                Object orderKey = accessors.get(columnOffset).get();
                 setOrderKey(member, orderKey);
             }
             ++columnOffset;
@@ -1020,8 +1022,8 @@ RME is this right
         for (int j = 0; j < properties.length; j++) {
             Property property = properties[j];
             member.setProperty(
-                    property.getName(),
-                    getPooledValue(resultSet.getObject(columnOffset + j + 1)));
+                property.getName(),
+                getPooledValue(accessors.get(columnOffset + j).get()));
         }
         cache.putMember(key, member);
         return member;

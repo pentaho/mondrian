@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,6 +24,7 @@ import mondrian.calc.impl.ConstantCalc;
  */
 public class MemberExpr extends ExpBase implements Exp {
     private final Member member;
+    private MemberType type;
 
     /**
      * Creates a member expression.
@@ -50,7 +51,10 @@ public class MemberExpr extends ExpBase implements Exp {
     }
 
     public Type getType() {
-        return MemberType.forMember(member);
+        if (type == null) {
+            type = MemberType.forMember(member);
+        }
+        return type;
     }
 
     public MemberExpr clone() {

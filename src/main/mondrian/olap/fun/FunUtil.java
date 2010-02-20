@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -253,7 +253,7 @@ public class FunUtil extends Util {
             T o = right.get(i);
             Object p = o;
             if (o instanceof Object[]) {
-                p = new ArrayHolder<Object>((Object[]) o);
+                p = Util.flatList((Object[]) o);
             }
             if (set.add(p)) {
                 left.add(o);
@@ -413,28 +413,29 @@ public class FunUtil extends Util {
      *
      * @param evaluator Evaluation context
      * @param exp Expression to evaluate
-     * @param members List of members (or List of Member[] tuples)
+     * @param tuples List of members (or List of Member[] tuples)
      *
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
      */
-    static Map<Object, Object> evaluateTuples(
+    static Map<List<Member>, Object> evaluateTuples(
         Evaluator evaluator,
         Calc exp,
-        List<Member[]> members)
+        List<Member[]> tuples)
     {
         evaluator = evaluator.push();
 
         assert exp.getType() instanceof ScalarType;
-        Map<Object, Object> mapMemberToValue = new HashMap<Object, Object>();
-        for (int i = 0, count = members.size(); i < count; i++) {
-            Member[] tuples = members.get(i);
-            evaluator.setContext(tuples);
+        final Map<List<Member>, Object> mapMemberToValue =
+            new HashMap<List<Member>, Object>();
+        for (int i = 0, count = tuples.size(); i < count; i++) {
+            Member[] tuple = tuples.get(i);
+            evaluator.setContext(tuple);
             Object result = exp.evaluate(evaluator);
             if (result == null) {
                 result = Util.nullValue;
             }
-            mapMemberToValue.put(new ArrayHolder<Member>(tuples), result);
+            mapMemberToValue.put(Util.flatList(tuple), result);
         }
         return mapMemberToValue;
     }
@@ -591,7 +592,7 @@ public class FunUtil extends Util {
             c.preloadValues(tupleList);
             comparator = c.wrap();
             if (desc) {
-                comparator = new ReverseComparator<Member[]>(comparator);
+                comparator = Collections.reverseOrder(comparator);
             }
         } else {
             comparator =
@@ -691,14 +692,16 @@ public class FunUtil extends Util {
      * valued Tuples, and returns them as a new List. Helper function for MDX
      * functions TopCount and BottomCount.
      *
+     * <p>NOTE: Does not preserve the contents of the validator. The returned
+     * list is immutable.
+     *
      * @param list a list of tuples
      * @param exp a Calc applied to each tple to find its sort-key
-     * @param evaluator
+     * @param evaluator Evaluator
      * @param limit maximum count of tuples to return.
      * @param desc true to sort descending (and find TopCount),
      *  false to sort ascending (and find BottomCount).
      * @return the top or bottom tuples, as a new list.
-     * <p>NOTE: Does not preserve the contents of the validator.
      */
     public static List<Member[]> partiallySortTuples(
         Evaluator evaluator,
@@ -711,7 +714,7 @@ public class FunUtil extends Util {
         Comparator<Member[]> comp =
             new BreakArrayComparator(evaluator, exp, arity).wrap();
         if (desc) {
-            comp = new ReverseComparator<Member[]>(comp);
+            comp = Collections.reverseOrder(comp);
         }
         return stablePartialSort(list, comp, limit);
     }
@@ -881,30 +884,39 @@ public class FunUtil extends Util {
     {
         double total = 0;
         int memberCount = members.size();
-        for (int i = 0; i < memberCount; i++) {
-            Object o = (isMember)
-                    ? mapMemberToValue.get(members.get(i))
-                    : mapMemberToValue.get(
-                        new ArrayHolder<Member>((Member []) members.get(i)));
-            if (o instanceof Number) {
-                total += ((Number) o).doubleValue();
+        if (isMember) {
+            for (int i = 0; i < memberCount; i++) {
+                final Object key = members.get(i);
+                final Object o = mapMemberToValue.get(key);
+                if (o instanceof Number) {
+                    total += ((Number) o).doubleValue();
+                }
             }
-        }
-        for (int i = 0; i < memberCount; i++) {
-            Object mo = members.get(i);
-            Object o =
-                (isMember)
-                ? mapMemberToValue.get(mo)
-                : mapMemberToValue.get(new ArrayHolder<Member>((Member []) mo));
-            if (o instanceof Number) {
-                double d = ((Number) o).doubleValue();
-                if (isMember) {
+            for (int i = 0; i < memberCount; i++) {
+                final Object key = members.get(i);
+                final Object o = mapMemberToValue.get(key);
+                if (o instanceof Number) {
+                    double d = ((Number) o).doubleValue();
                     mapMemberToValue.put(
-                        mo,
+                        key,
                         d / total * (double) 100);
-                } else {
+                }
+            }
+        } else {
+            for (int i = 0; i < memberCount; i++) {
+                final Object key = Util.flatList((Member []) members.get(i));
+                final Object o = mapMemberToValue.get(key);
+                if (o instanceof Number) {
+                    total += ((Number) o).doubleValue();
+                }
+            }
+            for (int i = 0; i < memberCount; i++) {
+                final Object key = Util.flatList((Member []) members.get(i));
+                final Object o = mapMemberToValue.get(key);
+                if (o instanceof Number) {
+                    double d = ((Number) o).doubleValue();
                     mapMemberToValue.put(
-                        new ArrayHolder<Member>((Member []) mo),
+                        key,
                         d / total * (double) 100);
                 }
             }
@@ -1449,7 +1461,10 @@ public class FunUtil extends Util {
                     evaluator.setContext((Member[]) object);
                 }
                 Object o = evaluator.evaluateCurrent();
-                if (o != Util.nullValue && o != null) {
+                if (o == Util.nullValue) {
+                    continue;
+                }
+                if (!evaluator.currentIsEmpty()) {
                     retval++;
                 }
             }
@@ -2168,35 +2183,43 @@ public class FunUtil extends Util {
         // REVIEW When limit is big relative to list size, faster to
         // mergesort. Test for this.
         int n = list.size();            // O(n) to scan list
-        Pair<T, Integer>[] pairs = new Pair[n];
+        @SuppressWarnings({"unchecked"})
+        final ObjIntPair<T>[] pairs = new ObjIntPair[n];
 
         int i = 0;
         for (T item : list) {           // O(n) to scan list
-            pairs[i] = new Pair(item, i);
+            pairs[i] = new ObjIntPair<T>(item, i);
             ++i;
         }
 
-        Comparator<Pair<T, Integer>> pairComp =
-            new Comparator<Pair<T, Integer>>()
+        Comparator<ObjIntPair<T>> pairComp =
+            new Comparator<ObjIntPair<T>>()
         {
-            public int compare(Pair<T, Integer> x, Pair<T, Integer> y) {
-                int val = comp.compare(x.left, y.left);
+            public int compare(ObjIntPair<T> x, ObjIntPair<T> y) {
+                int val = comp.compare(x.t, y.t);
                 if (val == 0) {
-                    val = x.right.compareTo(y.right);
+                    val = x.i - y.i;
                 }
                 return val;
             }
         };
 
-        limit = Math.min(limit, n);
+        final int length = Math.min(limit, n);
         // O(n + limit * log(limit)) to quicksort
-        partialSort(pairs, pairComp, limit);
+        partialSort(pairs, pairComp, length);
 
-        List<T> result = new ArrayList<T>();
-        for (i = 0; i < limit; ++i) {
-            result.add((T) pairs[i].left);  // O(limit) to scan
-        }
-        return result;
+        // Use an abstract list to avoid doing a copy. The result is immutable.
+        return new AbstractList<T>() {
+            @Override
+            public T get(int index) {
+                return pairs[index].t;
+            }
+
+            @Override
+            public int size() {
+                return length;
+            }
+        };
     }
 
     // ~ Inner classes ---------------------------------------------------------
@@ -2721,39 +2744,45 @@ public class FunUtil extends Util {
 
     // almost the same as MemberComparator
     static abstract class ArrayExpMemoComparator extends ArrayExpComparator {
-        final private Map<Object, Object> valueMap;
+        private final Map<List<Member>, Object> valueMap =
+            new HashMap<List<Member>, Object>();
 
         ArrayExpMemoComparator(Evaluator e, Calc calc, int arity)
         {
             super(e, calc, arity);
-            this.valueMap = new HashMap<Object, Object>();
         }
 
         // applies the Calc to a tuple, memorizing results
         protected Object eval(Member[] t)
         {
-            Object val = valueMap.get(t);
-            if (val == null) {
-                evaluator.setContext(t);
-                val = calc.evaluate(evaluator);
-                if (val == null) {
-                    val = Util.nullValue;
-                }
-                valueMap.put(t, val);
+            List<Member> key = flatList(t);
+            Object val = valueMap.get(key);
+            if (val != null) {
+                return val;
             }
-            return val;
+            return compute2(t, key);
         }
 
-        // Preloads the value map with precomputed members (supplied as a map).
-        void preloadValues(Map<Member[], Object> map) {
-            valueMap.putAll(map);
+        private Object compute(Member[] t) {
+            List<Member> key = flatList(t);
+            return compute2(t, key);
+        }
+
+        private Object compute2(Member[] t, List<Member> key) {
+            evaluator.setContext(t);
+            Object val = calc.evaluate(evaluator);
+            if (val == null) {
+                val = Util.nullValue;
+            }
+            valueMap.put(key, val);
+            return val;
         }
 
         // Preloads the value map by applying the expression to a Collection of
         // members.
         void preloadValues(Collection<Member[]> tuples) {
             for (Member[] t : tuples) {
-                eval(t);
+                compute(t);
             }
         }
     }
@@ -2867,7 +2896,7 @@ public class FunUtil extends Util {
      * Reverses the order of a {@link Comparator}.
      */
     private static class ReverseComparator<T> implements Comparator<T> {
-        Comparator<T> comparator;
+         Comparator<T> comparator;
         ReverseComparator(Comparator<T> comparator) {
             this.comparator = comparator;
         }
@@ -3150,6 +3179,36 @@ public class FunUtil extends Util {
             } else {
                 return this.member.compareTo(otherMember);
             }
+        }
+    }
+
+    /**
+     * Tuple consisting of an object and an integer.
+     *
+     * <p>Similar to {@link Pair}, but saves boxing overhead of converting
+     * {@code int} to {@link Integer}.
+     */
+    public static class ObjIntPair<T> {
+        T t;
+        int i;
+
+        public ObjIntPair(T t, int i) {
+            this.t = t;
+            this.i = i;
+        }
+
+        public int hashCode() {
+            return Util.hash(i, t);
+        }
+
+        public boolean equals(Object obj) {
+            return obj instanceof ObjIntPair
+                && this.i == ((ObjIntPair) obj).i
+                && Util.equals(this.t, ((ObjIntPair) obj).t);
+        }
+
+        public String toString() {
+            return "<" + t + ", " + i + ">";
         }
     }
 }

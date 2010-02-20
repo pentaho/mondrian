@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,6 +11,8 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapStar;
+
+import java.util.List;
 
 /**
  * <p>The <code>GroupingSet</code> stores the information about an
@@ -23,17 +25,22 @@ import mondrian.rolap.RolapStar;
  */
 
 public class GroupingSet {
-    private final Segment[] segments;
+    private final List<Segment> segments;
+    final Segment segment0;
     private final BitKey levelBitKey;
     private final BitKey measureBitKey;
     private final Aggregation.Axis[] axes;
     private final RolapStar.Column[] columns;
 
     public GroupingSet(
-        Segment[] segments, BitKey levelBitKey, BitKey measureBitKey,
-        Aggregation.Axis[] axes, RolapStar.Column[] columns)
+        List<Segment> segments,
+        BitKey levelBitKey,
+        BitKey measureBitKey,
+        Aggregation.Axis[] axes,
+        RolapStar.Column[] columns)
     {
         this.segments = segments;
+        this.segment0 = segments.get(0);
         this.levelBitKey = levelBitKey;
         this.measureBitKey = measureBitKey;
         this.axes = axes;
@@ -41,7 +48,7 @@ public class GroupingSet {
     }
 
 
-    public Segment[] getSegments() {
+    public List<Segment> getSegments() {
         return segments;
     }
 

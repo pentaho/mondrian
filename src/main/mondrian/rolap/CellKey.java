@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -88,7 +88,27 @@ public interface CellKey {
      */
     CellKey copy();
 
-    public class Generator {
+    /**
+     * Returns the offset of the cell in a raster-scan order.
+     *
+     * <p>For example, if the axes have lengths {2, 5, 10} then cell (2, 3, 4)
+     * has offset
+     *
+     * <blockquote>
+     * (2 * mulitiplers[0]) + (3 * multipliers[1]) + (4 * multipliers[2])<br/>
+     * = (2 * 50) + (3 * 10) + (4 * 1)<br/>
+     * = 134</blockquote>
+     *
+     * <p>The multipliers are the product of the lengths of all later axes, in
+     * this case (50, 10, 1).
+     *
+     * @param axisMultipliers For each axis, the product of the lengths of later
+     *     axes
+     * @return The raster-scan ordinal of this cell
+     */
+    int getOffset(int[] axisMultipliers);
+
+    public abstract class Generator {
         /**
          * Creates a CellKey with a given number of axes.
          *
@@ -132,27 +152,30 @@ public interface CellKey {
         }
 
         /**
-         * Creates a CellKey based on a reference to the given coordinate
-         * array. Whenever the contents of the coordinate array change, the
-         * CellKey will also.
-         *
-         * @param pos Coordinate array
-         * @return CellKey
-         */
-        public static CellKey newRefCellKey(int[] pos) {
-            // don't clone pos!
-            return new Many(pos);
-        }
-
-        /**
          * Creates a CellKey implemented by an array to hold the coordinates,
-         * regardless of the size. This is used for testing only.
+         * regardless of the size.
+         *
+         * <p>This is used for testing only. The CellKey will fail to compare
+         * equal to naturally created keys of size 0, 1, 2 or 3.
          *
          * @param size Number of coordinates
          * @return CallKey
          */
         static CellKey newManyCellKey(int size) {
             return new Many(new int[size]);
+        }
+
+        public static int getOffset(
+            int[] ordinals,
+            int[] axisMultipliers)
+        {
+            // TODO: We know that axisMultiplers[ordinals.length - 1] == 1. Can
+            // we avoid multiplying by it?
+            int offset = 0;
+            for (int i = 0; i < ordinals.length; i++) {
+                offset += ordinals[i] * axisMultipliers[i];
+            }
+            return offset;
         }
     }
 
@@ -171,15 +194,13 @@ public interface CellKey {
             return this;
         }
 
+        public int getOffset(int[] axisMultipliers) {
+            return 0;
+        }
+
+        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object o) {
-            if (o instanceof Zero) {
-                return true;
-            } else if (o instanceof Many) {
-                Many many = (Many) o;
-                return many.ordinals.length == 0;
-            } else {
-                return false;
-            }
+            return o == this;
         }
 
         public int hashCode() {
@@ -259,15 +280,15 @@ public interface CellKey {
             return new One(ordinal0);
         }
 
+        public int getOffset(int[] axisMultipliers) {
+            return ordinal0;
+        }
+
         public boolean equals(Object o) {
             // here we cheat, we know that all CellKey's will be the same size
             if (o instanceof One) {
                 One other = (One) o;
                 return (this.ordinal0 == other.ordinal0);
-            } else if (o instanceof Many) {
-                Many many = (Many) o;
-                return many.ordinals.length == 1
-                    && many.ordinals[0] == this.ordinal0;
             } else {
                 return false;
             }
@@ -305,16 +326,16 @@ public interface CellKey {
             return new Two(ordinal0, ordinal1);
         }
 
+        public int getOffset(int[] axisMultipliers) {
+            return ordinal0 * axisMultipliers[0]
+                + ordinal1;
+        }
+
         public boolean equals(Object o) {
             if (o instanceof Two) {
                 Two other = (Two) o;
                 return (other.ordinal0 == this.ordinal0)
                     && (other.ordinal1 == this.ordinal1);
-            } else if (o instanceof Many) {
-                Many many = (Many) o;
-                return many.ordinals.length == 2
-                    && many.ordinals[0] == this.ordinal0
-                    && many.ordinals[1] == this.ordinal1;
             } else {
                 return false;
             }
@@ -392,6 +413,12 @@ public interface CellKey {
             return new Three(ordinal0, ordinal1, ordinal2);
         }
 
+        public int getOffset(int[] axisMultipliers) {
+            return ordinal0 * axisMultipliers[0]
+                + ordinal1 * axisMultipliers[1]
+                + ordinal2;
+        }
+
         public boolean equals(Object o) {
             // here we cheat, we know that all CellKey's will be the same size
             if (o instanceof Three) {
@@ -399,12 +426,6 @@ public interface CellKey {
                 return (other.ordinal0 == this.ordinal0)
                     && (other.ordinal1 == this.ordinal1)
                     && (other.ordinal2 == this.ordinal2);
-            } else if (o instanceof Many) {
-                Many many = (Many) o;
-                return many.ordinals.length == 3
-                    && many.ordinals[0] == this.ordinal0
-                    && many.ordinals[1] == this.ordinal1
-                    && many.ordinals[2] == this.ordinal2;
             } else {
                 return false;
             }
@@ -484,6 +505,7 @@ public interface CellKey {
             }
             System.arraycopy(pos, 0, this.ordinals, 0, ordinals.length);
         }
+
         public final int[] getOrdinals() {
             return this.ordinals;
         }
@@ -513,6 +535,10 @@ public interface CellKey {
             return new Many(this.ordinals.clone());
         }
 
+        public int getOffset(int[] axisMultipliers) {
+            return Generator.getOffset(ordinals, axisMultipliers);
+        }
+
         public int hashCode() {
             int h = 17;
             for (int ordinal : ordinals) {
@@ -525,10 +551,8 @@ public interface CellKey {
             if (o instanceof Many) {
                 Many that = (Many) o;
                 return Arrays.equals(this.ordinals, that.ordinals);
-            } else {
-                // Use symmetric logic in One, Two, Three.
-                return o instanceof CellKey && o.equals(this);
             }
+            return false;
         }
     }
 }

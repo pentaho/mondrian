@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -792,6 +792,15 @@ public class BitKeyTest extends TestCase {
 
         // Check cardinality
         assertEquals(bitKey.cardinality(), bitPositions.length);
+
+        // Check nextSetBit
+        index = -1;
+        final Iterator<Integer> iter = bitKey.iterator();
+        while (iter.hasNext()) {
+            index = bitKey.nextSetBit(index + 1);
+            assertEquals(index, (int) iter.next());
+        }
+        assertEquals(-1, bitKey.nextSetBit(index + 1));
     }
 
     private void doTestEquals(int size0, int size1, int[][] positionsArray) {

@@ -221,32 +221,19 @@ public class Util extends XOMUtil {
 
     /**
      * Returns true if two objects are equal, or are both null.
+     *
+     * @param s First object
+     * @param t Second object
+     * @return Whether objects are equal or both null
      */
     public static boolean equals(Object s, Object t) {
-        return (s == null) ? (t == null) : s.equals(t);
-    }
-
-    /**
-     * Returns whether two arrays have equal contents. Elements may be null.
-     *
-     * @param a1 First array
-     * @param a2 Second array
-     * @param <T> Element type
-     * @return Whether arrays are equal
-     */
-    public static <T> boolean equalArray(
-        T[] a1,
-        T[] a2)
-    {
-        if (a1.length != a2.length) {
+        if (s == t) {
+            return true;
+        }
+        if (s == null || t == null) {
             return false;
         }
-        for (int i = 0; i < a1.length; ++i) {
-            if (!equals(a1[i], a2[i])) {
-                return false;
-            }
-        }
-        return true;
+        return s.equals(t);
     }
 
     /**
@@ -1458,6 +1445,31 @@ public class Util extends XOMUtil {
         return true;
     }
 
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list.
+     *
+     * @param t Array of members of list
+     * @param <T> Element type
+     * @return List containing the given members
+     */
+    public static <T> List<T> flatList(T[] t) {
+        switch (t.length) {
+        case 0:
+            return Collections.emptyList();
+        case 1:
+            return Collections.singletonList(t[0]);
+        case 2:
+            return new Flat2List<T>(t[0], t[1]);
+        case 3:
+            return new Flat3List<T>(t[0], t[1], t[2]);
+        default:
+            // REVIEW: AbstractList contains a modCount field; we could
+            //   write our own implementation and reduce creation overhead a
+            //   bit.
+            return Arrays.asList(t);
+        }
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
@@ -2033,6 +2045,54 @@ public class Util extends XOMUtil {
         System.arraycopy(a, 0, a2, 0, a.length);
         a2[a.length] = o;
         return a2;
+    }
+
+    /**
+     * Like {@link java.util.Arrays#copyOf(double[], int)},  but exists prior
+     * to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static double[] copyOf(double[] original, int newLength) {
+        double[] copy = new double[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
+    }
+
+    /**
+     * Like {@link java.util.Arrays#copyOf(int[], int)},  but exists prior
+     * to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static int[] copyOf(int[] original, int newLength) {
+        int[] copy = new int[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
+    }
+
+    /**
+     * Like {@link java.util.Arrays#copyOf(Object[], int)},  but exists prior
+     * to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static Object[] copyOf(Object[] original, int newLength) {
+        Object[] copy = new Object[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
     }
 
     /**
@@ -2718,16 +2778,135 @@ public class Util extends XOMUtil {
      * @return <code>true</code> if the String is null, empty or whitespace
      */
     public static boolean isBlank(String str) {
-        int strLen;
+        final int strLen;
         if (str == null || (strLen = str.length()) == 0) {
             return true;
         }
         for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * List that stores its two elements in the two members of the class.
+     * Unlike {@link java.util.ArrayList} or
+     * {@link java.util.Arrays#asList(Object[])} there is
+     * no array, only one piece of memory allocated, therefore is very compact
+     * and cache and CPU efficient.
+     *
+     * <p>The list is read-only, cannot be modified or resized, and neither
+     * of the elements can be null.
+     *
+     * <p>The list is created via {@link Util#flatList(Object[])}.
+     *
+     * @see mondrian.olap.Util.Flat3List
+     * @param <T>
+     */
+    protected static class Flat2List<T> extends UnsupportedList<T> {
+        private final T t0;
+        private final T t1;
+
+        Flat2List(T t0, T t1) {
+            this.t0 = t0;
+            this.t1 = t1;
+            assert t0 != null;
+            assert t1 != null;
+        }
+
+        public T get(int index) {
+            switch (index) {
+            case 0:
+                return t0;
+            case 1:
+                return t1;
+            default:
+                throw new IndexOutOfBoundsException("index " + index);
+            }
+        }
+
+        public int size() {
+            return 2;
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Flat2List) {
+                Flat2List that = (Flat2List) o;
+                return Util.equals(this.t0, that.t0)
+                    && Util.equals(this.t1, that.t1);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int h = t0.hashCode();
+            return Util.hash(h, t1.hashCode());
+        }
+    }
+
+    /**
+     * List that stores its three elements in the three members of the class.
+     * Unlike {@link java.util.ArrayList} or
+     * {@link java.util.Arrays#asList(Object[])} there is
+     * no array, only one piece of memory allocated, therefore is very compact
+     * and cache and CPU efficient.
+     *
+     * <p>The list is read-only, cannot be modified or resized, and none
+     * of the elements can be null.
+     *
+     * <p>The list is created via {@link Util#flatList(Object[])}.
+     *
+     * @see mondrian.olap.Util.Flat2List
+     * @param <T>
+     */
+    protected static class Flat3List<T> extends UnsupportedList<T> {
+        private final T t0;
+        private final T t1;
+        private final T t2;
+
+        Flat3List(T t0, T t1, T t2) {
+            this.t0 = t0;
+            this.t1 = t1;
+            this.t2 = t2;
+            assert t0 != null;
+            assert t1 != null;
+            assert t2 != null;
+        }
+
+        public T get(int index) {
+            switch (index) {
+            case 0:
+                return t0;
+            case 1:
+                return t1;
+            case 2:
+                return t2;
+            default:
+                throw new IndexOutOfBoundsException("index " + index);
+            }
+        }
+
+        public int size() {
+            return 3;
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Flat3List) {
+                Flat3List that = (Flat3List) o;
+                return Util.equals(this.t0, that.t0)
+                    && Util.equals(this.t1, that.t1)
+                    && Util.equals(this.t2, that.t2);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int h = t0.hashCode();
+            h = Util.hash(h, t1.hashCode());
+            return Util.hash(h, t2.hashCode());
+        }
     }
 }
 

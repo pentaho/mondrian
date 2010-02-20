@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,9 +12,8 @@ package mondrian.rolap.agg;
 import mondrian.rolap.*;
 import mondrian.olap.*;
 
+import java.sql.*;
 import java.util.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into
@@ -104,7 +103,6 @@ public class SegmentLoader {
     {
         GroupingSetsList groupingSetsList =
             new GroupingSetsList(groupingSets);
-        boolean useGroupingSet = groupingSetsList.useGroupingSets();
         RolapStar.Column[] defaultColumns =
             groupingSetsList.getDefaultColumns();
         SqlStatement stmt = null;
@@ -118,7 +116,7 @@ public class SegmentLoader {
 
             boolean[] axisContainsNull = new boolean[arity];
 
-            List<Object[]> rows =
+            RowList rows =
                 processData(
                     stmt,
                     axisContainsNull,
@@ -132,30 +130,18 @@ public class SegmentLoader {
                     groupingSetsList,
                     rows);
 
-            final SegmentDataset[] nonGroupingDataSets;
-            final Map<BitKey, SegmentDataset[]> groupingDataSetsMap;
-
-            if (useGroupingSet) {
-                nonGroupingDataSets = null;
-                groupingDataSetsMap =
-                    createDataSetsForGroupingSets(
-                        groupingSetsList, sparse);
-            } else {
-                nonGroupingDataSets =
-                    createDataSets(
-                        sparse,
-                        groupingSetsList.getDefaultSegments(),
-                        groupingSetsList.getDefaultAxes());
-                groupingDataSetsMap = null;
-            }
+            final Map<BitKey, List<SegmentDataset>> groupingDataSetsMap =
+                createDataSetsForGroupingSets(
+                    groupingSetsList,
+                    sparse,
+                    rows.getTypes().subList(
+                        arity, rows.getTypes().size()));
 
             loadDataToDataSets(
-                groupingSetsList, rows, groupingDataSetsMap,
-                nonGroupingDataSets, axisContainsNull, sparse);
+                groupingSetsList, rows, groupingDataSetsMap);
 
             setDataToSegments(
-                groupingSetsList, nonGroupingDataSets,
-                groupingDataSetsMap, pinnedSegments);
+                groupingSetsList, groupingDataSetsMap, pinnedSegments);
         } catch (SQLException e) {
             throw stmt.handle(e);
         } finally {
@@ -183,86 +169,52 @@ public class SegmentLoader {
      */
     private void loadDataToDataSets(
         GroupingSetsList groupingSetsList,
-        List<Object[]> rows,
-        Map<BitKey, SegmentDataset[]> groupingDataSetMap,
-        SegmentDataset[] nonGroupingDataSets,
-        boolean[] axisContainsNull,
-        boolean sparse)
+        RowList rows,
+        Map<BitKey, List<SegmentDataset>> groupingDataSetMap)
     {
         int arity = groupingSetsList.getDefaultColumns().length;
-        boolean useGroupingSet = groupingSetsList.useGroupingSets();
-        assert !useGroupingSet == (groupingDataSetMap == null);
-        assert useGroupingSet == (nonGroupingDataSets == null);
         Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
-        int segmentLength = groupingSetsList.getDefaultSegments().length;
+        int segmentLength = groupingSetsList.getDefaultSegments().size();
 
-        List<Integer> pos = new ArrayList<Integer>(arity);
-        for (Object[] row : rows) {
-            final SegmentDataset[] datasets;
-            int groupingBitKeyIndex = arity + segmentLength;
-            if (useGroupingSet) {
-                BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
-                datasets = groupingDataSetMap.get(groupingBitKey);
-            } else {
-                datasets = nonGroupingDataSets;
-            }
-            int k = 0;
+        final int[] pos = new int[arity];
+        final List<SqlStatement.Type> types = rows.getTypes();
+        for (rows.first(); rows.next();) {
+            final List<SegmentDataset> datasets =
+                groupingSetsList.chooseDatasets(groupingDataSetMap, rows);
             for (int j = 0; j < arity; j++) {
-                Object o = row[j];
-                if (useGroupingSet
-                    && isRollupNull(
-                        groupingSetsList, row, groupingBitKeyIndex, j))
-                {
-                    continue;
-                }
-                Aggregation.Axis axis = axes[j];
-                int offset = axis.getOffset(o);
-                pos.add(offset);
-                k *= axes[j].getKeys().length;
-                k += offset;
-            }
-
-            if (sparse) {
-                CellKey key = CellKey.Generator.newCellKey(toArray(pos));
-                for (int j = 0; j < segmentLength; j++) {
-                    final Object o = row[arity + j];
-                    datasets[j].put(key, o);
-                }
-            } else {
-                for (int j = 0; j < segmentLength; j++) {
-                    final Object o = row[arity + j];
-                    ((DenseSegmentDataset) datasets[j]).set(k, o);
+                final SqlStatement.Type type = types.get(j);
+                switch (type) {
+                // TODO: different treatment for INT, DOUBLE
+                case OBJECT:
+                case INT:
+                case DOUBLE:
+                    Object o = rows.getObject(j);
+                    if (groupingSetsList.isRollupNull(rows, j)) {
+                        continue;
+                    }
+                    Aggregation.Axis axis = axes[j];
+                    if (o == null) {
+                        o = RolapUtil.sqlNullValue;
+                    }
+                    int offset = axis.getOffset(o);
+                    pos[j] = offset;
+                    break;
+                default:
+                    throw Util.unexpected(type);
                 }
             }
-            pos.clear();
-        }
-    }
 
-    private boolean isRollupNull(
-        GroupingSetsList groupingSetsList,
-        Object[] row,
-        int groupingBitKeyIndex,
-        int j)
-    {
-        BitKey groupingBitKey = (BitKey) row[groupingBitKeyIndex];
-        boolean isGroupingBitSet =
-            groupingBitKey.get(groupingSetsList.findGroupingFunctionIndex(j));
-        return row[j].equals(RolapUtil.sqlNullValue) && isGroupingBitSet;
-    }
-
-    private int[] toArray(List<Integer> pos) {
-        int posArr[] = new int[pos.size()];
-        for (int i = 0; i < posArr.length; i++) {
-            posArr[i] = pos.get(i);
+            for (int j = 0; j < segmentLength; j++) {
+                datasets.get(j).populateFrom(pos, rows, arity + j);
+            }
         }
-        return posArr;
     }
 
     private boolean setAxisDataAndDecideSparseUse(
         SortedSet<Comparable<?>>[] axisValueSets,
         boolean[] axisContainsNull,
         GroupingSetsList groupingSetsList,
-        List<Object[]> rows)
+        RowList rows)
     {
         Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
         RolapStar.Column[] allColumns = groupingSetsList.getDefaultColumns();
@@ -290,55 +242,61 @@ public class SegmentLoader {
         return useSparse(sparse, n, rows);
     }
 
-    boolean useSparse(boolean sparse, int n, List<Object[]> rows) {
+    boolean useSparse(boolean sparse, int n, RowList rows) {
         sparse = sparse || useSparse((double) n, (double) rows.size());
         return sparse;
     }
 
     private void setDataToSegments(
         GroupingSetsList groupingSetsList,
-        SegmentDataset[] detailedDataSet,
-        Map<BitKey, SegmentDataset[]> datasetsMap,
+        Map<BitKey, List<SegmentDataset>> datasetsMap,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
-        boolean useGroupingSet = groupingSetsList.useGroupingSets();
         for (int i = 0; i < groupingSets.size(); i++) {
-            Segment[] groupedSegments = groupingSets.get(i).getSegments();
-            SegmentDataset[] dataSets =
-                useGroupingSet
-                    ? datasetsMap.get(
-                    groupingSetsList.getRollupColumnsBitKeyList().get(i))
-                    : detailedDataSet;
-            for (int j = 0; j < groupedSegments.length; j++) {
-                Segment groupedSegment = groupedSegments[j];
-                groupedSegment.setData(dataSets[j], pinnedSegments);
+            List<Segment> groupedSegments = groupingSets.get(i).getSegments();
+            List<SegmentDataset> dataSets =
+                datasetsMap.get(
+                    groupingSetsList.getRollupColumnsBitKeyList().get(i));
+            for (int j = 0; j < groupedSegments.size(); j++) {
+                Segment groupedSegment = groupedSegments.get(j);
+                groupedSegment.setData(dataSets.get(j), pinnedSegments);
             }
         }
     }
 
-    private Map<BitKey, SegmentDataset[]> createDataSetsForGroupingSets(
+    private Map<BitKey, List<SegmentDataset>> createDataSetsForGroupingSets(
         GroupingSetsList groupingSetsList,
-        boolean sparse)
+        boolean sparse,
+        List<SqlStatement.Type> types)
     {
-        Map<BitKey, SegmentDataset[]> datasetsMap =
-            new HashMap<BitKey, SegmentDataset[]>();
+        if (!groupingSetsList.useGroupingSets()) {
+            final List<SegmentDataset> datasets = createDataSets(
+                sparse,
+                groupingSetsList.getDefaultSegments(),
+                groupingSetsList.getDefaultAxes(),
+                types);
+            return Collections.singletonMap(BitKey.EMPTY, datasets);
+        }
+        Map<BitKey, List<SegmentDataset>> datasetsMap =
+            new HashMap<BitKey, List<SegmentDataset>>();
         List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
         List<BitKey> groupingColumnsBitKeyList =
             groupingSetsList.getRollupColumnsBitKeyList();
         for (int i = 0; i < groupingSets.size(); i++) {
             GroupingSet groupingSet = groupingSets.get(i);
-            SegmentDataset[] datasets =
+            List<SegmentDataset> datasets =
                 createDataSets(
                     sparse,
                     groupingSet.getSegments(),
-                    groupingSet.getAxes());
+                    groupingSet.getAxes(),
+                    types);
             datasetsMap.put(groupingColumnsBitKeyList.get(i), datasets);
         }
         return datasetsMap;
     }
 
-    private int calcuateMaxDataSize(Aggregation.Axis[] axes) {
+    private int calculateMaxDataSize(Aggregation.Axis[] axes) {
         int n = 1;
         for (Aggregation.Axis axis : axes) {
             n *= axis.getKeys().length;
@@ -346,24 +304,23 @@ public class SegmentLoader {
         return n;
     }
 
-    private SegmentDataset[] createDataSets(
+    private List<SegmentDataset> createDataSets(
         boolean sparse,
-        Segment[] segments,
-        Aggregation.Axis[] axes)
+        List<Segment> segments,
+        Aggregation.Axis[] axes,
+        List<SqlStatement.Type> types)
     {
-        int n = (sparse ? 0 : calcuateMaxDataSize(axes));
-        SegmentDataset[] datasets;
+        final List<SegmentDataset> datasets =
+            new ArrayList<SegmentDataset>(segments.size());
+        final int n;
         if (sparse) {
-            datasets = new SparseSegmentDataset[segments.length];
-            for (int i = 0; i < segments.length; i++) {
-                datasets[i] = new SparseSegmentDataset(segments[i]);
-            }
+            n = 0;
         } else {
-            datasets = new DenseSegmentDataset[segments.length];
-            for (int i = 0; i < segments.length; i++) {
-                datasets[i] =
-                    new DenseSegmentDataset(segments[i], new Object[n]);
-            }
+            n = calculateMaxDataSize(axes);
+        }
+        for (int i = 0; i < segments.size(); i++) {
+            final Segment segment = segments.get(i);
+            datasets.add(segment.createDataset(sparse, types.get(i), n));
         }
         return datasets;
     }
@@ -409,75 +366,160 @@ public class SegmentLoader {
             "Error while loading segment");
     }
 
-    List<Object[]> processData(
+    RowList processData(
         SqlStatement stmt,
-        boolean[] axisContainsNull,
-        SortedSet<Comparable<?>>[] axisValueSets,
-        GroupingSetsList groupingSetsList) throws SQLException
+        final boolean[] axisContainsNull,
+        final SortedSet<Comparable<?>>[] axisValueSets,
+        final GroupingSetsList groupingSetsList) throws SQLException
     {
-        Segment[] segments = groupingSetsList.getDefaultSegments();
-        int measureCount = segments.length;
-        List<Object[]> rawData = loadData(stmt, groupingSetsList);
-        List<Object[]> processedRows = new ArrayList<Object[]>(rawData.size());
-
+        List<Segment> segments = groupingSetsList.getDefaultSegments();
+        int measureCount = segments.size();
+        ResultSet rawRows = loadData(stmt, groupingSetsList);
+        final List<SqlStatement.Type> types =
+            stmt == null
+                ? Collections.nCopies(
+                rawRows.getMetaData().getColumnCount(),
+                SqlStatement.Type.OBJECT)
+                : stmt.guessTypes();
         int arity = axisValueSets.length;
-        int groupingColumnStartIndex = arity + measureCount;
-        for (Object[] row : rawData) {
-            int n =
-                groupingSetsList.useGroupingSets()
-                    ? row.length
-                      - (groupingSetsList.getRollupColumns().size())
-                      + 1
-                    : row.length;
-            Object[] processedRow = new Object[n];
+        final int groupingColumnStartIndex = arity + measureCount;
+
+        // If we're using grouping sets, the SQL query will have a number of
+        // indicator columns, and we roll these into a single BitSet column in
+        // the processed data set.
+        final List<SqlStatement.Type> processedTypes;
+        if (groupingSetsList.useGroupingSets()) {
+            processedTypes =
+                new ArrayList<SqlStatement.Type>(
+                    types.subList(0, groupingColumnStartIndex));
+            processedTypes.add(SqlStatement.Type.OBJECT);
+        } else {
+            processedTypes = types;
+        }
+        final RowList processedRows = new RowList(processedTypes, 100);
+
+        while (rawRows.next()) {
+            processedRows.createRow();
             // get the columns
             int columnIndex = 0;
             for (int axisIndex = 0; axisIndex < arity;
                  axisIndex++, columnIndex++)
             {
-                Object o = row[columnIndex];
-                if (o == null) {
-                    o = RolapUtil.sqlNullValue;
-                    if (!groupingSetsList.useGroupingSets()
-                        || !isAggregateNull(
-                            row,
-                            groupingColumnStartIndex,
+                final SqlStatement.Type type = types.get(columnIndex);
+                switch (type) {
+                case OBJECT:
+                    Object o = rawRows.getObject(columnIndex + 1);
+                    if (o == null) {
+                        o = RolapUtil.sqlNullValue;
+                        if (!groupingSetsList.useGroupingSets()
+                            || !isAggregateNull(
+                            rawRows, groupingColumnStartIndex,
                             groupingSetsList,
                             axisIndex))
-                    {
-                        axisContainsNull[axisIndex] = true;
+                        {
+                            axisContainsNull[axisIndex] = true;
+                        }
+                    } else {
+                        axisValueSets[axisIndex].add(Aggregation.Axis.wrap(o));
                     }
-                } else {
-                    axisValueSets[axisIndex].add(Aggregation.Axis.wrap(o));
+                    processedRows.setObject(columnIndex, o);
+                    break;
+                case INT:
+                    final int intValue = rawRows.getInt(columnIndex + 1);
+                    if (intValue == 0 && rawRows.wasNull()) {
+                        if (!groupingSetsList.useGroupingSets()
+                            || !isAggregateNull(
+                            rawRows, groupingColumnStartIndex,
+                            groupingSetsList,
+                            axisIndex))
+                        {
+                            axisContainsNull[axisIndex] = true;
+                        }
+                        processedRows.setNull(columnIndex, true);
+                    } else {
+                        axisValueSets[axisIndex].add(intValue);
+                        processedRows.setInt(columnIndex, intValue);
+                    }
+                    break;
+                case DOUBLE:
+                    final double doubleValue =
+                        rawRows.getDouble(columnIndex + 1);
+                    if (doubleValue == 0 && rawRows.wasNull()) {
+                        if (!groupingSetsList.useGroupingSets()
+                            || !isAggregateNull(
+                            rawRows, groupingColumnStartIndex,
+                            groupingSetsList,
+                            axisIndex))
+                        {
+                            axisContainsNull[axisIndex] = true;
+                        }
+                    }
+                    axisValueSets[axisIndex].add(doubleValue);
+                    processedRows.setDouble(columnIndex, doubleValue);
+                    break;
+                default:
+                    throw Util.unexpected(type);
                 }
-                processedRow[columnIndex] = o;
             }
+
+            // pre-compute which measures are numeric
+            final boolean[] numeric = new boolean[measureCount];
+            int k = 0;
+            for (Segment segment : segments) {
+                numeric[k++] = segment.measure.getDatatype().isNumeric();
+            }
+
             // get the measure
             for (int i = 0; i < measureCount; i++, columnIndex++) {
-                Object o = row[columnIndex];
-                if (o == null) {
-                    o = Util.nullValue; // convert to placeholder
-                } else if (segments[i].measure.getDatatype().isNumeric()) {
-                    if (o instanceof Double) {
-                        // nothing to do
-                    } else if (o instanceof Number) {
-                        o = ((Number) o).doubleValue();
-                    } else if (o instanceof byte[]) {
-                        // On MySQL 5.0 in German locale, values can come
-                        // out as byte arrays. Don't know why. Bug 1594119.
-                        o = Double.parseDouble(new String((byte[]) o));
-                    } else {
-                        o = Double.parseDouble(o.toString());
+                final SqlStatement.Type type =
+                    types.get(columnIndex);
+                switch (type) {
+                case OBJECT:
+                    Object o = rawRows.getObject(columnIndex + 1);
+                    if (o == null) {
+                        o = Util.nullValue; // convert to placeholder
+                    } else if (numeric[i]) {
+                        if (o instanceof Double) {
+                            // nothing to do
+                        } else if (o instanceof Number) {
+                            o = ((Number) o).doubleValue();
+                        } else if (o instanceof byte[]) {
+                            // On MySQL 5.0 in German locale, values can come
+                            // out as byte arrays. Don't know why. Bug 1594119.
+                            o = Double.parseDouble(new String((byte[]) o));
+                        } else {
+                            o = Double.parseDouble(o.toString());
+                        }
                     }
+                    processedRows.setObject(columnIndex, o);
+                    break;
+                case INT:
+                    final int intValue = rawRows.getInt(columnIndex + 1);
+                    processedRows.setInt(columnIndex, intValue);
+                    if (intValue == 0) {
+                        processedRows.setNull(columnIndex, true);
+                    }
+                    break;
+                case DOUBLE:
+                    final double doubleValue =
+                        rawRows.getDouble(columnIndex + 1);
+                    processedRows.setDouble(columnIndex, doubleValue);
+                    if (doubleValue == 0) {
+                        processedRows.setNull(columnIndex, true);
+                    }
+                    break;
+                default:
+                    throw Util.unexpected(type);
                 }
-                processedRow[columnIndex] = o;
             }
+
             if (groupingSetsList.useGroupingSets()) {
-                processedRow[columnIndex] = getRollupBitKey(
-                    groupingSetsList.getRollupColumns().size(), row,
-                    columnIndex);
+                processedRows.setObject(
+                    columnIndex,
+                    getRollupBitKey(
+                        groupingSetsList.getRollupColumns().size(),
+                        rawRows, columnIndex));
             }
-            processedRows.add(processedRow);
         }
         return processedRows;
     }
@@ -485,26 +527,24 @@ public class SegmentLoader {
     /**
      * Generates bit key representing roll up columns
      */
-    BitKey getRollupBitKey(int arity, Object[] row, int k) {
+    BitKey getRollupBitKey(int arity, ResultSet rowList, int k)
+        throws SQLException
+    {
         BitKey groupingBitKey = BitKey.Factory.makeBitKey(arity);
         for (int i = 0; i < arity; i++) {
-            Object o = row[k + i];
-            if (isOne(o)) {
+            int o = rowList.getInt(k + i + 1);
+            if (o == 1) {
                 groupingBitKey.set(i);
             }
         }
         return groupingBitKey;
     }
 
-    private static boolean isOne(Object o) {
-        return ((Number) o).intValue() == 1;
-    }
-
     private boolean isAggregateNull(
-        Object[] row,
+        ResultSet rowList,
         int groupingColumnStartIndex,
         GroupingSetsList groupingSetsList,
-        int axisIndex)
+        int axisIndex) throws SQLException
     {
         int groupingFunctionIndex =
             groupingSetsList.findGroupingFunctionIndex(axisIndex);
@@ -512,50 +552,42 @@ public class SegmentLoader {
             // Not a rollup column
             return false;
         }
-        return isOne(row[groupingColumnStartIndex + groupingFunctionIndex]);
+        return rowList.getInt(
+            groupingColumnStartIndex + groupingFunctionIndex + 1) == 1;
     }
 
-    List<Object[]> loadData(
+    ResultSet loadData(
         SqlStatement stmt,
         GroupingSetsList groupingSetsList)
         throws SQLException
     {
         int arity = groupingSetsList.getDefaultColumns().length;
-        int measureCount = groupingSetsList.getDefaultSegments().length;
+        int measureCount = groupingSetsList.getDefaultSegments().size();
         int groupingFunctionsCount = groupingSetsList.getRollupColumns().size();
+        List<SqlStatement.Type> types = stmt.guessTypes();
+        assert arity + measureCount + groupingFunctionsCount == types.size();
 
-        List<Object[]> rows = new ArrayList<Object[]>();
-        ResultSet resultSet = stmt.getResultSet();
-        while (resultSet.next()) {
-            ++stmt.rowCount;
-            int n =
-                groupingSetsList.useGroupingSets()
-                    ? arity + measureCount + groupingFunctionsCount
-                    : arity + measureCount;
-            Object[] row = new Object[n];
-            for (int i = 0; i < n; i++) {
-                row[i] = resultSet.getObject(i + 1);
-            }
-            rows.add(row);
-        }
-        return rows;
+        return stmt.getResultSet();
     }
 
-    List<RolapStar.Column[]> getGroupingColumnsList(
-        RolapStar.Column[] detailedBatchColumns,
-        List<GroupingSet> aggBatchDetails)
+    RowList loadData2(
+        SqlStatement stmt,
+        GroupingSetsList groupingSetsList)
+        throws SQLException
     {
-        List<RolapStar.Column[]> groupingColumns =
-            new ArrayList<RolapStar.Column[]>();
-        if (aggBatchDetails.isEmpty()) {
-            return groupingColumns;
+        int arity = groupingSetsList.getDefaultColumns().length;
+        int measureCount = groupingSetsList.getDefaultSegments().size();
+        int groupingFunctionsCount = groupingSetsList.getRollupColumns().size();
+        List<SqlStatement.Type> types = stmt.guessTypes();
+        assert arity + measureCount + groupingFunctionsCount == types.size();
+
+        final RowList rows = new RowList(types, 100);
+        final ResultSet resultSet = stmt.getResultSet();
+        while (resultSet.next()) {
+            ++stmt.rowCount;
+            rows.createRow(resultSet);
         }
-        groupingColumns.add(detailedBatchColumns);
-        for (GroupingSet aggBatchDetail : aggBatchDetails) {
-            groupingColumns.add(
-                aggBatchDetail.getSegments()[0].aggregation.getColumns());
-        }
-        return groupingColumns;
+        return rows;
     }
 
     SortedSet<Comparable<?>>[] getDistinctValueWorkspace(int arity) {
@@ -617,6 +649,360 @@ public class SegmentLoader {
                 + ", densityThreshold=" + densityThreshold;
         }
         return sparse;
+    }
+
+    /**
+     * Collection of rows, each with a set of columns of type Object, double, or
+     * int. Native types are not boxed.
+     */
+    static protected class RowList {
+        private final Column[] columns;
+        private int rowCount = 0;
+        private int capacity = 0;
+        private int currentRow = -1;
+
+        /**
+         * Creates a RowList.
+         *
+         * @param types Column types
+         */
+        RowList(List<SqlStatement.Type> types) {
+            this(types, 100);
+        }
+
+        /**
+         * Creates a RowList with a specified initial capacity.
+         *
+         * @param types Column types
+         * @param capacity Initial capacity
+         */
+        RowList(List<SqlStatement.Type> types, int capacity) {
+            this.columns = new Column[types.size()];
+            this.capacity = capacity;
+            for (int i = 0; i < columns.length; i++) {
+                columns[i] = Column.forType(i, types.get(i), capacity);
+            }
+        }
+
+        void createRow() {
+            currentRow = rowCount++;
+            if (rowCount > capacity) {
+                capacity *= 3;
+                for (Column column : columns) {
+                    column.resize(capacity);
+                }
+            }
+        }
+
+        void setObject(int column, Object value) {
+            columns[column].setObject(currentRow, value);
+        }
+
+        void setDouble(int column, double value) {
+            columns[column].setDouble(currentRow, value);
+        }
+
+        void setInt(int column, int value) {
+            columns[column].setInt(currentRow, value);
+        }
+
+        public int size() {
+            return rowCount;
+        }
+
+        public void createRow(ResultSet resultSet) throws SQLException {
+            createRow();
+            for (Column column : columns) {
+                column.populateFrom(currentRow, resultSet);
+            }
+        }
+
+        public List<SqlStatement.Type> getTypes() {
+            return new AbstractList<SqlStatement.Type>() {
+                public SqlStatement.Type get(int index) {
+                    return columns[index].type;
+                }
+
+                public int size() {
+                    return columns.length;
+                }
+            };
+        }
+
+        /**
+         * Moves to before the first row.
+         */
+        public void first() {
+            currentRow = -1;
+        }
+
+        /**
+         * Moves to after the last row.
+         */
+        public void last() {
+            currentRow = rowCount;
+        }
+
+        /**
+         * Moves forward one row, or returns false if at the last row.
+         *
+         * @return whether moved forward
+         */
+        public boolean next() {
+            if (currentRow < rowCount - 1) {
+                ++currentRow;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Moves backward one row, or returns false if at the first row.
+         *
+         * @return whether moved backward
+         */
+        public boolean previous() {
+            if (currentRow > 0) {
+                --currentRow;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Returns the object in the given column of the current row.
+         *
+         * @param columnIndex Column index
+         * @return Value of the column
+         */
+        public Object getObject(int columnIndex) {
+            return columns[columnIndex].getObject(currentRow);
+        }
+
+        public int getInt(int columnIndex) {
+            return columns[columnIndex].getInt(currentRow);
+        }
+
+        public double getDouble(int columnIndex) {
+            return columns[columnIndex].getDouble(currentRow);
+        }
+
+        public boolean isNull(int columnIndex) {
+            return columns[columnIndex].isNull(currentRow);
+        }
+
+        public void setNull(int columnIndex, boolean b) {
+            columns[columnIndex].setNull(currentRow, b);
+        }
+
+        static abstract class Column {
+            final int ordinal;
+            final SqlStatement.Type type;
+
+            protected Column(int ordinal, SqlStatement.Type type) {
+                this.ordinal = ordinal;
+                this.type = type;
+            }
+
+            static Column forType(
+                int ordinal,
+                SqlStatement.Type type,
+                int capacity)
+            {
+                switch (type) {
+                case OBJECT:
+                    return new ObjectColumn(ordinal, type, capacity);
+                case INT:
+                    return new IntColumn(ordinal, type, capacity);
+                case DOUBLE:
+                    return new DoubleColumn(ordinal, type, capacity);
+                default:
+                    throw Util.unexpected(type);
+                }
+            }
+
+            public abstract void resize(int newSize);
+
+            public void setObject(int row, Object value) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void setDouble(int row, double value) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void setInt(int row, int value) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void setNull(int row, boolean b) {
+                throw new UnsupportedOperationException();
+            }
+
+            public abstract void populateFrom(int row, ResultSet resultSet)
+                throws SQLException;
+
+            public Object getObject(int row) {
+                throw new UnsupportedOperationException();
+            }
+
+            public int getInt(int row) {
+                throw new UnsupportedOperationException();
+            }
+
+            public double getDouble(int row) {
+                throw new UnsupportedOperationException();
+            }
+
+            protected abstract int getCapacity();
+
+            public abstract boolean isNull(int row);
+        }
+
+        static class ObjectColumn extends Column {
+            private Object[] objects;
+
+            ObjectColumn(int ordinal, SqlStatement.Type type, int size) {
+                super(ordinal, type);
+                objects = new Object[size];
+            }
+
+            protected int getCapacity() {
+                return objects.length;
+            }
+
+            public boolean isNull(int row) {
+                return objects[row] == null;
+            }
+
+            public void resize(int newSize) {
+                objects = Util.copyOf(objects, newSize);
+            }
+
+            public void populateFrom(int row, ResultSet resultSet)
+                throws SQLException
+            {
+                objects[row] = resultSet.getObject(ordinal + 1);
+            }
+
+            public void setObject(int row, Object value) {
+                objects[row] = value;
+            }
+
+            public Object getObject(int row) {
+                return objects[row];
+            }
+        }
+
+        static abstract class NativeColumn extends Column {
+            protected BitSet nullIndicators;
+
+            NativeColumn(int ordinal, SqlStatement.Type type) {
+                super(ordinal, type);
+            }
+
+            public void setNull(int row, boolean b) {
+                getNullIndicators().set(row, b);
+            }
+
+            protected BitSet getNullIndicators() {
+                if (nullIndicators == null) {
+                    nullIndicators = new BitSet(getCapacity());
+                }
+                return nullIndicators;
+            }
+        }
+
+        static class IntColumn extends NativeColumn {
+            private int[] ints;
+
+            IntColumn(int ordinal, SqlStatement.Type type, int size) {
+                super(ordinal, type);
+                ints = new int[size];
+            }
+
+            public void resize(int newSize) {
+                ints = Util.copyOf(ints, newSize);
+            }
+
+            public void populateFrom(int row, ResultSet resultSet)
+                throws SQLException
+            {
+                int i = ints[row] = resultSet.getInt(ordinal + 1);
+                if (i == 0) {
+                    getNullIndicators().set(row, resultSet.wasNull());
+                }
+            }
+
+            public void setInt(int row, int value) {
+                ints[row] = value;
+            }
+
+            public int getInt(int row) {
+                return ints[row];
+            }
+
+            public boolean isNull(int row) {
+                return ints[row] == 0
+                   && nullIndicators != null
+                   && nullIndicators.get(row);
+            }
+
+            protected int getCapacity() {
+                return ints.length;
+            }
+
+            public Integer getObject(int row) {
+                return isNull(row) ? null : ints[row];
+            }
+        }
+
+        static class DoubleColumn extends NativeColumn {
+            private double[] doubles;
+
+            DoubleColumn(int ordinal, SqlStatement.Type type, int size) {
+                super(ordinal, type);
+                doubles = new double[size];
+            }
+
+            public void resize(int newSize) {
+                doubles = Util.copyOf(doubles, newSize);
+            }
+
+            public void populateFrom(int row, ResultSet resultSet)
+                throws SQLException
+            {
+                double d = doubles[row] = resultSet.getDouble(ordinal + 1);
+                if (d == 0d) {
+                    getNullIndicators().set(row, resultSet.wasNull());
+                }
+            }
+
+            public void setDouble(int row, double value) {
+                doubles[row] = value;
+            }
+
+            public double getDouble(int row) {
+                return doubles[row];
+            }
+
+            protected int getCapacity() {
+                return doubles.length;
+            }
+
+            public boolean isNull(int row) {
+                return doubles[row] == 0d
+                   && nullIndicators != null
+                   && nullIndicators.get(row);
+            }
+
+            public Double getObject(int row) {
+                return isNull(row) ? null : doubles[row];
+            }
+        }
+
+        public interface Handler {
+        }
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,7 +13,6 @@ package mondrian.rolap;
 
 import mondrian.olap.Util;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.List;
 public class ResultLoader {
     private final List<TargetBase> targets;
     private final int enumTargetCount;
-    private final ResultSet resultSet;
     private final boolean execQuery;
     private final String message;
     private final List<List<RolapMember>> partialResult, newPartialResult;
@@ -41,16 +39,15 @@ public class ResultLoader {
         final int enumTargetCount,
         final List<TargetBase> targets,
         final SqlStatement stmt,
-        final ResultSet resultSet,
         final boolean execQuery,
         final List<List<RolapMember>> partialResult,
         final List<List<RolapMember>> newPartialResult)
         throws SQLException
     {
+        assert (stmt != null) == execQuery;
         this.targets = targets;
         this.enumTargetCount = enumTargetCount;
         this.stmt = stmt;
-        this.resultSet = resultSet;
         this.execQuery = execQuery;
         this.partialResult = partialResult;
         this.newPartialResult = newPartialResult;
@@ -63,7 +60,6 @@ public class ResultLoader {
 
 
     public boolean loadResult() throws SQLException {
-        boolean moreRows = true;
 /*
         if (limit > 0 && limit < ++fetchCount) {
             throw MondrianResource.instance().MemberFetchLimitExceeded
@@ -74,7 +70,7 @@ public class ResultLoader {
             int column = 0;
             for (TargetBase target : targets) {
                 target.removeCurrMember();
-                column = target.addRow(resultSet, column);
+                column = target.addRow(stmt, column);
             }
         } else {
             int firstEnumTarget = 0;
@@ -91,15 +87,15 @@ public class ResultLoader {
             }
             resetCurrMembers(partialRow);
             addTargets(
-                0, firstEnumTarget, enumTargetCount, srcMemberIdxes,
-                resultSet, message);
+                0, firstEnumTarget, enumTargetCount, srcMemberIdxes, message);
             if (newPartialResult != null) {
                 savePartialResult(newPartialResult);
             }
         }
 
+        boolean moreRows;
         if (execQuery) {
-            moreRows = resultSet.next();
+            moreRows = stmt.getResultSet().next();
             if (moreRows) {
                 ++stmt.rowCount;
             }
@@ -124,6 +120,9 @@ public class ResultLoader {
     /**
      * Handles an error, and returns an exception that the caller should then
      * throw.
+     *
+     * @param e Exception
+     * @return Wrapper exception
      */
     public RuntimeException handle(Exception e) {
         if (stmt != null) {
@@ -167,8 +166,6 @@ public class ResultLoader {
      * @param nEnumTargets number of targets that have enumerated members
      * @param srcMemberIdxes for each enumerated target, the current member
      * to be retrieved to form the current cross product row
-     * @param resultSet result set corresponding to rows retrieved through
-     * native sql
      * @param message Message to issue on failure
      */
     private void addTargets(
@@ -176,7 +173,6 @@ public class ResultLoader {
         int currTargetIdx,
         int nEnumTargets,
         int[] srcMemberIdxes,
-        ResultSet resultSet,
         String message)
     {
         TargetBase currTarget = targets.get(currTargetIdx);
@@ -191,20 +187,21 @@ public class ResultLoader {
                 }
                 addTargets(
                     currEnumTargetIdx + 1, nextTargetIdx, nEnumTargets,
-                    srcMemberIdxes, resultSet, message);
+                    srcMemberIdxes, message);
             } else {
                 int column = 0;
                 int enumTargetIdx = 0;
                 for (TargetBase target : targets) {
                     if (target.getSrcMembers() == null) {
                         try {
-                            column = target.addRow(resultSet, column);
+                            column = target.addRow(stmt, column);
                         } catch (Throwable e) {
                             throw Util.newError(e, message);
                         }
                     } else {
-                        RolapMember member = target.getSrcMembers().get(
-                                    srcMemberIdxes[enumTargetIdx++]);
+                        RolapMember member =
+                            target.getSrcMembers().get(
+                                srcMemberIdxes[enumTargetIdx++]);
                         target.add(member);
                     }
                 }

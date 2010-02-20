@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,6 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
 import java.util.*;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -263,7 +262,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             Object value,
             Object captionValue,
             boolean parentChild,
-            ResultSet resultSet,
+            SqlStatement stmt,
             Object key,
             int column) throws SQLException
         {
@@ -274,7 +273,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                     value,
                     captionValue,
                     parentChild,
-                    resultSet,
+                    stmt,
                     key,
                     column));
         }

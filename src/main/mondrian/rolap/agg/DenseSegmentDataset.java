@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,39 +29,43 @@ import java.util.Iterator;
  * @since 21 March, 2002
  * @version $Id$
  */
-class DenseSegmentDataset implements SegmentDataset {
+abstract class DenseSegmentDataset implements SegmentDataset {
     private final Segment segment;
-    private final Object[] values; // length == m[0] * ... * m[axes.length-1]
+    protected final int[] axisMultipliers;
 
     /**
      * Creates a DenseSegmentDataset.
      *
      * @param segment Segment
-     * @param values Array of values, one for each possible coordinate
      */
-    DenseSegmentDataset(Segment segment, Object[] values) {
+    DenseSegmentDataset(Segment segment) {
         this.segment = segment;
-        this.values = values;
+        this.axisMultipliers = computeAxisMultipliers();
     }
 
-    public Object get(CellKey key) {
-        int offset = getOffset(key.getOrdinals());
-        return values[offset];
+    private int[] computeAxisMultipliers() {
+        final int[] axisMultipliers = new int[segment.axes.length];
+        int multiplier = 1;
+        for (int i = segment.axes.length - 1; i >= 0; --i) {
+            final Aggregation.Axis axis = segment.axes[i];
+            axisMultipliers[i] = multiplier;
+            multiplier *= axis.getKeys().length;
+        }
+        return axisMultipliers;
     }
 
-    public double getBytes() {
+    protected abstract int size();
+
+    public final double getBytes() {
         // assume a slot, key, and value are each 4 bytes
-        return values.length * 12;
-    }
-
-    public void put(CellKey key, Object value) {
-        int offset = getOffset(key.getOrdinals());
-        values[offset] = value;
+        return size() * 12;
     }
 
     public Iterator<Map.Entry<CellKey, Object>> iterator() {
         return new DenseSegmentDatasetIterator();
     }
+
+    protected abstract Object getObject(int i);
 
     // not used
     private boolean contains(Object[] keys) {
@@ -80,26 +84,20 @@ class DenseSegmentDataset implements SegmentDataset {
         keys[offset] = value;
     }
 
-    private int getOffset(int[] keys) {
-        int offset = 0;
-        for (int i = 0; i < keys.length; i++) {
-            Aggregation.Axis axis = segment.axes[i];
-            Object[] ks = axis.getKeys();
-            offset *= ks.length;
-            offset += keys[i];
-        }
-        return offset;
+    protected final int getOffset(int[] keys) {
+        return CellKey.Generator.getOffset(keys, axisMultipliers);
     }
 
-    private int getOffset(Object[] keys) {
+    protected final int getOffset(Object[] keys) {
         int offset = 0;
 outer:
         for (int i = 0; i < keys.length; i++) {
             Aggregation.Axis axis = segment.axes[i];
             Object[] ks = axis.getKeys();
-            offset *= ks.length;
+            final int axisLength = ks.length;
+            offset *= axisLength;
             Object value = keys[i];
-            for (int j = 0, axisLength = ks.length; j < axisLength; j++) {
+            for (int j = 0; j < axisLength; j++) {
                 if (ks[j].equals(value)) {
                     offset += j;
                     continue outer;
@@ -110,14 +108,16 @@ outer:
         return offset;
     }
 
-    /**
-     * Sets the value a given ordinal.
-     *
-     * @param k Ordinal
-     * @param o Value
-     */
-    void set(int k, Object o) {
-        values[k] = o;
+    public Object getObject(CellKey pos) {
+        throw new UnsupportedOperationException();
+    }
+
+    public int getInt(CellKey pos) {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getDouble(CellKey pos) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -134,16 +134,14 @@ outer:
     {
         private int i = -1;
         private final int[] ordinals;
-        private final CellKey key;
 
         DenseSegmentDatasetIterator() {
             ordinals = new int[segment.axes.length];
             ordinals[ordinals.length - 1] = -1;
-            key = CellKey.Generator.newRefCellKey(ordinals);
         }
 
         public boolean hasNext() {
-            return i < values.length - 1;
+            return i < size() - 1;
         }
 
         public Map.Entry<CellKey, Object> next() {
@@ -168,19 +166,17 @@ outer:
 
         // implement Entry
         public CellKey getKey() {
-            return key;
+            return CellKey.Generator.newCellKey(ordinals);
         }
 
         // implement Entry
         public Object getValue() {
-            return values[i];
+            return getObject(i);
         }
 
         // implement Entry
         public Object setValue(Object value) {
-            Object old = values[i];
-            values[i] = value;
-            return old;
+            throw new UnsupportedOperationException();
         }
     }
 }
