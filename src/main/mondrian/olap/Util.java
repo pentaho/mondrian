@@ -2048,8 +2048,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Like {@link java.util.Arrays#copyOf(double[], int)},  but exists prior
-     * to JDK 1.6.
+     * Like <code>{@link java.util.Arrays}.copyOf(double[], int)</code>, but
+     * exists prior to JDK 1.6.
      *
      * @param original the array to be copied
      * @param newLength the length of the copy to be returned
@@ -2064,8 +2064,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Like {@link java.util.Arrays#copyOf(int[], int)},  but exists prior
-     * to JDK 1.6.
+     * Like <code>{@link java.util.Arrays}.copyOf(int[], int)</code>, but
+     * exists prior to JDK 1.6.
      *
      * @param original the array to be copied
      * @param newLength the length of the copy to be returned
@@ -2080,8 +2080,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Like {@link java.util.Arrays#copyOf(Object[], int)},  but exists prior
-     * to JDK 1.6.
+     * Like <code>{@link java.util.Arrays}.copyOf(Object[], int)</code>, but
+     * exists prior to JDK 1.6.
      *
      * @param original the array to be copied
      * @param newLength the length of the copy to be returned
