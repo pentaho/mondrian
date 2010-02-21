@@ -51,7 +51,7 @@ import java.util.*;
  *
  * <p>Still to be implemented:<ul>
  *
- * <li>String formatting (upper-case, lower-case, fill from left/right)</li>
+ * <li>String formatting (fill from left/right)</li>
  *
  * <li>Use client's timezone for printing times.</li>
  *
@@ -64,7 +64,6 @@ public class Format {
     private String formatString;
     private BasicFormat format;
     private FormatLocale locale;
-    private static final FieldPosition dummyFieldPos = createDummyFieldPos();
 
     /**
      * Maximum number of entries in the format cache used by
@@ -88,16 +87,12 @@ public class Format {
      *
      * <p>If the number of entries in the cache exceeds 1000,
      */
-    private static Map<String, Format> cache =
+    private static final Map<String, Format> cache =
         new LinkedHashMap<String, Format>() {
             public boolean removeEldestEntry(Map.Entry<String, Format> entry) {
                 return size() > CacheLimit;
             }
         };
-
-    static final char[] digits = {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-    };
 
     static final char thousandSeparator_en = ',';
     static final char decimalPlaceholder_en = '.';
@@ -143,6 +138,8 @@ public class Format {
      * <p>If you need to format many objects using the same format string,
      * create a formatter object using
      * {@link mondrian.util.Format#Format(String, java.util.Locale)}.
+     *
+     * @return object formatted using format string
      */
     static String format(Object o, String formatString, Locale locale)
     {
@@ -218,18 +215,6 @@ public class Format {
 
         BasicFormat(int code) {
             this.code = code;
-        }
-
-        boolean isNumeric() {
-            return false;
-        }
-
-        boolean isDate() {
-            return false;
-        }
-
-        boolean isString() {
-            return false;
         }
 
         void formatNull(StringBuilder buf) {
@@ -454,7 +439,7 @@ public class Format {
             buf.append(s);
         }
 
-        void format(String s, StringBuilder buf) {
+        void format(String str, StringBuilder buf) {
             buf.append(s);
         }
 
@@ -678,7 +663,6 @@ public class Format {
             if (n == 0.0 || (n < 0 && !shows(fd, formatDigitsRightOfPoint))) {
                 // Underflow of negative number. Make it zero, so there is no
                 // '-' sign.
-                n = 0;
                 fd = new FloatingDecimal(0);
             }
             String s = fd.toJavaFormatString(
@@ -1092,17 +1076,49 @@ public class Format {
 
     private static class StringFormat extends BasicFormat
     {
-        int stringCase;
+        final StringCase stringCase;
+        final String literal;
 
-        StringFormat(int stringCase) {
+        StringFormat(StringCase stringCase, String literal) {
+            assert stringCase != null;
             this.stringCase = stringCase;
+            this.literal = literal;
+        }
+
+        @Override
+        void format(String s, StringBuilder buf) {
+            switch (stringCase) {
+            case UPPER:
+                s = s.toUpperCase();
+                break;
+            case LOWER:
+                s = s.toLowerCase();
+                break;
+            }
+            buf.append(s);
+        }
+
+        void format(double d, StringBuilder buf) {
+            buf.append(literal);
+        }
+
+        void format(long n, StringBuilder buf) {
+            buf.append(literal);
+        }
+
+        void format(Date date, StringBuilder buf) {
+            buf.append(literal);
+        }
+
+        void format(Calendar calendar, StringBuilder buf) {
+            buf.append(literal);
         }
     }
 
-    /** Values for {@link StringFormat#stringCase}. */
-    private static final int CASE_ASIS = 0;
-    private static final int CASE_UPPER = 1;
-    private static final int CASE_LOWER = 2;
+    private enum StringCase {
+        UPPER,
+        LOWER
+    }
 
     /** Types of Format. */
     private static final int GENERAL = 0;
@@ -1172,7 +1188,7 @@ public class Format {
     private static final int FORMAT_MMMM_LOWER = 56;
     private static final int FORMAT_USD = 57;
 
-    private static final Token nfe(
+    private static Token nfe(
         int code, int flags, String token, String purpose, String description)
     {
         Util.discard(purpose);
@@ -1180,12 +1196,12 @@ public class Format {
         return new Token(code, flags, token);
     }
 
-    public static final List<Token> getTokenList()
+    public static List<Token> getTokenList()
     {
         return Collections.unmodifiableList(Arrays.asList(tokens));
     }
 
-    static final Token[] tokens = {
+    private static final Token[] tokens = {
         nfe(
             FORMAT_NULL,
             NUMERIC,
@@ -1763,6 +1779,11 @@ public class Format {
     /**
      * Constructs a <code>Format</code> in a specific locale.
      *
+     * @param formatString the format string; see
+     *   <a href="http://www.apostate.com/programming/vb-format.html">this
+     *   description</a> for more details
+     * @param locale The locale
+     *
      * @see FormatLocale
      * @see #createLocale
      */
@@ -1808,13 +1829,15 @@ public class Format {
      * @param formatString the format string; see
      *   <a href="http://www.apostate.com/programming/vb-format.html">this
      *   description</a> for more details
+     *
+     * @return format for given format string in given locale
      */
     public static Format get(String formatString, Locale locale) {
         String key = formatString + "@@@" + locale;
-        Format format = (Format) cache.get(key);
+        Format format = cache.get(key);
         if (format == null) {
             synchronized (cache) {
-                format = (Format) cache.get(key);
+                format = cache.get(key);
                 if (format == null) {
                     format = new Format(formatString, locale);
                     cache.put(key, format);
@@ -2026,8 +2049,7 @@ public class Format {
         FormatLocale formatLocale, Locale locale)
     {
         String key = locale.toString(); // e.g. "en_us_Boston"
-        FormatLocale previous = mapLocaleToFormatLocale.put(key, formatLocale);
-        return previous;
+        return mapLocaleToFormatLocale.put(key, formatLocale);
     }
 
     // Values for variable numberState below.
@@ -2055,7 +2077,6 @@ public class Format {
             zeroesLeftOfPoint = 0,
             zeroesRightOfPoint = 0,
             zeroesRightOfExp = 0;
-        int stringCase = CASE_ASIS;
         boolean useDecimal = false,
             useThouSep = false,
             fillFromRight = true;
@@ -2224,7 +2245,7 @@ public class Format {
                         case FORMAT_BACKSLASH:
                         {
                             // Display the next character in the format string.
-                            String s = "";
+                            String s;
                             if (formatString.length() == 1) {
                                 // Backslash is the last character in the
                                 // string.
@@ -2278,13 +2299,13 @@ public class Format {
 
                         case FORMAT_UPPER:
                         {
-                            stringCase = CASE_UPPER;
+                            format = new StringFormat(StringCase.UPPER, ">");
                             break;
                         }
 
                         case FORMAT_LOWER:
                         {
-                            stringCase = CASE_LOWER;
+                            format = new StringFormat(StringCase.LOWER, "<");
                             break;
                         }
 
@@ -2490,17 +2511,17 @@ public class Format {
             // class equality than using 'instanceof'.
             Class<? extends Object> clazz = o.getClass();
             if (clazz == Double.class) {
-                format.format(((Double) o).doubleValue(), buf);
+                format.format((Double) o, buf);
             } else if (clazz == Float.class) {
-                format.format(((Float) o).floatValue(), buf);
+                format.format((Float) o, buf);
             } else if (clazz == Integer.class) {
-                format.format(((Integer) o).intValue(), buf);
+                format.format((Integer) o, buf);
             } else if (clazz == Long.class) {
-                format.format(((Long) o).longValue(), buf);
+                format.format((Long) o, buf);
             } else if (clazz == Short.class) {
-                format.format(((Short) o).shortValue(), buf);
+                format.format((Short) o, buf);
             } else if (clazz == Byte.class) {
-                format.format(((Byte) o).byteValue(), buf);
+                format.format((Byte) o, buf);
             } else if (o instanceof BigDecimal) {
                 format.format(((BigDecimal) o).doubleValue(), buf);
             } else if (o instanceof BigInteger) {
