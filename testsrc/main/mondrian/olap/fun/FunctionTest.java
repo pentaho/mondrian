@@ -9868,7 +9868,7 @@ Intel platforms):
      * "VisualTotals doesn't work for the all member".
      */
     public void testVisualTotalsAll() {
-        assertQueryReturns(
+        final String query =
             "SELECT \n"
             + "  {[Measures].[Unit Sales]} ON 0, \n"
             + "  VisualTotals(\n"
@@ -9876,7 +9876,9 @@ Intel platforms):
             + "     [Customers].[USA],\n"
             + "     [Customers].[USA].[CA],\n"
             + "     [Customers].[USA].[OR]}) ON 1\n"
-            + "FROM [Sales]",
+            + "FROM [Sales]";
+        assertQueryReturns(
+            query,
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -9890,6 +9892,13 @@ Intel platforms):
             + "Row #1: 142,407\n"
             + "Row #2: 74,748\n"
             + "Row #3: 67,659\n");
+
+        // Check captions
+        final Result result = getTestContext().executeQuery(query);
+        final List<Position> positionList = result.getAxes()[1].getPositions();
+        assertEquals("All Customers", positionList.get(0).get(0).getCaption());
+        assertEquals("USA", positionList.get(1).get(0).getCaption());
+        assertEquals("CA", positionList.get(2).get(0).getCaption());
     }
 
     /**

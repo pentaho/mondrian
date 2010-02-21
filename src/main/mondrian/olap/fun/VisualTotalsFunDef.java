@@ -229,6 +229,11 @@ public class VisualTotalsFunDef extends FunDefBase {
             return member.hashCode();
         }
 
+        @Override
+        public String getCaption() {
+            return member.getCaption();
+        }
+
         protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
