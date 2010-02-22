@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,6 +17,7 @@ import mondrian.rolap.agg.*;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ import java.util.*;
  */
 public class TestAggregationManager extends BatchTestCase {
     private static final Set<Dialect.DatabaseProduct> ACCESS_MYSQL =
-        Util.enumSetOf(
+        Olap4jUtil.enumSetOf(
             Dialect.DatabaseProduct.ACCESS,
             Dialect.DatabaseProduct.MYSQL);
 

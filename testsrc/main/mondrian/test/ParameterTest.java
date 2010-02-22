@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,6 +15,7 @@ import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import org.eigenbase.util.property.Property;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
 import java.math.BigDecimal;
@@ -754,7 +755,7 @@ public class ParameterTest extends FoodMartTestCase {
      * statement.
      */
     public void testConnectionPropsCannotBeOverridden() {
-        Set<RolapConnectionProperties> overrideableProps = Util.enumSetOf(
+        Set<RolapConnectionProperties> overrideableProps = Olap4jUtil.enumSetOf(
             RolapConnectionProperties.Catalog,
             RolapConnectionProperties.Locale);
         for (RolapConnectionProperties prop

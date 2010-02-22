@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2003-2009 Julian Hyde and others
+// Copyright (C) 2003-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -778,7 +778,7 @@ public class CrossJoinFunDef extends FunDefBase {
         @SuppressWarnings({"unchecked"})
         protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
             Iterable<Member> it1 = Util.castToIterable(o1);
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
+            Iterable<List<Member>> it2 = Util.castToIterable(o2);
             return makeIterableIterable(it1, it2);
         }
     }

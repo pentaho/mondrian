@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,21 +29,6 @@ import java.lang.reflect.Method;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk14 implements UtilCompatible {
-    public <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
-        HashSet<E> set = new HashSet<E>();
-        set.add(first);
-        set.addAll(Arrays.asList(rest));
-        return set;
-    }
-
-    public <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
-        return new HashSet<E>();
-    }
-
-    public <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
-        return new HashSet<E>(Arrays.asList(elementType.getEnumConstants()));
-    }
-
     /**
      * This generates a BigDecimal that can have a precision that does
      * not reflect the precision of the input double.

@@ -4,7 +4,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2001-2003 Kana Software, Inc.
-  == Copyright (C) 2001-2009 Julian Hyde and others
+  == Copyright (C) 2001-2010 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -23,12 +23,12 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="4.0.0.13109"/>
+  <property name="version" value="3.2.0.13406"/>
   <property name="vendor" value="Pentaho"/>
   <property name="driver.name" value="Mondrian olap4j driver"/>
-  <property name="driver.version" value="4.0.0"/>
-  <property name="driver.version.major" value="4"/>
-  <property name="driver.version.minor" value="000"/>
+  <property name="driver.version" value="3.2.0"/>
+  <property name="driver.version.major" value="3"/>
+  <property name="driver.version.minor" value="200"/>
   <!--
     ===================================================================
     Set the properties related to paths
@@ -188,7 +188,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="junit.jar"/>
     </fileset>
     <pathelement path="${driver.classpath}"/>
-    <!-- this picks up the default log4.properties -->
+    <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 
@@ -206,7 +206,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
     <pathelement path="${driver.classpath}"/>
-    <!-- this picks up the default log4.properties -->
+    <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 

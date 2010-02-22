@@ -33,7 +33,6 @@ import mondrian.resource.MondrianResource;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
-import org.olap4j.impl.ArrayMap;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -2543,46 +2542,6 @@ public class Util extends XOMUtil {
         } catch (IllegalArgumentException e) {
             return defaultValue;
         }
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#of(Enum, Enum[])} on JDK 1.5 or
-     * later. Otherwise, returns an ordinary set.
-     *
-     * @param first an element that the set is to contain initially
-     * @param rest the remaining elements the set is to contain initially
-     * @throws NullPointerException if any of the specified elements are null,
-     *     or if <tt>rest</tt> is null
-     * @return an enum set initially containing the specified elements
-     */
-    public static <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
-        return compatible.enumSetOf(first, rest);
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or
-     * later. Otherwise, returns an ordinary set.
-     *
-     * @param elementType the class object of the element type for this enum
-     *     set
-     */
-    public static <E extends Enum<E>> Set<E> enumSetNoneOf(
-        Class<E> elementType)
-    {
-        return compatible.enumSetNoneOf(elementType);
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#allOf(Class)} on JDK 1.5 or later.
-     * Otherwise, returns an ordinary set.
-
-     * @param elementType the class object of the element type for this enum
-     *     set
-     */
-    public static <E extends Enum<E>> Set<E> enumSetAllOf(
-        Class<E> elementType)
-    {
-        return compatible.enumSetAllOf(elementType);
     }
 
     /**

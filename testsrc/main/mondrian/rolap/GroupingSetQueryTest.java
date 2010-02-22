@@ -15,9 +15,9 @@ import java.util.Set;
 
 import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
+import org.olap4j.impl.Olap4jUtil;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -41,7 +41,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private boolean formattedSql;
     private String origWarnIfNoPatternForDialect;
     private static final Set<Dialect.DatabaseProduct> ORACLE_TERADATA =
-        Util.enumSetOf(
+        Olap4jUtil.enumSetOf(
             Dialect.DatabaseProduct.ORACLE,
             Dialect.DatabaseProduct.TERADATA);
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,7 +12,6 @@ package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
-import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
 import mondrian.resource.MondrianResource;
@@ -21,6 +20,7 @@ import mondrian.spi.Dialect;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.lang.ref.SoftReference;
 import java.io.PrintWriter;
@@ -491,7 +491,7 @@ public class JdbcSchema {
              * This contains the enums of all of the column's usages.
              */
             private final Set<UsageType> usageTypes =
-                Util.enumSetNoneOf(UsageType.class);
+                Olap4jUtil.enumSetNoneOf(UsageType.class);
 
             private Column(final String name) {
                 this.name = name;

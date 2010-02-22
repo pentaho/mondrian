@@ -19,6 +19,7 @@ import mondrian.rolap.RolapMember;
 
 import static mondrian.xmla.XmlaConstants.*;
 
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.Member.TreeOp;
 import org.olap4j.metadata.XmlaConstant;
 import org.olap4j.metadata.XmlaConstants;
@@ -6460,7 +6461,7 @@ TODO: see above
             Set<org.olap4j.metadata.Property.TypeFlag> typeFlags;
             if (list == null) {
                 typeFlags =
-                    Util.enumSetOf(
+                    Olap4jUtil.enumSetOf(
                         org.olap4j.metadata.Property.TypeFlag.MEMBER);
             } else {
                 typeFlags =

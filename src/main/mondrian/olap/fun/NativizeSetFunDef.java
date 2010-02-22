@@ -17,6 +17,7 @@ import mondrian.olap.type.SetType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import org.apache.log4j.Logger;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
 
@@ -1511,7 +1512,7 @@ public class NativizeSetFunDef extends FunDefBase {
             Collection<ReassemblyCommand> commands)
         {
             Set<NativeElementType> types =
-                Util.enumSetNoneOf(NativeElementType.class);
+                Olap4jUtil.enumSetNoneOf(NativeElementType.class);
             for (ReassemblyCommand command : commands) {
                 types.add(command.getMemberType());
             }
