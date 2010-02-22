@@ -1460,10 +1460,6 @@ public class FunUtil extends Util {
                 } else {
                     evaluator.setContext((Member[]) object);
                 }
-                Object o = evaluator.evaluateCurrent();
-                if (o == Util.nullValue) {
-                    continue;
-                }
                 if (!evaluator.currentIsEmpty()) {
                     retval++;
                 }
@@ -1485,9 +1481,9 @@ public class FunUtil extends Util {
         Iterable members,
         Calc calc)
     {
-        Util.assertPrecondition(members != null, "members != null");
-        Util.assertPrecondition(calc != null, "calc != null");
-        Util.assertPrecondition(calc.getType() instanceof ScalarType);
+        assert members != null;
+        assert calc != null;
+        assert calc.getType() instanceof ScalarType;
 
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();

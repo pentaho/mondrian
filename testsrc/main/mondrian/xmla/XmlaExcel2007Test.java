@@ -9,7 +9,10 @@
 */
 package mondrian.xmla;
 
+import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 import mondrian.test.DiffRepository;
+import mondrian.test.TestContext;
 
 /**
  * Test suite for compatibility of Mondrian XMLA with Excel 2007.
@@ -42,6 +45,29 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
 
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaExcel2007Test.class);
+    }
+
+    protected String filter(
+        String testCaseName,
+        String filename,
+        String content)
+    {
+        if (testCaseName.startsWith("testMemberPropertiesAndSlicer")
+            && filename.equals("response"))
+        {
+            Dialect dialect = TestContext.instance().getDialect();
+            switch (dialect.getDatabaseProduct()) {
+            case MYSQL:
+                final String start = "<Has_x0020_coffee_x0020_bar>";
+                final String end = "</Has_x0020_coffee_x0020_bar>";
+                content = Util.replace(
+                    content, start + "1" + end, start + "true" + end);
+                content = Util.replace(
+                    content, start + "0" + end, start + "false" + end);
+                break;
+            }
+        }
+        return content;
     }
 
     /**

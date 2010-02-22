@@ -215,11 +215,17 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public boolean currentIsEmpty() {
+        // If a cell evaluates to null, it is always deemed empty.
+        Object o = evaluateCurrent();
+        if (o == Util.nullValue || o == null) {
+            return true;
+        }
+        // For other cell values (e.g. zero), the cell is deemed empty if the
+        // number of fact table rows is zero.
         final RolapEvaluator eval2 = push(getCube().getFactCountMeasure());
-        final Object o = eval2.evaluateCurrent();
+        o = eval2.evaluateCurrent();
         return o == null
-               || (o instanceof Number
-                   && ((Number) o).intValue() == 0);
+           || (o instanceof Number && ((Number) o).intValue() == 0);
     }
 
     public void setNativeEnabled(final Boolean nativeEnabled) {

@@ -3007,6 +3007,65 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("count({[Gender].Parent}, ExcludeEmpty)", "0");
     }
 
+    /**
+     * Tests that the 'null' value is regarded as empty, even if the underlying
+     * cell has fact table rows.
+     *
+     * <p>For a fuller test case, see
+     * {@link mondrian.xmla.XmlaCognosTest#testCognosMDXSuiteConvertedAdventureWorksToFoodMart_015()}
+     */
+    public void testCountExcludeEmptyNull() {
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Foo] AS\n"
+            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, NULL)\n"
+            + "  MEMBER [Measures].[Bar] AS\n"
+            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, 0)\n"
+            + "  MEMBER [Time].[CountExc] AS\n"
+            + "    Count([Time].[1997].Children, EXCLUDEEMPTY),\n"
+            + "    SOLVE_ORDER = 2\n"
+            + "  MEMBER [Time].[CountInc] AS\n"
+            + "    Count([Time].[1997].Children, INCLUDEEMPTY),\n"
+            + "    SOLVE_ORDER = 2\n"
+            + "SELECT {[Measures].[Foo],\n"
+            + "   [Measures].[Bar],\n"
+            + "   [Measures].[Unit Sales]} ON 0,\n"
+            + "  {[Time].[1997].Children,\n"
+            + "   [Time].[CountExc],\n"
+            + "   [Time].[CountInc]} ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "{[Measures].[Bar]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "{[Time].[CountExc]}\n"
+            + "{[Time].[CountInc]}\n"
+            + "Row #0: \n"
+            + "Row #0: 0\n"
+            + "Row #0: 66,291\n"
+            + "Row #1: 1\n"
+            + "Row #1: 1\n"
+            + "Row #1: 62,610\n"
+            + "Row #2: \n"
+            + "Row #2: 0\n"
+            + "Row #2: 65,848\n"
+            + "Row #3: \n"
+            + "Row #3: 0\n"
+            + "Row #3: 72,024\n"
+            + "Row #4: 1\n"
+            + "Row #4: 4\n"
+            + "Row #4: 4\n"
+            + "Row #5: 4\n"
+            + "Row #5: 4\n"
+            + "Row #5: 4\n");
+    }
+
     //todo: testCountNull, testCountNoExp
 
     public void testCovariance() {

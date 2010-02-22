@@ -14,6 +14,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.olap.Level;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -26,9 +27,7 @@ import mondrian.test.TestContext;
 import mondrian.util.Bug;
 import mondrian.spi.Dialect;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
 import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
@@ -2339,6 +2338,16 @@ public class NonEmptyTest extends BatchTestCase {
             }
         };
         Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
+        final org.apache.log4j.Level prevLevel = rolapUtilLogger.getLevel();
+        final boolean needToResetLevel;
+        if (prevLevel == null
+            || !prevLevel.isGreaterOrEqual(org.apache.log4j.Level.WARN))
+        {
+            rolapUtilLogger.setLevel(org.apache.log4j.Level.WARN);
+            needToResetLevel = true;
+        } else {
+            needToResetLevel = false;
+        }
         rolapUtilLogger.addAppender(alertListener);
         String expectedMessage =
             "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
@@ -2398,6 +2407,10 @@ public class NonEmptyTest extends BatchTestCase {
         // no biggie if we don't get here for some reason; just being
         // half-heartedly clean
         rolapUtilLogger.removeAppender(alertListener);
+
+        if (needToResetLevel) {
+            rolapUtilLogger.setLevel(prevLevel);
+        }
     }
 
     private int countFilteredEvents(
@@ -4089,4 +4102,3 @@ public class NonEmptyTest extends BatchTestCase {
 }
 
 // End NonEmptyTest.java
-

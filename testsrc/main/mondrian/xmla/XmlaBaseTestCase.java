@@ -291,6 +291,8 @@ System.out.println("Got CONTINUE");
         if (s.startsWith("$")) {
             getDiffRepos().amend(var, "\n\n");
         }
+        // Give derived class a chance to change the content.
+        s = filter(getDiffRepos().getCurrentTestCaseName(true), filename, s);
         return s;
     }
 
