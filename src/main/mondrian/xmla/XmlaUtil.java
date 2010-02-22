@@ -438,17 +438,26 @@ way too noisy
             new DefaultXmlaResponse(
                 new ByteArrayOutputStream(),
                 Charset.defaultCharset().name(),
-                null),
+                Enumeration.ResponseMimeType.SOAP),
             rowList);
         MetadataRowset result = new MetadataRowset();
+        final List<RowsetDefinition.Column> colDefs =
+            new ArrayList<RowsetDefinition.Column>();
+        for (RowsetDefinition.Column columnDefinition
+            : rowsetDefinition.columnDefinitions)
+        {
+            if (columnDefinition.type == RowsetDefinition.Type.Rowset) {
+                // olap4j does not support the extended columns, e.g.
+                // Cube.Dimensions
+                continue;
+            }
+            colDefs.add(columnDefinition);
+        }
         for (Rowset.Row row : rowList) {
-            Object[] values =
-                new Object[rowsetDefinition.columnDefinitions.length];
+            Object[] values = new Object[colDefs.size()];
             int k = -1;
-            for (RowsetDefinition.Column columnDefinition
-                : rowsetDefinition.columnDefinitions)
-            {
-                Object o = row.get(columnDefinition.name);
+            for (RowsetDefinition.Column colDef : colDefs) {
+                Object o = row.get(colDef.name);
                 if (o instanceof List) {
                     o = toString((List<String>) o);
                 } else if (o instanceof String[]) {
@@ -458,10 +467,8 @@ way too noisy
             }
             result.rowList.add(Arrays.asList(values));
         }
-        for (RowsetDefinition.Column columnDefinition
-            : rowsetDefinition.columnDefinitions)
-        {
-            String columnName = columnDefinition.name;
+        for (RowsetDefinition.Column colDef : colDefs) {
+            String columnName = colDef.name;
             if (LOWERCASE_PATTERN.matcher(columnName).matches()) {
                 columnName = Util.camelToUpper(columnName);
             }
