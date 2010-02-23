@@ -144,7 +144,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
            + " </Join>\n"
            + " <Level name='Category' table='cat' column='cat' "
            + "ordinalColumn='ord' captionColumn='cap' nameColumn='name3' "
-           + "uniqueMembers='false'/>\n"
+           + "uniqueMembers='false' type='Numeric'/>\n"
            + " <Level name='Product Category' table='product_cat' "
            + "column='name2' ordinalColumn='ord' captionColumn='cap' "
            + "uniqueMembers='false'/>\n"
