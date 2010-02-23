@@ -6608,6 +6608,9 @@ TODO: see above
         {
             Property[] properties = level.getProperties();
             for (Property property : properties) {
+                if (property.isInternal()) {
+                    continue;
+                }
                 if (propertyNameRT.passes(property.getName())) {
                     outputProperty(
                         schemaReader, property,

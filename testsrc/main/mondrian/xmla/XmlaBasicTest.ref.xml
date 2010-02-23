@@ -10765,20 +10765,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Time Hierarchy - Month Level - $name Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
@@ -10886,20 +10872,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
                         <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - $name Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -11096,20 +11068,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
                         <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -11558,20 +11516,6 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
                         <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -14413,9 +14357,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element minOccurs="0" name="Month"
                                     sql:field="Month" type="xsd:integer"/>
                                 <xsd:element minOccurs="0" name="Week"
-                                    sql:field="Week" type="xsd:integer"/>
+                                    sql:field="Week" type="xsd:decimal"/>
                                 <xsd:element minOccurs="0" name="Day"
-                                    sql:field="Day" type="xsd:integer"/>
+                                    sql:field="Day" type="xsd:decimal"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -14682,9 +14626,9 @@ FROM Sales
                                 <xsd:element minOccurs="0" name="Month"
                                     sql:field="Month" type="xsd:integer"/>
                                 <xsd:element minOccurs="0" name="Week"
-                                    sql:field="Week" type="xsd:integer"/>
+                                    sql:field="Week" type="xsd:decimal"/>
                                 <xsd:element minOccurs="0" name="Day"
-                                    sql:field="Day" type="xsd:integer"/>
+                                    sql:field="Day" type="xsd:decimal"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>

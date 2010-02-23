@@ -600,6 +600,14 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
                     " sql:field=\"Day\" type=\"xsd:integer\"");
                 break;
             case ACCESS:
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Week\" type=\"xsd:decimal\"",
+                    " sql:field=\"Week\" type=\"xsd:double\"");
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Day\" type=\"xsd:decimal\"",
+                    " sql:field=\"Day\" type=\"xsd:integer\"");
                 break;
             }
         }

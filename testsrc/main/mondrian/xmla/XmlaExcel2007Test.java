@@ -58,16 +58,46 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             Dialect dialect = TestContext.instance().getDialect();
             switch (dialect.getDatabaseProduct()) {
             case MYSQL:
-                final String start = "<Has_x0020_coffee_x0020_bar>";
-                final String end = "</Has_x0020_coffee_x0020_bar>";
-                content = Util.replace(
-                    content, start + "1" + end, start + "true" + end);
-                content = Util.replace(
-                    content, start + "0" + end, start + "false" + end);
+                content =
+                    foo(content, "Has_x0020_coffee_x0020_bar", "1", "true");
+                content =
+                    foo(content, "Has_x0020_coffee_x0020_bar", "0", "false");
+                break;
+            case ACCESS:
+                content =
+                    foo(content, "Has_x0020_coffee_x0020_bar", "1", "true");
+                content =
+                    foo(content, "Has_x0020_coffee_x0020_bar", "0", "false");
+                content =
+                    foo(content, "Store_x0020_Sqft", "23688", "23688.0");
+                content = foo(
+                    content, "Grocery_x0020_Sqft", "15337",
+                    "15336.753169821777");
+                content = foo(
+                    content, "Frozen_x0020_Sqft", "5011", "5010.748098106934");
+                content = foo(
+                    content, "Meat_x0020_Sqft", "3340", "3340.4987320712894");
+                content = foo(content, "Store_x0020_Sqft", "23598", "23598.0");
+                content = foo(
+                    content, "Grocery_x0020_Sqft", "14210",
+                    "14210.378025591175");
+                content = foo(
+                    content, "Frozen_x0020_Sqft", "5633", "5632.5731846452945");
+                content = foo(
+                    content, "Meat_x0020_Sqft", "3755", "3755.0487897635303");
                 break;
             }
         }
         return content;
+    }
+
+    private String foo(String content, String tag, String from, String to) {
+        String start = "<" + tag + ">";
+        String end = "</" + tag + ">";
+        final String s = Util.replace(
+            content, start + from + end, start + to + end);
+        assert !s.contains(start + from + end);
+        return s;
     }
 
     /**
