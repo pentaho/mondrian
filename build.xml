@@ -282,7 +282,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <property name="mondrian.test.Name" value=""/>
 
   <!-- Arguments to the java process spawned by the junit task. -->
-  <property name="junit.jvmargs" value="-ea -esa -Xmx256m"/>
+  <property name="junit.jvmargs" value="-ea -esa -Xmx1024m"/>
 
   <!-- Bootstrap Ivy from web site so that it can be used without any special
        installation. Then of course it will load all of the other jars we
