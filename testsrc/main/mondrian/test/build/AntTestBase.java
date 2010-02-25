@@ -81,7 +81,10 @@ abstract class AntTestBase extends TestCase
         // file exists, assume that we are on hudson. Otherwise, require ant
         // to be on the path.
         String antCommand = "ant";
-        final String[] paths = {"/opt/ant1.7/bin/ant", "/opt/ant1.7.1/bin/ant"};
+        final String[] paths = {
+            "/opt/ant1.7/bin/ant",
+            "/opt/apache-ant-1.7.1/bin/ant"
+        };
         for (String path : paths) {
             final File antFile = new File(path);
             if (antFile.exists()) {
