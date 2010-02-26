@@ -17,7 +17,7 @@ import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
-import mondrian.util.Bug;
+
 import org.olap4j.impl.Olap4jUtil;
 
 /**
@@ -81,29 +81,28 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetsWithAggregateOverDefaultMember() {
-        if (Bug.BugMondrian705Fixed
-            && getTestContext().getDialect().supportsGroupingSets())
-        {
+        // testcase for MONDRIAN-705
+        if (getTestContext().getDialect().supportsGroupingSets()) {
             prop.EnableGroupingSets.set(true);
-            assertQueryReturns(
-                "with member [Gender].[agg] as ' "
-                + "  Aggregate({[Gender].DefaultMember}, [Measures].[Store Cost])' "
-                + "select "
-                + "  {[Measures].[Store Cost]} ON COLUMNS, "
-                + "  {[Gender].[Gender].Members, [Gender].[agg]} ON ROWS "
-                + "from [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Cost]}\n"
-                + "Axis #2:\n"
-                + "{[Gender].[All Gender].[F]}\n"
-                + "{[Gender].[All Gender].[M]}\n"
-                + "{[Gender].[agg]}\n"
-                + "Row #0: 111,777.48\n"
-                + "Row #1: 113,849.75\n"
-                + "Row #2: 225,627.23\n");
         }
+        assertQueryReturns(
+            "with member [Gender].[agg] as ' "
+            + "  Aggregate({[Gender].DefaultMember}, [Measures].[Store Cost])' "
+            + "select "
+            + "  {[Measures].[Store Cost]} ON COLUMNS, "
+            + "  {[Gender].[Gender].Members, [Gender].[agg]} ON ROWS "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender].[F]}\n"
+            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[agg]}\n"
+            + "Row #0: 111,777.48\n"
+            + "Row #1: 113,849.75\n"
+            + "Row #2: 225,627.23\n");
     }
 
     public void testGroupingSetForSingleColumnConstraint() {

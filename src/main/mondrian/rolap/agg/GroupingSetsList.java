@@ -87,6 +87,10 @@ final class GroupingSetsList {
         return groupingColumns;
     }
 
+    public int getGroupingBitKeyIndex() {
+        return groupingBitKeyIndex;
+    }
+
     public List<RolapStar.Column> getRollupColumns() {
         return rollupColumns;
     }
@@ -199,29 +203,24 @@ final class GroupingSetsList {
         return groupingSets.subList(1, groupingSets.size());
     }
 
-    public List<SegmentDataset> chooseDatasets(
-        Map<BitKey, List<SegmentDataset>> groupingDataSetMap,
-        SegmentLoader.RowList rows)
+    /**
+     * Collection of {@link mondrian.rolap.agg.SegmentDataset} that have the
+     * same dimensionality and identical axis values. A cohort contains
+     * corresponding cell values for set of measures.
+     */
+    static class Cohort
     {
-        if (!useGroupingSet) {
-            return groupingDataSetMap.get(BitKey.EMPTY);
-        } else {
-            BitKey groupingBitKey =
-                (BitKey) rows.getObject(
-                    groupingBitKeyIndex);
-            return groupingDataSetMap.get(groupingBitKey);
-        }
-    }
+        final List<SegmentDataset> segmentDatasetList;
+        // workspace
+        final int[] pos;
 
-    public boolean isRollupNull(SegmentLoader.RowList rows, int j) {
-        if (!useGroupingSet) {
-            return false;
+        Cohort(
+            List<SegmentDataset> segmentDatasetList,
+            int arity)
+        {
+            this.segmentDatasetList = segmentDatasetList;
+            this.pos = new int[arity];
         }
-        if (rows.getObject(j) != null) {
-            return false;
-        }
-        BitKey groupingBitKey = (BitKey) rows.getObject(groupingBitKeyIndex);
-        return groupingBitKey.get(columnIndexToGroupingIndexMap[j]);
     }
 }
 

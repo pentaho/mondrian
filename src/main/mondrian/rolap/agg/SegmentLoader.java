@@ -130,7 +130,7 @@ public class SegmentLoader {
                     groupingSetsList,
                     rows);
 
-            final Map<BitKey, List<SegmentDataset>> groupingDataSetsMap =
+            final Map<BitKey, GroupingSetsList.Cohort> groupingDataSetsMap =
                 createDataSetsForGroupingSets(
                     groupingSetsList,
                     sparse,
@@ -170,18 +170,28 @@ public class SegmentLoader {
     private void loadDataToDataSets(
         GroupingSetsList groupingSetsList,
         RowList rows,
-        Map<BitKey, List<SegmentDataset>> groupingDataSetMap)
+        Map<BitKey, GroupingSetsList.Cohort> groupingDataSetMap)
     {
         int arity = groupingSetsList.getDefaultColumns().length;
         Aggregation.Axis[] axes = groupingSetsList.getDefaultAxes();
         int segmentLength = groupingSetsList.getDefaultSegments().size();
 
-        final int[] pos = new int[arity];
         final List<SqlStatement.Type> types = rows.getTypes();
+        final boolean useGroupingSet = groupingSetsList.useGroupingSets();
         for (rows.first(); rows.next();) {
-            final List<SegmentDataset> datasets =
-                groupingSetsList.chooseDatasets(groupingDataSetMap, rows);
-            for (int j = 0; j < arity; j++) {
+            final BitKey groupingBitKey;
+            final GroupingSetsList.Cohort cohort;
+            if (useGroupingSet) {
+                groupingBitKey =
+                    (BitKey) rows.getObject(
+                        groupingSetsList.getGroupingBitKeyIndex());
+                cohort = groupingDataSetMap.get(groupingBitKey);
+            } else {
+                groupingBitKey = null;
+                cohort = groupingDataSetMap.get(BitKey.EMPTY);
+            }
+            final int[] pos = cohort.pos;
+            for (int j = 0, k = 0; j < arity; j++) {
                 final SqlStatement.Type type = types.get(j);
                 switch (type) {
                 // TODO: different treatment for INT, DOUBLE
@@ -189,7 +199,11 @@ public class SegmentLoader {
                 case INT:
                 case DOUBLE:
                     Object o = rows.getObject(j);
-                    if (groupingSetsList.isRollupNull(rows, j)) {
+                    if (useGroupingSet
+                        && (o == null || o == RolapUtil.sqlNullValue)
+                        && groupingBitKey.get(
+                            groupingSetsList.findGroupingFunctionIndex(j)))
+                    {
                         continue;
                     }
                     Aggregation.Axis axis = axes[j];
@@ -197,7 +211,7 @@ public class SegmentLoader {
                         o = RolapUtil.sqlNullValue;
                     }
                     int offset = axis.getOffset(o);
-                    pos[j] = offset;
+                    pos[k++] = offset;
                     break;
                 default:
                     throw Util.unexpected(type);
@@ -205,7 +219,8 @@ public class SegmentLoader {
             }
 
             for (int j = 0; j < segmentLength; j++) {
-                datasets.get(j).populateFrom(pos, rows, arity + j);
+                cohort.segmentDatasetList.get(j).populateFrom(
+                    pos, rows, arity + j);
             }
         }
     }
@@ -249,49 +264,51 @@ public class SegmentLoader {
 
     private void setDataToSegments(
         GroupingSetsList groupingSetsList,
-        Map<BitKey, List<SegmentDataset>> datasetsMap,
+        Map<BitKey, GroupingSetsList.Cohort> datasetsMap,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
         for (int i = 0; i < groupingSets.size(); i++) {
             List<Segment> groupedSegments = groupingSets.get(i).getSegments();
-            List<SegmentDataset> dataSets =
+            GroupingSetsList.Cohort cohort =
                 datasetsMap.get(
                     groupingSetsList.getRollupColumnsBitKeyList().get(i));
             for (int j = 0; j < groupedSegments.size(); j++) {
                 Segment groupedSegment = groupedSegments.get(j);
-                groupedSegment.setData(dataSets.get(j), pinnedSegments);
+                final SegmentDataset segmentDataset =
+                    cohort.segmentDatasetList.get(j);
+                groupedSegment.setData(segmentDataset, pinnedSegments);
             }
         }
     }
 
-    private Map<BitKey, List<SegmentDataset>> createDataSetsForGroupingSets(
+    private Map<BitKey, GroupingSetsList.Cohort> createDataSetsForGroupingSets(
         GroupingSetsList groupingSetsList,
         boolean sparse,
         List<SqlStatement.Type> types)
     {
         if (!groupingSetsList.useGroupingSets()) {
-            final List<SegmentDataset> datasets = createDataSets(
+            final GroupingSetsList.Cohort datasets = createDataSets(
                 sparse,
                 groupingSetsList.getDefaultSegments(),
                 groupingSetsList.getDefaultAxes(),
                 types);
             return Collections.singletonMap(BitKey.EMPTY, datasets);
         }
-        Map<BitKey, List<SegmentDataset>> datasetsMap =
-            new HashMap<BitKey, List<SegmentDataset>>();
+        Map<BitKey, GroupingSetsList.Cohort> datasetsMap =
+            new HashMap<BitKey, GroupingSetsList.Cohort>();
         List<GroupingSet> groupingSets = groupingSetsList.getGroupingSets();
         List<BitKey> groupingColumnsBitKeyList =
             groupingSetsList.getRollupColumnsBitKeyList();
         for (int i = 0; i < groupingSets.size(); i++) {
             GroupingSet groupingSet = groupingSets.get(i);
-            List<SegmentDataset> datasets =
+            GroupingSetsList.Cohort cohort =
                 createDataSets(
                     sparse,
                     groupingSet.getSegments(),
                     groupingSet.getAxes(),
                     types);
-            datasetsMap.put(groupingColumnsBitKeyList.get(i), datasets);
+            datasetsMap.put(groupingColumnsBitKeyList.get(i), cohort);
         }
         return datasetsMap;
     }
@@ -304,7 +321,7 @@ public class SegmentLoader {
         return n;
     }
 
-    private List<SegmentDataset> createDataSets(
+    private GroupingSetsList.Cohort createDataSets(
         boolean sparse,
         List<Segment> segments,
         Aggregation.Axis[] axes,
@@ -322,7 +339,7 @@ public class SegmentLoader {
             final Segment segment = segments.get(i);
             datasets.add(segment.createDataset(sparse, types.get(i), n));
         }
-        return datasets;
+        return new GroupingSetsList.Cohort(datasets, axes.length);
     }
 
     private void setAxisDataToGroupableList(
