@@ -68,7 +68,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
             }
         }
         if (failStr != null) {
-            fail (failStr);
+            fail(failStr);
         }
     }
 }
