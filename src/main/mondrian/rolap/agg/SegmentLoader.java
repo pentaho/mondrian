@@ -513,7 +513,7 @@ public class SegmentLoader {
                 case INT:
                     final int intValue = rawRows.getInt(columnIndex + 1);
                     processedRows.setInt(columnIndex, intValue);
-                    if (intValue == 0) {
+                    if (intValue == 0 && rawRows.wasNull()) {
                         processedRows.setNull(columnIndex, true);
                     }
                     break;
@@ -521,7 +521,7 @@ public class SegmentLoader {
                     final double doubleValue =
                         rawRows.getDouble(columnIndex + 1);
                     processedRows.setDouble(columnIndex, doubleValue);
-                    if (doubleValue == 0) {
+                    if (doubleValue == 0 && rawRows.wasNull()) {
                         processedRows.setNull(columnIndex, true);
                     }
                     break;

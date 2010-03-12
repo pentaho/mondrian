@@ -6940,6 +6940,34 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #2: -565,238.13\n"
             + "Row #2: 565,238.13\n");
     }
+
+     public void testZeroValuesAreNotTreatedAsNull() {
+        String mdx =
+            "select"
+            + "  {"
+            + "    ("
+            + "      [Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale].[Tell Tale Tomatos],"
+            + "      [Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking],"
+            + "      [Store].[All Stores].[USA].[WA].[Seattle].[Store 15],"
+            + "      [Time.Weekly].[All Time.Weeklys].[1997].[24].[3]"
+            + "  )"
+            + "  }"
+            + "  on 0,"
+            + "  [Measures].[units shipped] on 1"
+            + " from warehouse";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale].[Tell Tale Tomatos], "
+            + "[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking], "
+            + "[Store].[All Stores].[USA].[WA].[Seattle].[Store 15], "
+            + "[Time].[Weekly].[All Weeklys].[1997].[24].[3]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Units Shipped]}\n"
+            + "Row #0: .0\n");
+    }
 }
 
 // End BasicQueryTest.java
