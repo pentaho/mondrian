@@ -336,20 +336,95 @@ public class PerformanceTest extends FoodMartTestCase {
             + "    </Hierarchy>"
             + "</Dimension>",
             null);
-        String mdx = "with "
-                     + " member [Measures].[one] as '1'"
-                     + " member [Measures].[two] as '2'"
-                     + " member [Measures].[three] as '3'"
-                     + " member [Measures].[four] as '4'"
-                     + " member [Measures].[five] as '5'"
-                     + " select "
-                     + "{[Measures].[one],[Measures].[two],[Measures].[three],[Measures].[four],[Measures].[five]}"
-                     + " on 0, "
-                     + "Crossjoin([Customers].[name].members,[Store].[Store Name].members)"
-                     + " on 1 from sales";
+        String mdx =
+            "with "
+            + " member [Measures].[one] as '1'"
+            + " member [Measures].[two] as '2'"
+            + " member [Measures].[three] as '3'"
+            + " member [Measures].[four] as '4'"
+            + " member [Measures].[five] as '5'"
+            + " select "
+            + "{[Measures].[one],[Measures].[two],[Measures].[three],[Measures].[four],[Measures].[five]}"
+            + " on 0, "
+            + "Crossjoin([Customers].[name].members,[Store].[Store Name].members)"
+            + " on 1 from sales";
         long start = System.currentTimeMillis();
         testContext.executeQuery(mdx);
         printDuration("getProperty taking a long time", start);
+    }
+
+    /**
+     * Runs a query that performs a lot of in-memory calculation.
+     *
+     * <p>Timings (branch / change / host / DBMS / jdk):
+     * <ul>
+     * <li>mondrian-3.2 13366 marmalade oracle jdk1.6 579s, 565s, 579s
+     * <li>mondrian-3.2 13367 marmalade oracle jdk1.6 670s, 663s, 656s
+     * <li>mondrian-3.2 13397 marmalade oracle jdk1.6 604s, 626s
+     * <li>mondrian-3.2 13467 marmalade oracle jdk1.6 610s, 574s
+     * </ul>
+     */
+    public void testInMemoryCalc() {
+        final String result =
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[Typical Store Sales]}\n"
+            + "{[Measures].[Ratio]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Modell].[Modell Rye Bread], [Customers].[All Customers].[USA].[OR].[Salem].[Joan Johnson]}\n"
+            + "{[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Denny].[Denny Plastic Knives], [Customers].[All Customers].[USA].[OR].[Lebanon].[Pat Pinkston]}\n"
+            + "{[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Shady Lake].[Shady Lake Thai Rice], [Customers].[All Customers].[USA].[CA].[Grossmont].[Anne Silva]}\n"
+            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Better].[Better Regular Ramen Soup], [Customers].[All Customers].[USA].[CA].[Coronado].[Robert Brink]}\n"
+            + "{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Bird Call].[Bird Call Laundry Detergent], [Customers].[All Customers].[USA].[CA].[Downey].[Eric Renn]}\n"
+            + "Row #0: 19.65\n"
+            + "Row #0: 3.12\n"
+            + "Row #0: 6.30\n"
+            + "Row #1: 15.56\n"
+            + "Row #1: 2.80\n"
+            + "Row #1: 5.56\n"
+            + "Row #2: 11.24\n"
+            + "Row #2: 2.10\n"
+            + "Row #2: 5.35\n"
+            + "Row #3: 11.22\n"
+            + "Row #3: 2.46\n"
+            + "Row #3: 4.56\n"
+            + "Row #4: 6.33\n"
+            + "Row #4: 1.71\n"
+            + "Row #4: 3.70\n";
+        final String mdx =
+            "with member [Measures].[Typical Store Sales] as\n"
+            + "  Max(\n"
+            + "    [Customers].Siblings,\n"
+            + "    Min(\n"
+            + "      [Product].Siblings,\n"
+            + "      Avg(\n"
+            + "        [Time].Siblings,\n"
+            + "        [Measures].[Store Sales])))\n"
+            + "member [Measures].[Ratio] as\n"
+            + "  [Measures].[Store Sales]\n"
+            + "   / [Measures].[Typical Store Sales]\n"
+            + "select\n"
+            + "  {\n"
+            + "    [Measures].[Store Sales],\n"
+            + "    [Measures].[Typical Store Sales],\n"
+            + "    [Measures].[Ratio]\n"
+            + "  } on 0,\n"
+            + "  TopCount(\n"
+            + "    Filter(\n"
+            + "      NonEmptyCrossJoin("
+            + "        [Product].[Product Name].Members,\n"
+            + "        [Customers].[Name].Members),\n"
+            + "      [Measures].[Ratio] > 1.1\n"
+            + "      and [Measures].[Store Sales] > 5),\n"
+            + "    5,\n"
+            + "    [Measures].[Ratio]) on 1\n"
+            + "from [Sales]\n"
+            + "where [Time].[1997].[Q3]";
+        final long start = System.currentTimeMillis();
+        assertQueryReturns(mdx, result);
+        printDuration("in-memory calc", start);
     }
 
     private void printDuration(String desc, long t0) {
