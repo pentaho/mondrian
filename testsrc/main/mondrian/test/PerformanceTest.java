@@ -365,6 +365,11 @@ public class PerformanceTest extends FoodMartTestCase {
      * </ul>
      */
     public void testInMemoryCalc() {
+        if (!DEBUG) {
+            // Test is too expensive to run as part of standard regress.
+            // Take 10h on hudson (MySQL)!!!
+            return;
+        }
         final String result =
             "Axis #0:\n"
             + "{[Time].[1997].[Q3]}\n"
