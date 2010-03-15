@@ -3,33 +3,25 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.aggmatcher;
 
+import javax.sql.DataSource;
 import java.io.StringWriter;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Appender;
+import org.apache.log4j.*;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Query;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
-
-import javax.sql.DataSource;
 
 
 /**
@@ -53,7 +45,7 @@ public class AggGenTest extends FoodMartTestCase {
         StringWriter writer = new StringWriter();
         Appender myAppender = new WriterAppender(new SimpleLayout(), writer);
         logger.addAppender(myAppender);
-        logger.setLevel(Level.DEBUG);
+        propSaver.setAtLeast(logger, Level.DEBUG);
 
         final String trueValue = "true";
 

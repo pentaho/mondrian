@@ -12,6 +12,7 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
+
 import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
@@ -1466,6 +1467,7 @@ public class SchemaTest extends FoodMartTestCase {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);
@@ -1543,6 +1545,7 @@ public class SchemaTest extends FoodMartTestCase {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);

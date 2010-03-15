@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,24 +14,21 @@ package mondrian.test;
 import mondrian.olap.MondrianProperties;
 
 /**
- * <code>IgnoreUnrelatedDimensionsTest</code> Test case to
+ * Test case to
  * push unrelatedDimensions to top level when ignoreUnrelatedDimensions property
  * is set to true on a base cube usage.
+ *
  * @author ajoglekar
  * @since Dec 03, 2007
  * @version $Id$
  */
 public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
+    // TODO: use propSaver to restore property values
     boolean originalNonEmptyFlag;
     private final MondrianProperties prop = MondrianProperties.instance();
 
-    protected void setUp() throws Exception {
-        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
-        prop.EnableNonEmptyOnAllAxis.set(true);
-    }
-
-    private String cubeSales3 =
+    private static final String cubeSales3 =
         "<Cube name=\"Sales 3\">\n"
         + "   <Table name=\"sales_fact_1997\"/>\n"
         + "   <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
@@ -47,7 +44,8 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
         + "     <CalculatedMemberProperty name=\"MEMBER_ORDINAL\" value=\"2\"/>\n"
         + "   </Measure>\n"
         + "</Cube>";
-    private String cubeWarehouseAndSales3 =
+
+    private static final String cubeWarehouseAndSales3 =
         "<VirtualCube name=\"Warehouse and Sales 3\" defaultMeasure=\"Store Invoice\">\n"
         + "  <CubeUsages>\n"
         + "   <CubeUsage cubeName=\"Sales 3\" ignoreUnrelatedDimensions=\"true\"/>\n"
@@ -61,12 +59,19 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
         + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
         + "</VirtualCube>";
 
+    protected void setUp() throws Exception {
+        super.setUp();
+        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
+        prop.EnableNonEmptyOnAllAxis.set(true);
+    }
+
     protected void tearDown() throws Exception {
         prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
+        super.tearDown();
     }
 
     public TestContext getTestContext() {
-        final TestContext testContext = TestContext.create(
+        return TestContext.create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -106,7 +111,6 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             null,
             null,
             null);
-        return testContext;
     }
 
     public void testTotalingOnCrossJoinOfJoiningAndNonJoiningDimensions() {

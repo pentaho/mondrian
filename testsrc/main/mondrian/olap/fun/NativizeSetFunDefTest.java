@@ -21,8 +21,6 @@ import mondrian.test.*;
  * @since Oct 14, 2009
  */
 public class NativizeSetFunDefTest extends BatchTestCase {
-    private final PropertySaver propSaver = new PropertySaver();
-
     public void setUp() throws Exception {
         super.setUp();
         propSaver.set(
@@ -33,8 +31,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
     public void tearDown() throws Exception {
         super.tearDown();
-        // revert any properties that have been set during this test
-        propSaver.reset();
     }
 
     public void testLevelHierarchyHighCardinality() {

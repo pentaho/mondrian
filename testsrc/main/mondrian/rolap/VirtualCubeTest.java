@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,6 +26,7 @@ import java.util.List;
 public class VirtualCubeTest extends BatchTestCase {
     public VirtualCubeTest() {
     }
+
     public VirtualCubeTest(String name) {
         super(name);
     }
@@ -127,6 +128,24 @@ public class VirtualCubeTest extends BatchTestCase {
         }
     }
 
+    public void testVirtualCubeMeasureInvalidCubeName() {
+        TestContext testContext = TestContext.create(
+            null,
+            null,
+            "<VirtualCube name=\"Sales vs Warehouse\">\n"
+            + "<VirtualCubeDimension name=\"Product\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
+            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Bad cube\" "
+            + "name=\"[Measures].[Unit Sales]\"/>\n"
+            + "</VirtualCube>",
+            null,
+            null,
+            null);
+        testContext.assertQueryThrows(
+            "select from [Sales vs Warehouse]",
+            "Cube 'Bad cube' not found");
+    }
 
     public void testWithTimeDimension() {
         TestContext testContext = TestContext.create(
@@ -220,6 +239,9 @@ public class VirtualCubeTest extends BatchTestCase {
     /**
      * Creates a TestContext containing a cube
      * "Warehouse (Default USA) and Sales".
+     *
+     * @return test context with a cube where the default member in the
+     *     Warehouse dimension is USA
      */
     private TestContext createContextWithNonDefaultAllMember() {
         return TestContext.create(
@@ -311,8 +333,8 @@ public class VirtualCubeTest extends BatchTestCase {
         Member measure = columnPositions.get(ordinal).get(0);
         assertEquals(expectedName, measure.getName());
         assertEquals(
-            Boolean.valueOf(expectedVisibility), measure.getPropertyValue(
-                Property.VISIBLE.name));
+            expectedVisibility,
+            measure.getPropertyValue(Property.VISIBLE.name));
     }
 
     /**

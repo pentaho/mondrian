@@ -23,10 +23,6 @@ import org.eigenbase.util.property.BooleanProperty;
  * @version $Id$
  */
 public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
-    protected void tearDown() throws Exception {
-        propSaver.reset();
-    }
-
     public void testNonEmptyForAllAxesWithPropertySet() {
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);

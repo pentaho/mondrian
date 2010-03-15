@@ -2337,17 +2337,8 @@ public class NonEmptyTest extends BatchTestCase {
                 return false;
             }
         };
-        Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
-        final org.apache.log4j.Level prevLevel = rolapUtilLogger.getLevel();
-        final boolean needToResetLevel;
-        if (prevLevel == null
-            || !prevLevel.isGreaterOrEqual(org.apache.log4j.Level.WARN))
-        {
-            rolapUtilLogger.setLevel(org.apache.log4j.Level.WARN);
-            needToResetLevel = true;
-        } else {
-            needToResetLevel = false;
-        }
+        final Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
+        propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         rolapUtilLogger.addAppender(alertListener);
         String expectedMessage =
             "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
@@ -2362,6 +2353,7 @@ public class NonEmptyTest extends BatchTestCase {
             // Expected
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten one ERROR
@@ -2378,6 +2370,7 @@ public class NonEmptyTest extends BatchTestCase {
             checkNotNative(3, mdx);
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten one WARN
@@ -2396,6 +2389,7 @@ public class NonEmptyTest extends BatchTestCase {
             checkNotNative(3, mdx);
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten no WARN
@@ -2407,10 +2401,6 @@ public class NonEmptyTest extends BatchTestCase {
         // no biggie if we don't get here for some reason; just being
         // half-heartedly clean
         rolapUtilLogger.removeAppender(alertListener);
-
-        if (needToResetLevel) {
-            rolapUtilLogger.setLevel(prevLevel);
-        }
     }
 
     private int countFilteredEvents(
