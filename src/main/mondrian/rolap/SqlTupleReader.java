@@ -1079,26 +1079,30 @@ public class SqlTupleReader implements TupleReader {
     /**
      * Obtains the evaluator used to find an aggregate table to support
      * the Tuple constraint.
-     * @param constraint
+     *
+     * @param constraint Constraint
      * @return evaluator for constraint
      */
     protected Evaluator getEvaluator(TupleConstraint constraint) {
-        Evaluator evaluator = null;
-        if (!(constraint instanceof SqlContextConstraint)) {
-            if (constraint instanceof DescendantsConstraint) {
-                DescendantsConstraint descConstraint =
-                    (DescendantsConstraint)constraint;
-                MemberChildrenConstraint mcc =
-                    descConstraint.getMemberChildrenConstraint(null);
-                if (mcc instanceof SqlContextConstraint) {
-                    SqlContextConstraint scc = (SqlContextConstraint) mcc;
-                    evaluator = scc.getEvaluator();
-                }
+        if (constraint instanceof SqlContextConstraint) {
+            if (constraint
+                instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
+            {
+                return null;
             }
-        } else {
-            evaluator = constraint.getEvaluator();
+            return constraint.getEvaluator();
         }
-        return evaluator;
+        if (constraint instanceof DescendantsConstraint) {
+            DescendantsConstraint descConstraint =
+                (DescendantsConstraint) constraint;
+            MemberChildrenConstraint mcc =
+                descConstraint.getMemberChildrenConstraint(null);
+            if (mcc instanceof SqlContextConstraint) {
+                SqlContextConstraint scc = (SqlContextConstraint) mcc;
+                return scc.getEvaluator();
+            }
+        }
+        return null;
     }
 
     /**
