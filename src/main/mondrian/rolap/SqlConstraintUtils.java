@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -823,11 +823,12 @@ public class SqlConstraintUtils {
     {
         final StringBuilder columnBuf = new StringBuilder();
         final StringBuilder valueBuf = new StringBuilder();
+        final StringBuilder memberBuf = new StringBuilder();
 
         columnBuf.append("(");
 
         // generate the left-hand side of the IN expression
-        boolean isFirstLevelInMultiple = true;
+        int ordinalInMultiple = 0;
         for (RolapMember m = members.get(0); m != null; m = m.getParentMember())
         {
             if (m.isAll()) {
@@ -845,6 +846,9 @@ public class SqlConstraintUtils {
                 column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
 
+            // REVIEW: The following code mostly uses the name column (or name
+            // expression) of the level. Shouldn't it use the key column (or key
+            // expression)?
             String columnString;
             if (column != null) {
                 if (aggStar != null) {
@@ -859,12 +863,7 @@ public class SqlConstraintUtils {
                 } else {
                     RolapStar.Table targetTable = column.getTable();
                     hierarchy.addToFrom(sqlQuery, targetTable);
-
-                    RolapStar.Column nameColumn = column.getNameColumn();
-                    if (nameColumn == null) {
-                        nameColumn = column;
-                    }
-                    columnString = nameColumn.generateExprString(sqlQuery);
+                    columnString = column.generateExprString(sqlQuery);
                 }
             } else {
                 assert (aggStar == null);
@@ -877,10 +876,8 @@ public class SqlConstraintUtils {
                 columnString = nameExp.getExpression(sqlQuery);
             }
 
-            if (!isFirstLevelInMultiple) {
-                columnBuf.append(",");
-            } else {
-                isFirstLevelInMultiple = false;
+            if (ordinalInMultiple++ > 0) {
+                columnBuf.append(", ");
             }
 
             columnBuf.append(columnString);
@@ -895,8 +892,7 @@ public class SqlConstraintUtils {
 
         // generate the RHS of the IN predicate
         valueBuf.append("(");
-        boolean isFirstMember = true;
-        String memberString;
+        int memberOrdinal = 0;
         for (RolapMember m : members) {
             if (m.isCalculated()) {
                 if (restrictMemberTypes) {
@@ -907,8 +903,9 @@ public class SqlConstraintUtils {
                 continue;
             }
 
-            isFirstLevelInMultiple = true;
-            memberString = "(";
+            ordinalInMultiple = 0;
+            memberBuf.setLength(0);
+            memberBuf.append("(");
 
             boolean containsNull = false;
             for (RolapMember p = m; p != null; p = p.getParentMember()) {
@@ -945,15 +942,12 @@ public class SqlConstraintUtils {
                     break;
                 }
 
-                if (isFirstLevelInMultiple) {
-                    isFirstLevelInMultiple = false;
-                } else {
-                    memberString += ",";
+                if (ordinalInMultiple++ > 0) {
+                    memberBuf.append(", ");
                 }
 
-                final StringBuilder buf = new StringBuilder();
-                sqlQuery.getDialect().quote(buf, value, level.getDatatype());
-                memberString += buf.toString();
+                sqlQuery.getDialect().quote(
+                    memberBuf, value, level.getDatatype());
 
                 // Only needs to compare up to the first(lowest) unique level.
                 if (p.getLevel() == fromLevel) {
@@ -965,23 +959,24 @@ public class SqlConstraintUtils {
             // If parent levels do not contain NULL then SQL must have been
             // generated successfully.
             if (!containsNull) {
-                memberString += ")";
-                if (!isFirstMember) {
-                    valueBuf.append(",");
+                memberBuf.append(")");
+                if (memberOrdinal++ > 0) {
+                    valueBuf.append(", ");
                 }
-                valueBuf.append(memberString);
-                isFirstMember = false;
+                valueBuf.append(memberBuf);
             }
         }
 
-        String condition = "";
-        if (!isFirstMember) {
+        StringBuilder condition = new StringBuilder();
+        if (memberOrdinal > 0) {
             // SQLs are generated for some members.
-            valueBuf.append(")");
-            condition += columnBuf.toString() + " in " + valueBuf.toString();
+            condition.append(columnBuf);
+            condition.append(" in ");
+            condition.append(valueBuf);
+            condition.append(")");
         }
 
-        return condition;
+        return condition.toString();
     }
 
     /**

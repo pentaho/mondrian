@@ -12,9 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -1088,7 +1086,16 @@ public class SqlTupleReader implements TupleReader {
             if (constraint
                 instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
             {
-                return null;
+                // Cannot evaluate NonEmptyCrossJoinConstraint using an agg
+                // table if one of its args is a DescendantsConstraint.
+                RolapNativeCrossJoin.NonEmptyCrossJoinConstraint necj =
+                    (RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
+                        constraint;
+                for (CrossJoinArg arg : necj.args) {
+                    if (!(arg instanceof MemberListCrossJoinArg)) {
+                        return null;
+                    }
+                }
             }
             return constraint.getEvaluator();
         }
