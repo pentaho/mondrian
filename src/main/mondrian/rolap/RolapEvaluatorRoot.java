@@ -45,7 +45,6 @@ class RolapEvaluatorRoot {
      * happens very often.
      */
     final RolapMember[] defaultMembers;
-    final TreeMap<Integer, RolapMember> nonAllDefaultMembers;
 
     final MondrianProperties.SolveOrderModeEnum solveOrderMode =
         Util.lookup(
@@ -65,7 +64,6 @@ class RolapEvaluatorRoot {
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
-        nonAllDefaultMembers = new TreeMap<Integer, RolapMember>();
         for (RolapHierarchy hierarchy : cube.getHierarchies()) {
             RolapMember defaultMember =
                 (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
@@ -91,10 +89,6 @@ class RolapEvaluatorRoot {
             }
 
             list.add(defaultMember);
-            if (!defaultMember.isAll()) {
-                nonAllDefaultMembers.put(
-                    hierarchy.getOrdinalInCube(), defaultMember);
-            }
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =

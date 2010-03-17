@@ -53,7 +53,6 @@ public class RolapEvaluator implements Evaluator {
     private static final Object nullResult = new Object();
 
     private final RolapMember[] currentMembers;
-    private TreeMap<Integer, RolapMember> nonAllMemberMap;
     private final RolapEvaluator parent;
     protected CellReader cellReader;
     private final int depth;
@@ -77,6 +76,7 @@ public class RolapEvaluator implements Evaluator {
 
     private final List<Member> slicerMembers;
     private Boolean nativeEnabled;
+    private Member[] nonAllMembers;
 
     /**
      * States of the finite state machine for determining the max solve order
@@ -111,8 +111,6 @@ public class RolapEvaluator implements Evaluator {
         evalAxes = parent.evalAxes;
         cellReader = parent.cellReader;
         currentMembers = parent.currentMembers.clone();
-        nonAllMemberMap =
-            (TreeMap<Integer, RolapMember>) parent.nonAllMemberMap.clone();
         calcMembers = parent.calcMembers.clone();
         calcMemberCount = parent.calcMemberCount;
         slicerMembers = new ArrayList<Member>(parent.slicerMembers);
@@ -141,8 +139,6 @@ public class RolapEvaluator implements Evaluator {
         evalAxes = false;
         cellReader = null;
         currentMembers = root.defaultMembers.clone();
-        nonAllMemberMap =
-            (TreeMap<Integer, RolapMember>) root.nonAllDefaultMembers.clone();
         calcMembers = new RolapCalculation[currentMembers.length];
         calcMemberCount = 0;
         slicerMembers = new ArrayList<Member>();
@@ -241,8 +237,16 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final Member[] getNonAllMembers() {
-        final Collection<RolapMember> members = nonAllMemberMap.values();
-        return members.toArray(new Member[members.size()]);
+        if (nonAllMembers == null) {
+            final List<RolapMember> members = new ArrayList<RolapMember>();
+            for (RolapMember rolapMember : currentMembers) {
+                if(!rolapMember.isAll()){
+                    members.add(rolapMember);
+                }
+            }
+            nonAllMembers = members.toArray(new Member[members.size()]);
+        }
+        return nonAllMembers;
     }
 
     public final List<List<Member[]>> getAggregationLists() {
@@ -405,14 +409,10 @@ public class RolapEvaluator implements Evaluator {
             removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
-        if (m.isAll()) {
-            nonAllMemberMap.remove(ordinal);
-        } else {
-            nonAllMemberMap.put(ordinal, m);
-        }
         if (m.isEvaluated()) {
             addCalcMember(new RolapMemberCalculation(m));
         }
+        nonAllMembers = null;
         return previous;
     }
 
@@ -627,7 +627,7 @@ public class RolapEvaluator implements Evaluator {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         int i = -1;
-        for (RolapMember member : nonAllMemberMap.values()) {
+        for (Member member : getNonAllMembers()) {
             i++;
             // more than one usage
             if (member == null) {
