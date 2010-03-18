@@ -1413,7 +1413,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
     public void testSingleLevelDotMembersIsNativelyEvaluated() {
         String mdx1 =
-            "select non empty NativizeSet([Customers].[name].members) on 0,"
+            "with member [Customers].[agg] as '"
+            + "AGGREGATE({[Customers].[name].MEMBERS}, [Measures].[Unit Sales])'"
+            + "select non empty NativizeSet({{[Customers].[name].members}, {[Customers].[agg]}}) on 0,"
             + "non empty NativizeSet("
             + "Crossjoin({[Gender].[Gender].[M]},"
             + "[Measures].[Unit Sales])) on 1 "
