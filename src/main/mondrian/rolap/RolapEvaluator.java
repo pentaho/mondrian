@@ -240,7 +240,7 @@ public class RolapEvaluator implements Evaluator {
         if (nonAllMembers == null) {
             final List<RolapMember> members = new ArrayList<RolapMember>();
             for (RolapMember rolapMember : currentMembers) {
-                if(!rolapMember.isAll()){
+                if (!rolapMember.isAll()) {
                     members.add(rolapMember);
                 }
             }
