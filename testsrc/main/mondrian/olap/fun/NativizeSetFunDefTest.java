@@ -492,7 +492,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNoSubstitutionsArityTwo() {
-        checkNative(
+        checkNotNative(
             "SELECT NativizeSet(CrossJoin("
             + "{Gender.F, Gender.M}, "
             + "{ [Marital Status].M } "

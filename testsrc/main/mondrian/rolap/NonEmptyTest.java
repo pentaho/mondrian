@@ -3935,6 +3935,36 @@ public class NonEmptyTest extends BatchTestCase {
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
 
+    public void testMeasureConstraintsInACrossjoinHaveCorrectResults() {
+        //http://jira.pentaho.com/browse/MONDRIAN-715
+        propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
+        String mdx =
+            "with "
+            + "  member [Measures].[aa] as '([Measures].[Store Cost],[Gender].[M])'"
+            + "  member [Measures].[bb] as '([Measures].[Store Cost],[Gender].[F])'"
+            + " select"
+            + "  non empty "
+            + "  crossjoin({[Store].[All Stores].[USA].[CA]},"
+            + "      {[Measures].[aa], [Measures].[bb]}) on columns,"
+            + "  non empty "
+            + "  [Marital Status].[Marital Status].members on rows"
+            + " from sales";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores].[USA].[CA], [Measures].[aa]}\n"
+            + "{[Store].[All Stores].[USA].[CA], [Measures].[bb]}\n"
+            + "Axis #2:\n"
+            + "{[Marital Status].[All Marital Status].[M]}\n"
+            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "Row #0: 15,339.94\n"
+            + "Row #0: 15,941.98\n"
+            + "Row #1: 16,598.87\n"
+            + "Row #1: 15,649.64\n");
+    }
+
     public void testContextAtAllWorksWithConstraint() {
         TestContext ctx = TestContext.create(
             null,

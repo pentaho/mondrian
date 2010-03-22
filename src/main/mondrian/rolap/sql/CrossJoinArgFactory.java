@@ -124,9 +124,11 @@ public class CrossJoinArgFactory {
             return Collections.singletonList(cjArgs);
         }
 
-        cjArgs = checkConstrainedMeasures(evaluator, fun, args);
-        if (cjArgs != null) {
-            return Collections.singletonList(cjArgs);
+        if (returnAny) {
+            cjArgs = checkConstrainedMeasures(evaluator, fun, args);
+            if (cjArgs != null) {
+                return Collections.singletonList(cjArgs);
+            }
         }
 
         List<CrossJoinArg[]> allArgs =

@@ -105,7 +105,13 @@ public class NativizeSetFunDef extends FunDefBase {
             }
             return calc;
         } else if (substitutionMap.isEmpty()) {
-            return funArg.accept(compiler);
+            Calc calc = funArg.accept(compiler);
+            if (calc instanceof TupleIterCalc) {
+                return new NonNativeTupleIterCalc((TupleIterCalc) calc);
+            } else if (calc instanceof TupleListCalc) {
+                return new NonNativeTupleListCalc((TupleListCalc) calc);
+            }
+            return calc;
         } else {
             if (isFirstCompileCall) {
                 isFirstCompileCall = false;
@@ -246,6 +252,57 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
+    static class NonNativeTupleIterCalc extends NonNativeCalc
+        implements TupleIterCalc
+    {
+        protected NonNativeTupleIterCalc(TupleIterCalc parent) {
+            super(parent, false);
+        }
+
+        TupleIterCalc parent() {
+            return (TupleIterCalc) parent;
+        }
+
+        public SetType getType() {
+            return parent().getType();
+        }
+
+        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateTupleIterable(evaluator);
+        }
+
+        public Iterable evaluateIterable(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateIterable(evaluator);
+        }
+    }
+
+    static class NonNativeTupleListCalc extends NonNativeCalc
+        implements TupleListCalc
+    {
+        protected NonNativeTupleListCalc(TupleListCalc parent) {
+            super(parent, false);
+        }
+
+        TupleListCalc parent() {
+            return (TupleListCalc) parent;
+        }
+
+        public Type getType() {
+            return parent().getType();
+        }
+
+        public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateTupleList(evaluator);
+        }
+
+        public List evaluateList(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateList(evaluator);
+        }
+    }
 
     public static class NativeTupleListCalc extends AbstractTupleListCalc {
         private final SubstitutionMap substitutionMap;
