@@ -938,7 +938,7 @@ public class FilterTest extends BatchTestCase {
                 + "      <Level name='Store Country' column='store_country' uniqueMembers='true'/>\n"
                 + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
                 + "      <Level name='Store City' column='store_city' uniqueMembers='false'/>\n"
-                + "      <Level name='Store Name' column='store_id' nameColumn='store_name' uniqueMembers='false'/>\n"
+                + "      <Level name='Store Name' column='store_id' type='Numeric' nameColumn='store_name' uniqueMembers='false'/>\n"
                 + "    </Hierarchy>\n"
                 + "  </Dimension>\n");
         testContext.assertQueryReturns(
