@@ -214,127 +214,18 @@ public class PerformanceTest extends FoodMartTestCase {
 
     /***
      * Tests performance of a larger schema with a large number of result cells
-     * Runs in 12.2 seconds when RolapEvaluator.getProperty uses currentMemmber
-     * Runs in 7.5 seconds when RolapEvaluator.getProperty uses nonAllMemberMap
+     * Runs in 186 seconds when RolapEvaluator.getProperty uses currentMemmber
+     * Runs in 20 seconds when RolapEvaluator.getProperty uses nonAllMemberMap
+     * Runs in 8 seconds when the default FoodMart schema is used
      * The performance boost gets more significant as the schema size grows
      */
     public void testBigResultsWithBigSchemaPerforms() {
+        if (!DEBUG) {
+            return;
+        }
         TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
-            "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender3\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender5\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender6\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender7\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender8\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender9\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender10\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender11\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender12\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender13\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender14\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender15\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender16\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender17\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender18\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender19\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>"
-            + "<Dimension name=\"Gender20\" foreignKey=\"customer_id\">\n"
-            + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>"
-            + "</Dimension>",
+            extraGenders(1000),
             null);
         String mdx =
             "with "
@@ -351,6 +242,21 @@ public class PerformanceTest extends FoodMartTestCase {
         long start = System.currentTimeMillis();
         testContext.executeQuery(mdx);
         printDuration("getProperty taking a long time", start);
+    }
+
+    private String extraGenders(final int numGenders) {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < numGenders;i++) {
+            builder.append(
+                String.format(
+                    "<Dimension name=\"Gender%d \" foreignKey=\"customer_id\">"
+                    + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">"
+                    + "      <Table name=\"customer\"/>"
+                    + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>"
+                    + "    </Hierarchy>"
+                    + "</Dimension>", i));
+        }
+        return builder.toString();
     }
 
     /**

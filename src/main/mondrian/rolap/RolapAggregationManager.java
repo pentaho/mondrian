@@ -95,7 +95,7 @@ public abstract class RolapAggregationManager {
     public static CellRequest makeRequest(
         RolapEvaluator evaluator)
     {
-        final Member[] currentMembers = evaluator.getNonAllMembers();
+        final Member[] currentMembers = evaluator.getMembers();
         final List<List<Member[]>> aggregationLists =
             evaluator.getAggregationLists();
 

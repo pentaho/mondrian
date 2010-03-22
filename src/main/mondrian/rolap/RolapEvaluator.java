@@ -627,7 +627,7 @@ public class RolapEvaluator implements Evaluator {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         int i = -1;
-        for (Member member : getNonAllMembers()) {
+        for (Member member : getMembers()) {
             i++;
             // more than one usage
             if (member == null) {
