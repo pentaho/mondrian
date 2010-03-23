@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,6 +11,8 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.util.Bug;
+
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -22,8 +24,11 @@ import java.util.*;
  * @version $Id$
  */
 public class PerformanceTest extends FoodMartTestCase {
-    // Set this to false for checked in code.
-    private static final boolean DEBUG = false;
+    /**
+     * Certain tests are enabled only if logging is enabled.
+     */
+    private static final Logger LOGGER =
+        Logger.getLogger(PerformanceTest.class);
 
     public PerformanceTest(String name) {
         super(name);
@@ -135,7 +140,7 @@ public class PerformanceTest extends FoodMartTestCase {
         }
 
         // Build a query with an explcit member list.
-        if (DEBUG) {
+        if (LOGGER.isDebugEnabled()) {
             StringBuilder buf = new StringBuilder();
             for (Member member : memberList) {
                 if (buf.length() > 0) {
@@ -213,14 +218,13 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     /***
-     * Tests performance of a larger schema with a large number of result cells
-     * Runs in 186 seconds when RolapEvaluator.getProperty uses currentMemmber
-     * Runs in 20 seconds when RolapEvaluator.getProperty uses nonAllMemberMap
-     * Runs in 8 seconds when the default FoodMart schema is used
-     * The performance boost gets more significant as the schema size grows
+     * Tests performance of a larger schema with a large number of result cells.
+     * Runs in 12.2 seconds when RolapEvaluator.getProperty uses currentMember.
+     * Runs in 7.5 seconds when RolapEvaluator.getProperty uses nonAllMemberMap.
+     * The performance boost gets more significant as the schema size grows.
      */
     public void testBigResultsWithBigSchemaPerforms() {
-        if (!DEBUG) {
+        if (!LOGGER.isDebugEnabled()) {
             return;
         }
         TestContext testContext = TestContext.createSubstitutingCube(
@@ -262,16 +266,18 @@ public class PerformanceTest extends FoodMartTestCase {
     /**
      * Runs a query that performs a lot of in-memory calculation.
      *
-     * <p>Timings (branch / change / host / DBMS / jdk):
+     * <p>Timings (branch / change / host / DBMS / jdk / timings (s) / mean):
      * <ul>
-     * <li>mondrian-3.2 13366 marmalade oracle jdk1.6 579s, 565s, 579s
-     * <li>mondrian-3.2 13367 marmalade oracle jdk1.6 670s, 663s, 656s
-     * <li>mondrian-3.2 13397 marmalade oracle jdk1.6 604s, 626s
-     * <li>mondrian-3.2 13467 marmalade oracle jdk1.6 610s, 574s
+     * <li>mondrian-3.2 13366 marmalade oracle jdk1.6 592 588 581 571 avg 583
+     * <li>mondrian-3.2 13367 marmalade oracle jdk1.6 643 620 631 671 avg 641
+     * <li>mondrian-3.2 13397 marmalade oracle jdk1.6 604 626
+     * <li>mondrian-3.2 13467 marmalade oracle jdk1.6 610 574
+     * <li>mondrian-3.2 13489 marmalade oracle jdk1.6 565 561 579 596 avg 575
+     * <li>mondrian-3.2 13490 marmalade oracle jdk1.6 607 611 581 605 avg 601
      * </ul>
      */
     public void testInMemoryCalc() {
-        if (!DEBUG) {
+        if (!LOGGER.isDebugEnabled()) {
             // Test is too expensive to run as part of standard regress.
             // Take 10h on hudson (MySQL)!!!
             return;
@@ -341,9 +347,7 @@ public class PerformanceTest extends FoodMartTestCase {
     private void printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
-        if (DEBUG) {
-            System.out.println(desc + " took " + duration + " millis");
-        }
+        LOGGER.debug(desc + " took " + duration + " millis");
     }
 }
 
