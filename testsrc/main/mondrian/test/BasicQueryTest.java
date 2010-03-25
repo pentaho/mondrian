@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -2659,7 +2659,13 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: 5,581\n");
     }
 
-    /** Make sure that the "Store" cube is working. */
+    /**
+     * Tests that the "Store" cube is working.
+     *
+     * <p>The [Fact Count] measure, which is implicitly created because the cube
+     * definition does not include an explicit count measure, is flagged 'not
+     * visible' but is still correctly returned from [Measures].Members.
+     */
     public void testStoreCube() {
         assertQueryReturns(
             "select {[Measures].members} on columns,\n"
@@ -2672,6 +2678,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sqft]}\n"
             + "{[Measures].[Grocery Sqft]}\n"
+            + "{[Measures].[Fact Count]}\n"
             + "Axis #2:\n"
             + "{[Store Type].[All Store Types]}\n"
             + "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n"
@@ -2682,18 +2689,25 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Store Type].[All Store Types].[Supermarket]}\n"
             + "Row #0: 69,764\n"
             + "Row #0: 44,868\n"
+            + "Row #0: 5\n"
+            + "Row #1: \n"
             + "Row #1: \n"
             + "Row #1: \n"
             + "Row #2: 23,688\n"
             + "Row #2: 15,337\n"
+            + "Row #2: 1\n"
             + "Row #3: \n"
             + "Row #3: \n"
+            + "Row #3: 1\n"
+            + "Row #4: \n"
             + "Row #4: \n"
             + "Row #4: \n"
             + "Row #5: 22,478\n"
             + "Row #5: 15,321\n"
+            + "Row #5: 1\n"
             + "Row #6: 23,598\n"
-            + "Row #6: 14,210\n");
+            + "Row #6: 14,210\n"
+            + "Row #6: 2\n");
     }
 
     public void testSchemaLevelTableIsBad() {

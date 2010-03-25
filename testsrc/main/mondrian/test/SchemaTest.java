@@ -2843,7 +2843,14 @@ public class SchemaTest extends FoodMartTestCase {
             measure.getPropertyValue(Property.MEMBER_CAPTION.name));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
-        final Member calcMeasure = measures.get(1);
+        // The implicitly created [Fact Count] measure
+        final Member factCountMeasure = measures.get(1);
+        assertEquals("Fact Count", factCountMeasure.getName());
+        assertEquals(
+            false,
+            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+
+        final Member calcMeasure = measures.get(2);
         assertEquals("Foo", calcMeasure.getName());
         assertEquals("Calc member caption", calcMeasure.getCaption());
         assertEquals("Calc member description", calcMeasure.getDescription());

@@ -4243,7 +4243,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>4</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Store Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -4294,7 +4294,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>10</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
