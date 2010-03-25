@@ -255,20 +255,17 @@ public class RolapCube extends CubeBase {
             }
         }
 
-        // If writeback is enabled, ensure that cube has an atomic cell count
+        // Ensure that cube has an atomic cell count
         // measure even if the schema does not contain one.
-        if (writebackEnabled) {
-            if (factCountMeasure == null) {
-                final MondrianDef.Measure xmlMeasure =
-                    new MondrianDef.Measure();
-                xmlMeasure.aggregator = "count";
-                xmlMeasure.name = "Fact Count";
-                xmlMeasure.visible = false;
-                factCountMeasure =
-                    createMeasure(
-                        xmlCube, measuresLevel, measureList.size(), xmlMeasure);
-                measureList.add(factCountMeasure);
-            }
+        if (factCountMeasure == null) {
+            final MondrianDef.Measure xmlMeasure = new MondrianDef.Measure();
+            xmlMeasure.aggregator = "count";
+            xmlMeasure.name = "Fact Count";
+            xmlMeasure.visible = false;
+            factCountMeasure =
+                createMeasure(
+                    xmlCube, measuresLevel, measureList.size(), xmlMeasure);
+            measureList.add(factCountMeasure);
         }
 
         setMeasuresHierarchyMemberReader(
@@ -2385,6 +2382,9 @@ public class RolapCube extends CubeBase {
     /**
      * Returns the system measure that counts the number of fact table rows in
      * a given cell.
+     *
+     * <p>Never null, because if there is no count measure explicitly defined,
+     * the system creates one.
      */
     RolapMeasure getFactCountMeasure() {
         return factCountMeasure;

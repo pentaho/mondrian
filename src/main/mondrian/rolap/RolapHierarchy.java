@@ -497,14 +497,11 @@ public class RolapHierarchy extends HierarchyBase {
                 if (rootMember.isHidden()) {
                     continue;
                 }
-                Boolean visible = (Boolean)
-                    rootMember.getPropertyValue(Property.VISIBLE.name);
-                if (visible == null) {
-                    visible = true;
-                }
-                if (!visible) {
-                    continue;
-                }
+                // Note: We require that the root member is not a hidden member
+                // of a ragged hierarchy, but we do not require that it is
+                // visible. In particular, if a cube contains no explicit
+                // measures, the default measure will be the implicitly defined
+                // [Fact Count] measure, which happens to be non-visible.
                 defaultMember = rootMember;
                 break;
             }

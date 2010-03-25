@@ -3066,6 +3066,27 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #5: 4\n");
     }
 
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-710">
+     * bug MONDRIAN-710, "Count with ExcludeEmpty throws an exception when the
+     * cube does not have a factCountMeasure"</a>.
+     */
+    public void testCountExcludeEmptyOnCubeWithNoCountFacts() {
+        assertQueryReturns(
+            "WITH "
+            + "  MEMBER [Measures].[count] AS '"
+            + "    COUNT([Store Type].[Store Type].MEMBERS, EXCLUDEEMPTY)'"
+            + " SELECT "
+            + "  {[Measures].[count]} ON AXIS(0)"
+            + " FROM [Warehouse]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[count]}\n"
+            + "Row #0: 5\n");
+    }
+
     //todo: testCountNull, testCountNoExp
 
     public void testCovariance() {

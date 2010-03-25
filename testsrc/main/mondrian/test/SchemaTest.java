@@ -1880,9 +1880,10 @@ public class SchemaTest extends FoodMartTestCase {
             + "  </Dimension>\n"
             + "</Cube>",
             null, null, null, null);
-        testContext.assertQueryThrows(
-            "select {[Promotion Media]} on columns from [NoMeasures]",
-            "Hierarchy '[Measures]' is invalid (has no members)");
+        // Does not fail with
+        //    "Hierarchy '[Measures]' is invalid (has no members)"
+        // because of the implicit [Fact Count] measure.
+        testContext.assertSimpleQuery();
     }
 
     public void testCubeWithOneCalcMeasure() {
@@ -1903,13 +1904,17 @@ public class SchemaTest extends FoodMartTestCase {
             + "</Cube>",
             null, null, null, null);
 
-        // We would prefer if this query worked. I think we're hitting the bug
-        // which occurs where the default member is calculated. For now, just
-        // make sure that we get a reasonable error.
-        testContext.assertQueryThrows(
+        // Because there are no explicit stored measures, the default measure is
+        // the implicit stored measure, [Fact Count]. Stored measures, even
+        // non-visible ones, come before calculated measures.
+        testContext.assertQueryReturns(
             "select {[Measures]} on columns from [OneCalcMeasure]\n"
             + "where [Promotion Media].[TV]",
-            "Hierarchy '[Measures]' is invalid (has no members)");
+            "Axis #0:\n"
+                + "{[Promotion Media].[All Media].[TV]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Fact Count]}\n"
+                + "Row #0: 1,171\n");
     }
 
     /**
