@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>with member [Promotions].[VarP Store Sales]  as 'VarP([Promotions].members, [Measures].[Store Sales])'  Select {[Promotions].[VarP Store Sales]} on Axis(0), {[Time].[1997].children} on Axis(1) from [Sales] WHERE ([Education Level].[All Education Levels].[High School Degree])</mdxQuery>
+    <mdxQuery>with member [Promotions].[VarP Store Sales]  as 'VarP([Promotions].members, [Measures].[Store Sales])'  Select {[Promotions].[VarP Store Sales]} on Axis(0), {[Time].[1997].children} on Axis(1) from [Sales] WHERE ([Education Level].[High School Degree])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -24,7 +24,7 @@
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Customers].[All Customers]</member>
-                    <member>[Education Level].[All Education Levels].[High School Degree]</member>
+                    <member>[Education Level].[High School Degree]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
                     <member>[Promotion Media].[All Media]</member>

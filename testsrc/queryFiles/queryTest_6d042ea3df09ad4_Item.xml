@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} ON COLUMNS FROM [Sales] WHERE( {([Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian])}.Item(0).Item(0) ) </mdxQuery>
+    <mdxQuery>SELECT {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} ON COLUMNS FROM [Sales] WHERE( {([Customers].[USA].[OR].[Lebanon].[Mary Frances Christian])}.Item(0).Item(0) ) </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -25,7 +25,7 @@
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Promotions].[All Promotions]</member>
-                    <member>[Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]</member>
+                    <member>[Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>

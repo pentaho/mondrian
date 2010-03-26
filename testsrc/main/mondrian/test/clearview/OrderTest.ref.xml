@@ -30,101 +30,101 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Customers].[All Customers].[USA].[OR].[Albany], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}
-{[Customers].[All Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Anacortes], [Store Size in SQFT].[All Store Size in SQFTs].[28206]}
-{[Customers].[All Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Ballard], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[OR].[Beaverton], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Bellingham], [Store Size in SQFT].[All Store Size in SQFTs].[28206]}
-{[Customers].[All Customers].[USA].[CA].[Berkeley], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Bremerton], [Store Size in SQFT].[All Store Size in SQFTs].[39696]}
-{[Customers].[All Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Burien], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[Burlingame], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Chula Vista], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[Colma], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Concord], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Coronado], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[OR].[Corvallis], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}
-{[Customers].[All Customers].[USA].[CA].[Daly City], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Downey], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Downey], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Edmonds], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[El Cajon], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[WA].[Everett], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[Fremont], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[CA].[Grossmont], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[Imperial Beach], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[WA].[Issaquah], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[WA].[Kirkland], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[La Jolla], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[La Mesa], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[OR].[Lake Oswego], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[OR].[Lebanon], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}
-{[Customers].[All Customers].[USA].[CA].[Lemon Grove], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[Lincoln Acres], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Lynnwood], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[WA].[Marysville], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[Mill Valley], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[OR].[Milwaukie], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[CA].[National City], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[CA].[Novato], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Oakland], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[WA].[Olympia], [Store Size in SQFT].[All Store Size in SQFTs].[33858]}
-{[Customers].[All Customers].[USA].[OR].[Oregon City], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[CA].[Palo Alto], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Port Orchard], [Store Size in SQFT].[All Store Size in SQFTs].[39696]}
-{[Customers].[All Customers].[USA].[OR].[Portland], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[WA].[Puyallup], [Store Size in SQFT].[All Store Size in SQFTs].[33858]}
-{[Customers].[All Customers].[USA].[WA].[Redmond], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[Redwood City], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[WA].[Renton], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[CA].[Richmond], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[OR].[Salem], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}
-{[Customers].[All Customers].[USA].[CA].[San Carlos], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[San Diego], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[San Francisco], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[CA].[San Jose], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Santa Cruz], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}
-{[Customers].[All Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Seattle], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}
-{[Customers].[All Customers].[USA].[WA].[Sedro Woolley], [Store Size in SQFT].[All Store Size in SQFTs].[28206]}
-{[Customers].[All Customers].[USA].[WA].[Spokane], [Store Size in SQFT].[All Store Size in SQFTs].[30268]}
-{[Customers].[All Customers].[USA].[CA].[Spring Valley], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[WA].[Tacoma], [Store Size in SQFT].[All Store Size in SQFTs].[33858]}
-{[Customers].[All Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[OR].[W. Linn], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}
-{[Customers].[All Customers].[USA].[WA].[Walla Walla], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
-{[Customers].[All Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[OR].[Woodburn], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}
-{[Customers].[All Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}
-{[Customers].[All Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}
-{[Customers].[All Customers].[USA].[WA].[Yakima], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}
+{[Customers].[USA].[OR].[Albany], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Anacortes], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Ballard], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[OR].[Beaverton], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Bellingham], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[CA].[Berkeley], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Bremerton], [Store Size in SQFT].[39696]}
+{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Burien], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Burlingame], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Chula Vista], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Colma], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Concord], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Coronado], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[OR].[Corvallis], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Daly City], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Edmonds], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[El Cajon], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Everett], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Fremont], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Grossmont], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Imperial Beach], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Issaquah], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Kirkland], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[La Jolla], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[La Mesa], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[OR].[Lake Oswego], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[Lebanon], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Lemon Grove], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Lincoln Acres], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Lynnwood], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Marysville], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Mill Valley], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[OR].[Milwaukie], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[National City], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Novato], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Oakland], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[WA].[Olympia], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[OR].[Oregon City], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Palo Alto], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Port Orchard], [Store Size in SQFT].[39696]}
+{[Customers].[USA].[OR].[Portland], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[WA].[Puyallup], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[WA].[Redmond], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Redwood City], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[WA].[Renton], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Richmond], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[OR].[Salem], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[San Carlos], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[San Diego], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[San Francisco], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[San Jose], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Santa Cruz], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Seattle], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Sedro Woolley], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[WA].[Spokane], [Store Size in SQFT].[30268]}
+{[Customers].[USA].[CA].[Spring Valley], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Tacoma], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[W. Linn], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[WA].[Walla Walla], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[Woodburn], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Yakima], [Store Size in SQFT].[#null]}
 Row #0: 6,806
 Row #1: 1,152
 Row #2: 1,422
@@ -234,7 +234,7 @@ With
   Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
   Set [*SORTED_SET] as 'Order([*NATIVE_CJ_SET], Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BDESC, Ancestor([Product].currentMember, [Product].[Product Department]).OrderKey, BDESC)'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
-  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[All Products].[Food]})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[Food]})'
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}'
   Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0
 Select
@@ -250,14 +250,14 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[All Products].[Non-Consumable].[Periodicals]}
-{[Product].[All Products].[Non-Consumable].[Household]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
-{[Product].[All Products].[Non-Consumable].[Checkout]}
-{[Product].[All Products].[Non-Consumable].[Carousel]}
-{[Product].[All Products].[Drink].[Dairy]}
-{[Product].[All Products].[Drink].[Beverages]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Drink].[Alcoholic Beverages]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -284,7 +284,7 @@ Set [*SORTED_ROW_AXIS] as 'Order([*NATIVE_MEMBERS_Education Level],([Yearly Inco
 Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
-Set [*BASE_MEMBERS_Yearly Income] as 'Filter([Yearly Income].[Yearly Income].Members,[Yearly Income].CurrentMember Not In {[Yearly Income].[All Yearly Incomes].[$10K - $30K],[Yearly Income].[All Yearly Incomes].[$50K - $70K]})'
+Set [*BASE_MEMBERS_Yearly Income] as 'Filter([Yearly Income].[Yearly Income].Members,[Yearly Income].CurrentMember Not In {[Yearly Income].[$10K - $30K],[Yearly Income].[$50K - $70K]})'
 Set [*NATIVE_MEMBERS_Yearly Income] as 'Generate([*NATIVE_CJ_SET], {[Yearly Income].CurrentMember})'
 Member [Yearly Income].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Yearly Income])', SOLVE_ORDER=-101
 Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
@@ -304,20 +304,20 @@ Axis #0:
 Axis #1:
 {[Yearly Income].[*TOTAL_MEMBER_SEL~MAX], [Measures].[*FORMATTED_MEASURE_0]}
 {[Yearly Income].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$150K +], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$110K - $130K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$130K - $150K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$150K +], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$30K - $50K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
 {[Education Level].[*TOTAL_MEMBER_SEL~MAX]}
 {[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
-{[Education Level].[All Education Levels].[Graduate Degree]}
-{[Education Level].[All Education Levels].[Partial College]}
-{[Education Level].[All Education Levels].[Partial High School]}
-{[Education Level].[All Education Levels].[Bachelors Degree]}
-{[Education Level].[All Education Levels].[High School Degree]}
+{[Education Level].[Graduate Degree]}
+{[Education Level].[Partial College]}
+{[Education Level].[Partial High School]}
+{[Education Level].[Bachelors Degree]}
+{[Education Level].[High School Degree]}
 Row #0: 46,305
 Row #0: 61,645
 Row #0: 3,047
@@ -411,16 +411,16 @@ Axis #0:
 {}
 Axis #1:
 {[Customers].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
-{[Customers].[All Customers].[USA].[WA], [Measures].[*FORMATTED_MEASURE_0]}
-{[Customers].[All Customers].[USA].[OR], [Measures].[*FORMATTED_MEASURE_0]}
-{[Customers].[All Customers].[USA].[CA], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[WA], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[OR], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[CA], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[All Products].[Non-Consumable], [Gender].[All Gender].[F]}
-{[Product].[All Products].[Non-Consumable], [Gender].[All Gender].[M]}
-{[Product].[All Products].[Food], [Gender].[All Gender].[F]}
-{[Product].[All Products].[Food], [Gender].[All Gender].[M]}
-{[Product].[All Products].[Drink], [Gender].[All Gender].[M]}
-{[Product].[All Products].[Drink], [Gender].[All Gender].[F]}
+{[Product].[Non-Consumable], [Gender].[F]}
+{[Product].[Non-Consumable], [Gender].[M]}
+{[Product].[Food], [Gender].[F]}
+{[Product].[Food], [Gender].[M]}
+{[Product].[Drink], [Gender].[M]}
+{[Product].[Drink], [Gender].[F]}
 Row #0: 2,206
 Row #0: 770
 Row #0: 457
@@ -479,61 +479,61 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[All Products].[Drink].[Dairy].[Dairy]}
-{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages]}
-{[Product].[All Products].[Drink].[Beverages].[Drinks]}
-{[Product].[All Products].[Drink].[Beverages].[Hot Beverages]}
-{[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}
-{[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods]}
-{[Product].[All Products].[Food].[Snacks].[Candy]}
-{[Product].[All Products].[Food].[Snack Foods].[Snack Foods]}
-{[Product].[All Products].[Food].[Seafood].[Seafood]}
-{[Product].[All Products].[Food].[Produce].[Fruit]}
-{[Product].[All Products].[Food].[Produce].[Packaged Vegetables]}
-{[Product].[All Products].[Food].[Produce].[Specialty]}
-{[Product].[All Products].[Food].[Produce].[Vegetables]}
-{[Product].[All Products].[Food].[Meat].[Meat]}
-{[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods]}
-{[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts]}
-{[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees]}
-{[Product].[All Products].[Food].[Frozen Foods].[Meat]}
-{[Product].[All Products].[Food].[Frozen Foods].[Pizza]}
-{[Product].[All Products].[Food].[Frozen Foods].[Vegetables]}
-{[Product].[All Products].[Food].[Eggs].[Eggs]}
-{[Product].[All Products].[Food].[Deli].[Meat]}
-{[Product].[All Products].[Food].[Deli].[Side Dishes]}
-{[Product].[All Products].[Food].[Dairy].[Dairy]}
-{[Product].[All Products].[Food].[Canned Products].[Fruit]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Clams]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Oysters]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Sardines]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Soup]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna]}
-{[Product].[All Products].[Food].[Canned Foods].[Vegetables]}
-{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods]}
-{[Product].[All Products].[Food].[Baking Goods].[Baking Goods]}
-{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies]}
-{[Product].[All Products].[Food].[Baked Goods].[Bread]}
-{[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines]}
-{[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products]}
-{[Product].[All Products].[Non-Consumable].[Household].[Candles]}
-{[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies]}
-{[Product].[All Products].[Non-Consumable].[Household].[Electrical]}
-{[Product].[All Products].[Non-Consumable].[Household].[Hardware]}
-{[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products]}
-{[Product].[All Products].[Non-Consumable].[Household].[Paper Products]}
-{[Product].[All Products].[Non-Consumable].[Household].[Plastic Products]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
-{[Product].[All Products].[Non-Consumable].[Checkout].[Hardware]}
-{[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous]}
-{[Product].[All Products].[Non-Consumable].[Carousel].[Specialty]}
+{[Product].[Drink].[Dairy].[Dairy]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Drink].[Beverages].[Drinks]}
+{[Product].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Food].[Snacks].[Candy]}
+{[Product].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Food].[Seafood].[Seafood]}
+{[Product].[Food].[Produce].[Fruit]}
+{[Product].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Food].[Produce].[Specialty]}
+{[Product].[Food].[Produce].[Vegetables]}
+{[Product].[Food].[Meat].[Meat]}
+{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Food].[Frozen Foods].[Meat]}
+{[Product].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Food].[Eggs].[Eggs]}
+{[Product].[Food].[Deli].[Meat]}
+{[Product].[Food].[Deli].[Side Dishes]}
+{[Product].[Food].[Dairy].[Dairy]}
+{[Product].[Food].[Canned Products].[Fruit]}
+{[Product].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Food].[Baked Goods].[Bread]}
+{[Product].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Non-Consumable].[Household].[Bathroom Products]}
+{[Product].[Non-Consumable].[Household].[Candles]}
+{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Non-Consumable].[Carousel].[Specialty]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -622,61 +622,61 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages]}
-{[Product].[All Products].[Drink].[Beverages].[Hot Beverages]}
-{[Product].[All Products].[Drink].[Beverages].[Drinks]}
-{[Product].[All Products].[Drink].[Dairy].[Dairy]}
-{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}
-{[Product].[All Products].[Food].[Canned Foods].[Vegetables]}
-{[Product].[All Products].[Food].[Frozen Foods].[Vegetables]}
-{[Product].[All Products].[Food].[Produce].[Vegetables]}
-{[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods]}
-{[Product].[All Products].[Food].[Produce].[Specialty]}
-{[Product].[All Products].[Food].[Snack Foods].[Snack Foods]}
-{[Product].[All Products].[Food].[Deli].[Side Dishes]}
-{[Product].[All Products].[Food].[Seafood].[Seafood]}
-{[Product].[All Products].[Food].[Frozen Foods].[Pizza]}
-{[Product].[All Products].[Food].[Produce].[Packaged Vegetables]}
-{[Product].[All Products].[Food].[Deli].[Meat]}
-{[Product].[All Products].[Food].[Frozen Foods].[Meat]}
-{[Product].[All Products].[Food].[Meat].[Meat]}
-{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies]}
-{[Product].[All Products].[Food].[Canned Products].[Fruit]}
-{[Product].[All Products].[Food].[Produce].[Fruit]}
-{[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees]}
-{[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts]}
-{[Product].[All Products].[Food].[Eggs].[Eggs]}
-{[Product].[All Products].[Food].[Dairy].[Dairy]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Soup]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Sardines]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Oysters]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Clams]}
-{[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies]}
-{[Product].[All Products].[Food].[Snacks].[Candy]}
-{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods]}
-{[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods]}
-{[Product].[All Products].[Food].[Baked Goods].[Bread]}
-{[Product].[All Products].[Food].[Baking Goods].[Baking Goods]}
-{[Product].[All Products].[Non-Consumable].[Carousel].[Specialty]}
-{[Product].[All Products].[Non-Consumable].[Household].[Plastic Products]}
-{[Product].[All Products].[Non-Consumable].[Household].[Paper Products]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
-{[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous]}
-{[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines]}
-{[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene]}
-{[Product].[All Products].[Non-Consumable].[Checkout].[Hardware]}
-{[Product].[All Products].[Non-Consumable].[Household].[Hardware]}
-{[Product].[All Products].[Non-Consumable].[Household].[Electrical]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
-{[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies]}
-{[Product].[All Products].[Non-Consumable].[Household].[Candles]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
-{[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Drink].[Beverages].[Drinks]}
+{[Product].[Drink].[Dairy].[Dairy]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Food].[Produce].[Vegetables]}
+{[Product].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Food].[Produce].[Specialty]}
+{[Product].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Food].[Deli].[Side Dishes]}
+{[Product].[Food].[Seafood].[Seafood]}
+{[Product].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Food].[Deli].[Meat]}
+{[Product].[Food].[Frozen Foods].[Meat]}
+{[Product].[Food].[Meat].[Meat]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Food].[Canned Products].[Fruit]}
+{[Product].[Food].[Produce].[Fruit]}
+{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Food].[Eggs].[Eggs]}
+{[Product].[Food].[Dairy].[Dairy]}
+{[Product].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Food].[Snacks].[Candy]}
+{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Food].[Baked Goods].[Bread]}
+{[Product].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Non-Consumable].[Carousel].[Specialty]}
+{[Product].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Non-Consumable].[Household].[Candles]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Non-Consumable].[Household].[Bathroom Products]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -765,9 +765,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*CALCULATED_MEASURE_1]}
 Axis #2:
-{[Product].[All Products].[Food]}
-{[Product].[All Products].[Non-Consumable]}
-{[Product].[All Products].[Drink]}
+{[Product].[Food]}
+{[Product].[Non-Consumable]}
+{[Product].[Drink]}
 Row #0: 163,271
 Row #0: -163,271
 Row #1: 42,879
@@ -808,9 +808,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*SUMMARY_MEASURE_1]}
 Axis #2:
-{[Product].[All Products].[Drink]}
-{[Product].[All Products].[Non-Consumable]}
-{[Product].[All Products].[Food]}
+{[Product].[Drink]}
+{[Product].[Non-Consumable]}
+{[Product].[Food]}
 Row #0: 19,477
 Row #0: 8.63%
 Row #1: 42,879
@@ -852,29 +852,29 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_1]}
 {[Measures].[*SUMMARY_MEASURE_3]}
 Axis #2:
-{[Product].[All Products].[Food].[Starchy Foods]}
-{[Product].[All Products].[Food].[Snacks]}
-{[Product].[All Products].[Food].[Snack Foods]}
-{[Product].[All Products].[Food].[Seafood]}
-{[Product].[All Products].[Food].[Produce]}
-{[Product].[All Products].[Non-Consumable].[Periodicals]}
-{[Product].[All Products].[Food].[Meat]}
-{[Product].[All Products].[Non-Consumable].[Household]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
-{[Product].[All Products].[Food].[Frozen Foods]}
-{[Product].[All Products].[Food].[Eggs]}
-{[Product].[All Products].[Food].[Deli]}
-{[Product].[All Products].[Drink].[Dairy]}
-{[Product].[All Products].[Food].[Dairy]}
-{[Product].[All Products].[Non-Consumable].[Checkout]}
-{[Product].[All Products].[Non-Consumable].[Carousel]}
-{[Product].[All Products].[Food].[Canned Products]}
-{[Product].[All Products].[Food].[Canned Foods]}
-{[Product].[All Products].[Food].[Breakfast Foods]}
-{[Product].[All Products].[Drink].[Beverages]}
-{[Product].[All Products].[Food].[Baking Goods]}
-{[Product].[All Products].[Food].[Baked Goods]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Produce]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Food].[Meat]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Deli]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Dairy]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Drink].[Alcoholic Beverages]}
 Row #0: 4,706
 Row #0: 4,705.91
 Row #0: 2.09%
@@ -979,29 +979,29 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_1]}
 {[Measures].[*SUMMARY_MEASURE_3]}
 Axis #2:
-{[Product].[All Products].[Food].[Produce]}
-{[Product].[All Products].[Food].[Snack Foods]}
-{[Product].[All Products].[Non-Consumable].[Household]}
-{[Product].[All Products].[Food].[Frozen Foods]}
-{[Product].[All Products].[Food].[Canned Foods]}
-{[Product].[All Products].[Food].[Baking Goods]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
-{[Product].[All Products].[Food].[Dairy]}
-{[Product].[All Products].[Drink].[Beverages]}
-{[Product].[All Products].[Food].[Deli]}
-{[Product].[All Products].[Food].[Baked Goods]}
-{[Product].[All Products].[Food].[Snacks]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages]}
-{[Product].[All Products].[Food].[Starchy Foods]}
-{[Product].[All Products].[Food].[Eggs]}
-{[Product].[All Products].[Non-Consumable].[Periodicals]}
-{[Product].[All Products].[Drink].[Dairy]}
-{[Product].[All Products].[Food].[Breakfast Foods]}
-{[Product].[All Products].[Non-Consumable].[Checkout]}
-{[Product].[All Products].[Food].[Seafood]}
-{[Product].[All Products].[Food].[Meat]}
-{[Product].[All Products].[Food].[Canned Products]}
-{[Product].[All Products].[Non-Consumable].[Carousel]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Food].[Dairy]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Food].[Eggs]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Non-Consumable].[Carousel]}
 Row #0: 32,831
 Row #0: 32,831.33
 Row #0: 14.55%
@@ -1087,7 +1087,7 @@ Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures]
 Set [*ORDERED_SET] as 'Order([*SM_SET_10],[Product].CurrentMember.Parent.OrderKey,BDESC,[Measures].[*FORMATTED_MEASURE_3],BASC)'
 Set [*SM_SET_10] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})'
 Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
-Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[All Products].[Food]})'
+Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[Food]})'
 Set [*SM_SET_1] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_3],[Measures].[*SUMMARY_MEASURE_7],[Measures].[*SUMMARY_MEASURE_6],[Measures].[*SUMMARY_MEASURE_9],[Measures].[*SUMMARY_MEASURE_2]}'
 Member [Measures].[*SUMMARY_MEASURE_7] as 'Sum(Head(Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}),Rank(([Product].currentMember),Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}))),[Measures].[Store Cost])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
@@ -1095,14 +1095,14 @@ Member [Measures].[*SUMMARY_MEASURE_4] as 'Sum(Head(Generate(Exists([*ORDERED_SE
 Member [Measures].[*SUMMARY_MEASURE_9] as 'Sum(Head([*ORDERED_SET],Rank(([Product].currentMember),[*ORDERED_SET])),[Measures].[Store Cost])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
 Member [Measures].[*SUMMARY_MEASURE_6] as '[Measures].[*SUMMARY_MEASURE_4]/([Measures].[Store Cost],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0%', SOLVE_ORDER=100
 Member [Measures].[*SUMMARY_MEASURE_2] as '[Measures].[*SUMMARY_MEASURE_0]/([Measures].[Store Cost],[Product].[*TOTAL_MEMBER_SEL~SUM])', FORMAT_STRING = '###0%', SOLVE_ORDER=100
-Member [Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[All Products].[Drink],[Product].[Product Department]))', SOLVE_ORDER=-100
+Member [Product].[Drink].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[Drink],[Product].[Product Department]))', SOLVE_ORDER=-100
 Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-100
 Member [Measures].[*SUMMARY_MEASURE_0] as 'Sum(Head([*ORDERED_SET],Rank(([Product].currentMember),[*ORDERED_SET])),[Measures].[Store Cost])', FORMAT_STRING = '###0%', SOLVE_ORDER=100
-Member [Product].[All Products].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[All Products].[Non-Consumable],[Product].[Product Department]))', SOLVE_ORDER=-100
+Member [Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[Non-Consumable],[Product].[Product Department]))', SOLVE_ORDER=-100
 Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Select
 [*BASE_MEMBERS_Measures] on columns,
-Non Empty Union({[Product].[All Products].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM],[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM]},Generate([*ORDERED_SET], {([Product].currentMember)})) on rows
+Non Empty Union({[Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM],[Product].[Drink].[*TOTAL_MEMBER_SEL~SUM]},Generate([*ORDERED_SET], {([Product].currentMember)})) on rows
 From [Sales]
 ]]>
         </Resource>
@@ -1117,16 +1117,16 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_9]}
 {[Measures].[*SUMMARY_MEASURE_2]}
 Axis #2:
-{[Product].[All Products].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM]}
-{[Product].[All Products].[Drink].[*TOTAL_MEMBER_SEL~SUM]}
-{[Product].[All Products].[Non-Consumable].[Carousel]}
-{[Product].[All Products].[Non-Consumable].[Checkout]}
-{[Product].[All Products].[Non-Consumable].[Periodicals]}
-{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
-{[Product].[All Products].[Non-Consumable].[Household]}
-{[Product].[All Products].[Drink].[Dairy]}
-{[Product].[All Products].[Drink].[Alcoholic Beverages]}
-{[Product].[All Products].[Drink].[Beverages]}
+{[Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
 Row #0: 42,879
 Row #0: 
 Row #0: 

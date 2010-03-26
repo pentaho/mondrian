@@ -40,22 +40,22 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[High School Degree]</member>
+                    <member>[Education Level].[High School Degree]</member>
                 </tuple>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[Bachelors Degree]</member>
+                    <member>[Education Level].[Bachelors Degree]</member>
                 </tuple>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[Graduate Degree]</member>
+                    <member>[Education Level].[Graduate Degree]</member>
                 </tuple>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[High School Degree]</member>
+                    <member>[Education Level].[High School Degree]</member>
                 </tuple>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[Partial College]</member>
+                    <member>[Education Level].[Partial College]</member>
                 </tuple>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[Partial High School]</member>
+                    <member>[Education Level].[Partial High School]</member>
                 </tuple>
             </tuples>
         </columns>

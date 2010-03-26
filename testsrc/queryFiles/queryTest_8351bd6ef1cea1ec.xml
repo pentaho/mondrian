@@ -22,13 +22,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -39,27 +39,27 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[Canada]</member>
+                    <member>[Warehouse].[Canada]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[Canada]</member>
+                    <member>[Warehouse].[Canada]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[Mexico]</member>
+                    <member>[Warehouse].[Mexico]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[Mexico]</member>
+                    <member>[Warehouse].[Mexico]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Warehouse].[USA]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Warehouse].[USA]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
             </tuples>

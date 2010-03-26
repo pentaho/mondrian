@@ -59,13 +59,13 @@ FROM [Sales]</mdxQuery>
                     <member>[Product].[All Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable]</member>
+                    <member>[Product].[Non-Consumable]</member>
                 </tuple>
             </tuples>
         </rows>

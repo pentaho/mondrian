@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select     {Ancestor([Product].[All Products].[Drink],[Product].Levels(0)),Ancestor([Product].[All Products].[Drink],0),     Ancestor([Product].[All Products].[Drink],[Product].Levels(1)),Ancestor([Product].[All Products].[Drink],1)} on Axis(0) from [Sales]  </mdxQuery>
+    <mdxQuery>select     {Ancestor([Product].[Drink],[Product].Levels(0)),Ancestor([Product].[Drink],0),     Ancestor([Product].[Drink],[Product].Levels(1)),Ancestor([Product].[Drink],1)} on Axis(0) from [Sales]  </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -43,10 +43,10 @@
                     <member>[Product].[All Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
                     <member>[Product].[All Products]</member>

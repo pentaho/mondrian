@@ -68,8 +68,8 @@ public class InlineTableTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[Promo0]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n"
+            + "{[Alternative Promotion].[Promo0]}\n"
+            + "{[Alternative Promotion].[Promo1]}\n"
             + "Row #0: 195,448\n"
             + "Row #0: \n");
     }
@@ -120,8 +120,8 @@ public class InlineTableTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Shared Alternative Promotion].[All Shared Alternative Promotions].[First promo]}\n"
-            + "{[Shared Alternative Promotion].[All Shared Alternative Promotions].[Second promo]}\n"
+            + "{[Shared Alternative Promotion].[First promo]}\n"
+            + "{[Shared Alternative Promotion].[Second promo]}\n"
             + "Row #0: 195,448\n"
             + "Row #0: \n");
     }
@@ -187,9 +187,9 @@ public class InlineTableTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[CA]}\n"
-            + "{[Store].[All Stores].[MX]}\n"
-            + "{[Store].[All Stores].[US]}\n"
+            + "{[Store].[CA]}\n"
+            + "{[Store].[MX]}\n"
+            + "{[Store].[US]}\n"
             + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: 266,773\n");
@@ -246,10 +246,8 @@ public class InlineTableTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Alternative Promotion].[All Alternative Promotions]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2008-04-29"
-            + extra + "]}\n"
-            + "{[Alternative Promotion].[All Alternative Promotions].[2007-01-20"
-            + extra + "]}\n"
+            + "{[Alternative Promotion].[2008-04-29" + extra + "]}\n"
+            + "{[Alternative Promotion].[2007-01-20" + extra + "]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: \n"
             + "Row #0: \n");

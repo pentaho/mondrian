@@ -1452,8 +1452,48 @@ public class Query extends QueryPart {
         }
 
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
-            final String uniqueName = Util.implode(nameParts);
-            return query.lookupMemberFromCache(uniqueName);
+            for (final Formula formula : query.formulas) {
+                if (!formula.isMember()) {
+                    continue;
+                }
+                Member member = (Member) formula.getElement();
+                if (member == null) {
+                    continue;
+                }
+                if (!match(member, nameParts)) {
+                    continue;
+                }
+                if (!query.getConnection().getRole().canAccess(member)) {
+                    continue;
+                }
+                return member;
+            }
+            return null;
+        }
+
+        private static boolean match(
+            Member member, List<Id.Segment> nameParts)
+        {
+            Id.Segment segment = nameParts.get(nameParts.size() - 1);
+            while (member.getParentMember() != null) {
+                if (!segment.matches(member.getName())) {
+                    return false;
+                }
+                member = member.getParentMember();
+                nameParts = nameParts.subList(0, nameParts.size() - 1);
+                segment = nameParts.get(nameParts.size() - 1);
+            }
+            if (segment.matches(member.getName())) {
+                return Util.equalName(
+                    member.getHierarchy().getUniqueName(),
+                    Util.implode(nameParts.subList(0, nameParts.size() - 1)));
+            } else if (member.isAll()) {
+                return Util.equalName(
+                    member.getHierarchy().getUniqueName(),
+                    Util.implode(nameParts));
+            } else {
+                return false;
+            }
         }
 
         public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
@@ -1503,7 +1543,7 @@ public class Query extends QueryPart {
             if (mdxElement != null) {
                 return mdxElement;
             }
-            // then look in defined members (removed sf#1084651)
+            // then look in defined members (fixes MONDRIAN-77)
 
             // then in defined sets
             for (Formula formula : query.formulas) {

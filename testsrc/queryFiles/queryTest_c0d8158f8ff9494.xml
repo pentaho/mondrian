@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT     {[Time].[1997].[Q1]} ON COLUMNS,     bottomcount({[Store].[All Stores].[USA].[CA].[Beverly Hills], [Store].[All Stores].[USA].[CA].[Los Angeles], [Store].[All Stores].[USA].[CA].[San Diego], [Store].[All Stores].[USA].[CA].[San Francisco], [Store].[All Stores].[USA].[OR].[Portland], [Store].[All Stores].[USA].[OR].[Salem], [Store].[All Stores].[USA].[WA].[Bellingham], [Store].[All Stores].[USA].[WA].[Bremerton], [Store].[All Stores].[USA].[WA].[Seattle], [Store].[All Stores].[USA].[WA].[Spokane], [Store].[All Stores].[USA].[WA].[Tacoma], [Store].[All Stores].[USA].[WA].[Walla Walla], [Store].[All Stores].[USA].[WA].[Yakima]},         3,         [Measures].[Customer Count]) ON ROWS FROM [Sales] WHERE([Measures].[Unit Sales])</mdxQuery>
+    <mdxQuery>SELECT     {[Time].[1997].[Q1]} ON COLUMNS,     bottomcount({[Store].[USA].[CA].[Beverly Hills], [Store].[USA].[CA].[Los Angeles], [Store].[USA].[CA].[San Diego], [Store].[USA].[CA].[San Francisco], [Store].[USA].[OR].[Portland], [Store].[All Stores].[USA].[OR].[Salem], [Store].[All Stores].[USA].[WA].[Bellingham], [Store].[All Stores].[USA].[WA].[Bremerton], [Store].[All Stores].[USA].[WA].[Seattle], [Store].[All Stores].[USA].[WA].[Spokane], [Store].[All Stores].[USA].[WA].[Tacoma], [Store].[All Stores].[USA].[WA].[Walla Walla], [Store].[All Stores].[USA].[WA].[Yakima]},         3,         [Measures].[Customer Count]) ON ROWS FROM [Sales] WHERE([Measures].[Unit Sales])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -48,13 +48,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
                 </tuple>
             </tuples>
         </rows>

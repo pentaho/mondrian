@@ -434,11 +434,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 null);
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[All Retails].[CA].[Alameda]\n"
-            + "[Retail].[All Retails].[CA].[Beverly Hills]\n"
-            + "[Retail].[All Retails].[CA].[Los Angeles]\n"
-            + "[Retail].[All Retails].[CA].[San Diego]\n"
-            + "[Retail].[All Retails].[CA].[San Francisco]");
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]");
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
@@ -490,11 +490,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[All Retails].[CA].[Alameda]\n"
-            + "[Retail].[All Retails].[CA].[Beverly Hills]\n"
-            + "[Retail].[All Retails].[CA].[Los Angeles]\n"
-            + "[Retail].[All Retails].[CA].[San Diego]\n"
-            + "[Retail].[All Retails].[CA].[San Francisco]");
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]");
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();

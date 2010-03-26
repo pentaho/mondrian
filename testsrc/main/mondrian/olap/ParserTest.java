@@ -117,7 +117,7 @@ public class ParserTest extends FoodMartTestCase {
             + "select {[Measures].Members} ON COLUMNS,\n"
             + "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n"
             + "from [Sales]\n"
-            + "where [Marital Status].[All Marital Status].[S]\n");
+            + "where [Marital Status].[S]\n");
     }
 
     private void checkUnparse(String queryString, final String expected) {

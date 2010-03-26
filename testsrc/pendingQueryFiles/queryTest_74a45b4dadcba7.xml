@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>Select {      crossjoin(                     {StrToTuple("[Customers].[All Customers].[USA].[CA].Parent")},                     {StrToTuple("[Store].[All Stores].[USA].[CA]")}                    )             }      on Axis(0)  from [Sales]</mdxQuery>
+    <mdxQuery>Select {      crossjoin(                     {StrToTuple("[Customers].[USA].[CA].Parent")},                     {StrToTuple("[Store].[USA].[CA]")}                    )             }      on Axis(0)  from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -39,8 +39,8 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA]</member>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Customers].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
             </tuples>
         </columns>

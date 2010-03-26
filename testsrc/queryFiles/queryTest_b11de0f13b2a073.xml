@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>Select {ToggleDrillState({[Store].[All Stores].[Canada], [Store].[All Stores].[Mexico], [Store].[All Stores].[USA],[Store].[All Stores].[USA].[WA],[Store].[All Stores].[USA].[WA].[Seattle]},{[Store].[All Stores].[USA].[WA]})} on Axis(0) from [Sales]  </mdxQuery>
+    <mdxQuery>Select {ToggleDrillState({[Store].[Canada], [Store].[Mexico], [Store].[USA],[Store].[USA].[WA],[Store].[USA].[WA].[Seattle]},{[Store].[All Stores].[USA].[WA]})} on Axis(0) from [Sales]  </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -40,16 +40,16 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </columns>

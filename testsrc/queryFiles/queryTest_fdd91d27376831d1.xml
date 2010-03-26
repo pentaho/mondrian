@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Measures].[Qualified Count] AS  'COUNT(FILTER(DESCENDANTS([Customers].[All Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000))' MEMBER [Measures].[Qualified Sales] AS 'SUM(FILTER(DESCENDANTS([Customers].[All Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000), ([Measures].[Store Sales]))' SELECT {[Measures].[Store Sales], [Measures].[Unit Sales], [Measures].[Qualified Count], [Measures].[Qualified Sales]}  ON COLUMNS, {FILTER(DESCENDANTS([Customers].[All Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000)} ON ROWS FROM  [Sales] </mdxQuery>
+    <mdxQuery>WITH MEMBER [Measures].[Qualified Count] AS  'COUNT(FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000))' MEMBER [Measures].[Qualified Sales] AS 'SUM(FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000), ([Measures].[Store Sales]))' SELECT {[Measures].[Store Sales], [Measures].[Unit Sales], [Measures].[Qualified Count], [Measures].[Qualified Sales]}  ON COLUMNS, {FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000)} ON ROWS FROM  [Sales] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -57,28 +57,28 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Bellflower]</member>
+                    <member>[Customers].[USA].[CA].[Bellflower]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Customers].[USA].[CA].[Beverly Hills]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Burbank]</member>
+                    <member>[Customers].[USA].[CA].[Burbank]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Chula Vista]</member>
+                    <member>[Customers].[USA].[CA].[Chula Vista]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Downey]</member>
+                    <member>[Customers].[USA].[CA].[Downey]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Glendale]</member>
+                    <member>[Customers].[USA].[CA].[Glendale]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Long Beach]</member>
+                    <member>[Customers].[USA].[CA].[Long Beach]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA].[Newport Beach]</member>
+                    <member>[Customers].[USA].[CA].[Newport Beach]</member>
                 </tuple>
             </tuples>
         </rows>

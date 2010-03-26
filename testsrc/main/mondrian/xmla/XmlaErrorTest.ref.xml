@@ -661,9 +661,9 @@ this is just junk
       <Command>
         <Statement>
 DRILLTHROUGH MAXROWS -1000
-SELECT {[Customers].[All Customers].[USA].[CA].[Berkeley]} ON 0,
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[All Products].[Drink]} ON 2
+{[Product].[Drink]} ON 2
 FROM Sales
         </Statement>
       </Command>
@@ -691,9 +691,9 @@ FROM Sales
       <Command>
         <Statement>
 DRILLTHROUGH MAXROWS 1000 FIRSTROWSET -200
-SELECT {[Customers].[All Customers].[USA].[CA].[Berkeley]} ON 0,
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[All Products].[Drink]} ON 2
+{[Product].[Drink]} ON 2
 FROM Sales
         </Statement>
       </Command>
@@ -720,9 +720,9 @@ FROM Sales
     <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
       <Command>
         <Statement>
-SELECT {[Customers].[All Customers].[USA].[CA].[Berkeley]} ON 0,
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[All Products].[Drink]} ON 2
+{[Product].[Drink]} ON 2
 DRILLTHROUGH MAXROWS 1000 FIRSTROWSET 200
 FROM Sales
         </Statement>

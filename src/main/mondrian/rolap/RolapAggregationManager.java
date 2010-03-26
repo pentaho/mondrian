@@ -330,19 +330,19 @@ public abstract class RolapAggregationManager {
      * <p>For example:
      *
      * <pre>Tuples:
-     *     ([Gender].[M], [Store].[All Stores].[USA].[CA])
-     *     ([Gender].[F], [Store].[All Stores].[USA].[CA])
-     *     ([Gender].[M], [Store].[All Stores].[USA])
-     *     ([Gender].[F], [Store].[All Stores].[Canada])</pre>
+     *     ([Gender].[M], [Store].[USA].[CA])
+     *     ([Gender].[F], [Store].[USA].[CA])
+     *     ([Gender].[M], [Store].[USA])
+     *     ([Gender].[F], [Store].[Canada])</pre>
      *
      * will be grouped into
      *
      * <pre>Group 1:
-     *     {([Gender].[M], [Store].[All Stores].[USA].[CA]),
-     *      ([Gender].[F], [Store].[All Stores].[USA].[CA])}
+     *     {([Gender].[M], [Store].[USA].[CA]),
+     *      ([Gender].[F], [Store].[USA].[CA])}
      * Group 2:
-     *     {([Gender].[M], [Store].[All Stores].[USA]),
-     *      ([Gender].[F], [Store].[All Stores].[Canada])}</pre>
+     *     {([Gender].[M], [Store].[USA]),
+     *      ([Gender].[F], [Store].[Canada])}</pre>
      *
      * <p>This function returns a boolean value indicating if any constraint
      * can be created from the aggregationList. It is possible that only part
@@ -450,8 +450,8 @@ public abstract class RolapAggregationManager {
      * <p>1. The example below is for list of tuples
      *
      * <blockquote>
-     * group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]<br/>
-     * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
+     * group 1: [Gender].[M], [Store].[USA].[CA]<br/>
+     * group 2: [Gender].[F], [Store].[USA].[CA]
      * </blockquote>
      *
      * is translated into

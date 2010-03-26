@@ -954,7 +954,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales] "
             + "where [Store Type].[Store Type].[Small Grocery]",
             "Axis #0:\n"
-            + "{[Store Type].[All Store Types].[Small Grocery]}\n"
+            + "{[Store Type].[Small Grocery]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");
@@ -1347,7 +1347,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Unit Sales]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[All Products].[Food].[Deli].[Meat], [Gender].[M]}\n"
+                + "{[Product].[Food].[Deli].[Meat], [Gender].[M]}\n"
                 + "Row #0: 4,705\n");
 
         Result result = testContext.executeQuery(query);
@@ -1372,8 +1372,8 @@ public class TestAggregationManager extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Unit Sales]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
-                + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
+                + "{[Product].[Food].[Deli].[Meat]}\n"
+                + "{[Product].[Food].[Deli].[Side Dishes]}\n"
                 + "Row #0: 4,728\n"
                 + "Row #1: 1,262\n");
     }
@@ -1432,7 +1432,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
+            + "{[Gender].[M], [Marital Status].[M]}\n"
             + "Row #0: 66,460\n");
 
         // This second query verifies that joined levels on aggregate tables
@@ -1476,9 +1476,9 @@ public class TestAggregationManager extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 16,890\n"
             + "Row #1: 19,287\n"
             + "Row #2: 30,114\n");
@@ -1511,7 +1511,7 @@ public class TestAggregationManager extends BatchTestCase {
         };
 
         String query =
-            "select non empty [Gender].[All Gender].Children on columns\n"
+            "select non empty [Gender].Children on columns\n"
             + "from [Sales]";
 
         assertQuerySqlOrNot(
@@ -1522,8 +1522,8 @@ public class TestAggregationManager extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
     }

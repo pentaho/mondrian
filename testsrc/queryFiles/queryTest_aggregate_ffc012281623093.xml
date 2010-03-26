@@ -44,13 +44,13 @@ FROM [Sales]</mdxQuery>
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -63,67 +63,67 @@ FROM [Sales]</mdxQuery>
                     <member>[Store Size in SQFT].[Less Than 23000]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[#null]</member>
+                    <member>[Store Size in SQFT].[#null]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[20319]</member>
+                    <member>[Store Size in SQFT].[20319]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[21215]</member>
+                    <member>[Store Size in SQFT].[21215]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[22478]</member>
+                    <member>[Store Size in SQFT].[22478]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[23112]</member>
+                    <member>[Store Size in SQFT].[23112]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[23593]</member>
+                    <member>[Store Size in SQFT].[23593]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[23598]</member>
+                    <member>[Store Size in SQFT].[23598]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[23688]</member>
+                    <member>[Store Size in SQFT].[23688]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[23759]</member>
+                    <member>[Store Size in SQFT].[23759]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[24597]</member>
+                    <member>[Store Size in SQFT].[24597]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[27694]</member>
+                    <member>[Store Size in SQFT].[27694]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[28206]</member>
+                    <member>[Store Size in SQFT].[28206]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[30268]</member>
+                    <member>[Store Size in SQFT].[30268]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[30584]</member>
+                    <member>[Store Size in SQFT].[30584]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[30797]</member>
+                    <member>[Store Size in SQFT].[30797]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[33858]</member>
+                    <member>[Store Size in SQFT].[33858]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[34452]</member>
+                    <member>[Store Size in SQFT].[34452]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[34791]</member>
+                    <member>[Store Size in SQFT].[34791]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[36509]</member>
+                    <member>[Store Size in SQFT].[36509]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[38382]</member>
+                    <member>[Store Size in SQFT].[38382]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[39696]</member>
+                    <member>[Store Size in SQFT].[39696]</member>
                 </tuple>
             </tuples>
         </rows>

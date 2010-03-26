@@ -18,7 +18,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 /**
  * Constraint which optimizes the search for a child by name. This is used
  * whenever the string representation of a member is parsed, e.g.
- * [Customers].[All Customers].[USA].[CA]. Restricts the result to
+ * [Customers].[USA].[CA]. Restricts the result to
  * the member we are searching for.
  *
  * @author avix

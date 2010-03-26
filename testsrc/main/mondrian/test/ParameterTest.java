@@ -113,7 +113,7 @@ public class ParameterTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[M]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 135,215\n");
@@ -248,10 +248,10 @@ public class ParameterTest extends FoodMartTestCase {
             + " {[Marital Status].children} on columns\n"
             + "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
             "Axis #0:\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[M]}\n"
             + "Axis #1:\n"
-            + "{[Marital Status].[All Marital Status].[M]}\n"
-            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "{[Marital Status].[M]}\n"
+            + "{[Marital Status].[S]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 66,460\n"
@@ -337,7 +337,7 @@ public class ParameterTest extends FoodMartTestCase {
         TestContext.assertEqualsVerbose(
             "with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'\n"
             + "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'\n"
-            + "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
+            + "select {Parameter(\"P\", [Gender], [Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
             + "  {[Measures].[Unit Sales]} ON ROWS\n"
             + "from [Sales]\n",
             Util.unparse(query));
@@ -360,21 +360,21 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Baked Goods]}\n"
-            + "{[Product].[All Products].[Food].[Baking Goods]}\n"
-            + "{[Product].[All Products].[Food].[Breakfast Foods]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods]}\n"
-            + "{[Product].[All Products].[Food].[Canned Products]}\n"
-            + "{[Product].[All Products].[Food].[Dairy]}\n"
-            + "{[Product].[All Products].[Food].[Deli]}\n"
-            + "{[Product].[All Products].[Food].[Eggs]}\n"
-            + "{[Product].[All Products].[Food].[Frozen Foods]}\n"
-            + "{[Product].[All Products].[Food].[Meat]}\n"
-            + "{[Product].[All Products].[Food].[Produce]}\n"
-            + "{[Product].[All Products].[Food].[Seafood]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods]}\n"
-            + "{[Product].[All Products].[Food].[Snacks]}\n"
-            + "{[Product].[All Products].[Food].[Starchy Foods]}\n"
+            + "{[Product].[Food].[Baked Goods]}\n"
+            + "{[Product].[Food].[Baking Goods]}\n"
+            + "{[Product].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[Food].[Canned Foods]}\n"
+            + "{[Product].[Food].[Canned Products]}\n"
+            + "{[Product].[Food].[Dairy]}\n"
+            + "{[Product].[Food].[Deli]}\n"
+            + "{[Product].[Food].[Eggs]}\n"
+            + "{[Product].[Food].[Frozen Foods]}\n"
+            + "{[Product].[Food].[Meat]}\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Seafood]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "{[Product].[Food].[Snacks]}\n"
+            + "{[Product].[Food].[Starchy Foods]}\n"
             + "Row #0: 1,932\n"
             + "Row #1: 5,045\n"
             + "Row #2: 820\n"
@@ -403,7 +403,7 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Eggs].[Eggs]}\n"
+            + "{[Product].[Food].[Eggs].[Eggs]}\n"
             + "Row #0: 918\n",
             resultString);
 
@@ -419,8 +419,8 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
-            + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
+            + "{[Product].[Food].[Deli].[Meat]}\n"
+            + "{[Product].[Food].[Deli].[Side Dishes]}\n"
             + "Row #0: 621\n"
             + "Row #1: 187\n",
             resultString);
@@ -535,7 +535,7 @@ public class ParameterTest extends FoodMartTestCase {
             false,
             sr.getMemberByUniqueName(
                 Id.Segment.toList("Customers", "USA"), true),
-            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            "Invalid value '[Customers].[USA]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
         // Member of right level.
@@ -623,7 +623,7 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
             true,
             list,
-            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            "Invalid value '[Customers].[USA]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
         // List that contains members of right level, and a null member.

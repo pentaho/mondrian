@@ -1127,7 +1127,7 @@ public class MondrianProperties extends TriggerableProperties {
      * is resolved into a fully qualified
      * <blockquote>
      * <p>
-     * [Gender].[All Gender].[M]
+     * [Gender].[M]
      * </blockquote>
      *
      * <p> In a scenario where the schema is very large and dimensions have

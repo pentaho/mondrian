@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Customers].[Hierarchy Name] AS '[Customers].[All Customers].[USA].[CA].hierarchy.Name' SELECT {[Customers].[Hierarchy Name]} on columns From [Sales]</mdxQuery>
+    <mdxQuery>WITH MEMBER [Customers].[Hierarchy Name] AS '[Customers].[USA].[CA].hierarchy.Name' SELECT {[Customers].[Hierarchy Name]} on columns From [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

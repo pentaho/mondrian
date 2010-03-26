@@ -10276,7 +10276,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>1</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
                         <MEMBER_NAME>F</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Gender].[F]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>F</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
@@ -10295,7 +10295,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>1</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>2</MEMBER_ORDINAL>
                         <MEMBER_NAME>M</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Gender].[M]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>M</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
@@ -10431,12 +10431,12 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>3</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>7930</MEMBER_ORDINAL>
                         <MEMBER_NAME>Portland</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[OR].[Portland]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[USA].[OR].[Portland]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>Portland</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>90</CHILDREN_CARDINALITY>
                         <PARENT_LEVEL>2</PARENT_LEVEL>
-                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA].[OR]</PARENT_UNIQUE_NAME>
+                        <PARENT_UNIQUE_NAME>[Customers].[USA].[OR]</PARENT_UNIQUE_NAME>
                         <PARENT_COUNT>1</PARENT_COUNT>
                         <DEPTH>3</DEPTH>
                     </row>
@@ -10450,12 +10450,12 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>2</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>2967</MEMBER_ORDINAL>
                         <MEMBER_NAME>CA</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>CA</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>45</CHILDREN_CARDINALITY>
                         <PARENT_LEVEL>1</PARENT_LEVEL>
-                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
                         <PARENT_COUNT>1</PARENT_COUNT>
                         <DEPTH>2</DEPTH>
                     </row>
@@ -10605,7 +10605,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>1</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>2966</MEMBER_ORDINAL>
                         <MEMBER_NAME>USA</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[USA]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>USA</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>
@@ -10624,12 +10624,12 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>2</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>2967</MEMBER_ORDINAL>
                         <MEMBER_NAME>CA</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[USA].[CA]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>CA</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>45</CHILDREN_CARDINALITY>
                         <PARENT_LEVEL>1</PARENT_LEVEL>
-                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
                         <PARENT_COUNT>1</PARENT_COUNT>
                         <DEPTH>2</DEPTH>
                     </row>
@@ -10643,12 +10643,12 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <LEVEL_NUMBER>2</LEVEL_NUMBER>
                         <MEMBER_ORDINAL>8298</MEMBER_ORDINAL>
                         <MEMBER_NAME>WA</MEMBER_NAME>
-                        <MEMBER_UNIQUE_NAME>[Customers].[All Customers].[USA].[WA]</MEMBER_UNIQUE_NAME>
+                        <MEMBER_UNIQUE_NAME>[Customers].[USA].[WA]</MEMBER_UNIQUE_NAME>
                         <MEMBER_TYPE>1</MEMBER_TYPE>
                         <MEMBER_CAPTION>WA</MEMBER_CAPTION>
                         <CHILDREN_CARDINALITY>22</CHILDREN_CARDINALITY>
                         <PARENT_LEVEL>1</PARENT_LEVEL>
-                        <PARENT_UNIQUE_NAME>[Customers].[All Customers].[USA]</PARENT_UNIQUE_NAME>
+                        <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
                         <PARENT_COUNT>1</PARENT_COUNT>
                         <DEPTH>2</DEPTH>
                     </row>
@@ -14549,7 +14549,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
         <Command>
         <Statement>
 DRILLTHROUGH MAXROWS 3
-SELECT {[Customers].[All Customers].[USA].[CA].[Berkeley]} ON 0,
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1
 FROM Sales
          </Statement>
@@ -14789,8 +14789,8 @@ FROM Sales
     <Statement>
                     drillthrough
                                 select
-                                non empty{[Customers].[All Customers].[USA].[CA].[Concord]} on 0,
-                                non empty {[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice]} on 1
+                                non empty{[Customers].[USA].[CA].[Concord]} on 0,
+                                non empty {[Product].[Drink].[Beverages].[Pure Juice Beverages].[Juice]} on 1
                                 from
                                 [Sales]
                                 where([Measures].[Sales Count])
@@ -15003,9 +15003,9 @@ FROM Sales
       select
       from [Sales]
       where ([Measures].[Sales Count],
-          [Customers].[All Customers].[USA].[CA].[Concord],
+          [Customers].[USA].[CA].[Concord],
           [Time].[1997].[Q3],
-          [Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice],
+          [Product].[Drink].[Beverages].[Pure Juice Beverages].[Juice],
           [Gender])
   </Statement>
   </Command>
@@ -15325,7 +15325,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -15334,7 +15334,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -15343,7 +15343,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -15356,7 +15356,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -15366,7 +15366,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -15728,8 +15728,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All
-                                    Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
+                                    <UName>[Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
                                     <Caption>Alice Cantrell</Caption>
                                     <LName>[Customers].[Name]</LName>
                                     <LNum>4</LNum>
@@ -16375,8 +16374,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All
-                                    Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
+                                    <UName>[Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
                                     <Caption>Alice Cantrell</Caption>
                                     <LName>[Customers].[Name]</LName>
                                     <LNum>4</LNum>
@@ -16734,7 +16732,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -16743,7 +16741,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -16752,7 +16750,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -16765,7 +16763,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -16777,7 +16775,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -17171,7 +17169,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17180,7 +17178,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17189,7 +17187,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17202,7 +17200,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -17211,7 +17209,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -17601,7 +17599,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17610,7 +17608,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17619,7 +17617,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -17632,7 +17630,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -17641,7 +17639,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18031,7 +18029,7 @@ Cell Properties Format_String, Formatted_Value
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18040,7 +18038,7 @@ Cell Properties Format_String, Formatted_Value
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18049,7 +18047,7 @@ Cell Properties Format_String, Formatted_Value
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18062,7 +18060,7 @@ Cell Properties Format_String, Formatted_Value
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18071,7 +18069,7 @@ Cell Properties Format_String, Formatted_Value
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18304,7 +18302,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             [
               {
                 "Hierarchy": "Customers",
-                "UName": "[Customers].[All Customers].[Canada]",
+                "UName": "[Customers].[Canada]",
                 "Caption": "Canada",
                 "LName": "[Customers].[Country]",
                 "LNum": 1,
@@ -18314,7 +18312,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             [
               {
                 "Hierarchy": "Customers",
-                "UName": "[Customers].[All Customers].[Mexico]",
+                "UName": "[Customers].[Mexico]",
                 "Caption": "Mexico",
                 "LName": "[Customers].[Country]",
                 "LNum": 1,
@@ -18324,7 +18322,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             [
               {
                 "Hierarchy": "Customers",
-                "UName": "[Customers].[All Customers].[USA]",
+                "UName": "[Customers].[USA]",
                 "Caption": "USA",
                 "LName": "[Customers].[Country]",
                 "LNum": 1,
@@ -18339,7 +18337,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             [
               {
                 "Hierarchy": "Gender",
-                "UName": "[Gender].[All Gender].[F]",
+                "UName": "[Gender].[F]",
                 "Caption": "F",
                 "LName": "[Gender].[Gender]",
                 "LNum": 1,
@@ -18349,7 +18347,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
             [
               {
                 "Hierarchy": "Gender",
-                "UName": "[Gender].[All Gender].[M]",
+                "UName": "[Gender].[M]",
                 "Caption": "M",
                 "LName": "[Gender].[Gender]",
                 "LNum": 1,
@@ -18517,7 +18515,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18526,7 +18524,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18535,7 +18533,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18548,7 +18546,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18557,7 +18555,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18777,7 +18775,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18786,7 +18784,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18795,7 +18793,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -18808,7 +18806,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -18817,7 +18815,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -19018,7 +19016,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19027,7 +19025,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19036,7 +19034,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19049,7 +19047,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -19058,7 +19056,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -19250,7 +19248,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19259,7 +19257,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19268,7 +19266,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19281,7 +19279,7 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[F]</UName>
+                                    <UName>[Gender].[F]</UName>
                                     <Caption>F</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -19290,7 +19288,7 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender].[M]</UName>
+                                    <UName>[Gender].[M]</UName>
                                     <Caption>M</Caption>
                                     <LName>[Gender].[Gender]</LName>
                                     <LNum>1</LNum>
@@ -19715,14 +19713,14 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Drink]</UName>
+                                    <UName>[Product].[Drink]</UName>
                                     <Caption>Drink</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19731,14 +19729,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Drink]</UName>
+                                    <UName>[Product].[Drink]</UName>
                                     <Caption>Drink</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19747,14 +19745,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Food]</UName>
+                                    <UName>[Product].[Food]</UName>
                                     <Caption>Food</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131087</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19763,14 +19761,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Food]</UName>
+                                    <UName>[Product].[Food]</UName>
                                     <Caption>Food</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131087</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19779,14 +19777,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Non-Consumable]</UName>
+                                    <UName>[Product].[Non-Consumable]</UName>
                                     <Caption>Non-Consumable</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131077</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -19795,14 +19793,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Non-Consumable]</UName>
+                                    <UName>[Product].[Non-Consumable]</UName>
                                     <Caption>Non-Consumable</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131077</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20116,14 +20114,14 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Drink]</UName>
+                                    <UName>[Product].[Drink]</UName>
                                     <Caption>Drink</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20132,14 +20130,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Drink]</UName>
+                                    <UName>[Product].[Drink]</UName>
                                     <Caption>Drink</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20148,14 +20146,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Drink]</UName>
+                                    <UName>[Product].[Drink]</UName>
                                     <Caption>Drink</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20164,14 +20162,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Food]</UName>
+                                    <UName>[Product].[Food]</UName>
                                     <Caption>Food</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131087</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20180,14 +20178,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Food]</UName>
+                                    <UName>[Product].[Food]</UName>
                                     <Caption>Food</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131087</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20196,14 +20194,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Food]</UName>
+                                    <UName>[Product].[Food]</UName>
                                     <Caption>Food</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131087</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20212,14 +20210,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Non-Consumable]</UName>
+                                    <UName>[Product].[Non-Consumable]</UName>
                                     <Caption>Non-Consumable</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131077</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Canada]</UName>
+                                    <UName>[Customers].[Canada]</UName>
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20228,14 +20226,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Non-Consumable]</UName>
+                                    <UName>[Product].[Non-Consumable]</UName>
                                     <Caption>Non-Consumable</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131077</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[Mexico]</UName>
+                                    <UName>[Customers].[Mexico]</UName>
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
@@ -20244,14 +20242,14 @@ FROM Sales
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products].[Non-Consumable]</UName>
+                                    <UName>[Product].[Non-Consumable]</UName>
                                     <Caption>Non-Consumable</Caption>
                                     <LName>[Product].[Product Family]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>131077</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers].[USA]</UName>
+                                    <UName>[Customers].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>

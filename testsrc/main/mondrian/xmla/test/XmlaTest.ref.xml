@@ -488,7 +488,7 @@
             </Tuple>
             <Tuple>
               <Member Hierarchy="Employees">
-                <UName>[Employees].[All Employees].[Sheri Nowmer]</UName>
+                <UName>[Employees].[Sheri Nowmer]</UName>
                 <Caption>Sheri Nowmer</Caption>
                 <LName>[Employees].[Employee Id]</LName>
                 <LNum>1</LNum>

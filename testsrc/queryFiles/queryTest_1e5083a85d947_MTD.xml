@@ -81,169 +81,169 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages]</member>
+                    <member>[Product].[Drink].[Beverages].[Carbonated Beverages]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks]</member>
+                    <member>[Product].[Drink].[Beverages].[Drinks]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages]</member>
+                    <member>[Product].[Drink].[Beverages].[Hot Beverages]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages]</member>
+                    <member>[Product].[Drink].[Beverages].[Pure Juice Beverages]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy]</member>
+                    <member>[Product].[Drink].[Dairy].[Dairy]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread]</member>
+                    <member>[Product].[Food].[Baked Goods].[Bread]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods]</member>
+                    <member>[Product].[Food].[Baking Goods].[Baking Goods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies]</member>
+                    <member>[Product].[Food].[Baking Goods].[Jams and Jellies]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods]</member>
+                    <member>[Product].[Food].[Breakfast Foods].[Breakfast Foods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Anchovies]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Clams]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Oysters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Sardines]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Shrimp]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Soup]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna]</member>
+                    <member>[Product].[Food].[Canned Foods].[Canned Tuna]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables]</member>
+                    <member>[Product].[Food].[Canned Foods].[Vegetables]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit]</member>
+                    <member>[Product].[Food].[Canned Products].[Fruit]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Dairy].[Dairy]</member>
+                    <member>[Product].[Food].[Dairy].[Dairy]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat]</member>
+                    <member>[Product].[Food].[Deli].[Meat]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes]</member>
+                    <member>[Product].[Food].[Deli].[Side Dishes]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Eggs].[Eggs]</member>
+                    <member>[Product].[Food].[Eggs].[Eggs]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Breakfast Foods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Frozen Desserts]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Frozen Entrees]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Meat]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Pizza]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables]</member>
+                    <member>[Product].[Food].[Frozen Foods].[Vegetables]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Meat].[Meat]</member>
+                    <member>[Product].[Food].[Meat].[Meat]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Produce].[Fruit]</member>
+                    <member>[Product].[Food].[Produce].[Fruit]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables]</member>
+                    <member>[Product].[Food].[Produce].[Packaged Vegetables]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Produce].[Specialty]</member>
+                    <member>[Product].[Food].[Produce].[Specialty]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Produce].[Vegetables]</member>
+                    <member>[Product].[Food].[Produce].[Vegetables]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Seafood].[Seafood]</member>
+                    <member>[Product].[Food].[Seafood].[Seafood]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods]</member>
+                    <member>[Product].[Food].[Snack Foods].[Snack Foods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Snacks].[Candy]</member>
+                    <member>[Product].[Food].[Snacks].[Candy]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods]</member>
+                    <member>[Product].[Food].[Starchy Foods].[Starchy Foods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty]</member>
+                    <member>[Product].[Non-Consumable].[Carousel].[Specialty]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware]</member>
+                    <member>[Product].[Non-Consumable].[Checkout].[Hardware]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous]</member>
+                    <member>[Product].[Non-Consumable].[Checkout].[Miscellaneous]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]</member>
+                    <member>[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies]</member>
+                    <member>[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants]</member>
+                    <member>[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene]</member>
+                    <member>[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]</member>
+                    <member>[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Bathroom Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Candles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Cleaning Supplies]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Electrical]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Hardware]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Kitchen Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Paper Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products]</member>
+                    <member>[Product].[Non-Consumable].[Household].[Plastic Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines]</member>
+                    <member>[Product].[Non-Consumable].[Periodicals].[Magazines]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -673,7 +673,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
+    public void Q()
         throws Exception
     {
         String requestType = "EXECUTE";
@@ -705,7 +705,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    // Testcase for bug 1653587.
+    /**
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-257">
+     * MONDRIAN-257, "Crossjoin gives 'Execute unparse results' error in
+     * XMLA"</a>.
+     */
     public void testExecuteCrossjoin() throws Exception {
        String requestType = "EXECUTE";
         String query =
@@ -814,7 +818,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
                     return new HierarchyAccess() {
                         public Access getAccess(Member member) {
                             String mname =
-                                "[Customers].[All Customers].[Mexico]";
+                                "[Customers].[Mexico]";
                             if (member.getUniqueName().equals(mname)) {
                                 return Access.NONE;
                             } else {

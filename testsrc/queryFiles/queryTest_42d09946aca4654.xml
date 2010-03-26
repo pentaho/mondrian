@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT          {[Time].[1997].[Q1]} ON COLUMNS,          bottompercent(filter(         {[Store].[All Stores].[USA].[CA].children, [Store].[All Stores].[USA].[OR].children, [Store].[All Stores].[USA].[WA].children},                      [Measures].[Unit Sales] &amp;gt; 0),                  100,                  [Measures].[Store Sales]) ON ROWS  FROM [Sales]      WHERE([Measures].[Unit Sales])</mdxQuery>
+    <mdxQuery>SELECT          {[Time].[1997].[Q1]} ON COLUMNS,          bottompercent(filter(         {[Store].[USA].[CA].children, [Store].[USA].[OR].children, [Store].[USA].[WA].children},                      [Measures].[Unit Sales] &amp;gt; 0),                  100,                  [Measures].[Store Sales]) ON ROWS  FROM [Sales]      WHERE([Measures].[Unit Sales])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -48,43 +48,43 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Bellingham]</member>
+                    <member>[Store].[USA].[WA].[Bellingham]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Seattle]</member>
+                    <member>[Store].[USA].[WA].[Seattle]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                    <member>[Store].[USA].[OR].[Portland]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                    <member>[Store].[USA].[OR].[Salem]</member>
                 </tuple>
             </tuples>
         </rows>

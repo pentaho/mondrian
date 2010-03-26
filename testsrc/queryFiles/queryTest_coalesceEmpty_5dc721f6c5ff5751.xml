@@ -45,13 +45,13 @@ WHERE [Measures].[Foo]</mdxQuery>
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -64,13 +64,13 @@ WHERE [Measures].[Foo]</mdxQuery>
                     <member>[Product].[All Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable]</member>
+                    <member>[Product].[Non-Consumable]</member>
                 </tuple>
             </tuples>
         </rows>

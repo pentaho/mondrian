@@ -213,9 +213,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
-            + "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
+            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
+            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
             + "Row #0: $10,256.30\n"
             + "Row #0: $29,121.55\n"
             + "Row #0: $35,487.69\n");
@@ -233,13 +233,13 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Michael Spence]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Maya Gutierrez]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Roberta Damstra]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Darren Stanz]}\n"
-            + "{[EmployeesNonClosure].[All Employees].[Sheri Nowmer].[Donna Arnold]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Derrick Whelply]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Michael Spence]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Maya Gutierrez]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Roberta Damstra]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Darren Stanz]}\n"
+            + "{[EmployeesNonClosure].[Sheri Nowmer].[Donna Arnold]}\n"
             + "Axis #2:\n"
             + "{[Time].[1997]}\n"
             + "Row #0: $36,494.07\n"
@@ -279,7 +279,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 7,392\n");
     }
@@ -325,7 +325,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -348,7 +348,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
             + "Row #0: 24\n"
             + "Row #0: $234.36\n"
             + "Row #0: 2\n"
@@ -397,7 +397,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeesClosure].[All Employees].[1]}\n"
+            + "{[EmployeesClosure].[1]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -418,7 +418,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeesClosure].[All Employees].[7]}\n"
+            + "{[EmployeesClosure].[7]}\n"
             + "Row #0: 24\n"
             + "Row #0: $234.36\n"
             + "Row #0: 2\n"
@@ -437,7 +437,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
             + "Row #0: $72.36\n"
             + "Row #0: 12\n");
     }
@@ -454,7 +454,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
             + "Row #0: $234.36\n"
             + "Row #0: 24\n");
     }
@@ -472,21 +472,21 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "FROM HR\n"
             + "WHERE ([Pay Type].[Hourly])",
             "Axis #0:\n"
-            + "{[Pay Type].[All Pay Types].[Hourly]}\n"
+            + "{[Pay Type].[Hourly]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Employee Salary]}\n"
             + "{[Measures].[Number of Employees]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[William Hapke].[Marie Richmeier]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno].[Ellen Gray]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Paula Nickell].[Kristine Cleary].[Carla Zubaty].[Hattie Haemon]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Christopher Solano].[Sarah Amole]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Kenneth Turner].[Shirley Head]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Christopher Solano].[Mary Hall]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Yasmina Brown]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[Joshua Huff].[Teanna Cobb]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Kristine Aldred].[Kenton Forham]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Eddie Holmes].[Donald Thompson]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[William Hapke].[Marie Richmeier]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno].[Ellen Gray]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Paula Nickell].[Kristine Cleary].[Carla Zubaty].[Hattie Haemon]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Christopher Solano].[Sarah Amole]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Kenneth Turner].[Shirley Head]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Christopher Solano].[Mary Hall]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Yasmina Brown]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[Joshua Huff].[Teanna Cobb]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lois Wood].[Dell Gras].[Kristine Aldred].[Kenton Forham]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Eddie Holmes].[Donald Thompson]}\n"
             + "Row #0: $39.44\n"
             + "Row #0: 1\n"
             + "Row #1: $39.52\n"
@@ -526,16 +526,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Number of Employees]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Joy Sincich]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Florence Vonholt]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Eddie Holmes]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Gerald Drury]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Libby Allen]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Angela Bowers]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Michael Bruha]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Joy Sincich]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Florence Vonholt]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Eddie Holmes]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Gerald Drury]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Libby Allen]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Angela Bowers]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Michael Bruha]}\n"
             + "Row #0: 23\n"
             + "Row #1: 23\n"
             + "Row #2: 23\n"
@@ -556,20 +556,20 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Parent]}\n"
             + "Axis #2:\n"
             + "{[Employees].[All Employees]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Nancy Miller]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Wanda Hollar]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Corinne Zugschwert]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Michelle Adams]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Donahue Steen]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[John Baker]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Nancy Miller]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Wanda Hollar]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Corinne Zugschwert]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Michelle Adams]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Donahue Steen]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[John Baker]}\n"
             + "Row #0: #null\n"
             + "Row #1: All Employees\n"
             + "Row #2: Sheri Nowmer\n"
@@ -634,7 +634,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $39,431.67\n");
@@ -678,7 +678,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $271,552.44\n");
@@ -727,20 +727,20 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // Row #0: (null)
         // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite
         // loop while evaluating calculated member '[Measures].[Foo]'; context
-        // stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]),
-        // ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
+        // stack is {([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2].[4]),
+        // ([Store].[Mexico], [Time].[1997].[Q2])}"
         //
         // So encapsulate the error string as a pattern.
         final String expectedPattern =
@@ -785,7 +785,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             1,
             extendedContext,
-            "[Employees].[All Employees].[Sheri Nowmer]",
+            "[Employees].[Sheri Nowmer]",
             "$39,431.67",
             "select `time_by_day`.`the_year` as `Year`,"
             + " `employee`.`employee_id` as `Employee Id (Key)`,"
@@ -806,7 +806,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             2,
             extendedContext,
-            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]",
+            "[Employees].[Sheri Nowmer].[Derrick Whelply]",
             "$36,494.07",
             "select `time_by_day`.`the_year` as `Year`,"
             + " `employee`.`employee_id` as `Employee Id (Key)`,"
@@ -834,7 +834,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             2,
             extendedContext,
-            "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]",
+            "[Employees].[Sheri Nowmer].[Derrick Whelply]",
             "$36,494.07",
             "select"
             + " `time_by_day`.`the_year` as `Year`,"
@@ -992,10 +992,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[First Name]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Megan Davis]}\n"
+            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg]}\n"
+            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack]}\n"
+            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n"
+            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Megan Davis]}\n"
             + "Row #0: $29,762.88\n"
             + "Row #0: Brenda\n"
             + "Row #1: $27,908.33\n"
@@ -1012,8 +1012,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
             + "Row #0: $60.00\n"
             + "Row #0: $152.76\n");
 
@@ -1023,12 +1023,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]}\n"
+            + "{[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]}\n"
+            + "{[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]}\n"
+            + "{[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]}\n"
+            + "{[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]}\n"
+            + "{[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]}\n"
+            + "{[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]}\n"
             + "Row #0: $193.80\n"
             + "Row #0: $60.00\n"
             + "Row #0: $120.00\n"
@@ -1119,8 +1119,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: 152.76\n"

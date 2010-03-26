@@ -14,6 +14,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
 
@@ -469,7 +470,18 @@ public class RolapMember extends MemberBase {
 
     protected void setUniqueName(Object key) {
         String name = keyToString(key);
-        if (parentMember == null) {
+
+        // Drop the '[All Xxxx]' segment in regular members.
+        // Keep the '[All Xxxx]' segment in the 'all' member.
+        // Keep the '[All Xxxx]' segment in calc members.
+        // Drop it in visual-totals and parent-child members (which are flagged
+        // as calculated, but do have a data member).
+        if (parentMember == null
+            || (parentMember.isAll()
+                && (!isCalculated()
+                    || this instanceof VisualTotalsFunDef.VisualTotalMember
+                    || getDataMember() != null)))
+        {
             final RolapHierarchy hierarchy = getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
             if (/* dimension.getHierarchies().length == 1

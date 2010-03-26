@@ -26,14 +26,14 @@ public class SetFunDefTest extends FoodMartTestCase {
     public void testSetWithMembersFromDifferentHierarchies() {
         assertQueryFailsInSetValidation(
             "with member store.x as "
-            + "'{[Gender].[M],[Store].[All Stores].[USA].[CA]}' "
+            + "'{[Gender].[M],[Store].[USA].[CA]}' "
             + " SELECT store.x on 0, [measures].[customer count] on 1 from sales");
     }
 
     public void testSetWith2TuplesWithDifferentHierarchies() {
         assertQueryFailsInSetValidation(
             "with member store.x as '{([Gender].[M],[Store].[All Stores].[USA].[CA]),"
-            + "([Store].[All Stores].[USA].[OR],[Gender].[F])}'\n"
+            + "([Store].[USA].[OR],[Gender].[F])}'\n"
             + " SELECT store.x on 0, [measures].[customer count] on 1 from sales");
     }
 
