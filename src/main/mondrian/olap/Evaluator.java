@@ -225,7 +225,16 @@ public interface Evaluator {
     Member[] getMembers();
 
     /**
-     * Returns an array of the non-All members which make up the current context
+     * Returns an array of the non-All members which make up the current
+     * context.
+     *
+     * <p>Notes:<ul>
+     * <li>The 0th element is a measure, but otherwise the order of the
+     *     members is unspecified.
+     * <li>No hierarchy occurs more than once.
+     * <li>In rare circumstances, some of the members may be an 'All' member.
+     * <li>The list may contain calculated members.
+     * </ul>
      */
     Member[] getNonAllMembers();
 

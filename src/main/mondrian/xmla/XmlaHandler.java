@@ -1277,7 +1277,8 @@ public class XmlaHandler {
             final Map<String, String> properties = request.getProperties();
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
-            if ("true".equals(advancedFlag)) {
+            final boolean advanced = "true".equals(advancedFlag);
+            if (advanced) {
                 final Position position =
                     result.getAxes()[0].getPositions().get(0);
                 Member[] members = position.toArray(

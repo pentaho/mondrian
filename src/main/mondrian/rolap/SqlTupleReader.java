@@ -1143,7 +1143,7 @@ public class SqlTupleReader implements TupleReader {
         // Convert global ordinal to cube based ordinal (the 0th dimension
         // is always [Measures]). In the case of filter constraint this will
         // be the measure on which the filter will be done.
-        final Member[] members = evaluator.getMembers();
+        final Member[] members = evaluator.getNonAllMembers();
 
         // if measure is calculated, we can't continue
         if (!(members[0] instanceof RolapBaseCubeMeasure)) {

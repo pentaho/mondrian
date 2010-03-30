@@ -218,10 +218,10 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     /***
-     * Tests performance of a larger schema with a large number of result cells.
-     * Runs in 12.2 seconds when RolapEvaluator.getProperty uses currentMember.
-     * Runs in 7.5 seconds when RolapEvaluator.getProperty uses nonAllMemberMap.
-     * The performance boost gets more significant as the schema size grows.
+     * Tests performance of a larger schema with a large number of result cells
+     * Runs in 186 seconds without nonAllPositions array in RolapEvaluator
+     * Runs in 14 seconds when RolapEvaluator.getProperty uses getNonAllMembers
+     * The performance boost gets more significant as the schema size grows
      */
     public void testBigResultsWithBigSchemaPerforms() {
         if (!LOGGER.isDebugEnabled()) {

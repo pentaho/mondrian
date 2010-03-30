@@ -54,7 +54,7 @@ public class SqlConstraintUtils {
         boolean restrictMemberTypes)
     {
         // Add constraint using the current evaluator context
-        Member[] members = evaluator.getMembers();
+        Member[] members = evaluator.getNonAllMembers();
 
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
@@ -62,10 +62,7 @@ public class SqlConstraintUtils {
                     "can not restrict SQL to calculated Members");
             }
         } else {
-            List<Member> memberList =
-                removeCalculatedMembers(Arrays.asList(members));
-            memberList = removeDefaultMembers(memberList);
-            members = memberList.toArray(new Member[memberList.size()]);
+            members = removeCalculatedAndDefaultMembers(members);
         }
 
         final CellRequest request =
@@ -125,7 +122,7 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Removes the default members from an array.
+     * Removes calculated and default members from an array.
      *
      * <p>This is required only if the default member is
      * not the ALL member. The time dimension for example, has 1997 as default
@@ -142,24 +139,35 @@ public class SqlConstraintUtils {
      * table for 1998 not 1997. So we do not restrict the time dimension and
      * fetch all children.
      *
+     * <p>For calculated members, effect is the same as
+     * {@link #removeCalculatedMembers(java.util.List)}.
+     *
      * @param members Array of members
-     * @return Array of members with default members removed
+     * @return Members with calculated members removed (except those that are
+     *    leaves in a parent-child hierarchy) and with members that are the
+     *    default member of their hierarchy
      */
-    private static List<Member> removeDefaultMembers(List<Member> members) {
-        List<Member> result = new ArrayList<Member>();
-        int startIndex = 0;
-        if (members.size() > 0 && members.get(0).isMeasure()) {
-            result.add(members.get(0)); // add the measure
-            startIndex = 1;
-        }
-        for (int i = startIndex; i < members.size(); i++) {
-            Member m = members.get(i);
-            if (m.getHierarchy().getDefaultMember().equals(m)) {
+    private static Member[] removeCalculatedAndDefaultMembers(
+        Member[] members)
+    {
+        List<Member> memberList = new ArrayList<Member>(members.length);
+        for (int i = 0; i < members.length; ++i) {
+            Member member = members[i];
+            // Skip calculated members (except if leaf of parent-child hier)
+            if (member.isCalculated() && !member.isParentChildLeaf()) {
                 continue;
             }
-            result.add(m);
+
+            // Remove members that are the default for their hierarchy,
+            // except for the measures hierarchy.
+            if (i > 0
+                && member.getHierarchy().getDefaultMember().equals(member))
+            {
+                continue;
+            }
+            memberList.add(member);
         }
-        return result;
+        return memberList.toArray(new Member[memberList.size()]);
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {

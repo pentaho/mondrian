@@ -238,13 +238,11 @@ public class RolapEvaluator implements Evaluator {
 
     public final Member[] getNonAllMembers() {
         if (nonAllMembers == null) {
-            final List<RolapMember> members = new ArrayList<RolapMember>();
-            for (RolapMember rolapMember : currentMembers) {
-                if (!rolapMember.isAll()) {
-                    members.add(rolapMember);
-                }
+            nonAllMembers = new RolapMember[root.nonAllPositionCount];
+            for (int i = 0; i < root.nonAllPositionCount; i++) {
+                int nonAllPosition = root.nonAllPositions[i];
+                nonAllMembers[i] = currentMembers[nonAllPosition];
             }
-            nonAllMembers = members.toArray(new Member[members.size()]);
         }
         return nonAllMembers;
     }
@@ -409,11 +407,24 @@ public class RolapEvaluator implements Evaluator {
             removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
+        if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
+            root.nonAllPositions[root.nonAllPositionCount] = ordinal;
+            root.nonAllPositionCount++;
+        }
         if (m.isEvaluated()) {
             addCalcMember(new RolapMemberCalculation(m));
         }
         nonAllMembers = null;
         return previous;
+    }
+
+    private boolean isNewPosition(int ordinal) {
+        for (int nonAllPosition : root.nonAllPositions) {
+            if (ordinal == nonAllPosition) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public final void setContext(List<Member> memberList) {
@@ -627,7 +638,7 @@ public class RolapEvaluator implements Evaluator {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         int i = -1;
-        for (Member member : getMembers()) {
+        for (Member member : getNonAllMembers()) {
             i++;
             // more than one usage
             if (member == null) {
