@@ -6985,6 +6985,22 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Measures].[Units Shipped]}\n"
             + "Row #0: .0\n");
     }
+
+    public void testDirectMemberReferenceOnDimensionWithCalculationsDefined() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            null,
+            "<CalculatedMember dimension=\"Gender\" visible=\"true\" name=\"last\">"
+            + "<Formula>([Gender].LastChild)</Formula>"
+            + "</CalculatedMember>");
+        testContext.assertQueryReturns(
+            "select {[Gender].[M]} on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 135,215\n");
+    }
 }
 
 // End BasicQueryTest.java

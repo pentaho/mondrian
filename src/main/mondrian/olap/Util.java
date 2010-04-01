@@ -970,7 +970,7 @@ public class Util extends XOMUtil {
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        return (rootMembers.size() == 1 && rootMembers.get(0).isAll())
+        return (rootMembers.size() > 0 && rootMembers.get(0).isAll())
             ? reader.lookupMemberChildByName(
                 rootMembers.get(0),
                 memberName,
