@@ -69,10 +69,13 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 Arrays.asList(c.dimensions),
                 Arrays.asList(c.measures),
                 Arrays.asList(c.calculatedMembers),
-                Arrays.asList(c.namedSets));
+                Arrays.asList(c.namedSets),
+                ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.Dimension) {
             MondrianGuiDef.Dimension d = (MondrianGuiDef.Dimension) parent;
-            return Arrays.asList((Object[]) d.hierarchies);
+            return new CompoundList<Object>(
+                Arrays.asList((Object[]) d.hierarchies),
+                ifList(d.annotations));
         } else if (parent instanceof MondrianGuiDef.ExpressionView) {
             MondrianGuiDef.ExpressionView ev =
                 (MondrianGuiDef.ExpressionView) parent;
@@ -82,7 +85,8 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return new CompoundList<Object>(
                 Arrays.asList(h.levels),
                 Arrays.asList(h.memberReaderParameters),
-                ifList(h.relation));
+                ifList(h.relation),
+                ifList(h.annotations));
         } else if (parent instanceof MondrianGuiDef.Join) {
             MondrianGuiDef.Join j = (MondrianGuiDef.Join) parent;
             return Arrays.<Object>asList(
@@ -96,21 +100,26 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 ifList(level.nameExp),
                 ifList(level.ordinalExp),
                 ifList(level.parentExp),
-                ifList(level.closure));
+                ifList(level.closure),
+                ifList(level.annotations));
         } else if (parent instanceof MondrianGuiDef.CalculatedMember) {
             MondrianGuiDef.CalculatedMember c =
                 (MondrianGuiDef.CalculatedMember) parent;
             return new CompoundList<Object>(
                 ifList(c.formulaElement),
-                arrayList(c.memberProperties));
+                arrayList(c.memberProperties),
+                ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.Measure) {
             MondrianGuiDef.Measure m = (MondrianGuiDef.Measure) parent;
             return new CompoundList<Object>(
                 ifList(m.measureExp),
-                arrayList(m.memberProperties));
+                arrayList(m.memberProperties),
+                ifList(m.annotations));
         } else if (parent instanceof MondrianGuiDef.NamedSet) {
             MondrianGuiDef.NamedSet m = (MondrianGuiDef.NamedSet) parent;
-            return ifList((Object) m.formulaElement);
+            return new CompoundList<Object>(
+                ifList((Object) m.formulaElement),
+                ifList(m.annotations));
         } else if (parent instanceof MondrianGuiDef.Schema) {
             MondrianGuiDef.Schema s = (MondrianGuiDef.Schema) parent;
             // Return children in this order: cubes, dimensions, namedSets,
@@ -123,7 +132,8 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 Arrays.asList(s.userDefinedFunctions),
                 Arrays.asList(s.virtualCubes),
                 Arrays.asList(s.roles),
-                Arrays.asList(s.parameters));
+                Arrays.asList(s.parameters),
+                ifList(s.annotations));
         } else if (parent instanceof MondrianGuiDef.Table) {
             MondrianGuiDef.Table t = (MondrianGuiDef.Table) parent;
             return new CompoundList<Object>(
@@ -148,14 +158,19 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return new CompoundList<Object>(
                 Arrays.asList(c.dimensions),
                 Arrays.asList(c.measures),
-                Arrays.asList(c.calculatedMembers));
+                Arrays.asList(c.calculatedMembers),
+                ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.VirtualCubeDimension) {
-            return Collections.emptyList();
+            MondrianGuiDef.VirtualCubeDimension d = (MondrianGuiDef.VirtualCubeDimension) parent; 
+            return ifList((Object)d.annotations);
         } else if (parent instanceof MondrianGuiDef.VirtualCubeMeasure) {
-            return Collections.emptyList();
+            MondrianGuiDef.VirtualCubeMeasure m = (MondrianGuiDef.VirtualCubeMeasure) parent; 
+            return ifList((Object)m.annotations);
         } else if (parent instanceof MondrianGuiDef.Role) {
             MondrianGuiDef.Role c = (MondrianGuiDef.Role) parent;
-            return Arrays.asList((Object[]) c.schemaGrants);
+            return new CompoundList<Object>(
+                Arrays.asList((Object[]) c.schemaGrants),
+                ifList((Object)c.annotations));
         } else if (parent instanceof MondrianGuiDef.SchemaGrant) {
             MondrianGuiDef.SchemaGrant c = (MondrianGuiDef.SchemaGrant) parent;
             return Arrays.asList((Object[]) c.cubeGrants);
@@ -171,6 +186,9 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.Closure) {
             MondrianGuiDef.Closure c = (MondrianGuiDef.Closure) parent;
             return ifList((Object) c.table);
+        } else if (parent instanceof MondrianGuiDef.Annotations) {
+            MondrianGuiDef.Annotations annotations = (MondrianGuiDef.Annotations) parent;
+            return Arrays.asList((Object[]) annotations.array);
         } else {
             // In particular: Column, SQL, DimensionUsage have no children.
             return Collections.emptyList();

@@ -52,6 +52,11 @@
         <Attribute name="name" required="true">
             <Doc>Name of this schema</Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this schema.
+            </Doc>
+        </Attribute>
         <Attribute name="measuresCaption" required="false">
             <Doc>
                 Label for the measures dimension.
@@ -61,6 +66,9 @@
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Array name="parameters" type="Parameter">
             <Doc>
                 This schema's parameter definitions.
@@ -130,6 +138,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="foreignKey">
             <Doc>
                 The name of the column in the fact table which joins
@@ -138,6 +152,15 @@
                 public Dimension.
             </Doc>
         </Attribute>
+        <Attribute name="highCardinality" type="Boolean" default="false">
+            <Doc>
+                Flag to mark this dimension as a high cardinality one
+                and avoid caching.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Code><![CDATA[
             /**
              * Looks up the base dimension of this dimension. If this is a
@@ -171,6 +194,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="defaultMeasure" required="false">
             <Doc>
                 The name of the measure that would be taken as the default
@@ -191,6 +220,9 @@
                 realized otherwise it is ignored.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="fact" type="Relation" required="true">
             <Doc>
                 The fact table is the source of all measures in this cube. If
@@ -256,6 +288,15 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this virtual cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="cubeUsage" type="CubeUsages"><Doc></Doc></Object>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
@@ -352,6 +393,9 @@
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
     </Element>
 
     <!-- DimensionUsage =================================================== -->
@@ -420,6 +464,12 @@
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the dimensions's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -521,6 +571,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this hierarchy.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="uniqueKeyLevelName" required="false">
             <Doc>
 		        Should be set to the level (if such a level exists) at which depth it is known
@@ -529,6 +585,9 @@
             </Doc>
         </Attribute>
 
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="relation" type="RelationOrJoin">
             <Doc>
                 The {@link MondrianGuiDef.Table table},
@@ -661,7 +720,7 @@
                 <p>Allowable values are:
                 <code>Never</code> (a member always appears; the default);
                 <code>IfBlankName</code> (a member doesn't appear if its name
-                is null or empty); and
+                is null, empty or all whitespace); and
                 <code>IfParentsName</code> (a member appears unless its name
                 matches the parent's.</p>
             </Doc>
@@ -681,13 +740,21 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this level.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="captionColumn" required="false">
             <Doc>
                 The name of the column which holds the caption for
                 members.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="keyExp" type="KeyExpression" required="false">
             <Doc>
                 The SQL expression used to populate this level's key.
@@ -816,6 +883,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="dependsOnLevelValue" required="false" type="Boolean">
             <Doc>
 		        Should be set to true if the value of the property is functionally dependent on
@@ -891,12 +964,21 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this measure.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="visible" type="Boolean" required="false">
             <Doc>
                 Whether this member is visible in the user-interface.
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="measureExp" type="MeasureExpression" required="false">
             <Doc>
                 The SQL expression used to calculate a measure.
@@ -924,6 +1006,12 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="formula" required="false">
             <Doc>
                 MDX expression which gives the value of this member.
@@ -941,6 +1029,9 @@
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="formulaElement" type="Formula" required="false">
             <Doc>
                 MDX expression which gives the value of this member.
@@ -975,7 +1066,14 @@
         </Attribute>
          <Attribute name="caption" required="false">
             <Doc>
-                A string being displayed instead of the Properties's name.
+                A string being displayed instead of the name of this calculated
+                member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member property.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
@@ -1019,12 +1117,27 @@
                 Name of this named set.
             </Doc>
         </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                Caption of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="formula" required="false">
             <Doc>
                 MDX expression which gives the value of this set.
                 Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Object name="formulaElement" type="Formula" required="false">
             <Doc>
                 MDX expression which gives the value of this set.
@@ -1396,11 +1509,11 @@
 
     <Element type="Hint">
         <Doc>
-            Dialect-specific table optimization hints
+            Dialect-specific table optimization hints.
         </Doc>
         <Attribute name="type" required="true">
             <Doc>
-                Type of hint, interpreted and applied on a per-dialect basis
+                Type of hint, interpreted and applied on a per-dialect basis.
             </Doc>
         </Attribute>
         <CData/>
@@ -1822,6 +1935,9 @@
             (or denials) for schema elements.
         </Doc>
         <Attribute name="name" required="true"/>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
         <Array name="schemaGrants" type="SchemaGrant"/>
         <Object name="union" type="Union" required="false" />
     </Element>
@@ -2006,6 +2122,22 @@
         </Attribute>
     </Element>
 
+    <Element type="Annotations">
+        <Doc>Holder for an array of Annotation elements</Doc>
+        <Array name="array" type="Annotation"/>
+    </Element>
+
+    <Element type="Annotation">
+        <Doc>
+            User-defined property value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the annotation.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
 </Model>
 
 <!-- End Mondrian_SW.xml -->
