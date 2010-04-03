@@ -161,10 +161,12 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 Arrays.asList(c.calculatedMembers),
                 ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.VirtualCubeDimension) {
-            MondrianGuiDef.VirtualCubeDimension d = (MondrianGuiDef.VirtualCubeDimension) parent; 
+            MondrianGuiDef.VirtualCubeDimension d =
+                (MondrianGuiDef.VirtualCubeDimension) parent;
             return ifList((Object)d.annotations);
         } else if (parent instanceof MondrianGuiDef.VirtualCubeMeasure) {
-            MondrianGuiDef.VirtualCubeMeasure m = (MondrianGuiDef.VirtualCubeMeasure) parent; 
+            MondrianGuiDef.VirtualCubeMeasure m =
+                (MondrianGuiDef.VirtualCubeMeasure) parent;
             return ifList((Object)m.annotations);
         } else if (parent instanceof MondrianGuiDef.Role) {
             MondrianGuiDef.Role c = (MondrianGuiDef.Role) parent;
@@ -187,7 +189,8 @@ public class SchemaTreeModel extends DefaultTreeModel {
             MondrianGuiDef.Closure c = (MondrianGuiDef.Closure) parent;
             return ifList((Object) c.table);
         } else if (parent instanceof MondrianGuiDef.Annotations) {
-            MondrianGuiDef.Annotations annotations = (MondrianGuiDef.Annotations) parent;
+            MondrianGuiDef.Annotations annotations =
+                (MondrianGuiDef.Annotations) parent;
             return Arrays.asList((Object[]) annotations.array);
         } else {
             // In particular: Column, SQL, DimensionUsage have no children.

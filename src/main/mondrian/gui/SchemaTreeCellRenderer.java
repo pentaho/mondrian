@@ -419,7 +419,7 @@ public class SchemaTreeCellRenderer
                 new ImageIcon(
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
-                            "annotation"))));          
+                            "annotation"))));
         } else if (value instanceof MondrianGuiDef.SQL) {
             setText(invalidFlag, ((MondrianGuiDef.SQL) value).dialect);
             super.setIcon(

@@ -2849,7 +2849,7 @@ public class SchemaExplorer
         TreePath tpath = tree.getSelectionPath();
         Object path = tree.getSelectionPath().getLastPathComponent();
         // Verify that the node selected in the tree is something that supports
-        // annotations.  
+        // annotations.
         if (path == null || (!(path instanceof MondrianGuiDef.Schema)
             && !(path instanceof MondrianGuiDef.CubeDimension)
             && !(path instanceof MondrianGuiDef.Cube)
@@ -2860,20 +2860,21 @@ public class SchemaExplorer
             && !(path instanceof MondrianGuiDef.Measure)
             && !(path instanceof MondrianGuiDef.CalculatedMember)
             && !(path instanceof MondrianGuiDef.NamedSet)
-            && !(path instanceof MondrianGuiDef.Role))) 
+            && !(path instanceof MondrianGuiDef.Role)))
         {
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.objectNotSelectedForAnnotations.alert",
-                    "Please select an object that supports annotations."), alert, JOptionPane.WARNING_MESSAGE);
+                    "Please select an object that supports annotations."),
+                    alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
-  
-        MondrianGuiDef.Annotations annotations = new MondrianGuiDef.Annotations();
+
+        MondrianGuiDef.Annotations annotations =
+            new MondrianGuiDef.Annotations();
         annotations.array = new MondrianGuiDef.Annotation[0];
         Class cls = path.getClass();
-        try
-        {
+        try {
             Field field = cls.getField("annotations");
             field.set(path, annotations);
         } catch (Exception e)
@@ -2881,44 +2882,44 @@ public class SchemaExplorer
             throw new RuntimeException(e);
         }
         tree.setSelectionPath(tpath.pathByAddingChild(annotations));
-  
+
         refreshTree(tree.getSelectionPath());
     }
-      
-    
+
+
     protected void addAnnotation(ActionEvent evt) {
-      TreePath tpath = tree.getSelectionPath();
-      Object path = tree.getSelectionPath().getLastPathComponent();
-      if (!(path instanceof MondrianGuiDef.Annotations)) 
-      {
-          JOptionPane.showMessageDialog(
-              this, getResourceConverter().getString(
-                  "schemaExplorer.annotationsNotSelected.alert",
-                  "Annotations not selected."), alert, JOptionPane.WARNING_MESSAGE);
-          return;
-      }
+        TreePath tpath = tree.getSelectionPath();
+        Object path = tree.getSelectionPath().getLastPathComponent();
+        if (!(path instanceof MondrianGuiDef.Annotations)) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.annotationsNotSelected.alert",
+                    "Annotations not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-      MondrianGuiDef.Annotations annotations = (MondrianGuiDef.Annotations) path;
-      
-      MondrianGuiDef.Annotation annotation = new MondrianGuiDef.Annotation();
-      annotation.name =
-        getNewName(getResourceConverter().getString(
-                "schemaExplorer.newAnnotation.title",
-                "New Annotation"),
-                annotations.array);
-      
-      MondrianGuiDef.Annotation[] temp = annotations.array;
-      annotations.array = new MondrianGuiDef.Annotation[temp.length + 1];
-      for (int i = 0; i < temp.length; i++) {
-          annotations.array[i] = (MondrianGuiDef.Annotation) temp[i];
-      }
-      annotations.array[annotations.array.length - 1] = annotation;
-      tree.setSelectionPath(tpath.pathByAddingChild(annotation));
+        MondrianGuiDef.Annotations annotations =
+            (MondrianGuiDef.Annotations) path;
+        MondrianGuiDef.Annotation annotation = new MondrianGuiDef.Annotation();
+        annotation.name =
+          getNewName(getResourceConverter().getString(
+                  "schemaExplorer.newAnnotation.title",
+              "New Annotation"),
+                  annotations.array);
 
-      refreshTree(tree.getSelectionPath());
-      setTableCellFocus(0);
+        MondrianGuiDef.Annotation[] temp = annotations.array;
+        annotations.array = new MondrianGuiDef.Annotation[temp.length + 1];
+        for (int i = 0; i < temp.length; i++) {
+            annotations.array[i] = (MondrianGuiDef.Annotation) temp[i];
+        }
+        annotations.array[annotations.array.length - 1] = annotation;
+        tree.setSelectionPath(tpath.pathByAddingChild(annotation));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
     }
-    
+
     /**
      * @param evt
      */
@@ -3110,7 +3111,8 @@ public class SchemaExplorer
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
+                    "Level not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -3153,7 +3155,8 @@ public class SchemaExplorer
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
+                    "Level not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -3196,7 +3199,8 @@ public class SchemaExplorer
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
+                    "Level not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -4286,7 +4290,8 @@ public class SchemaExplorer
                     jPopupMenu.removeAll();
                     Object pathSelected = path.getLastPathComponent();
                     if (pathSelected instanceof MondrianGuiDef.Schema) {
-                        MondrianGuiDef.Schema s = (MondrianGuiDef.Schema) pathSelected;
+                        MondrianGuiDef.Schema s =
+                            (MondrianGuiDef.Schema) pathSelected;
                         jPopupMenu.add(addCube);
                         jPopupMenu.add(addDimension);
                         jPopupMenu.add(addNamedSet);
@@ -4296,10 +4301,11 @@ public class SchemaExplorer
                         jPopupMenu.add(addRole);
                         jPopupMenu.add(addParameter);
                         jPopupMenu.add(addAnnotations);
-                        if (s.annotations == null)
+                        if (s.annotations == null) {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                     } else if (pathSelected instanceof MondrianGuiDef.Cube) {
                         jPopupMenu.add(addDimension);
                         jPopupMenu.add(addDimensionUsage);
@@ -4311,10 +4317,13 @@ public class SchemaExplorer
                         jPopupMenu.add(addView);
                         jPopupMenu.add(addInlineTable);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.Cube) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.Cube) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator2);
                         jPopupMenu.add(delete);
                         if (((MondrianGuiDef.Cube) pathSelected).fact == null) {
@@ -4335,10 +4344,13 @@ public class SchemaExplorer
                     {
                         jPopupMenu.add(addHierarchy);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.Dimension) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.Dimension) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4351,10 +4363,13 @@ public class SchemaExplorer
                         jPopupMenu.add(addView);
                         jPopupMenu.add(addInlineTable);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.Hierarchy) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.Hierarchy) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator2);
                         jPopupMenu.add(delete);
                         // Disable Add Level if the relation has not been set
@@ -4379,44 +4394,39 @@ public class SchemaExplorer
                     } else if (pathSelected instanceof MondrianGuiDef.Level) {
                         jPopupMenu.add(addProperty);
                         jPopupMenu.add(addKeyExp);
-                        MondrianGuiDef.Level level = (MondrianGuiDef.Level) pathSelected;
-                        if (level.keyExp == null)
-                        {
+                        MondrianGuiDef.Level level =
+                            (MondrianGuiDef.Level) pathSelected;
+                        if (level.keyExp == null) {
                             addKeyExp.setEnabled(true);
                         } else {
                             addKeyExp.setEnabled(false);
                         }
                         jPopupMenu.add(addNameExp);
-                        if (level.nameExp == null)
-                        {
+                        if (level.nameExp == null) {
                             addNameExp.setEnabled(true);
                         } else {
                             addNameExp.setEnabled(false);
                         }
                         jPopupMenu.add(addOrdinalExp);
-                        if (level.ordinalExp == null)
-                        {
+                        if (level.ordinalExp == null) {
                             addOrdinalExp.setEnabled(true);
                         } else {
                             addOrdinalExp.setEnabled(false);
                         }
                         jPopupMenu.add(addParentExp);
-                        if (level.parentExp == null)
-                        {
+                        if (level.parentExp == null) {
                             addParentExp.setEnabled(true);
                         } else {
                             addParentExp.setEnabled(false);
                         }
                         jPopupMenu.add(addClosure);
-                        if (level.closure == null)
-                        {
+                        if (level.closure == null) {
                             addClosure.setEnabled(true);
                         } else {
                             addClosure.setEnabled(false);
                         }
                         jPopupMenu.add(addAnnotations);
-                        if (level.annotations == null)
-                        {
+                        if (level.annotations == null) {
                             addAnnotations.setEnabled(true);
                         } else {
                             addAnnotations.setEnabled(false);
@@ -4467,10 +4477,13 @@ public class SchemaExplorer
                             addMeasureExp.setEnabled(false);
                         }
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.Measure) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.Measure) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4485,10 +4498,13 @@ public class SchemaExplorer
                             addFormula.setEnabled(false);
                         }
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.NamedSet) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.NamedSet) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4504,10 +4520,13 @@ public class SchemaExplorer
                             addFormula.setEnabled(false);
                         }
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.CalculatedMember) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.CalculatedMember) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4555,19 +4574,25 @@ public class SchemaExplorer
                         jPopupMenu.add(addVirtualCubeMeasure);
                         jPopupMenu.add(addCalculatedMember);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.VirtualCube) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.VirtualCube) pathSelected)
+                                        .annotations == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected instanceof MondrianGuiDef.Role) {
                         jPopupMenu.add(addSchemaGrant);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.Role) pathSelected).annotations == null)
+                        if (((MondrianGuiDef.Role) pathSelected).annotations
+                                        == null)
+                        {
                             addAnnotations.setEnabled(true);
-                        else
+                        } else {
                             addAnnotations.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4613,7 +4638,8 @@ public class SchemaExplorer
     }
 
     static final String[] DEF_DEFAULT = {};
-    static final String[] DEF_VIRTUAL_CUBE = {"name", "description", "caption", "enabled"};
+    static final String[] DEF_VIRTUAL_CUBE = {"name", "description", "caption",
+        "enabled"};
     static final String[] DEF_VIRTUAL_CUBE_MEASURE = {
         "name", "cubeName", "visible"};
     static final String[] DEF_VIRTUAL_CUBE_DIMENSION = {
@@ -4632,7 +4658,7 @@ public class SchemaExplorer
     static final String[] DEF_CLOSURE = {"parentColumn", "childColumn"};
     static final String[] DEF_RELATION = {"name"};
     static final String[] DEF_SQL = {"cdata", "dialect"}; //?
-    static final String[] DEF_ANNOTATION = {"name", "cdata"}; 
+    static final String[] DEF_ANNOTATION = {"name", "cdata"};
     static final String[] DEF_SCHEMA = {
         "name", "description", "measuresCaption", "defaultRole"};
     static final String[] DEF_PROPERTY = {
@@ -4641,7 +4667,7 @@ public class SchemaExplorer
         "name", "description", "type", "modifiable", "defaultValue"}; //?
     static final String[] DEF_PARAMETER = {"name", "value"}; //?
     static final String[] DEF_MEASURE = {
-        "name", 
+        "name",
         "description",
         "aggregator",
         "column",
@@ -4653,7 +4679,7 @@ public class SchemaExplorer
     };
 
     static final String[] DEF_CALCULATED_MEMBER = {
-        "name", 
+        "name",
         "description",
         "caption",
         "dimension",
@@ -4664,11 +4690,12 @@ public class SchemaExplorer
     static final String[] DEF_FORMULA = {"cdata"};
     static final String[] DEF_CALCULATED_MEMBER_PROPERTY = {
         "name", "description", "caption", "expression", "value"};
-    static final String[] DEF_NAMED_SET = {"name", "description", "formula", "caption"};
+    static final String[] DEF_NAMED_SET = {"name", "description", "formula",
+        "caption"};
     static final String[] DEF_USER_DEFINED_FUNCTION = {"name", "className"};
 
     static final String[] DEF_LEVEL = {
-        "name", 
+        "name",
         "description",
         "table",
         "column",
@@ -4688,7 +4715,7 @@ public class SchemaExplorer
     static final String[] DEF_JOIN = {
         "leftAlias", "leftKey", "rightAlias", "rightKey"};
     static final String[] DEF_HIERARCHY = {
-        "name", 
+        "name",
         "description",
         "hasAll",
         "allMemberName",
@@ -4705,7 +4732,8 @@ public class SchemaExplorer
         "name", "foreignKey", "source", "level", "usagePrefix", "caption"};
     static final String[] DEF_DIMENSION = {
         "name", "description", "foreignKey", "type", "usagePrefix", "caption"};
-    static final String[] DEF_CUBE = {"name", "description", "caption", "cache", "enabled"};
+    static final String[] DEF_CUBE = {"name", "description", "caption",
+        "cache", "enabled"};
     static final String[] DEF_ROLE = {"name"};
     static final String[] DEF_SCHEMA_GRANT = {"access"};
     static final String[] DEF_CUBE_GRANT = {"access", "cube"};
@@ -4784,7 +4812,7 @@ public class SchemaExplorer
     private AbstractAction addMemberGrant;
     private AbstractAction addAnnotations;
     private AbstractAction addAnnotation;
-    
+
 
     private AbstractAction addDimension;
     private AbstractAction addDimensionUsage;
