@@ -1,6 +1,6 @@
 #!/bin/bash
 # $Id$
-# Copyright (C) 2006-2009 Julian Hyde
+# Copyright (C) 2006-2010 Julian Hyde
 #
 # Script to run the Mondrian test suite under various JDKs, with parameter
 # settings, against various RDBMSes. Customize it with your environment -
@@ -709,6 +709,31 @@ doQuick() {
   fi
 }
 
+# Runs the tests that are believed to be working.
+doWorking() {
+  ENABLE_NATIVE="\
+      mondrian.native.crossjoin.enable=true \
+      mondrian.native.topcount.enable=true \
+      mondrian.native.filter.enable=true \
+      mondrian.native.nonempty.enable=true"
+  DISABLE_NATIVE="\
+      mondrian.native.crossjoin.enable=false \
+      mondrian.native.topcount.enable=false \
+      mondrian.native.filter.enable=false \
+      mondrian.native.nonempty.enable=false"
+  ENABLE_AGGS="\
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true"
+  DISABLE_AGGS="\
+    mondrian.rolap.aggregates.Use=false \
+    mondrian.rolap.aggregates.Read=false"
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.6 derby ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
+}
+
 doAllTests() {
   # With olap4j
   doTest --olap4j jdk1.6 oracle
@@ -764,6 +789,8 @@ doAllTests() {
 doTests() {
   if [ "$quick" ]; then
     doQuick
+  elif [ "$working" ]; then
+    doWorking
   elif [ "$random" ]; then
     doRandom
   else
@@ -782,17 +809,19 @@ checkJavadoc() {
 }
 
 usage() {
-  echo "megatest [--help] [--nightly] [--quick] [--random] [--nobuild]"
+  echo "megatest [--help] [--nightly] [--nobuild] [--quick | --working | --random]"
   echo "Options:"
   echo "  --help     Print this help"
   echo "  --nightly  Run as a nightly batch job, with an error summary"
-  echo "  --quick    Only run one test"
-  echo "  --random   Run a test with a random set of parameters"
   echo "  --nobuild  Do not compile code before running the test"
+  echo "  --quick    Only run one test"
+  echo "  --working  Run the set of tests known to be working 100%"
+  echo "  --random   Run a test with a random set of parameters"
 }
 
 nightly=
 quick=
+working=
 random=
 build=true
 while [ $# -gt 0 ]; do
@@ -807,6 +836,10 @@ while [ $# -gt 0 ]; do
     ;;
   (--quick)
     quick=true
+    shift
+    ;;
+  (--working)
+    working=true
     shift
     ;;
   (--random)
@@ -882,4 +915,3 @@ CYGWIN*)
 esac
 
 # End megatest
-
