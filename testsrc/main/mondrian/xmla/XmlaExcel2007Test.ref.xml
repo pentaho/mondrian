@@ -108,7 +108,6 @@ where [Measures].[Unit Sales]
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
                                     <DisplayInfo>65539</DisplayInfo>
-
                                     <PARENT_UNIQUE_NAME>[Customers].[All Customers]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
@@ -119,7 +118,6 @@ where [Measures].[Unit Sales]
                                     <LName>[Customers].[State Province]</LName>
                                     <LNum>2</LNum>
                                     <DisplayInfo>65581</DisplayInfo>
-
                                     <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
@@ -129,8 +127,7 @@ where [Measures].[Unit Sales]
                                     <Caption>Beverly Hills</Caption>
                                     <LName>[Customers].[City]</LName>
                                     <LNum>3</LNum>
-                                    <DisplayInfo>0</DisplayInfo>
-
+                                    <DisplayInfo>94</DisplayInfo>
                                     <PARENT_UNIQUE_NAME>[Customers].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>

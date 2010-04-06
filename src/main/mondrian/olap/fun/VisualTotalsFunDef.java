@@ -272,6 +272,16 @@ public class VisualTotalsFunDef extends FunDefBase {
         public Member getMember() {
             return member;
         }
+
+        public Object getPropertyValue(String propertyName, boolean matchCase) {
+            Property property = Property.lookup(propertyName, matchCase);
+            switch (property.ordinal) {
+            case Property.CHILDREN_CARDINALITY_ORDINAL:
+                return member.getPropertyValue(propertyName, matchCase);
+            default:
+                return super.getPropertyValue(propertyName, matchCase);
+            }
+        }
     }
 
     /**
