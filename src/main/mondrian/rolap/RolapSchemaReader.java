@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -175,11 +175,21 @@ public class RolapSchemaReader
         return children;
     }
 
-    /**
-     * check, whether members children are cached, and
-     * if yes - return children count
-     * if no  - return -1
-     */
+    public void getParentChildContributingChildren(
+        Member dataMember,
+        Hierarchy hierarchy,
+        List<Member> list)
+    {
+        final List<RolapMember> rolapMemberList = Util.cast(list);
+        list.add(dataMember);
+        if (hierarchy instanceof RolapCubeHierarchy && false) {
+            hierarchy =
+                ((RolapCubeHierarchy) hierarchy).getRolapHierarchy();
+        }
+        ((RolapHierarchy) hierarchy).getMemberReader().getMemberChildren(
+            (RolapMember) dataMember, rolapMemberList);
+    }
+
     public int getChildrenCountFromCache(Member member) {
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
@@ -331,6 +341,14 @@ public class RolapSchemaReader
         }
     }
 
+    public void getMemberAncestors(Member member, List<Member> ancestorList) {
+        Member parentMember = getMemberParent(member);
+        while (parentMember != null) {
+            ancestorList.add(parentMember);
+            parentMember = getMemberParent(parentMember);
+        }
+    }
+
     public Cube getCube() {
         throw new UnsupportedOperationException();
     }
@@ -396,7 +414,10 @@ public class RolapSchemaReader
     public Member lookupMemberChildByName(
         Member parent, Id.Segment childName, MatchType matchType)
     {
-        LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "looking for child \"" + childName + "\" of " + parent);
+        }
         assert !(parent instanceof RolapHierarchy.LimitedRollupMember);
         try {
             MemberChildrenConstraint constraint;

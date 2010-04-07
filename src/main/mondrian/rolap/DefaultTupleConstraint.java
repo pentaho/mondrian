@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,9 +24,6 @@ public class DefaultTupleConstraint implements TupleConstraint {
 
     private static final TupleConstraint instance =
         new DefaultTupleConstraint();
-
-    /** we have no state, so all instances are equal */
-    private static final Object cacheKey = new Object();
 
     protected DefaultTupleConstraint() {
     }
@@ -57,7 +54,8 @@ public class DefaultTupleConstraint implements TupleConstraint {
     }
 
     public Object getCacheKey() {
-        return cacheKey;
+        // we have no state, so all instances are equal
+        return this;
     }
 
     public static TupleConstraint instance() {

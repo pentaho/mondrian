@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -124,11 +124,15 @@ public class Property extends EnumeratedValues.BasicValue {
             false, null);
 
     public static final int CONTRIBUTING_CHILDREN_ORDINAL = 4;
+
     /**
      * Definition of the internal property which
      * holds, for a member of a  parent-child hierarchy, a
      * {@link java.util.List} containing the member's data
      * member and all of its children (including non-visible children).
+     *
+     * @deprecated Property is not used and will be removed in mondrian-4.0;
+     * use {@link mondrian.olap.SchemaReader#getParentChildContributingChildren}
      */
     public static final Property CONTRIBUTING_CHILDREN =
         new Property(

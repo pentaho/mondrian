@@ -24,8 +24,9 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.util.Bug;
 import mondrian.spi.Dialect;
+import mondrian.util.Bug;
+import mondrian.util.Pair;
 
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
@@ -4065,13 +4066,9 @@ public class NonEmptyTest extends BatchTestCase {
 
     void clearAndHardenCache(MemberCacheHelper helper) {
         helper.mapLevelToMembers.setCache(
-                new HardSmartCache<
-                    SmartMemberListCache.Key2<RolapLevel, Object>,
-                    List<RolapMember>>());
+            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         helper.mapMemberToChildren.setCache(
-                new HardSmartCache<
-                    SmartMemberListCache.Key2<RolapMember, Object>,
-                    List<RolapMember>>());
+            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
         helper.mapKeyToMember.clear();
     }
 

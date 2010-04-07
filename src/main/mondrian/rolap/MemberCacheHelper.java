@@ -19,6 +19,7 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.olap.Util;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -37,7 +38,7 @@ public class MemberCacheHelper implements MemberCache {
     final SmartMemberListCache<RolapMember, List<RolapMember>>
         mapMemberToChildren;
 
-    /** a cache for alle members to ensure uniqueness */
+    /** a cache for all members to ensure uniqueness */
     SmartCache<Object, RolapMember> mapKeyToMember;
     RolapHierarchy rolapHierarchy;
     DataSourceChangeListener changeListener;
@@ -188,11 +189,10 @@ public class MemberCacheHelper implements MemberCache {
         // For each cache key whose level matches, remove from the list,
         // regardless of the constraint.
         RolapLevel level = member.getLevel();
-        for (Map.Entry<
-            SmartMemberListCache.Key2<RolapLevel, Object>,
+        for (Map.Entry<Pair<RolapLevel, Object>,
             List<RolapMember>> entry : mapLevelToMembers.getCache())
         {
-            if (entry.getKey().o1.equals(level)) {
+            if (entry.getKey().left.equals(level)) {
                 List<RolapMember> peers = entry.getValue();
                 boolean removedIt = peers.remove(member);
                 Util.discard(removedIt);
@@ -202,17 +202,13 @@ public class MemberCacheHelper implements MemberCache {
         // Drop member from the member-to-children map, wherever it occurs as
         // a parent or as a child, regardless of the constraint.
         RolapMember parent = member.getParentMember();
-        final Iterator<
-            Map.Entry<
-                SmartMemberListCache.Key2<RolapMember, Object>,
-                List<RolapMember>>> iter =
-            mapMemberToChildren.getCache().iterator();
+        final Iterator<Map.Entry<Pair<RolapMember, Object>, List<RolapMember>>>
+            iter = mapMemberToChildren.getCache().iterator();
         while (iter.hasNext()) {
-            Map.Entry<
-                SmartMemberListCache.Key2<RolapMember, Object>,
-                List<RolapMember>> entry = iter.next();
-            final RolapMember member1 = entry.getKey().o1;
-            final Object constraint = entry.getKey().o2;
+            Map.Entry<Pair<RolapMember, Object>, List<RolapMember>> entry =
+                iter.next();
+            final RolapMember member1 = entry.getKey().left;
+            final Object constraint = entry.getKey().right;
 
             // Cache key is (member's parent, constraint);
             // cache value is a list of member's siblings;

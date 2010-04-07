@@ -26,6 +26,7 @@ import mondrian.spi.impl.DataSourceChangeListenerImpl;
 import mondrian.spi.impl.DataSourceChangeListenerImpl2;
 import mondrian.spi.impl.DataSourceChangeListenerImpl3;
 import mondrian.spi.impl.DataSourceChangeListenerImpl4;
+import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
@@ -88,40 +89,26 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
         smrch.mapLevelToMembers.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapLevel, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         smrch.mapMemberToChildren.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapMember, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
         smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
         MemberCacheHelper rcsmrch =
             ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
                 .getRolapCubeMemberCacheHelper();
         rcsmrch.mapLevelToMembers.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapLevel, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         rcsmrch.mapMemberToChildren.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapMember, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
         rcsmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
-
-
 
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
         ssmrch.mapLevelToMembers.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapLevel, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         ssmrch.mapMemberToChildren.setCache(
-            new HardSmartCache<
-                SmartMemberListCache.Key2<RolapMember, Object>,
-                List<RolapMember>>());
+            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
         ssmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
 

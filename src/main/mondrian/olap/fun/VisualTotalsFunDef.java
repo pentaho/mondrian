@@ -189,14 +189,14 @@ public class VisualTotalsFunDef extends FunDefBase {
     /**
      * Calculated member for <code>VisualTotals</code> function.
      *
-     * It corresponds to a real member, and most of its properties are similar.
-     * The main differences are:<ul>
+     * <p>It corresponds to a real member, and most of its properties are
+     * similar. The main differences are:<ul>
      * <li>its name is derived from the VisualTotals pattern, e.g.
      *     "*Subtotal - Dairy" as opposed to "Dairy"
      * <li>its value is a calculation computed by aggregating all of the
      *     members which occur following it in the list</ul></p>
      */
-    public static class VisualTotalMember extends RolapMember {
+    public static class VisualTotalMember extends RolapMemberBase {
         private final Member member;
         private final Exp exp;
 

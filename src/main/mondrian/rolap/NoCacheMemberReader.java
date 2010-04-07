@@ -6,7 +6,7 @@
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -252,14 +252,14 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
             return;
         }
         list.add(startMember);
-        if (startMember == endMember) {
+        if (startMember.equals(endMember)) {
             return;
         }
         SiblingIterator siblings = new SiblingIterator(this, startMember);
         while (siblings.hasNext()) {
             final RolapMember member = siblings.nextMember();
             list.add(member);
-            if (member == endMember) {
+            if (member.equals(endMember)) {
                 return;
             }
         }
@@ -277,23 +277,23 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         final RolapMember m2,
         final boolean siblingsAreEqual)
     {
-        if (m1 == m2) {
+        if (Util.equals(m1, m2)) {
             return 0;
         }
-        if (m1.getParentMember() == m2.getParentMember()) {
+        if (Util.equals(m1.getParentMember(), m2.getParentMember())) {
             // including case where both parents are null
             if (siblingsAreEqual) {
                 return 0;
             } else if (m1.getParentMember() == null) {
                 // at this point we know that both parent members are null.
                 int pos1 = -1, pos2 = -1;
-                List siblingList = getRootMembers();
+                List<RolapMember> siblingList = getRootMembers();
                 for (int i = 0, n = siblingList.size(); i < n; i++) {
-                    RolapMember child = (RolapMember) siblingList.get(i);
-                    if (child == m1) {
+                    RolapMember child = siblingList.get(i);
+                    if (child.equals(m1)) {
                         pos1 = i;
                     }
-                    if (child == m2) {
+                    if (child.equals(m2)) {
                         pos2 = i;
                     }
                 }
@@ -311,10 +311,10 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 int pos1 = -1, pos2 = -1;
                 for (int i = 0, n = children.size(); i < n; i++) {
                     RolapMember child = children.get(i);
-                    if (child == m1) {
+                    if (child.equals(m1)) {
                         pos1 = i;
                     }
-                    if (child == m2) {
+                    if (child.equals(m2)) {
                         pos2 = i;
                     }
                 }
@@ -324,7 +324,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 if (pos2 == -1) {
                     throw Util.newInternal(m2 + " not found among siblings");
                 }
-                Util.assertTrue(pos1 != pos2);
+                assert pos1 != pos2;
                 return pos1 < pos2 ? -1 : 1;
             }
         }
@@ -370,7 +370,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
             this.siblings = siblingList;
             this.position = -1;
             for (int i = 0; i < this.siblings.size(); i++) {
-                if (siblings.get(i) == member) {
+                if (siblings.get(i).equals(member)) {
                     this.position = i;
                     break;
                 }
@@ -440,7 +440,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         if (defaultMember != null) {
             return defaultMember;
         }
-        return (RolapMember) getRootMembers().get(0);
+        return getRootMembers().get(0);
     }
 
     public int getLevelMemberCount(RolapLevel level) {
@@ -450,18 +450,18 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember desubstitute(RolapMember member) {
-        return (RolapMember) member;
+        return member;
     }
 
     public RolapMember substitute(RolapMember member) {
-        return (RolapMember) member;
+        return member;
     }
 
     public RolapMember getMemberParent(RolapMember member) {
         // This method deals with ragged hierarchies but not access-controlled
         // hierarchies - assume these have RestrictedMemberReader possibly
         // wrapped in a SubstitutingMemberReader.
-        RolapMember parentMember = (RolapMember) member.getParentMember();
+        RolapMember parentMember = member.getParentMember();
         // Skip over hidden parents.
         while (parentMember != null && parentMember.isHidden()) {
             parentMember = parentMember.getParentMember();
@@ -489,6 +489,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         Map<RolapMember, List<RolapMember>> tempMap =
             new HashMap<RolapMember, List<RolapMember>>();
         for (RolapMember member1 : members) {
+            //noinspection unchecked
             tempMap.put(member1, Collections.EMPTY_LIST);
         }
         for (final RolapMember child : children) {
@@ -499,7 +500,6 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
             // contains members from different levels, children of the same
             // member will be contiguous.
             assert child != null : "child";
-            assert tempMap != null : "tempMap";
             final RolapMember parentMember = child.getParentMember();
             List<RolapMember> list = tempMap.get(parentMember);
             if (list == null) {
@@ -512,8 +512,8 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 list = new ArrayList<RolapMember>();
                 tempMap.put(parentMember, list);
             }
-            ((List)list).add(child);
-            ((List)result).add(child);
+            list.add(child);
+            result.add(child);
         }
     }
 }

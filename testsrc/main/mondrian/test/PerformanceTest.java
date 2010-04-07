@@ -274,6 +274,7 @@ public class PerformanceTest extends FoodMartTestCase {
      * <li>mondrian-3.2 13467 marmalade oracle jdk1.6 610 574
      * <li>mondrian-3.2 13489 marmalade oracle jdk1.6 565 561 579 596 avg 575
      * <li>mondrian-3.2 13490 marmalade oracle jdk1.6 607 611 581 605 avg 601
+     * <li>mondrian-3.2 xxxxx marmalade oracle jdk1.6 562 583 541 522 avg 552
      * </ul>
      */
     public void testInMemoryCalc() {

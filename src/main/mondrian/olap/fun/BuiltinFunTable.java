@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -643,9 +643,12 @@ public class BuiltinFunTable extends FunTableImpl {
                     {
                         Member member =
                             evaluator.getParent().getContext(hierarchy);
-                        List members =
-                            (List) member.getPropertyValue(
-                                Property.CONTRIBUTING_CHILDREN.name);
+                        List<Member> members = new ArrayList<Member>();
+                        evaluator.getSchemaReader()
+                            .getParentChildContributingChildren(
+                                member.getDataMember(),
+                                hierarchy,
+                                members);
                         Aggregator aggregator =
                             (Aggregator) evaluator.getProperty(
                                 Property.AGGREGATION_TYPE.name, null);
@@ -818,20 +821,18 @@ public class BuiltinFunTable extends FunTableImpl {
                         Evaluator evaluator)
                     {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return ascendants(member);
+                        return ascendants(evaluator.getSchemaReader(), member);
                     }
                 };
             }
 
-            List<Member> ascendants(Member member) {
+            List<Member> ascendants(SchemaReader schemaReader, Member member) {
                 if (member.isNull()) {
                     return Collections.emptyList();
                 }
-                List<Member> members = member.getAncestorMembers();
-                final List<Member> result =
-                    new ArrayList<Member>(members.size() + 1);
+                final List<Member> result = new ArrayList<Member>();
                 result.add(member);
-                result.addAll(members);
+                schemaReader.getMemberAncestors(member, result);
                 return result;
             }
         });

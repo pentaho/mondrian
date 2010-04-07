@@ -83,7 +83,10 @@ class RolapEvaluatorRoot {
             // hierarchy usages.
             final HierarchyUsage hierarchyUsage = cube.getFirstUsage(hierarchy);
             if (hierarchyUsage != null) {
-                defaultMember.makeUniqueName(hierarchyUsage);
+                if (defaultMember instanceof RolapMemberBase) {
+                ((RolapMemberBase) defaultMember).makeUniqueName(
+                    hierarchyUsage);
+                }
             }
 
             list.add(defaultMember);

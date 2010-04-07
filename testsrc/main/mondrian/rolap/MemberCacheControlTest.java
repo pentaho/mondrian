@@ -417,7 +417,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final CacheControl cc = conn.getCacheControl(null);
         final RolapCubeMember caCubeMember =
             (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
-        final RolapMember caMember = caCubeMember.rolapMember;
+        final RolapMember caMember = caCubeMember.member;
         final RolapMember rootMember = caMember.getParentMember();
         final RolapHierarchy hierarchy = caMember.getHierarchy();
         final RolapMember berkeleyMember =
@@ -483,7 +483,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final RolapCubeMember alamedaCubeMember =
             (RolapCubeMember) findMember(
                 tc, "Sales", "Retail", "CA", "Alameda");
-        final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
+        final RolapMember alamedaMember = alamedaCubeMember.member;
         final RolapMember caMember = alamedaMember.getParentMember();
         final RolapMember rootMember = caMember.getParentMember();
         final RolapHierarchy hierarchy = caMember.getHierarchy();
@@ -548,13 +548,13 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final RolapCubeMember alamedaCubeMember =
             (RolapCubeMember) findMember(
                 tc, "Sales", "Retail", "CA", "Alameda");
-        final RolapMember alamedaMember = alamedaCubeMember.rolapMember;
+        final RolapMember alamedaMember = alamedaCubeMember.member;
         final RolapMember caMember = alamedaMember.getParentMember();
 
         final RolapCubeMember empCubeMember =
             (RolapCubeMember) findMember(
                 tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
-        final RolapMember empMember = empCubeMember.rolapMember;
+        final RolapMember empMember = empCubeMember.member;
 
         try {
             command = cc.createMoveCommand(null, alamedaMember);

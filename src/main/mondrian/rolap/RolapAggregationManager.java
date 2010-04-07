@@ -284,11 +284,11 @@ public abstract class RolapAggregationManager {
         final CellRequest request)
     {
         final RolapCubeHierarchy hierarchy = member.getHierarchy();
-        final Level[] levels = hierarchy.getLevels();
+        final RolapCubeLevel[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
              j > depth; j--)
         {
-            final RolapCubeLevel level = (RolapCubeLevel) levels[j];
+            final RolapCubeLevel level = levels[j];
             RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
             if (column != null) {
                 request.addConstrainedColumn(column, null);

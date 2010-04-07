@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 import mondrian.resource.MondrianResource;
+import mondrian.util.Bug;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public abstract class MemberBase
 
     public abstract String getName();
 
-    public String getUniqueName() {
+    public final String getUniqueName() {
         return uniqueName;
     }
 
@@ -197,6 +198,10 @@ public abstract class MemberBase
 
     // implement Member
     public boolean isChildOrEqualTo(Member member) {
+        // REVIEW: Using uniqueName to calculate ancestry seems inefficient,
+        //   because we can't afford to store every member's unique name, so
+        //   we want to compute it on the fly
+        assert !Bug.BugSegregateRolapCubeMemberFixed;
         return (member != null) && isChildOrEqualTo(member.getUniqueName());
     }
 
@@ -210,19 +215,24 @@ public abstract class MemberBase
             return false;
         }
 
-        // The mapping member uniqueName --> parent uniqueName is more
-        // efficient than using getAdoMember().
-        String thisUniqueName = getUniqueName();
-        if (thisUniqueName.equals(uniqueName)) {
-            //found a match
-            return true;
-        }
-        String parentUniqueName = getParentUniqueName();
-        return (parentUniqueName == null)
-            // have reached root
-            ? false
+        return isChildOrEqualTo(this, uniqueName);
+    }
+
+    private static boolean isChildOrEqualTo(Member member, String uniqueName) {
+        while (true) {
+            String thisUniqueName = member.getUniqueName();
+            if (thisUniqueName.equals(uniqueName)) {
+                // found a match
+                return true;
+            }
+            String parentUniqueName = member.getParentUniqueName();
+            if (parentUniqueName == null) {
+                // have reached root
+                return false;
+            }
             // try candidate's parentMember
-            : ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
+            member = member.getParentMember();
+        }
     }
 
     /**
@@ -255,13 +265,11 @@ public abstract class MemberBase
 
     // implement Member
     public List<Member> getAncestorMembers() {
-        List<Member> list = new ArrayList<Member>();
-        Member parentMember = getParentMember();
-        while (parentMember != null) {
-            list.add(parentMember);
-            parentMember = parentMember.getParentMember();
-        }
-        return list;
+        final SchemaReader schemaReader =
+            getDimension().getSchema().getSchemaReader();
+        final ArrayList<Member> ancestorList = new ArrayList<Member>();
+        schemaReader.getMemberAncestors(this, ancestorList);
+        return ancestorList;
     }
 
     /**

@@ -11,11 +11,7 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.FunInfo;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.RolapAggregator;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 
 import static mondrian.xmla.XmlaConstants.*;
 
@@ -4728,7 +4724,8 @@ TODO: see above
             // cardinality. Consumers should not assume that this
             // value is accurate.
             int cardinality =
-                RolapMember.getHierarchyCardinality(schemaReader, hierarchy);
+                RolapMemberBase.getHierarchyCardinality(
+                    schemaReader, hierarchy);
             row.set(HierarchyCardinality.name, cardinality);
 
             row.set(DefaultMember.name, hierarchy.getDefaultMember());
@@ -5905,7 +5902,7 @@ TODO: see above
                 // The value returned is not used at this point but they are
                 // now cached in the SchemaReader.
                 List<List<Member>> membersArray =
-                    RolapMember.getAllMembers(schemaReader, hierarchy);
+                    RolapMemberBase.getAllMembers(schemaReader, hierarchy);
                 for (List<Member> members : membersArray) {
                     outputMembers(
                         schemaReader, members,
@@ -6085,7 +6082,7 @@ TODO: see above
             }
 
             if (member.getOrdinal() == -1) {
-                RolapMember.setOrdinals(schemaReader, member);
+                RolapMemberBase.setOrdinals(schemaReader, member);
             }
 
             // Check whether the member is visible, otherwise do not dump.

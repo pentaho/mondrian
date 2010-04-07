@@ -1720,8 +1720,9 @@ public class FunUtil extends Util {
             return member.getHierarchy().getNullMember();
         }
 
-        List<Member> ancestors = member.getAncestorMembers();
+        final List<Member> ancestors = new ArrayList<Member>();
         final SchemaReader schemaReader = evaluator.getSchemaReader();
+        schemaReader.getMemberAncestors(member, ancestors);
 
         Member result = member.getHierarchy().getNullMember();
 

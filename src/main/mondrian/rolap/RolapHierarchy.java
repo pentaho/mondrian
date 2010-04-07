@@ -68,11 +68,6 @@ public class RolapHierarchy extends HierarchyBase {
     private Exp aggregateChildrenExpression;
 
     /**
-     * Type for members of this hierarchy. Set once to avoid excessive newing.
-     */
-    final Type memberType = MemberType.forHierarchy(this);
-
-    /**
      * The level that the null member belongs too.
      */
     protected final RolapLevel nullLevel;
@@ -81,7 +76,7 @@ public class RolapHierarchy extends HierarchyBase {
      * The 'all' member of this hierarchy. This exists even if the hierarchy
      * does not officially have an 'all' member.
      */
-    private RolapMember allMember;
+    private RolapMemberBase allMember;
     private static final String ALL_LEVEL_CARDINALITY = "1";
     private final Map<String, Annotation> annotationMap;
     final RolapHierarchy closureFor;
@@ -230,7 +225,7 @@ public class RolapHierarchy extends HierarchyBase {
                 LevelType.Regular, ALL_LEVEL_CARDINALITY,
                 Collections.<String, Annotation>emptyMap());
         allLevel.init(xmlCubeDimension);
-        this.allMember = new RolapMember(
+        this.allMember = new RolapMemberBase(
             null, allLevel, null, allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
         if (xmlHierarchy.allMemberCaption != null
@@ -535,7 +530,7 @@ public class RolapHierarchy extends HierarchyBase {
         Formula formula)
     {
         if (formula == null) {
-            return new RolapMember(
+            return new RolapMemberBase(
                 (RolapMember) parent, (RolapLevel) level, name);
         } else if (level.getDimension().isMeasures()) {
             return new RolapCalculatedMeasure(
@@ -1014,7 +1009,7 @@ public class RolapHierarchy extends HierarchyBase {
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(null, true, this);
         peerHier.allMemberName = getAllMemberName();
-        peerHier.allMember = getAllMember();
+        peerHier.allMember = (RolapMemberBase) getAllMember();
         peerHier.allLevelName = getAllLevelName();
         peerHier.sharedHierarchyName = getSharedHierarchyName();
         MondrianDef.Join join = new MondrianDef.Join();
@@ -1039,7 +1034,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null, null,  // no longer a parent-child hierarchy
                 null,
                 RolapProperty.emptyArray,
-                flags,
+                flags | RolapLevel.FLAG_UNIQUE,
                 src.getDatatype(),
                 src.getHideMemberCondition(),
                 src.getLevelType(),
@@ -1119,6 +1114,10 @@ public class RolapHierarchy extends HierarchyBase {
         // This is temporary to verify that all calls to this method are for
         // the measures hierarchy. For all other hierarchies, the context will
         // be a RolapCubeHierarchy.
+        //
+        // In particular, if this method is called from
+        // RolapEvaluator.setContext, the caller of that method should have
+        // passed in a RolapCubeMember, not a RolapMember.
         assert dimension.isMeasures();
         return 0;
     }
@@ -1131,7 +1130,7 @@ public class RolapHierarchy extends HierarchyBase {
      * omitted from sets (in particular, in the set constructor operator "{ ...
      * }".
      */
-    static class RolapNullMember extends RolapMember {
+    static class RolapNullMember extends RolapMemberBase {
         RolapNullMember(final RolapLevel level) {
             super(
                 null,
@@ -1186,6 +1185,8 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * <p>Note that this class extends RolapCubeMember only because other code
      * expects that all members in a RolapCubeHierarchy are RolapCubeMembers.
+     * As part of {@link mondrian.util.Bug#BugSegregateRolapCubeMemberFixed},
+     * maybe make {@link mondrian.rolap.RolapCubeMember} an interface.
      *
      * @see mondrian.olap.Role.RollupPolicy
      */
@@ -1200,8 +1201,7 @@ public class RolapHierarchy extends HierarchyBase {
             super(
                 member.getParentMember(),
                 member.getRolapMember(),
-                member.getLevel(),
-                member.getCube());
+                member.getLevel());
             assert !(member instanceof LimitedRollupMember);
             this.member = member;
             this.exp = exp;
@@ -1210,10 +1210,6 @@ public class RolapHierarchy extends HierarchyBase {
         public boolean equals(Object o) {
             return o instanceof LimitedRollupMember
                 && ((LimitedRollupMember) o).member.equals(member);
-        }
-
-        public int hashCode() {
-            return member.hashCode();
         }
 
         public Exp getExpression() {

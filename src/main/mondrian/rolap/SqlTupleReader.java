@@ -141,6 +141,13 @@ public class SqlTupleReader implements TupleReader {
                     RolapLevel childLevel = levels[i];
                     if (childLevel.isAll()) {
                         member = level.getHierarchy().getAllMember();
+                        if (memberBuilder instanceof SqlMemberSource
+                            && !(memberBuilder
+                            instanceof
+                            RolapCubeHierarchy.RolapCubeSqlMemberSource))
+                        {
+                            member = strip(member);
+                        }
                         continue;
                     }
                     RolapMember parentMember = member;
@@ -912,7 +919,7 @@ public class SqlTupleReader implements TupleReader {
         if (hierarchy instanceof RolapCubeHierarchy) {
             RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy)hierarchy;
             if (baseCube != null
-                && !cubeHierarchy.getDimension().getCube().equals(baseCube))
+                && !cubeHierarchy.getCube().equals(baseCube))
             {
                 // replace the hierarchy with the underlying base cube hierarchy
                 // in the case of virtual cubes
@@ -1194,6 +1201,18 @@ public class SqlTupleReader implements TupleReader {
 
     void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
+    }
+
+    private static RolapLevel strip(RolapLevel level) {
+        return level instanceof RolapCubeLevel
+            ? ((RolapCubeLevel) level).getRolapLevel()
+            : level;
+    }
+
+    private static RolapMember strip(RolapMember member) {
+        return member instanceof RolapCubeMember
+            ? ((RolapCubeMember) member).getRolapMember()
+            : member;
     }
 
     /**
