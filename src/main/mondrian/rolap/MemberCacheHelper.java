@@ -4,12 +4,10 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 21 December, 2001
 */
 package mondrian.rolap;
 
@@ -214,7 +212,7 @@ public class MemberCacheHelper implements MemberCache {
             // cache value is a list of member's siblings;
             // If constraint is trivial remove member from list of siblings;
             // otherwise it's safer to nuke the cache entry
-            if (member1.equals(parent)) {
+            if (Util.equals(member1, parent)) {
                 if (constraint == DefaultMemberChildrenConstraint.instance()) {
                     List<RolapMember> siblings = entry.getValue();
                     boolean removedIt = siblings.remove(member);
@@ -227,7 +225,7 @@ public class MemberCacheHelper implements MemberCache {
             // cache is (member, some constraint);
             // cache value is list of member's children;
             // remove cache entry
-            if (member1.equals(member)) {
+            if (Util.equals(member1, member)) {
                 iter.remove();
             }
         }
@@ -245,3 +243,4 @@ public class MemberCacheHelper implements MemberCache {
 }
 
 // End MemberCacheHelper.java
+

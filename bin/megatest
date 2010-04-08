@@ -729,6 +729,7 @@ doWorking() {
     mondrian.rolap.aggregates.Read=false"
   doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS} mondrian.rolap.EnableRolapCubeMemberCache=true
   doTest jdk1.6 derby ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
