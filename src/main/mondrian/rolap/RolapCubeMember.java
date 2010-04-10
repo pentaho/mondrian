@@ -70,7 +70,7 @@ public class RolapCubeMember
      *
      * @return Underlying member
      */
-    public RolapMember getRolapMember() {
+    public final RolapMember getRolapMember() {
         return member;
     }
 

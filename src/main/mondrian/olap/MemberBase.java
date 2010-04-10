@@ -66,8 +66,6 @@ public abstract class MemberBase
     private static final int FLAG_CALCULATED = 0x40;
     private static final int FLAG_MEASURE = 0x80;
 
-    protected String parentUniqueName;
-
     /**
      * Cached values of {@link mondrian.olap.Member.MemberType} enumeration.
      * Without caching, get excessive calls to {@link Object#clone}.
@@ -81,9 +79,6 @@ public abstract class MemberBase
     {
         this.parentMember = parentMember;
         this.level = level;
-        this.parentUniqueName = (parentMember == null)
-            ? null
-            : parentMember.getUniqueName();
         this.flags = memberType.ordinal()
             | (memberType == MemberType.ALL ? FLAG_ALL : 0)
             | (memberType == MemberType.NULL ? FLAG_NULL : 0)
@@ -91,12 +86,6 @@ public abstract class MemberBase
             | (level.getHierarchy().getDimension().isMeasures()
                ? FLAG_MEASURE
                : 0);
-    }
-
-    protected MemberBase() {
-        this.level = null;
-        this.flags = 0;
-        this.parentUniqueName = null;
     }
 
     public String getQualifiedName() {
@@ -122,16 +111,18 @@ public abstract class MemberBase
             : getName();
     }
 
-    public String getParentUniqueName() {
-        return parentUniqueName;
+    public final String getParentUniqueName() {
+        return parentMember == null
+            ? null
+            : parentMember.getUniqueName();
     }
 
     public Dimension getDimension() {
-        return getLevel().getDimension();
+        return level.getDimension();
     }
 
     public Hierarchy getHierarchy() {
-        return getLevel().getHierarchy();
+        return level.getHierarchy();
     }
 
     public Level getLevel() {
@@ -177,23 +168,7 @@ public abstract class MemberBase
 
     // implement Member
     public Member getParentMember() {
-        // use the cache if possible (getAdoMember can be very expensive)
-        if (parentUniqueName == null) {
-            return null; // we are root member, which has no parent
-        } else if (parentMember != null) {
-            return parentMember;
-        } else {
-            boolean failIfNotFound = true;
-            final Hierarchy hierarchy = getHierarchy();
-            final SchemaReader schemaReader =
-                hierarchy.getDimension().getSchema().getSchemaReader();
-            List<Id.Segment> parentUniqueNameParts =
-                Util.parseIdentifier(parentUniqueName);
-            parentMember =
-                schemaReader.getMemberByUniqueName(
-                    parentUniqueNameParts, failIfNotFound);
-            return parentMember;
-        }
+        return parentMember;
     }
 
     // implement Member
@@ -225,13 +200,12 @@ public abstract class MemberBase
                 // found a match
                 return true;
             }
-            String parentUniqueName = member.getParentUniqueName();
-            if (parentUniqueName == null) {
+            // try candidate's parentMember
+            member = member.getParentMember();
+            if (member == null) {
                 // have reached root
                 return false;
             }
-            // try candidate's parentMember
-            member = member.getParentMember();
         }
     }
 

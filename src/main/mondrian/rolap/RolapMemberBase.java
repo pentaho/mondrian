@@ -61,7 +61,6 @@ public class RolapMemberBase
                 "new parent belongs to different level than old");
         }
         this.parentMember = parentMember;
-        this.parentUniqueName = parentMember.getUniqueName();
     }
 
     /** Ordinal of the member within the hierarchy. Some member readers do not
@@ -124,15 +123,6 @@ public class RolapMemberBase
         this(parentMember, level, value, null, MemberType.REGULAR);
     }
 
-    /**
-     * Used by RolapCubeMember. Can obsolete when RolapMember becomes a
-     * hierarchy.
-     */
-    protected RolapMemberBase() {
-        super();
-        this.key = null;
-    }
-
     protected Logger getLogger() {
         return LOGGER;
     }
@@ -142,7 +132,7 @@ public class RolapMemberBase
     }
 
     public RolapHierarchy getHierarchy() {
-        return getLevel().getHierarchy();
+        return (RolapHierarchy) level.getHierarchy();
     }
 
     public RolapMember getParentMember() {

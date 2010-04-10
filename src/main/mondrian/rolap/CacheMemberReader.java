@@ -152,7 +152,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     public List<RolapMember> getRootMembers() {
         List<RolapMember> list = new ArrayList<RolapMember>();
         for (RolapMember member : members) {
-            if (member.getParentUniqueName() == null) {
+            if (member.getParentMember() == null) {
                 list.add(member);
             }
         }

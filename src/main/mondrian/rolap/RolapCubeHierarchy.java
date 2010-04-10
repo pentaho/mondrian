@@ -550,32 +550,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return rootMembers;
         }
 
-        private String getUniqueNameForMemberWithoutHierarchy(
-            RolapMember member)
-        {
-            assert member instanceof RolapMemberBase;
-            assert !(member instanceof RolapCubeMember);
-            if (false) {
-                return member.getUniqueName();
-            }
-            String name =
-                (String) member.getPropertyValue(
-                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName());
-            RolapMember parent = member;
-            if (name == null) {
-                StringBuilder fullName = new StringBuilder();
-                while (parent != null) {
-                    fullName.append("[").append(parent.getName()).append("]");
-                    parent = parent.getParentMember();
-                }
-                name = fullName.toString();
-                member.setProperty(
-                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName(),
-                        name);
-            }
-            return name;
-        }
-
         protected void readMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,
@@ -593,11 +567,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     continue;
                 }
                 final RolapCubeMember cubeMember = (RolapCubeMember) member;
-                lookup.put(
-                    getUniqueNameForMemberWithoutHierarchy(
-                        cubeMember.getRolapMember()),
-                    cubeMember);
-                rolapParents.add(cubeMember.getRolapMember());
+                final RolapMember rolapMember = cubeMember.getRolapMember();
+                lookup.put(rolapMember.getUniqueName(), cubeMember);
+                rolapParents.add(rolapMember);
             }
 
             // get member children from shared member reader if possible,
@@ -616,8 +588,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             for (RolapMember currMember : rolapChildren) {
                 RolapCubeMember parent =
                     lookup.get(
-                        getUniqueNameForMemberWithoutHierarchy(
-                            currMember.getParentMember()));
+                        currMember.getParentMember().getUniqueName());
                 RolapCubeLevel level =
                     parent.getLevel().getChildLevel();
                 if (level == null) {
@@ -912,32 +883,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return getMembersInLevel(cubeLevels[0], 0, Integer.MAX_VALUE);
         }
 
-        private String getUniqueNameForMemberWithoutHierarchy(
-            RolapMember member)
-        {
-            assert member instanceof RolapMemberBase;
-            assert !(member instanceof RolapCubeMember);
-            if (false) {
-                return member.getUniqueName();
-            }
-            String name =
-                (String) member.getPropertyValue(
-                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName());
-            RolapMember parent = member;
-            if (name == null) {
-                StringBuilder fullName = new StringBuilder();
-                while (parent != null) {
-                    fullName.append("[").append(parent.getName()).append("]");
-                    parent = parent.getParentMember();
-                }
-                name = fullName.toString();
-                member.setProperty(
-                        Property.UNIQUE_NAME_WITHOUT_HIERARCHY.getName(),
-                        name);
-            }
-            return name;
-        }
-
         protected void readMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,
@@ -953,10 +898,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             final List<RolapCubeMember> parentRolapCubeMemberList =
                 Util.cast(parentMembers);
             for (RolapCubeMember member : parentRolapCubeMemberList) {
-                lookup.put(
-                    getUniqueNameForMemberWithoutHierarchy(
-                        member.getRolapMember()), member);
-                rolapParents.add(member.getRolapMember());
+                final RolapMember rolapMember = member.getRolapMember();
+                lookup.put(rolapMember.getUniqueName(), member);
+                rolapParents.add(rolapMember);
             }
 
             // get member children from shared member reader if possible,
@@ -975,8 +919,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             for (RolapMember currMember : rolapChildren) {
                 RolapCubeMember parent =
                     lookup.get(
-                        getUniqueNameForMemberWithoutHierarchy(
-                            currMember.getParentMember()));
+                        currMember.getParentMember().getUniqueName());
                 RolapCubeLevel level =
                     parent.getLevel().getChildLevel();
                 if (level == null) {

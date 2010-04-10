@@ -6129,9 +6129,10 @@ TODO: see above
                 row.set(ParentLevel.name, 0);
             } else {
                 row.set(ParentLevel.name, adjustedLevelDepth - 1);
-                String parentUniqueName = member.getParentUniqueName();
-                if (parentUniqueName != null) {
-                    row.set(ParentUniqueName.name, parentUniqueName);
+                final Member parentMember = member.getParentMember();
+                if (parentMember != null) {
+                    row.set(
+                        ParentUniqueName.name, parentMember.getUniqueName());
                 }
             }
 
