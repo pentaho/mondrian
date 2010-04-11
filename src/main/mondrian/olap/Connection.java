@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -78,6 +78,15 @@ public interface Connection {
      * Parses a query.
      */
     Query parseQuery(String s);
+
+    /**
+     * Parses a statement.
+     *
+     * @param mdx MDX string
+     * @return A {@link Query} if it is a SELECT statement, a
+     *   {@link DrillThrough} if it is a DRILLTHROUGH statement
+     */
+    QueryPart parseStatement(String mdx);
 
     /**
      * Sets the privileges for the this connection.

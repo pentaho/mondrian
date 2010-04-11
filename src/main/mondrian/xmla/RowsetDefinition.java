@@ -6790,14 +6790,6 @@ TODO: see above
         public boolean isDrillThrough() {
             return request.isDrillThrough();
         }
-
-        public int drillThroughMaxRows() {
-            return request.drillThroughMaxRows();
-        }
-
-        public int drillThroughFirstRowset() {
-            return request.drillThroughFirstRowset();
-        }
     }
 }
 

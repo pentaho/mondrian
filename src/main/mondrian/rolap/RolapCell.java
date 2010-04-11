@@ -11,14 +11,17 @@ package mondrian.rolap;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.spi.Dialect;
 
 import java.sql.*;
 import java.util.*;
 
-import org.olap4j.AllocationPolicy;
-import org.olap4j.Scenario;
+import org.apache.log4j.Logger;
+import org.olap4j.*;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
@@ -26,7 +29,7 @@ import org.olap4j.Scenario;
  *
  * @version $Id$
  */
-class RolapCell implements Cell {
+public class RolapCell implements Cell {
     private final RolapResult result;
     protected final int[] pos;
     protected RolapResult.CellInfo ci;
@@ -85,7 +88,7 @@ class RolapCell implements Cell {
      * query will include all the levels (i.e. columns) of non-constraining
      * members (i.e. members which are at the "All" level).
      * If the parameter extendedContext is false, the query will exclude
-     * the levels (coulmns) of non-constraining members.
+     * the levels (columns) of non-constraining members.
      */
     public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggMan = AggregationManager.instance();
@@ -198,6 +201,98 @@ class RolapCell implements Cell {
             }
         }
         return currentMembers;
+    }
+
+    /**
+     * Generates an executes a SQL statement to drill through this cell.
+     *
+     * <p>Throws if this cell is not drillable.
+     *
+     * <p>Enforces limits on the starting and last row.
+     *
+     * <p>If tabFields is not null, returns the specified columns. (This option
+     * is deprecated.)
+     *
+     * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
+     * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
+     *   start from beginning
+     * @param tabFields Comma-separated list of fields to return (deprecated)
+     * @param extendedContext   If true, add non-constraining columns to the
+     *                          query for levels below each current member.
+     *                          This additional context makes the drill-through
+     *                          queries easier for humans to understand.
+     * @param logger Logger. If not null and debug is enabled, log SQL here
+     * @return executed SQL statement
+     */
+    public SqlStatement drillThroughInternal(
+        int maxRowCount,
+        int firstRowOrdinal,
+        String tabFields,
+        boolean extendedContext,
+        Logger logger)
+    {
+        if (!canDrillThrough()) {
+            throw Util.newError("Cannot do DrillThrough operation on the cell");
+        }
+
+        // Generate SQL.
+        String sql = getDrillThroughSQL(extendedContext);
+        if (tabFields != null) {
+            sql = addTabFields(sql, tabFields);
+        }
+        if (logger != null && logger.isDebugEnabled()) {
+            logger.debug("drill through sql: " + sql);
+        }
+
+        // Choose the appropriate scrollability. If we need to start from an
+        // offset row, it is useful that the cursor is scrollable, but not
+        // essential.
+        final Connection connection = result.getQuery().getConnection();
+        int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
+        int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
+        final Schema schema = connection.getSchema();
+        Dialect dialect = ((RolapSchema) schema).getDialect();
+        if (!dialect.supportsResultSetConcurrency(
+            resultSetType, resultSetConcurrency)
+            || firstRowOrdinal <= 1)
+        {
+            // downgrade to non-scroll cursor, since we can
+            // fake absolute() via forward fetch
+            resultSetType = ResultSet.TYPE_FORWARD_ONLY;
+        }
+        return
+            RolapUtil.executeQuery(
+                connection.getDataSource(),
+                sql,
+                maxRowCount,
+                firstRowOrdinal,
+                "RolapCell.drillThrough",
+                "Error in drill through",
+                resultSetType,
+                resultSetConcurrency);
+    }
+
+    private String addTabFields(String dtSql, String tabFields) {
+        int index = dtSql.indexOf("from");
+        String whereClause = " " + dtSql.substring(index);
+        StringTokenizer st = new StringTokenizer(tabFields, ",");
+        final List<String> drillThruColumnNames = new ArrayList<String>();
+        while (st.hasMoreTokens()) {
+            drillThruColumnNames.add(st.nextToken());
+        }
+
+        // Create Select Clause
+        StringBuilder buf = new StringBuilder("select ");
+        int k = -1;
+        for (String drillThruColumnName : drillThruColumnNames) {
+            if (++k > 0) {
+                buf.append(",");
+            }
+            buf.append(drillThruColumnName);
+        }
+        buf.append(' ');
+        buf.append(whereClause);
+        return buf.toString();
     }
 
     public Object getPropertyValue(String propertyName) {

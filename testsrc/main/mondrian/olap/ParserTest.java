@@ -18,6 +18,7 @@ import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * Tests the MDX parser.
@@ -52,7 +53,8 @@ public class ParserTest extends FoodMartTestCase {
     {
         Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
-        Query query = p.parseInternal(null, q, false, funTable, false, false);
+        QueryPart query =
+            p.parseInternal(null, q, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
@@ -351,10 +353,11 @@ public class ParserTest extends FoodMartTestCase {
                 + " * [Measures].[Store Sales])");
 
         try {
-            final Query query =
+            final QueryPart query =
                 p.parseInternal(
                     getConnection(), mdx, false, funTable, false, false);
-            query.resolve();
+            assertTrue(query instanceof Query);
+            ((Query) query).resolve();
         } catch (Throwable e) {
             fail(e.getMessage());
         }
@@ -540,6 +543,27 @@ public class ParserTest extends FoodMartTestCase {
         }
     }
 
+    public void testDrillThrough() {
+        assertParseQuery(
+            "DRILLTHROUGH SELECT [Foo] on 0, [Bar] on 1 FROM [Cube]",
+            "drillthrough\n"
+            + "select [Foo] ON COLUMNS,\n"
+            + "  [Bar] ON ROWS\n"
+            + "from [Cube]\n");
+    }
+
+    public void testDrillThroughExtended() {
+        assertParseQuery(
+            "DRILLTHROUGH MAXROWS 5 FIRSTROWSET 7\n"
+            + "SELECT [Foo] on 0, [Bar] on 1 FROM [Cube]\n"
+            + "RETURN [Xxx].[AAa], [YYY]",
+            "drillthrough maxrows 5 firstrowset 7\n"
+            + "select [Foo] ON COLUMNS,\n"
+            + "  [Bar] ON ROWS\n"
+            + "from [Cube]\n"
+            + " return  return [Xxx].[AAa], [YYY]");
+    }
+
     /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.
@@ -549,9 +573,11 @@ public class ParserTest extends FoodMartTestCase {
      */
     private void assertParseQuery(String mdx, final String expected) {
         Parser p = new TestParser();
-        final Query query =
+        final QueryPart query =
             p.parseInternal(null, mdx, false, funTable, false, false);
-        assertNull("Test parser should return null query", query);
+        if (!(query instanceof DrillThrough)) {
+            assertNull("Test parser should return null query", query);
+        }
         final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
     }
@@ -566,7 +592,7 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(String expr, final String expected) {
         TestParser p = new TestParser();
         final String mdx = wrapExpr(expr);
-        final Query query =
+        final QueryPart query =
             p.parseInternal(null, mdx, false, funTable, false, false);
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
@@ -586,11 +612,16 @@ public class ParserTest extends FoodMartTestCase {
         private String cube;
         private Exp slicer;
         private QueryPart[] cellProps;
+        private boolean drillThrough;
+        private int maxRowCount;
+        private int firstRowOrdinal;
+        private List<Exp> returnList;
 
         public TestParser() {
             super();
         }
 
+        @Override
         protected Query makeQuery(
             Formula[] formulae,
             QueryAxis[] axes,
@@ -603,6 +634,20 @@ public class ParserTest extends FoodMartTestCase {
             setCube(cube);
             setSlicer(slicer);
             setCellProps(cellProps);
+            return null;
+        }
+
+        @Override
+        protected DrillThrough makeDrillThrough(
+            Query query,
+            int maxRowCount,
+            int firstRowOrdinal,
+            List<Exp> returnList)
+        {
+            this.drillThrough = true;
+            this.maxRowCount = maxRowCount;
+            this.firstRowOrdinal = firstRowOrdinal;
+            this.returnList = returnList;
             return null;
         }
 
@@ -659,6 +704,16 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         private void unparse(PrintWriter pw) {
+            if (drillThrough) {
+                pw.print("drillthrough");
+                if (maxRowCount > 0) {
+                    pw.print(" maxrows " + maxRowCount);
+                }
+                if (firstRowOrdinal > 0) {
+                    pw.print(" firstrowset " + firstRowOrdinal);
+                }
+                pw.println();
+            }
             if (formulas != null) {
                 for (int i = 0; i < formulas.length; i++) {
                     if (i == 0) {
@@ -694,6 +749,12 @@ public class ParserTest extends FoodMartTestCase {
                 for (QueryPart cellProp : cellProps) {
                     cellProp.unparse(pw);
                 }
+            }
+            if (drillThrough && returnList != null) {
+                pw.print(" return ");
+                ExpBase.unparseList(
+                    pw, returnList.toArray(new Exp[returnList.size()]),
+                    " return ", ", ", "");
             }
         }
     }

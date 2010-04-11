@@ -69,7 +69,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 }
                 String sql = makeLevelMembersSql(dataSource);
                 stmt = RolapUtil.executeQuery(
-                    dataSource, sql, maxRows,
+                    dataSource, sql, maxRows, 0,
                     "HighCardSqlTupleReader.readTuples " + partialTargets,
                     message, -1, -1);
             }

@@ -378,7 +378,7 @@ public class SqlTupleReader implements TupleReader {
                 String sql = makeLevelMembersSql(dataSource);
                 assert sql != null && !sql.equals("");
                 stmt = RolapUtil.executeQuery(
-                    dataSource, sql, maxRows,
+                    dataSource, sql, maxRows, 0,
                     "SqlTupleReader.readTuples " + partialTargets,
                     message,
                     -1, -1);

@@ -19,12 +19,16 @@ package mondrian.xmla;
 public interface XmlaConstants {
 
     /* SOAP 1.1 */
-    public static final String NS_SOAP_ENV_1_1 = "http://schemas.xmlsoap.org/soap/envelope/";
-    public static final String NS_SOAP_ENC_1_1 = "http://schemas.xmlsoap.org/soap/encoding/";
+    public static final String NS_SOAP_ENV_1_1 =
+        "http://schemas.xmlsoap.org/soap/envelope/";
+    public static final String NS_SOAP_ENC_1_1 =
+        "http://schemas.xmlsoap.org/soap/encoding/";
 
     /* SOAP 1.2 - currently not supported */
-    public static final String NS_SOAP_ENV_1_2 = "http://www.w3.org/2003/05/soap-envelope";
-    public static final String NS_SOAP_ENC_1_2 = "http://www.w3.org/2003/05/soap-encoding";
+    public static final String NS_SOAP_ENV_1_2 =
+        "http://www.w3.org/2003/05/soap-envelope";
+    public static final String NS_SOAP_ENC_1_2 =
+        "http://www.w3.org/2003/05/soap-encoding";
 
     /* Namespaces for XML */
     public static final String NS_XSD = "http://www.w3.org/2001/XMLSchema";
@@ -232,26 +236,6 @@ public interface XmlaConstants {
     public static final String HSB_BAD_STATEMENT_FAULT_FS =
             "XMLA SOAP bad Execute Statement element";
 
-    public static final String HSB_DRILLDOWN_BAD_MAXROWS_CODE = "00HSBB11";
-    public static final String HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS =
-            "XMLA SOAP Drilldown Execute Statement non-positive maxrows";
-
-    public static final String HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE = "00HSBB12";
-    public static final String HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS =
-            "XMLA SOAP Drilldown Execute Statement non-positive first rowset";
-
-    public static final String HSB_DRILLDOWN_ERROR_CODE = "00HSBB13";
-    public static final String HSB_DRILLDOWN_ERROR_FAULT_FS =
-            "XMLA SOAP Drilldown Execute Statement error";
-
-    public static final String HSB_BAD_RESTRICTION_TYPE_CODE = "00HSBB14";
-    public static final String HSB_BAD_RESTRICTION_TYPE_FAULT_FS =
-            "XMLA SOAP bad Restriction type";
-
-    public static final String HSB_BAD_RESTRICTION_VALUE_CODE = "00HSBB15";
-    public static final String HSB_BAD_RESTRICTION_VALUE_FAULT_FS =
-            "XMLA SOAP bad Restriction value type";
-
     public static final String HSB_BAD_NON_NULLABLE_COLUMN_CODE = "00HSBB16";
     public static final String HSB_BAD_NON_NULLABLE_COLUMN_FAULT_FS =
             "XMLA SOAP non-nullable column";
@@ -296,10 +280,6 @@ public interface XmlaConstants {
     public static final String HSB_DRILL_THROUGH_SQL_CODE = "00HSBF02";
     public static final String HSB_DRILL_THROUGH_SQL_FAULT_FS =
             "XMLA Drill Through SQL error";
-
-    public static final String HSB_UNSUPPORTED_OPERATION_CODE = "00HSBG01";
-    public static final String HSB_UNSUPPORTED_OPERATION_FAULT_FS =
-            "XMLA unsupported operation";
 
     // unknown error while handle soap body
     public static final String HSB_UNKNOWN_CODE = "00HSBU01";

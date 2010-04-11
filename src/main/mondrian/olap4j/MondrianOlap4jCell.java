@@ -3,21 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.rolap.RolapCell;
+
+import mondrian.rolap.SqlStatement;
 import org.olap4j.*;
 import org.olap4j.metadata.Property;
 
-import javax.sql.DataSource;
+import java.sql.ResultSet;
 import java.util.*;
-import java.sql.*;
-import java.lang.reflect.Proxy;
-
-import mondrian.util.DelegatingInvocationHandler;
 
 /**
  * Implementation of {@link Cell}
@@ -116,31 +115,29 @@ class MondrianOlap4jCell implements Cell {
     }
 
     public ResultSet drillThrough() throws OlapException {
-        if (!cell.canDrillThrough()) {
-            return null;
-        }
-        final String sql = cell.getDrillThroughSQL(false);
-        final MondrianOlap4jConnection olap4jConnection =
-            this.olap4jCellSet.olap4jStatement.olap4jConnection;
-        final DataSource dataSource =
-            olap4jConnection.connection.getDataSource();
-        try {
-            final Connection connection = dataSource.getConnection();
-            final Statement statement = connection.createStatement();
-            final ResultSet resultSet = statement.executeQuery(sql);
+        return drillThroughInternal(-1, -1);
+    }
 
-            // To prevent a connection leak, wrap the result set in a proxy
-            // which automatically closes the connection (and hence also the
-            // statement and result set) when the result set is closed.
-            // The caller still has to remember to call ResultSet.close(), of
-            // course.
-            return (ResultSet) Proxy.newProxyInstance(
-                null,
-                new Class<?>[] {ResultSet.class},
-                new MyDelegatingInvocationHandler(resultSet));
-        } catch (SQLException e) {
-            throw olap4jConnection.helper.toOlapException(e);
-        }
+    /**
+     * Executes drill-through on this cell.
+     *
+     * <p>Not a part of the public API. Package-protected because this method
+     * also implements the DRILLTHROUGH statement.
+     *
+     * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
+     * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
+     *   start from beginning
+     * @return Result set
+     * @throws OlapException on error
+     */
+    ResultSet drillThroughInternal(
+        int maxRowCount,
+        int firstRowOrdinal) throws OlapException
+    {
+        final SqlStatement sqlStmt =
+            ((RolapCell) cell).drillThroughInternal(
+                maxRowCount, firstRowOrdinal, null, false, null);
+        return sqlStmt.getWrappedResultSet();
     }
 
     public void setValue(
@@ -151,35 +148,6 @@ class MondrianOlap4jCell implements Cell {
         Scenario scenario =
             olap4jCellSet.olap4jStatement.olap4jConnection.getScenario();
         cell.setValue(scenario, newValue, allocationPolicy, allocationArgs);
-    }
-
-    // must be public for reflection to work
-    public static class MyDelegatingInvocationHandler
-        extends DelegatingInvocationHandler
-    {
-        private final ResultSet resultSet;
-
-        /**
-         * Creates a MyDelegatingInvocationHandler.
-         *
-         * @param resultSet Result set
-         */
-        MyDelegatingInvocationHandler(ResultSet resultSet) {
-            this.resultSet = resultSet;
-        }
-
-        protected Object getTarget() {
-            return resultSet;
-        }
-
-        /**
-         * Helper method to implement {@link java.sql.ResultSet#close()}.
-         *
-         * @throws SQLException on error
-         */
-        public void close() throws SQLException {
-            resultSet.getStatement().getConnection().close();
-        }
     }
 }
 

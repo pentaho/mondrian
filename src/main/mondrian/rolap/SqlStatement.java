@@ -10,9 +10,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
+import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
 
+import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +56,7 @@ public class SqlStatement {
     private ResultSet resultSet;
     private final String sql;
     private final int maxRows;
+    private final int firstRowOrdinal;
     private final String component;
     private final int resultSetType;
     private final int resultSetConcurrency;
@@ -67,13 +70,15 @@ public class SqlStatement {
 
     // used for SQL logging, allows for a SQL Statement UID
     private static long executeCount = -1;
+    private boolean done;
 
     /**
      * Creates a SqlStatement.
      *
      * @param dataSource Data source
      * @param sql SQL
-     * @param maxRows Maximum rows
+     * @param maxRows Maximum rows; <= 0 means no maximum
+     * @param firstRowOrdinal Ordinal of first row to skip to; <= 0 do not skip
      * @param component Description of component/purpose of this statement
      * @param message Error message
      * @param resultSetType Result set type
@@ -83,6 +88,7 @@ public class SqlStatement {
         DataSource dataSource,
         String sql,
         int maxRows,
+        int firstRowOrdinal,
         String component,
         String message,
         int resultSetType,
@@ -91,6 +97,7 @@ public class SqlStatement {
         this.dataSource = dataSource;
         this.sql = sql;
         this.maxRows = maxRows;
+        this.firstRowOrdinal = firstRowOrdinal;
         this.component = component;
         this.message = message;
         this.resultSetType = resultSetType;
@@ -143,6 +150,22 @@ public class SqlStatement {
                 statement.setMaxRows(maxRows);
             }
             this.resultSet = statement.executeQuery(sql);
+
+            // skip to first row specified in request
+            this.done = false;
+            if (firstRowOrdinal > 0) {
+                if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
+                    for (int i = 0; i < firstRowOrdinal; ++i) {
+                        if (!this.resultSet.next()) {
+                            this.done = true;
+                            break;
+                        }
+                    }
+                } else {
+                    this.done = !this.resultSet.absolute(firstRowOrdinal);
+                }
+            }
+
             long time = System.currentTimeMillis();
             final long execMs = time - startTime;
             Util.addDatabaseTime(execMs);
@@ -349,6 +372,27 @@ public class SqlStatement {
         return accessors;
     }
 
+    public boolean isDone() {
+        return done;
+    }
+
+    /**
+     * Returns the result set in a proxy which automatically closes this
+     * SqlStatement (and hence also the statement and result set) when the result
+     * set is closed.
+     *
+     * <p>This helps to prevent connection leaks. The caller still has to
+     * remember to call ResultSet.close(), of course.
+     *
+     * @return Wrapped result set
+     */
+    public ResultSet getWrappedResultSet() {
+        return (ResultSet) Proxy.newProxyInstance(
+            null,
+            new Class<?>[] {ResultSet.class},
+            new MyDelegatingInvocationHandler(this));
+    }
+
     /**
      * The approximate JDBC type of a column.
      *
@@ -378,6 +422,41 @@ public class SqlStatement {
 
     public interface Accessor {
         Object get() throws SQLException;
+    }
+
+    /**
+     * Reflectively implements the {@link ResultSet} interface by routing method
+     * calls to the result set inside a {@link mondrian.rolap.SqlStatement}.
+     * When the result set is closed, so is the SqlStatement, and hence the
+     * JDBC connection and statement also.
+     */
+    // must be public for reflection to work
+    public static class MyDelegatingInvocationHandler
+        extends DelegatingInvocationHandler
+    {
+        private final SqlStatement sqlStatement;
+
+        /**
+         * Creates a MyDelegatingInvocationHandler.
+         *
+         * @param sqlStatement SQL statement
+         */
+        MyDelegatingInvocationHandler(SqlStatement sqlStatement) {
+            this.sqlStatement = sqlStatement;
+        }
+
+        protected Object getTarget() {
+            return sqlStatement.getResultSet();
+        }
+
+        /**
+         * Helper method to implement {@link java.sql.ResultSet#close()}.
+         *
+         * @throws SQLException on error
+         */
+        public void close() throws SQLException {
+            sqlStatement.close();
+        }
     }
 }
 

@@ -406,14 +406,6 @@ way too noisy
                         throw new UnsupportedOperationException();
                     }
 
-                    public int drillThroughMaxRows() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                    public int drillThroughFirstRowset() {
-                        throw new UnsupportedOperationException();
-                    }
-
                     public Format getFormat() {
                         throw new UnsupportedOperationException();
                     }

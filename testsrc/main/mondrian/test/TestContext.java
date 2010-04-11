@@ -524,6 +524,13 @@ public class TestContext {
         return result;
     }
 
+    public ResultSet executeStatement(String queryString) throws SQLException {
+        OlapConnection connection = getOlap4jConnection();
+        queryString = upgradeQuery(queryString);
+        OlapStatement stmt = connection.createStatement();
+        return stmt.executeQuery(queryString);
+    }
+
     /**
      * Executes a query using olap4j.
      */

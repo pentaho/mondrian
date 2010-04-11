@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -43,7 +43,7 @@ parser code {:
       * Parses a string to create a {@link Query}.
       * Called only by {@link ConnectionBase#parseQuery}.
       */
-    Query parseInternal(
+    QueryPart parseInternal(
         Connection mdxConnection,
         String queryString,
         boolean debug,
@@ -51,7 +51,7 @@ parser code {:
         boolean load,
         boolean strictValidation)
     {
-        Symbol parse_tree = null;
+        Symbol parse_tree;
         this.scanner = new StringScanner(queryString, debug);
         this.mdxConnection = mdxConnection;
         this.queryString = queryString;
@@ -64,7 +64,7 @@ parser code {:
             } else {
                 parse_tree = parse();
             }
-            return (Query) parse_tree.value;
+            return (QueryPart) parse_tree.value;
         } catch (Exception e) {
             // "Error while parsing MDX statement '%1'"
             throw MondrianResource.instance().WhileParsingMdx.ex(
@@ -163,6 +163,19 @@ parser code {:
         return new Query(
             mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load,
             strictValidation);
+    }
+
+    /**
+     * Creates a {@link DrillThrough} object.
+     */
+    protected DrillThrough makeDrillThrough(
+        Query query,
+        int maxRowCount,
+        int firstRowOrdinal,
+        List<Exp> returnList)
+    {
+        return new DrillThrough(
+            query, maxRowCount, firstRowOrdinal, returnList);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,
@@ -299,13 +312,16 @@ terminal
     CHAPTERS,
     COLUMNS,
     DIMENSION,
+    DRILLTHROUGH,
     ELSE,
     EMPTY,
     END,
+    FIRSTROWSET,
     FROM,
     IN,
     IS,
     MATCHES,
+    MAXROWS,
     MEMBER,
     NON,
     NOT,
@@ -314,6 +330,7 @@ terminal
     OR,
     PAGES,
     PROPERTIES,
+    RETURN,
     ROWS,
     SECTIONS,
     SELECT,
@@ -373,13 +390,16 @@ non terminal Exp
     term3,
     term4,
     term5,
+    return_item,
     value_expression,
     value_expression_opt,
     value_expression_primary,
     where_clause_opt;
+non terminal Query
+    select_statement;
 non terminal QueryPart
-    select_statement,
-    statement;
+    statement,
+    drillthrough_statement;
 non terminal Id
     bang_compound_id,
     compound_id,
@@ -407,8 +427,7 @@ non terminal
     cell_opt,
     cell_property,
     dimension_opt,
-    property,
-    unsigned_integer;
+    property;
 
 non terminal Boolean
     non_empty_opt;
@@ -427,6 +446,8 @@ non terminal List
     member_property_def_list,
     property_list,
     cell_property_list,
+    return_opt,
+    return_item_list,
     when_list,
     with_formula_specification_opt;
 
@@ -435,6 +456,10 @@ non terminal Exp[]
 
 non terminal Double
     axis_number;
+
+non terminal Number
+    maxrows_opt,
+    firstrowset_opt;
 
 // Start symbol
 start with statement;
@@ -1308,16 +1333,25 @@ aliasedExpression ::=
 // <MDX_statement> ::= <select_statement>
 //                   | <create_formula_statement>
 //                   | <drop_formula_statement>
+//                   | <drillthrough_statement>
 //
-
 // <select_statement> ::= [WITH <formula_specification>]
 //                         SELECT [<axis_specification>
 //                                [, <axis_specification>...]]
 //                         FROM [<cube_specification>]
 //                         [WHERE <slicer_specification>]
 //                         [<cell_props>]
+//
+// <drillthrough_statment> ::=
+//     DRILLTHROUGH
+//     [ MAXROWS <count> ]
+//     [ FIRSTROWSET <count> ]
+//     <select_statement>
+//     [ RETURN <member_or_attribute> [, <member_or_attribute>...] ]
+//
 statement ::=
         select_statement
+    |   drillthrough_statement
     |   _VALUE_EXPRESSION expression:e {:
             RESULT = (QueryPart) e;
         :}
@@ -1627,6 +1661,59 @@ cell_property_list ::=
 //                     | CELL_ORDINAL
 //                     | VALUE
 cell_property ::= compound_id;
+
+drillthrough_statement ::=
+        DRILLTHROUGH maxrows_opt:m firstrowset_opt:f select_statement:s
+        return_opt:r {:
+            RESULT = parser.makeDrillThrough(
+                s,
+                m == null ? 0 : m.intValue(),
+                f == null ? 0 : f.intValue(),
+                r);
+        :}
+    ;
+
+maxrows_opt ::=
+        MAXROWS NUMBER:n {:
+            RESULT = n;
+        :}
+    |   {:
+            RESULT = null;
+        :}
+    ;
+
+firstrowset_opt ::=
+        FIRSTROWSET NUMBER:n {:
+            RESULT = n;
+        :}
+    |   {:
+            RESULT = null;
+        :}
+    ;
+
+return_opt ::=
+        RETURN return_item_list:rl {:
+            RESULT = rl;
+        :}
+    |   {:
+            RESULT = null;
+        :}
+    ;
+
+return_item_list ::=
+        return_item:i {:
+            RESULT = new LinkedList();
+            RESULT.add(i);
+        :}
+    |   return_item:i COMMA return_item_list:list {:
+            list.add(0, i);
+            RESULT = list;
+        :}
+    ;
+
+return_item ::=
+        compound_id:i // TODO: allow NAME(id) etc.
+    ;
 
 //
 // <create_formula_statement> ::= CREATE [<scope>]<formula_specification>

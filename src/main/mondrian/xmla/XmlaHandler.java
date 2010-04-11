@@ -24,7 +24,6 @@ import static org.olap4j.metadata.XmlaConstants.*;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -42,7 +41,6 @@ public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
     private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
-    private final List<String> drillThruColumnNames = new ArrayList<String>();
     private final CatalogLocator catalogLocator;
     private final String prefix;
 
@@ -632,15 +630,7 @@ public class XmlaHandler {
         // Handle execute
         QueryResult result;
         if (request.isDrillThrough()) {
-            String tabFields =
-                properties.get(PropertyDefinition.TableFields.name());
-            if (tabFields != null && tabFields.length() > 0) {
-                // Presence of TABLE_FIELDS property initiates advanced
-                // drill-through.
-                result = executeColumnQuery(request);
-            } else {
-                result = executeDrillThroughQuery(request);
-            }
+            result = executeDrillThroughQuery(request);
         } else {
             result = executeQuery(request);
         }
@@ -1255,7 +1245,9 @@ public class XmlaHandler {
         final Connection connection = getConnection(dsCatalog, role, roleName);
 
         final String statement = request.getStatement();
-        final Query query = connection.parseQuery(statement);
+        final QueryPart parseTree = connection.parseStatement(statement);
+        final DrillThrough drillThrough = (DrillThrough) parseTree;
+        final Query query = drillThrough.getQuery();
         query.setResultStyle(ResultStyle.LIST);
         final Result result = connection.execute(query);
         // cell [0, 0] in a 2-dimensional query, [0, 0, 0] in 3 dimensions, etc.
@@ -1270,92 +1262,18 @@ public class XmlaHandler {
                 Util.newError("Cannot do DrillThrough operation on the cell"));
         }
 
-        String dtSql = dtCell.getDrillThroughSQL(true);
-        java.sql.Connection sqlConn = null;
-
         try {
             final Map<String, String> properties = request.getProperties();
+            String tabFields =
+                properties.get(PropertyDefinition.TableFields.name());
+            if (tabFields != null && tabFields.length() == 0) {
+                tabFields = null;
+            }
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
             final boolean advanced = "true".equals(advancedFlag);
             if (advanced) {
-                final Position position =
-                    result.getAxes()[0].getPositions().get(0);
-                Member[] members = position.toArray(
-                    new Member[position.size()]);
-
-                final CellRequest cellRequest =
-                    RolapAggregationManager.makeRequest(members);
-                List<MondrianDef.Relation> relationList =
-                    new ArrayList<MondrianDef.Relation>();
-                final RolapStar.Table factTable =
-                    cellRequest.getMeasure().getStar().getFactTable();
-                MondrianDef.Relation relation = factTable.getRelation();
-                relationList.add(relation);
-
-                for (RolapStar.Table table : factTable.getChildren()) {
-                    relationList.add(table.getRelation());
-                }
-                List<String> truncatedTableList = new ArrayList<String>();
-                sqlConn = connection.getDataSource().getConnection();
-                Statement stmt = null;
-                try {
-                    stmt = sqlConn.createStatement();
-                    List<List<String>> fields = new ArrayList<List<String>>();
-
-                    Map<String, List<String>> tableFieldMap =
-                        new HashMap<String, List<String>>();
-                    for (MondrianDef.Relation relation1 : relationList) {
-                        final String tableName = relation1.toString();
-                        List<String> fieldNameList = new ArrayList<String>();
-                        Dialect dialect =
-                            ((RolapSchema) connection.getSchema()).getDialect();
-                        // FIXME: Include schema name, if specified.
-                        // FIXME: Deal with relations that are not tables.
-                        final StringBuilder buf = new StringBuilder();
-                        buf.append("SELECT * FROM ");
-                        dialect.quoteIdentifier(buf, tableName);
-                        buf.append(" WHERE 1=2");
-                        String sql = buf.toString();
-                        ResultSet rs = stmt.executeQuery(sql);
-                        ResultSetMetaData rsMeta = rs.getMetaData();
-                        for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
-                            // FIXME: In some JDBC drivers,
-                            // ResultSetMetaData.getColumnName(int) does strange
-                            // things with aliased columns. See MONDRIAN-654
-                            // http://jira.pentaho.com/browse/MONDRIAN-654 for
-                            // details. Therefore, we don't want to use that
-                            // method. It seems harmless here, but I'd still
-                            // like to phase out use of getColumnName. After
-                            // PhysTable is introduced (coming in mondrian-4.0)
-                            // we should be able to just use its column list.
-                            String colName = rsMeta.getColumnName(j);
-                            boolean colNameExists = false;
-                            for (List<String> prvField : fields) {
-                                if (prvField.contains(colName)) {
-                                    colNameExists = true;
-                                    break;
-                                }
-                            }
-                            if (!colNameExists) {
-                                fieldNameList.add(colName);
-                            }
-                        }
-                        fields.add(fieldNameList);
-                        String truncatedTableName =
-                            tableName.substring(tableName.lastIndexOf(".") + 1);
-                        truncatedTableList.add(truncatedTableName);
-                        tableFieldMap.put(truncatedTableName, fieldNameList);
-                    }
-                    return new TabularRowSet(tableFieldMap, truncatedTableList);
-                } finally {
-                    if (stmt != null) {
-                        try {
-                            stmt.close();
-                        } catch (SQLException ignored) {
-                        }
-                    }
-                }
+                return executeDrillThroughAdvanced(connection, result);
             } else {
                 int count = -1;
                 if (MondrianProperties.instance().EnableTotalCount
@@ -1363,31 +1281,14 @@ public class XmlaHandler {
                 {
                     count = dtCell.getDrillThroughCount();
                 }
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("drill through sql: " + dtSql);
-                }
-                int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
-                int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-                Dialect dialect =
-                    ((RolapSchema) connection.getSchema()).getDialect();
-                if (!dialect.supportsResultSetConcurrency(
-                    resultSetType, resultSetConcurrency))
-                {
-                    // downgrade to non-scroll cursor, since we can
-                    // fake absolute() via forward fetch
-                    resultSetType = ResultSet.TYPE_FORWARD_ONLY;
-                }
                 SqlStatement stmt2 =
-                    RolapUtil.executeQuery(
-                        connection.getDataSource(), dtSql, -1,
-                        "XmlaHandler.executeDrillThroughQuery",
-                        "Error in drill through",
-                        resultSetType, resultSetConcurrency);
-                return new TabularRowSet(
-                    stmt2, request.drillThroughMaxRows(),
-                    request.drillThroughFirstRowset(), count,
-                    resultSetType);
+                    ((RolapCell) dtCell).drillThroughInternal(
+                        drillThrough.getMaxRowCount(),
+                        Math.max(drillThrough.getFirstRowOrdinal(), 1),
+                        tabFields,
+                        true,
+                        LOGGER);
+                return new TabularRowSet(stmt2, count);
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -1403,7 +1304,91 @@ public class XmlaHandler {
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 e);
+        }
+    }
+
+    private QueryResult executeDrillThroughAdvanced(
+        Connection connection,
+        Result result)
+        throws SQLException
+    {
+        java.sql.Connection sqlConn = null;
+        Statement stmt = null;
+        try {
+            final Axis axis = result.getAxes()[0];
+            final Position position = axis.getPositions().get(0);
+            Member[] members = position.toArray(
+                new Member[position.size()]);
+
+            final CellRequest cellRequest =
+                RolapAggregationManager.makeRequest(members);
+            List<MondrianDef.Relation> relationList =
+                new ArrayList<MondrianDef.Relation>();
+            final RolapStar.Table factTable =
+                cellRequest.getMeasure().getStar().getFactTable();
+            MondrianDef.Relation relation = factTable.getRelation();
+            relationList.add(relation);
+
+            for (RolapStar.Table table : factTable.getChildren()) {
+                relationList.add(table.getRelation());
+            }
+            List<String> truncatedTableList = new ArrayList<String>();
+            sqlConn = connection.getDataSource().getConnection();
+            stmt = sqlConn.createStatement();
+            List<List<String>> fields = new ArrayList<List<String>>();
+
+            Map<String, List<String>> tableFieldMap =
+                new HashMap<String, List<String>>();
+            for (MondrianDef.Relation relation1 : relationList) {
+                final String tableName = relation1.toString();
+                List<String> fieldNameList = new ArrayList<String>();
+                Dialect dialect =
+                    ((RolapSchema) connection.getSchema()).getDialect();
+                // FIXME: Include schema name, if specified.
+                // FIXME: Deal with relations that are not tables.
+                final StringBuilder buf = new StringBuilder();
+                buf.append("SELECT * FROM ");
+                dialect.quoteIdentifier(buf, tableName);
+                buf.append(" WHERE 1=2");
+                String sql = buf.toString();
+                ResultSet rs = stmt.executeQuery(sql);
+                ResultSetMetaData rsMeta = rs.getMetaData();
+                for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
+                    // FIXME: In some JDBC drivers,
+                    // ResultSetMetaData.getColumnName(int) does strange
+                    // things with aliased columns. See MONDRIAN-654
+                    // http://jira.pentaho.com/browse/MONDRIAN-654 for
+                    // details. Therefore, we don't want to use that
+                    // method. It seems harmless here, but I'd still
+                    // like to phase out use of getColumnName. After
+                    // PhysTable is introduced (coming in mondrian-4.0)
+                    // we should be able to just use its column list.
+                    String colName = rsMeta.getColumnName(j);
+                    boolean colNameExists = false;
+                    for (List<String> prvField : fields) {
+                        if (prvField.contains(colName)) {
+                            colNameExists = true;
+                            break;
+                        }
+                    }
+                    if (!colNameExists) {
+                        fieldNameList.add(colName);
+                    }
+                }
+                fields.add(fieldNameList);
+                String truncatedTableName =
+                    tableName.substring(tableName.lastIndexOf(".") + 1);
+                truncatedTableList.add(truncatedTableName);
+                tableFieldMap.put(truncatedTableName, fieldNameList);
+            }
+            return new TabularRowSet(tableFieldMap, truncatedTableList);
         } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ignored) {
+                }
+            }
             if (sqlConn != null) {
                 try {
                     sqlConn.close();
@@ -1440,20 +1425,12 @@ public class XmlaHandler {
          * <p>Closes the SqlStatement when it is done.
          *
          * @param stmt SqlStatement
-         * @param maxRows Maximum row count
-         * @param firstRowset Ordinal of row to skip to (1-based), or 0 to
-         *   start from beginning
          * @param totalCount Total number of rows. If >= 0, writes the
-         *   "totalCount" attribute.
-         * @param resultSetType Type of ResultSet, for example
-         *    {@link ResultSet#TYPE_FORWARD_ONLY}.
+         *   "totalCount" attribute into the XMLA response.
          */
         public TabularRowSet(
             SqlStatement stmt,
-            int maxRows,
-            int firstRowset,
-            int totalCount,
-            int resultSetType)
+            int totalCount)
         {
             this.totalCount = totalCount;
             ResultSet rs = stmt.getResultSet();
@@ -1469,30 +1446,21 @@ public class XmlaHandler {
                             md.getColumnType(i + 1)));
                 }
 
-                // skip to first rowset specified in request
-                int firstRow = (firstRowset <= 0 ? 1 : firstRowset);
-                if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
-                    for (int i = 0; i < firstRow; ++i) {
-                        if (!rs.next()) {
-                            break;
-                        }
-                    }
-                } else {
-                    rs.absolute(firstRow);
-                }
-
-                // populate data
+                // Populate data; assume that SqlStatement is already positioned
+                // on first row (or isDone() is true), and assume that the
+                // number of rows returned is limited.
                 rows = new ArrayList<Object[]>();
-                maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
                 final List<SqlStatement.Accessor> accessors =
                     stmt.getAccessors();
-                do {
-                    Object[] row = new Object[columnCount];
-                    for (int i = 0; i < columnCount; i++) {
-                        row[i] = accessors.get(i).get();
-                    }
-                    rows.add(row);
-                } while (rs.next() && --maxRows > 0);
+                if (!stmt.isDone()) {
+                    do {
+                        Object[] row = new Object[columnCount];
+                        for (int i = 0; i < columnCount; i++) {
+                            row[i] = accessors.get(i).get();
+                        }
+                        rows.add(row);
+                    } while (rs.next());
+                }
             } catch (SQLException e) {
                 throw stmt.handle(e);
             } finally {
@@ -3029,120 +2997,6 @@ public class XmlaHandler {
                 Util.newError("no catalog named '" + catalogName + "'"));
         }
         return dsCatalog;
-    }
-
-    private TabularRowSet executeColumnQuery(XmlaRequest request)
-        throws XmlaException
-    {
-        checkFormat(request);
-
-        DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
-        String roleName = request.getRoleName();
-        Role role = request.getRole();
-
-        final Connection connection = getConnection(dsCatalog, role, roleName);
-
-        final String statement = request.getStatement();
-        final Query query = connection.parseQuery(statement);
-        query.setResultStyle(ResultStyle.LIST);
-        final Result result = connection.execute(query);
-        Cell dtCell = result.getCell(new int[] {0, 0});
-
-        if (!dtCell.canDrillThrough()) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_CODE,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_FAULT_FS,
-                Util.newError("Cannot do DillThrough operation on the cell"));
-        }
-
-        final Map<String, String> properties = request.getProperties();
-        String dtSql = dtCell.getDrillThroughSQL(true);
-
-        int index = dtSql.indexOf("from");
-        String whereClause = " " + dtSql.substring(index);
-        final String fieldNames =
-            properties.get(PropertyDefinition.TableFields.name());
-        StringTokenizer st = new StringTokenizer(fieldNames, ",");
-        drillThruColumnNames.clear();
-        while (st.hasMoreTokens()) {
-            drillThruColumnNames.add(st.nextToken());
-        }
-
-        // Create Select Clause
-        StringBuilder buf = new StringBuilder("select ");
-        int k = -1;
-        for (String drillThruColumnName : drillThruColumnNames) {
-            if (++k > 0) {
-                buf.append(",");
-            }
-            buf.append(drillThruColumnName);
-        }
-        buf.append(' ');
-        buf.append(whereClause);
-        dtSql = buf.toString();
-
-        DataSource dataSource = connection.getDataSource();
-        try {
-            int count = -1;
-            if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
-                String temp = dtSql.toUpperCase();
-                int fromOff = temp.indexOf("FROM");
-                buf.setLength(0);
-                buf.append("select count(*) ");
-                buf.append(dtSql.substring(fromOff));
-
-                String countSql = buf.toString();
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Advanced drill through counting sql: " + countSql);
-                }
-                SqlStatement smt =
-                    RolapUtil.executeQuery(
-                        dataSource, countSql, -1,
-                        "XmlaHandler.executeColumnQuery",
-                        "Advanced drill-through",
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
-
-                try {
-                    ResultSet rs = smt.getResultSet();
-                    if (rs.next()) {
-                        count = rs.getInt(1);
-                        ++smt.rowCount;
-                    }
-                } catch (SQLException e) {
-                    throw smt.handle(e);
-                } finally {
-                    smt.close();
-                }
-            }
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Advanced drill through sql: " + dtSql);
-            }
-            SqlStatement stmt =
-                RolapUtil.executeQuery(
-                    dataSource, dtSql, -1, "XmlaHandler.executeColumnQuery",
-                    "Advanced drill-through",
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            return new TabularRowSet(
-                stmt, request.drillThroughMaxRows(),
-                request.drillThroughFirstRowset(), count,
-                ResultSet.TYPE_FORWARD_ONLY);
-        } catch (XmlaException xex) {
-            throw xex;
-        } catch (RuntimeException rte) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_DRILL_THROUGH_SQL_CODE,
-                HSB_DRILL_THROUGH_SQL_FAULT_FS,
-                rte);
-        }
     }
 
     public static void main(String[] args) {

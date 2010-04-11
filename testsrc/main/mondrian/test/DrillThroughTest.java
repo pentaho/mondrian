@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,8 +19,7 @@ import mondrian.rolap.RolapLevel;
 import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
-import java.sql.Statement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 /**
  * Test generation of SQL to access the fact table data underlying an MDX
@@ -40,7 +39,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     // ~ Tests ================================================================
 
-    public void testTrivalCalcMemberDrillThrough() throws Exception {
+    public void testTrivialCalcMemberDrillThrough() throws Exception {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Formatted Unit Sales]"
             + " AS '[Measures].[Unit Sales]', FORMAT_STRING='$#,###.000'\n"
@@ -871,6 +870,68 @@ public class DrillThroughTest extends FoodMartTestCase {
             false,
             "Sales",
             "([Time].[1997].[Q1], [Measures].[Unit Sales])");
+    }
+
+    public void testDrillthroughMaxRows() throws SQLException {
+        assertMaxRows("", 29);
+        assertMaxRows("maxrows 1000", 29);
+        assertMaxRows("maxrows 0", 29);
+        assertMaxRows("maxrows 3", 3);
+        assertMaxRows("maxrows 10 firstrowset 6", 4);
+        assertMaxRows("firstrowset 20", 9);
+        assertMaxRows("firstrowset 30", 0);
+    }
+
+    private void assertMaxRows(String firstMaxRow, int expectedCount)
+        throws SQLException
+    {
+        final ResultSet resultSet = getTestContext().executeStatement(
+            "drillthrough\n"
+            + firstMaxRow
+            + " select\n"
+            + "non empty{[Customers].[USA].[CA]} on 0,\n"
+            + "non empty {[Product].[Drink].[Beverages].[Pure Juice Beverages].[Juice]} on 1\n"
+            + "from\n"
+            + "[Sales]\n"
+            + "where([Measures].[Sales Count], [Time].[1997].[Q3].[8])");
+        int actualCount = 0;
+        while (resultSet.next()) {
+            ++actualCount;
+        }
+        assertEquals(expectedCount, actualCount);
+        resultSet.close();
+    }
+
+    public void testDrillthroughNegativeMaxRowsFails() throws SQLException {
+        try {
+            final ResultSet resultSet = getTestContext().executeStatement(
+                "DRILLTHROUGH MAXROWS -3\n"
+                + "SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,\n"
+                + "{[Time].[1997]} ON 1\n"
+                + "FROM Sales");
+            fail("expected error, got " + resultSet);
+        } catch (SQLException e) {
+            TestContext.checkThrowable(
+                e, "Syntax error at line 1, column 22, token '-'");
+        }
+    }
+
+    public void testDrillThroughNotDrillableFails() {
+        try {
+            final ResultSet resultSet = getTestContext().executeStatement(
+                "DRILLTHROUGH\n"
+                + "WITH MEMBER [Measures].[Foo] "
+                + " AS [Measures].[Unit Sales]\n"
+                + "   + ([Measures].[Unit Sales], [Time].[Time].PrevMember)\n"
+                + "SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,\n"
+                + "{[Time].[1997]} ON 1\n"
+                + "FROM Sales\n"
+                + "WHERE [Measures].[Foo]");
+            fail("expected error, got " + resultSet);
+        } catch (Exception e) {
+            TestContext.checkThrowable(
+                e, "Cannot do DrillThrough operation on the cell");
+        }
     }
 
     /**

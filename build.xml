@@ -562,7 +562,7 @@ META-INF/**"/>
     <javacup
         srcdir="${java.dir}"
         input="${java.dir}/mondrian/olap/Parser.cup"
-        expect="61"
+        expect="63"
         interface="true"/>
   </target>
 

@@ -65,21 +65,6 @@ public interface XmlaRequest {
      * EXECUTE method.
      */
     boolean isDrillThrough();
-
-    /**
-     * Drill through option: max returning rows of query.
-     *
-     * Value -1 means this option isn't provided.
-     */
-    int drillThroughMaxRows();
-
-    /**
-     * Drill through option: first returning row of query.
-     *
-     * Value -1 means this option isn't provided.
-     */
-    int drillThroughFirstRowset();
-
 }
 
 // End XmlaRequest.java

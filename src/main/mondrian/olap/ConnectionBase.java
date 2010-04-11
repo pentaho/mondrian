@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -55,12 +55,16 @@ public abstract class ConnectionBase implements Connection {
         return s;
     }
 
+    public QueryPart parseStatement(String query) {
+        return parseStatement(query, null, false, false);
+    }
+
     public Query parseQuery(String query) {
-        return parseQuery(query, null, false, false);
+        return (Query) parseStatement(query);
     }
 
     public Query parseQuery(String query, boolean load) {
-        return parseQuery(query, null, load, false);
+        return (Query) parseStatement(query, null, load, false);
     }
 
     /**
@@ -79,12 +83,12 @@ public abstract class ConnectionBase implements Connection {
      * @return Query the corresponding Query object if parsing is successful
      * @throws MondrianException if parsing fails
      */
-    public Query parseQuery(
+    public QueryPart parseStatement(
         String query,
         FunTable funTable,
         boolean strictValidation)
     {
-        return parseQuery(query, funTable, false, strictValidation);
+        return parseStatement(query, funTable, false, strictValidation);
     }
 
     public Exp parseExpression(String expr) {
@@ -106,7 +110,7 @@ public abstract class ConnectionBase implements Connection {
         }
     }
 
-    private Query parseQuery(
+    private QueryPart parseStatement(
         String query,
         FunTable cftab,
         boolean load,

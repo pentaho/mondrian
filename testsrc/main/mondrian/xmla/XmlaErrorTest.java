@@ -206,13 +206,13 @@ System.out.println("password=" + password);
             : null;
     }
 
-    static class Fault {
-        String faultCode;
-        String faultString;
-        String faultActor;
-        String errorNS;
-        String errorCode;
-        String errorDesc;
+    private static class Fault {
+        final String faultCode;
+        final String faultString;
+        final String faultActor;
+        final String errorNS;
+        final String errorCode;
+        final String errorDesc;
 
         Fault(
             String faultCode,
@@ -274,6 +274,8 @@ System.out.println("password=" + password);
                 // error desc element
                 node = faultNodes[1];
                 errorDesc = getNodeContent(node);
+            } else {
+                errorNS = errorCode = errorDesc = null;
             }
         }
 
@@ -310,30 +312,28 @@ System.out.println("password=" + password);
 
         void checkSame(Fault expectedFault) throws Exception {
             if (!Util.equals(this.faultCode, expectedFault.faultCode)) {
-                notSame("faultcode", this.faultCode, expectedFault.faultCode);
+                notSame("faultcode", expectedFault.faultCode, this.faultCode);
             }
             if (!Util.equals(this.faultString, expectedFault.faultString)) {
                 notSame(
-                    "faultstring",
-                    this.faultString,
-                    expectedFault.faultString);
+                    "faultstring", expectedFault.faultString, this.faultString);
             }
             if (!Util.equals(this.faultActor, expectedFault.faultActor)) {
                 notSame(
                     "faultactor",
-                    this.faultActor,
-                    expectedFault.faultActor);
+                    expectedFault.faultActor,
+                    this.faultActor);
             }
             if (!Util.equals(this.errorNS, expectedFault.errorNS)) {
                 throw new Exception(
                     "For error element namespace "
                     + " Expected "
-                    + this.errorNS
+                    + expectedFault.errorNS
                     + " but Got "
-                    + expectedFault.errorNS);
+                    + this.errorNS);
             }
             if (!Util.equals(this.errorCode, expectedFault.errorCode)) {
-                notSame("error.code", this.errorCode, expectedFault.errorCode);
+                notSame("error.code", expectedFault.errorCode, this.errorCode);
             }
         }
 
@@ -341,8 +341,9 @@ System.out.println("password=" + password);
             throws Exception
         {
             throw new Exception(
-                "For element " + elementName + " Expected " + expected
-                + " but Got " + got);
+                "For element " + elementName
+                + " expected [" + expected
+                + "] but got [" + got + "]");
         }
     }
 
@@ -899,11 +900,12 @@ System.out.println("DO IT AGAIN");
             new Fault(
                 XmlaException.formatFaultCode(
                     CLIENT_FAULT_FC,
-                    HSB_DRILLDOWN_BAD_MAXROWS_CODE),
-                    HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS,
-                    FAULT_ACTOR,
-                    MONDRIAN_NAMESPACE,
-                    HSB_DRILLDOWN_BAD_MAXROWS_CODE, null);
+                    HSB_DRILL_THROUGH_FORMAT_CODE),
+                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                FAULT_ACTOR,
+                MONDRIAN_NAMESPACE,
+                HSB_DRILL_THROUGH_FORMAT_CODE,
+                null);
 
         doTest(expectedFault);
     }
@@ -913,11 +915,12 @@ System.out.println("DO IT AGAIN");
             new Fault(
                 XmlaException.formatFaultCode(
                     CLIENT_FAULT_FC,
-                    HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE),
-                    HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS,
-                    FAULT_ACTOR,
-                    MONDRIAN_NAMESPACE,
-                    HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE, null);
+                    HSB_DRILL_THROUGH_FORMAT_CODE),
+                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                FAULT_ACTOR,
+                MONDRIAN_NAMESPACE,
+                HSB_DRILL_THROUGH_FORMAT_CODE,
+                null);
 
         doTest(expectedFault);
     }
@@ -927,11 +930,12 @@ System.out.println("DO IT AGAIN");
             new Fault(
                 XmlaException.formatFaultCode(
                     CLIENT_FAULT_FC,
-                    HSB_DRILLDOWN_ERROR_CODE),
-                    HSB_DRILLDOWN_ERROR_FAULT_FS,
-                    FAULT_ACTOR,
-                    MONDRIAN_NAMESPACE,
-                    HSB_DRILLDOWN_ERROR_CODE, null);
+                    HSB_DRILL_THROUGH_FORMAT_CODE),
+                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                FAULT_ACTOR,
+                MONDRIAN_NAMESPACE,
+                HSB_DRILL_THROUGH_FORMAT_CODE,
+                null);
 
         doTest(expectedFault);
     }
