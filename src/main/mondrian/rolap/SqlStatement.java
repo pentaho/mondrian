@@ -378,8 +378,8 @@ public class SqlStatement {
 
     /**
      * Returns the result set in a proxy which automatically closes this
-     * SqlStatement (and hence also the statement and result set) when the result
-     * set is closed.
+     * SqlStatement (and hence also the statement and result set) when the
+     * result set is closed.
      *
      * <p>This helps to prevent connection leaks. The caller still has to
      * remember to call ResultSet.close(), of course.
