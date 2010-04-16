@@ -26,6 +26,7 @@ import mondrian.util.ArrayStack;
 import java.io.*;
 import java.util.*;
 
+import mondrian.util.IdentifierParser;
 import org.apache.commons.collections.collection.CompositeCollection;
 
 /**
@@ -853,7 +854,7 @@ public class Query extends QueryPart {
             return value.toString();
         case Category.Set:
             if (value instanceof String) {
-                value = Util.parseIdentifierList((String) value);
+                value = IdentifierParser.parseIdentifierList((String) value);
             }
             if (!(value instanceof List)) {
                 throw Util.newInternal(

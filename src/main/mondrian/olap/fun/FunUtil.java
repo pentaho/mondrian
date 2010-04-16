@@ -18,9 +18,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.rolap.RolapHierarchy;
-import mondrian.util.FilteredIterableList;
-import mondrian.util.ConcatenableList;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.log4j.Logger;
@@ -2217,6 +2215,87 @@ public class FunUtil extends Util {
                 return length;
             }
         };
+    }
+
+    static List<Member[]> parseTupleList(
+        Evaluator evaluator,
+        String string,
+        Hierarchy[] hierarchies)
+    {
+        final IdentifierParser.TupleListBuilder builder =
+            new IdentifierParser.TupleListBuilder(
+                evaluator.getSchemaReader(),
+                evaluator.getCube(),
+                Arrays.asList(hierarchies));
+        IdentifierParser.parseTupleList(builder, string);
+        return builder.tupleList;
+    }
+
+    /**
+     * Parses a tuple, of the form '(member, member, ...)'.
+     * There must be precisely one member for each hierarchy.
+     *
+     * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
+     *   and {@link mondrian.olap.Cube}
+     * @param string String to parse
+     * @param i Position to start parsing in string
+     * @param members Output array of members
+     * @param hierarchies Hierarchies of the members
+     * @return Position where parsing ended in string
+     */
+    static int parseTuple(
+        final Evaluator evaluator,
+        String string,
+        int i,
+        final Member[] members,
+        Hierarchy[] hierarchies)
+    {
+        final IdentifierParser.Builder builder =
+            new IdentifierParser.TupleBuilder(
+                evaluator.getSchemaReader(),
+                evaluator.getCube(),
+                Arrays.asList(hierarchies))
+            {
+                public void tupleComplete() {
+                    super.tupleComplete();
+                    memberList.toArray(members);
+                }
+            };
+        return IdentifierParser.parseTuple(builder, string, i);
+    }
+
+    static List<Member> parseMemberList(
+        Evaluator evaluator,
+        String string,
+        Hierarchy hierarchy)
+    {
+        IdentifierParser.MemberListBuilder builder =
+            new IdentifierParser.MemberListBuilder(
+                evaluator.getSchemaReader(),
+                evaluator.getCube(),
+                hierarchy);
+        IdentifierParser.parseMemberList(builder, string);
+        return builder.memberList;
+    }
+
+    static int parseMember(
+        Evaluator evaluator,
+        String string,
+        int i,
+        final Member[] members,
+        Hierarchy hierarchy)
+    {
+        IdentifierParser.MemberListBuilder builder =
+            new IdentifierParser.MemberListBuilder(
+                evaluator.getSchemaReader(), evaluator.getCube(), hierarchy)
+            {
+                @Override
+                public void memberComplete() {
+                    members[0] = resolveMember(hierarchyList.get(0));
+                    nameList.clear();
+                }
+            };
+        return IdentifierParser.parseMember(builder, string, i);
     }
 
     // ~ Inner classes ---------------------------------------------------------

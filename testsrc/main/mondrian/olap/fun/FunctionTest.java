@@ -8509,6 +8509,18 @@ public class FunctionTest extends FoodMartTestCase {
             "4");
     }
 
+    public void testStrToMemberUniqueName() {
+        assertExprReturns(
+            "StrToMember(\"[Store].[USA].[CA]\").Name",
+            "CA");
+    }
+
+    public void testStrToMemberFullyQualifiedName() {
+        assertExprReturns(
+            "StrToMember(\"[Store].[All Stores].[USA].[CA]\").Name",
+            "CA");
+    }
+
     public void testStrToTuple() {
         // single dimension yields member
         assertAxisReturns(
@@ -8601,6 +8613,21 @@ public class FunctionTest extends FoodMartTestCase {
             + " [Time])",
             "{[Gender].[F], [Time].[1997].[Q2]}\n"
             + "{[Gender].[M], [Time].[1997]}");
+
+        // matches unique name
+        assertAxisReturns(
+            "StrToSet("
+            + "\""
+            + "{"
+            + " [Store].[USA].[CA], "
+            + " [Store].[All Stores].[USA].OR,"
+            + " [Store].[All Stores]. [USA] . [WA]"
+            + "}"
+            + "\","
+            + " [Store])",
+            "[Store].[USA].[CA]\n"
+            + "[Store].[USA].[OR]\n"
+            + "[Store].[USA].[WA]");
     }
 
     public void testStrToSetDupDimensionsFails() {

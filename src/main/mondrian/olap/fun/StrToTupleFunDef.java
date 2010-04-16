@@ -82,8 +82,7 @@ class StrToTupleFunDef extends FunDefBase {
         Evaluator evaluator, String string, Hierarchy[] hierarchies)
     {
         final Member[] members = new Member[hierarchies.length];
-        int i = StrToSetFunDef.parseTuple(
-            evaluator, string, 0, members, hierarchies);
+        int i = parseTuple(evaluator, string, 0, members, hierarchies);
         // todo: check for garbage at end of string
         return members;
     }
@@ -92,8 +91,7 @@ class StrToTupleFunDef extends FunDefBase {
         Evaluator evaluator, String string, Hierarchy hierarchy)
     {
         Member[] members = {null};
-        int i = StrToSetFunDef.parseMember(
-            evaluator, string, 0, members, new Hierarchy[] {hierarchy}, 0);
+        int i = parseMember(evaluator, string, 0, members, hierarchy);
         // todo: check for garbage at end of string
         return members[0];
     }
