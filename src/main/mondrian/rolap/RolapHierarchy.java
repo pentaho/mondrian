@@ -349,8 +349,14 @@ public class RolapHierarchy extends HierarchyBase {
             ((RolapLevel) level).init(xmlDimension);
         }
         if (defaultMemberName != null) {
-            List<Id.Segment> uniqueNameParts =
-                Util.parseIdentifier(defaultMemberName);
+            List<Id.Segment> uniqueNameParts;
+            if (defaultMemberName.contains("[")) {
+                uniqueNameParts = Util.parseIdentifier(defaultMemberName);
+            } else {
+                uniqueNameParts =
+                    Collections.singletonList(
+                        new Id.Segment(defaultMemberName, Id.Quoting.UNQUOTED));
+            }
 
             // First look up from within this hierarchy. Works for unqualified
             // names, e.g. [USA].[CA].

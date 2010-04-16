@@ -393,13 +393,33 @@ public class UtilTestCase extends TestCase {
         assertEquals(3, strings.size());
         assertEquals("calendar-[LANGUAGE].js", strings.get(2).name);
 
+        // allow spaces before, after and between
+        strings = Util.parseIdentifier("  [foo] . [bar].[baz]  ");
+        assertEquals(3, strings.size());
+        assertEquals("foo", strings.get(0).name);
+
+        // first segment not quoted
+        strings = Util.parseIdentifier("Time.1997.[Q3]");
+        assertEquals(3, strings.size());
+        assertEquals("Time", strings.get(0).name);
+        assertEquals("1997", strings.get(1).name);
+        assertEquals("Q3", strings.get(2).name);
+
+        // spaces ignored after unquoted segment
+        strings = Util.parseIdentifier("[Time . Weekly ] . 1997 . [Q3]");
+        assertEquals(3, strings.size());
+        assertEquals("Time . Weekly ", strings.get(0).name);
+        assertEquals("1997", strings.get(1).name);
+        assertEquals("Q3", strings.get(2).name);
+
+        // identifier ending in '.' is invalid
         try {
-            strings = Util.parseIdentifier("[foo].bar");
+            strings = Util.parseIdentifier("[foo].[bar].");
             Util.discard(strings);
             fail("expected exception");
         } catch (MondrianException e) {
             assertEquals(
-                "Mondrian Error:Invalid member identifier '[foo].bar'",
+                "Mondrian Error:Invalid member identifier '[foo].[bar].'",
                 e.getMessage());
         }
 
@@ -412,6 +432,86 @@ public class UtilTestCase extends TestCase {
                 "Mondrian Error:Invalid member identifier '[foo].[bar'",
                 e.getMessage());
         }
+
+        try {
+            strings = Util.parseIdentifier("[Foo].[Bar], [Baz]");
+            Util.discard(strings);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '[Foo].[Bar], [Baz]'",
+                e.getMessage());
+        }
+    }
+
+    /**
+     * Tests the {@link Util#parseIdentifier(String, java.util.List)} method.
+     */
+    public void testParseIdentifierResidue() {
+        // Now test the version that returns the residue.
+        final ArrayList<Id.Segment> list = new ArrayList<Id.Segment>();
+        String remaining = Util.parseIdentifier("[Foo].[Bar]", list);
+        assertEquals(2, list.size());
+        assertEquals("", remaining);
+
+        list.clear();
+        remaining = Util.parseIdentifier("[Foo].[Bar], ", list);
+        assertEquals(2, list.size());
+        assertEquals(", ", remaining);
+    }
+
+    /**
+     * Tests the {@link Util#parseIdentifierList(String)} method.
+     */
+    public void testParseIdentifierList() {
+        List<List<Id.Segment>> list;
+
+        list = Util.parseIdentifierList("{foo, baz.baz}");
+        assertEquals(2, list.size());
+        assertEquals(1, list.get(0).size());
+        assertEquals(2, list.get(1).size());
+
+        // now without braces
+        list = Util.parseIdentifierList("foo, baz.baz");
+        assertEquals(2, list.size());
+
+        // now with spaces
+        list = Util.parseIdentifierList(" {  foo , baz.baz }   ");
+        assertEquals(2, list.size());
+
+        // now with spaces & without braces
+        list = Util.parseIdentifierList(" {  foo , baz.baz }   ");
+        assertEquals(2, list.size());
+
+        // now with mismatched braces
+        try {
+            list = Util.parseIdentifierList(" {  foo , baz.baz ");
+            fail("expected error, got " + list);
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier ' {  foo , baz.baz '",
+                e.getMessage());
+        }
+
+        // now with mismatched braces
+        try {
+            list = Util.parseIdentifierList("  foo , baz.baz } ");
+            fail("expected error, got " + list);
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '  foo , baz.baz } '",
+                e.getMessage());
+        }
+
+        // empty string yields empty list
+        list = Util.parseIdentifierList("{}");
+        assertEquals(0, list.size());
+        list = Util.parseIdentifierList(" {  } ");
+        assertEquals(0, list.size());
+        list = Util.parseIdentifierList("");
+        assertEquals(0, list.size());
+        list = Util.parseIdentifierList(" \t\n");
+        assertEquals(0, list.size());
     }
 
     public void testReplaceProperties() {
@@ -654,6 +754,21 @@ public class UtilTestCase extends TestCase {
         assertEquals(
             Arrays.asList((Number) Math.PI, 123, null, 45, 0f),
             Arrays.asList(numbers));
+    }
+
+    public void testCanCast() {
+        assertTrue(Util.canCast(Collections.EMPTY_LIST, Integer.class));
+        assertTrue(Util.canCast(Collections.EMPTY_LIST, String.class));
+        assertTrue(Util.canCast(Collections.EMPTY_SET, String.class));
+        assertTrue(Util.canCast(Arrays.asList(1, 2), Integer.class));
+        assertTrue(Util.canCast(Arrays.asList(1, 2), Number.class));
+        assertFalse(Util.canCast(Arrays.asList(1, 2), String.class));
+        assertTrue(Util.canCast(Arrays.asList(1, null, 2d), Number.class));
+        assertTrue(
+            Util.canCast(
+                new HashSet<Object>(Arrays.asList(1, null, 2d)),
+                Number.class));
+        assertFalse(Util.canCast(Arrays.asList(1, null, 2d), Integer.class));
     }
 }
 

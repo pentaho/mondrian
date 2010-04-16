@@ -13,15 +13,17 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.olap.Connection;
 import mondrian.rolap.RolapConnectionProperties;
 import org.eigenbase.util.property.Property;
 import org.olap4j.impl.Olap4jUtil;
 
+import java.sql.*;
+import java.sql.DriverManager;
 import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -483,7 +485,7 @@ public class ParameterTest extends FoodMartTestCase {
             para, false, "8", "MDX object '[8]' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, "8.24",
-            "MDX object '[8.24]' not found in cube 'Sales'");
+            "MDX object '[8].[24]' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, 8,
             "Invalid value '8' for parameter 'x',"
@@ -505,6 +507,17 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(
             para, false, new Time(new Date().getTime()),
             "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+
+        // string is OK
+        assertAssignParameter(para, false, "[Customers].[Mexico]", null);
+        // now with spurious 'all'
+        assertAssignParameter(
+            para, false, "[Customers].[All Customers].[Canada].[BC]", null);
+        // non-existent member
+        assertAssignParameter(
+            para, false, "[Customers].[Canada].[Bear Province]",
+            "MDX object '[Customers].[Canada].[Bear Province]' not found in "
+            + "cube 'Sales'");
 
         // Valid to set to null. It means use the default member of the
         // hierarchy. (Not necessarily the same as the default value of the
@@ -538,6 +551,13 @@ public class ParameterTest extends FoodMartTestCase {
             "Invalid value '[Customers].[USA]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
+        // Same, using string.
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], [Customers].[USA].[CA])",
+            false, "[Customers].[USA]",
+            "Invalid value '[Customers].[USA]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
         // Member of right level.
         assertAssignParameter(
             "Parameter(\"x\", [Customers].[State Province], [Customers].[USA].[CA])",
@@ -556,10 +576,10 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"x\", [Customers], {[Customers].[USA], [Customers].[USA].[CA]})";
         assertAssignParameter(
             para, true, "8",
-            "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+            "MDX object '[8]' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, "foobar",
-            "Invalid value 'foobar' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+            "MDX object '[foobar]' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, 8,
             "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
@@ -579,6 +599,27 @@ public class ParameterTest extends FoodMartTestCase {
             para, true, new Time(new Date().getTime()),
             "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
 
+        // strings are OK
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[USA], [Customers].[All Customers].[Canada].[BC]}",
+            null);
+        // also OK without braces
+        assertAssignParameter(
+            para, true,
+            "[Customers].[USA], [Customers].[All Customers].[Canada].[BC]",
+            null);
+        // also OK with non-standard spacing
+        assertAssignParameter(
+            para, true,
+            "[Customers] . [USA] , [Customers].[Canada].[BC],[Customers].[Mexico]",
+            null);
+        // error if one of the members does not exist
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[USA], [Customers].[Canada].[BC].[Bear City]}",
+            "MDX object '[Customers].[Canada].[BC].[Bear City]' not found in cube 'Sales'");
+
         List<Member> list;
         SchemaReader sr =
             TestContext.instance().getConnection()
@@ -587,6 +628,15 @@ public class ParameterTest extends FoodMartTestCase {
         // Empty list is OK.
         list = Collections.emptyList();
         assertAssignParameter(para, true, list, null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, "", null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, "{}", null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, " { } ", null);
 
         // Not valid to set list to null.
         assertAssignParameter(
@@ -605,6 +655,13 @@ public class ParameterTest extends FoodMartTestCase {
             "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
             + "type MemberType<hierarchy=[Customers]>");
 
+        // as above, strings
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[Mexico], [Time].[1997].[Q2].[5]}",
+            "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
+            + "type MemberType<hierarchy=[Customers]>");
+
         // List that contains members of correct hierarchy.
         list =
             Arrays.asList(
@@ -618,12 +675,22 @@ public class ParameterTest extends FoodMartTestCase {
         list =
             Arrays.asList(
                 sr.getMemberByUniqueName(
-                    Id.Segment.toList("Customers", "USA"), true));
+                    Id.Segment.toList("Customers", "USA", "CA"), true),
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "Mexico"), true));
         assertAssignParameter(
             "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
             true,
             list,
-            "Invalid value '[Customers].[USA]' for parameter "
+            "Invalid value '[Customers].[Mexico]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
+        // as above, strings
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
+            true,
+            "{[Customers].[USA].[CA], [Customers].[Mexico]}",
+            "Invalid value '[Customers].[Mexico]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
         // List that contains members of right level, and a null member.

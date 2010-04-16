@@ -852,6 +852,9 @@ public class Query extends QueryPart {
             }
             return value.toString();
         case Category.Set:
+            if (value instanceof String) {
+                value = Util.parseIdentifierList((String) value);
+            }
             if (!(value instanceof List)) {
                 throw Util.newInternal(
                     "Invalid value '" + value + "' for parameter '"
@@ -884,18 +887,21 @@ public class Query extends QueryPart {
                         type.getDimension().getHierarchy().getDefaultMember();
                 }
             }
-            if (value instanceof Member) {
-                if (type.isInstance(value)) {
-                    return (Member) value;
+            if (value instanceof String) {
+                value = Util.parseIdentifier((String) value);
+            }
+            if (value instanceof List
+                && Util.canCast((List) value, Id.Segment.class))
+            {
+                final List<Id.Segment> segmentList = Util.cast((List) value);
+                final OlapElement olapElement = Util.lookup(query, segmentList);
+                if (olapElement instanceof Member) {
+                    value = olapElement;
                 }
             }
-            if (value instanceof String) {
-                String memberName = (String) value;
-                final OlapElement olapElement =
-                    Util.lookup(
-                        query, Util.parseIdentifier(memberName));
-                if (olapElement instanceof Member) {
-                    return (Member) olapElement;
+            if (value instanceof Member) {
+                if (type.isInstance(value)) {
+                    return value;
                 }
             }
             throw Util.newInternal(

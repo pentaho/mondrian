@@ -408,51 +408,144 @@ public class Util extends XOMUtil {
         return buf;
     }
 
+    /**
+     * Parses an MDX identifier such as <code>[Foo].[Bar].Baz.&Key&Key2</code>
+     * and returns the result as a list of segments.
+     *
+     * @param s MDX identifier
+     * @return List of segments
+     */
     public static List<Id.Segment> parseIdentifier(String s)  {
-        if (!s.startsWith("[")) {
-            return Collections.singletonList(
-                new Id.Segment(s, Id.Quoting.UNQUOTED));
-        }
-
-        List<Id.Segment> list = new ArrayList<Id.Segment>();
-        int i = 0;
-        Id.Quoting type;
-        while (i < s.length()) {
-            if (s.charAt(i) != '&' && s.charAt(i) != '[') {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            if (s.charAt(i) ==  '&') {
-                i++;
-                type = Id.Quoting.KEY;
-            } else {
-                type = Id.Quoting.QUOTED;
-            }
-
-            if (s.charAt(i) != '[') {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            int j = getEndIndex(s, i + 1);
-            if (j == -1) {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            list.add(
-                new Id.Segment(
-                    replace(s.substring(i + 1, j), "]]", "]"),
-                    type));
-
-            i = j + 2;
+        final List<Id.Segment> list = new ArrayList<Id.Segment>();
+        String remaining = parseIdentifier(s, list);
+        if (remaining.length() > 0) {
+            throw MondrianResource.instance().MdxInvalidMember.ex(s);
         }
         return list;
     }
 
+    /**
+     * Parses an MDX identifier into a list of segments and returns the residue
+     * (the part of the identifier not parsed).
+     *
+     * @param s Identifier
+     * @param list List of segments to populate
+     * @return Residue
+     */
+    public static String parseIdentifier(String s, List<Id.Segment> list)  {
+        final int length = s.length();
+        if (0 == length) {
+            return "";
+        }
+        int i = 0;
+        char c = s.charAt(i); // invariant: c == s.charAt(i) throughout loop
+        outer:
+        while (true) {
+            // skip over leading whitespace
+            while (c == ' ') {
+                ++i;
+                if (i >= length) {
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
+                }
+                c = s.charAt(i);
+            }
+
+            // parse a segment
+            int j;
+            Id.Quoting type;
+            switch (c) {
+            case ',':
+            case '}':
+                return s.substring(i);
+            case '&':
+                type = Id.Quoting.KEY;
+                i++;
+                if (i >= length) {
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
+                }
+                c = s.charAt(i);
+                if (c != '[') {
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
+                }
+                j = getEndIndex(s, i + 1);
+                if (j == -1) {
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
+                }
+                list.add(
+                    new Id.Segment(
+                        replace(s.substring(i + 1, j), "]]", "]"),
+                        type));
+                i = j + 1;
+                break;
+            case '[':
+                type = Id.Quoting.QUOTED;
+                j = getEndIndex(s, i + 1);
+                if (j == -1) {
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
+                }
+                list.add(
+                    new Id.Segment(
+                        replace(s.substring(i + 1, j), "]]", "]"),
+                        type));
+
+                i = j + 1;
+                break;
+            default:
+                type = Id.Quoting.UNQUOTED;
+                j = getNextNonAlphaNumeric(s, i + 1);
+                list.add(
+                    new Id.Segment(
+                        s.substring(i, j),
+                        type));
+                i = j;
+                break;
+            }
+
+            if (i >= length) {
+                break;
+            }
+            c = s.charAt(i);
+            while (c == ' ') {
+                ++i;
+                if (i >= length) {
+                    break outer;
+                }
+                c = s.charAt(i);
+            }
+            if (c != '.') {
+                // Return what's left. It might be a ',' or a '}'.
+                return s.substring(i);
+            }
+            ++i;
+            if (i >= length) {
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
+            }
+            c = s.charAt(i);
+        }
+        return "";
+    }
+
+    private static int getNextNonAlphaNumeric(String s, int i) {
+        final int length = s.length();
+        while (i < length) {
+            char c = s.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                ++i;
+            } else if (c == '_') {
+                ++i;
+            } else {
+                return i;
+            }
+        }
+        return length;
+    }
+
     private static int getEndIndex(String s, int i) {
-        while (i < s.length()) {
-            char ch = s.charAt(i);
-            if (ch == ']') {
-                if (i + 1 < s.length() && s.charAt(i + 1) == ']') {
+        final int length = s.length();
+        while (i < length) {
+            char c = s.charAt(i);
+            if (c == ']') {
+                if (i + 1 < length && s.charAt(i + 1) == ']') {
                     // found ]] => skip
                     i += 2;
                 } else {
@@ -463,6 +556,62 @@ public class Util extends XOMUtil {
             }
         }
         return -1;
+    }
+
+    public static List<List<Id.Segment>> parseIdentifierList(String s)  {
+        final String original = s;
+        final List<List<Id.Segment>> list =
+            new ArrayList<List<Id.Segment>>();
+        boolean leadingBrace = false;
+        boolean trailingBrace = false;
+
+        // skip over leading spaces
+        s = s.trim();
+
+        if (s.length() > 0
+            && s.charAt(0) == '{')
+        {
+            leadingBrace = true;
+            s = s.substring(1);
+        }
+
+        while (true) {
+            final List<Id.Segment> segmentList = new ArrayList<Id.Segment>();
+            s = parseIdentifier(s, segmentList);
+            if (segmentList.size() > 0) {
+                list.add(segmentList);
+            }
+
+            // skip over leading spaces
+            s = s.trim();
+
+            if (s.length() > 0
+                && s.charAt(0) == ',')
+            {
+                s = s.substring(1);
+                continue;
+            }
+
+            if (s.length() > 0
+                && s.charAt(0) == '}')
+            {
+                trailingBrace = true;
+                s = s.substring(1);
+            }
+
+            s = s.trim();
+
+            if (s.length() > 0) {
+                throw MondrianResource.instance().MdxInvalidMember.ex(original);
+            }
+
+            break;
+        }
+
+        if (leadingBrace != trailingBrace) {
+            throw MondrianResource.instance().MdxInvalidMember.ex(original);
+        }
+        return list;
     }
 
     /**
@@ -2478,6 +2627,28 @@ public class Util extends XOMUtil {
     @SuppressWarnings({"unchecked"})
     public static <T> List<T> cast(List<?> list) {
         return (List<T>) list;
+    }
+
+    /**
+     * Returns whether it is safe to cast a collection to a collection with a
+     * given element type.
+     *
+     * @param collection Collection
+     * @param clazz Target element type
+     * @param <T> Element type
+     * @return Whether all not-null elements of the collection are instances of
+     *   element type
+     */
+    public static <T> boolean canCast(
+        Collection<?> collection,
+        Class<T> clazz)
+    {
+        for (Object o : collection) {
+            if (o != null && !clazz.isInstance(o)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
