@@ -94,6 +94,25 @@ public class VirtualCubeTest extends BatchTestCase {
         assertQueriesReturnSimilarResults(query1, query2, testContext);
     }
 
+    public void testVirtualCubeMeasureInvalidCubeName() {
+        TestContext testContext = TestContext.create(
+            null,
+            null,
+            "<VirtualCube name=\"Sales vs Warehouse\">\n"
+            + "<VirtualCubeDimension name=\"Product\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
+            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Bad cube\" "
+            + "name=\"[Measures].[Unit Sales]\"/>\n"
+            + "</VirtualCube>",
+            null,
+            null,
+            null);
+        testContext.assertQueryThrows(
+            "select from [Sales vs Warehouse]",
+            "Cube 'Bad cube' not found");
+    }
+
     public void testDefaultMeasureInVCForCaseSensitivity() {
         TestContext testContext = TestContext.create(
             null,

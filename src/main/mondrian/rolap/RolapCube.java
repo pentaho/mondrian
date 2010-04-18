@@ -469,6 +469,10 @@ public class RolapCube extends CubeBase {
         {
             // Lookup a measure in an existing cube.
             RolapCube cube = schema.lookupCube(xmlMeasure.cubeName);
+            if (cube == null) {
+                throw Util.newError(
+                    "Cube '" + xmlMeasure.cubeName + "' not found");
+            }
             List<Member> cubeMeasures = cube.getMeasures();
             boolean found = false;
             for (Member cubeMeasure : cubeMeasures) {
