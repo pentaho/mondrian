@@ -12,9 +12,7 @@
 package mondrian.test;
 
 import junit.framework.Assert;
-import mondrian.olap.Result;
-import mondrian.olap.Member;
-import mondrian.olap.Cell;
+import mondrian.olap.*;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -1153,18 +1151,61 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "\n"
             + "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\" />\n"
             + "</Cube>\n";
-        String mdx =
-            "select {[Measures].[Count]} ON COLUMNS, NON EMPTY {[Employees].AllMembers} ON ROWS from [HR4C]";
+
         TestContext testClosureContext = TestContext.create(
             null, cubestart + closure + cubeend, null, null, null, null);
-        String expect =
-            TestContext.toString(testClosureContext.executeQuery(mdx));
         TestContext testNoClosureContext = TestContext.create(
             null, cubestart + cubeend, null, null, null, null);
+
+        String mdx;
+        String expected;
+
+        // 1. Run a big query on both contexts and check that both give same.
+        mdx =
+            "select {[Measures].[Count]} ON COLUMNS,\n"
+            + " NON EMPTY {[Employees].AllMembers} ON ROWS\n"
+            + "from [HR4C]";
+        expected =
+            TestContext.toString(testClosureContext.executeQuery(mdx));
+        assertTrue(expected, expected.contains("Row #0: 21,252\n"));
         // Need to unfold because 'expect' has platform-specific line-endings,
         // yet assertQueryReturns assumes that it contains linefeeds.
         testNoClosureContext.assertQueryReturns(
-            mdx, TestContext.unfold(expect));
+            mdx, TestContext.unfold(expected));
+
+        // 2. Run a small query with known results on both contexts.
+        // Note in particular the total for [All] is 21,252, same as for
+        // [Sheri Nowmer]. There was a bug where [All] had a much higher total.
+        mdx =
+            "select {[Measures].[Count]} ON COLUMNS,\n"
+            + " Descendants([Employees], 2, SELF_AND_BEFORE) ON ROWS\n"
+            + "from [HR4C]";
+        expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Count]}\n"
+            + "Axis #2:\n"
+            + "{[Employees].[All]}\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
+            + "{[Employees].[Sheri Nowmer].[Michael Spence]}\n"
+            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez]}\n"
+            + "{[Employees].[Sheri Nowmer].[Roberta Damstra]}\n"
+            + "{[Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
+            + "{[Employees].[Sheri Nowmer].[Darren Stanz]}\n"
+            + "{[Employees].[Sheri Nowmer].[Donna Arnold]}\n"
+            + "Row #0: 21,252\n"
+            + "Row #1: 21,252\n"
+            + "Row #2: 14,472\n"
+            + "Row #3: 1,128\n"
+            + "Row #4: 5,244\n"
+            + "Row #5: 96\n"
+            + "Row #6: 60\n"
+            + "Row #7: 168\n"
+            + "Row #8: 60\n";
+        testClosureContext.assertQueryReturns(mdx, expected);
+        testNoClosureContext.assertQueryReturns(mdx, expected);
     }
 }
 

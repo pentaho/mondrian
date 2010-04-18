@@ -91,6 +91,8 @@ public class RolapCube extends CubeBase {
     private Map<RolapLevel, RolapCubeLevel> virtualToBaseMap =
         new HashMap<RolapLevel, RolapCubeLevel>();
 
+    final BitKey closureColumnBitKey;
+
     /**
      * Private constructor used by both normal cubes and virtual cubes.
      *
@@ -135,6 +137,10 @@ public class RolapCube extends CubeBase {
             if (! isCache) {
                 star.setCacheAggregations(isCache);
             }
+            closureColumnBitKey =
+                BitKey.Factory.makeBitKey(star.getColumnCount());
+        } else {
+            closureColumnBitKey = null;
         }
 
         if (getLogger().isDebugEnabled()) {

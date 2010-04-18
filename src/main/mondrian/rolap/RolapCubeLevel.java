@@ -114,6 +114,11 @@ public class RolapCubeLevel extends RolapLevel {
             closedPeerCubeLevel = (RolapCubeLevel)
                 cubeDimension.getHierarchies()[0].getLevels()[1];
 
+            if (!getCube().isVirtual()) {
+                getCube().closureColumnBitKey.set(
+                    closedPeerCubeLevel.starKeyColumn.getBitPosition());
+            }
+
             this.levelReader = new ParentChildLevelReaderImpl(this);
         } else {
             this.levelReader = new RegularLevelReader(this);
