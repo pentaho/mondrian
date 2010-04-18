@@ -1717,6 +1717,92 @@ public class AccessControlTest extends FoodMartTestCase {
 //      System.out.println("Elapsed=" + (t2 - t1) + " millis");
 //      System.out.println("RoleImpl.accessCount=" + RoleImpl.accessCallCount);
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-694">MONDRIAN-694,
+     * "Incorrect handling of child/parent relationship with hierarchy
+     * grants"</a>.
+     */
+    public void testBugMondrian694() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"REG1\"> \n"
+                + "  <SchemaGrant access=\"none\"> \n"
+                + "    <CubeGrant cube=\"HR\" access=\"all\"> \n"
+                + "      <HierarchyGrant hierarchy=\"Employees\" access=\"custom\" rollupPolicy=\"partial\"> \n"
+                + "        <MemberGrant member=\"[Employees].[All Employees]\" access=\"none\"/>\n"
+                + "        <MemberGrant member=\"[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Steven Betsekas]\" access=\"all\"/> \n"
+                + "        <MemberGrant member=\"[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Arvid Ziegler]\" access=\"all\"/> \n"
+                + "        <MemberGrant member=\"[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Ann Weyerhaeuser]\" access=\"all\"/> \n"
+                + "      </HierarchyGrant> \n"
+                + "    </CubeGrant> \n"
+                + "  </SchemaGrant> \n"
+                + "</Role>")
+                .withRole("REG1");
+
+        // With bug MONDRIAN-694 returns 874.80, should return 79.20.
+        // Test case is minimal: doesn't happen without the Crossjoin, or
+        // without the NON EMPTY, or with [Employees] as opposed to
+        // [Employees].[All Employees], or with [Department].[All Departments].
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Org Salary]} ON COLUMNS,\n"
+            + "NON EMPTY Crossjoin({[Department].[14]}, {[Employees].[All Employees]}) ON ROWS\n"
+            + "from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Org Salary]}\n"
+            + "Axis #2:\n"
+            + "{[Department].[14], [Employees].[All Employees]}\n"
+            + "Row #0: $97.20\n");
+
+        // This query gave the right answer, even with MONDRIAN-694.
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Org Salary]} ON COLUMNS, \n"
+            + "NON EMPTY Hierarchize(Crossjoin({[Department].[14]}, {[Employees].[All Employees], [Employees].Children})) ON ROWS \n"
+            + "from [HR] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Org Salary]}\n"
+            + "Axis #2:\n"
+            + "{[Department].[14], [Employees].[All Employees]}\n"
+            + "{[Department].[14], [Employees].[Sheri Nowmer]}\n"
+            + "Row #0: $97.20\n"
+            + "Row #1: $97.20\n");
+
+        // Original test case, not quite minimal. With MONDRIAN-694, returns
+        // $874.80 for [All Employees].
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Org Salary]} ON COLUMNS, \n"
+            + "NON EMPTY Hierarchize(Union(Crossjoin({[Department].[All Departments].[14]}, {[Employees].[All Employees]}), Crossjoin({[Department].[All Departments].[14]}, [Employees].[All Employees].Children))) ON ROWS \n"
+            + "from [HR]  ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Org Salary]}\n"
+            + "Axis #2:\n"
+            + "{[Department].[14], [Employees].[All Employees]}\n"
+            + "{[Department].[14], [Employees].[Sheri Nowmer]}\n"
+            + "Row #0: $97.20\n"
+            + "Row #1: $97.20\n");
+
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Org Salary]} ON COLUMNS, \n"
+            + "NON EMPTY Crossjoin(Hierarchize(Union({[Employees].[All Employees]}, [Employees].[All Employees].Children)), {[Department].[14]}) ON ROWS \n"
+            + "from [HR] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Org Salary]}\n"
+            + "Axis #2:\n"
+            + "{[Employees].[All Employees], [Department].[14]}\n"
+            + "{[Employees].[Sheri Nowmer], [Department].[14]}\n"
+            + "Row #0: $97.20\n"
+            + "Row #1: $97.20\n");
+    }
 }
 
 // End AccessControlTest.java

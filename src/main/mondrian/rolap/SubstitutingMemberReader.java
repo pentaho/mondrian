@@ -277,6 +277,10 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                     key,
                     column));
         }
+
+        public RolapMember allMember() {
+            return substitute(memberReader.getHierarchy().getAllMember());
+        }
     }
 }
 

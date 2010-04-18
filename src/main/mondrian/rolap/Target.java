@@ -17,12 +17,8 @@ import java.sql.SQLException;
 import java.util.*;
 
  /**
- * <p>
- * helper class for HighCardSqlTupleReader
- *  {@link mondrian.rolap.HighCardSqlTupleReader}
- * Keeps track of target levels and constraints for adding to sql query
- *
- * </p>
+ * Helper class for {@link mondrian.rolap.HighCardSqlTupleReader} that
+ * keeps track of target levels and constraints for adding to SQL query.
  *
  * @author luis f. canals, Kurtis Walker
  * @since July 23, 2009
@@ -52,6 +48,8 @@ public class Target extends TargetBase {
 
     public void open() {
         levels = (RolapLevel[]) level.getHierarchy().getLevels();
+        // REVIEW: ArrayDeque is preferable to LinkedList (JDK1.6 and up) but it
+        //   doesn't implement List, so we can't easily interoperate the two.
         setList(new LinkedList<RolapMember>());
         levelDepth = level.getDepth();
         parentChild = level.isParentChild();
@@ -69,7 +67,7 @@ public class Target extends TargetBase {
             for (int i = 0; i <= levelDepth; i++) {
                 RolapLevel childLevel = levels[i];
                 if (childLevel.isAll()) {
-                    member = level.getHierarchy().getAllMember();
+                    member = memberBuilder.allMember();
                     continue;
                 }
 
@@ -245,4 +243,3 @@ public class Target extends TargetBase {
 }
 
 // End Target.java
-

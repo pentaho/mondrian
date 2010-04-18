@@ -1147,6 +1147,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public Object getMemberCacheLock() {
             return memberCacheLock;
         }
+
+        public RolapMember allMember() {
+            return getHierarchy().getAllMember();
+        }
     }
 }
 

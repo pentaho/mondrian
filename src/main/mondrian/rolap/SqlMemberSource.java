@@ -1036,6 +1036,13 @@ RME is this right
         return member;
     }
 
+    public RolapMember allMember() {
+        final RolapHierarchy rolapHierarchy =
+            hierarchy instanceof RolapCubeHierarchy
+                ? ((RolapCubeHierarchy) hierarchy).getRolapHierarchy()
+                : hierarchy;
+        return rolapHierarchy.getAllMember();
+    }
 
     /**
      * <p>Looks up an object (and if needed, stores it) in a cached value pool.

@@ -59,6 +59,13 @@ public interface TupleReader {
             Object key,
             int column)
             throws SQLException;
+
+        /**
+         * Returns the 'all' member of the hierarchy.
+         *
+         * @return The 'all' member
+         */
+        RolapMember allMember();
     }
 
     /**
