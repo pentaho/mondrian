@@ -182,10 +182,6 @@ public class RolapSchemaReader
     {
         final List<RolapMember> rolapMemberList = Util.cast(list);
         list.add(dataMember);
-        if (hierarchy instanceof RolapCubeHierarchy && false) {
-            hierarchy =
-                ((RolapCubeHierarchy) hierarchy).getRolapHierarchy();
-        }
         ((RolapHierarchy) hierarchy).getMemberReader().getMemberChildren(
             (RolapMember) dataMember, rolapMemberList);
     }
@@ -502,14 +498,32 @@ public class RolapSchemaReader
 
     public List<Dimension> getCubeDimensions(Cube cube) {
         assert cube != null;
-        // REVIEW: access control?
-        return Arrays.asList(cube.getDimensions());
+        final List<Dimension> dimensions = new ArrayList<Dimension>();
+        for (Dimension dimension : cube.getDimensions()) {
+            switch (role.getAccess(dimension)) {
+            case NONE:
+                continue;
+            default:
+                dimensions.add(dimension);
+                break;
+            }
+        }
+        return dimensions;
     }
 
     public List<Hierarchy> getDimensionHierarchies(Dimension dimension) {
         assert dimension != null;
-        // REVIEW: access control?
-        return Arrays.asList(dimension.getHierarchies());
+        final List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
+        for (Hierarchy hierarchy : dimension.getHierarchies()) {
+            switch (role.getAccess(hierarchy)) {
+            case NONE:
+                continue;
+            default:
+                hierarchies.add(hierarchy);
+                break;
+            }
+        }
+        return hierarchies;
     }
 
     public List<Level> getHierarchyLevels(Hierarchy hierarchy) {
