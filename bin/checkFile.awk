@@ -6,7 +6,7 @@ function error(fname, linum, msg) {
     printf "%s: %d: %s\n", fname, linum, msg;
     if (0) print; # for debug
 }
-function matchFile(fname) {
+function _matchFile(fname) {
     return fname ~ "/mondrian/" \
        || fname ~ "/org/olap4j/" \
        || fname ~ "/aspen/" \
@@ -15,11 +15,11 @@ function matchFile(fname) {
        || fname ~ "/com/sqlstream/" \
        || !lenient;
 }
-function isCpp(fname) {
+function _isCpp(fname) {
     return fname ~ /\.(cpp|h)$/;
 }
-function isJava(fname) {
-    return !isCpp(fname);
+function _isJava(fname) {
+    return fname ~ /\.(java|jj)$/;
 }
 function push(val) {
     switchStack[switchStackLen++] = val;
@@ -40,6 +40,9 @@ BEGIN {
 }
 FNR == 1 {
     fname = FILENAME;
+    matchFile = _matchFile(fname);
+    isCpp = _isCpp(fname);
+    isJava = _isJava(fname);
 }
 {
     if (previousLineEndedInCloseBrace > 0) {
@@ -99,29 +102,41 @@ FNR == 1 {
     error(fname, FNR, "Line ends in space");
 }
 /[\t]/ {
-    if (matchFile(fname)) {
+    if (matchFile) {
         error(fname, FNR, "Tab character");
     }
 }
+/[\r]/ {
+    if (matchFile) {
+        error(fname, FNR, "Carriage return character (file is in DOS format?)");
+    }
+}
+{
+    # Rules beyond this point only apply to Java and C++.
+    if (!isCpp && !isJava) {
+        next;
+    }
+}
+
 /^$/ {
-    if (matchFile(fname) && previousLineEndedInOpenBrace) {
+    if (matchFile && previousLineEndedInOpenBrace) {
         error(fname, FNR, "Empty line following open brace");
     }
 }
 /^ +}( catch| finally| while|[;,)])/ ||
 /^ +}$/ {
-    if (matchFile(fname) && previousLineWasEmpty) {
+    if (matchFile && previousLineWasEmpty) {
         error(fname, FNR - 1, "Empty line before close brace");
     }
 }
 s ~ /\<if\>.*;$/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else {
         error(fname, FNR, "if followed by statement on same line");
     }
 }
 s ~ /\<(if) *\(/ {
-    if (!matchFile(fname)) {
+    if (!matchFile) {
     } else if (s !~ /\<(if) /) {
         error(fname, FNR, "if must be followed by space");
     } else if (s ~ / else if /) {
@@ -131,7 +146,7 @@ s ~ /\<(if) *\(/ {
     }
 }
 s ~ /\<(while) *\(/ {
-    if (!matchFile(fname)) {
+    if (!matchFile) {
     } else if (s !~ /\<(while) /) {
         error(fname, FNR, "while must be followed by space");
     } else if (s ~ /} while /) {
@@ -140,7 +155,7 @@ s ~ /\<(while) *\(/ {
     }
 }
 s ~ /\<(for|switch|synchronized|} catch) *\(/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /^(    )*(for|switch|synchronized|} catch)/) {
         error(fname, FNR, "for/switch/synchronized/catch must be correctly indented");
     } else if (s !~ /\<(for|switch|synchronized|} catch) /) {
@@ -156,10 +171,10 @@ s ~ /\<(if|while|for|switch)\>/ {
     gsub(/[^(]/, "", opens);
     closes = s;
     gsub(/[^)]/, "", closes);
-    if (!matchFile(fname)) {
+    if (!matchFile) {
     } else if (s ~ /{( *\/\/ comment)?$/) {
         # lines which end with { and optional comment are ok
-    } else if (s ~ /{.*\\$/ && isCpp(fname)) {
+    } else if (s ~ /{.*\\$/ && isCpp) {
         # lines which end with backslash are ok in c++ macros
     } else if (s ~ /} while/) {
         # lines like "} while (foo);" are ok
@@ -239,14 +254,14 @@ s ~ /}/ {
 }
 s ~ /\<(case|default)\>/ {
     caseDefaultCol = match($0, /case|default/);
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (caseDefaultCol != switchCol) {
         error(fname, FNR, "case/default must be aligned with switch");
     }
 }
 s ~ /\<assert\>/ {
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname)) {} # rule only applies to java
+    if (!matchFile) {}
+    else if (isCpp) {} # rule only applies to java
     else if (s !~ /^(    )+(assert)/) {
         error(fname, FNR, "assert must be correctly indented");
     } else if (s !~ /\<assert /) {
@@ -254,8 +269,8 @@ s ~ /\<assert\>/ {
     }
 }
 s ~ /\<return\>/ {
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname) && s ~ /^#/) {
+    if (!matchFile) {}
+    else if (isCpp && s ~ /^#/) {
         # ignore macros
     } else if (s !~ /^(    )+(return)/) {
         error(fname, FNR, "return must be correctly indented");
@@ -264,8 +279,8 @@ s ~ /\<return\>/ {
     }
 }
 s ~ /\<throw\>/ {
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname)) {
+    if (!matchFile) {}
+    else if (isCpp) {
         # cannot yet handle C++ cases like 'void foo() throw(int)'
     } else if (s !~ /^(    )+(throw)/) {
         error(fname, FNR, "throw must be correctly indented");
@@ -274,53 +289,53 @@ s ~ /\<throw\>/ {
     }
 }
 s ~ /\<else\>/ {
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname) && s ~ /^# *else$/) {} # ignore "#else"
+    if (!matchFile) {}
+    else if (isCpp && s ~ /^# *else$/) {} # ignore "#else"
     else if (s !~ /^(    )+} else (if |{$|{ *\/\/|{ *\/\*)/) {
         error(fname, FNR, "else must be preceded by } and followed by { or if and correctly indented");
     }
 }
 s ~ /\<do\>/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /^(    )*do {/) {
         error(fname, FNR, "do must be followed by space {, and correctly indented");
     }
 }
 s ~ /\<try\>/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /^(    )+try {/) {
         error(fname, FNR, "try must be followed by space {, and correctly indented");
     }
 }
 s ~ /\<catch\>/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /^(    )+} catch /) {
         error(fname, FNR, "catch must be preceded by }, followed by space, and correctly indented");
     }
 }
 s ~ /\<finally\>/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /^(    )+} finally {/) {
         error(fname, FNR, "finally must be preceded by }, followed by space {, and correctly indented");
     }
 }
 match(s, /([]A-Za-z0-9()])(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\||\|\||^|\?|:) *[A-Za-z0-9(]/, a) {
     # < and > are not handled here - they have special treatment below
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
 #    else if (s ~ /<.*>/) {} # ignore templates
     else if (a[2] == "-" && s ~ /\(-/) {} # ignore case "foo(-1)"
     else if (a[2] == "-" && s ~ /[eE][+-][0-9]/) {} # ignore e.g. 1e-5
     else if (a[2] == "+" && s ~ /[eE][+-][0-9]/) {} # ignore e.g. 1e+5
     else if (a[2] == ":" && s ~ /(case.*|default):$/) {} # ignore e.g. "case 5:"
-    else if (isCpp(fname) && s ~ /[^ ][*&]/) {} # ignore e.g. "Foo* p;" in c++ - debatable
-    else if (isCpp(fname) && s ~ /\<operator.*\(/) {} # ignore e.g. "operator++()" in c++
-    else if (isCpp(fname) && a[2] == "/" && s ~ /#include/) {} # ignore e.g. "#include <x/y.hpp>" in c++
+    else if (isCpp && s ~ /[^ ][*&]/) {} # ignore e.g. "Foo* p;" in c++ - debatable
+    else if (isCpp && s ~ /\<operator.*\(/) {} # ignore e.g. "operator++()" in c++
+    else if (isCpp && a[2] == "/" && s ~ /#include/) {} # ignore e.g. "#include <x/y.hpp>" in c++
     else {
         error(fname, FNR, "operator '" a[2] "' must be preceded by space");
     }
 }
 match(s, /([]A-Za-z0-9() ] *)(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\||\|\||^|\?|:|,)[A-Za-z0-9(]/, a) {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
 #    else if (s ~ /<.*>/) {} # ignore templates
     else if (a[2] == "-" && s ~ /(\(|return |case |= )-/) {} # ignore prefix -
     else if (a[2] == ":" && s ~ /(case.*|default):$/) {} # ignore e.g. "case 5:"
@@ -328,18 +343,18 @@ match(s, /([]A-Za-z0-9() ] *)(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\|
     else if (s ~ /-[^ ]/ && s ~ /[^A-Za-z0-9] -/) {} # ignore case "x + -1" but not "x -1" or "3 -1"
     else if (a[2] == "-" && s ~ /[eE][+-][0-9]/) {} # ignore e.g. 1e-5
     else if (a[2] == "+" && s ~ /[eE][+-][0-9]/) {} # ignore e.g. 1e+5
-    else if (a[2] == "*" && isCpp(fname) && s ~ /\*[^ ]/) {} # ignore e.g. "Foo *p;" in c++
-    else if (a[2] == "&" && isCpp(fname) && s ~ /&[^ ]/) {} # ignore case "foo(&x)" in c++
-    else if (isCpp(fname) && s ~ /\<operator[^ ]+\(/) {} # ignore e.g. "operator++()" in c++
-    else if (isCpp(fname) && a[2] == "/" && s ~ /#include/) {} # ignore e.g. "#include <x/y.hpp>" in c++
+    else if (a[2] == "*" && isCpp && s ~ /\*[^ ]/) {} # ignore e.g. "Foo *p;" in c++
+    else if (a[2] == "&" && isCpp && s ~ /&[^ ]/) {} # ignore case "foo(&x)" in c++
+    else if (isCpp && s ~ /\<operator[^ ]+\(/) {} # ignore e.g. "operator++()" in c++
+    else if (isCpp && a[2] == "/" && s ~ /#include/) {} # ignore e.g. "#include <x/y.hpp>" in c++
     else if (lenient && fname ~ /(fennel)/ && a[1] = ",") {} # not enabled yet
     else {
         error(fname, FNR, "operator '" a[2] "' must be followed by space");
     }
 }
 match(s, /( )(,)/, a) {
-    # < and > are not handled here - they have special treatment below
-    if (!matchFile(fname)) {}
+    # (, < and > are not handled here - they have special treatment below
+    if (!matchFile) {}
     else {
         error(fname, FNR, "operator '" a[2] "' must not be preceded by space");
     }
@@ -350,7 +365,7 @@ match(s, /(\.|->)$/, a) {
     else if (lenient && fname ~ /(fennel|farrago|aspen)/ && a[1] = "+") {} # not enabled yet
     else if (a[1] == ":" && s ~ /(case.*|default):$/) {
         # ignore e.g. "case 5:"
-    } else if ((a[1] == "*" || a[1] == "&") && isCpp(fname) && s ~ /^[[:alnum:]:_ ]* [*&]$/) {
+    } else if ((a[1] == "*" || a[1] == "&") && isCpp && s ~ /^[[:alnum:]:_ ]* [*&]$/) {
         # ignore e.g. "const int *\nClass::Subclass2::method(int x)"
     } else {
         error(fname, FNR, "operator '" a[1] "' must not be at end of line");
@@ -359,58 +374,68 @@ match(s, /(\.|->)$/, a) {
 match(s, /^ *(=) /, a) {
     error(fname, FNR, "operator '" a[1] "' must not be at start of line");
 }
+match(s, /([[:alnum:]~]+)( )([(])/, a) {
+    # (, < and > are not handled here - they have special treatment below
+    if (!matchFile) {}
+    else if (isJava && a[1] ~ /\<(if|while|for|catch|switch|case|return|throw|synchronized|assert)\>/) {}
+    else if (isCpp && a[1] ~ /\<(if|while|for|catch|switch|case|return|throw|operator|void|PBuffer)\>/) {}
+    else if (isCpp && s ~ /^#define /) {}
+    else {
+        error(fname, FNR, "there must be no space before '" a[3] "' in fun call or fun decl");
+    }
+}
 s ~ /\<[[:digit:][:lower:]][[:alnum:]_]*</ {
     # E.g. "p<" but not "Map<"
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname)) {} # in C++ 'xyz<5>' could be a template
+    if (!matchFile) {}
+    else if (isCpp) {} # in C++ 'xyz<5>' could be a template
     else {
         error(fname, FNR, "operator '<' must be preceded by space");
     }
 }
 s ~ /\<[[:digit:][:lower:]][[:alnum:]_]*>/ {
     # E.g. "g>" but not "String>" as in "List<String>"
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname)) {} # in C++ 'xyz<int>' could be a template
+    if (!matchFile) {}
+    else if (isCpp) {} # in C++ 'xyz<int>' could be a template
     else {
         error(fname, FNR, "operator '>' must be preceded by space");
     }
 }
 match(s, /<([[:digit:][:lower:]][[:alnum:].]*)\>/, a) {
-    if (!matchFile(fname)) {}
-    else if (isCpp(fname)) {
+    if (!matchFile) {}
+    else if (isCpp) {
         # in C++, template and include generate too many false positives
-    } else if (isJava(fname) && a[1] ~ /(int|char|long|boolean|byte|double|float)/) {
+    } else if (isJava && a[1] ~ /(int|char|long|boolean|byte|double|float)/) {
         # Allow e.g. 'List<int[]>'
-    } else if (isJava(fname) && a[1] ~ /^[[:lower:]]+\./) {
+    } else if (isJava && a[1] ~ /^[[:lower:]]+\./) {
         # Allow e.g. 'List<java.lang.String>'
     } else {
         error(fname, FNR, "operator '<' must be followed by space");
     }
 }
 match(s, /^(.*[^-])>([[:digit:][:lower:]][[:alnum:]]*)\>/, a) {
-    if (!matchFile(fname)) {}
-    else if (isJava(fname) && a[1] ~ /.*\.<.*/) {
+    if (!matchFile) {}
+    else if (isJava && a[1] ~ /.*\.<.*/) {
         # Ignore 'Collections.<Type>member'
     } else {
         error(fname, FNR, "operator '>' must be followed by space");
     }
 }
 s ~ /[[(] / {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s ~ /[[(] +\\$/) {} # ignore '#define foo(   \'
     else {
         error(fname, FNR, "( or [ must not be followed by space");
     }
 }
 s ~ / [])]/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s ~ /^ *\)/ && previousLineEndedInCloseBrace) {} # ignore "bar(new Foo() { } );"
     else {
         error(fname, FNR, ") or ] must not be followed by space");
     }
 }
 s ~ /}/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s !~ /}( |;|,|$|\))/) {
         error(fname, FNR, "} must be followed by space");
     } else if (s !~ /(    )*}/) {
@@ -418,7 +443,7 @@ s ~ /}/ {
     }
 }
 s ~ /{/ {
-    if (!matchFile(fname)) {}
+    if (!matchFile) {}
     else if (s ~ /(\]\)?|=) *{/) {} # ignore e.g. "(int[]) {1, 2}" or "int[] x = {1, 2}"
     else if (s ~ /\({/) {} # ignore e.g. @SuppressWarnings({"unchecked"})
     else if (s ~ /{ *(\/\/|\/\*)/) {} # ignore e.g. "do { // a comment"
@@ -430,7 +455,7 @@ s ~ /{/ {
     else if (s ~ /\\$/) {} # ignore multiline macros
     else if (s ~ /{}/) { # e.g. "Constructor(){}"
         error(fname, FNR, "{} must be preceded by space and at end of line");
-    } else if (isCpp(fname) && s ~ /{ *\\$/) {
+    } else if (isCpp && s ~ /{ *\\$/) {
         # ignore - "{" can be followed by "\" in c macro
     } else if (s !~ /{$/) {
         error(fname, FNR, "{ must be at end of line");
@@ -448,8 +473,8 @@ s ~ /{/ {
     }
 }
 s ~ /(^| )(class|interface|enum) / ||
-s ~ /(^| )namespace / && isCpp(fname) {
-    if (isCpp(fname) && s ~ /;$/) {} # ignore type declaration
+s ~ /(^| )namespace / && isCpp {
+    if (isCpp && s ~ /;$/) {} # ignore type declaration
     else {
         classDeclStartLine = FNR;
         t = s;
@@ -533,7 +558,7 @@ END {
     gsub(".*/", "", basename);
     gsub(lf, "", lastNonEmptyLine);
     terminator = "// End " basename;
-    if (matchFile(fname) && (lastNonEmptyLine != terminator)) {
+    if (matchFile && (lastNonEmptyLine != terminator)) {
         error(fname, FNR, sprintf("Last line should be %c%s%c", 39, terminator, 39));
     }
 }

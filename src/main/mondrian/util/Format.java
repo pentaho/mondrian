@@ -339,6 +339,29 @@ public class Format {
                     } else {
                         i = 0;
                         if (formats[0].isApplicableTo(n)) {
+                            if (!Bug.BugMondrian687Fixed) {
+                                // Special case for format strings with style,
+                                // like "|#|style='red'". JPivot expects the
+                                // '-' to immediately precede the digits, viz
+                                // "|-6|style='red'|", not "-|6|style='red'|".
+                                // This is not consistent with SSAS 2005, hence
+                                // the bug.
+                                //
+                                // But for other formats, we want '-' to precede
+                                // literals, viz '-$6' not '$-6'. This is SSAS
+                                // 2005's behavior too.
+                                int size = buf.length();
+                                buf.append('-');
+                                n = -n;
+                                formats[i].format(n, buf);
+                                if (buf.substring(size, size + 2).equals(
+                                    "-|"))
+                                {
+                                    buf.setCharAt(size, '|');
+                                    buf.setCharAt(size + 1, '-');
+                                }
+                                return;
+                            }
                             buf.append('-');
                             n = -n;
                         } else {
@@ -384,6 +407,29 @@ public class Format {
                     } else {
                         i = 0;
                         if (formats[0].isApplicableTo(n)) {
+                            if (!Bug.BugMondrian687Fixed) {
+                                // Special case for format strings with style,
+                                // like "|#|style='red'". JPivot expects the
+                                // '-' to immediately precede the digits, viz
+                                // "|-6|style='red'|", not "-|6|style='red'|".
+                                // This is not consistent with SSAS 2005, hence
+                                // the bug.
+                                //
+                                // But for other formats, we want '-' to precede
+                                // literals, viz '-$6' not '$-6'. This is SSAS
+                                // 2005's behavior too.
+                                final int size = buf.length();
+                                buf.append('-');
+                                n = -n;
+                                formats[i].format(n, buf);
+                                if (buf.substring(size, size + 2).equals(
+                                    "-|"))
+                                {
+                                    buf.setCharAt(size, '|');
+                                    buf.setCharAt(size + 1, '-');
+                                }
+                                return;
+                            }
                             buf.append('-');
                             n = -n;
                         } else {
@@ -2392,22 +2438,6 @@ public class Format {
             haveSeenNumber = true;
         }
 
-        // Merge adjacent literal formats.
-        for (int i = 0; i < formatList.size(); ++i) {
-            if (i > 0
-                && formatList.get(i) instanceof LiteralFormat
-                && formatList.get(i - 1) instanceof LiteralFormat)
-            {
-                formatList.set(
-                    i - 1,
-                    new LiteralFormat(
-                        ((LiteralFormat) formatList.get(i - 1)).s
-                        + ((LiteralFormat) formatList.get(i)).s));
-                formatList.remove(i);
-                --i;
-            }
-        }
-
         // If they used some symbol like 'AM/PM' in the format string, tell all
         // date formats to use twelve hour clock.  Likewise, figure out the
         // multiplier implied by their use of "%" or ",".
@@ -2470,6 +2500,26 @@ public class Format {
                     ((NumericFormat) formatList.get(i)).decimalShift =
                         decimalShift;
                 }
+            }
+        }
+
+        // Merge adjacent literal formats.
+        //
+        // Must do this AFTER adjusting for percent. Otherwise '%' and following
+        // '|' might be merged into a plain literal, and '%' would lose its
+        // special powers.
+        for (int i = 0; i < formatList.size(); ++i) {
+            if (i > 0
+                && formatList.get(i) instanceof LiteralFormat
+                && formatList.get(i - 1) instanceof LiteralFormat)
+            {
+                formatList.set(
+                    i - 1,
+                    new LiteralFormat(
+                        ((LiteralFormat) formatList.get(i - 1)).s
+                        + ((LiteralFormat) formatList.get(i)).s));
+                formatList.remove(i);
+                --i;
             }
         }
 

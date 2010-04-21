@@ -223,6 +223,13 @@ public class FormatTest extends TestCase {
         // if there are no digits right to decimal.
         checkFormat(null, new BigDecimal("23"), "#.#", "23.");
         checkFormat(null, new BigDecimal("0"), "#.#", ".");
+
+        // escaped semicolon
+        final String formatString = "$\\;#;(\\;#);\\;\\Z";
+        checkFormat(null, new BigDecimal("1"), formatString, "$;1");
+        checkFormat(null, new BigDecimal("-1"), formatString, "(;1)");
+        checkFormat(null, new BigDecimal("0"), formatString, ";Z");
+        checkFormat(null, null, formatString, "");
     }
 
     /**
@@ -328,6 +335,96 @@ public class FormatTest extends TestCase {
         checkFormat(null, new BigDecimal("-0.0"), "#0.000", "0.000");
         checkFormat(null, new BigDecimal("-0.0"), "#0", "0");
         checkFormat(null, new BigDecimal("-0.0"), "#0.0", "0.0");
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-686">
+     * MONDRIAN-686</a>, "Regression: JPivot output invalid - New Variance
+     * Percent column".
+     */
+    public void testPercentWithStyle() {
+        checkFormat(
+            null,
+            new BigDecimal("0.0364"),
+            "|#.00%|style='green'",
+            "|3.64%|style='green'");
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-687">
+     * MONDRIAN-687</a>, "Format treats negative numbers differently than SSAS".
+     */
+    public void testNegativePercentWithStyle() {
+        if (Bug.BugMondrian687Fixed) {
+            checkFormat(
+                null,
+                new BigDecimal("-0.0364"),
+                "|#.00%|style=red",
+                "-|3.64%|style=red");
+        } else {
+            checkFormat(
+                null,
+                new BigDecimal("-0.0364"),
+                "|#.00%|style='red'",
+                "|-3.64%|style='red'"); // confirmed on SSAS 2005
+        }
+
+        // exercise code for long (and int) values
+        if (Bug.BugMondrian687Fixed) {
+            checkFormat(
+                null,
+                -364,
+                "|#.00|style=red",
+                "-|364.00|style=red");
+        } else {
+            checkFormat(
+                null,
+                -364,
+                "|#.00|style=red",
+                "|-364.00|style=red"); // confirmed on SSAS 2005
+        }
+
+        // now with multiple alternate formats
+        checkFormat(
+            null,
+            364,
+            "|#.00|style='green';|-#.000|style='red'",
+            "|364.00|style='green'"); // confirmed on SSAS 2005
+        checkFormat(
+            null,
+            -364,
+            "|#.00|style='green';|-#.000|style='red'",
+            "|-364.000|style='red'"); // confirmed on SSAS 2005
+    }
+
+    /**
+     * Single quotes in format string. SSAS 2005 removes them; Mondrian should
+     * also.
+     */
+    public void testSingleQuotes() {
+        if (Bug.BugMondrian687Fixed) {
+            checkFormat(
+                null,
+                3.64,
+                "|#.00|style='deep red'",
+                "-|364.00|style=deep red"); // confirmed on SSAS 2005
+            checkFormat(
+                null,
+                3.64,
+                "|#.00|style=\\'deep red\\'",
+                "-|364.00|style='deep red'"); // confirmed on SSAS 2005
+        } else {
+            checkFormat(
+                null,
+                -364,
+                "|#.00|style='deep red'",
+                "|-364.00|style='deep red'");
+        }
+    }
+
+    public void testNegativePercent() {
+        checkFormat(null, new BigDecimal("-0.0364"), "#.00%", "-3.64%");
+        checkFormat(null, new BigDecimal("0.0364"), "#.00%", "3.64%");
     }
 
     public void testNumberRoundingBug() {
