@@ -174,6 +174,14 @@ public class Bug {
     public static final boolean BugMondrian675Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-675">bug MONDRIAN-687,
+     * "Format treats negative numbers differently than SSAS"</a>
+     * is fixed.
+     */
+    public static final boolean BugMondrian687Fixed = false;
+
+    /**
      * Returns whether to avoid a test because the memory monitor may cause it
      * to fail.
      *
