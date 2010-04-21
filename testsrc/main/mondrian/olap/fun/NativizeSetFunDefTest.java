@@ -645,6 +645,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNonEmptyNestedCrossJoins() {
+        if (MondrianProperties.instance().UseAggregates.get()
+           || MondrianProperties.instance().ReadAggregates.get())
+        {
+            return;
+        }
         checkNative(
             "SELECT "
             + "NativizeSet(CrossJoin("
@@ -1001,6 +1006,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testMultipleLevelsOfSameDimInSingleArg() {
+        if (MondrianProperties.instance().UseAggregates.get()
+           || MondrianProperties.instance().ReadAggregates.get())
+        {
+            return;
+        }
         checkNotNative(
             // Although it's legal MDX, the RolapNativeSet.checkCrossJoinArg
             // can't deal with an arg that contains multiple .members functions.
@@ -1412,6 +1422,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testSingleLevelDotMembersIsNativelyEvaluated() {
+        if (MondrianProperties.instance().UseAggregates.get()
+           || MondrianProperties.instance().ReadAggregates.get())
+        {
+            return;
+        }
         String mdx1 =
             "with member [Customers].[agg] as '"
             + "AGGREGATE({[Customers].[name].MEMBERS}, [Measures].[Unit Sales])'"
