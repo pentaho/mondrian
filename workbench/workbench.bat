@@ -15,6 +15,7 @@ set CP=%CP%;lib/eigenbase-xom.jar
 set CP=%CP%;lib/javacup.jar
 set CP=%CP%;lib/log4j.jar
 set CP=%CP%;lib/mondrian.jar
+set CP=%CP%;lib/olap4j.jar
 set CP=%CP%;lib/jlfgr.jar
 set CP=%CP%;lib/commons-math.jar
 set CP=%CP%;lib/commons-vfs.jar
