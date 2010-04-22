@@ -27,10 +27,28 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
         propSaver.set(
             MondrianProperties.instance().NativizeMinThreshold, 0);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, false);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates, false);
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    public void testIsNoOpWithAggregatesTablesOn() {
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, true);
+        checkNotNative(
+            "with  member [gender].[agg] as"
+            + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
+            + "select NativizeSet(CrossJoin( "
+            + "{gender.gender.members, gender.agg}, "
+            + "{[marital status].[marital status].members}"
+            + ")) on 0 from sales");
     }
 
     public void testLevelHierarchyHighCardinality() {
@@ -645,11 +663,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNonEmptyNestedCrossJoins() {
-        if (MondrianProperties.instance().UseAggregates.get()
-           || MondrianProperties.instance().ReadAggregates.get())
-        {
-            return;
-        }
         checkNative(
             "SELECT "
             + "NativizeSet(CrossJoin("
@@ -1006,11 +1019,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testMultipleLevelsOfSameDimInSingleArg() {
-        if (MondrianProperties.instance().UseAggregates.get()
-           || MondrianProperties.instance().ReadAggregates.get())
-        {
-            return;
-        }
         checkNotNative(
             // Although it's legal MDX, the RolapNativeSet.checkCrossJoinArg
             // can't deal with an arg that contains multiple .members functions.
@@ -1422,11 +1430,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testSingleLevelDotMembersIsNativelyEvaluated() {
-        if (MondrianProperties.instance().UseAggregates.get()
-           || MondrianProperties.instance().ReadAggregates.get())
-        {
-            return;
-        }
         String mdx1 =
             "with member [Customers].[agg] as '"
             + "AGGREGATE({[Customers].[name].MEMBERS}, [Measures].[Unit Sales])'"

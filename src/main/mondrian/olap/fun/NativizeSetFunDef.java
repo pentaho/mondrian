@@ -86,6 +86,13 @@ public class NativizeSetFunDef extends FunDefBase {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         LOGGER.debug("NativizeSetFunDef compileCall");
         Exp funArg = call.getArg(0);
+
+        if (MondrianProperties.instance().UseAggregates.get()
+            || MondrianProperties.instance().ReadAggregates.get())
+        {
+            return funArg.accept(compiler);
+        }
+
         final Calc[] calcs = new Calc[] {compiler.compileList(funArg, true)};
 
         final int arity = ((SetType) calcs[0].getType()).getArity();
