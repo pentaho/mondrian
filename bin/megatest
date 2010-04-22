@@ -170,7 +170,7 @@ doTest2() {
         fi
         echo driver.classpath=${MONDRIAN_DIR}/testlib/ojdbc14.jar
       fi
-      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE
+      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade:1521/XE
       jdbcDrivers=oracle.jdbc.OracleDriver
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
