@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -51,9 +51,22 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
 
         // populate property list
         for (Id id : queryAxis.getDimensionProperties()) {
-            propertyList.add(
-                Property.StandardMemberProperty.valueOf(
-                    id.toStringArray()[0]));
+            final String[] names = id.toStringArray();
+            Property property = null;
+            if (names.length == 1) {
+                property =
+                    Util.lookup(
+                        Property.StandardMemberProperty.class, names[0]);
+            }
+            if (property == null) {
+                property =
+                    (Property)
+                    Util.lookup(
+                        cellSetMetaData.query,
+                        id.getSegments(),
+                        true);
+            }
+            propertyList.add(property);
         }
     }
 
@@ -63,52 +76,7 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
     }
 
     public List<Hierarchy> getHierarchies() {
-        if (queryAxis.getAxisOrdinal().isFilter()) {
-            // Slicer contains all dimensions not mentioned on other axes.
-            // The list contains the default hierarchy of
-            // each dimension not already in the slicer or in another axes.
-            Set<Dimension> dimensionSet = new HashSet<Dimension>();
-            for (CellSetAxisMetaData cellSetAxisMetaData
-                : cellSetMetaData.getAxesMetaData())
-            {
-                for (Hierarchy hierarchy
-                    : cellSetAxisMetaData.getHierarchies())
-                {
-                    dimensionSet.add(hierarchy.getDimension());
-                }
-            }
-            List<Hierarchy> hierarchyList =
-                new ArrayList<Hierarchy>();
-            for (Dimension dimension
-                : cellSetMetaData.getCube().getDimensions())
-            {
-                if (dimensionSet.add(dimension)) {
-                    hierarchyList.add(dimension.getDefaultHierarchy());
-                }
-            }
-            // In case a dimension has multiple hierarchies, return the
-            // declared type of the slicer expression. For example, if the
-            // WHERE clause contains [Time].[Weekly].[1997].[Week 6], the
-            // slicer should contain [Time].[Weekly] not the default hierarchy
-            // [Time].
-            for (Hierarchy hierarchy : getHierarchiesNonFilter()) {
-                if (hierarchy.getDimension().getHierarchies().size() == 1) {
-                    continue;
-                }
-                for (int i = 0; i < hierarchyList.size(); i++) {
-                    Hierarchy hierarchy1 = hierarchyList.get(i);
-                    if (hierarchy1.getDimension().equals(
-                        hierarchy.getDimension())
-                        && hierarchy1 != hierarchy)
-                    {
-                        hierarchyList.set(i, hierarchy);
-                    }
-                }
-            }
-            return hierarchyList;
-        } else {
-            return getHierarchiesNonFilter();
-        }
+        return getHierarchiesNonFilter();
     }
 
     /**
