@@ -135,8 +135,8 @@ public class RolapEvaluator implements Evaluator {
         depth = 0;
         nonEmpty = false;
         nativeEnabled =
-            MondrianProperties.instance().EnableNativeNonEmpty.get() ||
-            MondrianProperties.instance().EnableNativeCrossJoin.get();
+            MondrianProperties.instance().EnableNativeNonEmpty.get()
+            || MondrianProperties.instance().EnableNativeCrossJoin.get();
         evalAxes = false;
         cellReader = null;
         currentMembers = root.defaultMembers.clone();
