@@ -23,7 +23,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="3.2.0.13583"/>
+  <property name="version" value="3.2-SNAPSHOT"/>
   <property name="vendor" value="Pentaho"/>
   <property name="driver.name" value="Mondrian olap4j driver"/>
   <property name="driver.version" value="3.2.0"/>
