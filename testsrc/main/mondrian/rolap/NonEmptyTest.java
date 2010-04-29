@@ -111,7 +111,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(mondrianProperties.EnableNativeFilter, true);
         propSaver.set(mondrianProperties.EnableNativeNonEmpty, false);
         propSaver.set(mondrianProperties.ResultLimit, 5000000);
-        assertQueryReturns(
+        String mdx =
             "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level], NonEmptyCrossJoin([*BASE_MEMBERS_Product], NonEmptyCrossJoin([*BASE_MEMBERS_Customers], [*BASE_MEMBERS_Time])))' "
             + "set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET], ([Measures].[*TOP_Unit Sales_SEL~SUM] <= 2.0))' "
             + "set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Product].CurrentMember.OrderKey, BASC, Ancestor([Product].CurrentMember, [Product].[Brand Name]).OrderKey, BASC, [Customers].CurrentMember.OrderKey, BASC, Ancestor([Customers].CurrentMember, [Customers].[City]).OrderKey, BASC)' "
@@ -141,16 +141,17 @@ public class NonEmptyTest extends BatchTestCase {
             + "select Union(Crossjoin({[Education Level].[*TOTAL_MEMBER_SEL~SUM]}, [*BASE_MEMBERS_Measures]), Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures])) ON COLUMNS, "
             + "NON EMPTY Union(Crossjoin({[Product].[*TOTAL_MEMBER_SEL~SUM]}, {[Customers].[*DEFAULT_MEMBER]}), Union(Crossjoin(Generate([*METRIC_CJ_SET], {[Product].CurrentMember}), {[Customers].[*TOTAL_MEMBER_SEL~SUM]}), [*SORTED_ROW_AXIS])) ON ROWS "
             + "from [Sales] "
-            + "where [Time].[*SLICER_MEMBER] ",
+            + "where [Time].[*SLICER_MEMBER] ";
+        String expected =
             "Axis #0:\n"
             + "{[Time].[*SLICER_MEMBER]}\n"
             + "Axis #1:\n"
             + "{[Education Level].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[Bachelors Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[Graduate Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[High School Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[Partial College], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[Partial High School], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[All Education Levels].[Graduate Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[All Education Levels].[High School Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[All Education Levels].[Partial College], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[All Education Levels].[Partial High School], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
             + "{[Product].[*TOTAL_MEMBER_SEL~SUM], [Customers].[*DEFAULT_MEMBER]}\n"
             + "{[Product].[Food].[Baking Goods].[Baking Goods].[Spices].[BBB Best].[BBB Best Pepper], [Customers].[*TOTAL_MEMBER_SEL~SUM]}\n"
@@ -501,7 +502,18 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #49: \n"
             + "Row #49: \n"
             + "Row #49: \n"
-            + "Row #49: 7\n");
+            + "Row #49: 7\n";
+        expected =
+            Util.replace(
+                expected,
+                "[Product].[Food]",
+                "[Product].[All Products].[Food]");
+        expected =
+            Util.replace(
+                expected,
+                "[Customers].[USA]",
+                "[Customers].[All Customers].[USA]");
+        assertQueryReturns(mdx, expected);
     }
 
     public void testBug1961163() throws Exception {
