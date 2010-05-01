@@ -2082,6 +2082,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new AbstractIntegerCalc(call, new Calc[] {stringCalc}) {
                     public int evaluateInteger(Evaluator evaluator) {
                         String value = stringCalc.evaluateString(evaluator);
+                        if (value == null) {
+                            return 0;
+                        }
                         return value.length();
                     }
                 };

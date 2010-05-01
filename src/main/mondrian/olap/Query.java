@@ -833,8 +833,8 @@ public class Query extends QueryPart {
         int category = TypeUtil.typeToCategory(type);
         switch (category) {
         case Category.Numeric:
-            if (value instanceof Number) {
-                return (Number) value;
+            if (value instanceof Number || value == null) {
+                return value;
             }
             if (value instanceof String) {
                 String s = (String) value;
@@ -879,13 +879,13 @@ public class Query extends QueryPart {
         case Category.Member:
             if (value == null) {
                 // Setting a member parameter to null is the same as setting to
-                // the default member of the hierarchy. May not be equivalent to
-                // the default value of the parameter.
+                // the null member of the hierarchy. May not be equivalent to
+                // the default value of the parameter, nor the same as the all
+                // member.
                 if (type.getHierarchy() != null) {
-                    value = type.getHierarchy().getDefaultMember();
+                    value = type.getHierarchy().getNullMember();
                 } else if (type.getDimension() != null) {
-                    value =
-                        type.getDimension().getHierarchy().getDefaultMember();
+                    value = type.getDimension().getHierarchy().getNullMember();
                 }
             }
             if (value instanceof String) {

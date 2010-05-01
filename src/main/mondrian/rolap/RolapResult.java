@@ -1292,7 +1292,8 @@ public class RolapResult extends ResultBase {
          */
         RolapEvaluator slicerEvaluator;
         final RolapResult result;
-        private static final Object Sentinel = new Object();
+        private static final Object CycleSentinel = new Object();
+        private static final Object NullSentinel = new Object();
 
         public RolapResultEvaluatorRoot(RolapResult result) {
             super(result.query);
@@ -1322,9 +1323,8 @@ public class RolapResult extends ResultBase {
         }
 
         public Object getParameterValue(ParameterSlot slot) {
-            Object value = slot.getParameterValue();
-            if (value != null) {
-                return value;
+            if (slot.isParameterSet()) {
+                return slot.getParameterValue();
             }
 
             // Look in other places for the value. Which places we look depends
@@ -1352,20 +1352,31 @@ public class RolapResult extends ResultBase {
 
             // Not set in any accessible scope. Evaluate the default value,
             // then cache it.
-            value = slot.getCachedDefaultValue();
-            if (value != null) {
-                if (value == Sentinel) {
+            Object liftedValue = slot.getCachedDefaultValue();
+            Object value;
+            if (liftedValue != null) {
+                if (liftedValue == CycleSentinel) {
                     throw MondrianResource.instance()
                         .CycleDuringParameterEvaluation.ex(
                             slot.getParameter().getName());
                 }
+                if (liftedValue == NullSentinel) {
+                    value = null;
+                } else {
+                    value = liftedValue;
+                }
                 return value;
             }
             // Set value to a sentinel, so we can detect cyclic evaluation.
-            slot.setCachedDefaultValue(Sentinel);
+            slot.setCachedDefaultValue(CycleSentinel);
             value = result.evaluateExp(
                 slot.getDefaultValueCalc(), slicerEvaluator.push());
-            slot.setCachedDefaultValue(value);
+            if (value == null) {
+                liftedValue = NullSentinel;
+            } else {
+                liftedValue = value;
+            }
+            slot.setCachedDefaultValue(liftedValue);
             return value;
         }
     }

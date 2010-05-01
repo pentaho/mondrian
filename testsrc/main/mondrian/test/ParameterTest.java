@@ -19,7 +19,6 @@ import org.eigenbase.util.property.Property;
 import org.olap4j.impl.Olap4jUtil;
 
 import java.sql.*;
-import java.sql.DriverManager;
 import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -133,6 +132,77 @@ public class ParameterTest extends FoodMartTestCase {
                 "Parameter(\"S\",STRING,\"x\" || \"y\","
                 + "\"A string parameter\")");
         Assert.assertEquals("xy", s);
+    }
+
+    public void testStringParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default')",
+            "xxx",
+            "foo", "xxx");
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default')",
+            "",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Len(Parameter('foo', STRING, 'default'))",
+            "0",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default') = 'default'",
+            "false",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default') = ''",
+            "false",
+            "foo", null);
+    }
+
+    public void testNumericParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3)",
+            "234",
+            "foo", 234);
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3)",
+            "",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3) * 10",
+            "",
+            "foo", null);
+    }
+
+    public void testMemberParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "M",
+            "foo", "[Gender].[M]");
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "#null",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Hierarchy.Name",
+            "Gender",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]) is null",
+            "true",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]) is [Gender].Parent",
+            "true",
+            "foo", null);
+
+        // assign null then assign something else
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "M",
+            "foo", null,
+            "foo", "[Gender].[All Gender].[M]");
     }
 
     public void testNumericParameterStringValueFails() {
@@ -450,9 +520,8 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(
             para, false, new Time(new Date().getTime()),
             "' for parameter 'x', type NUMERIC");
-        assertAssignParameter(
-            para, false, null,
-            "Invalid value 'null' for parameter 'x', type NUMERIC");
+        // OK to assign null
+        assertAssignParameter(para, false, null, null);
     }
 
     /**

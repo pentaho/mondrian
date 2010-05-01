@@ -771,27 +771,20 @@ public class TestContext {
      * @return Cell which is the result of the expression
      */
     public Cell executeExprRaw(String expression) {
-        return executeExprRaw(expression, getDefaultCubeName());
+        final String queryString = generateExpression(expression);
+        Result result = executeQuery(queryString);
+        return result.getCell(new int[]{0});
     }
 
-    /**
-     * Executes the expression in the default cube, and returns the result as
-     * a Cell.
-     *
-     * @param expression The expression to evaluate
-     * @param cubeName Cube name
-     * @return Cell which is the result of the expression
-     */
-    public Cell executeExprRaw(String expression, String cubeName) {
+    private String generateExpression(String expression) {
+        String cubeName = getDefaultCubeName();
         if (cubeName.indexOf(' ') >= 0) {
             cubeName = Util.quoteMdxIdentifier(cubeName);
         }
-        final String queryString =
+        return
             "with member [Measures].[Foo] as "
             + Util.singleQuoteString(expression)
             + " select {[Measures].[Foo]} on columns from " + cubeName;
-        Result result = executeQuery(queryString);
-        return result.getCell(new int[]{0});
     }
 
     /**
@@ -799,6 +792,37 @@ public class TestContext {
      */
     public void assertExprReturns(String expression, String expected) {
         final Cell cell = executeExprRaw(expression);
+        if (expected == null) {
+            expected = ""; // null values are formatted as empty string
+        }
+        assertEqualsVerbose(expected, cell.getFormattedValue());
+    }
+
+    /**
+     * Asserts that an expression, with a given set of parameter bindings,
+     * returns a given result.
+     *
+     * @param expr Scalar MDX expression
+     * @param expected Expected result
+     * @param paramValues Array of parameter names and values
+     */
+    public void assertParameterizedExprReturns(
+        String expr,
+        String expected,
+        Object... paramValues)
+    {
+        Connection connection = getConnection();
+        String queryString = generateExpression(expr);
+        Query query = connection.parseQuery(queryString);
+        assert paramValues.length % 2 == 0;
+        for (int i = 0; i < paramValues.length;) {
+            final String paramName = (String) paramValues[i++];
+            final Object value = paramValues[i++];
+            query.setParameter(paramName, value);
+        }
+        final Result result = connection.execute(query);
+        final Cell cell = result.getCell(new int[]{0});
+
         if (expected == null) {
             expected = ""; // null values are formatted as empty string
         }

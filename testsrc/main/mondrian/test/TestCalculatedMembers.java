@@ -92,10 +92,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             null,
             "<CalculatedMember name='Profit With Spaces'"
             + "  dimension='Measures'"
-            + "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+            + "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>")
+            .withCube("Warehouse and Sales");
 
-        Cell s = testContext.executeExprRaw(
-            "[Measures].[Profit With Spaces]", "Warehouse and Sales");
+        Cell s = testContext.executeExprRaw("[Measures].[Profit With Spaces]");
         Assert.assertEquals("339,610.90", s.getFormattedValue());
     }
 

@@ -36,6 +36,8 @@ public class ParameterImpl
     private Type type;
     private ParameterSlot slot = new ParameterSlot() {
         Object value;
+        boolean assigned;
+
         public Object getCachedDefaultValue() {
             throw new UnsupportedOperationException();
         }
@@ -56,11 +58,16 @@ public class ParameterImpl
             return value;
         }
 
+        public boolean isParameterSet() {
+            return assigned;
+        }
+
         public void setCachedDefaultValue(Object value) {
             throw new UnsupportedOperationException();
         }
 
         public void setParameterValue(Object value) {
+            this.assigned = true;
             this.value = value;
         }
     };
@@ -174,7 +181,9 @@ public class ParameterImpl
         final ParameterSlot slot = compiler.registerParameter(this);
         if (this.slot != null) {
             // save previous value
-            slot.setParameterValue(this.slot.getParameterValue());
+            if (this.slot.isParameterSet()) {
+                slot.setParameterValue(this.slot.getParameterValue());
+            }
         }
         this.slot = slot;
         if (type instanceof SetType) {
@@ -209,7 +218,7 @@ public class ParameterImpl
 
         public Object evaluate(Evaluator evaluator) {
             Object value = evaluator.getParameterValue(slot);
-            if (slot.getParameterValue() == null) {
+            if (!slot.isParameterSet()) {
                 // save value if not set (setting the default value)
                 slot.setParameterValue(value);
             }
@@ -243,7 +252,7 @@ public class ParameterImpl
         public List<Member> evaluateMemberList(Evaluator evaluator) {
             List<Member> value =
                 (List<Member>) evaluator.getParameterValue(slot);
-            if (slot.getParameterValue() == null) {
+            if (!slot.isParameterSet()) {
                 // save value if not set (setting the default value)
                 slot.setParameterValue(value);
             }

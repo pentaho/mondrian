@@ -53,6 +53,14 @@ public interface ParameterSlot {
      */
     Object getParameterValue();
 
+    /**
+     * Returns whether the parameter has been assigned a value. (That value
+     * may be null.)
+     *
+     * @return Whether parmaeter has been assigned a value.
+     */
+    boolean isParameterSet();
+
     void setCachedDefaultValue(Object value);
 
     Object getCachedDefaultValue();
