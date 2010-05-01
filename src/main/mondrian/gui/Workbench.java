@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -1505,8 +1505,8 @@ public class Workbench extends javax.swing.JFrame {
         try {
             openSchemaFrame(
                 new File(new URI(getWorkbenchProperty(LAST_USED1_URL))), false);
-        } catch (Exception e) //catch (URISyntaxException e)
-        {
+        } catch (Exception e) {
+            // probably URISyntaxException
             LOGGER.error("lastUsed1MenuItemActionPerformed", e);
         }
     }
