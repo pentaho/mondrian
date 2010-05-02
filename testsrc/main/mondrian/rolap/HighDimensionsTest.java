@@ -54,7 +54,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
 
         // scale up for slower CPUs
         double scaleFactor = computeCpuScaleFactor();
-        final long target = (long) (60000 * scaleFactor);
+        final long target = (long) (90000 * scaleFactor);
         assertTrue(
             "Query execution took " + elapsed + " milliseconds, "
             + "which is outside target of  " + target + " milliseconds",
