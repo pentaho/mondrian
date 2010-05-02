@@ -27,7 +27,6 @@ parser code {:
     private String queryString;
     private Connection mdxConnection;
     private FunTable funTable;
-    private boolean load;
     private boolean strictValidation;
 
     /**
@@ -48,7 +47,6 @@ parser code {:
         String queryString,
         boolean debug,
         FunTable funTable,
-        boolean load,
         boolean strictValidation)
     {
         Symbol parse_tree;
@@ -56,7 +54,6 @@ parser code {:
         this.mdxConnection = mdxConnection;
         this.queryString = queryString;
         this.funTable = funTable;
-        this.load = load;
         this.strictValidation = strictValidation;
         try {
             if (debug) {
@@ -161,7 +158,7 @@ parser code {:
                     false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
-            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load,
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps,
             strictValidation);
     }
 

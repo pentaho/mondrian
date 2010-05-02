@@ -1878,7 +1878,7 @@ public class FunUtil extends Util {
     /**
      * Returns whether one of the members in a tuple is null.
      */
-    static boolean tupleContainsNullMember(Member[] tuple) {
+    public static boolean tupleContainsNullMember(Member[] tuple) {
         for (Member member : tuple) {
             if (member.isNull()) {
                 return true;
@@ -2243,7 +2243,7 @@ public class FunUtil extends Util {
      * @param hierarchies Hierarchies of the members
      * @return Position where parsing ended in string
      */
-    static int parseTuple(
+    private static int parseTuple(
         final Evaluator evaluator,
         String string,
         int i,
@@ -2264,6 +2264,27 @@ public class FunUtil extends Util {
         return IdentifierParser.parseTuple(builder, string, i);
     }
 
+    /**
+     * Parses a tuple, such as "([Gender].[M], [Marital Status].[S])".
+     *
+     * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
+     *   and {@link Cube}
+     * @param string String to parse
+     * @param hierarchies Hierarchies of the members
+     * @return Tuple represented as array of members
+     */
+    static Member[] parseTuple(
+        Evaluator evaluator, String string, Hierarchy[] hierarchies)
+    {
+        final Member[] members = new Member[hierarchies.length];
+        int i = parseTuple(evaluator, string, 0, members, hierarchies);
+        // todo: check for garbage at end of string
+        if (FunUtil.tupleContainsNullMember(members)) {
+            return null;
+        }
+        return members;
+    }
+
     static List<Member> parseMemberList(
         Evaluator evaluator,
         String string,
@@ -2278,7 +2299,7 @@ public class FunUtil extends Util {
         return builder.memberList;
     }
 
-    static int parseMember(
+    private static int parseMember(
         Evaluator evaluator,
         String string,
         int i,
@@ -2296,6 +2317,20 @@ public class FunUtil extends Util {
                 }
             };
         return IdentifierParser.parseMember(builder, string, i);
+    }
+
+    static Member parseMember(
+        Evaluator evaluator, String string, Hierarchy hierarchy)
+    {
+        Member[] members = {null};
+        int i = parseMember(evaluator, string, 0, members, hierarchy);
+        // todo: check for garbage at end of string
+        final Member member = members[0];
+        if (member == null) {
+            throw MondrianResource.instance().MdxChildObjectNotFound.ex(
+                string, evaluator.getCube().getQualifiedName());
+        }
+        return member;
     }
 
     // ~ Inner classes ---------------------------------------------------------

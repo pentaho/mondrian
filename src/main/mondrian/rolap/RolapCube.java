@@ -88,6 +88,14 @@ public class RolapCube extends CubeBase {
 
     final List<RolapHierarchy> hierarchyList =
         new ArrayList<RolapHierarchy>();
+
+    /**
+     * Set to true when a cube is being modified after creation.
+     *
+     * @see #isLoadInProgress()
+     */
+    private boolean loadInProgress = false;
+
     private Map<RolapLevel, RolapCubeLevel> virtualToBaseMap =
         new HashMap<RolapLevel, RolapCubeLevel>();
 
@@ -1910,6 +1918,11 @@ public class RolapCube extends CubeBase {
         return hierarchyList;
     }
 
+    public boolean isLoadInProgress() {
+        return loadInProgress
+            || getSchema().getSchemaLoadDate() == null;
+    }
+
     /**
      * Association between a MondrianDef.Table with its associated
      * level's depth. This is used to rank tables in a snowflake so that
@@ -2635,16 +2648,21 @@ public class RolapCube extends CubeBase {
                 + xml + "]");
         }
 
-        final List<RolapMember> memberList = new ArrayList<RolapMember>();
-        createCalcMembersAndNamedSets(
-            Collections.singletonList(xmlCalcMember),
-            Collections.<MondrianDef.NamedSet>emptyList(),
-            memberList,
-            new ArrayList<Formula>(),
-            this,
-            true);
-        assert memberList.size() == 1;
-        return memberList.get(0);
+        try {
+            loadInProgress = true;
+            final List<RolapMember> memberList = new ArrayList<RolapMember>();
+            createCalcMembersAndNamedSets(
+                Collections.singletonList(xmlCalcMember),
+                Collections.<MondrianDef.NamedSet>emptyList(),
+                memberList,
+                new ArrayList<Formula>(),
+                this,
+                true);
+            assert memberList.size() == 1;
+            return memberList.get(0);
+        } finally {
+            loadInProgress = false;
+        }
     }
 
     /**
@@ -2680,7 +2698,6 @@ public class RolapCube extends CubeBase {
                 null,
                 new QueryPart[0],
                 new Parameter[0],
-                false,
                 false);
         query.createValidator().validate(formula);
         calculatedMemberList.add(formula);

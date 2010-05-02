@@ -562,38 +562,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        // StrToMember(<String Expression>)
-        builder.define(
-            new FunDefBase(
-                "StrToMember",
-                "Returns a member from a unique name String in MDX format.",
-                "fmS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final StringCalc memberNameCalc =
-                        compiler.compileString(call.getArg(0));
-                return new AbstractMemberCalc(
-                    call, new Calc[] {memberNameCalc})
-                {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        String memberName =
-                                memberNameCalc.evaluateString(evaluator);
-                        return strToMember(evaluator, memberName);
-                    }
-                };
-            }
-
-            Member strToMember(Evaluator evaluator, String memberName) {
-                Cube cube = evaluator.getCube();
-                SchemaReader schemaReader = evaluator.getSchemaReader();
-                List<Id.Segment> uniqueNameParts =
-                    Util.parseIdentifier(memberName);
-                return (Member) schemaReader.lookupCompound(
-                    cube, uniqueNameParts, true, Category.Member);
-            }
-        });
-
+        builder.define(StrToMemberFunDef.INSTANCE);
         builder.define(ValidMeasureFunDef.instance);
 
         //

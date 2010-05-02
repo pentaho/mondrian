@@ -56,7 +56,7 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public QueryPart parseStatement(String query) {
-        return parseStatement(query, null, false, false);
+        return parseStatement(query, null, false);
     }
 
     public Query parseQuery(String query) {
@@ -64,7 +64,7 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String query, boolean load) {
-        return (Query) parseStatement(query, null, load, false);
+        return (Query) parseStatement(query, null, false);
     }
 
     /**
@@ -88,7 +88,27 @@ public abstract class ConnectionBase implements Connection {
         FunTable funTable,
         boolean strictValidation)
     {
-        return parseStatement(query, funTable, false, strictValidation);
+        Parser parser = new Parser();
+        boolean debug = false;
+
+        if (funTable == null) {
+            funTable = getSchema().getFunTable();
+        }
+
+        if (getLogger().isDebugEnabled()) {
+            //debug = true;
+            getLogger().debug(
+                Util.nl
+                + query);
+        }
+
+        try {
+            return
+                parser.parseInternal(
+                    this, query, debug, funTable, strictValidation);
+        } catch (Exception e) {
+            throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
+        }
     }
 
     public Exp parseExpression(String expr) {
@@ -107,38 +127,6 @@ public abstract class ConnectionBase implements Connection {
             throw MondrianResource.instance().FailedToParseQuery.ex(
                 expr,
                 exception);
-        }
-    }
-
-    private QueryPart parseStatement(
-        String query,
-        FunTable cftab,
-        boolean load,
-        boolean strictValidation)
-    {
-        Parser parser = new Parser();
-        boolean debug = false;
-        final FunTable funTable;
-
-        if (cftab == null) {
-            funTable = getSchema().getFunTable();
-        } else {
-            funTable = cftab;
-        }
-
-        if (getLogger().isDebugEnabled()) {
-            //debug = true;
-            getLogger().debug(
-                Util.nl
-                + query);
-        }
-
-        try {
-            return
-                parser.parseInternal(
-                    this, query, debug, funTable, load, strictValidation);
-        } catch (Exception e) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(query, e);
         }
     }
 }

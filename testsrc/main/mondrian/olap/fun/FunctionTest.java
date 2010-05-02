@@ -8521,6 +8521,79 @@ public class FunctionTest extends FoodMartTestCase {
             "CA");
     }
 
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-560">
+     * bug MONDRIAN-560, "StrToMember function doesn't use IgnoreInvalidMembers
+     * option"</a>.
+     */
+    public void testStrToMemberIgnoreInvalidMembers() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+
+        // [Product].[Drugs] is invalid, becomes null member, and is dropped
+        // from list
+        assertQueryReturns(
+            "select \n"
+            + "  {[Product].[Food],\n"
+            + "    StrToMember(\"[Product].[Drugs]\")} on columns,\n"
+            + "  {[Measures].[Unit Sales]} on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Food]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 191,940\n");
+
+        // Hierarchy is inferred from leading edge
+        assertExprReturns(
+            "StrToMember(\"[Marital Status].[Separated]\").Hierarchy.Name",
+            "Marital Status");
+
+        // Null member is returned
+        assertExprReturns(
+            "StrToMember(\"[Marital Status].[Separated]\").Name",
+            "#null");
+
+        // Use longest valid prefix, so get [Time].[Weekly] rather than just
+        // [Time].
+        final String timeWeekly = TestContext.hierarchyName("Time", "Weekly");
+        assertExprReturns(
+            "StrToMember(\"" + timeWeekly
+            + ".[1996].[Q1]\").Hierarchy.UniqueName",
+            timeWeekly);
+
+        // If hierarchy is invalid, throw an error even though
+        // IgnoreInvalidMembersDuringQuery is set.
+        assertExprThrows(
+            "StrToMember(\"[Unknown Hierarchy].[Invalid].[Member]\").Name",
+            "MDX object '[Unknown Hierarchy].[Invalid].[Member]' not found in cube 'Sales'");
+        assertExprThrows(
+            "StrToMember(\"[Unknown Hierarchy].[Invalid]\").Name",
+            "MDX object '[Unknown Hierarchy].[Invalid]' not found in cube 'Sales'");
+        assertExprThrows(
+            "StrToMember(\"[Unknown Hierarchy]\").Name",
+            "MDX object '[Unknown Hierarchy]' not found in cube 'Sales'");
+
+        assertAxisThrows(
+            "StrToMember(\"\")",
+            "MDX object '' not found in cube 'Sales'");
+
+        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, false);
+        assertQueryThrows(
+            "select \n"
+            + "  {[Product].[Food],\n"
+            + "    StrToMember(\"[Product].[Drugs]\")} on columns,\n"
+            + "  {[Measures].[Unit Sales]} on rows\n"
+            + "from [Sales]",
+            "Member '[Product].[Drugs]' not found");
+        assertExprThrows(
+            "StrToMember(\"[Marital Status].[Separated]\").Hierarchy.Name",
+            "Member '[Marital Status].[Separated]' not found");
+    }
+
     public void testStrToTuple() {
         // single dimension yields member
         assertAxisReturns(
@@ -8533,6 +8606,17 @@ public class FunctionTest extends FoodMartTestCase {
             "{[Gender].[F], [Time].[1997].[Q2]}");
 
         // todo: test for garbage at end of string
+    }
+
+    public void testStrToTupleIgnoreInvalidMembers() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+
+        // If any member is invalid, the whole tuple is null.
+        assertAxisReturns(
+            "StrToTuple(\"([Gender].[M], [Marital Status].[Separated])\","
+            + " [Gender], [Marital Status])",
+            "");
     }
 
     public void testStrToTupleDuHierarchiesFails() {
@@ -8643,6 +8727,38 @@ public class FunctionTest extends FoodMartTestCase {
             + " [Time],"
             + " [Gender])",
             "Tuple contains more than one member of hierarchy '[Gender]'.");
+    }
+
+    public void testStrToSetIgnoreInvalidMembers() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+        assertAxisReturns(
+            "StrToSet("
+            + "\""
+            + "{"
+            + " [Product].[Food],"
+            + " [Product].[Food].[You wouldn't like],"
+            + " [Product].[Drink].[You would like],"
+            + " [Product].[Drink].[Dairy]"
+            + "}"
+            + "\","
+            + " [Product])",
+            "[Product].[Food]\n"
+            + "[Product].[Drink].[Dairy]");
+
+        assertAxisReturns(
+            "StrToSet("
+            + "\""
+            + "{"
+            + " ([Gender].[M], [Product].[Food]),"
+            + " ([Gender].[F], [Product].[Food].[You wouldn't like]),"
+            + " ([Gender].[M], [Product].[Drink].[You would like]),"
+            + " ([Gender].[F], [Product].[Drink].[Dairy])"
+            + "}"
+            + "\","
+            + " [Gender], [Product])",
+            "{[Gender].[M], [Product].[Food]}\n"
+            + "{[Gender].[F], [Product].[Drink].[Dairy]}");
     }
 
     public void testYtd() {

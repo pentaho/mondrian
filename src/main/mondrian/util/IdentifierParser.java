@@ -13,7 +13,9 @@
 package mondrian.util;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapCube;
 
 import java.util.*;
 
@@ -374,6 +376,7 @@ public class IdentifierParser {
         private final Cube cube;
         protected final List<Hierarchy> hierarchyList;
         protected final List<Id.Segment> nameList = new ArrayList<Id.Segment>();
+        private final boolean ignoreInvalid;
 
         BuilderImpl(
             SchemaReader schemaReader, Cube cube, List<Hierarchy> hierarchyList)
@@ -381,6 +384,12 @@ public class IdentifierParser {
             this.schemaReader = schemaReader;
             this.cube = cube;
             this.hierarchyList = hierarchyList;
+            final MondrianProperties props = MondrianProperties.instance();
+            final boolean load = ((RolapCube) cube).isLoadInProgress();
+            this.ignoreInvalid =
+                (load
+                    ? props.IgnoreInvalidMembers.get()
+                    : props.IgnoreInvalidMembersDuringQuery.get());
         }
 
         public void segmentComplete(Id.Segment segment) {
@@ -395,11 +404,35 @@ public class IdentifierParser {
             throw new UnsupportedOperationException();
         }
 
-        protected Member resolveMember(Hierarchy hierarchy) {
-            final Member member =
+        protected Member resolveMember(Hierarchy expectedHierarchy) {
+            Member member =
                 (Member) Util.lookupCompound(
-                    schemaReader, cube, nameList, true, Category.Member);
-            if (member.getHierarchy() != hierarchy) {
+                    schemaReader, cube, nameList, !ignoreInvalid,
+                    Category.Member);
+            if (member == null) {
+                assert ignoreInvalid;
+                if (expectedHierarchy != null) {
+                    return expectedHierarchy.getNullMember();
+                } else {
+                    // Guess the intended hierarchy from the largest valid
+                    // prefix.
+                    for (int i = nameList.size() - 1; i > 0; --i) {
+                        List<Id.Segment> partialName =
+                            nameList.subList(0, i);
+                        OlapElement olapElement =
+                            schemaReader.lookupCompound(
+                                cube, partialName, false, Category.Unknown);
+                        if (olapElement != null) {
+                            return olapElement.getHierarchy().getNullMember();
+                        }
+                    }
+                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
+                        Util.implode(nameList), cube.getQualifiedName());
+                }
+            }
+            if (expectedHierarchy != null
+                && member.getHierarchy() != expectedHierarchy)
+            {
                 // TODO: better error
                 throw Util.newInternal("member is of wrong hierarchy");
             }
@@ -450,8 +483,11 @@ public class IdentifierParser {
 
         public void tupleComplete() {
             super.tupleComplete();
-            tupleList.add(
-                this.memberList.toArray(new Member[this.memberList.size()]));
+            final Member[] members =
+                memberList.toArray(new Member[memberList.size()]);
+            if (!FunUtil.tupleContainsNullMember(members)) {
+                tupleList.add(members);
+            }
             this.memberList.clear();
         }
     }
@@ -470,7 +506,9 @@ public class IdentifierParser {
 
         public void memberComplete() {
             final Member member = resolveMember(hierarchyList.get(0));
-            memberList.add(member);
+            if (!member.isNull()) {
+                memberList.add(member);
+            }
             nameList.clear();
         }
 

@@ -69,33 +69,6 @@ class StrToTupleFunDef extends FunDefBase {
         }
     }
 
-    /**
-     * Parses a tuple, such as "([Gender].[M], [Marital Status].[S])".
-     *
-     * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
-     *   and {@link Cube}
-     * @param string String to parse
-     * @param hierarchies Hierarchies of the members
-     * @return Tuple represented as array of members
-     */
-    private Member[] parseTuple(
-        Evaluator evaluator, String string, Hierarchy[] hierarchies)
-    {
-        final Member[] members = new Member[hierarchies.length];
-        int i = parseTuple(evaluator, string, 0, members, hierarchies);
-        // todo: check for garbage at end of string
-        return members;
-    }
-
-    private Member parseMember(
-        Evaluator evaluator, String string, Hierarchy hierarchy)
-    {
-        Member[] members = {null};
-        int i = parseMember(evaluator, string, 0, members, hierarchy);
-        // todo: check for garbage at end of string
-        return members[0];
-    }
-
     public Exp createCall(Validator validator, Exp[] args) {
         final int argCount = args.length;
         if (argCount <= 1) {
