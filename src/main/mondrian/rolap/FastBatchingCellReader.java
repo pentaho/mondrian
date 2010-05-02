@@ -834,12 +834,18 @@ public class FastBatchingCellReader implements CellReader {
          * @return Whether batches have the same closure columns
          */
         boolean haveSameClosureColumns(Batch other) {
+            final BitKey cubeClosureColumnBitKey = cube.closureColumnBitKey;
+            if (cubeClosureColumnBitKey == null) {
+                // Virtual cubes have a null bitkey. For now, punt; should do
+                // better.
+                return true;
+            }
             final BitKey closureColumns =
                 this.batchKey.getConstrainedColumnsBitKey()
-                    .and(cube.closureColumnBitKey);
+                    .and(cubeClosureColumnBitKey);
             final BitKey otherClosureColumns =
                 other.batchKey.getConstrainedColumnsBitKey()
-                    .and(cube.closureColumnBitKey);
+                    .and(cubeClosureColumnBitKey);
             return closureColumns.equals(otherClosureColumns);
         }
 

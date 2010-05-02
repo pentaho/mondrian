@@ -625,9 +625,19 @@ public class RolapSchema implements Schema {
                                 "You may only specify <MemberGrant> if "
                                 + "<Hierarchy> has access='custom'");
                         }
+                        final boolean ignoreInvalidMembers =
+                            MondrianProperties.instance().IgnoreInvalidMembers
+                                .get();
                         Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member), true);
-                        assert member != null;
+                            Util.parseIdentifier(memberGrant.member),
+                            !ignoreInvalidMembers);
+                        if (member == null) {
+                            // They asked to ignore members that don't exist
+                            // (e.g. [Store].[USA].[Foo]), so ignore this grant
+                            // too.
+                            assert ignoreInvalidMembers;
+                            continue;
+                        }
                         if (member.getHierarchy() != hierarchy) {
                             throw Util.newError(
                                 "Member '" + member

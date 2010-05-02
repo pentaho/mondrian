@@ -1803,6 +1803,52 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
     }
+
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-722">MONDRIAN-722, "If
+     * ignoreInvalidMembers=true, should ignore grants with invalid
+     * members"</a>.
+     */
+    public void testBugMondrian722() {
+        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
+        TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"CTO\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\">\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[XX]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[XX].[Yyy Yyyyyyy]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[CA].[Zzz Zzzz]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "      <HierarchyGrant hierarchy=\"[Gender]\" access=\"none\"/>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>")
+            .withRole("CTO")
+            .assertQueryReturns(
+                "select [Measures] on 0,\n"
+                + " Hierarchize(\n"
+                + "   {[Customers].[USA].Children,\n"
+                + "    [Customers].[USA].[CA].Children}) on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Customers].[USA].[CA]}\n"
+                + "{[Customers].[USA].[CA].[Los Angeles]}\n"
+                + "{[Customers].[USA].[CA].[San Francisco]}\n"
+                + "Row #0: 74,748\n"
+                + "Row #1: 2,009\n"
+                + "Row #2: 88\n");
+    }
 }
 
 // End AccessControlTest.java
