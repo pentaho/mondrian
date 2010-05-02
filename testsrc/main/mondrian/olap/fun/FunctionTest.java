@@ -3087,6 +3087,21 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 5\n");
     }
 
+    public void testCountExcludeEmptyOnVirtualCubeWithNoCountFacts() {
+        assertQueryReturns(
+            "WITH "
+            + "  MEMBER [Measures].[count] AS '"
+            + "    COUNT([Store].MEMBERS, EXCLUDEEMPTY)'"
+            + " SELECT "
+            + "  {[Measures].[count]} ON AXIS(0)"
+            + " FROM [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[count]}\n"
+            + "Row #0: 31\n");
+    }
+
     //todo: testCountNull, testCountNoExp
 
     public void testCovariance() {

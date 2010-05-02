@@ -163,29 +163,14 @@ public class RolapEvaluator implements Evaluator {
         return new RolapEvaluator(root);
     }
 
-    /**
-     * Returns the base (non-virtual) cube that the current measure in the
-     * context belongs to.
-     * @return Cube
-     */
     public RolapCube getMeasureCube() {
-        RolapCube measureCube = null;
-        if (currentMembers[0] instanceof RolapStoredMeasure) {
-            measureCube = ((RolapStoredMeasure) currentMembers[0]).getCube();
+        final RolapMember measure = currentMembers[0];
+        if (measure instanceof RolapStoredMeasure) {
+            return ((RolapStoredMeasure) measure).getCube();
         }
-        return measureCube;
+        return null;
     }
 
-    /**
-     * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
-     * members are on unrelated dimension for the measure in current context
-     * then returns true.
-     *
-     * @param members
-     * dimensions for the members need to be checked whether
-     * related or unrelated
-     * @return boolean
-     */
     public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
         RolapCube virtualCube = getCube();
         RolapCube baseCube = getMeasureCube();
@@ -217,9 +202,13 @@ public class RolapEvaluator implements Evaluator {
         if (o == Util.nullValue || o == null) {
             return true;
         }
+        final RolapCube measureCube = getMeasureCube();
+        if (measureCube == null) {
+            return false;
+        }
         // For other cell values (e.g. zero), the cell is deemed empty if the
         // number of fact table rows is zero.
-        final RolapEvaluator eval2 = push(getCube().getFactCountMeasure());
+        final RolapEvaluator eval2 = push(measureCube.getFactCountMeasure());
         o = eval2.evaluateCurrent();
         return o == null
            || (o instanceof Number && ((Number) o).intValue() == 0);
