@@ -4,14 +4,18 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2008-2009 Julian Hyde
+  == Copyright (C) 2008-2010 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
 <ivysettings>
-  <settings defaultResolver="chain"/>
+  <property name="ivy.local.default.root" value="${ivy.default.ivy.user.dir}/local" override="true"/>
+  <property name="ivy.local.default.artifact.pattern" value="[organisation]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" override="false"/>
+
+  <settings defaultResolver="default"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
   <resolvers>
-    <chain name="chain">
+    <chain name="shared">
       <url name="pentaho-rep" m2compatible="true">
         <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
         <artifact pattern="http://repo.pentaho.org/artifactory/repo/[organisation]/[module]/[revision]/[artifact].[ext]" />
@@ -19,4 +23,7 @@
       <ibiblio name="ibiblio" m2compatible="true" />
     </chain>
   </resolvers>
+  <include url="${ivy.default.settings.dir}/ivysettings-local.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-default-chain.xml"/>
 </ivysettings>

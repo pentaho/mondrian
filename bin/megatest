@@ -75,8 +75,8 @@ CYGWIN*)
 esac
 
 doTest() {
-  if [ -f build.properties ]; then
-    mv build.properties build.properties.bak
+  if [ -f test.properties ]; then
+    mv test.properties test.properties.bak
   fi
   if [ -f mondrian.properties ]; then
     mv mondrian.properties mondrian.properties.bak
@@ -84,7 +84,7 @@ doTest() {
 
   doTest2 "$@"
 
-  mv build.properties.bak build.properties
+  mv test.properties.bak test.properties
   mv mondrian.properties.bak mondrian.properties
 }
 
@@ -234,7 +234,7 @@ doTest2() {
     esac
   done
 
-  cat megatest.properties >> build.properties
+  cat megatest.properties >> test.properties
   cat megatest.properties >> mondrian.properties
 
   case $jdk in
@@ -727,9 +727,13 @@ doWorking() {
   DISABLE_AGGS="\
     mondrian.rolap.aggregates.Use=false \
     mondrian.rolap.aggregates.Read=false"
+  ENABLE_GSETS="\
+    mondrian.rolap.groupingsets.enable=true"
+  ENABLE_CMCACHE="\
+    mondrian.rolap.EnableRolapCubeMemberCache=true"
   doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS}
-  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS} mondrian.rolap.EnableRolapCubeMemberCache=true
+  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_CMCACHE}
   doTest jdk1.6 derby ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
