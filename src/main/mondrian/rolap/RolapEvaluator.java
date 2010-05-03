@@ -79,6 +79,16 @@ public class RolapEvaluator implements Evaluator {
     private Member[] nonAllMembers;
 
     /**
+     * Set of expressions actively being expanded. Prevents infinite cycle of
+     * expansions.
+     *
+     * @return Mutable set of expressions being expanded
+     */
+    public Set<Exp> getActiveNativeExpansions() {
+        return root.activeNativeExpansions;
+    }
+
+    /**
      * States of the finite state machine for determining the max solve order
      * for the "scoped" behavior.
      */

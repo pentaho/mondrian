@@ -103,7 +103,7 @@ public class NonEmptyTest extends BatchTestCase {
      * mondrian is doing crossjoins in memory; and the test case throws because
      * the result limit is exceeded.
      */
-    public void testAnalyzerPerformanceIssue() throws Exception {
+    public void testAnalyzerPerformanceIssue() {
         final MondrianProperties mondrianProperties =
             MondrianProperties.instance();
         propSaver.set(mondrianProperties.EnableNativeCrossJoin, true);
@@ -714,7 +714,7 @@ public class NonEmptyTest extends BatchTestCase {
      * RolapStar in SqlContextConstraint/SqlConstraintUtils.  Test ensures that
      * no exception is thrown.
      */
-    public void testVirtualCube() throws Exception {
+    public void testVirtualCube() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
@@ -3729,7 +3729,7 @@ public class NonEmptyTest extends BatchTestCase {
      * MONDRIAN-412, "NON EMPTY and Filter() breaking aggregate
      * calculations"</a>.
      */
-    public void testBugMondrian412() throws Exception {
+    public void testBugMondrian412() {
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
             "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
@@ -4344,7 +4344,7 @@ public class NonEmptyTest extends BatchTestCase {
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
 
-    public void _testMeasureConstraintsInACrossjoinHaveCorrectResults() {
+    public void testMeasureConstraintsInACrossjoinHaveCorrectResults() {
         //http://jira.pentaho.com/browse/MONDRIAN-715
         propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
         String mdx =
@@ -4470,6 +4470,38 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 74,748\n"
             + "Row #1: 67,659\n"
             + "Row #2: 124,366\n");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-734">
+     * MONDRIAN-734, "Exception thrown when creating a "New Analysis View" with
+     * JPivot"</a>.
+     */
+    public void testExpandNonNativeWithEnableNativeCrossJoin() {
+        final MondrianProperties mondrianProperties =
+            MondrianProperties.instance();
+        propSaver.set(mondrianProperties.EnableNativeCrossJoin, true);
+        propSaver.set(mondrianProperties.ExpandNonNative, true);
+
+        String mdx =
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,"
+            + " NON EMPTY Crossjoin(Hierarchize(Crossjoin({[Store].[All Stores]}, Crossjoin({[Store Size in SQFT].[All Store Size in SQFTs]}, Crossjoin({[Store Type].[All Store Types]}, Union(Crossjoin({[Time].[1997]}, {[Product].[All Products]}), Crossjoin({[Time].[1997]}, [Product].[All Products].Children)))))), {([Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes])}) ON ROWS"
+            + " from [Sales]";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[All Products], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Drink], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Food], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Non-Consumable], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 24,597\n"
+            + "Row #2: 191,940\n"
+            + "Row #3: 50,236\n");
     }
 
     void clearAndHardenCache(MemberCacheHelper helper) {

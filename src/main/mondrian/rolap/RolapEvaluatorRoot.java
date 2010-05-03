@@ -53,6 +53,8 @@ class RolapEvaluatorRoot {
             MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
             MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
 
+    final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
+
     /**
      * Creates a RolapEvaluatorRoot.
      *

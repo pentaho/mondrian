@@ -1133,6 +1133,11 @@ public class SqlConstraintUtils {
                     int bitPos = column.getBitPosition();
                     AggStar.Table.Column aggColumn =
                         aggStar.lookupColumn(bitPos);
+                    if (aggColumn == null) {
+                        throw Util.newInternal(
+                            "AggStar " + aggStar + " has no column for "
+                            + column + " (bitPos " + bitPos + ")");
+                    }
                     AggStar.Table table = aggColumn.getTable();
                     table.addToFrom(sqlQuery, false, true);
                     q = aggColumn.generateExprString(sqlQuery);

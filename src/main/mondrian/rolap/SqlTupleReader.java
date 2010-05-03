@@ -780,7 +780,7 @@ public class SqlTupleReader implements TupleReader {
 
 
         Evaluator evaluator = getEvaluator(constraint);
-        AggStar aggStar = chooseAggStar(evaluator);
+        AggStar aggStar = chooseAggStar(constraint, evaluator);
 
         // add the selects for all levels to fetch
         for (TargetBase target : targets) {
@@ -1083,20 +1083,6 @@ public class SqlTupleReader implements TupleReader {
      */
     protected Evaluator getEvaluator(TupleConstraint constraint) {
         if (constraint instanceof SqlContextConstraint) {
-            if (constraint
-                instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
-            {
-                // Cannot evaluate NonEmptyCrossJoinConstraint using an agg
-                // table if one of its args is a DescendantsConstraint.
-                RolapNativeCrossJoin.NonEmptyCrossJoinConstraint necj =
-                    (RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
-                        constraint;
-                for (CrossJoinArg arg : necj.args) {
-                    if (!(arg instanceof MemberListCrossJoinArg)) {
-                        return null;
-                    }
-                }
-            }
             return constraint.getEvaluator();
         }
         if (constraint instanceof DescendantsConstraint) {
@@ -1116,11 +1102,11 @@ public class SqlTupleReader implements TupleReader {
      * Obtains the AggStar instance which corresponds to an aggregate table
      * which can be used to support the member constraint.
      *
+     * @param constraint
      * @param evaluator the current evaluator to obtain the cube and members to
-     *        be queried
-     * @return AggStar for aggregate table
+     *        be queried  @return AggStar for aggregate table
      */
-    AggStar chooseAggStar(Evaluator evaluator) {
+    AggStar chooseAggStar(TupleConstraint constraint, Evaluator evaluator) {
         if (!MondrianProperties.instance().UseAggregates.get()) {
             return null;
         }
@@ -1181,6 +1167,28 @@ public class SqlTupleReader implements TupleReader {
         }
 
         measureBitKey.set(bitPosition);
+
+        if (constraint
+            instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
+        {
+            // Cannot evaluate NonEmptyCrossJoinConstraint using an agg
+            // table if one of its args is a DescendantsConstraint.
+            RolapNativeCrossJoin.NonEmptyCrossJoinConstraint necj =
+                (RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
+                    constraint;
+            for (CrossJoinArg arg : necj.args) {
+                if (arg instanceof DescendantsCrossJoinArg
+                    || arg instanceof MemberListCrossJoinArg)
+                {
+                    final RolapLevel level = arg.getLevel();
+                    if (level != null && !level.isAll()) {
+                        RolapStar.Column column =
+                            ((RolapCubeLevel)level).getStarKeyColumn();
+                        levelBitKey.set(column.getBitPosition());
+                    }
+                }
+            }
+        }
 
         // find the aggstar using the masks
         AggStar aggStar = AggregationManager.instance().findAgg(

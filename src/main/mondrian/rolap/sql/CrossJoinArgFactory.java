@@ -895,7 +895,9 @@ public class CrossJoinArgFactory {
     {
         ExpCompiler compiler = evaluator.getQuery().createCompiler();
         CrossJoinArg[] arg0 = null;
-        if (shouldExpandNonEmpty(exp)) {
+        if (shouldExpandNonEmpty(exp)
+            && evaluator.getActiveNativeExpansions().add(exp))
+        {
             ListCalc listCalc0 = compiler.compileList(exp);
             List<RolapMember> list0 =
                 Util.cast(listCalc0.evaluateList(evaluator));
@@ -909,12 +911,14 @@ public class CrossJoinArgFactory {
             if (arg != null) {
                 arg0 = new CrossJoinArg[]{arg};
             }
+            evaluator.getActiveNativeExpansions().remove(exp);
         }
         return arg0;
     }
 
     private boolean shouldExpandNonEmpty(Exp exp) {
         return MondrianProperties.instance().ExpandNonNative.get()
+//               && !MondrianProperties.instance().EnableNativeCrossJoin.get()
             || isCheapSet(exp);
     }
 
