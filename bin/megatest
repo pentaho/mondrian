@@ -74,6 +74,28 @@ CYGWIN*)
   ;;
 esac
 
+# Macros to allow groups of properties to be set at once.
+export ENABLE_NATIVE="\
+    mondrian.native.crossjoin.enable=true \
+    mondrian.native.topcount.enable=true \
+    mondrian.native.filter.enable=true \
+    mondrian.native.nonempty.enable=true"
+export DISABLE_NATIVE="\
+    mondrian.native.crossjoin.enable=false \
+    mondrian.native.topcount.enable=false \
+    mondrian.native.filter.enable=false \
+    mondrian.native.nonempty.enable=false"
+export ENABLE_AGGS="\
+    mondrian.rolap.aggregates.Use=true \
+    mondrian.rolap.aggregates.Read=true"
+export DISABLE_AGGS="\
+    mondrian.rolap.aggregates.Use=false \
+    mondrian.rolap.aggregates.Read=false"
+export ENABLE_GSETS="\
+    mondrian.rolap.groupingsets.enable=true"
+export ENABLE_CMCACHE="\
+    mondrian.rolap.EnableRolapCubeMemberCache=true"
+
 doTest() {
   if [ -f test.properties ]; then
     mv test.properties test.properties.bak
@@ -711,29 +733,11 @@ doQuick() {
 
 # Runs the tests that are believed to be working.
 doWorking() {
-  ENABLE_NATIVE="\
-      mondrian.native.crossjoin.enable=true \
-      mondrian.native.topcount.enable=true \
-      mondrian.native.filter.enable=true \
-      mondrian.native.nonempty.enable=true"
-  DISABLE_NATIVE="\
-      mondrian.native.crossjoin.enable=false \
-      mondrian.native.topcount.enable=false \
-      mondrian.native.filter.enable=false \
-      mondrian.native.nonempty.enable=false"
-  ENABLE_AGGS="\
-    mondrian.rolap.aggregates.Use=true \
-    mondrian.rolap.aggregates.Read=true"
-  DISABLE_AGGS="\
-    mondrian.rolap.aggregates.Use=false \
-    mondrian.rolap.aggregates.Read=false"
-  ENABLE_GSETS="\
-    mondrian.rolap.groupingsets.enable=true"
-  ENABLE_CMCACHE="\
-    mondrian.rolap.EnableRolapCubeMemberCache=true"
   doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${ENABLE_AGGS}
   doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_CMCACHE}
+  doTest jdk1.6 derby ${ENABLE_NATIVE} ${ENABLE_AGGS}
   doTest jdk1.6 derby ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
   doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
