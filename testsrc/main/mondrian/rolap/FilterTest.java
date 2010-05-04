@@ -332,6 +332,11 @@ public class FilterTest extends BatchTestCase {
      * that contain multiple levels, but none being null.
      */
     public void testNotInMultiLevelMemberConstraintNonNullParent() {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            // If aggregate tables are enabled, generates similar SQL involving
+            // agg tables.
+            return;
+        }
         String query =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
@@ -395,6 +400,11 @@ public class FilterTest extends BatchTestCase {
      * the same parent.
      */
     public void testNotInMultiLevelMemberConstraintNonNullSameParent() {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            // If aggregate tables are enabled, generates similar SQL involving
+            // agg tables.
+            return;
+        }
         String query =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
