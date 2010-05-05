@@ -270,21 +270,20 @@ TYPICAL TARGET SEQUENCE
 
   <!-- Set the project revision number to the value in the manifest file (if it has not
        been specified in the properties file -->
+  <property name="dollar" value="$" />
   <property name="project.revision" value="${Implementation-Version}" description="Sets the version number of the project based on the Implementation-Version found in the manifest file (if one is supplied and nothing is specified in the build.properties)" />
-  <fail message="A project revision number has not been determined!">
-    <condition>
-      <matches string="${project.revision}" pattern="\$\{.*\}" />
-    </condition>
-  </fail>
+  <condition property="project.revision.unset">
+    <contains string="${project.revision}" substring="${dollar}{" />
+  </condition>
+  <fail message="A project revision number has not been determined!" if="project.revision.unset"/>
 
   <!-- Set the project title to the value in the manifest file (if it has not
        been specified in the properties file -->
   <property name="impl.title" value="${Implementation-Title}" description="Sets the title of the project based on the Implementation-Title found in the manifest file (if one is supplied and nothing is specified in the build.properties)" />
-  <fail message="A project title has not been determined!">
-    <condition>
-      <matches string="${impl.title}" pattern="\$\{.*\}" />
-    </condition>
-  </fail>
+  <condition property="impl.title.unset">
+    <contains string="${impl.title}" substring="${dollar}{" />
+  </condition>
+  <fail message="A project title has not been determined!" if="impl.title.unset" />
 
   <!-- Build Mode properties -->
   <property name="release" value="false" description="Set this to true if you want to generate a release artifact" />
