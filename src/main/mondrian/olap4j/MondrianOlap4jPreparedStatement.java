@@ -71,7 +71,7 @@ abstract class MondrianOlap4jPreparedStatement
     }
 
     public Cube getCube() {
-        throw new UnsupportedOperationException();
+        return cellSetMetaData.getCube();
     }
 
     // implement PreparedStatement
@@ -259,6 +259,7 @@ abstract class MondrianOlap4jPreparedStatement
     private Parameter getParameter(int param) throws OlapException {
         final Parameter[] parameters = query.getParameters();
         if (param < 1 || param > parameters.length) {
+            //noinspection ThrowableResultOfMethodCallIgnored
             throw this.olap4jConnection.helper.toOlapException(
                 this.olap4jConnection.helper.createException(
                     "parameter ordinal " + param + " out of range"));
