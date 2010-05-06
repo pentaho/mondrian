@@ -755,6 +755,22 @@ public class UtilTestCase extends TestCase {
                 Number.class));
         assertFalse(Util.canCast(Arrays.asList(1, null, 2d), Integer.class));
     }
+
+    /**
+     * Unit test for {@link Util#parseLocale(String)} method.
+     */
+    public void testParseLocale() {
+        Locale[] locales = {
+            Locale.CANADA,
+            Locale.CANADA_FRENCH,
+            Locale.getDefault(),
+            Locale.US,
+            Locale.TRADITIONAL_CHINESE,
+        };
+        for (Locale locale : locales) {
+            assertEquals(locale, Util.parseLocale(locale.toString()));
+        }
+    }
 }
 
 // End UtilTestCase.java

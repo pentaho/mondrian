@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -256,21 +256,7 @@ public class RolapConnection extends ConnectionBase {
         String localeString =
             connectInfo.get(RolapConnectionProperties.Locale.name());
         if (localeString != null) {
-            String[] strings = localeString.split("_");
-            switch (strings.length) {
-            case 1:
-                this.locale = new Locale(strings[0]);
-                break;
-            case 2:
-                this.locale = new Locale(strings[0], strings[1]);
-                break;
-            case 3:
-                this.locale = new Locale(strings[0], strings[1], strings[2]);
-                break;
-            default:
-                throw Util.newInternal(
-                    "bad locale string '" + localeString + "'");
-            }
+            this.locale = Util.parseLocale(localeString);
         }
 
         this.schema = schema;
