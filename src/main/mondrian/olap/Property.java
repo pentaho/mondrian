@@ -615,6 +615,19 @@ public class Property extends EnumeratedValues.BasicValue {
             "DISPLAY_FOLDER", Datatype.TYPE_STRING, DISPLAY_FOLDER_ORDINAL,
             false, true, false, "Folder in which to display a measure");
 
+    public static final int LANGUAGE_ORDINAL = 50;
+
+    /**
+     * Definition of the property which
+     * holds the translation expressed as an LCID.
+     * Only valid for property translations.
+     */
+    public static final Property LANGUAGE =
+        new Property(
+            "LANGUAGE", Datatype.TYPE_NUMERIC, LANGUAGE_ORDINAL,
+            false, false, true,
+            "The translation expressed as an LCID. Only valid for property translations.");
+
     /**
      * The various property names which define a format string.
      */

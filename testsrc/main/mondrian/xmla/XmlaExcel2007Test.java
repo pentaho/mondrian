@@ -164,6 +164,24 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             + "{[Store].[XL_PT0]}\n"
             + "Row #0: [Store].[USA].[CA]\n");
     }
+
+    /**
+     * Tests that executed MDX query with CELL PROPERTIES included; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-708">MONDRIAN-708,
+     * "After change 13351 all Excel pivots fail to update. CellInfo element in
+     * XMLA response is wrong"</a>.
+     *
+     * <p>CellInfo element should always contain all requested cell properties.
+     * Cell itself can contain fewer properties than requested.
+     *
+     * <p>Currently most properties are not implemented or not defined.
+     * If they get implemented then test needs to be changed.
+     *
+     * @throws Exception on error
+     */
+    public void testCellInfo() throws Exception {
+        helperTest(false);
+    }
 }
 
 // End XmlaExcel2007Test.java

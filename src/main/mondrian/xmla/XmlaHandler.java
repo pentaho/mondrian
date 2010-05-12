@@ -1734,10 +1734,10 @@ public class XmlaHandler {
             "FmtValue",
             "FormatString"};
 
-        protected static final String[] cellPropLongs = new String[] {
-            Property.VALUE.name,
-            Property.FORMATTED_VALUE.name,
-            Property.FORMAT_STRING.name};
+        protected static final Property[] cellPropLongs = {
+            Property.VALUE,
+            Property.FORMATTED_VALUE,
+            Property.FORMAT_STRING};
 
         protected static final String[] defaultProps = new String[] {
             "UName",
@@ -1851,25 +1851,29 @@ public class XmlaHandler {
 
             // -----------
             writer.startElement("CellInfo");
-            if (shouldReturnCellProperty(Property.VALUE.getName())) {
-                writer.element(
-                    "Value",
-                    "name", "VALUE");
-            }
-            if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())) {
-                writer.element(
-                    "FmtValue",
-                    "name", "FORMATTED_VALUE");
-            }
-
-            if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())) {
-                writer.element(
-                    "FormatString",
-                    "name", "FORMAT_STRING");
-            }
+            cellProperty(writer, Property.VALUE, true, "Value");
+            cellProperty(writer, Property.FORMATTED_VALUE, true, "FmtValue");
+            cellProperty(writer, Property.FORMAT_STRING, true, "FormatString");
+            cellProperty(writer, Property.LANGUAGE, false, "Language");
+            cellProperty(writer, Property.BACK_COLOR, false, "BackColor");
+            cellProperty(writer, Property.FORE_COLOR, false, "ForeColor");
+            cellProperty(writer, Property.FONT_FLAGS, false, "FontFlags");
             writer.endElement(); // CellInfo
             // -----------
             writer.endElement(); // OlapInfo
+        }
+
+        private void cellProperty(
+            SaxWriter writer,
+            Property cellProperty,
+            boolean evenEmpty,
+            String elementName)
+        {
+            if (shouldReturnCellProperty(cellProperty, evenEmpty)) {
+                writer.element(
+                    elementName,
+                    "name", cellProperty.name);
+            }
         }
 
         private List<Hierarchy> axisInfo(
@@ -2262,40 +2266,16 @@ public class XmlaHandler {
                 "Cell",
                 "CellOrdinal", ordinal);
             for (int i = 0; i < cellProps.length; i++) {
-                String cellPropLong = cellPropLongs[i];
-                Object value = cell.getPropertyValue(cellPropLong);
-
-/*
-                if (value != null && shouldReturnCellProperty(cellPropLong)) {
-                    if (cellPropLong.equals(Property.VALUE.name)) {
-                        String valueType = deduceValueType(evaluator, value);
-                        writer.startElement(
-                            cellProps[i],"xsi:type", valueType});
-                    } else {
-                        writer.startElement(cellProps[i]);
-                    }
-
-                    String valueString = value.toString();
-
-                    if (cellPropLong.equals(Property.VALUE.name)
-                        && value instanceof Number)
-                    {
-                        valueString =
-                            XmlaUtil.normalizeNumericString(valueString);
-                    }
-
-                    writer.characters(valueString);
-                    writer.endElement();
-                }
-*/
+                Property cellPropLong = cellPropLongs[i];
+                Object value = cell.getPropertyValue(cellPropLong.name);
                 if (value == null) {
                     continue;
                 }
-                if (! shouldReturnCellProperty(cellPropLong)) {
+                if (!shouldReturnCellProperty(cellPropLong, true)) {
                     continue;
                 }
 
-                if (!json && cellPropLong.equals(Property.VALUE.name)) {
+                if (!json && cellPropLong == Property.VALUE) {
                     if (cell.isNull()) {
                         // Return cell without value as in case of AS2005
                         continue;
@@ -2326,10 +2306,22 @@ public class XmlaHandler {
             writer.endElement(); // Cell
         }
 
-        private boolean shouldReturnCellProperty(String cellPropLong) {
+        /**
+         * Returns whether we should return a cell property in the XMLA result.
+         *
+         * @param cellProperty Cell property definition
+         * @param evenEmpty Whether to return even if cell has no properties
+         * @return Whether to return cell property in XMLA result
+         */
+        private boolean shouldReturnCellProperty(
+            Property cellProperty,
+            boolean evenEmpty)
+        {
             Query query = result.getQuery();
-            return query.isCellPropertyEmpty()
-                || query.hasCellProperty(cellPropLong);
+            return
+                (evenEmpty
+                 && query.isCellPropertyEmpty())
+                || query.hasCellProperty(cellProperty.name);
         }
     }
 
