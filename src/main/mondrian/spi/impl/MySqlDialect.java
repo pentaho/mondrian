@@ -9,11 +9,8 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-import mondrian.olap.MondrianDef;
-import mondrian.util.Pair;
 
 import java.util.List;
-import java.util.Iterator;
 import java.util.Map;
 import java.sql.*;
 
@@ -48,6 +45,8 @@ public class MySqlDialect extends JdbcDialectImpl {
      * Creates a MySqlDialect.
      *
      * @param connection Connection
+     *
+     * @throws SQLException on error
      */
     public MySqlDialect(Connection connection) throws SQLException {
         super(connection);
@@ -136,21 +135,31 @@ public class MySqlDialect extends JdbcDialectImpl {
     private String getCurrentSqlMode(Connection connection)
         throws SQLException
     {
-        return getSqlMode(connection, true);
+        return getSqlMode(connection, Scope.SESSION);
     }
 
-    private String getSqlMode(Connection connection, boolean session)
+    private String getSqlMode(Connection connection, Scope scope)
         throws SQLException
     {
-        String scope = session ? "SESSION" : "GLOBAL";
         String sqlmode = null;
-        Statement s = connection.createStatement();
-        if (s.execute("SELECT @@" + scope + ".sql_mode")) {
-            ResultSet rs = s.getResultSet();
-            rs.next();
-            sqlmode = rs.getString(1);
+        Statement s = null;
+        try {
+            s = connection.createStatement();
+            if (s.execute("SELECT @@" + scope + ".sql_mode")) {
+                ResultSet rs = s.getResultSet();
+                if (rs.next()) {
+                    sqlmode = rs.getString(1);
+                }
+            }
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
         }
-        s.close();
         return sqlmode;
     }
 
@@ -214,6 +223,11 @@ public class MySqlDialect extends JdbcDialectImpl {
 
     public boolean supportsMultiValueInExpr() {
         return true;
+    }
+
+    private enum Scope {
+        SESSION,
+        GLOBAL
     }
 }
 

@@ -216,13 +216,27 @@ public class SqlStatement {
             haveSemaphore = false;
             querySemaphore.leave();
         }
+
+        // According to the JDBC spec, closing a statement automatically closes
+        // its result sets, and closing a connection automatically closes its
+        // statements. But let's be conservative and close everything
+        // explicitly.
+        Statement statement = null;
         if (resultSet != null) {
             try {
+                statement = resultSet.getStatement();
                 resultSet.close();
             } catch (SQLException e) {
                 throw Util.newError(message + "; sql=[" + sql + "]");
             } finally {
                 resultSet = null;
+            }
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw Util.newError(message + "; sql=[" + sql + "]");
             }
         }
         if (jdbcConnection != null) {
