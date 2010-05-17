@@ -1849,6 +1849,70 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Row #1: 2,009\n"
                 + "Row #2: 88\n");
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-742">MONDRIAN-742, "Role
+     * security not applied correctly for the 'Top Level' restriction"</a>.
+     */
+    public void testBugMondrian742() {
+        TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
+            + "        <MemberGrant member=\"[Store].[All Stores]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n")
+            .withRole("Role1")
+            .assertQueryReturns(
+                "With \n"
+                + "Member [Store].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([Store].Members)', SOLVE_ORDER=-100 \n"
+                + "Select \n"
+                + "{[Measures].[Count]} on columns, \n"
+                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]} on rows \n"
+                + "From [HR]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Count]}\n"
+                + "Axis #2:\n"
+                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]}\n"
+                + "Row #0: 22,176\n");
+    }
+
+    /**
+     * Tests that if a hierarchy has a top level visible, and there are no
+     * members explicitly granted, then the hierarchy is empty.
+     */
+    public void testHierarchyWithNoVisibleMembers() {
+        // Similar scenario to testBugMondrian742, but HierarchyGrant has no
+        // MemberGrants, so no members are visible. It is a common mistake to
+        // make, adding no MemberGrants if all you want to do is restrict the
+        // topLevel of the hierarchy. Note that the solution is to add a
+        // MemberGrant of the 'all' member.
+        TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n")
+            .withRole("Role1")
+            .assertQueryThrows(
+                "With \n"
+                + "Member [Store].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([Store].Members)', SOLVE_ORDER=-100 \n"
+                + "Select \n"
+                + "{[Measures].[Count]} on columns, \n"
+                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]} on rows \n"
+                + "From [HR]",
+                "Hierarchy '[Store]' has no accessible members.");
+    }
 }
 
 // End AccessControlTest.java

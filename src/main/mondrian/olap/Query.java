@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1402,7 +1402,9 @@ public class Query extends QueryPart {
      * Source of metadata within the scope of a query.
      *
      * <p>Note especially that {@link #getCalculatedMember(java.util.List)}
-     * returns the calculated members defined in this query.
+     * returns the calculated members defined in this query. It does not
+     * perform access control; all calculated members defined in a query are
+     * visible to everyone.
      */
     private static class QuerySchemaReader extends DelegatingSchemaReader {
         private final Query query;
