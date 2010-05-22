@@ -1912,18 +1912,6 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
-        <MEASURE_NAME>Profit last Period</MEASURE_NAME>
-        <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
-        <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
-        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
-        <DATA_TYPE>130</DATA_TYPE>
-        <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
         <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
         <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
         <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
@@ -2304,24 +2292,6 @@
         <PARENT_COUNT>0</PARENT_COUNT>
         <DEPTH>0</DEPTH>
       </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
-        <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <MEMBER_ORDINAL>18</MEMBER_ORDINAL>
-        <MEMBER_NAME>Profit last Period</MEMBER_NAME>
-        <MEMBER_UNIQUE_NAME>[Measures].[Profit last Period]</MEMBER_UNIQUE_NAME>
-        <MEMBER_TYPE>4</MEMBER_TYPE>
-        <MEMBER_CAPTION>Profit last Period</MEMBER_CAPTION>
-        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
-        <PARENT_LEVEL>0</PARENT_LEVEL>
-        <PARENT_COUNT>0</PARENT_COUNT>
-        <DEPTH>0</DEPTH>
-      </row>
     </root>
   </xmla:return>
 </xmla:DiscoverResponse>
@@ -2617,24 +2587,6 @@
         <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
         <MEMBER_TYPE>4</MEMBER_TYPE>
         <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
-        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
-        <PARENT_LEVEL>0</PARENT_LEVEL>
-        <PARENT_COUNT>0</PARENT_COUNT>
-        <DEPTH>0</DEPTH>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
-        <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <MEMBER_ORDINAL>18</MEMBER_ORDINAL>
-        <MEMBER_NAME>Profit last Period</MEMBER_NAME>
-        <MEMBER_UNIQUE_NAME>[Measures].[Profit last Period]</MEMBER_UNIQUE_NAME>
-        <MEMBER_TYPE>4</MEMBER_TYPE>
-        <MEMBER_CAPTION>Profit last Period</MEMBER_CAPTION>
         <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
         <PARENT_LEVEL>0</PARENT_LEVEL>
         <PARENT_COUNT>0</PARENT_COUNT>

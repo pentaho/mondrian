@@ -92,6 +92,16 @@ public enum PropertyDefinition {
         + "(dimensions, hierarchies, levels, measures, named sets) of each "
         + "cube."),
 
+    // Mondrian-specific extension to XMLA.
+    EmitInvisibleMembers(
+        RowsetDefinition.Type.Boolean,
+        null,
+        XmlaConstants.Access.ReadWrite,
+        "",
+        XmlaConstants.Method.DISCOVER,
+        "Whether to include members whose VISIBLE property is false, or "
+        + "measures whose MEASURE_IS_VISIBLE property is false."),
+
     EndRange(
         RowsetDefinition.Type.Integer,
         null,

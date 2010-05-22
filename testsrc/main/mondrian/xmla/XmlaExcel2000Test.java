@@ -96,7 +96,11 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         helperTest(true);
     }
 
-    public void test13() throws Exception {
+    public void testMdschemaMeasures() throws Exception {
+        helperTest(true);
+    }
+
+    public void testMdschemaMeasuresEmitInvisible() throws Exception {
         helperTest(true);
     }
 

@@ -513,6 +513,26 @@ way too noisy
     }
 
     /**
+     * Returns whether an XMLA request should return invisible members.
+     *
+     * <p>According to the XMLA spec, it should not. But we allow the client to
+     * specify different behavior. In particular, the olap4j driver for XMLA
+     * may need to access invisible members.
+     *
+     * <p>Returns true if the EmitInvisibleMembers property is specified and
+     * equal to "true".
+     *
+     * @param request XMLA request
+     * @return Whether to return invisible members
+     */
+    public static boolean shouldEmitInvisibleMembers(XmlaRequest request) {
+        final String value =
+            request.getProperties().get(
+                PropertyDefinition.EmitInvisibleMembers.name());
+        return Boolean.parseBoolean(value);
+    }
+
+    /**
      * Result of a metadata query.
      */
     public static class MetadataRowset {

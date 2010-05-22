@@ -10160,6 +10160,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
         <Catalog>${catalog}</Catalog>
         <Format>${format}</Format>
         <Content>${content}</Content>
+        <EmitInvisibleMembers>true</EmitInvisibleMembers>
       </PropertyList>
     </Properties>
     </Discover>
@@ -13137,6 +13138,14 @@ SchemaData: Returns both the schema information as well as the data.</PropertyDe
                             request, whether to include sub-elements
                             (dimensions, hierarchies, levels, measures,
                             named sets) of each cube.</PropertyDescription>
+                        <PropertyType>Boolean</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>EmitInvisibleMembers</PropertyName>
+                        <PropertyDescription>Whether to include members whose VISIBLE property is false, or measures whose MEASURE_IS_VISIBLE property is false.</PropertyDescription>
                         <PropertyType>Boolean</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>

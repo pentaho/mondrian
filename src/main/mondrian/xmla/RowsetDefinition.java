@@ -1050,8 +1050,6 @@ enum RowsetDefinition {
         }
     };
 
-    private static final boolean EMIT_INVISIBLE_MEMBERS = true;
-
     transient final Column[] columnDefinitions;
     transient final Column[] sortColumnDefinitions;
 
@@ -2328,6 +2326,8 @@ enum RowsetDefinition {
                     continue;
                 }
 
+                final boolean emitInvisibleMembers =
+                    XmlaUtil.shouldEmitInvisibleMembers(request);
                 int ordinalPosition = 1;
                 Row row;
 
@@ -2361,7 +2361,7 @@ enum RowsetDefinition {
                         if (visible == null) {
                             visible = true;
                         }
-                        if (!EMIT_INVISIBLE_MEMBERS && !visible) {
+                        if (!emitInvisibleMembers && !visible) {
                             continue;
                         }
 
@@ -5471,7 +5471,7 @@ TODO: see above
             if (visible == null) {
                 visible = true;
             }
-            if (!EMIT_INVISIBLE_MEMBERS && !visible) {
+            if (!visible && !XmlaUtil.shouldEmitInvisibleMembers(request)) {
                 return;
             }
 
@@ -6091,7 +6091,7 @@ TODO: see above
             if (visible == null) {
                 visible = true;
             }
-            if (!EMIT_INVISIBLE_MEMBERS && !visible) {
+            if (!visible && !XmlaUtil.shouldEmitInvisibleMembers(request)) {
                 return;
             }
 
@@ -6114,7 +6114,7 @@ TODO: see above
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
             row.set(LevelUniqueName.name, level.getUniqueName());
             row.set(LevelNumber.name, adjustedLevelDepth);
-            row.set(MemberOrdinal.name, false ? 0 : member.getOrdinal());
+            row.set(MemberOrdinal.name, member.getOrdinal());
             row.set(MemberName.name, member.getName());
             row.set(MemberUniqueName.name, member.getUniqueName());
             row.set(MemberType.name, member.getMemberType().ordinal());

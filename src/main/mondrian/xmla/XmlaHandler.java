@@ -1271,7 +1271,7 @@ public class XmlaHandler {
             }
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
-            final boolean advanced = "true".equals(advancedFlag);
+            final boolean advanced = Boolean.parseBoolean(advancedFlag);
             if (advanced) {
                 return executeDrillThroughAdvanced(connection, result);
             } else {
