@@ -1,10 +1,10 @@
-Mondrian 3.2.0.13583 production release notes
+Mondrian 3.2.0.13643 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.2.0.13583 is a minor release version of the leading
+Mondrian 3.2.0.13643 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -42,6 +42,8 @@ Main functionality in this release
  - Improved native performance
  - olap4j drill through support
  - Improved XMLA support
+ - Greenplum Dialect
+ - Improved parameter support
 
 API changes from 3.1 to 3.2
 ---------------------------
@@ -52,6 +54,28 @@ API changes from 3.1 to 3.2
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed for 3.2.0.13643
+----------------------------------------------------------
+MONDRIAN-560 - StrToMember function doesn't use IgnoreInvalidMembers
+               option
+MONDRIAN-737 - Sybase SQL Dialect is not correctly applied for
+               Sybase Adaptive Server Enterprise 15.5
+MONDRIAN-722 - If ignoreInvalidMembers=true, should ignore
+               grants with invalid members
+MONDRIAN-734 - Exception thrown when creating a 'New Analysis View'
+               with JPivot
+MONDRIAN-728 - Rolap Connection Locale is handled incorrectly in
+               LocalizingDynamicSchemaProcessor.java
+MONDRIAN-738 - Statements not being closed
+MONDRIAN-708 - After change 13351 all Excel pivots fail to update.
+               CellInfo element in XMLA response is wrong
+MONDRIAN-742 - Role security not applied correctly for the 'Top
+               Level' restriction
+MONDRIAN-727 - [Fact count] measure added in change 13506
+               shouldn't be returned in XMLA rowset, not visible 
+               measures shouldn't be
+               returned either
 
 Bugs and feature requests fixed for 3.2.0.13583
 ----------------------------------------------------------

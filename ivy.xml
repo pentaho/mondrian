@@ -15,7 +15,7 @@
     xmlns:m="http://ant.apache.org/ivy/maven"
     xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
-    <info organisation="pentaho" module="mondrian" revision="3.2-SNAPSHOT">
+    <info organisation="pentaho" module="mondrian" revision="3.2.0.13643">
         <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
         <repository name="pentaho-repository" url="http://repo.pentaho.org/artifactory"/>
