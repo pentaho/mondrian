@@ -213,10 +213,9 @@ public class ParameterTest extends FoodMartTestCase {
     public void testNullStrToMember() {
         Connection connection = getConnection();
         Query query = connection.parseQuery(
-            "select NON EMPTY {[Time].[1997]} ON COLUMNS, " +
-            "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS " +
-            "from [Sales]"
-        );
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS, "
+            + "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS "
+            + "from [Sales]");
 
         // Execute #1: Parameter unset
         Parameter[] parameters = query.getParameters();
@@ -270,10 +269,10 @@ public class ParameterTest extends FoodMartTestCase {
     public void testSetUnsetParameter() {
         Connection connection = getConnection();
         Query query = connection.parseQuery(
-            "select NON EMPTY {[Time].[1997]} ON COLUMNS, " +
-            "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS " +
-            "from [Sales]"
-        );
+            "with member [Measures].[Foo] as\n"
+            + " len(Parameter(\"sProduct\", STRING, \"foobar\"))\n"
+            + "select {[Measures].[Foo]} ON COLUMNS\n"
+            + "from [Sales]");
         Parameter[] parameters = query.getParameters();
         final Parameter parameter0 = parameters[0];
         assertFalse(parameter0.isSet());
@@ -281,21 +280,47 @@ public class ParameterTest extends FoodMartTestCase {
             // harmless to unset a parameter which is unset
             parameter0.unsetValue();
         }
-        parameter0.setValue(null);
-        assertTrue(parameter0.isSet());
-        Result result = connection.execute(query);
-        String resultString = TestContext.toString(result);
-        final String expected =
+        final String expect6 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "Row #0: 131,558\n";
-        TestContext.assertEqualsVerbose(expected, resultString);
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 6\n";
+        final String expect0 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 0\n";
+        final String expect3 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 3\n";
+
+        // before parameter is set, should get len of default value, viz 6
+        Result result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect6, TestContext.toString(result));
+
+        // after parameter is set to null, should get len of null, viz 0
+        parameter0.setValue(null);
         assertTrue(parameter0.isSet());
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect0, TestContext.toString(result));
+        assertTrue(parameter0.isSet());
+
+        // after parameter is set to "foo", should get len of foo, viz 3
+        parameter0.setValue("foo");
+        assertTrue(parameter0.isSet());
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect3, TestContext.toString(result));
+        assertTrue(parameter0.isSet());
+
+        // after unset, should get len of default value, viz 6
         parameter0.unsetValue();
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect6, TestContext.toString(result));
         assertFalse(parameter0.isSet());
     }
 
