@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -20,8 +20,9 @@ import java.io.Reader;
 import java.util.Calendar;
 import java.net.URL;
 
-import mondrian.olap.Query;
 import mondrian.olap.Parameter;
+import mondrian.olap.Query;
+import mondrian.olap.Util;
 
 /**
  * Implementation of {@link PreparedOlapStatement}
@@ -384,7 +385,16 @@ abstract class MondrianOlap4jPreparedStatement
 
     public int getParameterMode(int param) throws SQLException {
         Parameter paramDef = getParameter(param); // forces param range check
+        Util.discard(paramDef);
         return ParameterMetaData.parameterModeIn;
+    }
+
+    public boolean isSet(int parameterIndex) throws SQLException {
+        return getParameter(parameterIndex).isSet();
+    }
+
+    public void unset(int parameterIndex) throws SQLException {
+        getParameter(parameterIndex).unsetValue();
     }
 
     // Helper classes

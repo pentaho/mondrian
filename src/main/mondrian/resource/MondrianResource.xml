@@ -272,6 +272,10 @@
     <text>Hierarchy ''{0}'' has no accessible members.</text>
 </exception>
 
+<exception id="350630" name="NullValue">
+    <text>An MDX expression was expected. An empty expression was specified.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 

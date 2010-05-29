@@ -49,6 +49,10 @@ class StrToSetFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {stringCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
+                    if (string == null) {
+                        throw newEvalException(
+                            MondrianResource.instance().NullValue.ex());
+                    }
                     return parseMemberList(evaluator, string, hierarchy);
                 }
             };
@@ -62,6 +66,10 @@ class StrToSetFunDef extends FunDefBase {
             return new AbstractListCalc(call, new Calc[] {stringCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
+                    if (string == null) {
+                        throw newEvalException(
+                            MondrianResource.instance().NullValue.ex());
+                    }
                     return parseTupleList(evaluator, string, hierarchies);
                 }
             };
@@ -149,7 +157,9 @@ class StrToSetFunDef extends FunDefBase {
                 return null;
             }
             Type type = args[0].getType();
-            if (!(type instanceof StringType)) {
+            if (!(type instanceof StringType)
+                && !(type instanceof NullType))
+            {
                 return null;
             }
             for (int i = 1; i < args.length; i++) {

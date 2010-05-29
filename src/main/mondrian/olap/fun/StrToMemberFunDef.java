@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 /**
  * Definition of the <code>StrToMember</code> MDX function.
@@ -40,6 +41,10 @@ class StrToMemberFunDef extends FunDefBase {
             public Member evaluateMember(Evaluator evaluator) {
                 String memberName =
                     memberNameCalc.evaluateString(evaluator);
+                if (memberName == null) {
+                    throw newEvalException(
+                        MondrianResource.instance().NullValue.ex());
+                }
                 return parseMember(evaluator, memberName, null);
             }
         };

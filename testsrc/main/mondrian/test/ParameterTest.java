@@ -205,6 +205,100 @@ public class ParameterTest extends FoodMartTestCase {
             "foo", "[Gender].[All Gender].[M]");
     }
 
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-745">MONDRIAN-745,
+     * "NullPointerException when passing in null param value"</a>.
+     */
+    public void testNullStrToMember() {
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS, " +
+            "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS " +
+            "from [Sales]"
+        );
+
+        // Execute #1: Parameter unset
+        Parameter[] parameters = query.getParameters();
+        final Parameter parameter0 = parameters[0];
+        assertFalse(parameter0.isSet());
+        // ideally, parameter's default value would be available before
+        // execution; but it is what it is
+        assertNull(parameter0.getValue());
+        Result result = connection.execute(query);
+        assertEquals("[Gender].[Gender].[F]", parameter0.getValue());
+        final String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: 131,558\n";
+        TestContext.assertEqualsVerbose(expected, TestContext.toString(result));
+
+        // Execute #2: Parameter set to null
+        assertFalse(parameter0.isSet());
+        parameter0.setValue(null);
+        assertTrue(parameter0.isSet());
+        assertEquals(null, parameter0.getValue());
+        Throwable throwable;
+        try {
+            result = connection.execute(query);
+            Util.discard(result);
+            throwable = null;
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "An MDX expression was expected. An empty expression was specified.");
+
+        // Execute #3: Parameter unset, reverts to default value
+        assertTrue(parameter0.isSet());
+        parameter0.unsetValue();
+        assertFalse(parameter0.isSet());
+        // ideally, parameter's default value would be available before
+        // execution; but it is what it is
+        assertNull(parameter0.getValue());
+        result = connection.execute(query);
+        assertEquals("[Gender].[Gender].[F]", parameter0.getValue());
+        TestContext.assertEqualsVerbose(expected, TestContext.toString(result));
+        assertFalse(parameter0.isSet());
+    }
+
+    public void testSetUnsetParameter() {
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS, " +
+            "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS " +
+            "from [Sales]"
+        );
+        Parameter[] parameters = query.getParameters();
+        final Parameter parameter0 = parameters[0];
+        assertFalse(parameter0.isSet());
+        if (new Random().nextBoolean()) {
+            // harmless to unset a parameter which is unset
+            parameter0.unsetValue();
+        }
+        parameter0.setValue(null);
+        assertTrue(parameter0.isSet());
+        Result result = connection.execute(query);
+        String resultString = TestContext.toString(result);
+        final String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: 131,558\n";
+        TestContext.assertEqualsVerbose(expected, resultString);
+        assertTrue(parameter0.isSet());
+        parameter0.unsetValue();
+        assertFalse(parameter0.isSet());
+    }
+
     public void testNumericParameterStringValueFails() {
         assertExprThrows(
             "Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",

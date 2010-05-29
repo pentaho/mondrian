@@ -1913,6 +1913,50 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "From [HR]",
                 "Hierarchy '[Store]' has no accessible members.");
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-746">MONDRIAN-746,
+     * "Report returns stack trace when turning on subtotals on a hierarchy with
+     * top level hidden"</a>.
+     */
+    public void testCalcMemberLevel() {
+        checkCalcMemberLevel(getTestContext());
+        checkCalcMemberLevel(
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
+                + "        <MemberGrant member=\"[Store].[All Stores]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n")
+                .withRole("Role1"));
+    }
+
+    private void checkCalcMemberLevel(TestContext testContext) {
+        Result result = testContext.executeQuery(
+            "with member [Store].[USA].[CA].[Foo] as\n"
+            + " 1\n"
+            + "select {[Measures].[Unit Sales]} on columns,\n"
+            + "{[Store].[USA].[CA],\n"
+            + " [Store].[USA].[CA].[Los Angeles],\n"
+            + " [Store].[USA].[CA].[Foo]} on rows\n"
+            + "from [Sales]");
+        final List<Position> rowPos = result.getAxes()[1].getPositions();
+        final Member member0 = rowPos.get(0).get(0);
+        assertEquals("CA", member0.getName());
+        assertEquals("Store State", member0.getLevel().getName());
+        final Member member1 = rowPos.get(1).get(0);
+        assertEquals("Los Angeles", member1.getName());
+        assertEquals("Store City", member1.getLevel().getName());
+        final Member member2 = rowPos.get(2).get(0);
+        assertEquals("Foo", member2.getName());
+        assertEquals("Store City", member2.getLevel().getName());
+    }
 }
 
 // End AccessControlTest.java

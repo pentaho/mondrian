@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -62,11 +62,16 @@ public class ParameterImpl
             return assigned;
         }
 
+        public void unsetParameterValue() {
+            this.assigned = false;
+            this.value = null;
+        }
+
         public void setCachedDefaultValue(Object value) {
             throw new UnsupportedOperationException();
         }
 
-        public void setParameterValue(Object value) {
+        public void setParameterValue(Object value, boolean assigned) {
             this.assigned = true;
             this.value = value;
         }
@@ -116,12 +121,21 @@ public class ParameterImpl
 
     public void setValue(Object value) {
         if (value instanceof MemberExpr) {
-            slot.setParameterValue(((MemberExpr) value).getMember());
+            slot.setParameterValue(((MemberExpr) value).getMember(), true);
         } else if (value instanceof Literal) {
-            slot.setParameterValue(((Literal) value).getValue());
+            slot.setParameterValue(((Literal) value).getValue(), true);
         } else {
-            slot.setParameterValue(value);
+            slot.setParameterValue(value, true);
         }
+    }
+
+    public boolean isSet() {
+        return slot != null
+            && slot.isParameterSet();
+    }
+
+    public void unsetValue() {
+        slot.unsetParameterValue();
     }
 
     public String getDescription() {
@@ -182,7 +196,7 @@ public class ParameterImpl
         if (this.slot != null) {
             // save previous value
             if (this.slot.isParameterSet()) {
-                slot.setParameterValue(this.slot.getParameterValue());
+                slot.setParameterValue(this.slot.getParameterValue(), true);
             }
         }
         this.slot = slot;
@@ -220,7 +234,7 @@ public class ParameterImpl
             Object value = evaluator.getParameterValue(slot);
             if (!slot.isParameterSet()) {
                 // save value if not set (setting the default value)
-                slot.setParameterValue(value);
+                slot.setParameterValue(value, false);
             }
             return value;
         }
@@ -254,7 +268,7 @@ public class ParameterImpl
                 (List<Member>) evaluator.getParameterValue(slot);
             if (!slot.isParameterSet()) {
                 // save value if not set (setting the default value)
-                slot.setParameterValue(value);
+                slot.setParameterValue(value, false);
             }
             return value;
         }

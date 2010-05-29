@@ -8536,6 +8536,20 @@ public class FunctionTest extends FoodMartTestCase {
             "CA");
     }
 
+    public void testStrToMemberNull() {
+        // SSAS 2005 gives "#Error An MDX expression was expected. An empty
+        // expression was specified."
+        assertExprThrows(
+            "StrToMember(null).Name",
+            "An MDX expression was expected. An empty expression was specified");
+        assertExprThrows(
+            "StrToSet(null, [Gender]).Count",
+            "An MDX expression was expected. An empty expression was specified");
+        assertExprThrows(
+            "StrToTuple(null, [Gender]).Name",
+            "An MDX expression was expected. An empty expression was specified");
+    }
+
     /**
      * Testcase for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-560">
@@ -10359,6 +10373,79 @@ Intel platforms):
             + "Row #0: 4\n");
     }
 
+    public void testVisualTotalsLevel() {
+        Result result = getTestContext().executeQuery(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "{[Product].[All Products],\n"
+            + " [Product].[All Products].[Food].[Baked Goods].[Bread],\n"
+            + " VisualTotals(\n"
+            + "    {[Product].[All Products].[Food].[Baked Goods].[Bread],\n"
+            + "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels],\n"
+            + "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]},\n"
+            + "     \"**Subtotal - *\")} on rows\n"
+            + "from [Sales]");
+        final List<Position> rowPos = result.getAxes()[1].getPositions();
+        final Member member0 = rowPos.get(0).get(0);
+        assertEquals("All Products", member0.getName());
+        assertEquals("(All)", member0.getLevel().getName());
+        final Member member1 = rowPos.get(1).get(0);
+        assertEquals("Bread", member1.getName());
+        assertEquals("Product Category", member1.getLevel().getName());
+        final Member member2 = rowPos.get(2).get(0);
+        assertEquals("*Subtotal - Bread", member2.getName());
+        assertEquals("Product Category", member2.getLevel().getName());
+        final Member member3 = rowPos.get(3).get(0);
+        assertEquals("Bagels", member3.getName());
+        assertEquals("Product Subcategory", member3.getLevel().getName());
+        final Member member4 = rowPos.get(4).get(0);
+        assertEquals("Muffins", member4.getName());
+        assertEquals("Product Subcategory", member4.getLevel().getName());
+    }
+
+    /**
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-749">
+     * MONDRIAN-749, "Cannot use visual totals members in calculations"</a>.
+     *
+     * <p>The bug is not currently fixed, so it is a negative test case. Row #2
+     * cell #1 contains an exception, but should be "**Subtotal - Bread :
+     * Product Subcategory".
+     */
+    public void testVisualTotalsMemberInCalculation() {
+        getTestContext().assertQueryReturns(
+            "with member [Measures].[Foo] as\n"
+            + " [Product].CurrentMember.Name || ' : ' || [Product].Level.Name\n"
+            + "select {[Measures].[Unit Sales], [Measures].[Foo]} on columns,\n"
+            + "{[Product].[All Products],\n"
+            + " [Product].[All Products].[Food].[Baked Goods].[Bread],\n"
+            + " VisualTotals(\n"
+            + "    {[Product].[All Products].[Food].[Baked Goods].[Bread],\n"
+            + "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels],\n"
+            + "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]},\n"
+            + "     \"**Subtotal - *\")} on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Foo]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[All Products]}\n"
+            + "{[Product].[Food].[Baked Goods].[Bread]}\n"
+            + "{[Product].[Food].[Baked Goods].[*Subtotal - Bread]}\n"
+            + "{[Product].[Food].[Baked Goods].[Bread].[Bagels]}\n"
+            + "{[Product].[Food].[Baked Goods].[Bread].[Muffins]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: All Products : (All)\n"
+            + "Row #1: 7,870\n"
+            + "Row #1: Bread : Product Category\n"
+            + "Row #2: 4,312\n"
+            + "Row #2: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
+            + "Row #3: 815\n"
+            + "Row #3: Bagels : Product Subcategory\n"
+            + "Row #4: 3,497\n"
+            + "Row #4: Muffins : Product Subcategory\n");
+    }
+
     public void testCalculatedChild() {
         // Construct calculated children with the same name for both [Drink] and
         // [Non-Consumable].  Then, create a metric to select the calculated
@@ -10830,6 +10917,22 @@ Intel platforms):
             + "Axis #1:\n"
             + "{[Store].[USA].[WA].[Bellingham]}\n"
             + "Row #0: 2,237\n");
+    }
+
+    public void testLenFunctionWithNullString() {
+        // SSAS2005 returns 0
+        assertQueryReturns(
+            "with member [Measures].[Foo] as ' NULL '\n"
+            + " member [Measures].[Bar] as ' len([Measures].[Foo]) '\n"
+            + "select [Measures].[Bar] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Bar]}\n"
+            + "Row #0: 0\n");
+        // same, but inline
+        assertExprReturns("len(null)", 0, 0);
     }
 
     public void testUCaseWithNonEmptyString() {
