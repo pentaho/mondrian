@@ -359,9 +359,9 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*ZERO]}\n"
             + "Axis #2:\n"
-            + "{[NuStore].[Canada]}\n"
-            + "{[NuStore].[Mexico]}\n"
-            + "{[NuStore].[USA]}\n"
+            + "{[NuStore].[All NuStores].[Canada]}\n"
+            + "{[NuStore].[All NuStores].[Mexico]}\n"
+            + "{[NuStore].[All NuStores].[USA]}\n"
             + "Row #0: 0\n"
             + "Row #1: 0\n"
             + "Row #2: 0\n");
