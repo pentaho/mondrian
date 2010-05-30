@@ -343,12 +343,17 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "</Hierarchy>\n"
             + "</Dimension>");
 
+        final String nuStore = TestContext.hierarchyName("NuStore", "NuStore");
+
         testContext.assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_NuStore]' "
-            + "set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [NuStore].CurrentMember.OrderKey, BASC)' "
-            + "set [*BASE_MEMBERS_NuStore] as '[NuStore].[NuStore Country].Members' "
+            + "set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], "
+            + nuStore + ".CurrentMember.OrderKey, BASC)' "
+            + "set [*BASE_MEMBERS_NuStore] as '"
+            + nuStore + ".[NuStore Country].Members' "
             + "set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' "
-            + "set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {[NuStore].CurrentMember})' "
+            + "set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {"
+            + nuStore + ".CurrentMember})' "
             + "set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' "
             + "member [Measures].[*ZERO] as '0.0', SOLVE_ORDER = 0.0 "
             + "select [*BASE_MEMBERS_Measures] ON COLUMNS, "
