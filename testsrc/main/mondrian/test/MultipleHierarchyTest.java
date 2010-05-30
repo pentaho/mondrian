@@ -9,6 +9,7 @@
 */
 package mondrian.test;
 
+import junit.framework.Assert;
 import mondrian.olap.MondrianProperties;
 
 /**
@@ -317,6 +318,53 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                 + "{[Measures].[Time Child Count]}\n"
                 + "Row #0: 4\n");
         }
+    }
+
+    /**
+     * Tests <a href="http://jira.pentaho.com/browse/MONDRIAN-750">
+     * bug MONDRIAN-750, "... multiple hierarchies beneath a single dimension
+     * throws exception"</a>.
+     */
+    public void testDefaultNamedHierarchy() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"NuStore\" foreignKey=\"store_id\">\n"
+            + "<Hierarchy name=\"NuStore\" hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "  <Table name=\"store\"/>\n"
+            + "  <Level name=\"NuStore Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"NuStore State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"NuStore Name\" column=\"store_name\" uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "<Hierarchy caption=\"NuStore2\" name=\"NuStore2\" allMemberName=\"All NuStore2s\" hasAll=\"true\" primaryKey=\"NuStore_id\">\n"
+            + "  <Table name=\"store\"/>\n"
+            + "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"NuStore Name\" column=\"store_name\"  uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>");
+
+        testContext.assertQueryReturns(
+            "with set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_NuStore]' "
+            + "set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [NuStore].CurrentMember.OrderKey, BASC)' "
+            + "set [*BASE_MEMBERS_NuStore] as '[NuStore].[NuStore Country].Members' "
+            + "set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' "
+            + "set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {[NuStore].CurrentMember})' "
+            + "set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' "
+            + "member [Measures].[*ZERO] as '0.0', SOLVE_ORDER = 0.0 "
+            + "select [*BASE_MEMBERS_Measures] ON COLUMNS, "
+            + "[*SORTED_ROW_AXIS] ON ROWS "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n"
+            + "{[NuStore].[Canada]}\n"
+            + "{[NuStore].[Mexico]}\n"
+            + "{[NuStore].[USA]}\n"
+            + "Row #0: 0\n"
+            + "Row #1: 0\n"
+            + "Row #2: 0\n");
     }
 }
 

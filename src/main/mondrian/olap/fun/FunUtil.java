@@ -282,7 +282,7 @@ public class FunUtil extends Util {
         }
         for (Hierarchy hierarchy : hierarchies) {
             if (hierarchy.getName() == null
-                || hierarchy.getName().equals(dimension.getName()))
+                || hierarchy.getUniqueName().equals(dimension.getUniqueName()))
             {
                 return hierarchy;
             }
