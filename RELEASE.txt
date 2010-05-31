@@ -1,10 +1,10 @@
-Mondrian 3.2.0.13643 production release notes
+Mondrian 3.2.0.13658 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.2.0.13643 is a minor release version of the leading
+Mondrian 3.2.0.13658 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -54,6 +54,14 @@ API changes from 3.1 to 3.2
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed for 3.2.0.13658
+----------------------------------------------------------
+MONDRIAN-745 - NullPointerException when passing in null param value
+MONDRIAN-746 - Level of calculated member is different when hierarchy
+               is access-controlled
+MONDRIAN-750 - View model with Analyzer where model contains multiple
+               hierarchies beneath a single dimension throws exception
 
 Bugs and feature requests fixed for 3.2.0.13643
 ----------------------------------------------------------
