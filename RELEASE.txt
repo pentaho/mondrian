@@ -1,10 +1,10 @@
-Mondrian 3.2.0.13658 production release notes
+Mondrian 3.2.0.13661 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.2.0.13658 is a minor release version of the leading
+Mondrian 3.2.0.13661 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -54,6 +54,11 @@ API changes from 3.1 to 3.2
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed for 3.2.0.13661
+----------------------------------------------------------
+MONDRIAN-751 - Drill SQL does not include slicer members in WHERE 
+               clause
 
 Bugs and feature requests fixed for 3.2.0.13658
 ----------------------------------------------------------
