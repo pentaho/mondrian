@@ -39,7 +39,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     // ~ Tests ================================================================
 
-    public void testTrivialCalcMemberDrillThrough() throws Exception {
+    public void testTrivialCalcMemberDrillThrough() {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Formatted Unit Sales]"
             + " AS '[Measures].[Unit Sales]', FORMAT_STRING='$#,###.000'\n"
@@ -125,8 +125,70 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertEquals(calcCell.getDrillThroughCount(), 7978);
     }
 
+    public void testTrivialCalcMemberNotMeasure() {
+        // [Product].[My Food] is trivial because it maps to a single member.
+        // First, on ROWS axis.
+        Result result = executeQuery(
+            "with member [Product].[My Food]\n"
+            + " AS [Product].[Food], FORMAT_STRING = '#,###'\n"
+            + "SELECT [Measures].[Unit Sales] * [Gender].[M] on 0,\n"
+            + " [Marital Status].[S] * [Product].[My Food] on 1\n"
+            + "from [Sales]");
+        Cell cell = result.getCell(new int[] {0, 0});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(16129, cell.getDrillThroughCount());
 
-    public void testDrillThrough() throws Exception {
+        // Next, on filter axis.
+        result = executeQuery(
+            "with member [Product].[My Food]\n"
+            + " AS [Product].[Food], FORMAT_STRING = '#,###'\n"
+            + "SELECT [Measures].[Unit Sales] * [Gender].[M] on 0,\n"
+            + " [Marital Status].[S] on 1\n"
+            + "from [Sales]\n"
+            + "where [Product].[My Food]");
+        cell = result.getCell(new int[] {0, 0});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(16129, cell.getDrillThroughCount());
+
+        // Trivial member with Aggregate.
+        result = executeQuery(
+            "with member [Product].[My Food]\n"
+            + " AS Aggregate({[Product].[Food]}), FORMAT_STRING = '#,###'\n"
+            + "SELECT [Measures].[Unit Sales] * [Gender].[M] on 0,\n"
+            + " [Marital Status].[S] * [Product].[My Food] on 1\n"
+            + "from [Sales]");
+        cell = result.getCell(new int[] {0, 0});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(16129, cell.getDrillThroughCount());
+
+        // Non-trivial member on rows.
+        result = executeQuery(
+            "with member [Product].[My Food Drink]\n"
+            + " AS Aggregate({[Product].[Food], [Product].[Drink]}),\n"
+            + "       FORMAT_STRING = '#,###'\n"
+            + "SELECT [Measures].[Unit Sales] * [Gender].[M] on 0,\n"
+            + " [Marital Status].[S] * [Product].[My Food Drink] on 1\n"
+            + "from [Sales]");
+        cell = result.getCell(new int[] {0, 0});
+        assertFalse(cell.canDrillThrough());
+
+        // drop the constraint when we drill through
+        assertEquals(22479, cell.getDrillThroughCount());
+
+        // Non-trivial member on filter axis.
+        result = executeQuery(
+            "with member [Product].[My Food Drink]\n"
+            + " AS Aggregate({[Product].[Food], [Product].[Drink]}),\n"
+            + "       FORMAT_STRING = '#,###'\n"
+            + "SELECT [Measures].[Unit Sales] * [Gender].[M] on 0,\n"
+            + " [Marital Status].[S] on 1\n"
+            + "from [Sales]\n"
+            + "where [Product].[My Food Drink]");
+        cell = result.getCell(new int[] {0, 0});
+        assertFalse(cell.canDrillThrough());
+    }
+
+    public void testDrillThrough() {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Store Sales], [Time].[Time].PrevMember)'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns,\n"
@@ -186,7 +248,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         return null;
     }
 
-    public void testDrillThrough2() throws Exception {
+    public void testDrillThrough2() {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Unit Sales], [Time].[Time].PrevMember)'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns,\n"
@@ -279,7 +341,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertNull(sql);
     }
 
-    public void testDrillThrough3() throws Exception {
+    public void testDrillThrough3() {
         Result result = executeQuery(
             "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON COLUMNS, \n"
             + "Hierarchize(Union(Union(Crossjoin({[Promotion Media].[All Media]}, {[Product].[All Products]}), \n"
@@ -376,23 +438,14 @@ public class DrillThroughTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 1472311, "Drillthrough fails, if Aggregate in
-     * MDX-query". The problem actually occurs with any calculated member,
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-180">
+     * MONDRIAN-180, "Drillthrough fails, if Aggregate in
+     * MDX-query"</a>. The problem actually occurs with any calculated member,
      * not just Aggregate. The bug was causing a syntactically invalid
      * constraint to be added to the WHERE clause; after the fix, we do
      * not constrain on the member at all.
      */
-    public void testDrillThroughBug1472311() throws Exception {
-        /*
-                "with set [Date Range] as\n"
-                + "'{[Time].[1997].[Q1],[Time].[1997].[Q2]}'\n"
-                + "member [Time].[Date Range] as 'Aggregate([Date Range])'\n"
-                + "select {[Store]} on rows,\n"
-                + "{[Measures].[Unit Sales]} on columns\n"
-                + "from [Sales]\n"
-                + "where [Time].[Date Range]");
-
-         */
+    public void testDrillThroughBugMondrian180() {
         Result result = executeQuery(
             "with set [Date Range] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}'\n"
             + "member [Time].[Date Range] as 'Aggregate([Date Range])'\n"
@@ -401,13 +454,20 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[Date Range]");
 
-        String sql = result.getCell(new int[] {0, 6}).getDrillThroughSQL(true);
+        final Cell cell = result.getCell(new int[]{0, 6});
+
+        // It is not valid to drill through this cell, because it contains a
+        // non-trivial calculated member.
+        assertFalse(cell.canDrillThrough());
+
+        // For backwards compatibility, generate drill-through SQL (ignoring
+        // calculated members) even though we said we could not drill through.
+        String sql = cell.getDrillThroughSQL(true);
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
 
         final String expectedSql =
             "select"
-            //`+ store`.`store_country` as `Store Country`,"
             + " `store`.`store_state` as `Store State`,"
             + " `store`.`store_city` as `Store City`,"
             + " `store`.`store_name` as `Store Name`,"
@@ -453,7 +513,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and"
             + " `sales_fact_1997`.`customer_id` = `customer`.`customer_id`"
             + " order by"
-            // + `store`.`store_country` ASC,"
             + " `store`.`store_state` ASC,"
             + " `store`.`store_city` ASC,"
             + " `store`.`store_name` ASC,"
@@ -483,13 +542,14 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `customer`.`marital_status` ASC,"
             + " `customer`.`yearly_income` ASC";
 
-        //getTestContext().assertSqlEquals(expectedSql, sql, 86837);
         getTestContext().assertSqlEquals(expectedSql, sql, 6815);
     }
 
-    // Test that proper SQL is being generated for a Measure specified
-    // as an expression
-    public void testDrillThroughMeasureExp() throws Exception {
+    /**
+     * Tests that proper SQL is being generated for a Measure specified
+     * as an expression.
+     */
+    public void testDrillThroughMeasureExp() {
         Result result = executeQuery(
             "SELECT {[Measures].[Promotion Sales]} on columns,\n"
             + " {[Product].Children} on rows\n"
@@ -543,7 +603,7 @@ public class DrillThroughTest extends FoodMartTestCase {
      * columns with the same name. Related to bug 1592556, "XMLA Drill through
      * bug".
      */
-    public void testDrillThroughDupKeys() throws Exception {
+    public void testDrillThroughDupKeys() {
         /*
          * Note here that the type on the Store Id level is Integer or
          * Numeric. The default, of course, would be String.
@@ -600,7 +660,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     /**
      * Tests that cells in a virtual cube say they can be drilled through.
      */
-    public void testDrillThroughVirtualCube() throws Exception {
+    public void testDrillThroughVirtualCube() {
         Result result = executeQuery(
             "select Crossjoin([Customers].[All Customers].[USA].[OR].Children, {[Measures].[Unit Sales]}) ON COLUMNS, "
             + " [Gender].[All Gender].Children ON ROWS"
@@ -642,7 +702,7 @@ public class DrillThroughTest extends FoodMartTestCase {
      * This tests for bug 1438285, "nameColumn cannot be column in level
      * definition".
      */
-    public void testBug1438285() throws Exception {
+    public void testBug1438285() {
         final Dialect dialect = getTestContext().getDialect();
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.TERADATA) {
             // On default Teradata express instance there isn't enough spool
@@ -960,6 +1020,37 @@ public class DrillThroughTest extends FoodMartTestCase {
         } else {
             assertNull(sql);
         }
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-752">
+     * MONDRIAN-752, "cell.getDrillCount returns 0".
+     */
+    public void testDrillThroughOneAxis() {
+        Result result = executeQuery(
+            "SELECT [Measures].[Unit Sales] on 0\n"
+            + "from Sales");
+
+        final Cell cell = result.getCell(new int[]{0});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(86837, cell.getDrillThroughCount());
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-751">
+     * MONDRIAN-751, "Drill SQL does not include slicer members in WHERE
+     * clause".
+     */
+    public void testDrillThroughCalcMemberInSlicer() {
+        Result result = executeQuery(
+            "WITH MEMBER [Product].[Aggregate Food Drink] AS \n"
+            + " Aggregate({[Product].[Food], [Product].[Drink]})\n"
+            + "SELECT [Measures].[Unit Sales] on 0\n"
+            + "from Sales\n"
+            + "WHERE [Product].[Aggregate Food Drink]");
+
+        final Cell cell = result.getCell(new int[]{0});
+        assertFalse(cell.canDrillThrough());
     }
 }
 

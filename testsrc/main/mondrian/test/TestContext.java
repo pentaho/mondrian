@@ -1435,7 +1435,7 @@ public class TestContext {
     public void assertSqlEquals(
         String expectedSql,
         String actualSql,
-        int expectedRows) throws Exception
+        int expectedRows)
     {
         // if the actual SQL isn't in the current dialect we have some
         // problems... probably with the dialectize method
@@ -1516,7 +1516,6 @@ public class TestContext {
     private void checkSqlAgainstDatasource(
         String actualSql,
         int expectedRows)
-        throws Exception
     {
         Util.PropertyList connectProperties = getFoodMartConnectionProperties();
 
@@ -1571,7 +1570,7 @@ public class TestContext {
 
             Assert.assertEquals("row count", expectedRows, rows);
         } catch (SQLException e) {
-            throw new Exception(
+            throw new RuntimeException(
                 "ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
                 + "\n" + actualSql,

@@ -749,7 +749,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         }
     }
 
-    public void testParentChildDrillThrough() throws Exception {
+    public void testParentChildDrillThrough() {
         Result result = executeQuery(
             "select {[Measures].Members} ON columns,\n"
             + "  {[Employees].Members} ON rows\n"
@@ -820,7 +820,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             12);
     }
 
-    public void testParentChildDrillThroughWithContext() throws Exception {
+    public void testParentChildDrillThroughWithContext() {
         Result result = executeQuery(
             "select {[Measures].Members} ON columns,\n"
             + "  {[Employees].Members} ON rows\n"
@@ -892,7 +892,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         String expectedMember,
         String expectedCell,
         String expectedSql,
-        int expectedRows) throws Exception
+        int expectedRows)
     {
         final Member empMember =
             result.getAxes()[1].getPositions().get(row).get(0);

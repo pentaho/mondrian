@@ -13,6 +13,8 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
+import mondrian.olap.fun.AggregateFunDef;
+import mondrian.olap.fun.SetFunDef;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
@@ -142,8 +144,26 @@ public class RolapCell implements Cell {
     public boolean canDrillThrough() {
         // get current members
         final Member[] currentMembers = getMembersForDrillThrough();
+        if (containsCalcMembers(currentMembers)) {
+            return false;
+        }
         Cube x = chooseDrillThroughCube(currentMembers, result.getCube());
         return x != null;
+    }
+
+    private boolean containsCalcMembers(Member[] currentMembers) {
+        // Any calculated members which are not measures, we can't drill
+        // through. Trivial calculated members should have been converted
+        // already. We allow simple calculated measures such as
+        // [Measures].[Unit Sales] / [Measures].[Store Sales] provided that both
+        // are from the same cube.
+        for (int i = 1; i < currentMembers.length; i++) {
+            final Member currentMember = currentMembers[i];
+            if (currentMember.isCalculated()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static RolapCube chooseDrillThroughCube(
@@ -189,18 +209,53 @@ public class RolapCell implements Cell {
         final Member[] currentMembers = result.getCellMembers(pos);
 
         // replace member if we're dealing with a trivial formula
-        if (currentMembers[0]
-            instanceof RolapHierarchy.RolapCalculatedMeasure)
-        {
-            RolapHierarchy.RolapCalculatedMeasure measure =
-                (RolapHierarchy.RolapCalculatedMeasure)currentMembers[0];
-            if (measure.getFormula().getExpression() instanceof MemberExpr) {
-                currentMembers[0] =
-                    ((MemberExpr) measure.getFormula().getExpression())
-                    .getMember();
-            }
+        List<Member> memberList = Arrays.asList(currentMembers);
+        for (int i = 0; i < currentMembers.length; i++) {
+            replaceTrivialCalcMember(i, memberList);
         }
         return currentMembers;
+    }
+
+    private void replaceTrivialCalcMember(int i, List<Member> members) {
+        Member member = members.get(i);
+        if (!member.isCalculated()) {
+            return;
+        }
+        if (member instanceof RolapCubeMember) {
+            RolapCubeMember rolapCubeMember = (RolapCubeMember) member;
+            member = rolapCubeMember.getRolapMember();
+        }
+        // if "cm" is a calc member defined by
+        // "with member cm as m" then
+        // "cm" is equivalent to "m"
+        RolapCalculatedMember measure = (RolapCalculatedMember) member;
+        final Exp expr = measure.getFormula().getExpression();
+        if (expr instanceof MemberExpr) {
+            members.set(
+                i,
+                ((MemberExpr) expr).getMember());
+            return;
+        }
+        // "Aggregate({m})" is equivalent to "m"
+        if (expr instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) expr;
+            if (call.getFunDef() instanceof AggregateFunDef) {
+                final Exp[] args = call.getArgs();
+                if (args[0] instanceof ResolvedFunCall) {
+                    final ResolvedFunCall arg0 = (ResolvedFunCall) args[0];
+                    if (arg0.getFunDef() instanceof SetFunDef) {
+                        if (arg0.getArgCount() == 1
+                            && arg0.getArg(0) instanceof MemberExpr)
+                        {
+                            final MemberExpr memberExpr =
+                                (MemberExpr) arg0.getArg(0);
+                            members.set(i, memberExpr.getMember());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

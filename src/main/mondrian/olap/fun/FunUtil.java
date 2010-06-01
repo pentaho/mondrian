@@ -2333,6 +2333,42 @@ public class FunUtil extends Util {
         return member;
     }
 
+    /**
+     * Returns whether an expression is worth wrapping in "Cache( ... )".
+     *
+     * @param exp Expression
+     * @return Whether worth caching
+     */
+    public static boolean worthCaching(Exp exp) {
+        // Literal is not worth caching.
+        if (exp instanceof Literal) {
+            return false;
+        }
+        // Member, hierarchy, level, or dimension expression is not worth
+        // caching.
+        if (exp instanceof MemberExpr
+            || exp instanceof LevelExpr
+            || exp instanceof HierarchyExpr
+            || exp instanceof DimensionExpr)
+        {
+            return false;
+        }
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+
+            // A set of literals is not worth caching.
+            if (call.getFunDef() instanceof SetFunDef) {
+                for (Exp setArg : call.getArgs()) {
+                    if (worthCaching(setArg)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
     // ~ Inner classes ---------------------------------------------------------
 
     /**

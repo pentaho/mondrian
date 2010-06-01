@@ -191,6 +191,7 @@ class RolapNamedSetEvaluator
      *
      * @param <T> Element type
      */
+    // TODO: should also implement List -- save a copy
     private class IterableCollection<T> implements Collection<T>, Iterable<T> {
         public Iterator<T> iterator() {
             return new Iterator<T>() {
