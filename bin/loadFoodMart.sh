@@ -111,9 +111,9 @@ farrago() {
 # jdbc:luciddb:http://localhost> create user "foodmart" identified by 'foodmart';
 luciddb() {
     export LUCIDDB_HOME=/usr/local/luciddb-0.9.2
-    java -cp "${CP}${PS}$(cat ${LUCIDDB_HOME}/bin/classpath.gen)" \
+    java -cp "${CP}${PS}${LUCIDDB_HOME}/plugin/LucidDbClient.jar" \
         mondrian.test.loader.MondrianFoodMartLoader \
-        -verbose -aggregates -tables -data -indexes \
+        -verbose -aggregates -tables -data -indexes -analyze \
         -jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver \
         -inputFile=demo/FoodMartCreateData.sql \
         -outputJdbcURL="jdbc:luciddb:http://localhost;schema=FOODMART" \

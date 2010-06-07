@@ -187,7 +187,7 @@ doTest2() {
       echo driver.classpath=${LUCIDDB_HOME}/plugin/LucidDbClient.jar
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
-      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc='${jdbcURL}';JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)

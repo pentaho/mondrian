@@ -36,13 +36,15 @@ import org.apache.log4j.*;
  * <p>This is known to create test data for the following databases:</p>
  * <ul>
  *
+ * <li>LucidDB-0.9.2</li>
+ *
  * <li>MySQL 3.23 using MySQL-connector/J 3.0.16</li>
  *
  * <li>MySQL 4.15 using MySQL-connector/J 3.0.16</li>
  *
- * <li>Postgres 8.0 beta using postgresql-driver-jdbc3-74-214.jar</li>
- *
  * <li>Oracle 10g using ojdbc14.jar</li>
+ *
+ * <li>Postgres 8.0 beta using postgresql-driver-jdbc3-74-214.jar</li>
  *
  * <li>FirebirdSQL 1.0.2 and JayBird 1.5 (JDBC)</li>
  *
@@ -82,6 +84,9 @@ import org.apache.log4j.*;
  *    -inputJdbcUser=SYSDBA
  *    -inputJdbcPassword=masterkey
  * </code></blockquote>
+ *
+ * <p>See {@code bin/loadFoodMart.sh} for examples of command lines for other
+ * databases.
  *
  * @author jhyde
  * @since 23 December, 2004
@@ -123,6 +128,7 @@ public class MondrianFoodMartLoader {
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
+    private boolean analyze = false;
     private Pattern include = null;
     private Pattern exclude = null;
     private boolean generateUniqueConstraints = false;
@@ -188,6 +194,8 @@ public class MondrianFoodMartLoader {
                 indexes = true;
             } else if (arg.equals("-populationQueries")) {
                 populationQueries = true;
+            } else if (arg.equals("-analyze")) {
+                analyze = true;
             } else if (arg.startsWith("-include=")) {
                 include = Pattern.compile(arg.substring("-include=".length()));
             } else if (arg.startsWith("-exclude=")) {
@@ -277,42 +285,44 @@ public class MondrianFoodMartLoader {
             + " [-inputJdbcPassword=password] [-inputJdbcSchema=schema]]"
             + "   | "
             + "   [-inputfile=<file name>]"
-            + "]",
-            "",
-            "  <jdbcURL>             JDBC connect string for DB.",
-            "  [user]                JDBC user name for DB.",
-            "  [password]            JDBC password for user for DB.",
-            "                        If no source DB parameters are given, assumes data",
-            "                        comes from file.",
-            "  [schema]              schema overriding connection defaults",
-            "  [file name]           File containing test data - INSERT statements in MySQL",
-            "                        format. If no input file name or input JDBC parameters",
-            "                        are given, assume insert statements come from",
-            "                        demo/FoodMartCreateData.zip file",
-            "  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql",
-            "                        and FoodMartCreateIndexes.sql will be created.",
-            "  -outputJdbcBatchSize=<batch size>",
-            "                        Size of JDBC batch updates (default 50 records).",
-            "  -jdbcDrivers=<jdbcDrivers>",
-            "                        Comma-separated list of JDBC drivers;",
-            "                        they must be on the classpath.",
-            "  -verbose              Verbose mode.",
-            "  -aggregates           If specified, create aggregate tables and indexes for them.",
-            "  -tables               If specified, drop and create the tables.",
-            "  -data                 If specified, load the data.",
-            "  -indexes              If specified, drop and create the tables.",
-            "  -populationQueries    If specified, run the data loading queries. Runs by",
-            "                        default if -data is specified.",
-            "  -pauseMillis=<n>      Pause n milliseconds between batches;",
-            "                        if not specified, or 0, do not pause.",
-            "  -include=<regexp>     Create, load, and index only tables whose name",
-            "                        matches regular expression",
-            "  -exclude=<regexp>     Create, load, and index only tables whose name",
-            "                        does not match regular expression",
-            "                        if not specified, or 0, do not pause.",
-            "",
-            "To load data in trickle mode, first run with '-exclude=sales_fact_1997'",
-            "then run with '-include=sales_fact_1997 -pauseMillis=1 -outputJdbcBatchSize=1",
+            + "]"
+            + "\n"
+            + "  <jdbcURL>             JDBC connect string for DB.\n"
+            + "  [user]                JDBC user name for DB.\n"
+            + "  [password]            JDBC password for user for DB.\n"
+            + "                        If no source DB parameters are given, assumes data\n"
+            + "                        comes from file.\n"
+            + "  [schema]              schema overriding connection defaults\n"
+            + "  [file name]           File containing test data - INSERT statements in MySQL\n"
+            + "                        format. If no input file name or input JDBC parameters\n"
+            + "                        are given, assume insert statements come from\n"
+            + "                        demo/FoodMartCreateData.zip file\n"
+            + "  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql\n"
+            + "                        and FoodMartCreateIndexes.sql will be created.\n"
+            + "  -outputJdbcBatchSize=<batch size>\n"
+            + "                        Size of JDBC batch updates (default 50 records).\n"
+            + "  -jdbcDrivers=<jdbcDrivers>\n"
+            + "                        Comma-separated list of JDBC drivers;\n"
+            + "                        they must be on the classpath.\n"
+            + "  -verbose              Verbose mode.\n"
+            + "  -aggregates           If specified, create aggregate tables and indexes for them.\n"
+            + "  -tables               If specified, drop and create the tables.\n"
+            + "  -data                 If specified, load the data.\n"
+            + "  -indexes              If specified, drop and create the indexes.\n"
+            + "  -populationQueries    If specified, run the data loading queries. Runs by\n"
+            + "                        default if -data is specified.\n"
+            + "  -analyze              If specified, analyze tables after populating and indexing\n"
+            + "                        them.\n"
+            + "  -pauseMillis=<n>      Pause n milliseconds between batches;\n"
+            + "                        if not specified, or 0, do not pause.\n"
+            + "  -include=<regexp>     Create, load, and index only tables whose name\n"
+            + "                        matches regular expression\n"
+            + "  -exclude=<regexp>     Create, load, and index only tables whose name\n"
+            + "                        does not match regular expression\n"
+            + "                        if not specified, or 0, do not pause.\n"
+            + "\n"
+            + "To load data in trickle mode, first run with '-exclude=sales_fact_1997'\n"
+            + "then run with '-include=sales_fact_1997 -pauseMillis=1 -outputJdbcBatchSize=1\n"
         };
         for (String s : lines) {
             System.out.println(s);
@@ -466,6 +476,10 @@ public class MondrianFoodMartLoader {
             if (indexes && aggregates) {
                 createIndexes(false, true, tableFilter);
             }
+
+            if (analyze) {
+                analyzeTables();
+            }
         } finally {
             if (connection != null) {
                 connection.close();
@@ -491,7 +505,7 @@ public class MondrianFoodMartLoader {
      *
      * <blockquote><pre>
      * MondrianFoodLoader
-     * -verbose -tables -data -indexes
+     * -verbose -tables -data -indexes -analyze
      * -jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver
      * -inputJdbcURL=jdbc:odbc:MondrianFoodMart
      * -outputJdbcURL=jdbc:mysql://localhost/textload?user=root&password=myAdmin
@@ -1135,30 +1149,30 @@ public class MondrianFoodMartLoader {
      * Otherwise,
      *      output the statements to a file.
      *
-     * @param batch         SQL statements to execute
+     * @param sqls          SQL statements to execute
      * @param pauseMillis   How many milliseconds to pause between batches
      * @return              # SQL statements executed
      */
     private int writeBatch(
-        List<String> batch,
+        List<String> sqls,
         long pauseMillis)
         throws IOException, SQLException
     {
-        if (batch.size() == 0) {
+        if (sqls.size() == 0) {
             // nothing to do
-            return batch.size();
+            return sqls.size();
         }
 
         if (dialect.getDatabaseProduct()
             == Dialect.DatabaseProduct.INFOBRIGHT)
         {
-            for (int i = 0; i < batch.size(); i++) {
-                fileOutput.write(batch.get(i));
+            for (String sql : sqls) {
+                fileOutput.write(sql);
                 fileOutput.write(nl);
             }
         } else if (outputDirectory != null) {
-            for (int i = 0; i < batch.size(); i++) {
-                fileOutput.write(batch.get(i));
+            for (String sql : sqls) {
+                fileOutput.write(sql);
                 fileOutput.write(";" + nl);
             }
         } else {
@@ -1190,38 +1204,38 @@ public class MondrianFoodMartLoader {
                 // so collapse the batch into one big multi-row insert.
                 // Similarly Neoview.
                 String VALUES_TOKEN = "VALUES";
-                StringBuilder sb = new StringBuilder(batch.get(0));
-                for (int i = 1; i < batch.size(); i++) {
+                StringBuilder sb = new StringBuilder(sqls.get(0));
+                for (int i = 1; i < sqls.size(); i++) {
                     sb.append(",\n");
-                    int valuesPos = batch.get(i).indexOf(VALUES_TOKEN);
+                    int valuesPos = sqls.get(i).indexOf(VALUES_TOKEN);
                     if (valuesPos < 0) {
                         throw new RuntimeException(
-                            "Malformed INSERT:  " + batch.get(i));
+                            "Malformed INSERT:  " + sqls.get(i));
                     }
                     valuesPos += VALUES_TOKEN.length();
-                    sb.append(batch.get(i).substring(valuesPos));
+                    sb.append(sqls.get(i).substring(valuesPos));
                 }
-                batch.clear();
-                batch.add(sb.toString());
+                sqls.clear();
+                sqls.add(sb.toString());
             }
 
             Statement stmt = connection.createStatement();
-            if (batch.size() == 1) {
+            if (sqls.size() == 1) {
                 // Don't use batching if there's only one item. This allows
                 // us to work around bugs in the JDBC driver by setting
                 // outputJdbcBatchSize=1.
-                stmt.execute(batch.get(0));
+                stmt.execute(sqls.get(0));
             } else {
-                for (int i = 0; i < batch.size(); i++) {
-                    stmt.addBatch(batch.get(i));
+                for (String sql : sqls) {
+                    stmt.addBatch(sql);
                 }
                 int[] updateCounts;
 
                 try {
                     updateCounts = stmt.executeBatch();
                 } catch (SQLException e) {
-                    for (int i = 0; i < batch.size(); i++) {
-                        LOGGER.error("Error in SQL batch: " + batch.get(i));
+                    for (String sql : sqls) {
+                        LOGGER.error("Error in SQL batch: " + sql);
                     }
                     throw e;
                 }
@@ -1230,12 +1244,12 @@ public class MondrianFoodMartLoader {
                     updates += updateCounts[i], i++)
                 {
                     if (updateCounts[i] == 0) {
-                        LOGGER.error("Error in SQL: " + batch.get(i));
+                        LOGGER.error("Error in SQL: " + sqls.get(i));
                     }
                 }
-                if (updates < batch.size()) {
+                if (updates < sqls.size()) {
                     throw new RuntimeException(
-                        "Failed to execute batch: " + batch.size() + " versus "
+                        "Failed to execute batch: " + sqls.size() + " versus "
                         + updates);
                 }
             }
@@ -1244,7 +1258,7 @@ public class MondrianFoodMartLoader {
                 connection.setAutoCommit(true);
             }
         }
-        return batch.size();
+        return sqls.size();
     }
 
     /**
@@ -2785,6 +2799,33 @@ public class MondrianFoodMartLoader {
             executeDDL(ddl);
         } catch (Exception e) {
             throw MondrianResource.instance().CreateTableFailed.ex(name, e);
+        }
+    }
+
+    private void analyzeTables() throws SQLException {
+        switch (dialect.getDatabaseProduct()) {
+        case LUCIDDB:
+            Statement statement = null;
+            try {
+                LOGGER.info("Analyzing schema...");
+                statement = connection.createStatement();
+                statement.execute(
+                    "call "
+                    + "applib.estimate_statistics_for_schema(current_schema)");
+                LOGGER.info("Analyze complete.");
+            } finally {
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
+            break;
+        default:
+            LOGGER.warn("Analyze is not supported for current database.");
+            break;
         }
     }
 
