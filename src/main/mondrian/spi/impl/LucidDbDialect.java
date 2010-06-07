@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,6 +29,8 @@ public class LucidDbDialect extends JdbcDialectImpl {
      * Creates a LucidDbDialect.
      *
      * @param connection Connection
+     *
+     * @throws java.sql.SQLException on error
      */
     public LucidDbDialect(Connection connection) throws SQLException {
         super(connection);
@@ -48,6 +50,23 @@ public class LucidDbDialect extends JdbcDialectImpl {
 
     public boolean supportsMultiValueInExpr() {
         return true;
+    }
+
+    @Override
+    public NullCollation getNullCollation() {
+        return NullCollation.NEGINF;
+    }
+
+    @Override
+    public String generateOrderItem(
+        String expr, boolean nullable, boolean ascending)
+    {
+        if (nullable && ascending) {
+            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr
+                + " ASC";
+        } else {
+            return super.generateOrderItem(expr, nullable, ascending);
+        }
     }
 }
 

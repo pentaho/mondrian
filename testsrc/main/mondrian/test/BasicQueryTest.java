@@ -772,10 +772,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that a slicer with multiple values gives an error; bug
+     * Used to test that a slicer with multiple values gives an error; bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-96">MONDRIAN-96</a>.
+     * But now compound slicers are valid.
      */
-    public void testCompoundSlicerFails() {
+    public void testCompoundSlicer() {
         // two tuples
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -879,7 +880,12 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 131,558\n"
             + "Row #2: 135,215\n");
 
-        // slicer expression which evaluates to three tuples is not ok
+        // Slicer expression which evaluates to three tuples is ok now we
+        // support compound slicers. But the results must not double-count if,
+        // as in this case, a member and its parent both appear in the list.
+        // In that respect, an MDX WHERE clause behaves more like a SQL WHERE
+        // clause (applying the condition to each cell) than the MDX Aggregate
+        // function (summing over all cells that pass).
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Gender].MEMBERS} ON ROWS\n"

@@ -17,7 +17,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.*;
-import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -127,7 +126,18 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 tupleList =  (List<Member[]>) list;
             }
 
-            tupleList = optimizeTupleList(evaluator, tupleList);
+            if (evaluator instanceof RolapEvaluator
+                && ((RolapEvaluator) evaluator).getDialect()
+                .supportsUnlimitedValueList())
+            {
+                // If the DBMS does not have an upper limit on IN list
+                // predicate size, then don't attempt any list
+                // optimization, since the current algorithm is
+                // very slow.  May want to revisit this if someone
+                // improves the algorithm.
+            } else {
+                tupleList = optimizeTupleList(evaluator, tupleList);
+            }
 
             // Can't aggregate distinct-count values in the same way
             // which is used for other types of aggregations. To evaluate a
@@ -146,43 +156,22 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             Evaluator evaluator,
             List<Member[]> tupleList)
         {
-            RolapEvaluator rolapEvaluator = null;
-            if (evaluator instanceof RolapEvaluator) {
-                rolapEvaluator = (RolapEvaluator) evaluator;
+            // FIXME: We remove overlapping tuple entries only to pass
+            // AggregationOnDistinctCountMeasuresTest
+            // .testOptimizeListWithTuplesOfLength3 on Access. Without
+            // the optimization, we generate a statement 7000
+            // characters long and Access gives "Query is too complex".
+            // The optimization is expensive, so we only want to do it
+            // if the DBMS can't execute the query otherwise.
+            if (false) {
+                tupleList = removeOverlappingTupleEntries(tupleList);
             }
-
-            if ((rolapEvaluator != null)
-                && rolapEvaluator.getDialect().supportsUnlimitedValueList())
-            {
-                // If the DBMS does not have an upper limit on IN list
-                // predicate size, then don't attempt any list
-                // optimization, since the current algorithm is
-                // very slow.  May want to revisit this if someone
-                // improves the algorithm.
-            } else {
-                // FIXME: We remove overlapping tuple entries only to pass
-                // AggregationOnDistinctCountMeasuresTest
-                // .testOptimizeListWithTuplesOfLength3 on Access. Without
-                // the optimization, we generate a statement 7000
-                // characters long and Access gives "Query is too complex".
-                // The optimization is expensive, so we only want to do it
-                // if the DBMS can't execute the query otherwise.
-                if ((rolapEvaluator != null)
-                    && rolapEvaluator.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.ACCESS
-                    && false)
-                {
-                    tupleList = removeOverlappingTupleEntries(tupleList);
-                }
-                if (true) {
-                    tupleList =
-                        optimizeChildren(
-                            tupleList,
-                            evaluator.getSchemaReader(),
-                            evaluator.getMeasureCube());
-                }
-                checkIfAggregationSizeIsTooLarge(tupleList);
-            }
+            tupleList =
+                optimizeChildren(
+                    tupleList,
+                    evaluator.getSchemaReader(),
+                    evaluator.getMeasureCube());
+            checkIfAggregationSizeIsTooLarge(tupleList);
             return tupleList;
         }
 

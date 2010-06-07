@@ -3,7 +3,7 @@
 # This software is subject to the terms of the Eclipse Public License v1.0
 # Agreement, available at the following URL:
 # http://www.eclipse.org/legal/epl-v10.html.
-# Copyright (C) 2008-2009 Julian Hyde and others.
+# Copyright (C) 2008-2010 Julian Hyde and others.
 # All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
 #
@@ -99,6 +99,26 @@ farrago() {
         -jdbcDrivers=net.sf.farrago.client.FarragoVjdbcClientDriver \
         -inputFile=demo/FoodMartCreateData.sql \
         -outputJdbcURL="jdbc:farrago:rmi://localhost"
+}
+
+# Load LucidDB
+#
+# Install LucidDB per instructions at
+# http://pub.eigenbase.org/wiki/LucidDbGettingStarted, start sqlline, then run
+# the following:
+# 
+# jdbc:luciddb:http://localhost> create schema foodmart;
+# jdbc:luciddb:http://localhost> create user "foodmart" identified by 'foodmart';
+luciddb() {
+    export LUCIDDB_HOME=/usr/local/luciddb-0.9.2
+    java -cp "${CP}${PS}$(cat ${LUCIDDB_HOME}/bin/classpath.gen)" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -aggregates -tables -data -indexes \
+        -jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputJdbcURL="jdbc:luciddb:http://localhost;schema=FOODMART" \
+        -outputJdbcUser="foodmart" \
+        -outputJdbcPassword="foodmart"
 }
 
 # Load Teradata.

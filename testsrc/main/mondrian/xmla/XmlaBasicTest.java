@@ -578,9 +578,10 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             case DERBY:
             case HSQLDB:
             case INFOBRIGHT:
-            case NETEZZA:
-            case NEOVIEW:
+            case LUCIDDB:
             case MYSQL:
+            case NEOVIEW:
+            case NETEZZA:
             case TERADATA:
                 content = Util.replace(
                     content,

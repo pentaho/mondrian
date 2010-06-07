@@ -18,10 +18,12 @@ CLEAN=clean
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
 MONDRIAN_DIR=$(cd $(dirname $0)/..; pwd)
 hostname=$(uname -n)
+cygwin=
 case $(uname) in
 CYGWIN*)
   OPEN_DIR=$(cygpath -m $OPEN_DIR)
   MONDRIAN_DIR=$(cygpath -m $MONDRIAN_DIR)
+  cygwin=true
   if [ ${hostname} = mackerel-winxp \
     -a "$OPEN_DIR" = "e:/open" ]; then
     OPEN_DIR=/open
@@ -29,13 +31,12 @@ CYGWIN*)
     echo $OPEN_DIR
   fi
   ;;
-(*)
-  # Special case for Julian's machine mackerel, which dual boots into Windows
-  # and linux.
-  if [ ${hostname} = mackerel ]; then
-    hostname=mackerel-linux
-  fi
-  ;;
+esac
+
+# Special cases.
+case ${hostname} in
+marmalade.hydromatic.net) hostname=marmalade ;;
+mackerel) if [ ! "$cygwin" ]; then hostname=mackerel-linux; fi ;;
 esac
 
 case ${hostname} in
@@ -56,7 +57,7 @@ mackerel-winxp)
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 marmalade)
-  databaseList="hsqldb mysql oracle"
+  databaseList="hsqldb mysql oracle luciddb"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 *)
@@ -176,6 +177,17 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=sa;JdbcPassword=;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  luciddb)
+    (
+      export LUCIDDB_HOME=/usr/local/luciddb-0.9.2
+      jdbcURL="jdbc:luciddb:http://localhost;schema=FOODMART"
+      jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver
+      echo driver.classpath=${LUCIDDB_HOME}/plugin/LucidDbClient.jar
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)
