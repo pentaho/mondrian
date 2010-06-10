@@ -174,6 +174,76 @@ public class SteelWheelsTestCase extends TestCase {
     }
 
     /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-755">
+     * MONDRIAN-755, "Getting drillthrough count results in exception"</a>.
+     */
+    public void testBugMondrian755() {
+        TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        // One-dimensional query, using set and trivial calc member.
+        checkCellZero(
+            testContext,
+            "With \n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns\n"
+            + "From [SteelWheelsSales]");
+
+        // One-dimensional query, using trivial calc member.
+        checkCellZero(
+            testContext,
+            "With \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + " {[Measures].[*FORMATTED_MEASURE_0]} on columns\n"
+            + "From [SteelWheelsSales]");
+
+        // One-dimensional query, using simple calc member.
+        checkCellZero(
+            testContext,
+            "With \n"
+            + "Member [Measures].[Avg Price] as '[Measures].[Sales] / [Measures].[Quantity]', FORMAT_STRING = '#.##'\n"
+            + "Select\n"
+            + " {[Measures].[Avg Price]} on columns\n"
+            + "From [SteelWheelsSales]");
+
+        // Zero dim query
+        checkCellZero(
+            testContext,
+            "Select\n"
+            + "From [SteelWheelsSales]");
+
+        // Zero dim query on calc member
+        checkCellZero(
+            testContext,
+            "With \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "From [SteelWheelsSales]\n" 
+            + "Where [Measures].[*FORMATTED_MEASURE_0]");
+
+        // Two-dimensional query, using trivial calc member.
+        checkCellZero(
+            testContext,
+            "With \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + " {[Measures].[*FORMATTED_MEASURE_0]} on columns,"
+            + " [Product].[All Products] * [Customers].[All Customers] on rows\n"
+            + "From [SteelWheelsSales]");
+    }
+
+    private void checkCellZero(TestContext testContext, String mdx) {
+        final Result result = testContext.executeQuery(mdx);
+        final Cell cell = result.getCell(new int[result.getAxes().length]);
+        assertTrue(cell.canDrillThrough());
+        assertEquals(2996, cell.getDrillThroughCount());
+    }
+
+    /**
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-756">
      * MONDRIAN-756, "Error in RolapResult.replaceNonAllMembers leads to
      * NPE"</a>.

@@ -138,10 +138,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         extraPredicates(sqlQuery);
 
         // add measures
-        if (!countOnly) {
-            for (int i = 0, count = getMeasureCount(); i < count; i++) {
-                addMeasure(i, sqlQuery);
-            }
+        for (int i = 0, count = getMeasureCount(); i < count; i++) {
+            addMeasure(i, sqlQuery);
         }
     }
 
