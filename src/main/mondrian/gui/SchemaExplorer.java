@@ -2885,7 +2885,6 @@ public class SchemaExplorer
         refreshTree(tree.getSelectionPath());
     }
 
-
     protected void addAnnotation(ActionEvent evt) {
         TreePath tpath = tree.getSelectionPath();
         Object path = tree.getSelectionPath().getLastPathComponent();
