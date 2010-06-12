@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( [Product].[All Products].[Drink].children,          generate ( [Store].[USA].children, { ([Product].currentmember, [Store].currentmember) } )) on rows from [Sales]</mdxQuery>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( [Product].[Drink].children,          generate ( [Store].[USA].children, { ([Product].currentmember, [Store].currentmember) } )) on rows from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -47,40 +47,40 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

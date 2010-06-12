@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,17 +13,12 @@ import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.rolap.sql.TupleConstraint;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
  /**
- * <p>
- * helper class for HighCardSqlTupleReader
- *  {@link mondrian.rolap.HighCardSqlTupleReader}
- * Keeps track of target levels and constraints for adding to sql query
- *
- * </p>
+ * Helper class for {@link mondrian.rolap.HighCardSqlTupleReader} that
+ * keeps track of target levels and constraints for adding to SQL query.
  *
  * @author luis f. canals, Kurtis Walker
  * @since July 23, 2009
@@ -53,23 +48,26 @@ public class Target extends TargetBase {
 
     public void open() {
         levels = (RolapLevel[]) level.getHierarchy().getLevels();
+        // REVIEW: ArrayDeque is preferable to LinkedList (JDK1.6 and up) but it
+        //   doesn't implement List, so we can't easily interoperate the two.
         setList(new LinkedList<RolapMember>());
         levelDepth = level.getDepth();
         parentChild = level.isParentChild();
     }
 
-    int internalAddRow(ResultSet resultSet, int column)
-            throws SQLException
+    int internalAddRow(SqlStatement stmt, int column)
+        throws SQLException
     {
         RolapMember member = null;
         if (getCurrMember() != null) {
             member = getCurrMember();
         } else {
             boolean checkCacheStatus = true;
+            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             for (int i = 0; i <= levelDepth; i++) {
                 RolapLevel childLevel = levels[i];
                 if (childLevel.isAll()) {
-                    member = level.getHierarchy().getAllMember();
+                    member = memberBuilder.allMember();
                     continue;
                 }
 
@@ -77,13 +75,13 @@ public class Target extends TargetBase {
                     column++;
                 }
 
-                Object value = resultSet.getObject(++column);
+                Object value = accessors.get(column++).get();
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;
                 }
                 Object captionValue;
                 if (childLevel.hasCaptionColumn()) {
-                    captionValue = resultSet.getObject(++column);
+                    captionValue = accessors.get(column++).get();
                 } else {
                     captionValue = null;
                 }
@@ -102,7 +100,7 @@ public class Target extends TargetBase {
                     if (member == null) {
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, value, captionValue,
-                            parentChild, resultSet, key, column);
+                            parentChild, stmt, key, column);
                     }
                 }
 
@@ -245,4 +243,3 @@ public class Target extends TargetBase {
 }
 
 // End Target.java
-

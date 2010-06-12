@@ -506,7 +506,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <Dimension name="Department" foreignKey="department_id">
     <Hierarchy hasAll="true" primaryKey="department_id">
       <Table name="department"/>
-      <Level name="Department Description" uniqueMembers="true"
+      <Level name="Department Description" type="Numeric" uniqueMembers="true"
           column="department_id"/>
     </Hierarchy>
   </Dimension>

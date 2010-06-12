@@ -41,10 +41,10 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                    <member>[Promotions].[Bag Stuffers]</member>
                 </tuple>
                 <tuple>
-                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                    <member>[Promotions].[Best Savings]</member>
                 </tuple>
                 <tuple>
                     <member>[Promotions].[Foo]</member>
@@ -60,13 +60,13 @@ FROM [Sales]</mdxQuery>
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

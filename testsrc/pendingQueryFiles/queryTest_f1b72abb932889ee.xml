@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>with member [Measures].[Test] as 'TupleToStr((Time.[1997], Store.[All Stores].[USA].[CA].[San Francisco]))' Select {[Measures].[Test]} on Axis(0) From [Sales] </mdxQuery>
+    <mdxQuery>with member [Measures].[Test] as 'TupleToStr((Time.[1997], Store.[USA].[CA].[San Francisco]))' Select {[Measures].[Test]} on Axis(0) From [Sales] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -46,7 +46,7 @@
         </columns>
         <data>
             <drow>
-                <cell>([Time].[1997], [Store].[All Stores].[USA].[CA].[San Francisco])</cell>
+                <cell>([Time].[1997], [Store].[USA].[CA].[San Francisco])</cell>
             </drow>
         </data>
     </dataResult>

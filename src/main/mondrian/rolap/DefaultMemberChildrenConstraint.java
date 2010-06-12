@@ -28,9 +28,6 @@ public class DefaultMemberChildrenConstraint
     private static final MemberChildrenConstraint instance =
         new DefaultMemberChildrenConstraint();
 
-    /** we have no state, so all instances are equal */
-    private static final Object cacheKey = new Object();
-
     protected DefaultMemberChildrenConstraint() {
     }
 
@@ -68,15 +65,12 @@ public class DefaultMemberChildrenConstraint
     }
 
     public Object getCacheKey() {
-        return cacheKey;
+        // we have no state, so all instances are equal
+        return this;
     }
 
     public static MemberChildrenConstraint instance() {
         return instance;
-    }
-
-    public int getMaxRows() {
-        return 0;
     }
 }
 

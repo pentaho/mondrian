@@ -402,6 +402,24 @@ public class SchemaTreeCellRenderer
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
                             "memberGrant"))));
+        } else if (value instanceof MondrianGuiDef.Annotations) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.annotations.title",
+                    "Annotations"));
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "annotations"))));
+        } else if (value instanceof MondrianGuiDef.Annotation) {
+            setText(
+                invalidFlag, ((MondrianGuiDef.Annotation)value).name);
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "annotation"))));
         } else if (value instanceof MondrianGuiDef.SQL) {
             setText(invalidFlag, ((MondrianGuiDef.SQL) value).dialect);
             super.setIcon(

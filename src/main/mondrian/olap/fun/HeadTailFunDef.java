@@ -105,7 +105,7 @@ class HeadTailFunDef extends FunDefBase {
             }
 
             public Iterator<T> iterator() {
-                return new ItrUnknownSize();
+                return new Itr();
             }
 
             public Object[] toArray() {
@@ -141,7 +141,7 @@ class HeadTailFunDef extends FunDefBase {
             }
 
             public Iterator<T> iterator() {
-                return new ItrUnknownSize();
+                return new Itr();
             }
 
             public Object[] toArray() {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -394,6 +394,9 @@ public class DialectTest extends TestCase {
                 + "expression\n",
                 // teradata
                 ".*The ORDER BY clause must contain only integer constants.",
+                // Greenplum
+                "ERROR: ORDER BY on a UNION/INTERSECT/EXCEPT result must be on "
+                + "one of the result columns",
             };
             assertQueryFails(sql, errs);
         }
@@ -447,6 +450,8 @@ public class DialectTest extends TestCase {
                 "(?s)You have an error in your SQL syntax; check .*",
                 // access
                 "(?s)\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression 'GROUPING SETS.*",
+                // luciddb
+                "(?s).*Encountered \"GROUPING\" at line 3, column 2\\..*",
                 // postgres
                 "ERROR: syntax error at or near \"SETS\"",
                 // neoview
@@ -619,6 +624,10 @@ public class DialectTest extends TestCase {
         } else {
             // Largest value comes first, null comes last.
             switch (dialect.getDatabaseProduct()) {
+            case GREENPLUM:
+                // Current version cannot force null order, introduced in
+                // Postgres 8.3
+                return;
             case NEOVIEW:
                 // Neoview cannot force nulls to appear last
                 return;
@@ -834,12 +843,18 @@ public class DialectTest extends TestCase {
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] You tried "
                 + "to execute a query that does not include the specified "
                 + "expression 'the_month' as part of an aggregate function.",
+                // luciddb
+                "From line 1, column 19 to line 1, column 29: Expression "
+                + "'the_month' is not being grouped",
                 // neoview
                 ".* ERROR\\[4005\\] Column reference \"the_month\" must be a "
                 + "grouping column or be specified within an aggregate. .*",
                 // teradata
                 ".*Selected non-aggregate values must be part of the "
                 + "associated group.",
+                // Greenplum
+                "ERROR: column \"time_by_day.the_month\" must appear in the "
+                + "GROUP BY clause or be used in an aggregate function",
             };
             assertQueryFails(sql, errs);
         }

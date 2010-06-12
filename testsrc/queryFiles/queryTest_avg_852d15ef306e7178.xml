@@ -2,7 +2,7 @@
 <mdbTest>
     <mdxQuery>WITH MEMBER [Promotions].[Average] AS 'AVG({[Bag Stuffers], [Best Savings]}, [Bag Stuffers] * 3)'
 SELECT {[Promotions].[Bag Stuffers], [Promotions].[Best Savings], [Promotions].[Average]} ON AXIS(0),
-       {[Store].[All Stores].[USA], [Store].[All Stores].[USA].Children} ON AXIS(1)
+       {[Store].[USA], [Store].[USA].Children} ON AXIS(1)
 FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
@@ -41,10 +41,10 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                    <member>[Promotions].[Bag Stuffers]</member>
                 </tuple>
                 <tuple>
-                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                    <member>[Promotions].[Best Savings]</member>
                 </tuple>
                 <tuple>
                     <member>[Promotions].[Average]</member>
@@ -57,16 +57,16 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -23,11 +23,11 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
  * select
  *   {[Measures].[Unit Sales], [Measures].[Store Cost]} on columns,
  *   CrossJoin(
- *     { [Promotion Media].[All Promotion Media].[Radio],
- *       [Promotion Media].[All Promotion Media].[TV],
- *       [Promotion Media].[All Promotion Media].[Sunday Paper],
- *       [Promotion Media].[All Promotion Media].[Street Handout] },
- *     [Product].[All Products].[Drink].children) on rows
+ *     { [Promotion Media].[Radio],
+ *       [Promotion Media].[TV],
+ *       [Promotion Media].[Sunday Paper],
+ *       [Promotion Media].[Street Handout] },
+ *     [Product].[Drink].children) on rows
  * from Sales
  * where ([Time].[1997])
  * &lt;/query&gt;</pre>

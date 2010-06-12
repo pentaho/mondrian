@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Product].[All Products].[Food].[Deli].[Meat].[BBQ] AS  'AGGREGATE({[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken], [Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs]})'
+    <mdxQuery>WITH MEMBER [Product].[Food].[Deli].[Meat].[BBQ] AS  'AGGREGATE({[Product].[Food].[Deli].[Meat].[Fresh Chicken], [Product].[Food].[Deli].[Meat].[Hot Dogs]})'
 SELECT {[Store].[All Stores]} ON AXIS(0),
-       {[Product].[All Products].[Food].[Deli].[Meat], [Product].[All Products].[Food].[Deli].[Meat].Children,
-        [Product].[All Products].[Food].[Deli].[Meat].[BBQ]} ON AXIS(1)
+       {[Product].[Food].[Deli].[Meat], [Product].[Food].[Deli].[Meat].Children,
+        [Product].[Food].[Deli].[Meat].[BBQ]} ON AXIS(1)
 FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
@@ -52,22 +52,22 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat]</member>
+                    <member>[Product].[Food].[Deli].[Meat]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna]</member>
+                    <member>[Product].[Food].[Deli].[Meat].[Bologna]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats]</member>
+                    <member>[Product].[Food].[Deli].[Meat].[Deli Meats]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken]</member>
+                    <member>[Product].[Food].[Deli].[Meat].[Fresh Chicken]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs]</member>
+                    <member>[Product].[Food].[Deli].[Meat].[Hot Dogs]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Deli].[Meat].[BBQ]</member>
+                    <member>[Product].[Food].[Deli].[Meat].[BBQ]</member>
                 </tuple>
             </tuples>
         </rows>

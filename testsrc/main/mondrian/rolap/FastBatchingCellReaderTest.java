@@ -53,8 +53,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Time].[1997], [Product].[All Products].[Drink], [Education Level].[All Education Levels].[Bachelors Degree]}\n"
+            + "{[Time].[1997], [Product].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Time].[1997], [Product].[Drink], [Education Level].[Bachelors Degree]}\n"
             + "Row #0: 6,423\n"
             + "Row #1: 6,423\n");
     }
@@ -69,20 +69,20 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial High School]}' "
             + "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' "
             + "Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember)', SOLVE_ORDER=200 "
-            + "Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 "
-            + "Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 "
+            + "Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Drink]))', SOLVE_ORDER=-100 "
+            + "Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[All Products].[Food]))', SOLVE_ORDER=-100 "
             + "Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*Store Cost_SEL~SUM] > 1000.0))', SOLVE_ORDER=-101 "
             + "Select "
             + "{[Measures].[Store Cost]} on columns, "
-            + "NonEmptyCrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) "
+            + "NonEmptyCrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}) "
             + "on rows From [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Product].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
             + "Row #0: 6,535.30\n"
             + "Row #1: 3,860.89\n");
     }
@@ -1246,8 +1246,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 null,
                 null);
 
-        testContext.assertQueryReturns(
-            query,
+        String desiredResult =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1258,12 +1257,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "{[Measures].[Count All Store+Warehouse]}\n"
             + "{[Measures].[Store Count]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[All Store Types].[HeadQuarters]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n"
-            + "{[Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store Type].[HeadQuarters]}\n"
+            + "{[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store Type].[Supermarket]}\n"
             + "Row #0: 1\n"
             + "Row #0: 0\n"
             + "Row #0: 0\n"
@@ -1299,7 +1298,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Row #5: 3\n"
             + "Row #5: 8\n"
             + "Row #5: 8\n"
-            + "Row #5: 8\n");
+            + "Row #5: 8\n";
+
+        testContext.assertQueryReturns(query, desiredResult);
 
         String loadCountDistinct_luciddb1 =
             "select "
@@ -1412,7 +1413,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "FROM Sales\n"
             + "WHERE ([Store].[USA].[CA])",
             "Axis #0:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
@@ -1440,7 +1441,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "FROM Sales\n"
             + "WHERE ([Store].[USA].[CA])",
             "Axis #0:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Customer Count]}\n"
@@ -1482,8 +1483,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "Axis #1:\n"
             + "{[Promotion Media].[TV plus Radio]}\n"
-            + "{[Promotion Media].[All Media].[TV]}\n"
-            + "{[Promotion Media].[All Media].[Radio]}\n"
+            + "{[Promotion Media].[TV]}\n"
+            + "{[Promotion Media].[Radio]}\n"
             + "Axis #2:\n"
             + "{[Time].[1997]}\n"
             + "{[Time].[1997].[Q1]}\n"
@@ -1613,8 +1614,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
             + "{[Store].[CA plus USA], [Time].[Q1 plus July]}\n"
-            + "{[Store].[All Stores].[USA].[CA], [Time].[Q1 plus July]}\n"
-            + "{[Store].[All Stores].[USA], [Time].[Q1 plus July]}\n"
+            + "{[Store].[USA].[CA], [Time].[Q1 plus July]}\n"
+            + "{[Store].[USA], [Time].[Q1 plus July]}\n"
             + "{[Store].[CA plus USA], [Time].[1997].[Q1]}\n"
             + "{[Store].[CA plus USA], [Time].[1997].[Q3].[7]}\n"
             + "Row #0: 3,505\n"
@@ -1639,9 +1640,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         String query =
             "With "
             + "Set [Products] as "
-            + " '{[Product].[All Products].[Drink], "
-            + "   [Product].[All Products].[Food], "
-            + "   [Product].[All Products].[Non-Consumable]}' "
+            + " '{[Product].[Drink], "
+            + "   [Product].[Food], "
+            + "   [Product].[Non-Consumable]}' "
             + "Member [Product].[Selected Products] as "
             + " 'Aggregate([Products])', SOLVE_ORDER=2 "
             + "Select "
@@ -1753,7 +1754,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Store].[USA].[WA], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
             + "Row #0: 889\n");
 
         String mysqlSql =
@@ -1842,8 +1843,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
@@ -1909,8 +1910,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
             + "Row #0: 2,692\n"
             + "Row #1: 1,036\n");
 

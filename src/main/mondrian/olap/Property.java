@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -124,11 +124,15 @@ public class Property extends EnumeratedValues.BasicValue {
             false, null);
 
     public static final int CONTRIBUTING_CHILDREN_ORDINAL = 4;
+
     /**
      * Definition of the internal property which
      * holds, for a member of a  parent-child hierarchy, a
      * {@link java.util.List} containing the member's data
      * member and all of its children (including non-visible children).
+     *
+     * @deprecated Property is not used and will be removed in mondrian-4.0;
+     * use {@link mondrian.olap.SchemaReader#getParentChildContributingChildren}
      */
     public static final Property CONTRIBUTING_CHILDREN =
         new Property(
@@ -589,17 +593,6 @@ public class Property extends EnumeratedValues.BasicValue {
             "KEY", Datatype.TYPE_STRING, KEY_ORDINAL, false, true, false,
             "Key.");
 
-    public static final int UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL = 47;
-    /**
-     * Definition of the internal property which
-     * describes the unique name of a member minus its
-     * hierarchy.
-     */
-    public static final Property UNIQUE_NAME_WITHOUT_HIERARCHY =
-        new Property(
-            "$unique_name_without_hierarchy", Datatype.TYPE_STRING,
-            UNIQUE_NAME_WITHOUT_HIERARCHY_ORDINAL, true, true, false, null);
-
     public static final int SCENARIO_ORDINAL = 48;
     /**
      * Definition of the internal property which
@@ -621,6 +614,19 @@ public class Property extends EnumeratedValues.BasicValue {
         new Property(
             "DISPLAY_FOLDER", Datatype.TYPE_STRING, DISPLAY_FOLDER_ORDINAL,
             false, true, false, "Folder in which to display a measure");
+
+    public static final int LANGUAGE_ORDINAL = 50;
+
+    /**
+     * Definition of the property which
+     * holds the translation expressed as an LCID.
+     * Only valid for property translations.
+     */
+    public static final Property LANGUAGE =
+        new Property(
+            "LANGUAGE", Datatype.TYPE_NUMERIC, LANGUAGE_ORDINAL,
+            false, false, true,
+            "The translation expressed as an LCID. Only valid for property translations.");
 
     /**
      * The various property names which define a format string.
@@ -758,7 +764,6 @@ public class Property extends EnumeratedValues.BasicValue {
                 DATATYPE,
                 MEMBER_KEY,
                 KEY,
-                UNIQUE_NAME_WITHOUT_HIERARCHY,
                 SCENARIO,
                 DISPLAY_FOLDER,
             });

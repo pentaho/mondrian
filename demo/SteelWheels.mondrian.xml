@@ -38,7 +38,7 @@
 		</Dimension>
 		<Dimension type="TimeDimension" foreignKey="TIME_ID" name="Time">
 			<Hierarchy hasAll="true" allMemberName="All Years" primaryKey="TIME_ID">
-				<Table name="dim_time">
+				<Table name="time">
 				</Table>
 				<Level name="Years" column="YEAR_ID" type="String" uniqueMembers="true" levelType="TimeYears" hideMemberIf="Never">
 				</Level>

@@ -12,6 +12,7 @@ package mondrian.test;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
+
 import org.olap4j.metadata.*;
 
 import mondrian.rolap.aggmatcher.AggTableManager;
@@ -119,7 +120,7 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender with default].[All Gender with defaults].[M]}\n"
+            + "{[Gender with default].[M]}\n"
             + "Row #0: 135,215\n");
     }
 
@@ -173,7 +174,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "Axis #1:\n"
             // Note that the 'all' member is named according to the rule
             // '[<hierarchy>].[All <hierarchy>s]'.
-            + "{[Gender with default].[All Gender with defaults].[F]}\n"
+            + "{[Gender with default].[F]}\n"
             + "Row #0: 131,558\n");
     }
 
@@ -196,8 +197,8 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
             + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: 86,837\n"
             + "Row #0: 266,773\n"
             + "Row #1: 42,831\n"
@@ -356,9 +357,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$10K - $30K]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
+            + "{[Yearly Income2].[$150K +]}\n"
             + "Row #0: 918\n");
 
         testContext.assertQueryReturns(
@@ -371,70 +372,70 @@ public class SchemaTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$90K - $110K]}\n"
             + "Row #0: 12,824\n"
             + "Row #1: 2,822\n"
             + "Row #2: 2,933\n"
@@ -549,9 +550,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$10K - $30K]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
+            + "{[Yearly Income2].[$150K +]}\n"
             + "Row #0: \n");
 
         testContext.assertQueryReturns(
@@ -564,14 +565,14 @@ public class SchemaTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$10K - $30K], [Yearly Income2].[All Yearly Income2s].[$10K - $30K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$110K - $130K], [Yearly Income2].[All Yearly Income2s].[$110K - $130K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$130K - $150K], [Yearly Income2].[All Yearly Income2s].[$130K - $150K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$150K +], [Yearly Income2].[All Yearly Income2s].[$150K +]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$30K - $50K], [Yearly Income2].[All Yearly Income2s].[$30K - $50K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$50K - $70K], [Yearly Income2].[All Yearly Income2s].[$50K - $70K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$70K - $90K], [Yearly Income2].[All Yearly Income2s].[$70K - $90K]}\n"
-            + "{[Yearly Income].[All Yearly Incomes].[$90K - $110K], [Yearly Income2].[All Yearly Income2s].[$90K - $110K]}\n"
+            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[$150K +], [Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$90K - $110K]}\n"
             + "Row #0: 57,950\n"
             + "Row #1: 11,561\n"
             + "Row #2: 14,392\n"
@@ -652,9 +653,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA].[South West]}\n"
+            + "{[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
-            + "{[Store].[MyHierarchy].[All MyHierarchys].[Mexico]}\n"
+            + "{[Store].[MyHierarchy].[Mexico]}\n"
             + "Row #0: 51,298\n");
     }
 
@@ -718,9 +719,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA].[South West]}\n"
+            + "{[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
-            + "{[Store].[MyHierarchy].[All MyHierarchys].[USA].[South West]}\n"
+            + "{[Store].[MyHierarchy].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
     }
 
@@ -775,9 +776,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA].[South West]}\n"
+            + "{[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[South West]}\n"
+            + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
     }
 
@@ -829,9 +830,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA].[South West]}\n"
+            + "{[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[South West]}\n"
+            + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
     }
 
@@ -883,9 +884,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA].[South West]}\n"
+            + "{[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[South West]}\n"
+            + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
     }
 
@@ -933,9 +934,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[StoreB].[All StoreBs].[USA]}\n"
+            + "{[StoreB].[USA]}\n"
             + "Axis #2:\n"
-            + "{[StoreA].[All StoreAs].[USA]}\n"
+            + "{[StoreA].[USA]}\n"
             + "Row #0: 10,425\n");
     }
 
@@ -983,9 +984,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[StoreB].[All StoreBs].[USA]}\n"
+            + "{[StoreB].[USA]}\n"
             + "Axis #2:\n"
-            + "{[StoreA].[All StoreAs].[USA]}\n"
+            + "{[StoreA].[USA]}\n"
             + "Row #0: 10,425\n");
     }
 
@@ -1094,7 +1095,7 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[USA]}\n"
             + "Row #0: 266,773\n");
 
         String dimension =
@@ -1110,7 +1111,7 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[USA]}\n"
             + "Axis #2:\n"
             + "{[Time].[1997].[Q1]}\n"
             + "Row #0: 66,291\n");
@@ -1138,16 +1139,16 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[Canada].[BC]}\n"
-            + "{[Store].[All Stores].[Mexico].[DF]}\n"
-            + "{[Store].[All Stores].[Mexico].[Guerrero]}\n"
-            + "{[Store].[All Stores].[Mexico].[Jalisco]}\n"
-            + "{[Store].[All Stores].[Mexico].[Veracruz]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan]}\n"
-            + "{[Store].[All Stores].[Mexico].[Zacatecas]}\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[Canada].[BC]}\n"
+            + "{[Store].[Mexico].[DF]}\n"
+            + "{[Store].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 7,700\n"
             + "Row #0: 1,492\n"
             + "Row #0: 228\n"
@@ -1319,9 +1320,9 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Time].[1997]}\n"
             + "{[Time].[1997].[Q3]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 25,789.086\n"
             + "Row #0: 8,624.791\n"
             + "Row #1: 17,606.904\n"
@@ -1372,12 +1373,12 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[All Store Types].[HeadQuarters]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n"
-            + "{[Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket]}\n"
+            + "{[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store Type].[HeadQuarters]}\n"
+            + "{[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store Type].[Supermarket]}\n"
             + "Row #0: 146,045\n"
             + "Row #0: 47,447\n"
             + "Row #0: \n"
@@ -1412,16 +1413,16 @@ public class SchemaTest extends FoodMartTestCase {
             + "FROM [Sales]\n"
             + "WHERE ([Gender].[M])",
             "Axis #0:\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[M]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Customer Count]}\n"
             + "{[Measures].[Customer Count2]}\n"
             + "{[Measures].[Half Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 37,989\n"
             + "Row #0: 1,389\n"
             + "Row #0: 1,389\n"
@@ -1466,6 +1467,7 @@ public class SchemaTest extends FoodMartTestCase {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);
@@ -1543,6 +1545,7 @@ public class SchemaTest extends FoodMartTestCase {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);
@@ -1721,19 +1724,19 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[StoreType]}\n"
             + "Axis #2:\n"
-            + "{[Store2].[All Stores].[2], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[3], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[6], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[7], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[11], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[13], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[14], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[15], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[16], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[17], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[22], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[23], [Product].[All Products]}\n"
-            + "{[Store2].[All Stores].[24], [Product].[All Products]}\n"
+            + "{[Store2].[2], [Product].[All Products]}\n"
+            + "{[Store2].[3], [Product].[All Products]}\n"
+            + "{[Store2].[6], [Product].[All Products]}\n"
+            + "{[Store2].[7], [Product].[All Products]}\n"
+            + "{[Store2].[11], [Product].[All Products]}\n"
+            + "{[Store2].[13], [Product].[All Products]}\n"
+            + "{[Store2].[14], [Product].[All Products]}\n"
+            + "{[Store2].[15], [Product].[All Products]}\n"
+            + "{[Store2].[16], [Product].[All Products]}\n"
+            + "{[Store2].[17], [Product].[All Products]}\n"
+            + "{[Store2].[22], [Product].[All Products]}\n"
+            + "{[Store2].[23], [Product].[All Products]}\n"
+            + "{[Store2].[24], [Product].[All Products]}\n"
             + "Row #0: 4,739.23\n"
             + "Row #0: Small Grocery\n"
             + "Row #1: 52,896.30\n"
@@ -1801,9 +1804,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products].[Drink]}\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
             + "Row #0: 24,597\n"
             + "Row #0: 191,940\n"
             + "Row #0: 50,236\n");
@@ -1877,9 +1880,10 @@ public class SchemaTest extends FoodMartTestCase {
             + "  </Dimension>\n"
             + "</Cube>",
             null, null, null, null);
-        testContext.assertQueryThrows(
-            "select {[Promotion Media]} on columns from [NoMeasures]",
-            "Hierarchy '[Measures]' is invalid (has no members)");
+        // Does not fail with
+        //    "Hierarchy '[Measures]' is invalid (has no members)"
+        // because of the implicit [Fact Count] measure.
+        testContext.assertSimpleQuery();
     }
 
     public void testCubeWithOneCalcMeasure() {
@@ -1900,13 +1904,17 @@ public class SchemaTest extends FoodMartTestCase {
             + "</Cube>",
             null, null, null, null);
 
-        // We would prefer if this query worked. I think we're hitting the bug
-        // which occurs where the default member is calculated. For now, just
-        // make sure that we get a reasonable error.
-        testContext.assertQueryThrows(
+        // Because there are no explicit stored measures, the default measure is
+        // the implicit stored measure, [Fact Count]. Stored measures, even
+        // non-visible ones, come before calculated measures.
+        testContext.assertQueryReturns(
             "select {[Measures]} on columns from [OneCalcMeasure]\n"
             + "where [Promotion Media].[TV]",
-            "Hierarchy '[Measures]' is invalid (has no members)");
+            "Axis #0:\n"
+            + "{[Promotion Media].[TV]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Fact Count]}\n"
+            + "Row #0: 1,171\n");
     }
 
     /**
@@ -2030,8 +2038,8 @@ public class SchemaTest extends FoodMartTestCase {
 
         TestContext.assertEqualsVerbose(
             "[Gender2].[All Gender]\n"
-            + "[Gender2].[All Gender].[F]\n"
-            + "[Gender2].[All Gender].[M]",
+            + "[Gender2].[F]\n"
+            + "[Gender2].[M]",
             TestContext.toString(
                 result.getAxes()[0].getPositions()));
     }
@@ -2166,7 +2174,7 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[USA]}\n"
             + "{[Store].[Total Non CA State]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
@@ -2183,7 +2191,7 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[USA]}\n"
             + "{[Store].[Total Non CA State]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
@@ -2210,7 +2218,7 @@ public class SchemaTest extends FoodMartTestCase {
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Store].[All Stores].[USA]}\n"
+                + "{[Store].[USA]}\n"
                 + "{[Store].[Total Non CA State]}\n"
                 + "Axis #2:\n"
                 + "{[Measures].[Unit Sales]}\n"
@@ -2397,8 +2405,8 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
             + "{[Product truncated].[All Product truncateds]}\n"
-            + "{[Product truncated].[All Product truncateds].[Fresh Vegetables]}\n"
-            + "{[Product truncated].[All Product truncateds].[Fresh Fruit]}\n"
+            + "{[Product truncated].[Fresh Vegetables]}\n"
+            + "{[Product truncated].[Fresh Fruit]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: 20,739\n"
             + "Row #2: 11,767\n");
@@ -2495,7 +2503,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products], [Store].[All Stores].[USA].[CA]}\n"
+            + "{[Product].[All Products], [Store].[USA].[CA]}\n"
             + "Row #0: 74,748\n");
 
         // Now query the children of CA using the descendants function
@@ -2513,10 +2521,10 @@ public class SchemaTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "Row #0: 21,333\n"
             + "Row #1: 25,663\n"
             + "Row #2: 25,635\n"
@@ -2548,9 +2556,9 @@ public class SchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time2].[All Time2s].[1997].[Q1].[1].[367]}\n"
-            + "{[Time2].[All Time2s].[1997].[Q1].[1].[368]}\n"
-            + "{[Time2].[All Time2s].[1997].[Q1].[1].[369]}\n"
+            + "{[Time2].[1997].[Q1].[1].[367]}\n"
+            + "{[Time2].[1997].[Q1].[1].[368]}\n"
+            + "{[Time2].[1997].[Q1].[1].[369]}\n"
             + "Row #0: 348\n"
             + "Row #0: 635\n"
             + "Row #0: 589\n");
@@ -2558,12 +2566,12 @@ public class SchemaTest extends FoodMartTestCase {
         // Check that can apply ParallelPeriod to a TimeUndefined level.
         testContext.assertAxisReturns(
             "PeriodsToDate([Time2].[Quarter hours], [Time2].[1997].[Q1].[1].[368])",
-            "[Time2].[All Time2s].[1997].[Q1].[1].[368]");
+            "[Time2].[1997].[Q1].[1].[368]");
 
         testContext.assertAxisReturns(
             "PeriodsToDate([Time2].[Half year], [Time2].[1997].[Q1].[1].[368])",
-            "[Time2].[All Time2s].[1997].[Q1].[1].[367]\n"
-            + "[Time2].[All Time2s].[1997].[Q1].[1].[368]");
+            "[Time2].[1997].[Q1].[1].[367]\n"
+            + "[Time2].[1997].[Q1].[1].[368]");
 
         // Check that get an error if give invalid level type
         try {
@@ -2840,7 +2848,14 @@ public class SchemaTest extends FoodMartTestCase {
             measure.getPropertyValue(Property.MEMBER_CAPTION.name));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
-        final Member calcMeasure = measures.get(1);
+        // The implicitly created [Fact Count] measure
+        final Member factCountMeasure = measures.get(1);
+        assertEquals("Fact Count", factCountMeasure.getName());
+        assertEquals(
+            false,
+            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+
+        final Member calcMeasure = measures.get(2);
         assertEquals("Foo", calcMeasure.getName());
         assertEquals("Calc member caption", calcMeasure.getCaption());
         assertEquals("Calc member description", calcMeasure.getDescription());

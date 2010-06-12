@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2007 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 
@@ -207,7 +208,14 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         if (topLevelDepth > 0) {
             RolapLevel topLevel =
                 (RolapLevel) getHierarchy().getLevels()[topLevelDepth];
-            return getMembersInLevel(topLevel, 0, Integer.MAX_VALUE);
+            final List<RolapMember> memberList =
+                getMembersInLevel(topLevel, 0, Integer.MAX_VALUE);
+            if (memberList.isEmpty()) {
+                throw MondrianResource.instance()
+                    .HierarchyHasNoAccessibleMembers.ex(
+                        getHierarchy().getUniqueName());
+            }
+            return memberList;
         }
         return super.getRootMembers();
     }

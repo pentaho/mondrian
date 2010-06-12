@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -162,13 +162,19 @@ public class Util extends XOMUtil {
      */
     public static String quoteForMdx(String val) {
         StringBuilder buf = new StringBuilder(val.length() + 20);
-        buf.append("\"");
+        quoteForMdx(buf, val);
+        return buf.toString();
+    }
 
+    /**
+     * Appends a double-quoted string to a string builder.
+     */
+    public static StringBuilder quoteForMdx(StringBuilder buf, String val) {
+        buf.append("\"");
         String s0 = replace(val, "\"", "\"\"");
         buf.append(s0);
-
         buf.append("\"");
-        return buf.toString();
+        return buf;
     }
 
     /**
@@ -214,32 +220,19 @@ public class Util extends XOMUtil {
 
     /**
      * Returns true if two objects are equal, or are both null.
+     *
+     * @param s First object
+     * @param t Second object
+     * @return Whether objects are equal or both null
      */
     public static boolean equals(Object s, Object t) {
-        return (s == null) ? (t == null) : s.equals(t);
-    }
-
-    /**
-     * Returns whether two arrays have equal contents. Elements may be null.
-     *
-     * @param a1 First array
-     * @param a2 Second array
-     * @param <T> Element type
-     * @return Whether arrays are equal
-     */
-    public static <T> boolean equalArray(
-        T[] a1,
-        T[] a2)
-    {
-        if (a1.length != a2.length) {
+        if (s == t) {
+            return true;
+        }
+        if (s == null || t == null) {
             return false;
         }
-        for (int i = 0; i < a1.length; ++i) {
-            if (!equals(a1[i], a2[i])) {
-                return false;
-            }
-        }
-        return true;
+        return s.equals(t);
     }
 
     /**
@@ -415,61 +408,15 @@ public class Util extends XOMUtil {
         return buf;
     }
 
+    /**
+     * Parses an MDX identifier such as <code>[Foo].[Bar].Baz.&Key&Key2</code>
+     * and returns the result as a list of segments.
+     *
+     * @param s MDX identifier
+     * @return List of segments
+     */
     public static List<Id.Segment> parseIdentifier(String s)  {
-        if (!s.startsWith("[")) {
-            return Collections.singletonList(
-                new Id.Segment(s, Id.Quoting.UNQUOTED));
-        }
-
-        List<Id.Segment> list = new ArrayList<Id.Segment>();
-        int i = 0;
-        Id.Quoting type;
-        while (i < s.length()) {
-            if (s.charAt(i) != '&' && s.charAt(i) != '[') {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            if (s.charAt(i) ==  '&') {
-                i++;
-                type = Id.Quoting.KEY;
-            } else {
-                type = Id.Quoting.QUOTED;
-            }
-
-            if (s.charAt(i) != '[') {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            int j = getEndIndex(s, i + 1);
-            if (j == -1) {
-                throw MondrianResource.instance().MdxInvalidMember.ex(s);
-            }
-
-            list.add(
-                new Id.Segment(
-                    replace(s.substring(i + 1, j), "]]", "]"),
-                    type));
-
-            i = j + 2;
-        }
-        return list;
-    }
-
-    private static int getEndIndex(String s, int i) {
-        while (i < s.length()) {
-            char ch = s.charAt(i);
-            if (ch == ']') {
-                if (i + 1 < s.length() && s.charAt(i + 1) == ']') {
-                    // found ]] => skip
-                    i += 2;
-                } else {
-                    return i;
-                }
-            } else {
-                i++;
-            }
-        }
-        return -1;
+        return IdentifierParser.parseIdentifier(s);
     }
 
     /**
@@ -644,6 +591,9 @@ public class Util extends XOMUtil {
                 }
             }
             parent = child;
+            if (matchType == MatchType.EXACT_SCHEMA) {
+                matchType = MatchType.EXACT;
+            }
         }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
@@ -977,7 +927,7 @@ public class Util extends XOMUtil {
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        return (rootMembers.size() == 1 && rootMembers.get(0).isAll())
+        return (rootMembers.size() > 0 && rootMembers.get(0).isAll())
             ? reader.lookupMemberChildByName(
                 rootMembers.get(0),
                 memberName,
@@ -1451,6 +1401,54 @@ public class Util extends XOMUtil {
         return true;
     }
 
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list.
+     *
+     * @param t Array of members of list
+     * @param <T> Element type
+     * @return List containing the given members
+     */
+    public static <T> List<T> flatList(T[] t) {
+        switch (t.length) {
+        case 0:
+            return Collections.emptyList();
+        case 1:
+            return Collections.singletonList(t[0]);
+        case 2:
+            return new Flat2List<T>(t[0], t[1]);
+        case 3:
+            return new Flat3List<T>(t[0], t[1], t[2]);
+        default:
+            // REVIEW: AbstractList contains a modCount field; we could
+            //   write our own implementation and reduce creation overhead a
+            //   bit.
+            return Arrays.asList(t);
+        }
+    }
+
+    /**
+     * Parses a locale string.
+     *
+     * <p>The inverse operation of {@link java.util.Locale#toString()}.
+     *
+     * @param localeString Locale string, e.g. "en" or "en_US"
+     * @return Java locale object
+     */
+    public static Locale parseLocale(String localeString) {
+        String[] strings = localeString.split("_");
+        switch (strings.length) {
+        case 1:
+            return new Locale(strings[0]);
+        case 2:
+            return new Locale(strings[0], strings[1]);
+        case 3:
+            return new Locale(strings[0], strings[1], strings[2]);
+        default:
+            throw newInternal(
+                "bad locale string '" + localeString + "'");
+        }
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
@@ -1671,7 +1669,7 @@ public class Util extends XOMUtil {
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
     public static class PropertyList
-        implements Iterable<Pair<String, String>>
+        implements Iterable<Pair<String, String>>, Serializable
     {
         List<Pair<String, String>> list =
             new ArrayList<Pair<String, String>>();
@@ -2026,6 +2024,54 @@ public class Util extends XOMUtil {
         System.arraycopy(a, 0, a2, 0, a.length);
         a2[a.length] = o;
         return a2;
+    }
+
+    /**
+     * Like <code>{@link java.util.Arrays}.copyOf(double[], int)</code>, but
+     * exists prior to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static double[] copyOf(double[] original, int newLength) {
+        double[] copy = new double[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
+    }
+
+    /**
+     * Like <code>{@link java.util.Arrays}.copyOf(int[], int)</code>, but
+     * exists prior to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static int[] copyOf(int[] original, int newLength) {
+        int[] copy = new int[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
+    }
+
+    /**
+     * Like <code>{@link java.util.Arrays}.copyOf(Object[], int)</code>, but
+     * exists prior to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static Object[] copyOf(Object[] original, int newLength) {
+        Object[] copy = new Object[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
     }
 
     /**
@@ -2415,6 +2461,28 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns whether it is safe to cast a collection to a collection with a
+     * given element type.
+     *
+     * @param collection Collection
+     * @param clazz Target element type
+     * @param <T> Element type
+     * @return Whether all not-null elements of the collection are instances of
+     *   element type
+     */
+    public static <T> boolean canCast(
+        Collection<?> collection,
+        Class<T> clazz)
+    {
+        for (Object o : collection) {
+            if (o != null && !clazz.isInstance(o)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Casts a collection to iterable.
      *
      * Under JDK 1.4, {@link Collection} objects do not implement
@@ -2447,64 +2515,35 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Looks up an enumeration by name, returning null if not valid.
+     * Looks up an enumeration by name, returning null if null or not valid.
+     *
+     * @param clazz Enumerated type
+     * @param name Name of constant
      */
     public static <E extends Enum<E>> E lookup(Class<E> clazz, String name) {
         return lookup(clazz, name, null);
     }
 
     /**
-     * Looks up an enumeration by name, returning a given default value if not
-     * valid.
+     * Looks up an enumeration by name, returning a given default value if null
+     * or not valid.
+     *
+     * @param clazz Enumerated type
+     * @param name Name of constant
+     * @param defaultValue Default value if constant is not found
+     * @return Value, or null if name is null or value does not exist
      */
     public static <E extends Enum<E>> E lookup(
         Class<E> clazz, String name, E defaultValue)
     {
+        if (name == null) {
+            return defaultValue;
+        }
         try {
             return Enum.valueOf(clazz, name);
         } catch (IllegalArgumentException e) {
             return defaultValue;
         }
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#of(Enum, Enum[])} on JDK 1.5 or
-     * later. Otherwise, returns an ordinary set.
-     *
-     * @param first an element that the set is to contain initially
-     * @param rest the remaining elements the set is to contain initially
-     * @throws NullPointerException if any of the specified elements are null,
-     *     or if <tt>rest</tt> is null
-     * @return an enum set initially containing the specified elements
-     */
-    public static <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
-        return compatible.enumSetOf(first, rest);
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or
-     * later. Otherwise, returns an ordinary set.
-     *
-     * @param elementType the class object of the element type for this enum
-     *     set
-     */
-    public static <E extends Enum<E>> Set<E> enumSetNoneOf(
-        Class<E> elementType)
-    {
-        return compatible.enumSetNoneOf(elementType);
-    }
-
-    /**
-     * Equivalent to {@link java.util.EnumSet#allOf(Class)} on JDK 1.5 or later.
-     * Otherwise, returns an ordinary set.
-
-     * @param elementType the class object of the element type for this enum
-     *     set
-     */
-    public static <E extends Enum<E>> Set<E> enumSetAllOf(
-        Class<E> elementType)
-    {
-        return compatible.enumSetAllOf(elementType);
     }
 
     /**
@@ -2700,16 +2739,135 @@ public class Util extends XOMUtil {
      * @return <code>true</code> if the String is null, empty or whitespace
      */
     public static boolean isBlank(String str) {
-        int strLen;
+        final int strLen;
         if (str == null || (strLen = str.length()) == 0) {
             return true;
         }
         for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * List that stores its two elements in the two members of the class.
+     * Unlike {@link java.util.ArrayList} or
+     * {@link java.util.Arrays#asList(Object[])} there is
+     * no array, only one piece of memory allocated, therefore is very compact
+     * and cache and CPU efficient.
+     *
+     * <p>The list is read-only, cannot be modified or resized, and neither
+     * of the elements can be null.
+     *
+     * <p>The list is created via {@link Util#flatList(Object[])}.
+     *
+     * @see mondrian.olap.Util.Flat3List
+     * @param <T>
+     */
+    protected static class Flat2List<T> extends UnsupportedList<T> {
+        private final T t0;
+        private final T t1;
+
+        Flat2List(T t0, T t1) {
+            this.t0 = t0;
+            this.t1 = t1;
+            assert t0 != null;
+            assert t1 != null;
+        }
+
+        public T get(int index) {
+            switch (index) {
+            case 0:
+                return t0;
+            case 1:
+                return t1;
+            default:
+                throw new IndexOutOfBoundsException("index " + index);
+            }
+        }
+
+        public int size() {
+            return 2;
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Flat2List) {
+                Flat2List that = (Flat2List) o;
+                return Util.equals(this.t0, that.t0)
+                    && Util.equals(this.t1, that.t1);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int h = t0.hashCode();
+            return Util.hash(h, t1.hashCode());
+        }
+    }
+
+    /**
+     * List that stores its three elements in the three members of the class.
+     * Unlike {@link java.util.ArrayList} or
+     * {@link java.util.Arrays#asList(Object[])} there is
+     * no array, only one piece of memory allocated, therefore is very compact
+     * and cache and CPU efficient.
+     *
+     * <p>The list is read-only, cannot be modified or resized, and none
+     * of the elements can be null.
+     *
+     * <p>The list is created via {@link Util#flatList(Object[])}.
+     *
+     * @see mondrian.olap.Util.Flat2List
+     * @param <T>
+     */
+    protected static class Flat3List<T> extends UnsupportedList<T> {
+        private final T t0;
+        private final T t1;
+        private final T t2;
+
+        Flat3List(T t0, T t1, T t2) {
+            this.t0 = t0;
+            this.t1 = t1;
+            this.t2 = t2;
+            assert t0 != null;
+            assert t1 != null;
+            assert t2 != null;
+        }
+
+        public T get(int index) {
+            switch (index) {
+            case 0:
+                return t0;
+            case 1:
+                return t1;
+            case 2:
+                return t2;
+            default:
+                throw new IndexOutOfBoundsException("index " + index);
+            }
+        }
+
+        public int size() {
+            return 3;
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Flat3List) {
+                Flat3List that = (Flat3List) o;
+                return Util.equals(this.t0, that.t0)
+                    && Util.equals(this.t1, that.t1)
+                    && Util.equals(this.t2, that.t2);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int h = t0.hashCode();
+            h = Util.hash(h, t1.hashCode());
+            return Util.hash(h, t2.hashCode());
+        }
     }
 }
 

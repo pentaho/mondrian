@@ -15,9 +15,10 @@ import java.util.Set;
 
 import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
+
+import org.olap4j.impl.Olap4jUtil;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>
@@ -41,7 +42,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     private boolean formattedSql;
     private String origWarnIfNoPatternForDialect;
     private static final Set<Dialect.DatabaseProduct> ORACLE_TERADATA =
-        Util.enumSetOf(
+        Olap4jUtil.enumSetOf(
             Dialect.DatabaseProduct.ORACLE,
             Dialect.DatabaseProduct.TERADATA);
 
@@ -77,6 +78,31 @@ public class GroupingSetQueryTest extends BatchTestCase {
         prop.EnableGroupingSets.set(useGroupingSets);
         prop.GenerateFormattedSql.set(formattedSql);
         prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
+    }
+
+    public void testGroupingSetsWithAggregateOverDefaultMember() {
+        // testcase for MONDRIAN-705
+        if (getTestContext().getDialect().supportsGroupingSets()) {
+            prop.EnableGroupingSets.set(true);
+        }
+        assertQueryReturns(
+            "with member [Gender].[agg] as ' "
+            + "  Aggregate({[Gender].DefaultMember}, [Measures].[Store Cost])' "
+            + "select "
+            + "  {[Measures].[Store Cost]} ON COLUMNS, "
+            + "  {[Gender].[Gender].Members, [Gender].[agg]} ON ROWS "
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "{[Gender].[agg]}\n"
+            + "Row #0: 111,777.48\n"
+            + "Row #1: 113,849.75\n"
+            + "Row #2: 225,627.23\n");
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
@@ -537,31 +563,31 @@ public class GroupingSetQueryTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]}\n"
-            + "{[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]}\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
-            + "{[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
-            + "{[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
-            + "{[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
-            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
-            + "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[Canada].[BC].[Vancouver].[Store 19]}\n"
+            + "{[Store].[Canada].[BC].[Victoria].[Store 20]}\n"
+            + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
+            + "{[Store].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
+            + "{[Store].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
+            + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
+            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "{[Store].[allbutwallawalla]}\n"
             + "{[Store].[All Stores]}\n"
             + "Axis #2:\n"

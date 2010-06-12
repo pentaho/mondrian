@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -38,15 +38,13 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
      */
     protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
         this.constrainedColumn = constrainedColumn;
-        /*
-         * Check if contraintedColumns are null.
-         * (Example: FastBatchingCellReader.testAggregateDistinctCount5()).
-         */
+
+        // Check whether constrainedColumn are null.
+        // Example: FastBatchingCellReaderTest.testAggregateDistinctCount5().
         if (constrainedColumn != null && constrainedColumn.getTable() != null) {
             constrainedColumnBitKey =
                 BitKey.Factory.makeBitKey(
                     constrainedColumn.getStar().getColumnCount());
-            constrainedColumnBitKey.clear();
             constrainedColumnBitKey.set(constrainedColumn.getBitPosition());
         } else {
             constrainedColumnBitKey = null;

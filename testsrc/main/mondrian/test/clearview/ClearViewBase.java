@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -51,6 +51,7 @@ public abstract class ClearViewBase extends BatchTestCase {
 
     // implement TestCase
     protected void setUp() throws Exception {
+        super.setUp();
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(getName());
     }
@@ -59,6 +60,7 @@ public abstract class ClearViewBase extends BatchTestCase {
     protected void tearDown() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
+        super.tearDown();
     }
 
     // implement TestCase

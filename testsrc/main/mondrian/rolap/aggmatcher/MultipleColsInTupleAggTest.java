@@ -88,7 +88,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Total]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[All Products].[Cat One].[Prod Cat One],"
+                + "{[Product].[Cat One].[Prod Cat One],"
                 + " [Store].[All Stores]}\n"
                 + "Row #0: 15\n");
     }
@@ -107,8 +107,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Total]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[All Products].[Cat One].[Prod Cat Two]}\n"
-                + "{[Product].[All Products].[Cat One].[Prod Cat One]}\n"
+                + "{[Product].[Cat One].[Prod Cat Two]}\n"
+                + "{[Product].[Cat One].[Prod Cat One]}\n"
                 + "Row #0: 18\n"
                 + "Row #1: 15\n");
     }
@@ -144,7 +144,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
            + " </Join>\n"
            + " <Level name='Category' table='cat' column='cat' "
            + "ordinalColumn='ord' captionColumn='cap' nameColumn='name3' "
-           + "uniqueMembers='false'/>\n"
+           + "uniqueMembers='false' type='Numeric'/>\n"
            + " <Level name='Product Category' table='product_cat' "
            + "column='name2' ordinalColumn='ord' captionColumn='cap' "
            + "uniqueMembers='false'/>\n"

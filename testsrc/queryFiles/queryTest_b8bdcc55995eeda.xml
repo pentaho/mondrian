@@ -57,22 +57,22 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baked Goods]</member>
+                    <member>[Product].[Food].[Baked Goods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baking Goods]</member>
+                    <member>[Product].[Food].[Baking Goods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Breakfast Foods]</member>
+                    <member>[Product].[Food].[Breakfast Foods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baked Goods]</member>
+                    <member>[Product].[Food].[Baked Goods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Baking Goods]</member>
+                    <member>[Product].[Food].[Baking Goods]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food].[Breakfast Foods]</member>
+                    <member>[Product].[Food].[Breakfast Foods]</member>
                 </tuple>
             </tuples>
         </rows>

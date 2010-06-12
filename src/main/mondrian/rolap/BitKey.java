@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,6 +39,10 @@ import java.util.Iterator;
  * @version $Id$
  */
 public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
+    /**
+     * The BitKey with no bits set.
+     */
+    BitKey EMPTY = Factory.makeBitKey(0);
 
     /**
      * Sets the bit at the specified index to the specified value.
@@ -140,6 +144,25 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
     Iterator<Integer> iterator();
 
     /**
+     * Returns the index of the first bit that is set to <code>true</code>
+     * that occurs on or after the specified starting index. If no such
+     * bit exists then -1 is returned.
+     *
+     * To iterate over the <code>true</code> bits in a <code>BitKey</code>,
+     * use the following loop:
+     *
+     * <pre>
+     * for (int i = bk.nextSetBit(0); i >= 0; i = bk.nextSetBit(i + 1)) {
+     *     // operate on index i here
+     * }</pre>
+     *
+     * @param   fromIndex the index to start checking from (inclusive)
+     * @return  the index of the next set bit
+     * @throws  IndexOutOfBoundsException if the specified index is negative
+     */
+    int nextSetBit(int fromIndex);
+
+    /**
      * Returns the number of bits set.
      *
      * @return Number of bits set
@@ -185,15 +208,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * Abstract implementation of {@link BitKey}.
      */
     abstract class AbstractBitKey implements BitKey {
-        /**
-         * Creates an AbstractBitKey.
-         */
-        protected AbstractBitKey() {
-        }
 
         // chunk is a long, which has 64 bits
         protected static final int ChunkBitCount = 6;
         protected static final int Mask = 63;
+        protected static final long WORD_MASK = 0xffffffffffffffffL;
 
         /**
          * Creates a chunk containing a single bit.
@@ -593,7 +612,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                         bits = 0;
                         return true;
                     }
-                    long b = (bits&-bits);
+                    long b = (bits & -bits);
                     if (b == 0) {
                         // should never happen
                         return false;
@@ -627,6 +646,21 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     throw new UnsupportedOperationException("remove");
                 }
             };
+        }
+
+        public int nextSetBit(int fromIndex) {
+            if (fromIndex < 0) {
+                throw new IndexOutOfBoundsException(
+                    "fromIndex < 0: " + fromIndex);
+            }
+
+            if (fromIndex < 64) {
+                long word = bits & (WORD_MASK << fromIndex);
+                if (word != 0) {
+                    return Long.numberOfTrailingZeros(word);
+                }
+            }
+            return -1;
         }
 
         public boolean equals(Object o) {
@@ -987,6 +1021,36 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             };
         }
 
+        public int nextSetBit(int fromIndex) {
+            if (fromIndex < 0) {
+                throw new IndexOutOfBoundsException(
+                    "fromIndex < 0: " + fromIndex);
+            }
+
+            int u = fromIndex >> 6;
+            long word;
+            switch (u) {
+            case 0:
+                word = bits0 & (WORD_MASK << fromIndex);
+                if (word != 0) {
+                    return Long.numberOfTrailingZeros(word);
+                }
+                word = bits1;
+                if (word != 0) {
+                    return 64 + Long.numberOfTrailingZeros(word);
+                }
+                return -1;
+            case 1:
+                word = bits1 & (WORD_MASK << fromIndex);
+                if (word != 0) {
+                    return 64 + Long.numberOfTrailingZeros(word);
+                }
+                return -1;
+            default:
+                return -1;
+            }
+        }
+
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -1095,6 +1159,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * {@link java.util.BitSet}, but does not require dynamic resizing.
      */
     public class Big extends AbstractBitKey {
+
         private long[] bits;
 
         private Big(int size) {
@@ -1102,7 +1167,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
         }
 
         private Big(Big big) {
-            bits = (long[]) big.bits.clone();
+            bits = big.bits.clone();
         }
 
         private int size() {
@@ -1401,6 +1466,29 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                     throw new UnsupportedOperationException("remove");
                 }
             };
+        }
+
+        public int nextSetBit(int fromIndex) {
+            if (fromIndex < 0) {
+                throw new IndexOutOfBoundsException(
+                    "fromIndex < 0: " + fromIndex);
+            }
+
+            int u = chunkPos(fromIndex);
+            if (u >= bits.length) {
+                return -1;
+            }
+            long word = bits[u] & (WORD_MASK << fromIndex);
+
+            while (true) {
+                if (word != 0) {
+                    return (u * 64) + Long.numberOfTrailingZeros(word);
+                }
+                if (++u == bits.length) {
+                    return -1;
+                }
+                word = bits[u];
+            }
         }
 
         public boolean equals(Object o) {

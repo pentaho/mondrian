@@ -48,34 +48,34 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                    <member>[Store].[USA].[OR].[Portland]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                    <member>[Store].[USA].[OR].[Salem]</member>
                 </tuple>
             </tuples>
         </rows>

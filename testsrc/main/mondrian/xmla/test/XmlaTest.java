@@ -3,13 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla.test;
 
 import mondrian.xmla.*;
+import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
 import mondrian.olap.*;
@@ -139,7 +140,9 @@ public class XmlaTest extends TestCase {
                 XmlaTestContext.CATALOG_LOCATOR,
                 "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem);
-        XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
+        XmlaResponse response =
+            new DefaultXmlaResponse(
+                resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
         handler.process(request, response);
 
         return XmlaUtil.stream2Element(
@@ -193,6 +196,51 @@ public class XmlaTest extends TestCase {
             if (false) // FIXME:
             assertEquals(
                 "Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
+        }
+
+        /**
+         * Unit test for {@link XmlaUtil#chooseResponseMimeType(String)}.
+         */
+        public void testAccept() {
+            // simple
+            assertEquals(
+                Enumeration.ResponseMimeType.SOAP,
+                XmlaUtil.chooseResponseMimeType("application/xml"));
+
+            // deal with ",q=<n>" quality codes by ignoring them
+            assertEquals(
+                Enumeration.ResponseMimeType.SOAP,
+                XmlaUtil.chooseResponseMimeType(
+                    "text/html,application/xhtml+xml,"
+                    + "application/xml;q=0.9,*/*;q=0.8"));
+
+            // return null if nothing matches
+            assertNull(
+                XmlaUtil.chooseResponseMimeType(
+                    "text/html,application/xhtml+xml"));
+
+            // quality codes all over the place; return JSON because we see
+            // it before application/xml
+            assertEquals(
+                Enumeration.ResponseMimeType.JSON,
+                XmlaUtil.chooseResponseMimeType(
+                    "text/html;q=0.9,"
+                    + "application/xhtml+xml;q=0.9,"
+                    + "application/json;q=0.9,"
+                    + "application/xml;q=0.9,"
+                    + "*/*;q=0.8"));
+
+            // allow application/soap+xml as synonym for application/xml
+            assertEquals(
+                Enumeration.ResponseMimeType.SOAP,
+                XmlaUtil.chooseResponseMimeType(
+                    "text/html,application/soap+xml"));
+
+            // allow text/xml as synonym for application/xml
+            assertEquals(
+                Enumeration.ResponseMimeType.SOAP,
+                XmlaUtil.chooseResponseMimeType(
+                    "text/html,application/soap+xml"));
         }
     }
 }

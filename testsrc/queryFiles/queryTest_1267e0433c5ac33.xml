@@ -48,7 +48,7 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

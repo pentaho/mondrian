@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -225,6 +225,20 @@ public interface Evaluator {
     Member[] getMembers();
 
     /**
+     * Returns an array of the non-All members which make up the current
+     * context.
+     *
+     * <p>Notes:<ul>
+     * <li>The 0th element is a measure, but otherwise the order of the
+     *     members is unspecified.
+     * <li>No hierarchy occurs more than once.
+     * <li>In rare circumstances, some of the members may be an 'All' member.
+     * <li>The list may contain calculated members.
+     * </ul>
+     */
+    Member[] getNonAllMembers();
+
+    /**
      * Returns the number of times that this evaluator has told a lie when
      * retrieving cell values.
      */
@@ -306,6 +320,13 @@ public interface Evaluator {
      * @return boolean
      */
     boolean nativeEnabled();
+
+    /**
+     * Returns whether the current context is an empty cell.
+     *
+     * @return Whether the current context is an empty cell
+     */
+    boolean currentIsEmpty();
 
     /**
      * Interface for evaluating a particular named set.

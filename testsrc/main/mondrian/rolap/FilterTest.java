@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -248,16 +248,16 @@ public class FilterTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[#null]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[28206]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[30268]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[33858]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[#null]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[20319]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[21215]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[22478]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[23598]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[23688]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[27694]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[28206]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[30268]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[33858]}\n"
             + "Row #0: 1,153\n"
             + "Row #1: 563\n"
             + "Row #2: 906\n"
@@ -305,15 +305,15 @@ public class FilterTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[20319]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[21215]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[22478]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[23598]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[23688]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[27694]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[28206]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[30268]}\n"
-            + "{[Customers].[All Customers].[USA], [Store Size in SQFT].[All Store Size in SQFTs].[33858]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[20319]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[21215]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[22478]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[23598]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[23688]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[27694]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[28206]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[30268]}\n"
+            + "{[Customers].[USA], [Store Size in SQFT].[33858]}\n"
             + "Row #0: 563\n"
             + "Row #1: 906\n"
             + "Row #2: 296\n"
@@ -332,6 +332,11 @@ public class FilterTest extends BatchTestCase {
      * that contain multiple levels, but none being null.
      */
     public void testNotInMultiLevelMemberConstraintNonNullParent() {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            // If aggregate tables are enabled, generates similar SQL involving
+            // agg tables.
+            return;
+        }
         String query =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
@@ -370,8 +375,8 @@ public class FilterTest extends BatchTestCase {
             + "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
             + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
             + "(`customer`.`country` = 'USA') and "
-            + "(not ((`time_by_day`.`quarter`,`time_by_day`.`the_year`) in "
-            + "(('Q1',1997),('Q3',1998))) or (`time_by_day`.`quarter` is null or "
+            + "(not ((`time_by_day`.`quarter`, `time_by_day`.`the_year`) in "
+            + "(('Q1', 1997), ('Q3', 1998))) or (`time_by_day`.`quarter` is null or "
             + "`time_by_day`.`the_year` is null)) "
             + "group by `customer`.`country`, `time_by_day`.`the_year`, "
             + "`time_by_day`.`quarter` order by ISNULL(`customer`.`country`), "
@@ -395,6 +400,11 @@ public class FilterTest extends BatchTestCase {
      * the same parent.
      */
     public void testNotInMultiLevelMemberConstraintNonNullSameParent() {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
+            // If aggregate tables are enabled, generates similar SQL involving
+            // agg tables.
+            return;
+        }
         String query =
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
@@ -523,14 +533,14 @@ public class FilterTest extends BatchTestCase {
             + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
             + "and `inventory_fact_1997`.`product_id` = `product`.`product_id` "
             + "and (`product_class`.`product_family` = 'Food') and "
-            + "(not ((`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`,`warehouse`.`warehouse_fax`) "
-            + "in (('Jones International','3377 Coachman Place','971-555-6213')) "
-            + "or (`warehouse`.`warehouse_fax` is null and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) "
-            + "in (('Freeman And Co','234 West Covina Pkwy')))) or "
+            + "(not ((`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_fax`) "
+            + "in (('Jones International', '3377 Coachman Place', '971-555-6213')) "
+            + "or (`warehouse`.`warehouse_fax` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) "
+            + "in (('Freeman And Co', '234 West Covina Pkwy')))) or "
             + "((`warehouse`.`warehouse_name` is null or `warehouse`.`wa_address1` is null "
             + "or `warehouse`.`warehouse_fax` is null) and not((`warehouse`.`warehouse_fax` is null "
-            + "and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in "
-            + "(('Freeman And Co','234 West Covina Pkwy')))))) "
+            + "and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in "
+            + "(('Freeman And Co', '234 West Covina Pkwy')))))) "
             + "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, "
             + "`warehouse`.`warehouse_name`, `product_class`.`product_family` "
             + "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
@@ -732,21 +742,21 @@ public class FilterTest extends BatchTestCase {
             + "from [Sales] "
             + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])",
             "Axis #0:\n"
-            + "{[Store].[All Stores].[USA].[CA], [Time].[1997]}\n"
+            + "{[Store].[USA].[CA], [Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Store Cost]}\n"
             + "{[Measures].[Rendite]}\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n"
-            + "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n"
-            + "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n"
+            + "{[Product].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}\n"
+            + "{[Product].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}\n"
+            + "{[Product].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}\n"
+            + "{[Product].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}\n"
+            + "{[Product].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}\n"
             + "Row #0: 42\n"
             + "Row #0: 24.06\n"
             + "Row #0: 1.93\n"
@@ -797,15 +807,15 @@ public class FilterTest extends BatchTestCase {
             + "{[Measures].[Store Sqft]}\n"
             + "{[Measures].[Grocery Sqft]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Row #0: 36,509\n"
             + "Row #0: 22,450\n"
             + "Row #1: \n"
@@ -845,10 +855,10 @@ public class FilterTest extends BatchTestCase {
             + "{[Measures].[Store Sqft]}\n"
             + "{[Measures].[Grocery Sqft]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
             + "Row #0: 36,509\n"
             + "Row #0: 22,450\n"
             + "Row #1: 30,797\n"
@@ -877,9 +887,9 @@ public class FilterTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 74,748\n"
             + "Row #1: 67,659\n"
             + "Row #2: 124,366\n");
@@ -906,6 +916,64 @@ public class FilterTest extends BatchTestCase {
             + "from [Store]",
             null,
             requestFreshConnection);
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-706">bug MONDRIAN-706,
+     * "SQL using hierarchy attribute 'Column Name' instead of 'Column' in the
+     * filter"</a>.
+     */
+    public void testBugMondrian706() {
+        propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
+        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        // With bug MONDRIAN-706, would generate
+        //
+        // ((`store`.`store_name`, `store`.`store_city`, `store`.`store_state`)
+        //   in (('11', 'Portland', 'OR'), ('14', 'San Francisco', 'CA'))
+        //
+        // Notice that the '11' and '14' store ID is applied on the store_name
+        // instead of the store_id. So it would return no rows.
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Store",
+                "<Dimension name='Store Type'>\n"
+                + "    <Hierarchy name='Store Types Hierarchy' allMemberName='All Store Types Member Name' hasAll='true'>\n"
+                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Dimension name='Store'>\n"
+                + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+                + "      <Table name='store'/>\n"
+                + "      <Level name='Store Country' column='store_country' uniqueMembers='true'/>\n"
+                + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
+                + "      <Level name='Store City' column='store_city' uniqueMembers='false'/>\n"
+                + "      <Level name='Store Name' column='store_id' type='Numeric' nameColumn='store_name' uniqueMembers='false'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "With \n"
+            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))' \n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Store].CurrentMember, [Store].[Store Country]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store State]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store City]).OrderKey,BASC,[Store].CurrentMember.OrderKey,BASC)' \n"
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' \n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})' \n"
+            + "Set [*BASE_MEMBERS_Store] as 'Filter([Store].[Store Name].Members,(Ancestor([Store].CurrentMember, [Store].[Store State]) In {[Store].[All Stores].[USA].[CA],[Store].[All Stores].[USA].[OR]}) AND ([Store].CurrentMember In {[Store].[All Stores].[USA].[OR].[Portland].[Store 11],[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}))' \n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400 \n"
+            + "Select \n"
+            + "[*BASE_MEMBERS_Measures] on columns, \n"
+            + "[*SORTED_ROW_AXIS] on rows \n"
+            + "From [Store] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "Row #0: 22,478\n"
+            + "Row #1: 20,319\n");
     }
 }
 

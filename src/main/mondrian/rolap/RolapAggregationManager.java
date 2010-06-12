@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -95,7 +95,7 @@ public abstract class RolapAggregationManager {
     public static CellRequest makeRequest(
         RolapEvaluator evaluator)
     {
-        final Member[] currentMembers = evaluator.getMembers();
+        final Member[] currentMembers = evaluator.getNonAllMembers();
         final List<List<Member[]>> aggregationLists =
             evaluator.getAggregationLists();
 
@@ -191,13 +191,17 @@ public abstract class RolapAggregationManager {
             if (cube == null) {
                 return null;
             }
-            if (members[0] instanceof RolapStoredMeasure) {
+            if (members.length > 0
+                && members[0] instanceof RolapStoredMeasure)
+            {
                 measure = (RolapStoredMeasure) members[0];
             } else {
                 measure = (RolapStoredMeasure) cube.getMeasures().get(0);
             }
         } else {
-            if (members[0] instanceof RolapStoredMeasure) {
+            if (members.length > 0
+                && members[0] instanceof RolapStoredMeasure)
+            {
                 measure = (RolapStoredMeasure) members[0];
             } else {
                 return null;
@@ -280,11 +284,11 @@ public abstract class RolapAggregationManager {
         final CellRequest request)
     {
         final RolapCubeHierarchy hierarchy = member.getHierarchy();
-        final Level[] levels = hierarchy.getLevels();
+        final RolapCubeLevel[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
              j > depth; j--)
         {
-            final RolapCubeLevel level = (RolapCubeLevel) levels[j];
+            final RolapCubeLevel level = levels[j];
             RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
             if (column != null) {
                 request.addConstrainedColumn(column, null);
@@ -326,19 +330,19 @@ public abstract class RolapAggregationManager {
      * <p>For example:
      *
      * <pre>Tuples:
-     *     ([Gender].[M], [Store].[All Stores].[USA].[CA])
-     *     ([Gender].[F], [Store].[All Stores].[USA].[CA])
-     *     ([Gender].[M], [Store].[All Stores].[USA])
-     *     ([Gender].[F], [Store].[All Stores].[Canada])</pre>
+     *     ([Gender].[M], [Store].[USA].[CA])
+     *     ([Gender].[F], [Store].[USA].[CA])
+     *     ([Gender].[M], [Store].[USA])
+     *     ([Gender].[F], [Store].[Canada])</pre>
      *
      * will be grouped into
      *
      * <pre>Group 1:
-     *     {([Gender].[M], [Store].[All Stores].[USA].[CA]),
-     *      ([Gender].[F], [Store].[All Stores].[USA].[CA])}
+     *     {([Gender].[M], [Store].[USA].[CA]),
+     *      ([Gender].[F], [Store].[USA].[CA])}
      * Group 2:
-     *     {([Gender].[M], [Store].[All Stores].[USA]),
-     *      ([Gender].[F], [Store].[All Stores].[Canada])}</pre>
+     *     {([Gender].[M], [Store].[USA]),
+     *      ([Gender].[F], [Store].[Canada])}</pre>
      *
      * <p>This function returns a boolean value indicating if any constraint
      * can be created from the aggregationList. It is possible that only part
@@ -446,8 +450,8 @@ public abstract class RolapAggregationManager {
      * <p>1. The example below is for list of tuples
      *
      * <blockquote>
-     * group 1: [Gender].[M], [Store].[All Stores].[USA].[CA]<br/>
-     * group 2: [Gender].[F], [Store].[All Stores].[USA].[CA]
+     * group 1: [Gender].[M], [Store].[USA].[CA]<br/>
+     * group 2: [Gender].[F], [Store].[USA].[CA]
      * </blockquote>
      *
      * is translated into

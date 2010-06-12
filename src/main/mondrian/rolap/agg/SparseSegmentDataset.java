@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,6 +14,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
+import mondrian.rolap.SqlStatement;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -41,8 +42,25 @@ class SparseSegmentDataset implements SegmentDataset {
         Util.discard(segment);
     }
 
-    public Object get(CellKey pos) {
+    public Object getObject(CellKey pos) {
         return values.get(pos);
+    }
+
+    public boolean isNull(CellKey pos) {
+        // cf exists -- calls values.containsKey
+        return values.get(pos) == null;
+    }
+
+    public int getInt(CellKey pos) {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getDouble(CellKey pos) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean exists(CellKey pos) {
+        return values.containsKey(pos);
     }
 
     public void put(CellKey key, Object value) {
@@ -56,6 +74,21 @@ class SparseSegmentDataset implements SegmentDataset {
     public double getBytes() {
         // assume a slot, key, and value are each 4 bytes
         return values.size() * 12;
+    }
+
+    public void populateFrom(int[] pos, SegmentDataset data, CellKey key) {
+        values.put(CellKey.Generator.newCellKey(pos), data.getObject(key));
+    }
+
+    public void populateFrom(
+        int[] pos, SegmentLoader.RowList rowList, int column)
+    {
+        final Object o = rowList.getObject(column);
+        put(CellKey.Generator.newCellKey(pos), o);
+    }
+
+    public SqlStatement.Type getType() {
+        return SqlStatement.Type.OBJECT;
     }
 }
 

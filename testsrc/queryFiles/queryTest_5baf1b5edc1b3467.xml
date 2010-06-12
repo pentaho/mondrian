@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {crossjoin({Dimensions("Measures").CurrentMember.Hierarchy.CurrentMember},{Dimensions("Product")})} on Axis(0), {[Customers].[All Customers].[USA].Level.Hierarchy.CurrentMember} on Axis(1) from [Sales] </mdxQuery>
+    <mdxQuery>SELECT {crossjoin({Dimensions("Measures").CurrentMember.Hierarchy.CurrentMember},{Dimensions("Product")})} on Axis(0), {[Customers].[USA].Level.Hierarchy.CurrentMember} on Axis(1) from [Sales] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

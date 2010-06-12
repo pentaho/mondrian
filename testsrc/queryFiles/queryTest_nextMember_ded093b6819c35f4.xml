@@ -28,7 +28,7 @@ WHERE [Marital Status].[M].NextMember</mdxQuery>
                     <member>[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
-                    <member>[Marital Status].[All Marital Status].[S]</member>
+                    <member>[Marital Status].[S]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
                     <member>[Promotion Media].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
@@ -44,13 +44,13 @@ WHERE [Marital Status].[M].NextMember</mdxQuery>
                     <member>[Product].[All Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable]</member>
+                    <member>[Product].[Non-Consumable]</member>
                 </tuple>
             </tuples>
         </columns>

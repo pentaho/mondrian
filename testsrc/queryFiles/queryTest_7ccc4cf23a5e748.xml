@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( crossjoin([Product].[All Products].[Drink].children, [Time].[1997].children),         { ([Product].currentmember, [Time].[Time].currentmember) }) on rows from [Sales]</mdxQuery>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( crossjoin([Product].[Drink].children, [Time].[1997].children),         { ([Product].currentmember, [Time].[Time].currentmember) }) on rows from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -47,51 +47,51 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
                     <member>[Time].[1997].[Q1]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
                     <member>[Time].[1997].[Q2]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
                     <member>[Time].[1997].[Q3]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
                     <member>[Time].[1997].[Q4]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
                     <member>[Time].[1997].[Q1]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
                     <member>[Time].[1997].[Q2]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
                     <member>[Time].[1997].[Q3]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Product].[Drink].[Beverages]</member>
                     <member>[Time].[1997].[Q4]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
                     <member>[Time].[1997].[Q1]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
                     <member>[Time].[1997].[Q2]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
                     <member>[Time].[1997].[Q3]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Product].[Drink].[Dairy]</member>
                     <member>[Time].[1997].[Q4]</member>
                 </tuple>
             </tuples>

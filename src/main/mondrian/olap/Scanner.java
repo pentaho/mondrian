@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -252,10 +252,12 @@ public class Scanner {
         initResword(ParserSym.COLUMNS,              "COLUMNS");
 //      initResword(ParserSym.DESC,                 "DESC");
         initResword(ParserSym.DIMENSION,            "DIMENSION");
+        initResword(ParserSym.DRILLTHROUGH,         "DRILLTHROUGH");
         initResword(ParserSym.ELSE,                 "ELSE");
         initResword(ParserSym.EMPTY,                "EMPTY");
         initResword(ParserSym.END,                  "END");
 //      initResword(ParserSym.FIRSTCHILD,           "FIRSTCHILD");
+        initResword(ParserSym.FIRSTROWSET,          "FIRSTROWSET");
 //      initResword(ParserSym.FIRSTSIBLING,         "FIRSTSIBLING");
 //      initResword(ParserSym.FONT_FLAGS,           "FONT_FLAGS");
 //      initResword(ParserSym.FONT_NAME,            "FONT_NAME");
@@ -271,6 +273,7 @@ public class Scanner {
 //      initResword(ParserSym.LASTSIBLING,          "LASTSIBLING");
 //      initResword(ParserSym.LEAD,                 "LEAD");
         initResword(ParserSym.MATCHES,              "MATCHES");
+        initResword(ParserSym.MAXROWS,              "MAXROWS");
         initResword(ParserSym.MEMBER,               "MEMBER");
 //      initResword(ParserSym.MEMBERS,              "MEMBERS");
 //      initResword(ParserSym.NEXTMEMBER,           "NEXTMEMBER");
@@ -284,6 +287,7 @@ public class Scanner {
 //      initResword(ParserSym.PREVMEMBER,           "PREVMEMBER");
         initResword(ParserSym.PROPERTIES,           "PROPERTIES");
 //      initResword(ParserSym.RECURSIVE,            "RECURSIVE");
+        initResword(ParserSym.RETURN,               "RETURN");
         initResword(ParserSym.ROWS,                 "ROWS");
         initResword(ParserSym.SECTIONS,             "SECTIONS");
         initResword(ParserSym.SELECT,               "SELECT");

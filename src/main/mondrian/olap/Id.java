@@ -236,7 +236,7 @@ public class Id
             case UNQUOTED:
                 return Util.equalName(this.name, name);
             case QUOTED:
-                return this.name.equals(name);
+                return Util.equalName(this.name, name);
             default:
                 return false;
             }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Crossjoin({[Store].[All Stores].[Canada].Parent}, {[Time].[1997].Children})} ON AXIS(0),
-       {[Product].[All Products].[Food].[Eggs].Parent} ON AXIS(1)
+    <mdxQuery>SELECT {Crossjoin({[Store].[Canada].Parent}, {[Time].[1997].Children})} ON AXIS(0),
+       {[Product].[Food].[Eggs].Parent} ON AXIS(1)
 FROM [Sales]
-WHERE ([Customers].[All Customers].[USA].[OR].[Salem].Parent, [Gender].[All Gender].[M])
+WHERE ([Customers].[USA].[OR].[Salem].Parent, [Gender].[M])
 </mdxQuery>
     <dataResult>
         <slicer>
@@ -25,12 +25,12 @@ WHERE ([Customers].[All Customers].[USA].[OR].[Salem].Parent, [Gender].[All Gend
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Promotions].[All Promotions]</member>
-                    <member>[Customers].[All Customers].[USA].[OR]</member>
+                    <member>[Customers].[USA].[OR]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
                     <member>[Promotion Media].[All Media]</member>
-                    <member>[Gender].[All Gender].[M]</member>
+                    <member>[Gender].[M]</member>
                 </tuple>
             </tuples>
         </slicer>
@@ -64,7 +64,7 @@ WHERE ([Customers].[All Customers].[USA].[OR].[Salem].Parent, [Gender].[All Gend
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                 </tuple>
             </tuples>
         </rows>

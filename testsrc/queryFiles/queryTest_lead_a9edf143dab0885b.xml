@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Store, Store.[All Stores].[Canada], Store.[All Stores].[Canada].Lead(2)} on ROWS,
+    <mdxQuery>SELECT {Store, Store.[Canada], Store.[Canada].Lead(2)} on ROWS,
        {Time.[1997].[Q2], Time.[1997].[Q2].Lead(-1)} on COLUMNS
 FROM [Sales]
-WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types].[Mid-Size Grocery], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>
+WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[Mid-Size Grocery], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -24,7 +24,7 @@ WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[A
                     <member>[Measures].[Unit Sales]</member>
                     <member>[Product].[All Products]</member>
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
                     <member>[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
@@ -57,10 +57,10 @@ WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[A
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

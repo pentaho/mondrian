@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,13 +11,11 @@ package mondrian.xmla.impl;
 
 import java.util.*;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
-import mondrian.xmla.XmlaConstants;
-import mondrian.xmla.XmlaException;
-import mondrian.xmla.XmlaRequest;
-import mondrian.xmla.XmlaUtil;
+import mondrian.xmla.*;
+
+import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -36,15 +34,9 @@ public class DefaultXmlaRequest
         Logger.getLogger(DefaultXmlaRequest.class);
 
     private static final String MSG_INVALID_XMLA = "Invalid XML/A message";
-    private static final String MSG_INVALID_DRILLTHROUGH =
-        "Invalid DRILLTHROUGH statement";
-    private static final String MSG_INVALID_MAXROWS =
-        "MAXROWS is not positive integer";
-    private static final String MSG_INVALID_FIRSTROWSET =
-        "FIRSTROWSET isn't positive integer";
 
     /* common content */
-    private int method;
+    private Method method;
     private Map<String, String> properties;
     private final String roleName;
     private final Role role;
@@ -52,8 +44,6 @@ public class DefaultXmlaRequest
     /* EXECUTE content */
     private String statement;
     private boolean drillthrough;
-    private int maxRows;
-    private int firstRowset;
 
     /* DISCOVER contnet */
     private String requestType;
@@ -89,7 +79,7 @@ public class DefaultXmlaRequest
 
     /* Interface implmentation */
 
-    public int getMethod() {
+    public Method getMethod() {
         return method;
     }
 
@@ -98,7 +88,7 @@ public class DefaultXmlaRequest
     }
 
     public Map<String, Object> getRestrictions() {
-        if (method != METHOD_DISCOVER) {
+        if (method != Method.DISCOVER) {
             throw new IllegalStateException(
                 "Only METHOD_DISCOVER has restrictions");
         }
@@ -106,7 +96,7 @@ public class DefaultXmlaRequest
     }
 
     public String getStatement() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE has statement");
         }
@@ -128,7 +118,7 @@ public class DefaultXmlaRequest
 */
 
     public String getRequestType() {
-        if (method != METHOD_DISCOVER) {
+        if (method != Method.DISCOVER) {
             throw new IllegalStateException(
                 "Only METHOD_DISCOVER has requestType");
         }
@@ -136,27 +126,11 @@ public class DefaultXmlaRequest
     }
 
     public boolean isDrillThrough() {
-        if (method != METHOD_EXECUTE) {
+        if (method != Method.EXECUTE) {
             throw new IllegalStateException(
                 "Only METHOD_EXECUTE determines drillthrough");
         }
         return drillthrough;
-    }
-
-    public int drillThroughMaxRows() {
-        if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException(
-                "Only METHOD_EXECUTE determines drillthrough");
-        }
-        return maxRows;
-    }
-
-    public int drillThroughFirstRowset() {
-        if (method != METHOD_EXECUTE) {
-            throw new IllegalStateException(
-                "Only METHOD_EXECUTE determines drillthrough");
-        }
-        return firstRowset;
     }
 
 
@@ -164,10 +138,10 @@ public class DefaultXmlaRequest
         if (NS_XMLA.equals(xmlaRoot.getNamespaceURI())) {
             String lname = xmlaRoot.getLocalName();
             if ("Discover".equals(lname)) {
-                method = METHOD_DISCOVER;
+                method = Method.DISCOVER;
                 initDiscover(xmlaRoot);
             } else if ("Execute".equals(lname)) {
-                method = METHOD_EXECUTE;
+                method = Method.EXECUTE;
                 initExecute(xmlaRoot);
             } else {
                 // Note that is code will never be reached because
@@ -347,7 +321,6 @@ public class DefaultXmlaRequest
                 HSB_BAD_RESTRICTION_LIST_CODE,
                 HSB_BAD_RESTRICTION_LIST_FAULT_FS,
                 Util.newError(buf.toString()));
-        } else {
         }
         this.restrictions = (Map) Collections.unmodifiableMap(restrictions);
     }
@@ -417,98 +390,8 @@ public class DefaultXmlaRequest
                 Util.newError(buf.toString()));
         }
         statement = XmlaUtil.textInElement(childElems[0]).replaceAll("\\r", "");
-
-        String upperStatement = statement.toUpperCase();
-        int dtOffset = upperStatement.indexOf("DRILLTHROUGH");
-        int mrOffset = upperStatement.indexOf("MAXROWS");
-        int frOffset = upperStatement.indexOf("FIRSTROWSET");
-        int slOffset = upperStatement.indexOf("SELECT");
-
-        if (dtOffset == -1) {
-            drillthrough = false;
-        } else {
-            /*
-             * <drillthrough> := DRILLTHROUGH
-             *     [<Max_Rows>] [<First_Rowset>] <MDX select> [<Return_Columns>]
-             * <Max_Rows> := MAXROWS <positive number>
-             * <First_Rowset> := FIRSTROWSET <positive number>
-             * <Return_Columns> := RETURN <member or attribute>
-             *     [, <member or attribute>]
-             */
-            if (dtOffset < slOffset) {
-                maxRows = firstRowset = -1;
-                try {
-                    if (mrOffset > dtOffset && mrOffset < slOffset) {
-                        maxRows = parseIntValue(
-                            statement.substring(mrOffset, slOffset));
-                        if (maxRows <= 0) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append(MSG_INVALID_MAXROWS);
-                            buf.append(": ");
-                            buf.append(maxRows);
-                            throw new XmlaException(
-                                CLIENT_FAULT_FC,
-                                HSB_DRILLDOWN_BAD_MAXROWS_CODE,
-                                HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS,
-                                Util.newError(buf.toString()));
-                        }
-                    }
-                    if (frOffset > dtOffset
-                        && frOffset > mrOffset
-                        && frOffset < slOffset)
-                    {
-                        firstRowset =
-                            parseIntValue(
-                                statement.substring(frOffset, slOffset));
-                        if (firstRowset <= 0) {
-                            StringBuilder buf = new StringBuilder(100);
-                            buf.append(MSG_INVALID_FIRSTROWSET);
-                            buf.append(": ");
-                            buf.append(firstRowset);
-                            throw new XmlaException(
-                                CLIENT_FAULT_FC,
-                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE,
-                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS,
-                                Util.newError(buf.toString()));
-                        }
-                    }
-                } catch (XmlaException xex) {
-                    throw xex;
-                } catch (Exception e) {
-                    throw new XmlaException(
-                        CLIENT_FAULT_FC,
-                        HSB_DRILLDOWN_ERROR_CODE,
-                        HSB_DRILLDOWN_ERROR_FAULT_FS,
-                        Util.newError(e, MSG_INVALID_DRILLTHROUGH));
-                }
-
-                int configMaxRows = MondrianProperties.instance().MaxRows.get();
-                if (configMaxRows > 0 && maxRows > configMaxRows) {
-                    maxRows = configMaxRows;
-                }
-
-                StringBuilder dtStmtBuf = new StringBuilder();
-                dtStmtBuf.append(statement.substring(0, dtOffset)); // formulas
-                // select to end
-                dtStmtBuf.append(statement.substring(slOffset));
-                statement = dtStmtBuf.toString();
-
-                drillthrough = true;
-            } else {
-                throw new XmlaException(
-                    CLIENT_FAULT_FC,
-                    HSB_DRILLDOWN_ERROR_CODE,
-                    HSB_DRILLDOWN_ERROR_FAULT_FS,
-                    Util.newError(MSG_INVALID_DRILLTHROUGH));
-            }
-        }
+        drillthrough = statement.toUpperCase().indexOf("DRILLTHROUGH") != -1;
     }
-
-    private int parseIntValue(String option) {
-        String[] opts = option.split("[ \t\n]");
-        return Integer.parseInt(opts[1]);
-    }
-
 }
 
 // End DefaultXmlaRequest.java

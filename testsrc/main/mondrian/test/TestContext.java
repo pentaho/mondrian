@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -445,7 +445,13 @@ public class TestContext {
         int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
         int end;
         if (h < 0) {
+            h = s.indexOf("<Cube name='" + cubeName + "'");
+        }
+        if (h < 0) {
             h = s.indexOf("<VirtualCube name=\"" + cubeName + "\"");
+            if (h < 0) {
+                h = s.indexOf("<VirtualCube name='" + cubeName + "'");
+            }
             if (h < 0) {
                 throw new RuntimeException("cube '" + cubeName + "' not found");
             } else {
@@ -516,6 +522,13 @@ public class TestContext {
             assertResultValid(result);
         }
         return result;
+    }
+
+    public ResultSet executeStatement(String queryString) throws SQLException {
+        OlapConnection connection = getOlap4jConnection();
+        queryString = upgradeQuery(queryString);
+        OlapStatement stmt = connection.createStatement();
+        return stmt.executeQuery(queryString);
     }
 
     /**
@@ -758,27 +771,20 @@ public class TestContext {
      * @return Cell which is the result of the expression
      */
     public Cell executeExprRaw(String expression) {
-        return executeExprRaw(expression, getDefaultCubeName());
+        final String queryString = generateExpression(expression);
+        Result result = executeQuery(queryString);
+        return result.getCell(new int[]{0});
     }
 
-    /**
-     * Executes the expression in the default cube, and returns the result as
-     * a Cell.
-     *
-     * @param expression The expression to evaluate
-     * @param cubeName Cube name
-     * @return Cell which is the result of the expression
-     */
-    public Cell executeExprRaw(String expression, String cubeName) {
+    private String generateExpression(String expression) {
+        String cubeName = getDefaultCubeName();
         if (cubeName.indexOf(' ') >= 0) {
             cubeName = Util.quoteMdxIdentifier(cubeName);
         }
-        final String queryString =
+        return
             "with member [Measures].[Foo] as "
             + Util.singleQuoteString(expression)
             + " select {[Measures].[Foo]} on columns from " + cubeName;
-        Result result = executeQuery(queryString);
-        return result.getCell(new int[]{0});
     }
 
     /**
@@ -786,6 +792,37 @@ public class TestContext {
      */
     public void assertExprReturns(String expression, String expected) {
         final Cell cell = executeExprRaw(expression);
+        if (expected == null) {
+            expected = ""; // null values are formatted as empty string
+        }
+        assertEqualsVerbose(expected, cell.getFormattedValue());
+    }
+
+    /**
+     * Asserts that an expression, with a given set of parameter bindings,
+     * returns a given result.
+     *
+     * @param expr Scalar MDX expression
+     * @param expected Expected result
+     * @param paramValues Array of parameter names and values
+     */
+    public void assertParameterizedExprReturns(
+        String expr,
+        String expected,
+        Object... paramValues)
+    {
+        Connection connection = getConnection();
+        String queryString = generateExpression(expr);
+        Query query = connection.parseQuery(queryString);
+        assert paramValues.length % 2 == 0;
+        for (int i = 0; i < paramValues.length;) {
+            final String paramName = (String) paramValues[i++];
+            final Object value = paramValues[i++];
+            query.setParameter(paramName, value);
+        }
+        final Result result = connection.execute(query);
+        final Cell cell = result.getCell(new int[]{0});
+
         if (expected == null) {
             expected = ""; // null values are formatted as empty string
         }
@@ -854,6 +891,14 @@ public class TestContext {
                 actual,
                 "[TIME.CALENDAR]",
                 "[TIME].[CALENDAR]");
+            actual = Util.replace(
+                actual,
+                "<Store>true</Store>",
+                "<Store>1</Store>");
+            actual = Util.replace(
+                actual,
+                "<Employees>80000.0000</Employees>",
+                "<Employees>80000</Employees>");
         }
         return actual;
     }
@@ -1390,7 +1435,7 @@ public class TestContext {
     public void assertSqlEquals(
         String expectedSql,
         String actualSql,
-        int expectedRows) throws Exception
+        int expectedRows)
     {
         // if the actual SQL isn't in the current dialect we have some
         // problems... probably with the dialectize method
@@ -1471,7 +1516,6 @@ public class TestContext {
     private void checkSqlAgainstDatasource(
         String actualSql,
         int expectedRows)
-        throws Exception
     {
         Util.PropertyList connectProperties = getFoodMartConnectionProperties();
 
@@ -1526,7 +1570,7 @@ public class TestContext {
 
             Assert.assertEquals("row count", expectedRows, rows);
         } catch (SQLException e) {
-            throw new Exception(
+            throw new RuntimeException(
                 "ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
                 + "\n" + actualSql,

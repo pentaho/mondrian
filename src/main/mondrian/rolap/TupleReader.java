@@ -3,14 +3,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -48,13 +46,26 @@ public interface TupleReader {
 
         /**
          * Creates a new member (together with its properties).
-         * @see SqlMemberSource#makeMember(RolapMember, RolapLevel, Object, Object, boolean, ResultSet, Object, int)
+         *
+         * @param column Column ordinal (0-based)
          */
         RolapMember makeMember(
-            RolapMember parentMember, RolapLevel childLevel,
-            Object value, Object captionValue, boolean parentChild,
-            ResultSet resultSet, Object key, int column)
+            RolapMember parentMember,
+            RolapLevel childLevel,
+            Object value,
+            Object captionValue,
+            boolean parentChild,
+            SqlStatement stmt,
+            Object key,
+            int column)
             throws SQLException;
+
+        /**
+         * Returns the 'all' member of the hierarchy.
+         *
+         * @return The 'all' member
+         */
+        RolapMember allMember();
     }
 
     /**
@@ -63,10 +74,11 @@ public interface TupleReader {
      * @param level level that the members correspond to
      * @param memberBuilder used to build new members for this level
      * @param srcMembers if set, array of enumerated members that make up
-     * this level
+     *     this level
      */
     void addLevelMembers(
-        RolapLevel level, MemberBuilder memberBuilder,
+        RolapLevel level,
+        MemberBuilder memberBuilder,
         List<RolapMember> srcMembers);
 
     /**

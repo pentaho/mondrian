@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,6 +13,9 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.xmla.impl.DefaultXmlaResponse;
+
+import static org.olap4j.metadata.XmlaConstants.*;
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -371,8 +374,8 @@ way too noisy
         Rowset rowset =
             rowsetDefinition.getRowset(
                 new XmlaRequest() {
-                    public int getMethod() {
-                        return METHOD_DISCOVER;
+                    public Method getMethod() {
+                        return Method.DISCOVER;
                     }
 
                     public Map<String, String> getProperties() {
@@ -403,11 +406,7 @@ way too noisy
                         throw new UnsupportedOperationException();
                     }
 
-                    public int drillThroughMaxRows() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                    public int drillThroughFirstRowset() {
+                    public Format getFormat() {
                         throw new UnsupportedOperationException();
                     }
                 },
@@ -430,17 +429,27 @@ way too noisy
         rowset.populate(
             new DefaultXmlaResponse(
                 new ByteArrayOutputStream(),
-                Charset.defaultCharset().name()),
+                Charset.defaultCharset().name(),
+                Enumeration.ResponseMimeType.SOAP),
             rowList);
         MetadataRowset result = new MetadataRowset();
+        final List<RowsetDefinition.Column> colDefs =
+            new ArrayList<RowsetDefinition.Column>();
+        for (RowsetDefinition.Column columnDefinition
+            : rowsetDefinition.columnDefinitions)
+        {
+            if (columnDefinition.type == RowsetDefinition.Type.Rowset) {
+                // olap4j does not support the extended columns, e.g.
+                // Cube.Dimensions
+                continue;
+            }
+            colDefs.add(columnDefinition);
+        }
         for (Rowset.Row row : rowList) {
-            Object[] values =
-                new Object[rowsetDefinition.columnDefinitions.length];
+            Object[] values = new Object[colDefs.size()];
             int k = -1;
-            for (RowsetDefinition.Column columnDefinition
-                : rowsetDefinition.columnDefinitions)
-            {
-                Object o = row.get(columnDefinition.name);
+            for (RowsetDefinition.Column colDef : colDefs) {
+                Object o = row.get(colDef.name);
                 if (o instanceof List) {
                     o = toString((List<String>) o);
                 } else if (o instanceof String[]) {
@@ -450,10 +459,8 @@ way too noisy
             }
             result.rowList.add(Arrays.asList(values));
         }
-        for (RowsetDefinition.Column columnDefinition
-            : rowsetDefinition.columnDefinitions)
-        {
-            String columnName = columnDefinition.name;
+        for (RowsetDefinition.Column colDef : colDefs) {
+            String columnName = colDef.name;
             if (LOWERCASE_PATTERN.matcher(columnName).matches()) {
                 columnName = Util.camelToUpper(columnName);
             }
@@ -476,6 +483,53 @@ way too noisy
             buf.append(t);
         }
         return buf.toString();
+    }
+
+    /**
+     * Chooses the appropriate response mime type given an HTTP "Accept" header.
+     *
+     * <p>The header can contain a list of mime types and optional qualities,
+     * for example "text/html,application/xhtml+xml,application/xml;q=0.9"
+     *
+     * @param accept Accept header
+     * @return Mime type, or null if none is acceptable
+     */
+    public static Enumeration.ResponseMimeType chooseResponseMimeType(
+        String accept)
+    {
+        for (String s : accept.split(",")) {
+            s = s.trim();
+            final int semicolon = s.indexOf(";");
+            if (semicolon >= 0) {
+                s = s.substring(0, semicolon);
+            }
+            Enumeration.ResponseMimeType mimeType =
+                Enumeration.ResponseMimeType.MAP.get(s);
+            if (mimeType != null) {
+                return mimeType;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether an XMLA request should return invisible members.
+     *
+     * <p>According to the XMLA spec, it should not. But we allow the client to
+     * specify different behavior. In particular, the olap4j driver for XMLA
+     * may need to access invisible members.
+     *
+     * <p>Returns true if the EmitInvisibleMembers property is specified and
+     * equal to "true".
+     *
+     * @param request XMLA request
+     * @return Whether to return invisible members
+     */
+    public static boolean shouldEmitInvisibleMembers(XmlaRequest request) {
+        final String value =
+            request.getProperties().get(
+                PropertyDefinition.EmitInvisibleMembers.name());
+        return Boolean.parseBoolean(value);
     }
 
     /**

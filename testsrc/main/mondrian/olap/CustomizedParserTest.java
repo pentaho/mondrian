@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -22,7 +22,6 @@ import java.util.*;
  */
 public class CustomizedParserTest extends FoodMartTestCase {
 
-    Parser p = new Parser();
     public CustomizedParserTest(String name) {
         super(name);
     }
@@ -58,7 +57,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
         boolean strictValidation)
     {
         String mdx = wrapExpr(expr);
-        return ((ConnectionBase) getConnection()).parseQuery(
+        return (Query) ((ConnectionBase) getConnection()).parseStatement(
             mdx, cftab, strictValidation);
     }
 
@@ -198,11 +197,10 @@ public class CustomizedParserTest extends FoodMartTestCase {
         try {
             properties.IgnoreInvalidMembers.set(true);
             properties.IgnoreInvalidMembersDuringQuery.set(true);
-            Query q =
-                getParsedQueryForExpr(
-                    cftab,
-                    "'[Measures].[Store Cost] + [Measures].[Unit Salese]'",
-                    strictValidation);
+            Query q = getParsedQueryForExpr(
+                cftab,
+                "'[Measures].[Store Cost] + [Measures].[Unit Salese]'",
+                strictValidation);
             q.resolve(q.createValidator(cftab, true));
             // Shouldn't reach here if strictValidation
             fail(

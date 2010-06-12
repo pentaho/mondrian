@@ -1372,7 +1372,7 @@ public class CacheControlImpl implements CacheControl {
 
         public void execute(final List<CellRegion> cellRegionList) {
             deleteMember(member, member.getParentMember(), cellRegionList);
-            member.setParentMember(newParent);
+            ((RolapMemberBase) member).setParentMember(newParent);
             addMember(member, member.getParentMember(), cellRegionList);
         }
     }
@@ -1425,7 +1425,7 @@ public class CacheControlImpl implements CacheControl {
 
     private static RolapMember stripMember(RolapMember member) {
         if (member instanceof RolapCubeMember) {
-            member = ((RolapCubeMember) member).rolapMember;
+            member = ((RolapCubeMember) member).member;
         }
         return member;
     }
@@ -1434,7 +1434,7 @@ public class CacheControlImpl implements CacheControl {
         for (int i = 0; i < members.size(); i++) {
             RolapMember member = members.get(i);
             if (member instanceof RolapCubeMember) {
-                members.set(i, ((RolapCubeMember) member).rolapMember);
+                members.set(i, ((RolapCubeMember) member).member);
             }
         }
     }

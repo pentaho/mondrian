@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <Root>
     <TestCase name="test01">
-        <Resource name="excel_XP_01_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header/>
@@ -21,7 +21,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_01_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -86,7 +86,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test02">
-        <Resource name="excel_XP_02_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -110,7 +110,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_02_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -641,7 +641,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test03">
-        <Resource name="excel_XP_03_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -664,7 +664,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_03_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -723,7 +723,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test04">
-        <Resource name="excel_XP_04_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -750,7 +750,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_04_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -814,7 +814,7 @@
         </Resource>
     </TestCase>
     <TestCase name="test05">
-        <Resource name="excel_XP_05_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -841,7 +841,7 @@
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_05_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -907,7 +907,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test06">
-        <Resource name="excel_XP_06_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -929,7 +929,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_06_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -958,7 +958,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test07">
-        <Resource name="excel_XP_07_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -981,7 +981,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_07_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1010,7 +1010,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test08">
-        <Resource name="excel_XP_08_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1038,111 +1038,8 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_08_out.xml">
-            <![CDATA[
-<SOAP-ENV:Envelope
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-  <SOAP-ENV:Header>
-    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
-  </SOAP-ENV:Header>
-  <SOAP-ENV:Body>
-    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
-          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <xsd:schema elementFormDefault="qualified"
-            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <xsd:element name="root">
-              <xsd:complexType>
-                <xsd:sequence>
-                  <xsd:element maxOccurs="unbounded" minOccurs="0"
-                    name="row" type="row"/>
-                </xsd:sequence>
-              </xsd:complexType>
-            </xsd:element>
-            <xsd:simpleType name="uuid">
-              <xsd:restriction base="xsd:string">
-                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
-              </xsd:restriction>
-            </xsd:simpleType>
-            <xsd:complexType name="row">
-              <xsd:sequence>
-                <xsd:element minOccurs="0" name="CATALOG_NAME"
-                  sql:field="CATALOG_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="SCHEMA_NAME"
-                  sql:field="SCHEMA_NAME" type="xsd:string"/>
-                <xsd:element name="CUBE_NAME"
-                  sql:field="CUBE_NAME" type="xsd:string"/>
-                <xsd:element name="CUBE_TYPE"
-                  sql:field="CUBE_TYPE" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="CUBE_GUID"
-                  sql:field="CUBE_GUID" type="uuid"/>
-                <xsd:element minOccurs="0" name="CREATED_ON"
-                  sql:field="CREATED_ON" type="xsd:dateTime"/>
-                <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE"
-                  sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
-                <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY"
-                  sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="LAST_DATA_UPDATE"
-                  sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
-                <xsd:element minOccurs="0" name="DATA_UPDATED_BY"
-                  sql:field="DATA_UPDATED_BY" type="xsd:string"/>
-                <xsd:element name="IS_DRILLTHROUGH_ENABLED"
-                  sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
-                <xsd:element name="IS_WRITE_ENABLED"
-                  sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
-                <xsd:element name="IS_LINKABLE" 
-                    sql:field="IS_LINKABLE" type="xsd:boolean"/>
-                <xsd:element name="IS_SQL_ENABLED"
-                  sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
-                <xsd:element minOccurs="0" name="DESCRIPTION"
-                  sql:field="DESCRIPTION" type="xsd:string"/>
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:schema>
-        </root>
-      </xmla:return>
-    </xmla:DiscoverResponse>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
-]]>
-        </Resource>
-    </TestCase>
-    <TestCase name="test09">
-        <Resource name="excel_XP_09_in.xml">
-            <![CDATA[
-<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
-  <Header>
-    <XA:Session SessionId="${session.id}" mustUnderstand="1" xmlns:XA="urn:schemas-microsoft-com:xml-analysis"/>
-  </Header>
-  <Body>
-    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
-      <RequestType>MDSCHEMA_CUBES</RequestType>
-      <Restrictions>
-        <RestrictionList>
-          <CUBE_NAME>Sales</CUBE_NAME>
-        </RestrictionList>
-      </Restrictions>
-      <Properties>
-        <PropertyList>
-          <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
-          <Catalog>FoodMart</Catalog>
-          <Content>SchemaData</Content>
-          <Format>Tabular</Format>
-        </PropertyList>
-      </Properties>
-    </Discover>
-  </Body>
-</Envelope>
-]]>
-        </Resource>
-        <Resource name="excel_XP_09_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
@@ -1215,6 +1112,130 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEASURES" sql:field="MEASURES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="test09">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <XA:Session SessionId="${session.id}" mustUnderstand="1" xmlns:XA="urn:schemas-microsoft-com:xml-analysis"/>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_CUBES</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <Catalog>FoodMart</Catalog>
+          <Content>SchemaData</Content>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header>
+        <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_TYPE"
+                                    sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="CUBE_GUID"
+                                    sql:field="CUBE_GUID" type="uuid"/>
+                                <xsd:element minOccurs="0"
+                                    name="CREATED_ON"
+                                    sql:field="CREATED_ON" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0"
+                                    name="LAST_SCHEMA_UPDATE"
+                                    sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_UPDATED_BY"
+                                    sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="LAST_DATA_UPDATE"
+                                    sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0"
+                                    name="DATA_UPDATED_BY"
+                                    sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element
+                                    name="IS_DRILLTHROUGH_ENABLED"
+                                    sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_WRITE_ENABLED"
+                                    sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_LINKABLE"
+                                    sql:field="IS_LINKABLE" type="xsd:boolean"/>
+                                <xsd:element name="IS_SQL_ENABLED"
+                                    sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEASURES" sql:field="MEASURES"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -1239,7 +1260,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test10">
-        <Resource name="excel_XP_10_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1267,96 +1288,107 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_10_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-  <SOAP-ENV:Header>
-    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
-  </SOAP-ENV:Header>
-  <SOAP-ENV:Body>
-    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
-          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <xsd:schema elementFormDefault="qualified"
-            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <xsd:element name="root">
-              <xsd:complexType>
-                <xsd:sequence>
-                  <xsd:element maxOccurs="unbounded" minOccurs="0"
-                    name="row" type="row"/>
-                </xsd:sequence>
-              </xsd:complexType>
-            </xsd:element>
-            <xsd:simpleType name="uuid">
-              <xsd:restriction base="xsd:string">
-                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
-              </xsd:restriction>
-            </xsd:simpleType>
-            <xsd:complexType name="row">
-              <xsd:sequence>
-                <xsd:element minOccurs="0" name="CATALOG_NAME"
-                  sql:field="CATALOG_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="SCHEMA_NAME"
-                  sql:field="SCHEMA_NAME" type="xsd:string"/>
-                <xsd:element name="CUBE_NAME"
-                  sql:field="CUBE_NAME" type="xsd:string"/>
-                <xsd:element name="DIMENSION_UNIQUE_NAME"
-                  sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-                <xsd:element name="HIERARCHY_NAME"
-                  sql:field="HIERARCHY_NAME" type="xsd:string"/>
-                <xsd:element name="HIERARCHY_UNIQUE_NAME"
-                  sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="HIERARCHY_GUID"
-                  sql:field="HIERARCHY_GUID" type="uuid"/>
-                <xsd:element name="HIERARCHY_CAPTION"
-                  sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
-                <xsd:element name="DIMENSION_TYPE"
-                  sql:field="DIMENSION_TYPE" type="xsd:short"/>
-                <xsd:element name="HIERARCHY_CARDINALITY"
-                  sql:field="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
-                <xsd:element minOccurs="0" name="DEFAULT_MEMBER"
-                  sql:field="DEFAULT_MEMBER" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="ALL_MEMBER"
-                  sql:field="ALL_MEMBER" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="DESCRIPTION"
-                  sql:field="DESCRIPTION" type="xsd:string"/>
-                <xsd:element name="STRUCTURE" 
-                  sql:field="STRUCTURE" type="xsd:short"/>
-                <xsd:element name="IS_VIRTUAL" 
-                  sql:field="IS_VIRTUAL" type="xsd:boolean"/>
-                <xsd:element name="IS_READWRITE"
-                  sql:field="IS_READWRITE" type="xsd:boolean"/>
-                <xsd:element name="DIMENSION_UNIQUE_SETTINGS"
-                  sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
-                <xsd:element name="DIMENSION_IS_VISIBLE"
-                  sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
-                <xsd:element name="HIERARCHY_ORDINAL"
-                  sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
-                <xsd:element name="DIMENSION_IS_SHARED"
-                  sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
-                <xsd:element minOccurs="0"
-                  name="PARENT_CHILD"
-                  sql:field="PARENT_CHILD" type="xsd:boolean"/>
-
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:schema>
-        </root>
-      </xmla:return>
-    </xmla:DiscoverResponse>
-  </SOAP-ENV:Body>
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header>
+        <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="HIERARCHY_NAME"
+                                    sql:field="HIERARCHY_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHY_GUID"
+                                    sql:field="HIERARCHY_GUID" type="uuid"/>
+                                <xsd:element name="HIERARCHY_CAPTION"
+                                    sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_TYPE"
+                                    sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                                <xsd:element
+                                    name="HIERARCHY_CARDINALITY"
+                                    sql:field="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element minOccurs="0"
+                                    name="DEFAULT_MEMBER"
+                                    sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="ALL_MEMBER"
+                                    sql:field="ALL_MEMBER" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element name="STRUCTURE"
+                                    sql:field="STRUCTURE" type="xsd:short"/>
+                                <xsd:element name="IS_VIRTUAL"
+                                    sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                                <xsd:element name="IS_READWRITE"
+                                    sql:field="IS_READWRITE" type="xsd:boolean"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_SETTINGS"
+                                    sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element name="DIMENSION_IS_VISIBLE"
+                                    sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_ORDINAL"
+                                    sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="DIMENSION_IS_SHARED"
+                                    sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="PARENT_CHILD"
+                                    sql:field="PARENT_CHILD" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
     </TestCase>
     <TestCase name="test11">
-        <Resource name="excel_XP_11_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1384,7 +1416,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_11_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1441,6 +1473,8 @@ The default value for this property is an empty string.</PropertyDescription>
                   sql:field="LEVELS_LIST" type="xsd:string"/>
                 <xsd:element minOccurs="0" name="DESCRIPTION"
                   sql:field="DESCRIPTION" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DEFAULT_FORMAT_STRING"
+                  sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:schema>
@@ -1453,7 +1487,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test12">
-        <Resource name="excel_XP_12_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1481,7 +1515,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_12_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1544,6 +1578,9 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DEFAULT_FORMAT_STRING"
+                                    sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -1592,18 +1629,6 @@ The default value for this property is an empty string.</PropertyDescription>
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <MEASURE_NAME>Profit last Period</MEASURE_NAME>
-                        <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
-                        <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
-                        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1724,7 +1749,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test13">
-        <Resource name="excel_XP_13_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -1752,115 +1777,8 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_13_out.xml">
-            <![CDATA[
-<SOAP-ENV:Envelope
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-  <SOAP-ENV:Header>
-    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
-  </SOAP-ENV:Header>
-  <SOAP-ENV:Body>
-    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
-          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <xsd:schema elementFormDefault="qualified"
-            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <xsd:element name="root">
-              <xsd:complexType>
-                <xsd:sequence>
-                  <xsd:element maxOccurs="unbounded" minOccurs="0"
-                    name="row" type="row"/>
-                </xsd:sequence>
-              </xsd:complexType>
-            </xsd:element>
-            <xsd:simpleType name="uuid">
-              <xsd:restriction base="xsd:string">
-                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
-              </xsd:restriction>
-            </xsd:simpleType>
-            <xsd:complexType name="row">
-              <xsd:sequence>
-                <xsd:element minOccurs="0" name="CATALOG_NAME"
-                  sql:field="CATALOG_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="SCHEMA_NAME"
-                  sql:field="SCHEMA_NAME" type="xsd:string"/>
-                <xsd:element name="CUBE_NAME"
-                  sql:field="CUBE_NAME" type="xsd:string"/>
-                <xsd:element name="DIMENSION_NAME"
-                  sql:field="DIMENSION_NAME" type="xsd:string"/>
-                <xsd:element name="DIMENSION_UNIQUE_NAME"
-                  sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="DIMENSION_GUID"
-                  sql:field="DIMENSION_GUID" type="uuid"/>
-                <xsd:element name="DIMENSION_CAPTION"
-                  sql:field="DIMENSION_CAPTION" type="xsd:string"/>
-                <xsd:element name="DIMENSION_ORDINAL"
-                  sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
-                <xsd:element name="DIMENSION_TYPE"
-                  sql:field="DIMENSION_TYPE" type="xsd:short"/>
-                <xsd:element name="DIMENSION_CARDINALITY"
-                  sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
-                <xsd:element name="DEFAULT_HIERARCHY"
-                  sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="DESCRIPTION"
-                  sql:field="DESCRIPTION" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="IS_VIRTUAL" 
-                  sql:field="IS_VIRTUAL" type="xsd:boolean"/>
-                <xsd:element minOccurs="0" name="IS_READWRITE"
-                  sql:field="IS_READWRITE" type="xsd:boolean"/>
-                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS"
-                  sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
-                <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME"
-                  sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
-                <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE"
-                  sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
-              </xsd:sequence>
-            </xsd:complexType>
-          </xsd:schema>
-        </root>
-      </xmla:return>
-    </xmla:DiscoverResponse>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
-]]>
-        </Resource>
-    </TestCase>
-    <TestCase name="test14">
-        <Resource name="excel_XP_14_in.xml">
-            <![CDATA[
-<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
-  <Header>
-    <XA:Session SessionId="${session.id}" mustUnderstand="1" xmlns:XA="urn:schemas-microsoft-com:xml-analysis"/>
-  </Header>
-  <Body>
-    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
-      <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
-      <Restrictions>
-        <RestrictionList>
-          <CUBE_NAME>Sales</CUBE_NAME>
-        </RestrictionList>
-      </Restrictions>
-      <Properties>
-        <PropertyList>
-          <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
-          <Catalog>FoodMart</Catalog>
-          <Content>SchemaData</Content>
-          <Format>Tabular</Format>
-        </PropertyList>
-      </Properties>
-    </Discover>
-  </Body>
-</Envelope>
-]]>
-        </Resource>
-        <Resource name="excel_XP_14_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
@@ -1938,6 +1856,129 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DIMENSION_IS_VISIBLE"
                                     sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHIES" sql:field="HIERARCHIES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="test14">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <XA:Session SessionId="${session.id}" mustUnderstand="1" xmlns:XA="urn:schemas-microsoft-com:xml-analysis"/>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <Catalog>FoodMart</Catalog>
+          <Content>SchemaData</Content>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header>
+        <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_NAME"
+                                    sql:field="DIMENSION_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_GUID"
+                                    sql:field="DIMENSION_GUID" type="uuid"/>
+                                <xsd:element name="DIMENSION_CAPTION"
+                                    sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_ORDINAL"
+                                    sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="DIMENSION_TYPE"
+                                    sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                                <xsd:element
+                                    name="DIMENSION_CARDINALITY"
+                                    sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="DEFAULT_HIERARCHY"
+                                    sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="IS_VIRTUAL"
+                                    sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="IS_READWRITE"
+                                    sql:field="IS_READWRITE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_UNIQUE_SETTINGS"
+                                    sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_MASTER_UNIQUE_NAME"
+                                    sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_IS_VISIBLE"
+                                    sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHIES" sql:field="HIERARCHIES"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -2171,7 +2212,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test15">
-        <Resource name="excel_XP_15_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2199,8 +2240,8 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_15_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
@@ -2273,6 +2314,11 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEASURES" sql:field="MEASURES"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -2297,7 +2343,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test16">
-        <Resource name="excel_XP_16_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2325,7 +2371,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_16_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2402,7 +2448,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test17">
-        <Resource name="excel_XP_17_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2431,7 +2477,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_17_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2559,7 +2605,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test19">
-        <Resource name="excel_XP_19_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2587,8 +2633,8 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_19_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
@@ -2661,6 +2707,11 @@ The default value for this property is an empty string.</PropertyDescription>
                                 <xsd:element minOccurs="0"
                                     name="DESCRIPTION"
                                     sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEASURES" sql:field="MEASURES"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -2685,7 +2736,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test20">
-        <Resource name="excel_XP_20_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2714,7 +2765,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_20_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2876,7 +2927,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test23">
-        <Resource name="excel_XP_23_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2899,7 +2950,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_23_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2928,7 +2979,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="test24">
-        <Resource name="excel_XP_24_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -2937,7 +2988,7 @@ The default value for this property is an empty string.</PropertyDescription>
   <Body>
     <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
       <Command>
-        <Statement>SELECT {[Measures].[Sales Count], [Measures].[Store Cost]} DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS , NON EMPTY HIERARCHIZE({DrillDownMember({{DrillDownMember({{DrillDownMember({DrillDownLevel({[Store].[All Stores]})}, {[Store].[All Stores].[USA]})}}, {[Store].[All Stores].[USA].[OR]})}}, {[Store].[All Stores].[USA].[OR].[Salem]})}) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS  FROM [Sales]</Statement>
+        <Statement>SELECT {[Measures].[Sales Count], [Measures].[Store Cost]} DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS , NON EMPTY HIERARCHIZE({DrillDownMember({{DrillDownMember({{DrillDownMember({DrillDownLevel({[Store].[All Stores]})}, {[Store].[USA]})}}, {[Store].[USA].[OR]})}}, {[Store].[USA].[OR].[Salem]})}) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS  FROM [Sales]</Statement>
       </Command>
       <Properties>
         <PropertyList>
@@ -2954,16 +3005,16 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_24_out.xml">
-            <![CDATA[
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope
-  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-  <SOAP-ENV:Header>
-    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
-  </SOAP-ENV:Header>
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header>
+        <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+    </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -3070,11 +3121,11 @@ The default value for this property is an empty string.</PropertyDescription>
                                     minOccurs="0" processContents="lax"/>
                                     </xsd:sequence>
                                     </xsd:sequence>
+
                                     <xsd:attribute
                                     name="name"
                                     type="xsd:string" use="required"/>
                                     </xsd:complexType>
-
                                     </xsd:element>
                                     </xsd:sequence>
                                     <xsd:attribute
@@ -3209,7 +3260,8 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Measures].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Measures].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Measures].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="Axis1">
@@ -3219,86 +3271,8 @@ The default value for this property is an empty string.</PropertyDescription>
                                     <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Store Size in SQFT">
-                                    <UName name="[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store Size in SQFT].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store Size in SQFT].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store Size in SQFT].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Store Type">
-                                    <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store Type].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store Type].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Time">
-                                    <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Time].[MEMBER_CAPTION]"/>
-                                    <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Time].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Product">
-                                    <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Product].[MEMBER_CAPTION]"/>
-                                    <LName name="[Product].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Product].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Product].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Promotion Media">
-                                    <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
-                                    <LName name="[Promotion Media].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Promotion Media].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Promotion Media].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Promotions">
-                                    <UName name="[Promotions].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Promotions].[MEMBER_CAPTION]"/>
-                                    <LName name="[Promotions].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Promotions].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Promotions].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Customers">
-                                    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Customers].[MEMBER_CAPTION]"/>
-                                    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Customers].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Education Level">
-                                    <UName name="[Education Level].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Education Level].[MEMBER_CAPTION]"/>
-                                    <LName name="[Education Level].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Education Level].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Education Level].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Gender">
-                                    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Gender].[MEMBER_CAPTION]"/>
-                                    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Gender].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Marital Status">
-                                    <UName name="[Marital Status].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Marital Status].[MEMBER_CAPTION]"/>
-                                    <LName name="[Marital Status].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Marital Status].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Marital Status].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                                <HierarchyInfo name="Yearly Income">
-                                    <UName name="[Yearly Income].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Yearly Income].[MEMBER_CAPTION]"/>
-                                    <LName name="[Yearly Income].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Yearly Income].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Yearly Income].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                         </AxesInfo>
@@ -3344,7 +3318,7 @@ The default value for this property is an empty string.</PropertyDescription>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA]</UName>
+                                    <UName>[Store].[USA]</UName>
                                     <Caption>USA</Caption>
                                     <LName>[Store].[Store Country]</LName>
                                     <LNum>1</LNum>
@@ -3354,145 +3328,62 @@ The default value for this property is an empty string.</PropertyDescription>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[CA]</UName>
+                                    <UName>[Store].[USA].[CA]</UName>
                                     <Caption>CA</Caption>
                                     <LName>[Store].[Store State]</LName>
                                     <LNum>2</LNum>
                                     <DisplayInfo>5</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[OR]</UName>
+                                    <UName>[Store].[USA].[OR]</UName>
                                     <Caption>OR</Caption>
                                     <LName>[Store].[Store State]</LName>
                                     <LNum>2</LNum>
                                     <DisplayInfo>196610</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[OR].[Portland]</UName>
+                                    <UName>[Store].[USA].[OR].[Portland]</UName>
                                     <Caption>Portland</Caption>
                                     <LName>[Store].[Store City]</LName>
                                     <LNum>3</LNum>
                                     <DisplayInfo>1</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA].[OR]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[OR]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[OR].[Salem]</UName>
+                                    <UName>[Store].[USA].[OR].[Salem]</UName>
                                     <Caption>Salem</Caption>
                                     <LName>[Store].[Store City]</LName>
                                     <LNum>3</LNum>
                                     <DisplayInfo>196609</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA].[OR]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[OR]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</UName>
+                                    <UName>[Store].[USA].[OR].[Salem].[Store 13]</UName>
                                     <Caption>Store 13</Caption>
                                     <LName>[Store].[Store Name]</LName>
                                     <LNum>4</LNum>
                                     <DisplayInfo>0</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All Stores].[USA].[WA]</UName>
+                                    <UName>[Store].[USA].[WA]</UName>
                                     <Caption>WA</Caption>
                                     <LName>[Store].[Store State]</LName>
                                     <LNum>2</LNum>
                                     <DisplayInfo>7</DisplayInfo>
-                                    <PARENT_UNIQUE_NAME>[Store].[All Stores].[USA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
-                                    <Caption>All Store Size in SQFTs</Caption>
-                                    <LName>[Store Size in SQFT].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>21</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Store Type">
-                                    <UName>[Store Type].[All Store Types]</UName>
-                                    <Caption>All Store Types</Caption>
-                                    <LName>[Store Type].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>6</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Time">
-                                    <UName>[Time].[1997]</UName>
-                                    <Caption>1997</Caption>
-                                    <LName>[Time].[Year]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>4</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Product">
-                                    <UName>[Product].[All Products]</UName>
-                                    <Caption>All Products</Caption>
-                                    <LName>[Product].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Promotion Media">
-                                    <UName>[Promotion Media].[All Media]</UName>
-                                    <Caption>All Media</Caption>
-                                    <LName>[Promotion Media].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>14</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Promotions">
-                                    <UName>[Promotions].[All Promotions]</UName>
-                                    <Caption>All Promotions</Caption>
-                                    <LName>[Promotions].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>51</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Customers">
-                                    <UName>[Customers].[All Customers]</UName>
-                                    <Caption>All Customers</Caption>
-                                    <LName>[Customers].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All Education Levels]</UName>
-                                    <Caption>All Education Levels</Caption>
-                                    <LName>[Education Level].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>5</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Gender">
-                                    <UName>[Gender].[All Gender]</UName>
-                                    <Caption>All Gender</Caption>
-                                    <LName>[Gender].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>2</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All Marital Status]</UName>
-                                    <Caption>All Marital Status</Caption>
-                                    <LName>[Marital Status].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>111</DisplayInfo>
-                                    </Member>
-                                    <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
-                                    <Caption>All Yearly Incomes</Caption>
-                                    <LName>[Yearly Income].[(All)]</LName>
-                                    <LNum>0</LNum>
-                                    <DisplayInfo>8</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -3581,15 +3472,15 @@ The default value for this property is an empty string.</PropertyDescription>
                         </Cell>
                     </CellData>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
     </TestCase>
     <TestCase name="testExpect01">
-        <Resource name="excel_XP_01_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header/>
@@ -3609,7 +3500,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_01_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -3674,7 +3565,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect02">
-        <Resource name="excel_XP_02_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -3698,7 +3589,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_02_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4229,7 +4120,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect03">
-        <Resource name="excel_XP_03_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4252,7 +4143,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_03_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4311,7 +4202,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect04">
-        <Resource name="excel_XP_04_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4338,7 +4229,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_04_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4402,7 +4293,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect05">
-        <Resource name="excel_XP_05_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4429,7 +4320,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_05_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -4495,7 +4386,7 @@ The default value for this property is an empty string.</PropertyDescription>
         </Resource>
     </TestCase>
     <TestCase name="testExpect06">
-        <Resource name="excel_XP_06_in.xml">
+        <Resource name="request">
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
@@ -4517,7 +4408,7 @@ The default value for this property is an empty string.</PropertyDescription>
 </Envelope>
 ]]>
         </Resource>
-        <Resource name="excel_XP_06_out.xml">
+        <Resource name="response">
             <![CDATA[
 <SOAP-ENV:Envelope
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">

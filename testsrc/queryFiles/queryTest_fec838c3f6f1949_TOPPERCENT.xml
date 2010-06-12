@@ -60,19 +60,19 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                    <member>[Store].[USA].[OR].[Salem]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                    <member>[Store].[USA].[OR].[Portland]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
             </tuples>
         </rows>

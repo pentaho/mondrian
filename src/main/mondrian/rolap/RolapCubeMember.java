@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,11 +13,10 @@
 
 package mondrian.rolap;
 
-import java.util.*;
-
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 /**
  * RolapCubeMember wraps RolapMembers and binds them to a specific cube.
@@ -28,122 +27,78 @@ import mondrian.olap.*;
  * @author Will Gorman (wgorman@pentaho.org)
  * @version $Id$
  */
-public class RolapCubeMember extends RolapMember {
+public class RolapCubeMember
+    extends DelegatingRolapMember
+    implements RolapMemberInCube
+{
+    protected final RolapCubeLevel cubeLevel;
+    protected final RolapCubeMember parentCubeMember;
 
-    protected final String rolapAllMemberCubeName;
-
-    protected final RolapMember rolapMember;
-
-    protected final RolapCubeLevel rolapLevel;
-
-    protected final RolapCube rolapCube;
-
+    /**
+     * Creates a RolapCubeMember.
+     *
+     * @param parent Parent member
+     * @param member Member of underlying (non-cube) hierarchy
+     * @param cubeLevel Level
+     */
     public RolapCubeMember(
-        RolapCubeMember parent,
-        RolapMember member,
-        RolapCubeLevel level,
-        RolapCube cube)
+        RolapCubeMember parent, RolapMember member, RolapCubeLevel cubeLevel)
     {
-        super();
-
-        this.parentMember = parent;
-        this.rolapMember = member;
-        this.rolapLevel = level;
-        this.rolapCube = cube;
-        if (parent != null) {
-            this.parentUniqueName = parent.getUniqueName();
-        }
-        if (member.isAll()) {
-            // this is a special case ...
-            // replace hierarchy name portion of all member with new name
-            if (member.getLevel().getHierarchy().getName().equals(
-                    level.getHierarchy().getName()))
-            {
-                rolapAllMemberCubeName = member.getName();
-            } else {
-                // special case if we're dealing with a closure
-                String replacement =
-                    level.getHierarchy().getName().replaceAll("\\$", "\\\\\\$");
-
-                // convert string to regular expression
-                String memberLevelName =
-                    member.getLevel().getHierarchy().getName().replaceAll(
-                        "\\.", "\\\\.");
-
-                rolapAllMemberCubeName = member.getName().replaceAll(
-                        memberLevelName,
-                       replacement);
-            }
-            setUniqueName(rolapAllMemberCubeName);
-        } else {
-            rolapAllMemberCubeName = null;
-            Object name = rolapMember.getPropertyValue(Property.NAME.name);
-            if (name != null
-                && !(rolapMember.getKey() != null
-                     && name.equals(rolapMember.getKey())))
-            {
-                // Save memory by only saving the name as a property if it's
-                // different from the key.
-                setUniqueName(name);
-            } else if (rolapMember.getKey() != null) {
-                setUniqueName(rolapMember.getKey());
-            }
-        }
+        super(member);
+        this.parentCubeMember = parent;
+        this.cubeLevel = cubeLevel;
+        assert !member.isAll() || getClass() != RolapCubeMember.class;
     }
 
-    public int getDepth() {
-        return rolapMember.getDepth();
-    }
-
-    public boolean isNull() {
-        return rolapMember.isNull();
-    }
-
-    public boolean isMeasure() {
-        return rolapMember.isMeasure();
-    }
-
-    public boolean isAll() {
-        return rolapMember.isAll();
-    }
-
-    public RolapMember getRolapMember() {
-        return rolapMember;
-    }
-
-    public Map<String, Annotation> getAnnotationMap() {
-        return rolapMember.getAnnotationMap();
+    @Override
+    public String getUniqueName() {
+        // We are making a hard design decision to compute uniqueName every
+        // time it is requested rather than storing it. RolapCubeMember is thin
+        // wrapper, so cheap to construct that we don't need to cache instances.
+        //
+        // Storing uniqueName would make creation of RolapCubeMember more
+        // expensive and use significantly more memory, so we don't do that.
+        // That meakes each call to getUniqueName more expensive, so we try to
+        // minimize the number of calls to this method.
+        return cubeLevel.getHierarchy().convertMemberName(
+            member.getUniqueName());
     }
 
     /**
-     * Returns the cube this cube member belongs to.
+     * Returns the underlying member. This is a member of a shared dimension and
+     * does not belong to a cube.
      *
-     * <p>This method is not in the {@link Member} interface, because regular
-     * members may be shared, and therefore do not belong to a specific cube.
-     *
-     * @return Cube this cube member belongs to
+     * @return Underlying member
      */
-    public RolapCube getCube() {
-        return rolapCube;
+    public final RolapMember getRolapMember() {
+        return member;
     }
 
-    public Member getDataMember() {
-        RolapMember member = (RolapMember) rolapMember.getDataMember();
-        if (member != null) {
-            RolapCubeMember cubeDataMember =
-                new RolapCubeMember(
-                    getParentMember(), member,
-                    getLevel(), this.rolapCube);
-            return cubeDataMember;
-        } else {
+    // final is important for performance
+    public final RolapCube getCube() {
+        return cubeLevel.getCube();
+    }
+
+    public final RolapCubeMember getDataMember() {
+        RolapMember member = (RolapMember) super.getDataMember();
+        if (member == null) {
             return null;
         }
+        return new RolapCubeMember(parentCubeMember, member, cubeLevel);
     }
 
     public int compareTo(Object o) {
         // light wrapper around rolap member compareTo
         RolapCubeMember other = (RolapCubeMember) o;
-        return rolapMember.compareTo(other.rolapMember);
+        return member.compareTo(other.member);
+    }
+
+    public String toString() {
+        return getUniqueName();
+    }
+
+    public int hashCode() {
+        return member.hashCode();
     }
 
     public boolean equals(Object o) {
@@ -154,6 +109,7 @@ public class RolapCubeMember extends RolapMember {
             return equals((RolapCubeMember) o);
         }
         if (o instanceof Member) {
+            assert !Bug.BugSegregateRolapCubeMemberFixed;
             return getUniqueName().equals(((Member) o).getUniqueName());
         }
         return false;
@@ -166,19 +122,20 @@ public class RolapCubeMember extends RolapMember {
 
     private boolean equals(RolapCubeMember that) {
         assert that != null; // public method should have checked
-        // Do not use equalsIgnoreCase; unique names should be identical, and
-        // hashCode assumes this.
-        return this.rolapLevel.equals(that.rolapLevel)
-                && this.rolapMember.equals(that.rolapMember);
+        // Assume that RolapCubeLevel is canonical. (Besides, its equals method
+        // is very slow.)
+        return this.cubeLevel == that.cubeLevel
+               && this.member.equals(that.member);
     }
 
-    public Object getKey() {
-        return rolapMember.getKey();
+    // override with stricter return type; final important for performance
+    public final RolapCubeHierarchy getHierarchy() {
+        return cubeLevel.getHierarchy();
     }
 
-    // override with stricter return type
-    public RolapCubeHierarchy getHierarchy() {
-        return (RolapCubeHierarchy) super.getHierarchy();
+    // override with stricter return type; final important for performance
+    public final RolapCubeDimension getDimension() {
+        return cubeLevel.getDimension();
     }
 
     /**
@@ -190,59 +147,24 @@ public class RolapCubeMember extends RolapMember {
      * wrapping the cache member report that they belong to different levels,
      * and hence different hierarchies, dimensions, and cubes.
      */
-    // this is cube dependent
-    public RolapCubeLevel getLevel() {
-        return rolapLevel;
+    // override with stricter return type; final important for performance
+    public final RolapCubeLevel getLevel() {
+        return cubeLevel;
     }
 
-    public String getName() {
-        if (rolapMember.isAll()) {
-            return rolapAllMemberCubeName;
+    public void setProperty(String name, Object value) {
+        synchronized (this) {
+            super.setProperty(name, value);
         }
-        return rolapMember.getName();
-    }
-
-    public Comparable getOrderKey() {
-        return rolapMember.getOrderKey();
-    }
-
-    void setOrderKey(Comparable orderKey) {
-        // this should never be called
-        throw new UnsupportedOperationException();
-    }
-
-    public int getOrdinal() {
-        return rolapMember.getOrdinal();
-    }
-
-    void setOrdinal(int ordinal) {
-        rolapMember.setOrdinal(ordinal);
-    }
-
-    public synchronized void setProperty(String name, Object value) {
-        rolapMember.setProperty(name, value);
     }
 
     public Object getPropertyValue(String propertyName, boolean matchCase) {
         // we need to wrap these children as rolap cube members
         Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
-            Member parentMember;
             switch (property.ordinal) {
-            case Property.CONTRIBUTING_CHILDREN_ORDINAL:
-                List<RolapMember> list = new ArrayList<RolapMember>();
-                List<RolapMember> origList =
-                    (List) rolapMember.getPropertyValue(
-                        propertyName, matchCase);
-                for (RolapMember member : origList) {
-                    list.add(
-                        new RolapCubeMember(
-                            this, member, this.getLevel(), this.rolapCube));
-                }
-                return list;
-
             case Property.DIMENSION_UNIQUE_NAME_ORDINAL:
-                return getHierarchy().getDimension().getUniqueName();
+                return getDimension().getUniqueName();
 
             case Property.HIERARCHY_UNIQUE_NAME_ORDINAL:
                 return getHierarchy().getUniqueName();
@@ -260,18 +182,9 @@ public class RolapCubeMember extends RolapMember {
                 return getCaption();
 
             case Property.PARENT_UNIQUE_NAME_ORDINAL:
-                parentMember = getParentMember();
-                return parentMember == null ? null : parentMember
-                        .getUniqueName();
-            case Property.CHILDREN_CARDINALITY_ORDINAL:
-                // because rolapcalculated member overrides this property,
-                // we need to make sure it gets called
-                if (rolapMember instanceof RolapCalculatedMember) {
-                    return
-                        rolapMember.getPropertyValue(propertyName, matchCase);
-                } else {
-                    return super.getPropertyValue(propertyName, matchCase);
-                }
+                return parentCubeMember == null
+                    ? null
+                    : parentCubeMember.getUniqueName();
 
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
@@ -280,45 +193,18 @@ public class RolapCubeMember extends RolapMember {
             }
         }
         // fall through to rolap member
-        return rolapMember.getPropertyValue(propertyName, matchCase);
+        return member.getPropertyValue(propertyName, matchCase);
     }
 
-    public int getSolveOrder() {
-        return rolapMember.getSolveOrder();
-    }
-
-    protected Object getPropertyFromMap(
-        String propertyName,
-        boolean matchCase)
-    {
-        return rolapMember.getPropertyFromMap(propertyName, matchCase);
-    }
-
-    public final MemberType getMemberType() {
-        return rolapMember.getMemberType();
-    }
-
-    public RolapCubeMember getParentMember() {
-        return (RolapCubeMember) super.getParentMember();
-    }
-
-    public String getCaption() {
-        return rolapMember.getCaption();
-    }
-
-    public boolean isCalculated() {
-        return rolapMember.isCalculated();
-    }
-
-    public boolean isCalculatedInQuery() {
-        return rolapMember.isCalculatedInQuery();
+    public final RolapCubeMember getParentMember() {
+        return parentCubeMember;
     }
 
     // this method is overridden to make sure that any HierarchyExpr returns
     // the cube hierarchy vs. shared hierarchy.  this is the case for
     // SqlMemberSource.RolapParentChildMemberNoClosure
     public Exp getExpression() {
-        Exp exp = rolapMember.getExpression();
+        Exp exp = member.getExpression();
         if (exp instanceof ResolvedFunCall) {
             // convert any args to RolapCubeHierarchies
             ResolvedFunCall fcall = (ResolvedFunCall)exp;
@@ -326,7 +212,7 @@ public class RolapCubeMember extends RolapMember {
                 if (fcall.getArg(i) instanceof HierarchyExpr) {
                     HierarchyExpr expr = (HierarchyExpr)fcall.getArg(i);
                     if (expr.getHierarchy().equals(
-                        rolapMember.getHierarchy()))
+                        member.getHierarchy()))
                     {
                         fcall.getArgs()[i] =
                             new HierarchyExpr(this.getHierarchy());

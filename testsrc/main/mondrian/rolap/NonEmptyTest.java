@@ -14,6 +14,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.olap.Level;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -23,12 +24,11 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.util.Bug;
 import mondrian.spi.Dialect;
+import mondrian.util.Bug;
+import mondrian.util.Pair;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
 import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
@@ -103,7 +103,7 @@ public class NonEmptyTest extends BatchTestCase {
      * mondrian is doing crossjoins in memory; and the test case throws because
      * the result limit is exceeded.
      */
-    public void testAnalyzerPerformanceIssue() throws Exception {
+    public void testAnalyzerPerformanceIssue() {
         final MondrianProperties mondrianProperties =
             MondrianProperties.instance();
         propSaver.set(mondrianProperties.EnableNativeCrossJoin, true);
@@ -111,7 +111,8 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(mondrianProperties.EnableNativeFilter, true);
         propSaver.set(mondrianProperties.EnableNativeNonEmpty, false);
         propSaver.set(mondrianProperties.ResultLimit, 5000000);
-        String mdx =
+
+        assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level], NonEmptyCrossJoin([*BASE_MEMBERS_Product], NonEmptyCrossJoin([*BASE_MEMBERS_Customers], [*BASE_MEMBERS_Time])))' "
             + "set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET], ([Measures].[*TOP_Unit Sales_SEL~SUM] <= 2.0))' "
             + "set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Product].CurrentMember.OrderKey, BASC, Ancestor([Product].CurrentMember, [Product].[Brand Name]).OrderKey, BASC, [Customers].CurrentMember.OrderKey, BASC, Ancestor([Customers].CurrentMember, [Customers].[City]).OrderKey, BASC)' "
@@ -141,17 +142,16 @@ public class NonEmptyTest extends BatchTestCase {
             + "select Union(Crossjoin({[Education Level].[*TOTAL_MEMBER_SEL~SUM]}, [*BASE_MEMBERS_Measures]), Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures])) ON COLUMNS, "
             + "NON EMPTY Union(Crossjoin({[Product].[*TOTAL_MEMBER_SEL~SUM]}, {[Customers].[*DEFAULT_MEMBER]}), Union(Crossjoin(Generate([*METRIC_CJ_SET], {[Product].CurrentMember}), {[Customers].[*TOTAL_MEMBER_SEL~SUM]}), [*SORTED_ROW_AXIS])) ON ROWS "
             + "from [Sales] "
-            + "where [Time].[*SLICER_MEMBER] ";
-        String expected =
+            + "where [Time].[*SLICER_MEMBER] ",
             "Axis #0:\n"
             + "{[Time].[*SLICER_MEMBER]}\n"
             + "Axis #1:\n"
             + "{[Education Level].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[All Education Levels].[Graduate Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[All Education Levels].[High School Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[All Education Levels].[Partial College], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Education Level].[All Education Levels].[Partial High School], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[Bachelors Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[Graduate Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[High School Degree], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[Partial College], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Education Level].[Partial High School], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
             + "{[Product].[*TOTAL_MEMBER_SEL~SUM], [Customers].[*DEFAULT_MEMBER]}\n"
             + "{[Product].[Food].[Baking Goods].[Baking Goods].[Spices].[BBB Best].[BBB Best Pepper], [Customers].[*TOTAL_MEMBER_SEL~SUM]}\n"
@@ -502,18 +502,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #49: \n"
             + "Row #49: \n"
             + "Row #49: \n"
-            + "Row #49: 7\n";
-        expected =
-            Util.replace(
-                expected,
-                "[Product].[Food]",
-                "[Product].[All Products].[Food]");
-        expected =
-            Util.replace(
-                expected,
-                "[Customers].[USA]",
-                "[Customers].[All Customers].[USA]");
-        assertQueryReturns(mdx, expected);
+            + "Row #49: 7\n");
     }
 
     public void testBug1961163() throws Exception {
@@ -529,15 +518,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[AvgRevenue]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
             + "Row #0: 45,750.24\n"
             + "Row #0: 43,479.86\n"
             + "Row #1: 54,545.28\n"
@@ -572,9 +561,9 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "{[Product].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
             + "Row #0: 10,215\n"
             + "Row #1: 5,711\n"
             + "Row #2: 3,926\n");
@@ -596,8 +585,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
             + "Row #0: 20,739\n"
             + "Row #1: 11,767\n");
         // run again with different count
@@ -610,9 +599,9 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables]}\n"
+            + "{[Product].[Food].[Produce].[Fruit].[Fresh Fruit]}\n"
+            + "{[Product].[Food].[Canned Foods].[Canned Soup].[Soup]}\n"
             + "Row #0: 20,739\n"
             + "Row #1: 11,767\n"
             + "Row #2: 8,006\n");
@@ -682,24 +671,24 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Anacortes]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Ballard]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Bellingham]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Burien]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Everett]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Issaquah]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Kirkland]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Lynnwood]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Marysville]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Olympia]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Puyallup]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Redmond]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Renton]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Seattle]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Sedro Woolley]}\n"
-            + "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Tacoma]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Anacortes]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Ballard]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Bellingham]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Burien]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Everett]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Issaquah]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Kirkland]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Lynnwood]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Marysville]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Olympia]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Puyallup]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Redmond]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Renton]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Seattle]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Sedro Woolley]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Tacoma]}\n"
             + "Row #0: 1,789\n"
             + "Row #1: 1,789\n"
             + "Row #2: 20\n"
@@ -725,7 +714,7 @@ public class NonEmptyTest extends BatchTestCase {
      * RolapStar in SqlContextConstraint/SqlConstraintUtils.  Test ensures that
      * no exception is thrown.
      */
-    public void testVirtualCube() throws Exception {
+    public void testVirtualCube() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
@@ -803,8 +792,8 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA]}\n"
-            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA]}\n"
+            + "{[Gender].[F], [Store].[USA]}\n"
+            + "{[Gender].[M], [Store].[USA]}\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n",
             requestFreshConnection);
@@ -834,7 +823,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA], [Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raisins]}\n"
+            + "{[Store].[USA], [Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast].[Fast Raisins]}\n"
             + "Row #0: 152\n",
             requestFreshConnection);
     }
@@ -939,7 +928,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[CalcSum], [Education Level].[All Education Levels]}\n"
+            + "{[Product].[Food].[CalcSum], [Education Level].[All Education Levels]}\n"
             + "Row #0: 163,270.72\n");
     }
 
@@ -963,15 +952,15 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Drink], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Drink], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Drink], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Food], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Food], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Food], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
             + "Row #0: 574\n"
             + "Row #0: 14,092\n"
             + "Row #0: 24,597\n"
@@ -1006,12 +995,12 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n"
-            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n"
-            + "{[Gender].[All Gender].[F], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Drink]}\n"
-            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Food]}\n"
-            + "{[Gender].[All Gender].[M], [Store].[All Stores].[USA], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Gender].[F], [Store].[USA], [Product].[Drink]}\n"
+            + "{[Gender].[F], [Store].[USA], [Product].[Food]}\n"
+            + "{[Gender].[F], [Store].[USA], [Product].[Non-Consumable]}\n"
+            + "{[Gender].[M], [Store].[USA], [Product].[Drink]}\n"
+            + "{[Gender].[M], [Store].[USA], [Product].[Food]}\n"
+            + "{[Gender].[M], [Store].[USA], [Product].[Non-Consumable]}\n"
             + "Row #0: 12,202\n"
             + "Row #0: 94,814\n"
             + "Row #0: 24,542\n"
@@ -1037,18 +1026,18 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Drink]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Food]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Non-Consumable]}\n"
             + "Row #0: 6,827\n"
             + "Row #0: 55,358\n"
             + "Row #0: 14,652\n"
@@ -1094,7 +1083,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
+            + "{[Store].[USA], [Store Type].[Supermarket], [Product].[Food]}\n"
             + "Row #0: 108,188\n");
     }
 
@@ -1114,7 +1103,7 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food], [Store].[All Stores].[USA]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Food], [Store].[USA]}\n"
             + "Row #0: 108,188\n");
     }
 
@@ -1185,15 +1174,15 @@ public class NonEmptyTest extends BatchTestCase {
             12,
             "with "
             + "set [All Store Types] as {"
-            + "[Store Type].[All Store Types].[Deluxe Supermarket], "
-            + "[Store Type].[All Store Types].[Gourmet Supermarket], "
-            + "[Store Type].[All Store Types].[Mid-Size Grocery], "
-            + "[Store Type].[All Store Types].[Small Grocery], "
-            + "[Store Type].[All Store Types].[Supermarket]} "
+            + "[Store Type].[Deluxe Supermarket], "
+            + "[Store Type].[Gourmet Supermarket], "
+            + "[Store Type].[Mid-Size Grocery], "
+            + "[Store Type].[Small Grocery], "
+            + "[Store Type].[Supermarket]} "
             + "set [All Products] as {"
-            + "[Product].[All Products].[Drink], "
-            + "[Product].[All Products].[Food], "
-            + "[Product].[All Products].[Non-Consumable]} "
+            + "[Product].[Drink], "
+            + "[Product].[Food], "
+            + "[Product].[Non-Consumable]} "
             + "select "
             + "NonEmptyCrossJoin("
             + "Filter([All Store Types], ([Measures].[Unit Sales] > 10000)), "
@@ -1202,18 +1191,18 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Deluxe Supermarket], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Gourmet Supermarket], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Mid-Size Grocery], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Drink]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food]}\n"
-            + "{[Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Non-Consumable]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Deluxe Supermarket], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Gourmet Supermarket], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Drink]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Food]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Product].[Non-Consumable]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Drink]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Food]}\n"
+            + "{[Store Type].[Supermarket], [Product].[Non-Consumable]}\n"
             + "Row #0: 6,827\n"
             + "Row #0: 55,358\n"
             + "Row #0: 14,652\n"
@@ -1257,7 +1246,7 @@ public class NonEmptyTest extends BatchTestCase {
         // non "All" member.
         //
         // It can also be rewritten to use
-        // Filter([Product].[All Products].Children, Is
+        // Filter([Product].Children, Is
         // NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
         propSaver.set(
@@ -1275,9 +1264,9 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products].[Drink], [Store].[All Stores]}\n"
-            + "{[Product].[All Products].[Food], [Store].[All Stores]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store].[All Stores]}\n"
+            + "{[Product].[Drink], [Store].[All Stores]}\n"
+            + "{[Product].[Food], [Store].[All Stores]}\n"
+            + "{[Product].[Non-Consumable], [Store].[All Stores]}\n"
             + "Row #0: 24,597\n"
             + "Row #0: 191,940\n"
             + "Row #0: 50,236\n",
@@ -1392,14 +1381,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales] "
             + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
             "Axis #0:\n"
-            + "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
+            + "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[USA], [Product].[Drink]}\n"
             + "Axis #1:\n"
             + "{[Time].[1997]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "Row #0: 1,945\n"
             + "Row #1: 2,422\n"
             + "Row #2: 2,560\n"
@@ -1413,14 +1402,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales]  "
             + "where ([Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])",
             "Axis #0:\n"
-            + "{[Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n"
+            + "{[Measures].[Unit Sales], [Customers].[USA], [Product].[Drink]}\n"
             + "Axis #1:\n"
             + "{[Time].[1997]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "Row #0: 1,945\n"
             + "Row #1: 2,422\n"
             + "Row #2: 2,560\n"
@@ -1449,7 +1438,7 @@ public class NonEmptyTest extends BatchTestCase {
             "with member [Time].[Jan] as  "
             + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
             + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
-            + "NON EMPTY [Product].[All Products].Children ON rows from [Sales] "
+            + "NON EMPTY [Product].Children ON rows from [Sales] "
             + "where ([Time].[Jan]) ");
     }
 
@@ -1464,7 +1453,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "        [Product].[Product Name].Members), "
             + "    [Promotions].[Promotion Name].Members) ON rows "
             + " from [Sales] where ("
-            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Store].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])");
     }
 
@@ -1493,7 +1482,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "        [Product Ragged].[Product Name].Members), "
             + "    [Promotions].[Promotion Name].Members) ON rows "
             + " from [Sales] where ("
-            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Store].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])");
     }
 
@@ -1522,7 +1511,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "        [Product Ragged].[Product Name].Members), "
             + "    [Promotions].[Promotion Name].Members) ON rows "
             + " from [Sales] where ("
-            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Store].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])");
     }
 
@@ -1892,7 +1881,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "where "
             + "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` "
             + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
-            + "and ((`store`.`store_city`,`store`.`store_state`) in (('Portland','OR'),('Salem','OR'),('San Francisco','CA'),('Tacoma','WA'))) "
+            + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
             + "and (`product_class`.`product_family` = 'Food') "
             + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` "
             + "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, "
@@ -1975,8 +1964,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, "
             + "`product_class` as `product_class` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
             + "`product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Arnold and Sons','5617 Saclan Terrace'),"
-            + "('Jones International','3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, "
+            + "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Arnold and Sons', '5617 Saclan Terrace'), "
+            + "('Jones International', '3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, "
             + "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
             + "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, "
             + "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, "
@@ -2063,9 +2052,9 @@ public class NonEmptyTest extends BatchTestCase {
             + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
             + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
             + "`inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "((`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`,`warehouse`.`warehouse_fax`) in (('Jones International','3377 Coachman Place','971-555-6213')) "
+            + "((`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_fax`) in (('Jones International', '3377 Coachman Place', '971-555-6213')) "
             + "or (`warehouse`.`warehouse_fax` is null and "
-            + "(`warehouse`.`warehouse_name`,`warehouse`.`wa_address1`) in (('Freeman And Co','234 West Covina Pkwy')))) "
+            + "(`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Freeman And Co', '234 West Covina Pkwy')))) "
             + "and (`product_class`.`product_family` = 'Food') "
             + "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
             + "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
@@ -2358,7 +2347,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
         // make sure that the parent/child for the context are cached
 
-        // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
+        // [Customers].[USA].[CA].[Burlingame].[Peggy Justice]
         Member member = r.getAxes()[1].getPositions().get(1).get(0);
         Member parent = member.getParentMember();
         parent = ((RolapCubeMember) parent).getRolapMember();
@@ -2415,7 +2404,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // make sure that the parent/child for the context are cached
 
-        // [Customers].[All Customers].[Canada].[BC].[Burnaby]
+        // [Customers].[Canada].[BC].[Burnaby]
         Member member = r.getAxes()[1].getPositions().get(1).get(0);
         Member parent = member.getParentMember();
 
@@ -2647,7 +2636,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Time].[1997]}\n"
             + "Axis #2:\n"
             + "{[Customers].[All Customers]}\n"
-            + "{[Customers].[All Customers].[USA]}\n"
+            + "{[Customers].[USA]}\n"
             + "Row #0: $339,610.90\n"
             + "Row #1: $339,610.90\n");
     }
@@ -2757,7 +2746,8 @@ public class NonEmptyTest extends BatchTestCase {
                 return false;
             }
         };
-        Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
+        final Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
+        propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         rolapUtilLogger.addAppender(alertListener);
         String expectedMessage =
             "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
@@ -2772,6 +2762,7 @@ public class NonEmptyTest extends BatchTestCase {
             // Expected
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten one ERROR
@@ -2788,6 +2779,7 @@ public class NonEmptyTest extends BatchTestCase {
             checkNotNative(3, mdx);
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten one WARN
@@ -2806,6 +2798,7 @@ public class NonEmptyTest extends BatchTestCase {
             checkNotNative(3, mdx);
         } finally {
             propSaver.reset();
+            propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
 
         // should have gotten no WARN
@@ -2935,15 +2928,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Drink], [Store Type].[All Store Types].[S]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Food], [Store Type].[All Store Types].[S]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Small Grocery]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[Supermarket]}\n"
-            + "{[Product].[All Products].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Drink], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Drink], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Drink], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Food], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Food], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Food], [Store Type].[All Store Types].[S]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[Small Grocery]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[Supermarket]}\n"
+            + "{[Product].[Non-Consumable], [Store Type].[All Store Types].[S]}\n"
             + "Row #0: 574\n"
             + "Row #1: 14,092\n"
             + "Row #2: 24,597\n"
@@ -3047,10 +3040,10 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997].[Q2].[4], [Customers].[All Customers].[USA]}\n"
+            + "{[Time].[1997].[Q2].[4], [Customers].[USA]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n"
             + "Row #0: 3\n"
             + "Row #1: 21\n");
     }
@@ -3214,15 +3207,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
             + "{[Store].[All Stores]}\n"
-            + "{[Store].[All Stores].[USA]}\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
             + "Row #0: 225,627.23\n"
             + "Row #1: 225,627.23\n"
             + "Row #2: 63,530.43\n"
@@ -3294,8 +3287,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Time].[1997].[Q2], [Measures].[*SUMMARY_METRIC_0]}\n"
             + "{[Time].[*SUBTOTAL_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}\n"
             + "Row #0: 48.34%\n"
             + "Row #0: 51.66%\n"
@@ -3336,7 +3329,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink]}\n"
+            + "{[Product].[Drink]}\n"
             + "Row #0: 12,395\n");
     }
 
@@ -3456,11 +3449,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "select [nep] on columns from sales "
             + "where ([Store].[Store Country].[Mexico])",
             "Axis #0:\n"
-            + "{[Store].[All Stores].[Mexico]}\n"
+            + "{[Store].[Mexico]}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products].[Drink]}\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
             + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: \n");
@@ -3543,36 +3536,36 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n"
             + "Axis #2:\n"
             + "{[Store].[All Stores]}\n"
-            + "{[Store].[All Stores].[USA]}\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Row #0: $679,221.79\n"
             + "Row #1: $679,221.79\n"
             + "Row #2: $191,274.83\n"
@@ -3630,16 +3623,16 @@ public class NonEmptyTest extends BatchTestCase {
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Store].[All Stores].[Canada].[BC]}\n"
-                + "{[Store].[All Stores].[Mexico].[DF]}\n"
-                + "{[Store].[All Stores].[Mexico].[Guerrero]}\n"
-                + "{[Store].[All Stores].[Mexico].[Jalisco]}\n"
-                + "{[Store].[All Stores].[Mexico].[Veracruz]}\n"
-                + "{[Store].[All Stores].[Mexico].[Yucatan]}\n"
-                + "{[Store].[All Stores].[Mexico].[Zacatecas]}\n"
-                + "{[Store].[All Stores].[USA].[CA]}\n"
-                + "{[Store].[All Stores].[USA].[OR]}\n"
-                + "{[Store].[All Stores].[USA].[WA]}\n"
+                + "{[Store].[Canada].[BC]}\n"
+                + "{[Store].[Mexico].[DF]}\n"
+                + "{[Store].[Mexico].[Guerrero]}\n"
+                + "{[Store].[Mexico].[Jalisco]}\n"
+                + "{[Store].[Mexico].[Veracruz]}\n"
+                + "{[Store].[Mexico].[Yucatan]}\n"
+                + "{[Store].[Mexico].[Zacatecas]}\n"
+                + "{[Store].[USA].[CA]}\n"
+                + "{[Store].[USA].[OR]}\n"
+                + "{[Store].[USA].[WA]}\n"
                 + "Axis #2:\n"
                 + "{[Measures].[One]}\n"
                 + "{[Measures].[Store Sales]}\n"
@@ -3675,16 +3668,16 @@ public class NonEmptyTest extends BatchTestCase {
                     "Axis #0:\n"
                     + "{}\n"
                     + "Axis #1:\n"
-                    + "{[Store].[All Stores].[Canada].[BC]}\n"
-                    + "{[Store].[All Stores].[Mexico].[DF]}\n"
-                    + "{[Store].[All Stores].[Mexico].[Guerrero]}\n"
-                    + "{[Store].[All Stores].[Mexico].[Jalisco]}\n"
-                    + "{[Store].[All Stores].[Mexico].[Veracruz]}\n"
-                    + "{[Store].[All Stores].[Mexico].[Yucatan]}\n"
-                    + "{[Store].[All Stores].[Mexico].[Zacatecas]}\n"
-                    + "{[Store].[All Stores].[USA].[CA]}\n"
-                    + "{[Store].[All Stores].[USA].[OR]}\n"
-                    + "{[Store].[All Stores].[USA].[WA]}\n"
+                    + "{[Store].[Canada].[BC]}\n"
+                    + "{[Store].[Mexico].[DF]}\n"
+                    + "{[Store].[Mexico].[Guerrero]}\n"
+                    + "{[Store].[Mexico].[Jalisco]}\n"
+                    + "{[Store].[Mexico].[Veracruz]}\n"
+                    + "{[Store].[Mexico].[Yucatan]}\n"
+                    + "{[Store].[Mexico].[Zacatecas]}\n"
+                    + "{[Store].[USA].[CA]}\n"
+                    + "{[Store].[USA].[OR]}\n"
+                    + "{[Store].[USA].[WA]}\n"
                     + "Axis #2:\n"
                     + "{[Measures].[One]}\n"
                     + "{[Measures].[Store Sales]}\n"
@@ -3736,7 +3729,7 @@ public class NonEmptyTest extends BatchTestCase {
      * MONDRIAN-412, "NON EMPTY and Filter() breaking aggregate
      * calculations"</a>.
      */
-    public void testBugMondrian412() throws Exception {
+    public void testBugMondrian412() {
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
             "with member [Measures].[AvgRevenue] as 'Avg([Store].[Store Name].Members, [Measures].[Store Sales])' "
@@ -3749,15 +3742,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[AvgRevenue]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
             + "Row #0: 45,750.24\n"
             + "Row #0: 43,479.86\n"
             + "Row #1: 54,545.28\n"
@@ -3786,19 +3779,19 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
+            + "{[Warehouse].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
+            + "{[Warehouse].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
+            + "{[Warehouse].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
+            + "{[Warehouse].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
+            + "{[Warehouse].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
+            + "{[Warehouse].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
+            + "{[Warehouse].[USA].[WA].[Bellingham].[Foster Products]}\n"
+            + "{[Warehouse].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
+            + "{[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
+            + "{[Warehouse].[USA].[WA].[Spokane].[Jones International]}\n"
+            + "{[Warehouse].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
+            + "{[Warehouse].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
+            + "{[Warehouse].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Units Shipped]}\n"
             + "{[Measures].[Unit Sales]}\n"
@@ -3839,19 +3832,19 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
-            + "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
+            + "{[Warehouse].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n"
+            + "{[Warehouse].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n"
+            + "{[Warehouse].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n"
+            + "{[Warehouse].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]}\n"
+            + "{[Warehouse].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n"
+            + "{[Warehouse].[USA].[OR].[Salem].[Treehouse Distribution]}\n"
+            + "{[Warehouse].[USA].[WA].[Bellingham].[Foster Products]}\n"
+            + "{[Warehouse].[USA].[WA].[Bremerton].[Destination, Inc.]}\n"
+            + "{[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n"
+            + "{[Warehouse].[USA].[WA].[Spokane].[Jones International]}\n"
+            + "{[Warehouse].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n"
+            + "{[Warehouse].[USA].[WA].[Walla Walla].[Valdez Warehousing]}\n"
+            + "{[Warehouse].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Units Shipped]}\n"
             + "{[Measures].[vm]}\n"
@@ -3906,32 +3899,32 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22], [Gender].[All Gender].[M]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23], [Gender].[All Gender].[F]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23], [Gender].[All Gender].[M]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[F]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6], [Gender].[M]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7], [Gender].[F]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7], [Gender].[M]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24], [Gender].[F]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24], [Gender].[M]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14], [Gender].[F]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14], [Gender].[M]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11], [Gender].[F]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11], [Gender].[M]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13], [Gender].[F]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22], [Gender].[M]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23], [Gender].[F]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23], [Gender].[M]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[vm]}\n"
@@ -3994,11 +3987,11 @@ public class NonEmptyTest extends BatchTestCase {
             + " NON EMPTY "
             + "Crossjoin("
             + "{"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
             + "},"
             + "[Store].[Store Name].members"
             + ") on 0 from hr";
@@ -4010,12 +4003,12 @@ public class NonEmptyTest extends BatchTestCase {
             + " NON EMPTY "
             + "Crossjoin("
             + "{"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
             + "},"
             + "[Store].[Store Name].members"
             + ") on 0 from hr";
@@ -4351,6 +4344,36 @@ public class NonEmptyTest extends BatchTestCase {
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
 
+    public void testMeasureConstraintsInACrossjoinHaveCorrectResults() {
+        //http://jira.pentaho.com/browse/MONDRIAN-715
+        propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
+        String mdx =
+            "with "
+            + "  member [Measures].[aa] as '([Measures].[Store Cost],[Gender].[M])'"
+            + "  member [Measures].[bb] as '([Measures].[Store Cost],[Gender].[F])'"
+            + " select"
+            + "  non empty "
+            + "  crossjoin({[Store].[All Stores].[USA].[CA]},"
+            + "      {[Measures].[aa], [Measures].[bb]}) on columns,"
+            + "  non empty "
+            + "  [Marital Status].[Marital Status].members on rows"
+            + " from sales";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[USA].[CA], [Measures].[aa]}\n"
+            + "{[Store].[USA].[CA], [Measures].[bb]}\n"
+            + "Axis #2:\n"
+            + "{[Marital Status].[M]}\n"
+            + "{[Marital Status].[S]}\n"
+            + "Row #0: 15,339.94\n"
+            + "Row #0: 15,941.98\n"
+            + "Row #1: 16,598.87\n"
+            + "Row #1: 15,649.64\n");
+    }
+
     public void testContextAtAllWorksWithConstraint() {
         TestContext ctx = TestContext.create(
             null,
@@ -4381,21 +4404,111 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: 131,558\n"
             + "Row #1: 135,215\n");
     }
 
+    /***
+     * Before the fix this test would throw an IndexOutOfBounds exception
+     * in SqlConstraintUtils.removeDefaultMembers.  The method assumed that the
+     * first member in the list would exist and be a measure.  But, when the
+     * default measure is calculated, it would have already been removed from
+     * the list by removeCalculatedMembers, and thus the assumption was wrong.
+     */
+    public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
+        propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
+        final TestContext context =
+            TestContext.create(
+                "<Schema name=\"FoodMart\">"
+                + "  <Dimension name=\"Store\">"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">"
+                + "      <Table name=\"store\" />"
+                + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\" />"
+                + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\" />"
+                + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\" />"
+                + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">"
+                + "        <Property name=\"Store Type\" column=\"store_type\" />"
+                + "        <Property name=\"Store Manager\" column=\"store_manager\" />"
+                + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Grocery Sqft\" column=\"grocery_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Frozen Sqft\" column=\"frozen_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Meat Sqft\" column=\"meat_sqft\" type=\"Numeric\" />"
+                + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\" />"
+                + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\" />"
+                + "      </Level>"
+                + "    </Hierarchy>"
+                + "  </Dimension>"
+                + "  <Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">"
+                + "    <Table name=\"sales_fact_1997\" />"
+                + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\" />"
+                + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\" />"
+                + "    <CalculatedMember name=\"dummyMeasure\" dimension=\"Measures\">"
+                + "      <Formula>1</Formula>"
+                + "    </CalculatedMember>"
+                + "  </Cube>"
+                + "  <VirtualCube defaultMeasure=\"dummyMeasure\" name=\"virtual\">"
+                + "    <VirtualCubeDimension name=\"Store\" />"
+                + "    <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\" />"
+                + "    <VirtualCubeMeasure name=\"[Measures].[dummyMeasure]\" cubeName=\"Sales\" />"
+                + "  </VirtualCube>"
+                + "</Schema>");
+        context.assertQueryReturns(
+            "select "
+            + " [Measures].[Unit Sales] on COLUMNS, "
+            + " NON EMPTY {[Store].[Store State].Members} ON ROWS "
+            + " from [virtual] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #1: 67,659\n"
+            + "Row #2: 124,366\n");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-734">
+     * MONDRIAN-734, "Exception thrown when creating a "New Analysis View" with
+     * JPivot"</a>.
+     */
+    public void testExpandNonNativeWithEnableNativeCrossJoin() {
+        final MondrianProperties mondrianProperties =
+            MondrianProperties.instance();
+        propSaver.set(mondrianProperties.EnableNativeCrossJoin, true);
+        propSaver.set(mondrianProperties.ExpandNonNative, true);
+
+        String mdx =
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,"
+            + " NON EMPTY Crossjoin(Hierarchize(Crossjoin({[Store].[All Stores]}, Crossjoin({[Store Size in SQFT].[All Store Size in SQFTs]}, Crossjoin({[Store Type].[All Store Types]}, Union(Crossjoin({[Time].[1997]}, {[Product].[All Products]}), Crossjoin({[Time].[1997]}, [Product].[All Products].Children)))))), {([Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes])}) ON ROWS"
+            + " from [Sales]";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[All Products], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Drink], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Food], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "{[Store].[All Stores], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Time].[1997], [Product].[Non-Consumable], [Promotion Media].[All Media], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Gender].[All Gender], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 24,597\n"
+            + "Row #2: 191,940\n"
+            + "Row #3: 50,236\n");
+    }
+
     void clearAndHardenCache(MemberCacheHelper helper) {
         helper.mapLevelToMembers.setCache(
-                new HardSmartCache<
-                    SmartMemberListCache.Key2<RolapLevel, Object>,
-                    List<RolapMember>>());
+            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         helper.mapMemberToChildren.setCache(
-                new HardSmartCache<
-                    SmartMemberListCache.Key2<RolapMember, Object>,
-                    List<RolapMember>>());
+            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
         helper.mapKeyToMember.clear();
     }
 
@@ -4446,4 +4559,3 @@ public class NonEmptyTest extends BatchTestCase {
 }
 
 // End NonEmptyTest.java
-

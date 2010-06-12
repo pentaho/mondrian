@@ -3,34 +3,32 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
 
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.DiffRepository;
-import mondrian.test.TestContext;
-import mondrian.tui.XmlaSupport;
-import mondrian.tui.XmlUtil;
-import mondrian.olap.Util;
 import mondrian.olap.Role;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnectionProperties;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
+import mondrian.test.*;
+import mondrian.tui.*;
+
+import org.olap4j.metadata.XmlaConstants;
+
 import junit.framework.AssertionFailedError;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+
+import org.custommonkey.xmlunit.XMLAssert;
+
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.w3c.dom.Element;
-import java.io.IOException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -41,9 +39,8 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class XmlaBaseTestCase extends FoodMartTestCase {
-    protected static final String LAST_SCHEMA_UPDATE_DATE_PROP =
-        "last.schema.update.date";
-    protected static final String LAST_SCHEMA_UPDATE_DATE = "somedate";
+    protected static final String LAST_SCHEMA_UPDATE_DATE =
+        "xxxx-xx-xxTxx:xx:xx";
     private static final String LAST_SCHEMA_UPDATE_NODE_NAME =
         "LAST_SCHEMA_UPDATE";
     protected SortedMap<String, String> catalogNameUrls = null;
@@ -64,13 +61,181 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String CATALOG          = "FoodMart";// cube
     public static final String CUBE_NAME_PROP   = "cube.name";
     public static final String SALES_CUBE       = "Sales";// format
-    public static final String HR_CUBE          = "HR";
     public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
-    private static final boolean DEBUG = false;
+    protected static final boolean DEBUG = false;
 
     // Associate a Role with a query
     private static final ThreadLocal<Role> roles = new ThreadLocal<Role>();
+
+    protected String generateExpectedString(Properties props)
+        throws Exception
+    {
+        String expectedStr = fileToString("response");
+        if (props != null) {
+            // YES, duplicate the above
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
+            }
+            expectedStr = Util.replaceProperties(
+                expectedStr, Util.toMap(props));
+        }
+        return expectedStr;
+    }
+
+    protected String generateRequestString(Properties props)
+        throws Exception
+    {
+        String requestText = fileToString("request");
+
+        if (props != null) {
+            String sessionId = getSessionId(Action.QUERY);
+            if (sessionId != null) {
+                props.put(SESSION_ID_PROP, sessionId);
+            }
+            requestText = Util.replaceProperties(
+                requestText, Util.toMap(props));
+        }
+if (DEBUG) {
+System.out.println("requestText=" + requestText);
+}
+        return requestText;
+    }
+
+    protected void validate(
+        byte[] bytes,
+        Document expectedDoc,
+        TestContext testContext,
+        boolean replace)
+        throws Exception
+    {
+        if (XmlUtil.supportsValidation()) {
+            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
+                if (DEBUG) {
+                    System.out.println("XML Data is Valid");
+                }
+            }
+        }
+
+        Document gotDoc = XmlUtil.parse(bytes);
+        gotDoc = replaceLastSchemaUpdateDate(gotDoc);
+        String gotStr = XmlUtil.toString(gotDoc, true);
+        gotStr = Util.maskVersion(gotStr);
+        gotStr = testContext.upgradeActual(gotStr);
+        if (expectedDoc == null) {
+            if (replace) {
+                getDiffRepos().amend("${response}", gotStr);
+            }
+            return;
+        }
+        expectedDoc = replaceLastSchemaUpdateDate(expectedDoc);
+        String expectedStr = XmlUtil.toString(expectedDoc, true);
+        try {
+            XMLAssert.assertXMLEqual(expectedStr, gotStr);
+        } catch (AssertionFailedError e) {
+            // Let DiffRepository do the comparison. It will output
+            // a textual difference, and will update the logfile,
+            // XmlaBasicTest.log.xml. If you agree with the change,
+            // copy this file to XmlaBasicTest.ref.xml.
+            if (replace) {
+                gotStr =
+                    gotStr.replaceAll(
+                        " SessionId=\"[^\"]*\" ",
+                        " SessionId=\"\\${session.id}\" ");
+                getDiffRepos().assertEquals(
+                    "response",
+                    "${response}",
+                    gotStr);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public void doTest(Properties props) throws Exception {
+        String requestText = generateRequestString(props);
+        Document reqDoc = XmlUtil.parseString(requestText);
+
+        Servlet servlet = getServlet(getTestContext());
+        byte[] bytes = XmlaSupport.processSoapXmla(reqDoc, servlet);
+
+        String expectedStr = generateExpectedString(props);
+        Document expectedDoc = XmlUtil.parseString(expectedStr);
+        validate(bytes, expectedDoc, TestContext.instance(), true);
+    }
+
+    protected void doTest(
+        MockHttpServletRequest req,
+        Properties props) throws Exception
+    {
+        String requestText = generateRequestString(props);
+
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        res.setCharacterEncoding("UTF-8");
+
+        Servlet servlet = getServlet(getTestContext());
+        servlet.service(req, res);
+
+        int statusCode = res.getStatusCode();
+        if (statusCode == HttpServletResponse.SC_OK) {
+            byte[] bytes = res.toByteArray();
+            String expectedStr = generateExpectedString(props);
+            Document expectedDoc = XmlUtil.parseString(expectedStr);
+            validate(bytes, expectedDoc, TestContext.instance(), true);
+
+        } else if (statusCode == HttpServletResponse.SC_CONTINUE) {
+            // remove the Expect header from request and try again
+if (DEBUG) {
+System.out.println("Got CONTINUE");
+}
+
+            req.clearHeader(XmlaRequestCallback.EXPECT);
+            req.setBodyContent(requestText);
+
+            servlet.service(req, res);
+
+            statusCode = res.getStatusCode();
+            if (statusCode == HttpServletResponse.SC_OK) {
+                byte[] bytes = res.toByteArray();
+                String expectedStr = generateExpectedString(props);
+                Document expectedDoc = XmlUtil.parseString(expectedStr);
+                validate(bytes, expectedDoc, TestContext.instance(), true);
+
+            } else {
+                fail("Bad status code: "  + statusCode);
+            }
+        } else {
+            fail("Bad status code: "  + statusCode);
+        }
+    }
+
+    protected void helperTestExpect(boolean doSessionId)
+        throws Exception
+    {
+        if (doSessionId) {
+            Util.discard(getSessionId(Action.CREATE));
+        }
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setMethod("POST");
+        req.setContentType("text/xml");
+        req.setHeader(
+            XmlaRequestCallback.EXPECT,
+            XmlaRequestCallback.EXPECT_100_CONTINUE);
+
+        Properties props = new Properties();
+        doTest(req, props);
+    }
+
+    protected void helperTest(boolean doSessionId)
+        throws Exception
+    {
+        if (doSessionId) {
+            getSessionId(Action.CREATE);
+        }
+        Properties props = new Properties();
+        doTest(props);
+    }
 
     static class CallBack implements XmlaRequestCallback {
         public CallBack() {
@@ -86,7 +251,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         {
             Role role = roles.get();
             if (role != null) {
-                context.put(XmlaConstants.CONTEXT_ROLE, role);
+                context.put(mondrian.xmla.XmlaConstants.CONTEXT_ROLE, role);
             }
             return true;
         }
@@ -126,20 +291,26 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         if (s.startsWith("$")) {
             getDiffRepos().amend(var, "\n\n");
         }
+        // Give derived class a chance to change the content.
+        s = filter(getDiffRepos().getCurrentTestCaseName(true), filename, s);
         return s;
     }
 
     protected Document replaceLastSchemaUpdateDate(Document doc) {
         NodeList elements =
             doc.getElementsByTagName(LAST_SCHEMA_UPDATE_NODE_NAME);
-        if (elements.getLength() == 0) {
-            return doc;
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node node = elements.item(i);
+            node.getFirstChild().setNodeValue(
+                LAST_SCHEMA_UPDATE_DATE);
         }
-
-        Node lastSchemaUpdateNode = elements.item(0);
-        lastSchemaUpdateNode.getFirstChild().setNodeValue(
-            LAST_SCHEMA_UPDATE_DATE);
         return doc;
+    }
+
+    private String ignoreLastUpdateDate(String document) {
+        return document.replaceAll(
+            "\"LAST_SCHEMA_UPDATE\": \"....-..-..T..:..:..\"",
+            "\"LAST_SCHEMA_UPDATE\": \"" + LAST_SCHEMA_UPDATE_DATE + "\"");
     }
 
     protected Map<String, String> getCatalogNameUrls(TestContext testContext) {
@@ -193,9 +364,11 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     protected Document fileToDocument(String filename)
         throws IOException, SAXException
     {
-        String s = getDiffRepos().expand(null, filename);
+        final String var = "${" + filename + "}";
+        String s = getDiffRepos().expand(null, var);
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
+            getDiffRepos().amend(var, s);
         }
         // Give derived class a chance to change the content.
         s = filter(getDiffRepos().getCurrentTestCaseName(true), filename, s);
@@ -230,6 +403,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
      * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
      * @param props Properties for request
      * @param testContext Test context
+     * @throws Exception on error
      */
     public void doTest(
         String requestType,
@@ -248,7 +422,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         String requestText = fileToString("request");
         requestText = testContext.upgradeQuery(requestText);
         doTestInline(
-            requestType, requestText, "${response}",
+            requestType, requestText, "response",
             props, testContext, role);
     }
 
@@ -274,13 +448,24 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         Role role)
         throws Exception
     {
-        Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
-            : null;
-
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
 
+        boolean xml = !requestText.contains("application/json");
+        if (!xml) {
+            String responseStr = (respFileName != null)
+                ? fileToString(respFileName)
+                : null;
+            doTestsJson(
+                requestText, props,
+                testContext, connectString, catalogNameUrls,
+                responseStr, XmlaConstants.Content.Data, role);
+            return;
+        }
+
+        final Document responseDoc = (respFileName != null)
+            ? fileToDocument(respFileName)
+            : null;
         Document expectedDoc;
 
         // Test 'schemadata' first, so that if it fails, we will be able to
@@ -292,8 +477,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_SCHEMADATA, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, XmlaConstants.Content.SchemaData, role, true);
 
         if (requestType.equals("EXECUTE")) {
             return;
@@ -303,11 +488,10 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "none"}}, ns)
             : null;
-
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_NONE, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, XmlaConstants.Content.None, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -315,8 +499,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_DATA, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, XmlaConstants.Content.Data, role, false);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -324,23 +508,42 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_SCHEMA, role);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, XmlaConstants.Content.Schema, role, false);
     }
 
+    /**
+     * Executes a SOAP request.
+     *
+     * @param soapRequestText SOAP request
+     * @param props Name/value pairs to substitute in the request
+     * @param testContext Test context
+     * @param connectString Connect string
+     * @param catalogNameUrls Map from catalog names to URL
+     * @param expectedDoc Expected SOAP output
+     * @param content Content type
+     * @param role Role in which to execute query, or null
+     * @param replace Whether to generate a replacement reference log into
+     *    TestName.log.xml if there is an exception. If you are running the same
+     *    request with different content types and the same reference log, you
+     *    should pass {@code true} for the content type that has the most
+     *    information (generally
+     *    {@link org.olap4j.metadata.XmlaConstants.Content#SchemaData})
+     * @throws Exception on error
+     */
     protected void doTests(
         String soapRequestText,
         Properties props,
         TestContext testContext,
-        String soapResponseText,
         String connectString,
         Map<String, String> catalogNameUrls,
         Document expectedDoc,
-        String content,
-        Role role) throws Exception
+        XmlaConstants.Content content,
+        Role role,
+        boolean replace) throws Exception
     {
         if (content != null) {
-            props.setProperty(XmlaBasicTest.CONTENT_PROP, content);
+            props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
         }
         soapRequestText = Util.replaceProperties(
             soapRequestText, Util.toMap(props));
@@ -352,7 +555,6 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         byte[] bytes =
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role);
-        String response = new String(bytes);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -380,10 +582,68 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
                 roles.set(null);
             }
         }
-        response = new String(bytes);
+
         if (DEBUG) {
             System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + response);
+                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
+        }
+
+        validate(bytes, expectedDoc, testContext, replace);
+    }
+
+    protected void doTestsJson(
+        String soapRequestText,
+        Properties props,
+        TestContext testContext,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String expectedStr,
+        XmlaConstants.Content content,
+        Role role) throws Exception
+    {
+        if (content != null) {
+            props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
+        }
+        soapRequestText = Util.replaceProperties(
+            soapRequestText, Util.toMap(props));
+
+        Document soapReqDoc = XmlUtil.parseString(soapRequestText);
+        Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
+
+        // do XMLA
+        byte[] bytes =
+            XmlaSupport.processXmla(
+                xmlaReqDoc, connectString, catalogNameUrls, role);
+        if (XmlUtil.supportsValidation()) {
+            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
+                if (DEBUG) {
+                    System.out.println(
+                        "XmlaBaseTestCase.doTests: XML Data is Valid");
+                }
+            }
+        }
+
+        // do SOAP-XMLA
+        try {
+            String callBackClassName = CallBack.class.getName();
+            if (role != null) {
+                roles.set(role);
+            }
+            bytes = XmlaSupport.processSoapXmla(
+                soapReqDoc,
+                connectString,
+                catalogNameUrls,
+                callBackClassName);
+        } finally {
+            if (role != null) {
+                // Java4 does not support the ThreadLocal remove() method
+                // so we use the set(null).
+                roles.set(null);
+            }
+        }
+        if (DEBUG) {
+            System.out.println(
+                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
         }
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
@@ -394,51 +654,20 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
             }
         }
 
-        Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
-        String gotStr = XmlUtil.toString(gotDoc, true);
+        String gotStr = new String(bytes);
+        gotStr = ignoreLastUpdateDate(gotStr);
         gotStr = Util.maskVersion(gotStr);
         gotStr = testContext.upgradeActual(gotStr);
-        if (expectedDoc != null) {
-            String expectedStr = XmlUtil.toString(expectedDoc, true);
-if (DEBUG) {
-System.out.println("XmlaBaseTestCase.doTests: GOT:\n" + gotStr);
-System.out.println("XmlaBaseTestCase.doTests: EXPECTED:\n" + expectedStr);
-System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
-}
-            try {
-                XMLAssert.assertXMLEqual(expectedStr, gotStr);
-            } catch (AssertionFailedError e) {
-                if (content.equals(XmlaBasicTest.CONTENT_SCHEMADATA)) {
-                    // Let DiffRepository do the comparison. It will output
-                    // a textual difference, and will update the logfile,
-                    // XmlaBasicTest.log.xml. If you agree with the change,
-                    // copy this file to XmlaBasicTest.ref.xml.
-                    getDiffRepos().assertEquals(
-                        "response",
-                        "${response}",
-                        gotStr);
-                } else {
-                    throw e;
-                }
-            }
-        } else {
-            if (content.equals(XmlaBasicTest.CONTENT_SCHEMADATA)) {
-                getDiffRepos().amend("${response}", gotStr);
-            }
+        if (expectedStr != null) {
+            // Let DiffRepository do the comparison. It will output
+            // a textual difference, and will update the logfile,
+            // XmlaBasicTest.log.xml. If you agree with the change,
+            // copy this file to XmlaBasicTest.ref.xml.
+            getDiffRepos().assertEquals(
+                "response",
+                "${response}",
+                gotStr);
         }
-    }
-
-    private Document ignoreLastUpdateDate(Document document) {
-        NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
-        for (int i = elements.getLength(); i > 0; i--) {
-            removeNode(elements.item(i - 1));
-        }
-        return document;
-    }
-
-    private void removeNode(Node node) {
-        Node parentNode = node.getParentNode();
-        parentNode.removeChild(node);
     }
 
     enum Action {
@@ -480,6 +709,67 @@ System.out.println("XmlaBaseTestCase.doTests: BEFORE ASSERT");
 
         default:
             throw new UnsupportedOperationException();
+        }
+    }
+
+    protected static abstract class XmlaRequestCallbackImpl
+        implements XmlaRequestCallback
+    {
+        private static final String MY_SESSION_ID = "my_session_id";
+        private final String name;
+
+        protected XmlaRequestCallbackImpl(String name) {
+            this.name = name;
+        }
+
+        public void init(ServletConfig servletConfig) throws ServletException {
+        }
+
+        public boolean processHttpHeader(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, Object> context)
+            throws Exception
+        {
+            String expect = request.getHeader(XmlaRequestCallback.EXPECT);
+            if ((expect != null)
+                && expect.equalsIgnoreCase(
+                    XmlaRequestCallback.EXPECT_100_CONTINUE))
+            {
+                Helper.generatedExpectResponse(
+                    request, response, context);
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public void preAction(
+            HttpServletRequest request,
+            Element[] requestSoapParts,
+            Map<String, Object> context)
+            throws Exception
+        {
+        }
+
+        private void setSessionId(Map<String, Object> context) {
+            context.put(
+                MY_SESSION_ID,
+                getSessionId(name, Action.CREATE));
+        }
+
+        public String generateSessionId(Map<String, Object> context) {
+            setSessionId(context);
+            return (String) context.get(MY_SESSION_ID);
+        }
+
+        public void postAction(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, Object> context)
+            throws Exception
+        {
         }
     }
 }

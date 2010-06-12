@@ -694,7 +694,8 @@ public class FastBatchingCellReader implements CellReader {
                 && hasSameMeasureList(other)
                 && !hasDistinctCountMeasure()
                 && !other.hasDistinctCountMeasure()
-                && haveSameStarAndAggregation(other);
+                && haveSameStarAndAggregation(other)
+                && haveSameClosureColumns(other);
         }
 
         /**
@@ -818,6 +819,34 @@ public class FastBatchingCellReader implements CellReader {
 
             boolean hasSameStar = getStar().equals(other.getStar());
             return hasSameStar && hasSameAggregation && hasSameRollupOption;
+        }
+
+        /**
+         * Returns whether this batch has the same closure columns as another.
+         *
+         * <p>Ensures that we do not group together a batch that includes a
+         * level of a parent-child closure dimension with a batch that does not.
+         * It is not safe to roll up from a parent-child closure level; due to
+         * multiple accounting, the 'all' level is less than the sum of the
+         * members of the closure level.
+         *
+         * @param other Other batch
+         * @return Whether batches have the same closure columns
+         */
+        boolean haveSameClosureColumns(Batch other) {
+            final BitKey cubeClosureColumnBitKey = cube.closureColumnBitKey;
+            if (cubeClosureColumnBitKey == null) {
+                // Virtual cubes have a null bitkey. For now, punt; should do
+                // better.
+                return true;
+            }
+            final BitKey closureColumns =
+                this.batchKey.getConstrainedColumnsBitKey()
+                    .and(cubeClosureColumnBitKey);
+            final BitKey otherClosureColumns =
+                other.batchKey.getConstrainedColumnsBitKey()
+                    .and(cubeClosureColumnBitKey);
+            return closureColumns.equals(otherClosureColumns);
         }
 
         /**

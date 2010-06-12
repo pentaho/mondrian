@@ -15,10 +15,10 @@
     xmlns:m="http://ant.apache.org/ivy/maven"
     xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
-    <info organisation="pentaho" module="mondrian" revision="4.0.0.xxxxx">
+    <info organisation="pentaho" module="mondrian" revision="3.2-SNAPSHOT">
         <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
-        <repository name="pentaho-rep" url="http://repo.pentaho.org"/>
+        <repository name="pentaho-repository" url="http://repo.pentaho.org/artifactory"/>
         <description homepage="http://mondrian.pentaho.org">
             Mondrian is an OLAP (online analytical processing) engine written
             in Java. It reads from JDBC data sources, aggregates data in a
@@ -27,7 +27,16 @@
         </description>
     </info>
 
-    <dependencies>
+    <configurations>
+        <conf name="codegen"/>
+     	<conf name="default"/>
+        <conf name="default-jdk1.4"/>
+        <conf name="sources"/>
+        <conf name="dist"/>
+        <conf name="test" visibility="private"/>
+    </configurations>
+
+    <dependencies defaultconf="default->default">
         <dependency org="commons-collections" name="commons-collections"
                 rev="3.2"/>
         <dependency org="commons-dbcp" name="commons-dbcp" rev="1.2"/>
@@ -40,24 +49,18 @@
         <dependency org="commons-vfs" name="commons-vfs" rev="1.0"/>
         <dependency org="javacup" name="javacup" rev="10k"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
-        <dependency org="backport-util-concurrent" 
-                name="backport-util-concurrent" rev="3.1"/>
-        <dependency org="asm" name="asm" rev="3.1"/>
-        <dependency org="asm" name="asm-commons" rev="3.1"/>
-        <dependency org="asm" name="asm-util" rev="3.1"/>
-        <dependency org="retroweaver" name="retroweaver" rev="2.0.7"/>
-        <dependency org="retroweaver" name="retroweaver-rt" rev="2.0.7"/>
         <dependency org="eigenbase" name="eigenbase-xom" rev="1.3.0.11999"/>
         <dependency org="eigenbase" name="eigenbase-properties" rev="1.1.0.10924"/>
         <dependency org="eigenbase" name="eigenbase-resgen" rev="1.3.0.11873"/>
         <dependency org="sun" name="jlfgr" rev="1.0"/>
-        <dependency org="junit" name="junit" rev="3.8.1"/>
         <dependency org="javax.servlet" name="jsp-api" rev="2.0"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4"/>
         <dependency org="log4j" name="log4j" rev="1.2.9"/>
-        <dependency org="org.olap4j" name="olap4j" rev="0.9.7.296"
-                conf="default->default" changing="true">
+        <dependency org="org.olap4j" name="olap4j" rev="0.9.7.309" changing="true">
             <artifact name="olap4j"/>
+        </dependency>
+        <dependency org="org.olap4j" name="olap4j" rev="0.9.7.309"
+                conf="sources->default">
             <artifact name="olap4j" type="source" ext="jar"
                     m:classifier="sources"/>
         </dependency>
@@ -65,14 +68,34 @@
         <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.4.1"/>
         <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
-        <dependency org="xmlunit" name="xmlunit" rev="1.1"/>
-        <dependency org="org.apache.derby" name="derby" rev="10.2.2.0"/>
-        <dependency org="hsqldb" name="hsqldb" rev="1.8.0"/>
+
+        <!-- JDK 1.4 backwards compatibility jars -->
+        <dependency org="backport-util-concurrent" 
+                name="backport-util-concurrent" rev="3.1"
+                conf="default-jdk1.4->default"/>
+        <dependency org="asm" name="asm" rev="3.1"
+                conf="default-jdk1.4->default"/>
+        <dependency org="asm" name="asm-commons" rev="3.1"
+                conf="default-jdk1.4->default"/>
+        <dependency org="asm" name="asm-util" rev="3.1"
+                conf="default-jdk1.4->default"/>
+        <dependency org="retroweaver" name="retroweaver" rev="2.0.7"
+                conf="default-jdk1.4->default"/>
+        <dependency org="retroweaver" name="retroweaver-rt" rev="2.0.7"
+                conf="default-jdk1.4->default"/>
+
+        <!-- Distribution Jar and Wars -->
+        <dependency org="org.apache.derby" name="derby" rev="10.2.2.0" conf="dist->default"/>
+        <dependency org="hsqldb" name="hsqldb" rev="1.8.0" conf="dist->default"/>
 
         <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-090302">
+        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-100420" conf="dist->default">
             <artifact name="jpivot" type="war"/>
         </dependency>
+
+        <!-- Test Jars -->
+        <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
+        <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
 
         <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>

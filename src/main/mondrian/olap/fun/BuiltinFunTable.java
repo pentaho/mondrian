@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -562,38 +562,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        // StrToMember(<String Expression>)
-        builder.define(
-            new FunDefBase(
-                "StrToMember",
-                "Returns a member from a unique name String in MDX format.",
-                "fmS")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final StringCalc memberNameCalc =
-                        compiler.compileString(call.getArg(0));
-                return new AbstractMemberCalc(
-                    call, new Calc[] {memberNameCalc})
-                {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        String memberName =
-                                memberNameCalc.evaluateString(evaluator);
-                        return strToMember(evaluator, memberName);
-                    }
-                };
-            }
-
-            Member strToMember(Evaluator evaluator, String memberName) {
-                Cube cube = evaluator.getCube();
-                SchemaReader schemaReader = evaluator.getSchemaReader();
-                List<Id.Segment> uniqueNameParts =
-                    Util.parseIdentifier(memberName);
-                return (Member) schemaReader.lookupCompound(
-                    cube, uniqueNameParts, true, Category.Member);
-            }
-        });
-
+        builder.define(StrToMemberFunDef.INSTANCE);
         builder.define(ValidMeasureFunDef.instance);
 
         //
@@ -643,9 +612,12 @@ public class BuiltinFunTable extends FunTableImpl {
                     {
                         Member member =
                             evaluator.getParent().getContext(hierarchy);
-                        List members =
-                            (List) member.getPropertyValue(
-                                Property.CONTRIBUTING_CHILDREN.name);
+                        List<Member> members = new ArrayList<Member>();
+                        evaluator.getSchemaReader()
+                            .getParentChildContributingChildren(
+                                member.getDataMember(),
+                                hierarchy,
+                                members);
                         Aggregator aggregator =
                             (Aggregator) evaluator.getProperty(
                                 Property.AGGREGATION_TYPE.name, null);
@@ -818,20 +790,18 @@ public class BuiltinFunTable extends FunTableImpl {
                         Evaluator evaluator)
                     {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return ascendants(member);
+                        return ascendants(evaluator.getSchemaReader(), member);
                     }
                 };
             }
 
-            List<Member> ascendants(Member member) {
+            List<Member> ascendants(SchemaReader schemaReader, Member member) {
                 if (member.isNull()) {
                     return Collections.emptyList();
                 }
-                List<Member> members = member.getAncestorMembers();
-                final List<Member> result =
-                    new ArrayList<Member>(members.size() + 1);
+                final List<Member> result = new ArrayList<Member>();
                 result.add(member);
-                result.addAll(members);
+                schemaReader.getMemberAncestors(member, result);
                 return result;
             }
         });
@@ -2081,6 +2051,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new AbstractIntegerCalc(call, new Calc[] {stringCalc}) {
                     public int evaluateInteger(Evaluator evaluator) {
                         String value = stringCalc.evaluateString(evaluator);
+                        if (value == null) {
+                            return 0;
+                        }
                         return value.length();
                     }
                 };

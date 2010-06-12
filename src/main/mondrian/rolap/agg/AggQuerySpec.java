@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,7 +16,6 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 
@@ -37,7 +36,8 @@ class AggQuerySpec {
     private static final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
 
     private final AggStar aggStar;
-    private final Segment[] segments;
+    private final List<Segment> segments;
+    private final Segment segment0;
     private final boolean rollup;
     private final GroupingSetsList groupingSetsList;
 
@@ -48,6 +48,7 @@ class AggQuerySpec {
     {
         this.aggStar = aggStar;
         this.segments = groupingSetsList.getDefaultSegments();
+        this.segment0 = segments.get(0);
         this.rollup = rollup;
         this.groupingSetsList = groupingSetsList;
     }
@@ -61,11 +62,11 @@ class AggQuerySpec {
     }
 
     public int getMeasureCount() {
-        return segments.length;
+        return segments.size();
     }
 
     public AggStar.FactTable.Column getMeasureAsColumn(final int i) {
-        int bitPos = segments[i].measure.getBitPosition();
+        int bitPos = segments.get(i).measure.getBitPosition();
         return aggStar.lookupColumn(bitPos);
     }
 
@@ -74,11 +75,11 @@ class AggQuerySpec {
     }
 
     public int getColumnCount() {
-        return segments[0].aggregation.getColumns().length;
+        return segment0.aggregation.getColumns().length;
     }
 
     public AggStar.Table.Column getColumn(final int i) {
-        RolapStar.Column[] columns = segments[0].aggregation.getColumns();
+        RolapStar.Column[] columns = segment0.aggregation.getColumns();
         int bitPos = columns[i].getBitPosition();
         AggStar.Table.Column column = aggStar.lookupColumn(bitPos);
 
@@ -103,7 +104,7 @@ class AggQuerySpec {
      * @return Constraint on column
      */
     public StarColumnPredicate getPredicate(int i) {
-        return segments[0].axes[i].getPredicate();
+        return segment0.axes[i].getPredicate();
     }
 
     public String generateSqlQuery() {

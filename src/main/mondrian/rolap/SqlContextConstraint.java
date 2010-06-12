@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,7 +40,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 public class SqlContextConstraint
     implements MemberChildrenConstraint, TupleConstraint
 {
-    List<Object> cacheKey;
+    private final List<Object> cacheKey;
     private Evaluator evaluator;
     private boolean strict;
 
@@ -95,7 +95,7 @@ public class SqlContextConstraint
         }
 
         // we can not handle calc members in slicer except calc measure
-        Member[] members = ((RolapEvaluator)context).getMembers();
+        Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {
             if (members[i].isCalculated()) {
                 return false;
@@ -218,7 +218,7 @@ public class SqlContextConstraint
         // just the default measure for the entire virtual cube. The commented
         // code in RolapResult() that replaces the default measure seems to
         // do that.
-        if (((RolapCube)evaluator.getCube()).isVirtual()) {
+        if (evaluator.getCube().isVirtual()) {
             cacheKey.addAll(evaluator.getQuery().getBaseCubes());
         }
     }

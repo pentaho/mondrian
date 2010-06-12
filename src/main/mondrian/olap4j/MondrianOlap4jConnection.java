@@ -350,7 +350,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public MdxParserFactory getParserFactory() {
         return new MdxParserFactory() {
             public MdxParser createMdxParser(OlapConnection connection) {
-                return new DefaultMdxParserImpl(connection);
+                return new DefaultMdxParserImpl();
             }
 
             public MdxValidator createMdxValidator(OlapConnection connection) {

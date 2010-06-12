@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,7 +16,7 @@ import mondrian.test.TestContext;
 /**
  * Test that the implementations of the CellKey interface are correct.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public class CellKeyTest extends FoodMartTestCase {
@@ -84,9 +84,6 @@ public class CellKeyTest extends FoodMartTestCase {
         assertTrue(key == key2); // all 0-dimensional keys have same singleton
         assertEquals(0, key.size());
 
-        CellKey keyMany = CellKey.Generator.newManyCellKey(0);
-        assertEquals(keyMany, key);
-
         CellKey copy = key.copy();
         assertEquals(copy, key);
 
@@ -105,12 +102,8 @@ public class CellKeyTest extends FoodMartTestCase {
     }
 
     public void testOne() {
-        CellKey keyMany = CellKey.Generator.newManyCellKey(1);
         CellKey key = CellKey.Generator.newCellKey(1);
-
         assertTrue("CellKey size", key.size() == 1);
-        assertTrue("CellKey size", keyMany.size() == 1);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         CellKey copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -144,10 +137,6 @@ public class CellKeyTest extends FoodMartTestCase {
         assertTrue("CellKey array too small", gotException);
 
         key.setAxis(0, 1);
-        assertTrue("CellKey not equals", !key.equals(keyMany));
-
-        keyMany.setAxis(0, 1);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -158,12 +147,9 @@ public class CellKeyTest extends FoodMartTestCase {
     }
 
     public void testTwo() {
-        CellKey keyMany = CellKey.Generator.newManyCellKey(2);
         CellKey key = CellKey.Generator.newCellKey(2);
 
         assertTrue("CellKey size", key.size() == 2);
-        assertTrue("CellKey size", keyMany.size() == 2);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         CellKey copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -198,11 +184,6 @@ public class CellKeyTest extends FoodMartTestCase {
 
         key.setAxis(0, 1);
         key.setAxis(1, 3);
-        assertTrue("CellKey not equals", !key.equals(keyMany));
-
-        keyMany.setAxis(0, 1);
-        keyMany.setAxis(1, 3);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -213,12 +194,9 @@ public class CellKeyTest extends FoodMartTestCase {
     }
 
     public void testThree() {
-        CellKey keyMany = CellKey.Generator.newManyCellKey(3);
         CellKey key = CellKey.Generator.newCellKey(3);
 
         assertTrue("CellKey size", key.size() == 3);
-        assertTrue("CellKey size", keyMany.size() == 3);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         CellKey copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -254,12 +232,6 @@ public class CellKeyTest extends FoodMartTestCase {
         key.setAxis(0, 1);
         key.setAxis(1, 3);
         key.setAxis(2, 5);
-        assertTrue("CellKey not equals", !key.equals(keyMany));
-
-        keyMany.setAxis(0, 1);
-        keyMany.setAxis(1, 3);
-        keyMany.setAxis(2, 5);
-        assertTrue("CellKey equals", key.equals(keyMany));
 
         copy = key.copy();
         assertTrue("CellKey equals", key.equals(copy));
@@ -304,13 +276,13 @@ public class CellKeyTest extends FoodMartTestCase {
 
         String result =
             "Axis #0:\n"
-            + "{[City].[All Citys].[Redwood City]}\n"
+            + "{[City].[Redwood City]}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#null]}\n"
-            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[#2]}\n"
-            + "{[Gender].[All Genders].[F], [Address2].[All Address2s].[Unit H103]}\n"
-            + "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#null]}\n"
-            + "{[Gender].[All Genders].[M], [Address2].[All Address2s].[#208]}\n"
+            + "{[Gender].[F], [Address2].[#null]}\n"
+            + "{[Gender].[F], [Address2].[#2]}\n"
+            + "{[Gender].[F], [Address2].[Unit H103]}\n"
+            + "{[Gender].[M], [Address2].[#null]}\n"
+            + "{[Gender].[M], [Address2].[#208]}\n"
             + "Row #0: 71\n"
             + "Row #0: 10\n"
             + "Row #0: 3\n"

@@ -3,14 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.BitKey;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -32,23 +31,21 @@ import java.util.*;
  * @version $Id$
  * @since 24 May 2007
  */
-class GroupingSetsList {
+final class GroupingSetsList {
 
     private final List<RolapStar.Column> rollupColumns;
-
     private final List<RolapStar.Column[]> groupingSetsColumns;
     private final boolean useGroupingSet;
 
-    private final List<BitKey> rollupColumnsBitKeyList =
-        new ArrayList<BitKey>();
+    private final List<BitKey> rollupColumnsBitKeyList;
 
     /**
      * Maps column index to grouping function index.
      */
-    private final Map<Integer, Integer> columnIndexToGroupingIndexMap =
-        new HashMap<Integer, Integer>();
+    private final int[] columnIndexToGroupingIndexMap;
 
     private final List<GroupingSet> groupingSets;
+    private final int groupingBitKeyIndex;
 
     /**
      * Creates a GroupingSetsList.
@@ -65,12 +62,17 @@ class GroupingSetsList {
         if (useGroupingSet) {
             this.groupingSetsColumns = getGroupingColumnsList(groupingSets);
             this.rollupColumns = findRollupColumns();
-            loadRollupIndex();
-            loadGroupingColumnBitKeys();
+
+            int arity = getDefaultColumns().length;
+            int segmentLength = getDefaultSegments().size();
+            this.groupingBitKeyIndex = arity + segmentLength;
         } else {
-            this.groupingSetsColumns = new ArrayList<RolapStar.Column[]>();
-            this.rollupColumns = new ArrayList<RolapStar.Column>();
+            this.groupingSetsColumns = Collections.emptyList();
+            this.rollupColumns = Collections.emptyList();
+            this.groupingBitKeyIndex = -1;
         }
+        this.columnIndexToGroupingIndexMap = loadRollupIndex();
+        this.rollupColumnsBitKeyList = loadGroupingColumnBitKeys();
     }
 
     List<RolapStar.Column[]> getGroupingColumnsList(
@@ -80,9 +82,13 @@ class GroupingSetsList {
             new ArrayList<RolapStar.Column[]>();
         for (GroupingSet aggBatchDetail : groupingSets) {
             groupingColumns.add(
-                aggBatchDetail.getSegments()[0].aggregation.getColumns());
+                aggBatchDetail.segment0.aggregation.getColumns());
         }
         return groupingColumns;
+    }
+
+    public int getGroupingBitKeyIndex() {
+        return groupingBitKeyIndex;
     }
 
     public List<RolapStar.Column> getRollupColumns() {
@@ -97,17 +103,18 @@ class GroupingSetsList {
         return rollupColumnsBitKeyList;
     }
 
-    public BitKey getDetailedColumnsBitKey() {
-        return rollupColumnsBitKeyList.get(0);
-    }
-
-    private void loadGroupingColumnBitKeys() {
-        int bitKeyLength = getDefaultColumns().length;
+    private List<BitKey> loadGroupingColumnBitKeys() {
+        if (!useGroupingSet) {
+            return Collections.singletonList(BitKey.EMPTY);
+        }
+        final List<BitKey> rollupColumnsBitKeyList = new ArrayList<BitKey>();
+        final int bitKeyLength = getDefaultColumns().length;
         for (RolapStar.Column[] groupingSetColumns : groupingSetsColumns) {
             BitKey groupingColumnsBitKey =
                 BitKey.Factory.makeBitKey(bitKeyLength);
             Set<RolapStar.Column> columns =
-                convertToSet(groupingSetColumns);
+                new HashSet<RolapStar.Column>(
+                    Arrays.asList(groupingSetColumns));
             int bitPosition = 0;
             for (RolapStar.Column rollupColumn : rollupColumns) {
                 if (!columns.contains(rollupColumn)) {
@@ -117,17 +124,23 @@ class GroupingSetsList {
             }
             rollupColumnsBitKeyList.add(groupingColumnsBitKey);
         }
+        return rollupColumnsBitKeyList;
     }
 
-    private void loadRollupIndex() {
+    private int[] loadRollupIndex() {
+        if (!useGroupingSet) {
+            return new int[0];
+        }
         RolapStar.Column[] detailedColumns = getDefaultColumns();
+        int[] columnIndexToGroupingIndexMap = new int[detailedColumns.length];
         for (int columnIndex = 0; columnIndex < detailedColumns.length;
              columnIndex++)
         {
             int rollupIndex =
                 rollupColumns.indexOf(detailedColumns[columnIndex]);
-            columnIndexToGroupingIndexMap.put(columnIndex, rollupIndex);
+            columnIndexToGroupingIndexMap[columnIndex] = rollupIndex;
         }
+        return columnIndexToGroupingIndexMap;
     }
 
     private List<RolapStar.Column> findRollupColumns() {
@@ -135,7 +148,8 @@ class GroupingSetsList {
             RolapStar.ColumnComparator.instance);
         for (RolapStar.Column[] groupingSetColumn : groupingSetsColumns) {
             Set<RolapStar.Column> summaryColumns =
-                convertToSet(groupingSetColumn);
+                new HashSet<RolapStar.Column>(
+                    Arrays.asList(groupingSetColumn));
             for (RolapStar.Column column : getDefaultColumns()) {
                 if (!summaryColumns.contains(column)) {
                     rollupSet.add(column);
@@ -145,20 +159,12 @@ class GroupingSetsList {
         return new ArrayList<RolapStar.Column>(rollupSet);
     }
 
-    private Set<RolapStar.Column> convertToSet(RolapStar.Column[] columns) {
-        HashSet<RolapStar.Column> columnSet = new HashSet<RolapStar.Column>();
-        for (RolapStar.Column column : columns) {
-            columnSet.add(column);
-        }
-        return columnSet;
-    }
-
     public boolean useGroupingSets() {
         return useGroupingSet;
     }
 
     public int findGroupingFunctionIndex(int columnIndex) {
-        return columnIndexToGroupingIndexMap.get(columnIndex);
+        return columnIndexToGroupingIndexMap[columnIndex];
     }
 
     public Aggregation.Axis[] getDefaultAxes() {
@@ -170,11 +176,10 @@ class GroupingSetsList {
     }
 
     public RolapStar.Column[] getDefaultColumns() {
-        return getDefaultGroupingSet().getSegments()[0].aggregation
-            .getColumns();
+        return getDefaultGroupingSet().segment0.aggregation.getColumns();
     }
 
-    public Segment[] getDefaultSegments() {
+    public List<Segment> getDefaultSegments() {
         return getDefaultGroupingSet().getSegments();
     }
 
@@ -187,7 +192,7 @@ class GroupingSetsList {
     }
 
     public RolapStar getStar() {
-        return getDefaultSegments()[0].aggregation.getStar();
+        return getDefaultGroupingSet().segment0.aggregation.getStar();
     }
 
     public List<GroupingSet> getGroupingSets() {
@@ -195,10 +200,27 @@ class GroupingSetsList {
     }
 
     public List<GroupingSet> getRollupGroupingSets() {
-        ArrayList<GroupingSet> rollupGroupingSets =
-            new ArrayList<GroupingSet>(groupingSets);
-        rollupGroupingSets.remove(0);
-        return rollupGroupingSets;
+        return groupingSets.subList(1, groupingSets.size());
+    }
+
+    /**
+     * Collection of {@link mondrian.rolap.agg.SegmentDataset} that have the
+     * same dimensionality and identical axis values. A cohort contains
+     * corresponding cell values for set of measures.
+     */
+    static class Cohort
+    {
+        final List<SegmentDataset> segmentDatasetList;
+        // workspace
+        final int[] pos;
+
+        Cohort(
+            List<SegmentDataset> segmentDatasetList,
+            int arity)
+        {
+            this.segmentDatasetList = segmentDatasetList;
+            this.pos = new int[arity];
+        }
     }
 }
 

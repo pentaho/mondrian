@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,6 +50,10 @@ class StrToTupleFunDef extends FunDefBase {
             return new AbstractMemberCalc(call, new Calc[] {stringCalc}) {
                 public Member evaluateMember(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
+                    if (string == null) {
+                        throw newEvalException(
+                            MondrianResource.instance().NullValue.ex());
+                    }
                     return parseMember(evaluator, string, hierarchy);
                 }
             };
@@ -63,39 +67,14 @@ class StrToTupleFunDef extends FunDefBase {
             return new AbstractTupleCalc(call, new Calc[] {stringCalc}) {
                 public Member[] evaluateTuple(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
+                    if (string == null) {
+                        throw newEvalException(
+                            MondrianResource.instance().NullValue.ex());
+                    }
                     return parseTuple(evaluator, string, hierarchies);
                 }
             };
         }
-    }
-
-    /**
-     * Parses a tuple, such as "([Gender].[M], [Marital Status].[S])".
-     *
-     * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
-     *   and {@link Cube}
-     * @param string String to parse
-     * @param hierarchies Hierarchies of the members
-     * @return Tuple represented as array of members
-     */
-    private Member[] parseTuple(
-        Evaluator evaluator, String string, Hierarchy[] hierarchies)
-    {
-        final Member[] members = new Member[hierarchies.length];
-        int i = StrToSetFunDef.parseTuple(
-            evaluator, string, 0, members, hierarchies);
-        // todo: check for garbage at end of string
-        return members;
-    }
-
-    private Member parseMember(
-        Evaluator evaluator, String string, Hierarchy hierarchy)
-    {
-        Member[] members = {null};
-        int i = StrToSetFunDef.parseMember(
-            evaluator, string, 0, members, new Hierarchy[] {hierarchy}, 0);
-        // todo: check for garbage at end of string
-        return members[0];
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
@@ -175,7 +154,9 @@ class StrToTupleFunDef extends FunDefBase {
                 return null;
             }
             Type type = args[0].getType();
-            if (!(type instanceof StringType)) {
+            if (!(type instanceof StringType)
+                && !(type instanceof NullType))
+            {
                 return null;
             }
             for (int i = 1; i < args.length; i++) {

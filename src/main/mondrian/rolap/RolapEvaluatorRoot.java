@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,6 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
@@ -45,12 +44,16 @@ class RolapEvaluatorRoot {
      * happens very often.
      */
     final RolapMember[] defaultMembers;
+    final int[] nonAllPositions;
+    int nonAllPositionCount;
 
     final MondrianProperties.SolveOrderModeEnum solveOrderMode =
         Util.lookup(
             MondrianProperties.SolveOrderModeEnum.class,
             MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
             MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
+
+    final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
 
     /**
      * Creates a RolapEvaluatorRoot.
@@ -64,15 +67,12 @@ class RolapEvaluatorRoot {
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
+        nonAllPositions = new int[cube.getHierarchies().size()];
+        nonAllPositionCount = 0;
         for (RolapHierarchy hierarchy : cube.getHierarchies()) {
             RolapMember defaultMember =
                 (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
-
-            // If there is no member, we cannot continue.
-            if (defaultMember == null) {
-                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
-                    hierarchy.getUniqueName());
-            }
+            assert defaultMember != null;
 
             if (ScenarioImpl.isScenario(hierarchy)
                 && connection.getScenario() != null)
@@ -85,10 +85,18 @@ class RolapEvaluatorRoot {
             // hierarchy usages.
             final HierarchyUsage hierarchyUsage = cube.getFirstUsage(hierarchy);
             if (hierarchyUsage != null) {
-                defaultMember.makeUniqueName(hierarchyUsage);
+                if (defaultMember instanceof RolapMemberBase) {
+                ((RolapMemberBase) defaultMember).makeUniqueName(
+                    hierarchyUsage);
+                }
             }
 
             list.add(defaultMember);
+            if (!defaultMember.isAll()) {
+                nonAllPositions[nonAllPositionCount] =
+                    hierarchy.getOrdinalInCube();
+                nonAllPositionCount++;
+            }
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =

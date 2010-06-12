@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,7 +25,7 @@ import java.util.*;
  * @since 21 March, 2002
  * @version $Id$
  */
-public class CellRequest {
+public final class CellRequest {
     private final RolapStar.Measure measure;
     public final boolean extendedContext;
     public final boolean drillThrough;
@@ -80,9 +80,12 @@ public class CellRequest {
      * order; otherwise, successive runs generate different SQL queries.
      * Another solution worth considering would be to use the inherent ordering
      * of BitKeys and create a sorted map.
+     *
+     * <p>Creating CellRequests is one of the top hotspots in Mondrian.
+     * Therefore we initialize the map to null, and don't create a map until
+     * we add the first entry.
      */
-    private final Map<BitKey, StarPredicate> compoundPredicateMap =
-        new LinkedHashMap<BitKey, StarPredicate>();
+    private Map<BitKey, StarPredicate> compoundPredicateMap = null;
 
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
@@ -177,6 +180,9 @@ public class CellRequest {
         BitKey compoundBitKey,
         StarPredicate compoundPredicate)
     {
+        if (compoundPredicateMap == null) {
+            compoundPredicateMap = new LinkedHashMap<BitKey, StarPredicate>();
+        }
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
 
@@ -207,11 +213,16 @@ public class CellRequest {
     }
 
     /**
-     * Returns the map of compound predicates.
+     * Returns the map of compound predicates, or null if empty.
      *
-     * @return predicate map
+     * <p>NOTE: It is not generally considered good API design to return null
+     * to represent empty collections, but this collection is very often empty
+     * and the the implementation of Collections.emptyMap().keySet().iterator()
+     * is slow, so we optimize for the common case.
+     *
+     * @return predicate map, or null if empty
      */
-    public Map<BitKey, StarPredicate> getCompoundPredicateMap() {
+    Map<BitKey, StarPredicate> getCompoundPredicateMap() {
         return compoundPredicateMap;
     }
 
@@ -229,7 +240,10 @@ public class CellRequest {
                     new StarColumnPredicate[columnPredicateList.size()]);
             columnPredicateList.clear();
             int i = 0;
-            for (int bitPos : constrainedColumnsBitKey) {
+            for (int bitPos = constrainedColumnsBitKey.nextSetBit(0);
+                bitPos >= 0;
+                bitPos = constrainedColumnsBitKey.nextSetBit(bitPos + 1))
+            {
                 int index = constrainedColumnList.indexOf(bitPos);
                 if (index >= 0) {
                     final StarColumnPredicate value =

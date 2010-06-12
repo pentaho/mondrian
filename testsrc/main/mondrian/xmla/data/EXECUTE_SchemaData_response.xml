@@ -251,7 +251,7 @@
     <Tuples>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Altadena]</UName>
+    <UName>[Customers].[USA].[CA].[Altadena]</UName>
     <Caption>Altadena</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -264,7 +264,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Arcadia]</UName>
+    <UName>[Customers].[USA].[CA].[Arcadia]</UName>
     <Caption>Arcadia</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -277,7 +277,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Bellflower]</UName>
+    <UName>[Customers].[USA].[CA].[Bellflower]</UName>
     <Caption>Bellflower</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -290,7 +290,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Berkeley]</UName>
+    <UName>[Customers].[USA].[CA].[Berkeley]</UName>
     <Caption>Berkeley</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -303,7 +303,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Beverly Hills]</UName>
+    <UName>[Customers].[USA].[CA].[Beverly Hills]</UName>
     <Caption>Beverly Hills</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -316,7 +316,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Burbank]</UName>
+    <UName>[Customers].[USA].[CA].[Burbank]</UName>
     <Caption>Burbank</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -329,7 +329,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Burlingame]</UName>
+    <UName>[Customers].[USA].[CA].[Burlingame]</UName>
     <Caption>Burlingame</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -342,7 +342,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Chula Vista]</UName>
+    <UName>[Customers].[USA].[CA].[Chula Vista]</UName>
     <Caption>Chula Vista</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -355,7 +355,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Colma]</UName>
+    <UName>[Customers].[USA].[CA].[Colma]</UName>
     <Caption>Colma</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -368,7 +368,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Concord]</UName>
+    <UName>[Customers].[USA].[CA].[Concord]</UName>
     <Caption>Concord</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -381,7 +381,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Coronado]</UName>
+    <UName>[Customers].[USA].[CA].[Coronado]</UName>
     <Caption>Coronado</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -394,7 +394,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Daly City]</UName>
+    <UName>[Customers].[USA].[CA].[Daly City]</UName>
     <Caption>Daly City</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -407,7 +407,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Downey]</UName>
+    <UName>[Customers].[USA].[CA].[Downey]</UName>
     <Caption>Downey</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -420,7 +420,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[El Cajon]</UName>
+    <UName>[Customers].[USA].[CA].[El Cajon]</UName>
     <Caption>El Cajon</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -433,7 +433,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Fremont]</UName>
+    <UName>[Customers].[USA].[CA].[Fremont]</UName>
     <Caption>Fremont</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -446,7 +446,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Glendale]</UName>
+    <UName>[Customers].[USA].[CA].[Glendale]</UName>
     <Caption>Glendale</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -459,7 +459,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Grossmont]</UName>
+    <UName>[Customers].[USA].[CA].[Grossmont]</UName>
     <Caption>Grossmont</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -472,7 +472,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Imperial Beach]</UName>
+    <UName>[Customers].[USA].[CA].[Imperial Beach]</UName>
     <Caption>Imperial Beach</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -485,7 +485,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[La Jolla]</UName>
+    <UName>[Customers].[USA].[CA].[La Jolla]</UName>
     <Caption>La Jolla</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -498,7 +498,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[La Mesa]</UName>
+    <UName>[Customers].[USA].[CA].[La Mesa]</UName>
     <Caption>La Mesa</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -511,7 +511,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Lakewood]</UName>
+    <UName>[Customers].[USA].[CA].[Lakewood]</UName>
     <Caption>Lakewood</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -524,7 +524,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Lemon Grove]</UName>
+    <UName>[Customers].[USA].[CA].[Lemon Grove]</UName>
     <Caption>Lemon Grove</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -537,7 +537,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Lincoln Acres]</UName>
+    <UName>[Customers].[USA].[CA].[Lincoln Acres]</UName>
     <Caption>Lincoln Acres</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -550,7 +550,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Long Beach]</UName>
+    <UName>[Customers].[USA].[CA].[Long Beach]</UName>
     <Caption>Long Beach</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -563,7 +563,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Los Angeles]</UName>
+    <UName>[Customers].[USA].[CA].[Los Angeles]</UName>
     <Caption>Los Angeles</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -576,7 +576,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Mill Valley]</UName>
+    <UName>[Customers].[USA].[CA].[Mill Valley]</UName>
     <Caption>Mill Valley</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -589,7 +589,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[National City]</UName>
+    <UName>[Customers].[USA].[CA].[National City]</UName>
     <Caption>National City</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -602,7 +602,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Newport Beach]</UName>
+    <UName>[Customers].[USA].[CA].[Newport Beach]</UName>
     <Caption>Newport Beach</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -615,7 +615,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Novato]</UName>
+    <UName>[Customers].[USA].[CA].[Novato]</UName>
     <Caption>Novato</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -628,7 +628,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Oakland]</UName>
+    <UName>[Customers].[USA].[CA].[Oakland]</UName>
     <Caption>Oakland</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -641,7 +641,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Palo Alto]</UName>
+    <UName>[Customers].[USA].[CA].[Palo Alto]</UName>
     <Caption>Palo Alto</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -654,7 +654,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Pomona]</UName>
+    <UName>[Customers].[USA].[CA].[Pomona]</UName>
     <Caption>Pomona</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -667,7 +667,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Redwood City]</UName>
+    <UName>[Customers].[USA].[CA].[Redwood City]</UName>
     <Caption>Redwood City</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -680,7 +680,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Richmond]</UName>
+    <UName>[Customers].[USA].[CA].[Richmond]</UName>
     <Caption>Richmond</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -693,7 +693,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[San Carlos]</UName>
+    <UName>[Customers].[USA].[CA].[San Carlos]</UName>
     <Caption>San Carlos</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -706,7 +706,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[San Diego]</UName>
+    <UName>[Customers].[USA].[CA].[San Diego]</UName>
     <Caption>San Diego</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -719,7 +719,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[San Francisco]</UName>
+    <UName>[Customers].[USA].[CA].[San Francisco]</UName>
     <Caption>San Francisco</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -732,7 +732,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[San Gabriel]</UName>
+    <UName>[Customers].[USA].[CA].[San Gabriel]</UName>
     <Caption>San Gabriel</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -745,7 +745,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[San Jose]</UName>
+    <UName>[Customers].[USA].[CA].[San Jose]</UName>
     <Caption>San Jose</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -758,7 +758,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Santa Cruz]</UName>
+    <UName>[Customers].[USA].[CA].[Santa Cruz]</UName>
     <Caption>Santa Cruz</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -771,7 +771,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Santa Monica]</UName>
+    <UName>[Customers].[USA].[CA].[Santa Monica]</UName>
     <Caption>Santa Monica</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -784,7 +784,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Spring Valley]</UName>
+    <UName>[Customers].[USA].[CA].[Spring Valley]</UName>
     <Caption>Spring Valley</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -797,7 +797,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Torrance]</UName>
+    <UName>[Customers].[USA].[CA].[Torrance]</UName>
     <Caption>Torrance</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -810,7 +810,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[West Covina]</UName>
+    <UName>[Customers].[USA].[CA].[West Covina]</UName>
     <Caption>West Covina</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -823,7 +823,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[CA].[Woodland Hills]</UName>
+    <UName>[Customers].[USA].[CA].[Woodland Hills]</UName>
     <Caption>Woodland Hills</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -836,7 +836,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Albany]</UName>
+    <UName>[Customers].[USA].[OR].[Albany]</UName>
     <Caption>Albany</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -849,7 +849,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Beaverton]</UName>
+    <UName>[Customers].[USA].[OR].[Beaverton]</UName>
     <Caption>Beaverton</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -862,7 +862,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Corvallis]</UName>
+    <UName>[Customers].[USA].[OR].[Corvallis]</UName>
     <Caption>Corvallis</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -875,7 +875,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Lake Oswego]</UName>
+    <UName>[Customers].[USA].[OR].[Lake Oswego]</UName>
     <Caption>Lake Oswego</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -888,7 +888,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Lebanon]</UName>
+    <UName>[Customers].[USA].[OR].[Lebanon]</UName>
     <Caption>Lebanon</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -901,7 +901,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Milwaukie]</UName>
+    <UName>[Customers].[USA].[OR].[Milwaukie]</UName>
     <Caption>Milwaukie</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -914,7 +914,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Oregon City]</UName>
+    <UName>[Customers].[USA].[OR].[Oregon City]</UName>
     <Caption>Oregon City</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -927,7 +927,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Portland]</UName>
+    <UName>[Customers].[USA].[OR].[Portland]</UName>
     <Caption>Portland</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -940,7 +940,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Salem]</UName>
+    <UName>[Customers].[USA].[OR].[Salem]</UName>
     <Caption>Salem</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -953,7 +953,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[W. Linn]</UName>
+    <UName>[Customers].[USA].[OR].[W. Linn]</UName>
     <Caption>W. Linn</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -966,7 +966,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[OR].[Woodburn]</UName>
+    <UName>[Customers].[USA].[OR].[Woodburn]</UName>
     <Caption>Woodburn</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -979,7 +979,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Anacortes]</UName>
+    <UName>[Customers].[USA].[WA].[Anacortes]</UName>
     <Caption>Anacortes</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -992,7 +992,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Ballard]</UName>
+    <UName>[Customers].[USA].[WA].[Ballard]</UName>
     <Caption>Ballard</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1005,7 +1005,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Bellingham]</UName>
+    <UName>[Customers].[USA].[WA].[Bellingham]</UName>
     <Caption>Bellingham</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1018,7 +1018,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Bremerton]</UName>
+    <UName>[Customers].[USA].[WA].[Bremerton]</UName>
     <Caption>Bremerton</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1031,7 +1031,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Burien]</UName>
+    <UName>[Customers].[USA].[WA].[Burien]</UName>
     <Caption>Burien</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1044,7 +1044,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Edmonds]</UName>
+    <UName>[Customers].[USA].[WA].[Edmonds]</UName>
     <Caption>Edmonds</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1057,7 +1057,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Everett]</UName>
+    <UName>[Customers].[USA].[WA].[Everett]</UName>
     <Caption>Everett</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1070,7 +1070,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Issaquah]</UName>
+    <UName>[Customers].[USA].[WA].[Issaquah]</UName>
     <Caption>Issaquah</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1083,7 +1083,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Kirkland]</UName>
+    <UName>[Customers].[USA].[WA].[Kirkland]</UName>
     <Caption>Kirkland</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1096,7 +1096,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Lynnwood]</UName>
+    <UName>[Customers].[USA].[WA].[Lynnwood]</UName>
     <Caption>Lynnwood</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1109,7 +1109,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Marysville]</UName>
+    <UName>[Customers].[USA].[WA].[Marysville]</UName>
     <Caption>Marysville</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1122,7 +1122,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Olympia]</UName>
+    <UName>[Customers].[USA].[WA].[Olympia]</UName>
     <Caption>Olympia</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1135,7 +1135,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Port Orchard]</UName>
+    <UName>[Customers].[USA].[WA].[Port Orchard]</UName>
     <Caption>Port Orchard</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1148,7 +1148,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Puyallup]</UName>
+    <UName>[Customers].[USA].[WA].[Puyallup]</UName>
     <Caption>Puyallup</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1161,7 +1161,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Redmond]</UName>
+    <UName>[Customers].[USA].[WA].[Redmond]</UName>
     <Caption>Redmond</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1174,7 +1174,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Renton]</UName>
+    <UName>[Customers].[USA].[WA].[Renton]</UName>
     <Caption>Renton</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1187,7 +1187,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Seattle]</UName>
+    <UName>[Customers].[USA].[WA].[Seattle]</UName>
     <Caption>Seattle</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1200,7 +1200,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Sedro Woolley]</UName>
+    <UName>[Customers].[USA].[WA].[Sedro Woolley]</UName>
     <Caption>Sedro Woolley</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1213,7 +1213,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Spokane]</UName>
+    <UName>[Customers].[USA].[WA].[Spokane]</UName>
     <Caption>Spokane</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1226,7 +1226,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Tacoma]</UName>
+    <UName>[Customers].[USA].[WA].[Tacoma]</UName>
     <Caption>Tacoma</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1239,7 +1239,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Walla Walla]</UName>
+    <UName>[Customers].[USA].[WA].[Walla Walla]</UName>
     <Caption>Walla Walla</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1252,7 +1252,7 @@
     <DisplayInfo>131072</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Customers">
-    <UName>[Customers].[All Customers].[USA].[WA].[Yakima]</UName>
+    <UName>[Customers].[USA].[WA].[Yakima]</UName>
     <Caption>Yakima</Caption>
     <LName>[Customers].[City]</LName>
     <LNum>3</LNum>
@@ -1268,91 +1268,91 @@
     <Tuples>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[CA].[Beverly Hills]</UName>
+    <UName>[Store].[USA].[CA].[Beverly Hills]</UName>
     <Caption>Beverly Hills</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[CA].[Los Angeles]</UName>
+    <UName>[Store].[USA].[CA].[Los Angeles]</UName>
     <Caption>Los Angeles</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[CA].[San Diego]</UName>
+    <UName>[Store].[USA].[CA].[San Diego]</UName>
     <Caption>San Diego</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[CA].[San Francisco]</UName>
+    <UName>[Store].[USA].[CA].[San Francisco]</UName>
     <Caption>San Francisco</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[OR].[Portland]</UName>
+    <UName>[Store].[USA].[OR].[Portland]</UName>
     <Caption>Portland</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>1</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[OR].[Salem]</UName>
+    <UName>[Store].[USA].[OR].[Salem]</UName>
     <Caption>Salem</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Bellingham]</UName>
+    <UName>[Store].[USA].[WA].[Bellingham]</UName>
     <Caption>Bellingham</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>1</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Bremerton]</UName>
+    <UName>[Store].[USA].[WA].[Bremerton]</UName>
     <Caption>Bremerton</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Seattle]</UName>
+    <UName>[Store].[USA].[WA].[Seattle]</UName>
     <Caption>Seattle</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Spokane]</UName>
+    <UName>[Store].[USA].[WA].[Spokane]</UName>
     <Caption>Spokane</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Tacoma]</UName>
+    <UName>[Store].[USA].[WA].[Tacoma]</UName>
     <Caption>Tacoma</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Walla Walla]</UName>
+    <UName>[Store].[USA].[WA].[Walla Walla]</UName>
     <Caption>Walla Walla</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>
     <DisplayInfo>131073</DisplayInfo></Member></Tuple>
     <Tuple>
     <Member Hierarchy="Store">
-    <UName>[Store].[All Stores].[USA].[WA].[Yakima]</UName>
+    <UName>[Store].[USA].[WA].[Yakima]</UName>
     <Caption>Yakima</Caption>
     <LName>[Store].[Store City]</LName>
     <LNum>3</LNum>

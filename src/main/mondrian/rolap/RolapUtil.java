@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,7 +19,6 @@ import mondrian.resource.MondrianResource;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -188,7 +187,7 @@ public class RolapUtil {
         String message)
     {
         return executeQuery(
-            dataSource, sql, -1, component, message, -1, -1);
+            dataSource, sql, 0, 0, component, message, -1, -1);
     }
 
     /**
@@ -203,7 +202,9 @@ public class RolapUtil {
      *
      * @param dataSource DataSource
      * @param sql SQL string
-     * @param maxRows Row limit, or -1 if no limit
+     * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
+     * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
+     *   start from beginning
      * @param component Description of a the component executing the query,
      *   generally a method name, e.g. "SqlTupleReader.readTuples"
      * @param message Description of the purpose of this statement, to be
@@ -215,7 +216,8 @@ public class RolapUtil {
     public static SqlStatement executeQuery(
         DataSource dataSource,
         String sql,
-        int maxRows,
+        int maxRowCount,
+        int firstRowOrdinal,
         String component,
         String message,
         int resultSetType,
@@ -223,8 +225,8 @@ public class RolapUtil {
     {
         SqlStatement stmt =
             new SqlStatement(
-                dataSource, sql, maxRows, component, message,
-                resultSetType, resultSetConcurrency);
+                dataSource, sql, maxRowCount, firstRowOrdinal, component,
+                message, resultSetType, resultSetConcurrency);
         stmt.execute();
         return stmt;
     }

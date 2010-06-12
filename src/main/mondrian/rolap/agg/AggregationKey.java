@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import mondrian.olap.Util;
 import mondrian.rolap.*;
@@ -56,6 +54,8 @@ public class AggregationKey
      */
     private final Map<BitKey, StarPredicate> compoundPredicateMap;
 
+    private int hashCode;
+
     /**
      * Creates an AggregationKey.
      *
@@ -64,10 +64,10 @@ public class AggregationKey
     public AggregationKey(CellRequest request) {
         this.constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
         this.star = request.getMeasure().getStar();
-        compoundPredicateMap = request.getCompoundPredicateMap();
+        this.compoundPredicateMap = request.getCompoundPredicateMap();
     }
 
-    public int hashCode() {
+    public int computeHashCode() {
         int retCode = constrainedColumnsBitKey.hashCode();
         retCode = Util.hash(retCode, star);
         if (compoundPredicateMap != null) {
@@ -76,6 +76,15 @@ public class AggregationKey
             }
         }
         return retCode;
+    }
+
+    public int hashCode() {
+        if (hashCode == 0) {
+            // Compute hash code on first use. It is expensive to compute, and
+            // not always required.
+            hashCode = computeHashCode();
+        }
+        return hashCode;
     }
 
     public boolean equals(Object other) {
@@ -92,13 +101,19 @@ public class AggregationKey
      * Two compound predicates are equal.
      *
      * @param map1 First compound predicate map
-      *@param map2 Second compound predicate map
+     * @param map2 Second compound predicate map
      * @return Whether compound predicate maps are equal
      */
     private static boolean equal(
         final Map<BitKey, StarPredicate> map1,
         final Map<BitKey, StarPredicate> map2)
     {
+        if (map1 == null) {
+            return map2 == null;
+        }
+        if (map2 == null) {
+            return false;
+        }
         if (map1.size() != map2.size()) {
             return false;
         }
@@ -119,7 +134,10 @@ public class AggregationKey
         return
             star.getFactTable().getTableName()
             + " " + constrainedColumnsBitKey.toString()
-            + "\n" + compoundPredicateMap.toString();
+            + "\n"
+            + (compoundPredicateMap == null
+                ? "{}"
+                : compoundPredicateMap.toString());
     }
 
     /**
@@ -145,6 +163,9 @@ public class AggregationKey
      * @return list of predicates
      */
     public List<StarPredicate> getCompoundPredicateList() {
+        if (compoundPredicateMap == null) {
+            return Collections.emptyList();
+        }
         return new ArrayList<StarPredicate>(compoundPredicateMap.values());
     }
 

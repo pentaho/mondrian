@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -90,6 +90,18 @@ public class RolapCube extends CubeBase {
         new ArrayList<RolapHierarchy>();
 
     /**
+     * Set to true when a cube is being modified after creation.
+     *
+     * @see #isLoadInProgress()
+     */
+    private boolean loadInProgress = false;
+
+    private Map<RolapLevel, RolapCubeLevel> virtualToBaseMap =
+        new HashMap<RolapLevel, RolapCubeLevel>();
+
+    final BitKey closureColumnBitKey;
+
+    /**
      * Private constructor used by both normal cubes and virtual cubes.
      *
      * @param schema Schema cube belongs to
@@ -133,6 +145,10 @@ public class RolapCube extends CubeBase {
             if (! isCache) {
                 star.setCacheAggregations(isCache);
             }
+            closureColumnBitKey =
+                BitKey.Factory.makeBitKey(star.getColumnCount());
+        } else {
+            closureColumnBitKey = null;
         }
 
         if (getLogger().isDebugEnabled()) {
@@ -253,20 +269,17 @@ public class RolapCube extends CubeBase {
             }
         }
 
-        // If writeback is enabled, ensure that cube has an atomic cell count
+        // Ensure that cube has an atomic cell count
         // measure even if the schema does not contain one.
-        if (writebackEnabled) {
-            if (factCountMeasure == null) {
-                final MondrianDef.Measure xmlMeasure =
-                    new MondrianDef.Measure();
-                xmlMeasure.aggregator = "count";
-                xmlMeasure.name = "Fact Count";
-                xmlMeasure.visible = false;
-                factCountMeasure =
-                    createMeasure(
-                        xmlCube, measuresLevel, measureList.size(), xmlMeasure);
-                measureList.add(factCountMeasure);
-            }
+        if (factCountMeasure == null) {
+            final MondrianDef.Measure xmlMeasure = new MondrianDef.Measure();
+            xmlMeasure.aggregator = "count";
+            xmlMeasure.name = "Fact Count";
+            xmlMeasure.visible = false;
+            factCountMeasure =
+                createMeasure(
+                    xmlCube, measuresLevel, measureList.size(), xmlMeasure);
+            measureList.add(factCountMeasure);
         }
 
         setMeasuresHierarchyMemberReader(
@@ -1905,6 +1918,11 @@ public class RolapCube extends CubeBase {
         return hierarchyList;
     }
 
+    public boolean isLoadInProgress() {
+        return loadInProgress
+            || getSchema().getSchemaLoadDate() == null;
+    }
+
     /**
      * Association between a MondrianDef.Table with its associated
      * level's depth. This is used to rank tables in a snowflake so that
@@ -2383,6 +2401,9 @@ public class RolapCube extends CubeBase {
     /**
      * Returns the system measure that counts the number of fact table rows in
      * a given cell.
+     *
+     * <p>Never null, because if there is no count measure explicitly defined,
+     * the system creates one.
      */
     RolapMeasure getFactCountMeasure() {
         return factCountMeasure;
@@ -2438,6 +2459,9 @@ public class RolapCube extends CubeBase {
      * @return base cube level if found
      */
     public RolapCubeLevel findBaseCubeLevel(RolapLevel level) {
+        if (virtualToBaseMap.containsKey(level)) {
+            return virtualToBaseMap.get(level);
+        }
         String levelDimName = level.getDimension().getName();
         String levelHierName = level.getHierarchy().getName();
 
@@ -2460,25 +2484,29 @@ public class RolapCube extends CubeBase {
                 levelHierName.substring(0, levelHierName.length() - 8);
         }
 
-        for (int i = 0; i < getDimensions().length; i++) {
-            Dimension dimension = getDimensions()[i];
-            if (dimension.getName().equals(levelDimName)
-                || (isClosure && dimension.getName().equals(closDimName)))
+        for (Dimension dimension : getDimensions()) {
+            final String dimensionName = dimension.getName();
+            if (dimensionName.equals(levelDimName)
+                || (isClosure && dimensionName.equals(closDimName)))
             {
-                for (int j = 0; j <  dimension.getHierarchies().length; j++) {
-                    Hierarchy hier = dimension.getHierarchies()[j];
-                    if (hier.getName().equals(levelHierName)
-                        || (isClosure && hier.getName().equals(closHierName)))
+                for (Hierarchy hier : dimension.getHierarchies()) {
+                    final String hierarchyName = hier.getName();
+                    if (hierarchyName.equals(levelHierName)
+                        || (isClosure && hierarchyName.equals(closHierName)))
                     {
                         if (isClosure) {
-                            return (RolapCubeLevel)
-                                ((RolapCubeLevel) hier.getLevels()[1])
-                                .getClosedPeer();
+                            final RolapCubeLevel baseLevel =
+                                ((RolapCubeLevel)
+                                    hier.getLevels()[1]).getClosedPeer();
+                            virtualToBaseMap.put(level, baseLevel);
+                            return baseLevel;
                         }
-                        for (int k = 0; k < hier.getLevels().length; k++) {
-                            Level lvl = hier.getLevels()[k];
+                        for (Level lvl : hier.getLevels()) {
                             if (lvl.getName().equals(level.getName())) {
-                                return (RolapCubeLevel)lvl;
+                                final RolapCubeLevel baseLevel =
+                                    (RolapCubeLevel) lvl;
+                                virtualToBaseMap.put(level, baseLevel);
+                                return baseLevel;
                             }
                         }
                     }
@@ -2620,16 +2648,21 @@ public class RolapCube extends CubeBase {
                 + xml + "]");
         }
 
-        final List<RolapMember> memberList = new ArrayList<RolapMember>();
-        createCalcMembersAndNamedSets(
-            Collections.singletonList(xmlCalcMember),
-            Collections.<MondrianDef.NamedSet>emptyList(),
-            memberList,
-            new ArrayList<Formula>(),
-            this,
-            true);
-        assert memberList.size() == 1;
-        return memberList.get(0);
+        try {
+            loadInProgress = true;
+            final List<RolapMember> memberList = new ArrayList<RolapMember>();
+            createCalcMembersAndNamedSets(
+                Collections.singletonList(xmlCalcMember),
+                Collections.<MondrianDef.NamedSet>emptyList(),
+                memberList,
+                new ArrayList<Formula>(),
+                this,
+                true);
+            assert memberList.size() == 1;
+            return memberList.get(0);
+        } finally {
+            loadInProgress = false;
+        }
     }
 
     /**
@@ -2665,7 +2698,6 @@ public class RolapCube extends CubeBase {
                 null,
                 new QueryPart[0],
                 new Parameter[0],
-                false,
                 false);
         query.createValidator().validate(formula);
         calculatedMemberList.add(formula);

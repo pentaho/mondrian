@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -139,9 +139,7 @@ class DescendantsFunDef extends FunDefBase {
             };
         } else if (depthSpecified) {
             final IntegerCalc depthCalc =
-                call.getArgCount() > 1
-                ? compiler.compileInteger(call.getArg(1))
-                : null;
+                compiler.compileInteger(call.getArg(1));
             final Flag flag1 = flag;
             return new AbstractMemberListCalc(
                 call, new Calc[] {memberCalc, depthCalc})

@@ -10,8 +10,8 @@
             <![CDATA[
 SELECT
 crossjoin( 
-  [Customers].[All Customers].[USA].children,
-  [Product].[All Products].[Food].children) ON ROWS,
+  [Customers].[USA].children,
+  [Product].[Food].children) ON ROWS,
 {[Measures].[Unit Sales]} ON COLUMNS
 FROM [Sales]
 ]]>
@@ -23,51 +23,51 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Baked Goods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Baking Goods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Breakfast Foods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Canned Foods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Canned Products]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Dairy]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Deli]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Eggs]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Frozen Foods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Meat]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Produce]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Seafood]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Snack Foods]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Snacks]}
-{[Customers].[All Customers].[USA].[CA], [Product].[All Products].[Food].[Starchy Foods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Baked Goods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Baking Goods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Breakfast Foods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Canned Foods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Canned Products]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Dairy]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Deli]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Eggs]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Frozen Foods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Meat]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Produce]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Seafood]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Snack Foods]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Snacks]}
-{[Customers].[All Customers].[USA].[OR], [Product].[All Products].[Food].[Starchy Foods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Baked Goods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Baking Goods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Breakfast Foods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Canned Foods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Canned Products]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Dairy]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Deli]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Eggs]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Frozen Foods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Meat]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Produce]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Seafood]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Snack Foods]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Snacks]}
-{[Customers].[All Customers].[USA].[WA], [Product].[All Products].[Food].[Starchy Foods]}
+{[Customers].[USA].[CA], [Product].[Food].[Baked Goods]}
+{[Customers].[USA].[CA], [Product].[Food].[Baking Goods]}
+{[Customers].[USA].[CA], [Product].[Food].[Breakfast Foods]}
+{[Customers].[USA].[CA], [Product].[Food].[Canned Foods]}
+{[Customers].[USA].[CA], [Product].[Food].[Canned Products]}
+{[Customers].[USA].[CA], [Product].[Food].[Dairy]}
+{[Customers].[USA].[CA], [Product].[Food].[Deli]}
+{[Customers].[USA].[CA], [Product].[Food].[Eggs]}
+{[Customers].[USA].[CA], [Product].[Food].[Frozen Foods]}
+{[Customers].[USA].[CA], [Product].[Food].[Meat]}
+{[Customers].[USA].[CA], [Product].[Food].[Produce]}
+{[Customers].[USA].[CA], [Product].[Food].[Seafood]}
+{[Customers].[USA].[CA], [Product].[Food].[Snack Foods]}
+{[Customers].[USA].[CA], [Product].[Food].[Snacks]}
+{[Customers].[USA].[CA], [Product].[Food].[Starchy Foods]}
+{[Customers].[USA].[OR], [Product].[Food].[Baked Goods]}
+{[Customers].[USA].[OR], [Product].[Food].[Baking Goods]}
+{[Customers].[USA].[OR], [Product].[Food].[Breakfast Foods]}
+{[Customers].[USA].[OR], [Product].[Food].[Canned Foods]}
+{[Customers].[USA].[OR], [Product].[Food].[Canned Products]}
+{[Customers].[USA].[OR], [Product].[Food].[Dairy]}
+{[Customers].[USA].[OR], [Product].[Food].[Deli]}
+{[Customers].[USA].[OR], [Product].[Food].[Eggs]}
+{[Customers].[USA].[OR], [Product].[Food].[Frozen Foods]}
+{[Customers].[USA].[OR], [Product].[Food].[Meat]}
+{[Customers].[USA].[OR], [Product].[Food].[Produce]}
+{[Customers].[USA].[OR], [Product].[Food].[Seafood]}
+{[Customers].[USA].[OR], [Product].[Food].[Snack Foods]}
+{[Customers].[USA].[OR], [Product].[Food].[Snacks]}
+{[Customers].[USA].[OR], [Product].[Food].[Starchy Foods]}
+{[Customers].[USA].[WA], [Product].[Food].[Baked Goods]}
+{[Customers].[USA].[WA], [Product].[Food].[Baking Goods]}
+{[Customers].[USA].[WA], [Product].[Food].[Breakfast Foods]}
+{[Customers].[USA].[WA], [Product].[Food].[Canned Foods]}
+{[Customers].[USA].[WA], [Product].[Food].[Canned Products]}
+{[Customers].[USA].[WA], [Product].[Food].[Dairy]}
+{[Customers].[USA].[WA], [Product].[Food].[Deli]}
+{[Customers].[USA].[WA], [Product].[Food].[Eggs]}
+{[Customers].[USA].[WA], [Product].[Food].[Frozen Foods]}
+{[Customers].[USA].[WA], [Product].[Food].[Meat]}
+{[Customers].[USA].[WA], [Product].[Food].[Produce]}
+{[Customers].[USA].[WA], [Product].[Food].[Seafood]}
+{[Customers].[USA].[WA], [Product].[Food].[Snack Foods]}
+{[Customers].[USA].[WA], [Product].[Food].[Snacks]}
+{[Customers].[USA].[WA], [Product].[Food].[Starchy Foods]}
 Row #0: 2,150
 Row #1: 5,799
 Row #2: 938

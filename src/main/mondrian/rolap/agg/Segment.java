@@ -132,8 +132,8 @@ class Segment {
      * but should still be ignored.
      */
     private final List<Region> excludedRegions;
-    private static final Logger LOGGER =
-            Logger.getLogger(Segment.class);
+
+    private static final Logger LOGGER = Logger.getLogger(Segment.class);
 
     /**
      * Creates a <code>Segment</code>; it's not loaded yet.
@@ -279,8 +279,9 @@ class Segment {
         buf.append(" {");
         buf.append(sep);
         buf.append("measure=");
-        buf.append(measure.getAggregator().getExpression(
-                        measure.getExpression().getGenericExpression()));
+        buf.append(
+            measure.getAggregator().getExpression(
+                measure.getExpression().getGenericExpression()));
         return buf.toString();
     }
 
@@ -343,7 +344,7 @@ class Segment {
             // waitUntilLoaded() ensures data exists, and makes
             // following read threadsafe
             waitUntilLoaded();
-            Object o = data.get(cellKey);
+            Object o = data.getObject(cellKey);
             if (o == null) {
                 o = Util.nullValue;
             }
@@ -370,7 +371,11 @@ class Segment {
      * Returns whether a cell value is excluded from this segment.
      */
     private boolean isExcluded(Object[] keys) {
-        for (Region excludedRegion : excludedRegions) {
+        // Performance critical: cannot use foreach
+        //noinspection ForLoopReplaceableByForEach
+        final int n = excludedRegions.size();
+        for (int i = 0; i < n; i++) {
+            Region excludedRegion = excludedRegions.get(i);
             if (excludedRegion.wouldContain(keys)) {
                 return true;
             }
@@ -460,7 +465,7 @@ class Segment {
      *
      * @param axisKeepBitSets For each axis, a bitmap of the axis values to
      *   keep; each axis must have at least one bit set
-     * @param bestColumn
+     * @param bestColumn The column that retains most of its values
      * @param bestPredicate
      * @param excludedRegions List of regions to exclude from segment
      * @return Segment containing a subset of the values
@@ -523,31 +528,23 @@ class Segment {
         final Segment newSegment =
             new Segment(aggregation, measure, newAxes, excludedRegions);
 
+        // isReady() is guarded and ensures visibility of data
+        Util.assertTrue(isReady());
+
         // Create a dataset containing a subset of the current dataset.
         // Keep the same representation as the current dataset.
         // (We could be smarter - sometimes a subset of a sparse dataset will
         // be dense and VERY occasionally a subset of a relatively dense dataset
         // will be sparse.)
-        SegmentDataset newData;
-
-        // isReady() is guarded and ensures visibility of data
-        Util.assertTrue(isReady());
-        if (data instanceof SparseSegmentDataset) {
-            newData =
-                new SparseSegmentDataset(
-                    newSegment);
-        } else {
-            Object[] newValues = new Object[valueCount];
-            newData =
-                new DenseSegmentDataset(
-                    newSegment,
-                    newValues);
-        }
+        SegmentDataset newData =
+            createDataset(
+                data instanceof SparseSegmentDataset,
+                data.getType(),
+                valueCount);
 
         // If the source is sparse, it is more efficient to iterate over the
         // values we need. If it's dense, it doesn't matter too much.
         int[] pos = new int[axes.length];
-        CellKey newKey = CellKey.Generator.newRefCellKey(pos);
         data:
         for (Map.Entry<CellKey, Object> entry : data) {
             CellKey key = entry.getKey();
@@ -569,11 +566,32 @@ class Segment {
                     pos[i] = integer;
                 }
             }
-            newData.put(newKey, entry.getValue());
+            newData.populateFrom(pos, data, key);
         }
         newSegment.setData(newData, null);
 
         return newSegment;
+    }
+
+    SegmentDataset createDataset(
+        boolean sparse,
+        SqlStatement.Type type,
+        int size)
+    {
+        if (sparse) {
+            return new SparseSegmentDataset(this);
+        } else {
+            switch (type) {
+            case OBJECT:
+                return new DenseObjectSegmentDataset(this, size);
+            case INT:
+                return new DenseIntSegmentDataset(this, size);
+            case DOUBLE:
+                return new DenseDoubleSegmentDataset(this, size);
+            default:
+                throw Util.unexpected(type);
+            }
+        }
     }
 
     /**

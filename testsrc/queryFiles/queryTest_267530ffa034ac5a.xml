@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>with member [Store].[Max CA Store]  as 'Max([Store].[All Stores].[USA].[CA].children)'  Select { [Store].[Max CA Store],[Store].[All Stores].[USA].[CA].children} on Axis(0), {[Time].[1997].children} on Axis(1) from [Sales]</mdxQuery>
+    <mdxQuery>with member [Store].[Max CA Store]  as 'Max([Store].[USA].[CA].children)'  Select { [Store].[Max CA Store],[Store].[USA].[CA].children} on Axis(0), {[Time].[1997].children} on Axis(1) from [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -41,19 +41,19 @@
                     <member>[Store].[Max CA Store]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
                 </tuple>
             </tuples>
         </columns>

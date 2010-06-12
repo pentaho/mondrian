@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Store, Store.[All Stores].[Canada], Store.[All Stores].[Canada].Lead(1), Store.[All Stores].[Canada].Lead(2), Store.[All Stores].[Canada].Lead(0), Store.[All Stores].[USA].Lead(-1) } on ROWS,
+    <mdxQuery>SELECT {Store, Store.[Canada], Store.[Canada].Lead(1), Store.[Canada].Lead(2), Store.[Canada].Lead(0), Store.[USA].Lead(-1) } on ROWS,
        {Time.[1997].[Q2], Time.[1997].[Q2].Lead(-1), Time.[1997].[Q2].Lead(1), Time.[1997].[Q2].Lead(2), Time.[1997].[Q4].Lead(-3)} on COLUMNS
 FROM [Sales] where([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>
     <dataResult>
@@ -65,19 +65,19 @@ FROM [Sales] where([Measures].[Unit Sales], [Product].[All Products], [Store Siz
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
             </tuples>
         </rows>

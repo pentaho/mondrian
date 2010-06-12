@@ -3,18 +3,26 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
 
 import mondrian.olap.*;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Schema;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
 import mondrian.spi.Dialect;
 
+import org.olap4j.metadata.XmlaConstants;
 import org.w3c.dom.Document;
 
 import java.util.Properties;
@@ -41,16 +49,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     // content
     public static final String CONTENT_PROP     = "content";
-    public static final String CONTENT_NONE     =
-                Enumeration.Content.None.name();
-    public static final String CONTENT_DATA     =
-                Enumeration.Content.Data.name();
-    public static final String CONTENT_SCHEMA   =
-                Enumeration.Content.Schema.name();
-    public static final String CONTENT_SCHEMADATA =
-                Enumeration.Content.SchemaData.name();
-    public static final String CONTENT_DATAOMITDEFAULTSLICER =
-                Enumeration.Content.DataOmitDefaultSlicer.name();
 
     public XmlaBasicTest() {
     }
@@ -63,55 +61,13 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         return DiffRepository.lookup(XmlaBasicTest.class);
     }
 
-/*
-    static class R extends RoleImpl {
-        public R() {
-        }
-        public Access getAccess(Cube cube) {
-            if (cube.getName().equals("Sales")) {
-                return Access.NONE;
-            } else {
-                return super.getAccess(cube);
-            }
-        }
-    }
-    static class CallBack implements XmlaRequestCallback {
-        public CallBack() {
-        }
-        public void init(ServletConfig servletConfig) throws ServletException {
-        }
-        public boolean processHttpHeader(
-                HttpServletRequest request,
-                HttpServletResponse response,
-                Map<String, Object> context) throws Exception {
-            return true;
-        }
-        public void preAction(
-            HttpServletRequest request,
-            Element[] requestSoapParts,
-            Map<String, Object> context) throws Exception {
-        }
-        public String generateSessionId(Map<String, Object> context) {
-            return null;
-        }
-        public void postAction(HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map<String, Object> context) throws Exception {
-        }
-    }
-*/
     protected Class<? extends XmlaRequestCallback> getServletCallbackClass() {
         return null;
-/*
-System.out.println("XmlaBasicTest.getServletCallbackClass");
-        return CallBack.class;
-*/
     }
 
     protected String extractSoapResponse(
         Document responseDoc,
-        Enumeration.Content content)
+        XmlaConstants.Content content)
     {
         Document partialDoc = null;
         switch (content) {
@@ -228,6 +184,44 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
         props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDCubesJson() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDCubesDeep() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, "HR");
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDCubesDeepJson() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, "HR");
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
         doTest(requestType, props, TestContext.instance());
@@ -554,7 +548,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         String content)
     {
         if (testCaseName.startsWith("testDrillThrough")
-            && filename.equals("${response}"))
+            && filename.equals("response"))
         {
             // Different databases have slightly different column types, which
             // results in slightly different inferred xml schema for the drill-
@@ -584,9 +578,10 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             case DERBY:
             case HSQLDB:
             case INFOBRIGHT:
-            case NETEZZA:
-            case NEOVIEW:
+            case LUCIDDB:
             case MYSQL:
+            case NEOVIEW:
+            case NETEZZA:
             case TERADATA:
                 content = Util.replace(
                     content,
@@ -606,6 +601,14 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     " sql:field=\"Day\" type=\"xsd:integer\"");
                 break;
             case ACCESS:
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Week\" type=\"xsd:decimal\"",
+                    " sql:field=\"Week\" type=\"xsd:double\"");
+                content = Util.replace(
+                    content,
+                    " sql:field=\"Day\" type=\"xsd:decimal\"",
+                    " sql:field=\"Day\" type=\"xsd:integer\"");
                 break;
             }
         }
@@ -618,16 +621,34 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testExecuteSlicerJson() throws Exception {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testExecuteSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContentDataOmitDefaultSlicer();
+        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
-        doTestExecuteContentDataOmitDefaultSlicer();
+        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
+    }
+
+    public void testExecuteSlicerContentDataIncludeDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
+    }
+
+    public void testExecuteNoSlicerContentDataIncludeDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteWithoutCellProperties() throws Exception
@@ -653,7 +674,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
+    public void Q()
         throws Exception
     {
         String requestType = "EXECUTE";
@@ -685,7 +706,11 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, TestContext.instance());
     }
 
-    // Testcase for bug 1653587.
+    /**
+     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-257">
+     * MONDRIAN-257, "Crossjoin gives 'Execute unparse results' error in
+     * XMLA"</a>.
+     */
     public void testExecuteCrossjoin() throws Exception {
        String requestType = "EXECUTE";
         String query =
@@ -717,7 +742,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
             + "</soapenv:Envelope>";
         Properties props = getDefaultRequestProperties(requestType);
         doTestInline(
-            requestType, request, "${response}", props, TestContext.instance());
+            requestType, request, "response", props, TestContext.instance());
     }
 
     /**
@@ -794,7 +819,7 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
                     return new HierarchyAccess() {
                         public Access getAccess(Member member) {
                             String mname =
-                                "[Customers].[All Customers].[Mexico]";
+                                "[Customers].[Mexico]";
                             if (member.getUniqueName().equals(mname)) {
                                 return Access.NONE;
                             } else {
@@ -844,13 +869,9 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
 
         Properties props = getDefaultRequestProperties(requestType);
         doTestInline(
-            requestType, request, "${response}",
+            requestType, request, "response",
             props, TestContext.instance(), role);
     }
-
-    /*
-     * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
-     */
 
     public void doTestRT(String requestType, TestContext testContext)
         throws Exception
@@ -862,16 +883,16 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         doTest(requestType, props, testContext);
     }
 
-    private void doTestExecuteContentDataOmitDefaultSlicer() throws Exception {
+    private void doTestExecuteContent(
+        XmlaConstants.Content content)
+        throws Exception
+    {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
         String requestText = fileToString("request");
         TestContext testContext = TestContext.instance();
         requestText = testContext.upgradeQuery(requestText);
-        String respFileName = "${response}";
-        Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
-            : null;
+        Document responseDoc = fileToDocument("response");
 
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
@@ -882,12 +903,12 @@ System.out.println("XmlaBasicTest.getServletCallbackClass");
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
             responseDoc,
-            new String[][] {{"content", "DataOmitDefaultSlicer"}}, ns)
+            new String[][] {{"content", content.name()}}, ns)
             : null;
         doTests(
             requestText, props,
-            testContext, null, connectString, catalogNameUrls,
-            expectedDoc, XmlaBasicTest.CONTENT_DATAOMITDEFAULTSLICER, null);
+            testContext, connectString, catalogNameUrls,
+            expectedDoc, content, null, true);
     }
 
     protected String getSessionId(Action action) {

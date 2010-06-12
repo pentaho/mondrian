@@ -44,7 +44,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "from [HR]\n"
             + "where [Pay Type].[Hourly]",
             "Axis #0:\n"
-            + "{[Pay Type].[All Pay Types].[Hourly]}\n"
+            + "{[Pay Type].[Hourly]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Avg Salary]}\n"
             + "{[Measures].[Org Salary]}\n"
@@ -92,10 +92,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             null,
             "<CalculatedMember name='Profit With Spaces'"
             + "  dimension='Measures'"
-            + "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+            + "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>")
+            .withCube("Warehouse and Sales");
 
-        Cell s = testContext.executeExprRaw(
-            "[Measures].[Profit With Spaces]", "Warehouse and Sales");
+        Cell s = testContext.executeExprRaw("[Measures].[Profit With Spaces]");
         Assert.assertEquals("339,610.90", s.getFormattedValue());
     }
 
@@ -436,16 +436,16 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Set of tuples cannot be converted.
         assertExprThrows(
             "{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}",
-            "Member expression '{([Customers].[All Customers].[USA], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");
+            "Member expression '{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");
         assertExprThrows(
             "{([Customers].[USA], [Product].[Food]),"
             + "([Customers].[USA], [Product].[Drink])}",
-            "{([Customers].[All Customers].[USA], [Product].[All Products].[Food]), ([Customers].[All Customers].[USA], [Product].[All Products].[Drink])}' must not be a set");
+            "{([Customers].[USA], [Product].[Food]), ([Customers].[USA], [Product].[Drink])}' must not be a set");
 
         // Sets cannot be converted.
         assertExprThrows(
             "{[Product].[Food]}",
-            "Member expression '{[Product].[All Products].[Food]}' must not be a set");
+            "Member expression '{[Product].[Food]}' must not be a set");
     }
 
     /**
@@ -479,15 +479,15 @@ public class TestCalculatedMembers extends BatchTestCase {
             + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
             + " [Measures].[Foo])",
             "Axis #0:\n"
-            + "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n"
+            + "{[Time].[1997].[Q4].[12], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Seattle]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Spokane]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n"
-            + "{[Store].[All Stores].[USA].[WA].[Yakima]}\n"
+            + "{[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
             + "Row #0: Infinity\n"
             + "Row #0: Infinity\n"
             + "Row #0: 0.5\n"
@@ -642,9 +642,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Colored Profit]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink]}\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
             + "Row #0: |$29,358.98|style=green\n"
             + "Row #1: |$245,764.87|style=green\n"
             + "Row #2: |$64,487.05|style=green\n");
@@ -661,9 +661,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Colored Profit]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink]}\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[All Products].[Non-Consumable]}\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
             + "Row #0: |$29,358.98|style=green\n"
             + "Row #1: |$245,764.87|style=green\n"
             + "Row #2: |$64,487.05|style=green\n");
@@ -757,9 +757,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #1:\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink]}\n"
-            + "{[Product].[All Products].[Food]}\n"
-            + "{[Product].[All Products].[Non-Consumable]}\n");
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n");
     }
 
     public void testNonCharacterMembers() {
@@ -805,9 +805,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[Profit]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[All Customers].[USA].[CA]}\n"
-            + "{[Customers].[All Customers].[USA].[OR]}\n"
-            + "{[Customers].[All Customers].[USA].[WA]}\n"
+            + "{[Customers].[USA].[CA]}\n"
+            + "{[Customers].[USA].[OR]}\n"
+            + "{[Customers].[USA].[WA]}\n"
             + "{[Customers].[Highly Profitable States]}\n"
             + "{[Customers].[Plain States]}\n"
             + "Row #0: 159,167.84\n"
@@ -853,10 +853,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Foo], [Gender].[All Gender].[M]}\n"
+            + "{[Product].[Foo], [Gender].[M]}\n"
             + "{[Product].[Foo], [Gender].[Bar]}\n"
-            + "{[Product].[All Products].[Drink], [Gender].[All Gender].[M]}\n"
-            + "{[Product].[All Products].[Drink], [Gender].[Bar]}\n"
+            + "{[Product].[Drink], [Gender].[M]}\n"
+            + "{[Product].[Drink], [Gender].[Bar]}\n"
             + "Row #0: 1\n"
             + "Row #1: 2\n"
             + "Row #2: 12,395\n"
@@ -877,9 +877,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Foo]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[Canada]}\n"
-            + "{[Store].[All Stores].[Mexico]}\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[Canada]}\n"
+            + "{[Store].[Mexico]}\n"
+            + "{[Store].[USA]}\n"
             + "Row #0: \n"
             + "Row #0: foo1.2345E-8bar\n"
             + "Row #1: \n"
@@ -928,7 +928,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[USA]}\n"
             + "{[Store].[CA or OR]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 142,407\n");
@@ -958,9 +958,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Profit Formatted]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[Canada]}\n"
-            + "{[Store].[All Stores].[Mexico]}\n"
-            + "{[Store].[All Stores].[USA]}\n"
+            + "{[Store].[Canada]}\n"
+            + "{[Store].[Mexico]}\n"
+            + "{[Store].[USA]}\n"
             + "Row #0: \n"
             + "Row #0: foo1.2345E-8bar\n"
             + "Row #1: \n"
@@ -1061,12 +1061,12 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products].[Food]}\n"
+            + "{[Product].[Food]}\n"
             + "{[Product].[Top Product Total]}\n"
             + "Axis #2:\n"
             + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: 191,940\n"
             + "Row #0: 266,773\n"
             + "Row #1: 94,814\n"
@@ -1108,9 +1108,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
             + "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Food]}\n"
-            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Education Level].[All Education Levels].[Graduate Degree], [Product].[All Products].[Food]}\n"
+            + "{[Education Level].[Bachelors Degree], [Product].[Food]}\n"
+            + "{[Education Level].[Bachelors Degree], [Product].[Non-Consumable]}\n"
+            + "{[Education Level].[Graduate Degree], [Product].[Food]}\n"
             + "Row #0: 73,671\n"
             + "Row #1: 49,365\n"
             + "Row #2: 13,051\n"
@@ -1149,9 +1149,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
             + "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Food]}\n"
-            + "{[Education Level].[All Education Levels].[Bachelors Degree], [Product].[All Products].[Non-Consumable]}\n"
-            + "{[Education Level].[All Education Levels].[Graduate Degree], [Product].[All Products].[Food]}\n"
+            + "{[Education Level].[Bachelors Degree], [Product].[Food]}\n"
+            + "{[Education Level].[Bachelors Degree], [Product].[Non-Consumable]}\n"
+            + "{[Education Level].[Graduate Degree], [Product].[Food]}\n"
             + "Row #0: 76,661\n"
             + "Row #1: 49,365\n"
             + "Row #2: 13,051\n"
@@ -1191,7 +1191,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Test]}\n"
+            + "{[Product].[Food].[Test]}\n"
             + "Row #0: 191,940\n");
     }
 
@@ -1227,6 +1227,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalculatedMemberMSASCompatibility() {
+        propSaver.set(MondrianProperties.instance().CaseSensitive, false);
         assertQueryReturns(
             "with "
             + "member gender.calculated as 'gender.m' "
@@ -1294,10 +1295,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Price per Unit]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
+            + "{[Gender].[F], [Marital Status].[M]}\n"
+            + "{[Gender].[F], [Marital Status].[S]}\n"
+            + "{[Gender].[M], [Marital Status].[M]}\n"
+            + "{[Gender].[M], [Marital Status].[S]}\n"
             + "Row #0: 779\n"
             + "Row #0: 2.40\n"
             + "Row #1: 811\n"
@@ -1324,17 +1325,17 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "from [Sales]\n"
             + "where [Top Products] * [Time].[1997].[Q3]",
             "Axis #0:\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony], [Time].[1997].[Q3]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Price per Unit]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
+            + "{[Gender].[F], [Marital Status].[M]}\n"
+            + "{[Gender].[F], [Marital Status].[S]}\n"
+            + "{[Gender].[M], [Marital Status].[M]}\n"
+            + "{[Gender].[M], [Marital Status].[S]}\n"
             + "Row #0: 779\n"
             + "Row #0: 2.40\n"
             + "Row #1: 811\n"
@@ -1360,16 +1361,16 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Burnaby]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Cliffside]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Haney]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Ladner]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Langford]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Langley]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Metchosin]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[N. Vancouver]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Newton]}\n"
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[All Customers].[Canada].[BC].[Oak Bay]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Burnaby]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Cliffside]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Haney]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Ladner]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Langford]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Langley]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Metchosin]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[N. Vancouver]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Newton]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Customers].[Canada].[BC].[Oak Bay]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
             + "Row #2: \n"
@@ -1401,17 +1402,17 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "from [Sales]\n"
             + "where [Top Product Cities] * [Time].[1997].[Q3]",
             "Axis #0:\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods], [Customers].[All Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Produce].[Vegetables], [Customers].[All Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods], [Customers].[All Customers].[USA].[WA].[Puyallup], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods], [Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables], [Customers].[USA].[WA].[Spokane], [Time].[1997].[Q3]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods], [Customers].[USA].[WA].[Puyallup], [Time].[1997].[Q3]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Price per Unit]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}\n"
-            + "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}\n"
+            + "{[Gender].[F], [Marital Status].[M]}\n"
+            + "{[Gender].[F], [Marital Status].[S]}\n"
+            + "{[Gender].[M], [Marital Status].[M]}\n"
+            + "{[Gender].[M], [Marital Status].[S]}\n"
             + "Row #0: 483\n"
             + "Row #0: 2.21\n"
             + "Row #1: 419\n"
@@ -1474,9 +1475,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[M0]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[CA]}\n"
-            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[OR]}\n"
-            + "{[Product].[All Products].[Food], [Store].[All Stores].[USA].[WA]}\n"
+            + "{[Product].[Food], [Store].[USA].[CA]}\n"
+            + "{[Product].[Food], [Store].[USA].[OR]}\n"
+            + "{[Product].[Food], [Store].[USA].[WA]}\n"
             + "Row #0: 217,506\n"
             + "Row #1: 193,104\n"
             + "Row #2: 359,162\n");
@@ -1570,17 +1571,17 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
             + "{[Country].[*TOTAL_MEMBER_SEL~SUM], [Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM]}\n"
-            + "{[Country].[All Countrys].[Canada], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
-            + "{[Country].[All Countrys].[Canada], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Mid-Size Grocery]}\n"
-            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
-            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Gourmet Supermarket]}\n"
-            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Mid-Size Grocery]}\n"
-            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Small Grocery]}\n"
-            + "{[Country].[All Countrys].[Mexico], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Supermarket]}\n"
-            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Deluxe Supermarket]}\n"
-            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Gourmet Supermarket]}\n"
-            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Small Grocery]}\n"
-            + "{[Country].[All Countrys].[USA], [Store Type.Store Types Hierarchy].[All Store Types Member Name].[Supermarket]}\n"
+            + "{[Country].[Canada], [Store Type.Store Types Hierarchy].[Deluxe Supermarket]}\n"
+            + "{[Country].[Canada], [Store Type.Store Types Hierarchy].[Mid-Size Grocery]}\n"
+            + "{[Country].[Mexico], [Store Type.Store Types Hierarchy].[Deluxe Supermarket]}\n"
+            + "{[Country].[Mexico], [Store Type.Store Types Hierarchy].[Gourmet Supermarket]}\n"
+            + "{[Country].[Mexico], [Store Type.Store Types Hierarchy].[Mid-Size Grocery]}\n"
+            + "{[Country].[Mexico], [Store Type.Store Types Hierarchy].[Small Grocery]}\n"
+            + "{[Country].[Mexico], [Store Type.Store Types Hierarchy].[Supermarket]}\n"
+            + "{[Country].[USA], [Store Type.Store Types Hierarchy].[Deluxe Supermarket]}\n"
+            + "{[Country].[USA], [Store Type.Store Types Hierarchy].[Gourmet Supermarket]}\n"
+            + "{[Country].[USA], [Store Type.Store Types Hierarchy].[Small Grocery]}\n"
+            + "{[Country].[USA], [Store Type.Store Types Hierarchy].[Supermarket]}\n"
             + "Row #0: 571,596\n"
             + "Row #1: 23,112\n"
             + "Row #2: 34,452\n"

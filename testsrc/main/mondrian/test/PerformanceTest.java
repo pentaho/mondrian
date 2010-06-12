@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,6 +11,8 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.util.Bug;
+
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -22,8 +24,11 @@ import java.util.*;
  * @version $Id$
  */
 public class PerformanceTest extends FoodMartTestCase {
-    // Set this to false for checked in code.
-    private static final boolean DEBUG = false;
+    /**
+     * Certain tests are enabled only if logging is enabled.
+     */
+    private static final Logger LOGGER =
+        Logger.getLogger(PerformanceTest.class);
 
     public PerformanceTest(String name) {
         super(name);
@@ -135,7 +140,7 @@ public class PerformanceTest extends FoodMartTestCase {
         }
 
         // Build a query with an explcit member list.
-        if (DEBUG) {
+        if (LOGGER.isDebugEnabled()) {
             StringBuilder buf = new StringBuilder();
             for (Member member : memberList) {
                 if (buf.length() > 0) {
@@ -212,12 +217,138 @@ public class PerformanceTest extends FoodMartTestCase {
         assertEquals(1, result.getAxes()[1].getPositions().size());
     }
 
+    /***
+     * Tests performance of a larger schema with a large number of result cells
+     * Runs in 186 seconds without nonAllPositions array in RolapEvaluator
+     * Runs in 14 seconds when RolapEvaluator.getProperty uses getNonAllMembers
+     * The performance boost gets more significant as the schema size grows
+     */
+    public void testBigResultsWithBigSchemaPerforms() {
+        if (!LOGGER.isDebugEnabled()) {
+            return;
+        }
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            extraGenders(1000),
+            null);
+        String mdx =
+            "with "
+            + " member [Measures].[one] as '1'"
+            + " member [Measures].[two] as '2'"
+            + " member [Measures].[three] as '3'"
+            + " member [Measures].[four] as '4'"
+            + " member [Measures].[five] as '5'"
+            + " select "
+            + "{[Measures].[one],[Measures].[two],[Measures].[three],[Measures].[four],[Measures].[five]}"
+            + " on 0, "
+            + "Crossjoin([Customers].[name].members,[Store].[Store Name].members)"
+            + " on 1 from sales";
+        long start = System.currentTimeMillis();
+        testContext.executeQuery(mdx);
+        printDuration("getProperty taking a long time", start);
+    }
+
+    private String extraGenders(final int numGenders) {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < numGenders;i++) {
+            builder.append(
+                String.format(
+                    "<Dimension name=\"Gender%d \" foreignKey=\"customer_id\">"
+                    + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">"
+                    + "      <Table name=\"customer\"/>"
+                    + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>"
+                    + "    </Hierarchy>"
+                    + "</Dimension>", i));
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Runs a query that performs a lot of in-memory calculation.
+     *
+     * <p>Timings (branch / change / host / DBMS / jdk / timings (s) / mean):
+     * <ul>
+     * <li>mondrian-3.2 13366 marmalade oracle jdk1.6 592 588 581 571 avg 583
+     * <li>mondrian-3.2 13367 marmalade oracle jdk1.6 643 620 631 671 avg 641
+     * <li>mondrian-3.2 13397 marmalade oracle jdk1.6 604 626
+     * <li>mondrian-3.2 13467 marmalade oracle jdk1.6 610 574
+     * <li>mondrian-3.2 13489 marmalade oracle jdk1.6 565 561 579 596 avg 575
+     * <li>mondrian-3.2 13490 marmalade oracle jdk1.6 607 611 581 605 avg 601
+     * <li>mondrian-3.2 xxxxx marmalade oracle jdk1.6 562 583 541 522 avg 552
+     * </ul>
+     */
+    public void testInMemoryCalc() {
+        if (!LOGGER.isDebugEnabled()) {
+            // Test is too expensive to run as part of standard regress.
+            // Take 10h on hudson (MySQL)!!!
+            return;
+        }
+        final String result =
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[Typical Store Sales]}\n"
+            + "{[Measures].[Ratio]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Baked Goods].[Bread].[Sliced Bread].[Modell].[Modell Rye Bread], [Customers].[USA].[OR].[Salem].[Joan Johnson]}\n"
+            + "{[Product].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Denny].[Denny Plastic Knives], [Customers].[USA].[OR].[Lebanon].[Pat Pinkston]}\n"
+            + "{[Product].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Shady Lake].[Shady Lake Thai Rice], [Customers].[USA].[CA].[Grossmont].[Anne Silva]}\n"
+            + "{[Product].[Food].[Canned Foods].[Canned Soup].[Soup].[Better].[Better Regular Ramen Soup], [Customers].[USA].[CA].[Coronado].[Robert Brink]}\n"
+            + "{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Bird Call].[Bird Call Laundry Detergent], [Customers].[USA].[CA].[Downey].[Eric Renn]}\n"
+            + "Row #0: 19.65\n"
+            + "Row #0: 3.12\n"
+            + "Row #0: 6.30\n"
+            + "Row #1: 15.56\n"
+            + "Row #1: 2.80\n"
+            + "Row #1: 5.56\n"
+            + "Row #2: 11.24\n"
+            + "Row #2: 2.10\n"
+            + "Row #2: 5.35\n"
+            + "Row #3: 11.22\n"
+            + "Row #3: 2.46\n"
+            + "Row #3: 4.56\n"
+            + "Row #4: 6.33\n"
+            + "Row #4: 1.71\n"
+            + "Row #4: 3.70\n";
+        final String mdx =
+            "with member [Measures].[Typical Store Sales] as\n"
+            + "  Max(\n"
+            + "    [Customers].Siblings,\n"
+            + "    Min(\n"
+            + "      [Product].Siblings,\n"
+            + "      Avg(\n"
+            + "        [Time].Siblings,\n"
+            + "        [Measures].[Store Sales])))\n"
+            + "member [Measures].[Ratio] as\n"
+            + "  [Measures].[Store Sales]\n"
+            + "   / [Measures].[Typical Store Sales]\n"
+            + "select\n"
+            + "  {\n"
+            + "    [Measures].[Store Sales],\n"
+            + "    [Measures].[Typical Store Sales],\n"
+            + "    [Measures].[Ratio]\n"
+            + "  } on 0,\n"
+            + "  TopCount(\n"
+            + "    Filter(\n"
+            + "      NonEmptyCrossJoin("
+            + "        [Product].[Product Name].Members,\n"
+            + "        [Customers].[Name].Members),\n"
+            + "      [Measures].[Ratio] > 1.1\n"
+            + "      and [Measures].[Store Sales] > 5),\n"
+            + "    5,\n"
+            + "    [Measures].[Ratio]) on 1\n"
+            + "from [Sales]\n"
+            + "where [Time].[1997].[Q3]";
+        final long start = System.currentTimeMillis();
+        assertQueryReturns(mdx, result);
+        printDuration("in-memory calc", start);
+    }
+
     private void printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
-        if (DEBUG) {
-            System.out.println(desc + " took " + duration + " millis");
-        }
+        LOGGER.debug(desc + " took " + duration + " millis");
     }
 }
 

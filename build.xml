@@ -4,31 +4,20 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2001-2003 Kana Software, Inc.
-  == Copyright (C) 2001-2009 Julian Hyde and others
+  == Copyright (C) 2001-2010 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
 <project name="mondrian" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
   <property environment="env"/>
 
-  <!-- Define desired ivy version and location. -->
-  <property name="ivy.install.version" value="2.1.0"/>
-  <property name="ivy.jar.dir" value="${basedir}/ivy"/>
-  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
-
   <property name="project.location" location="${basedir}"/>
   <property name="lib.location" location="${project.location}/lib"/>
   <property file="${project.location}/build.properties"/>
+  <property file="${project.location}/test.properties"/>
   <property file="${project.location}/mondrian.properties"/>
   <property name="project.build.debug" value="on"/>
-  <property name="Name" value="Mondrian"/>
-  <property name="name" value="mondrian"/>
-  <property name="version" value="4.0.0.13109"/>
-  <property name="vendor" value="Pentaho"/>
-  <property name="driver.name" value="Mondrian olap4j driver"/>
-  <property name="driver.version" value="4.0.0"/>
-  <property name="driver.version.major" value="4"/>
-  <property name="driver.version.minor" value="000"/>
+
   <!--
     ===================================================================
     Set the properties related to paths
@@ -46,6 +35,9 @@
       <isset property="cruisecontrol" />
     </not>
   </condition>
+
+  <import file="subfloor.xml" />
+
   <property name="testsrc.dir" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
@@ -59,8 +51,8 @@
   <property name="testclasses.dir" value="testclasses"/>
   <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
   <property name="build.dir" value="build"/>
-  <property name="dist.name" value="${name}-${version}"/>
-  <property name="embedded.dist.name" value="${name}-${version}-embedded"/>
+  <property name="dist.name" value="${name}-${project.revision}"/>
+  <property name="embedded.dist.name" value="${name}-${project.revision}-embedded"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
   <property name="demo.dir" value="demo"/>
@@ -72,7 +64,7 @@
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
   <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
-  <property name="workbench.dist.name" value="workbench-${version}"/>
+  <property name="workbench.dist.name" value="workbench-${project.revision}"/>
   <property name="workbench.dist.file" value="${workbench.dist.name}.zip"/>
   <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
@@ -80,8 +72,6 @@
   <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="war.embeddedDb.file" value="${lib.dir}/${name}-embedded.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
-  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
-  <property name="junit.home" value="${env.JUNIT_HOME}"/>
 
   <property name="log4j.configuration" value="log4j.properties" />
   
@@ -188,7 +178,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="junit.jar"/>
     </fileset>
     <pathelement path="${driver.classpath}"/>
-    <!-- this picks up the default log4.properties -->
+    <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 
@@ -206,7 +196,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
     <pathelement path="${driver.classpath}"/>
-    <!-- this picks up the default log4.properties -->
+    <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 
@@ -258,17 +248,17 @@ demo/access/MondrianFoodMart.mdb"/>
   <!--
     ===================================================================
     Properties for running the FoodMart test. (Override them by
-    editing build.properties)
+    editing test.properties)
     ===================================================================
   -->
 
-  <!-- Comma-separated list of jdbc drivers. Override in build.properties. -->
+  <!-- Comma-separated list of jdbc drivers. Override in test.properties. -->
   <property name="mondrian.jdbcDrivers" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
 
-  <!-- Connect string to the database. Override in build.properties. -->
+  <!-- Connect string to the database. Override in test.properties. -->
   <property name="mondrian.foodmart.jdbcURL" value="jdbc:odbc:MondrianFoodMart"/>
 
-  <!-- Classpath for JDBC drivers. Override in your build.properties. -->
+  <!-- Classpath for JDBC drivers. Override in your test.properties. -->
   <property name="driver.classpath" value=""/>
 
   <!-- URL of the catalog definition. -->
@@ -282,44 +272,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <property name="mondrian.test.Name" value=""/>
 
   <!-- Arguments to the java process spawned by the junit task. -->
-  <property name="junit.jvmargs" value="-ea -esa -Xmx256m"/>
-
-  <!-- Bootstrap Ivy from web site so that it can be used without any special
-       installation. Then of course it will load all of the other jars we
-       need. -->
-  <target name="download-ivy" unless="skip.download">
-    <mkdir dir="${ivy.jar.dir}"/>
-    <get
-        src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
-        dest="${ivy.jar.file}"
-        usetimestamp="true"/>
-  </target>
-
-  <!-- Define ivy tasks. If you put ivy.jar in your ant lib directory, this
-       task is not necessary. -->
-  <target name="install-ivy" depends="download-ivy">
-    <!-- Try to load ivy here from local ivy dir, in case the user has not
-         already dropped it into ant's lib dir. (Note that the latter copy
-         will always take precedence.) We will not fail as long as local
-         lib dir exists (it may be empty) and ivy is in at least one of
-         ant's lib dir or the local lib dir. -->
-    <path id="ivy.lib.path">
-        <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
-    </path>
-    <taskdef
-        resource="org/apache/ivy/ant/antlib.xml"
-        uri="antlib:org.apache.ivy.ant"
-        classpathref="ivy.lib.path"/>
-    <ivy:settings file="${basedir}/ivysettings.xml"/>
-  </target>
-
-  <target name="clean-ivy">
-    <delete dir="${ivy.jar.dir}"/>
-  </target>
-
-  <target name="clean-cache" depends="install-ivy">
-    <ivy:cleancache/>
-  </target>
+  <property name="junit.jvmargs" value="-ea -esa -Xmx1024m"/>
 
   <target name="help">
     <echo>
@@ -344,8 +297,6 @@ demo/access/MondrianFoodMart.mdb"/>
   <echo>==============================================================</echo>
   <echo>project.location             = ${project.location}</echo>
   <echo>jdk.home                     = ${env.JAVA_HOME}</echo>
-  <echo>catalina.home                = ${env.CATALINA_HOME}</echo>
-  <echo>junit.home                   = ${env.JUNIT_HOME}</echo>
   <echo>log4j.configuration          = ${log4j.configuration}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>
@@ -379,7 +330,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <antcall target="clean"/>
   </target>
 
-  <target name="prepare" depends="download-ivy,install-ivy,resolve">
+  <target name="prepare" depends="install-ivy,resolve">
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${testclasses.dir}"/>
     <mkdir dir="${build.dir}"/>
@@ -562,7 +513,7 @@ META-INF/**"/>
     <javacup
         srcdir="${java.dir}"
         input="${java.dir}/mondrian/olap/Parser.cup"
-        expect="61"
+        expect="63"
         interface="true"/>
   </target>
 
@@ -603,7 +554,7 @@ META-INF/**"/>
   <!-- Before you run it, you will need to set the
        "mondrian.jdbcDrivers", "mondrian.foodmart.jdbcURL", and
        "mondrian.foodmart.catalogURL" properties. The easiest way to
-       do this is to edit the file "build.properties". -->
+       do this is to edit the file "test.properties". -->
 
   <target name="set.connectString">
     <!-- Ensure that the JdbcUser parameter is only added to the connect string
@@ -872,7 +823,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
   <target name="version">
     <echo file="VERSION.txt">Title: ${name}
-Version: ${version}
+Version: ${project.revision}
 Vendor: ${vendor}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
@@ -1243,11 +1194,13 @@ VERSION.txt"/>
         <attribute name="Built-By" value="${user.name}"/>
         <section name="mondrian.olap">
           <attribute name="Implementation-Title" value="${name}"/>
-          <attribute name="Implementation-Version" value="${version}"/>
+          <attribute name="Implementation-Version" value="${project.revision}"/>
           <attribute name="Implementation-Vendor" value="${vendor}"/>
         </section>
       </manifest>
     </jar>
+    <copy file="${jar.file}"
+        tofile="${dist.dir}/${ivy.artifact.id}-${project.revision}.jar"/>
   </target>
 
   <target name="xml_schema"
@@ -1301,7 +1254,7 @@ clean against JDK 1.6.">
         author="true"
         source="1.5"
         access="${access}"
-        Windowtitle="Mondrian OLAP Engine, version ${version}"
+        Windowtitle="Mondrian OLAP Engine, version ${project.revision}"
         additionalparam="${additionalparam}"
       >
       <tag name="pre" description="Pre-condition:"
@@ -1348,7 +1301,7 @@ diagrams and hyperlinks to source code">
         author="true"
         source="1.5"
         access="package"
-        Windowtitle="Mondrian OLAP Engine, version ${version}"
+        Windowtitle="Mondrian OLAP Engine, version ${project.revision}"
         additionalparam="-linksource"
       >
       <tag name="pre" description="Pre-condition:"

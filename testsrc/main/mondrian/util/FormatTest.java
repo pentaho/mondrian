@@ -159,9 +159,9 @@ public class FormatTest extends TestCase {
         checkNumber(locale, format, new BigDecimal("0"), result0);
         checkNumber(locale, format, new BigDecimal(".6"), resultPoint6);
         checkNumber(locale, format, null, resultEmpty);
-        checkNumber(locale, format, Long.valueOf(6), result6);
-        checkNumber(locale, format, Long.valueOf(-6), resultNeg6);
-        checkNumber(locale, format, Long.valueOf(0), result0);
+        checkNumber(locale, format, 6L, result6);
+        checkNumber(locale, format, -6L, resultNeg6);
+        checkNumber(locale, format, 0L, result0);
     }
 
     private void checkNumber(
@@ -487,8 +487,7 @@ public class FormatTest extends TestCase {
     }
 
     public void testAllTokens() {
-        for (int i = 0; i < Format.tokens.length; i++) {
-            Format.Token fe = Format.tokens[i];
+        for (Format.Token fe : Format.getTokenList()) {
             Object o;
             if (fe.isNumeric()) {
                 o = d;
@@ -614,6 +613,47 @@ public class FormatTest extends TestCase {
             assertEquals(i + ".", s);
             buf.append("#");
         }
+    }
+
+    public void testString() {
+        checkFormat(null, "This Is A Test", ">", "THIS IS A TEST");
+        checkFormat(null, "This Is A Test", "<", "this is a test");
+        checkFormat(null, "hello", "\\f\\i\\x\\e\\d", "fixed");
+        checkFormat(null, "hello", ">\\f\\i\\x\\e\\d<", "HELLOfixedhello");
+
+        final BigDecimal decimal = new BigDecimal("123.45");
+        final int integer = 123;
+        final String string = "Foo Bar";
+
+        // ">"
+        checkFormat(null, decimal, ">", ">");
+        checkFormat(null, integer, ">", ">");
+        checkFormat(null, string, ">", "FOO BAR"); // SSAS 2005 returns ">"
+
+        // "<"
+        checkFormat(null, decimal, "<", "<");
+        checkFormat(null, integer, "<", "<");
+        checkFormat(null, string, "<", "foo bar"); // SSAS 2005 returns "<"
+
+        // "@" (can't figure out how to use this -- SSAS 2005 always ignores)
+        checkFormat(null, decimal, "@", "@"); // checked on SSAS 2005
+        checkFormat(null, integer, "@", "@"); // checked on SSAS 2005
+        checkFormat(null, string, "@", "@"); // checked on SSAS 2005
+
+        // combinations
+        checkFormat(null, string, "<@", "foo bar@"); // SSAS 2005 returns "<@"
+        checkFormat(
+            null, string, "<>", "foo barFOO BAR"); // SSAS 2005 returns "<>"
+        checkFormat(null, string, "E", "E"); // checked on SSAS 2005
+
+        checkFormat(
+            null, decimal, "E",
+            "E"); // FIXME: SSAS 2005 returns "1.234500E+002"
+
+        checkFormat(null, decimal, "<E", "<E"); // checked on SSAS 2005
+
+        // spec and SSAS 2005 disagree
+        checkFormat(null, string, "\"fixed\"", "fixed");
     }
 }
 

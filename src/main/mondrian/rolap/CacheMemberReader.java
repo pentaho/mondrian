@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -48,7 +48,11 @@ class CacheMemberReader implements MemberReader, MemberCache {
         this.mapKeyToMember = new HashMap<Object, RolapMember>();
         this.members = source.getMembers();
         for (int i = 0; i < members.size(); i++) {
-            members.get(i).setOrdinal(i);
+            RolapMember member = members.get(i);
+            if (member instanceof RolapCubeMember) {
+                member = ((RolapCubeMember) member).getRolapMember();
+            }
+            ((RolapMemberBase) member).setOrdinal(i);
         }
     }
 
@@ -148,7 +152,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     public List<RolapMember> getRootMembers() {
         List<RolapMember> list = new ArrayList<RolapMember>();
         for (RolapMember member : members) {
-            if (member.getParentUniqueName() == null) {
+            if (member.getParentMember() == null) {
                 list.add(member);
             }
         }

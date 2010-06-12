@@ -19,7 +19,7 @@
             <tuples>
                 <tuple>
                     <member>[Measures].[Unit Sales]</member>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Promotions].[All Promotions]</member>
@@ -57,13 +57,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

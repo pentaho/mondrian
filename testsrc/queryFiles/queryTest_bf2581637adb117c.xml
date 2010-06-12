@@ -54,52 +54,52 @@
                     <member>[Customers].[All Customers]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Canada]</member>
+                    <member>[Customers].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Canada].[BC]</member>
+                    <member>[Customers].[Canada].[BC]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico]</member>
+                    <member>[Customers].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[DF]</member>
+                    <member>[Customers].[Mexico].[DF]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Guerrero]</member>
+                    <member>[Customers].[Mexico].[Guerrero]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Jalisco]</member>
+                    <member>[Customers].[Mexico].[Jalisco]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Mexico]</member>
+                    <member>[Customers].[Mexico].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Oaxaca]</member>
+                    <member>[Customers].[Mexico].[Oaxaca]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Sinaloa]</member>
+                    <member>[Customers].[Mexico].[Sinaloa]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Veracruz]</member>
+                    <member>[Customers].[Mexico].[Veracruz]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Yucatan]</member>
+                    <member>[Customers].[Mexico].[Yucatan]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico].[Zacatecas]</member>
+                    <member>[Customers].[Mexico].[Zacatecas]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA]</member>
+                    <member>[Customers].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[CA]</member>
+                    <member>[Customers].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[OR]</member>
+                    <member>[Customers].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA].[WA]</member>
+                    <member>[Customers].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

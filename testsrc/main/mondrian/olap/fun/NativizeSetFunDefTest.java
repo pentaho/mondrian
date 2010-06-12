@@ -21,20 +21,34 @@ import mondrian.test.*;
  * @since Oct 14, 2009
  */
 public class NativizeSetFunDefTest extends BatchTestCase {
-    private final PropertySaver propSaver = new PropertySaver();
-
     public void setUp() throws Exception {
         super.setUp();
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
         propSaver.set(
             MondrianProperties.instance().NativizeMinThreshold, 0);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, false);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates, false);
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        // revert any properties that have been set during this test
-        propSaver.reset();
+    }
+
+    public void testIsNoOpWithAggregatesTablesOn() {
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates, true);
+        checkNotNative(
+            "with  member [gender].[agg] as"
+            + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
+            + "select NativizeSet(CrossJoin( "
+            + "{gender.gender.members, gender.agg}, "
+            + "{[marital status].[marital status].members}"
+            + ")) on 0 from sales");
     }
 
     public void testLevelHierarchyHighCardinality() {
@@ -496,7 +510,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNoSubstitutionsArityTwo() {
-        checkNative(
+        checkNotNative(
             "SELECT NativizeSet(CrossJoin("
             + "{Gender.F, Gender.M}, "
             + "{ [Marital Status].M } "
@@ -1026,7 +1040,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         assertQueryIsReWritten(
             "SELECT NativizeSet({Gender.M,Gender.F}) on 0 from sales",
             "select "
-            + "NativizeSet({[Gender].[All Gender].[M], [Gender].[All Gender].[F]}) "
+            + "NativizeSet({[Gender].[M], [Gender].[F]}) "
             + "ON COLUMNS\n"
             + "from [Sales]\n");
     }
@@ -1055,7 +1069,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "'{[Marital Status].[_Nativized_Member_Marital Status_Marital Status_]}'\n"
             + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
             + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010.0'\n"
-            + "select NativizeSet(Crossjoin({[Gender].[All Gender].[M], [Gender].[All Gender].[F]}, "
+            + "select NativizeSet(Crossjoin({[Gender].[M], [Gender].[F]}, "
             + "{[_Nativized_Set_Marital Status_Marital Status_]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
@@ -1065,17 +1079,17 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
 
         assertQueryIsReWritten(
-            "WITH SET [COG_OQP_INT_s4] AS 'CROSSJOIN({[Education Level].[All Education Levels].[Graduate Degree]},"
+            "WITH SET [COG_OQP_INT_s4] AS 'CROSSJOIN({[Education Level].[Graduate Degree]},"
             + " [COG_OQP_INT_s3])'"
-            + " SET [COG_OQP_INT_s3] AS 'CROSSJOIN({[Marital Status].[All Marital Status].[S]}, [COG_OQP_INT_s2])'"
-            + " SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Gender].[All Gender].[F]}, [COG_OQP_INT_s1])'"
+            + " SET [COG_OQP_INT_s3] AS 'CROSSJOIN({[Marital Status].[S]}, [COG_OQP_INT_s2])'"
+            + " SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Gender].[F]}, [COG_OQP_INT_s1])'"
             + " SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Product].[Product Name].MEMBERS}, {[Customers].[Name].MEMBERS})' "
             + "SELECT {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0),"
             + " NativizeSet([COG_OQP_INT_s4]) DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(1) "
             + "FROM [Sales] CELL PROPERTIES VALUE, FORMAT_STRING",
-            "with set [COG_OQP_INT_s4] as 'Crossjoin({[Education Level].[All Education Levels].[Graduate Degree]}, [COG_OQP_INT_s3])'\n"
-            + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Marital Status].[All Marital Status].[S]}, [COG_OQP_INT_s2])'\n"
-            + "  set [COG_OQP_INT_s2] as 'Crossjoin({[Gender].[All Gender].[F]}, [COG_OQP_INT_s1])'\n"
+            "with set [COG_OQP_INT_s4] as 'Crossjoin({[Education Level].[Graduate Degree]}, [COG_OQP_INT_s3])'\n"
+            + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Marital Status].[S]}, [COG_OQP_INT_s2])'\n"
+            + "  set [COG_OQP_INT_s2] as 'Crossjoin({[Gender].[F]}, [COG_OQP_INT_s1])'\n"
             + "  set [COG_OQP_INT_s1] as 'Crossjoin({[_Nativized_Set_Product_Product Name_]}, {[_Nativized_Set_Customers_Name_]})'\n"
             + "  member [Customers].[_Nativized_Member_Customers_Name_] as '[Customers].DefaultMember'\n"
             + "  set [_Nativized_Set_Customers_Name_] as '{[Customers].[_Nativized_Member_Customers_Name_]}'\n"
@@ -1101,15 +1115,15 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + " AGGREGATE({[Product].[Product Name].MEMBERS}))', SOLVE_ORDER = 4 "
             + "MEMBER [Product].[COG_OQP_INT_m2] AS 'AGGREGATE({[Product].[Product Name].MEMBERS},"
             + " [Measures].[Unit Sales])', SOLVE_ORDER = 4 "
-            + "SET [COG_OQP_INT_s5] AS 'CROSSJOIN({[Marital Status].[All Marital Status].[S]}, [COG_OQP_INT_s4])'"
-            + " SET [COG_OQP_INT_s4] AS 'CROSSJOIN({[Gender].[All Gender].[F]}, [COG_OQP_INT_s2])'"
-            + " SET [COG_OQP_INT_s3] AS 'CROSSJOIN({[Gender].[All Gender].[F]}, {[COG_OQP_INT_s2], [COG_OQP_INT_s1]})' "
+            + "SET [COG_OQP_INT_s5] AS 'CROSSJOIN({[Marital Status].[S]}, [COG_OQP_INT_s4])'"
+            + " SET [COG_OQP_INT_s4] AS 'CROSSJOIN({[Gender].[F]}, [COG_OQP_INT_s2])'"
+            + " SET [COG_OQP_INT_s3] AS 'CROSSJOIN({[Gender].[F]}, {[COG_OQP_INT_s2], [COG_OQP_INT_s1]})' "
             + "SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Product].[Product Name].MEMBERS}, {[Customers].[Name].MEMBERS})' "
             + "SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Product].[COG_OQP_INT_umg1]}, {[Customers].DEFAULTMEMBER})' "
             + "SELECT {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0),"
-            + " NativizeSet(GENERATE({[Education Level].[All Education Levels].[Graduate Degree]}, \n"
+            + " NativizeSet(GENERATE({[Education Level].[Graduate Degree]}, \n"
             + "CROSSJOIN(HEAD({([Education Level].CURRENTMEMBER)}, IIF(COUNT([COG_OQP_INT_s5], INCLUDEEMPTY) > 0, 1, 0)), "
-            + "GENERATE({[Marital Status].[All Marital Status].[S]}, CROSSJOIN(HEAD({([Marital Status].CURRENTMEMBER)}, "
+            + "GENERATE({[Marital Status].[S]}, CROSSJOIN(HEAD({([Marital Status].CURRENTMEMBER)}, "
             + "IIF(COUNT([COG_OQP_INT_s4], INCLUDEEMPTY) > 0, 1, 0)), [COG_OQP_INT_s3]), ALL)), ALL))"
             + " DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(1)"
             + " FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING",
@@ -1118,15 +1132,15 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "Aggregate({[Product].[Product Name].Members}))', SOLVE_ORDER = 4.0\n"
             + "  member [Product].[COG_OQP_INT_m2] as "
             + "'Aggregate({[Product].[Product Name].Members}, [Measures].[Unit Sales])', SOLVE_ORDER = 4.0\n"
-            + "  set [COG_OQP_INT_s5] as 'Crossjoin({[Marital Status].[All Marital Status].[S]}, [COG_OQP_INT_s4])'\n"
-            + "  set [COG_OQP_INT_s4] as 'Crossjoin({[Gender].[All Gender].[F]}, [COG_OQP_INT_s2])'\n"
-            + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Gender].[All Gender].[F]}, {[COG_OQP_INT_s2], [COG_OQP_INT_s1]})'\n"
+            + "  set [COG_OQP_INT_s5] as 'Crossjoin({[Marital Status].[S]}, [COG_OQP_INT_s4])'\n"
+            + "  set [COG_OQP_INT_s4] as 'Crossjoin({[Gender].[F]}, [COG_OQP_INT_s2])'\n"
+            + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Gender].[F]}, {[COG_OQP_INT_s2], [COG_OQP_INT_s1]})'\n"
             + "  set [COG_OQP_INT_s2] as 'Crossjoin({[Product].[Product Name].Members}, {[Customers].[Name].Members})'\n"
             + "  set [COG_OQP_INT_s1] as 'Crossjoin({[Product].[COG_OQP_INT_umg1]}, {[Customers].DefaultMember})'\n"
             + "select {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON COLUMNS,\n"
-            + "  NativizeSet(Generate({[Education Level].[All Education Levels].[Graduate Degree]}, "
+            + "  NativizeSet(Generate({[Education Level].[Graduate Degree]}, "
             + "Crossjoin(Head({[Education Level].CurrentMember}, IIf((Count([COG_OQP_INT_s5], INCLUDEEMPTY) > 0.0), 1.0, 0.0)), "
-            + "Generate({[Marital Status].[All Marital Status].[S]}, "
+            + "Generate({[Marital Status].[S]}, "
             + "Crossjoin(Head({[Marital Status].CurrentMember}, "
             + "IIf((Count([COG_OQP_INT_s4], INCLUDEEMPTY) > 0.0), 1.0, 0.0)), [COG_OQP_INT_s3]), ALL)), ALL)) "
             + "DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON ROWS\n"
@@ -1157,7 +1171,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "from sales",
             "with member [Time].[_Nativized_Member_Time_Weekly_Week_] as '[Time].DefaultMember'\n"
             + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[_Nativized_Member_Time_Weekly_Week_]}'\n"
-            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[All Gender].[M]})) ON COLUMNS\n"
+            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
@@ -1175,7 +1189,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[_Nativized_Member_Time_Weekly_Week_]}'\n"
             + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010.0'\n"
             + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
-            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[All Gender].[M]})) ON COLUMNS\n"
+            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
@@ -1196,7 +1210,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "\t[COG_OQP_INT_s8] AS 'CROSSJOIN({[Store Type].[Store Type].MEMBERS}, [COG_OQP_INT_s7])' \n"
             + "SET\n"
             + "\t[COG_OQP_INT_s7] AS 'CROSSJOIN({[Promotions].[Promotions].MEMBERS}, "
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]})' \n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]})' \n"
             + "SET\n"
             + "\t[COG_OQP_INT_s6] AS 'CROSSJOIN({[Store Type].[COG_OQP_INT_umg1]}, [COG_OQP_INT_s1])' \n"
             + "SET\n"
@@ -1213,7 +1227,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "\t[COG_OQP_INT_s10] AS 'CROSSJOIN({[Marital Status].[Marital Status].MEMBERS}, [COG_OQP_INT_s8])' \n"
             + "SET\n"
             + "\t[COG_OQP_INT_s1] AS 'CROSSJOIN({[Promotion Name].DEFAULTMEMBER}, "
-            + "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]})' \n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]})' \n"
             + "SELECT\n"
             + "\t{[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL,\n"
             + "\tCHILDREN_CARDINALITY,\n"
@@ -1256,7 +1270,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997], [Gender].[All Gender].[F]}\n"
+            + "{[Time].[1997], [Gender].[F]}\n"
             + "Row #0: 131,558\n");
     }
 
@@ -1311,7 +1325,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  NativizeSet("
             + "    Except("
             + "      {[Promotion Media].[Promotion Media].Members},\n"
-            + "      {[Promotion Media].[All Media].[Bulk Mail],[Promotion Media].[All Media].[Daily Paper]}"
+            + "      {[Promotion Media].[Bulk Mail],[Promotion Media].[All Media].[Daily Paper]}"
             + "    )"
             + "  ) ON COLUMNS,"
             + "  NON EMPTY "
@@ -1358,11 +1372,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + " NON EMPTY "
             + "NativizeSet(Crossjoin("
             + "{"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Gabriel Walton],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Bishop Meastas],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Paula Duran],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Margaret Earley],"
+            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
             + "},"
             + "[Store].[Store Name].members"
             + ")) on 0 from hr");
@@ -1384,7 +1398,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "{[Gender].[Gender].members,[gender].[agg]}"
             + ")) on 0 "
             + " from sales "
-            + " where [Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]");
+            + " where [Store].[Canada].[BC].[Vancouver].[Store 19]");
     }
 
     public void testCardinalityQueriesOnlyExecuteOnce() {
@@ -1417,7 +1431,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
     public void testSingleLevelDotMembersIsNativelyEvaluated() {
         String mdx1 =
-            "select non empty NativizeSet([Customers].[name].members) on 0,"
+            "with member [Customers].[agg] as '"
+            + "AGGREGATE({[Customers].[name].MEMBERS}, [Measures].[Unit Sales])'"
+            + "select non empty NativizeSet({{[Customers].[name].members}, {[Customers].[agg]}}) on 0,"
             + "non empty NativizeSet("
             + "Crossjoin({[Gender].[Gender].[M]},"
             + "[Measures].[Unit Sales])) on 1 "

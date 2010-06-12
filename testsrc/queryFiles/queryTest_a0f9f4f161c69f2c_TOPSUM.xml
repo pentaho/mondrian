@@ -47,16 +47,16 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Customers].[All Customers].[Canada]</member>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Customers].[Canada]</member>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[Mexico]</member>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Customers].[Mexico]</member>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
                 <tuple>
-                    <member>[Customers].[All Customers].[USA]</member>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Customers].[USA]</member>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
             </tuples>
         </rows>

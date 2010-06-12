@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -27,7 +27,8 @@ import java.util.List;
  * @version $Id$
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
-    private final Segment[] segments;
+    private final List<Segment> segments;
+    private final Segment segment0;
     private final GroupingSetsList groupingSetsList;
 
     /*
@@ -49,6 +50,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     {
         super(groupingSetsList.getStar(), false);
         this.segments = groupingSetsList.getDefaultSegments();
+        this.segment0 = segments.get(0);
         this.groupingSetsList = groupingSetsList;
         this.compoundPredicateList = compoundPredicateList;
         assert isValid(true);
@@ -62,14 +64,14 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
      * @return Whether this query specification is valid
      */
     private boolean isValid(boolean fail) {
-        assert segments.length > 0;
+        assert segments.size() > 0;
         for (Segment segment : segments) {
-            if (segment.aggregation != segments[0].aggregation) {
+            if (segment.aggregation != segment0.aggregation) {
                 assert !fail;
                 return false;
             }
             int n = segment.axes.length;
-            if (n != segments[0].axes.length) {
+            if (n != segment0.axes.length) {
                 assert !fail;
                 return false;
             }
@@ -78,7 +80,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
                 if (segment.axes[j].getPredicate()
-                    != segments[0].axes[j].getPredicate())
+                    != segment0.axes[j].getPredicate())
                 {
                     assert !fail;
                     return false;
@@ -89,11 +91,11 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public int getMeasureCount() {
-        return segments.length;
+        return segments.size();
     }
 
     public RolapStar.Measure getMeasure(final int i) {
-        return segments[i].measure;
+        return segments.get(i).measure;
     }
 
     public String getMeasureAlias(final int i) {
@@ -101,7 +103,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public RolapStar.Column[] getColumns() {
-        return segments[0].aggregation.getColumns();
+        return segment0.aggregation.getColumns();
     }
 
     /**
@@ -114,7 +116,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
-        return segments[0].axes[i].getPredicate();
+        return segment0.axes[i].getPredicate();
     }
 
     protected List<StarPredicate> getPredicateList() {

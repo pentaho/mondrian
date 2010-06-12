@@ -234,6 +234,7 @@ fi
 export deferred_file=/tmp/checkFile_deferred_$$.txt
 rm -f "${deferred_file}"
 
+(
 if [ "$under" ]; then
     find "$under" -type f |
     while read file; do
@@ -263,5 +264,13 @@ fi
 if test "$deferred"; then
     doCheckDeferred
 fi
+) | tee /tmp/checkFile_output_$$.txt
+
+status=0
+if [ -s /tmp/checkFile_output_$$.txt ]; then
+    status=1
+fi
+
+exit $status
 
 # End checkFile

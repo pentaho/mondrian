@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,6 +37,7 @@ abstract class Rowset implements XmlaConstants {
     protected final XmlaRequest request;
     protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
+    protected final boolean deep;
 
     /**
      * Creates a Rowset.
@@ -100,6 +101,7 @@ abstract class Rowset implements XmlaConstants {
         this.restrictedColumns =
             list.toArray(
                 new RowsetDefinition.Column[list.size()]);
+        boolean deep = false;
         for (Map.Entry<String, String> propertyEntry : properties.entrySet()) {
             String propertyName = propertyEntry.getKey();
             final PropertyDefinition propertyDef =
@@ -111,7 +113,11 @@ abstract class Rowset implements XmlaConstants {
             }
             final String propertyValue = propertyEntry.getValue();
             setProperty(propertyDef, propertyValue);
+            if (propertyDef == PropertyDefinition.Deep) {
+                deep = Boolean.valueOf(propertyValue);
+            }
         }
+        this.deep = deep;
     }
 
     protected ArrayList<RowsetDefinition.Column> pruneRestrictions(
@@ -157,15 +163,18 @@ abstract class Rowset implements XmlaConstants {
      */
     public final void unparse(XmlaResponse response) throws XmlaException
     {
-        List<Row> rows = new ArrayList<Row>();
+        final List<Row> rows = new ArrayList<Row>();
         populate(response, rows);
-        Comparator<Row> comparator = rowsetDefinition.getComparator();
+        final Comparator<Row> comparator = rowsetDefinition.getComparator();
         if (comparator != null) {
             Collections.sort(rows, comparator);
         }
+        final SaxWriter writer = response.getWriter();
+        writer.startSequence(null, "row");
         for (Row row : rows) {
             emit(row, response);
         }
+        writer.endSequence();
     }
 
     /**
@@ -242,10 +251,17 @@ abstract class Rowset implements XmlaConstants {
                         writer.endElement();
                     }
                 }
+            } else if (value instanceof Rowset) {
+                Rowset rowset = (Rowset) value;
+                final List<Row> rows = new ArrayList<Row>();
+                rowset.populate(response, rows);
+                writer.startSequence(column.name, "row");
+                for (Row row1 : rows) {
+                    rowset.emit(row1, response);
+                }
+                writer.endSequence();
             } else {
-                writer.startElement(column.name);
-                writer.characters(value.toString());
-                writer.endElement();
+                writer.textElement(column.name, value);
             }
         }
         writer.endElement();
@@ -405,10 +421,6 @@ abstract class Rowset implements XmlaConstants {
             this.values.add(value);
         }
 
-        void set(String name, boolean value) {
-            set(name, value ? "true" : "false");
-        }
-
         /**
          * Retrieves the value of a field with a given name, or null if the
          * field's value is not defined.
@@ -420,32 +432,34 @@ abstract class Rowset implements XmlaConstants {
     }
 
     /**
-     * Holder for non-scalar column values of a {@link mondrian.xmla.Rowset.Row}.
+     * Holder for non-scalar column values of a
+     * {@link mondrian.xmla.Rowset.Row}.
      */
     protected static class XmlElement {
         private final String tag;
-        private final String[] attributes;
+        private final Object[] attributes;
         private final String text;
         private final XmlElement[] children;
 
-        XmlElement(String tag, String[] attributes) {
+        XmlElement(String tag, Object[] attributes) {
             this(tag, attributes, null, null);
         }
 
-        XmlElement(String tag, String[] attributes, String text) {
+        XmlElement(String tag, Object[] attributes, String text) {
             this(tag, attributes, text, null);
         }
 
-        XmlElement(String tag, String[] attributes, XmlElement[] children) {
+        XmlElement(String tag, Object[] attributes, XmlElement[] children) {
             this(tag, attributes, null, children);
         }
 
         private XmlElement(
             String tag,
-            String[] attributes,
+            Object[] attributes,
             String text,
             XmlElement[] children)
         {
+            assert attributes == null || attributes.length % 2 == 0;
             this.tag = tag;
             this.attributes = attributes;
             this.text = text;

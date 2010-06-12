@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,7 +18,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.resource.MondrianResource;
 
 /**
- * Parameter which is defined in a schema.
+ * Parameter that is defined in a schema.
  *
  * @author jhyde
  * @version $Id$
@@ -32,6 +32,7 @@ public class RolapSchemaParameter implements Parameter, ParameterCompilable {
     private Type type;
     private final boolean modifiable;
     private Object value;
+    private boolean assigned;
     private Object cachedDefaultValue;
 
     RolapSchemaParameter(
@@ -92,7 +93,21 @@ public class RolapSchemaParameter implements Parameter, ParameterCompilable {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
                 getName(), getScope().name());
         }
+        this.assigned = true;
         this.value = value;
+    }
+
+    public boolean isSet() {
+        return assigned;
+    }
+
+    public void unsetValue() {
+        if (!modifiable) {
+            throw MondrianResource.instance().ParameterIsNotModifiable.ex(
+                getName(), getScope().name());
+        }
+        assigned = false;
+        value = null;
     }
 
     public Calc compile(ExpCompiler compiler) {

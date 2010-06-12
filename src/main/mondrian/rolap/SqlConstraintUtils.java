@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -54,7 +54,7 @@ public class SqlConstraintUtils {
         boolean restrictMemberTypes)
     {
         // Add constraint using the current evaluator context
-        Member[] members = evaluator.getMembers();
+        Member[] members = evaluator.getNonAllMembers();
 
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
@@ -62,10 +62,7 @@ public class SqlConstraintUtils {
                     "can not restrict SQL to calculated Members");
             }
         } else {
-            List<Member> memberList =
-                removeCalculatedMembers(Arrays.asList(members));
-            memberList = removeDefaultMembers(memberList);
-            members = memberList.toArray(new Member[memberList.size()]);
+            members = removeCalculatedAndDefaultMembers(members);
         }
 
         final CellRequest request =
@@ -125,7 +122,7 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Removes the default members from an array.
+     * Removes calculated and default members from an array.
      *
      * <p>This is required only if the default member is
      * not the ALL member. The time dimension for example, has 1997 as default
@@ -142,20 +139,35 @@ public class SqlConstraintUtils {
      * table for 1998 not 1997. So we do not restrict the time dimension and
      * fetch all children.
      *
+     * <p>For calculated members, effect is the same as
+     * {@link #removeCalculatedMembers(java.util.List)}.
+     *
      * @param members Array of members
-     * @return Array of members with default members removed
+     * @return Members with calculated members removed (except those that are
+     *    leaves in a parent-child hierarchy) and with members that are the
+     *    default member of their hierarchy
      */
-    private static List<Member> removeDefaultMembers(List<Member> members) {
-        List<Member> result = new ArrayList<Member>();
-        result.add(members.get(0)); // add the measure
-        for (int i = 1; i < members.size(); i++) {
-            Member m = members.get(i);
-            if (m.getHierarchy().getDefaultMember().equals(m)) {
+    private static Member[] removeCalculatedAndDefaultMembers(
+        Member[] members)
+    {
+        List<Member> memberList = new ArrayList<Member>(members.length);
+        for (int i = 0; i < members.length; ++i) {
+            Member member = members[i];
+            // Skip calculated members (except if leaf of parent-child hier)
+            if (member.isCalculated() && !member.isParentChildLeaf()) {
                 continue;
             }
-            result.add(m);
+
+            // Remove members that are the default for their hierarchy,
+            // except for the measures hierarchy.
+            if (i > 0
+                && member.getHierarchy().getDefaultMember().equals(member))
+            {
+                continue;
+            }
+            memberList.add(member);
         }
-        return result;
+        return memberList.toArray(new Member[memberList.size()]);
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {
@@ -819,11 +831,12 @@ public class SqlConstraintUtils {
     {
         final StringBuilder columnBuf = new StringBuilder();
         final StringBuilder valueBuf = new StringBuilder();
+        final StringBuilder memberBuf = new StringBuilder();
 
         columnBuf.append("(");
 
         // generate the left-hand side of the IN expression
-        boolean isFirstLevelInMultiple = true;
+        int ordinalInMultiple = 0;
         for (RolapMember m = members.get(0); m != null; m = m.getParentMember())
         {
             if (m.isAll()) {
@@ -841,6 +854,9 @@ public class SqlConstraintUtils {
                 column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
             }
 
+            // REVIEW: The following code mostly uses the name column (or name
+            // expression) of the level. Shouldn't it use the key column (or key
+            // expression)?
             String columnString;
             if (column != null) {
                 if (aggStar != null) {
@@ -855,12 +871,7 @@ public class SqlConstraintUtils {
                 } else {
                     RolapStar.Table targetTable = column.getTable();
                     hierarchy.addToFrom(sqlQuery, targetTable);
-
-                    RolapStar.Column nameColumn = column.getNameColumn();
-                    if (nameColumn == null) {
-                        nameColumn = column;
-                    }
-                    columnString = nameColumn.generateExprString(sqlQuery);
+                    columnString = column.generateExprString(sqlQuery);
                 }
             } else {
                 assert (aggStar == null);
@@ -873,10 +884,8 @@ public class SqlConstraintUtils {
                 columnString = nameExp.getExpression(sqlQuery);
             }
 
-            if (!isFirstLevelInMultiple) {
-                columnBuf.append(",");
-            } else {
-                isFirstLevelInMultiple = false;
+            if (ordinalInMultiple++ > 0) {
+                columnBuf.append(", ");
             }
 
             columnBuf.append(columnString);
@@ -891,8 +900,7 @@ public class SqlConstraintUtils {
 
         // generate the RHS of the IN predicate
         valueBuf.append("(");
-        boolean isFirstMember = true;
-        String memberString;
+        int memberOrdinal = 0;
         for (RolapMember m : members) {
             if (m.isCalculated()) {
                 if (restrictMemberTypes) {
@@ -903,8 +911,9 @@ public class SqlConstraintUtils {
                 continue;
             }
 
-            isFirstLevelInMultiple = true;
-            memberString = "(";
+            ordinalInMultiple = 0;
+            memberBuf.setLength(0);
+            memberBuf.append("(");
 
             boolean containsNull = false;
             for (RolapMember p = m; p != null; p = p.getParentMember()) {
@@ -941,15 +950,12 @@ public class SqlConstraintUtils {
                     break;
                 }
 
-                if (isFirstLevelInMultiple) {
-                    isFirstLevelInMultiple = false;
-                } else {
-                    memberString += ",";
+                if (ordinalInMultiple++ > 0) {
+                    memberBuf.append(", ");
                 }
 
-                final StringBuilder buf = new StringBuilder();
-                sqlQuery.getDialect().quote(buf, value, level.getDatatype());
-                memberString += buf.toString();
+                sqlQuery.getDialect().quote(
+                    memberBuf, value, level.getDatatype());
 
                 // Only needs to compare up to the first(lowest) unique level.
                 if (p.getLevel() == fromLevel) {
@@ -961,23 +967,24 @@ public class SqlConstraintUtils {
             // If parent levels do not contain NULL then SQL must have been
             // generated successfully.
             if (!containsNull) {
-                memberString += ")";
-                if (!isFirstMember) {
-                    valueBuf.append(",");
+                memberBuf.append(")");
+                if (memberOrdinal++ > 0) {
+                    valueBuf.append(", ");
                 }
-                valueBuf.append(memberString);
-                isFirstMember = false;
+                valueBuf.append(memberBuf);
             }
         }
 
-        String condition = "";
-        if (!isFirstMember) {
+        StringBuilder condition = new StringBuilder();
+        if (memberOrdinal > 0) {
             // SQLs are generated for some members.
-            valueBuf.append(")");
-            condition += columnBuf.toString() + " in " + valueBuf.toString();
+            condition.append(columnBuf);
+            condition.append(" in ");
+            condition.append(valueBuf);
+            condition.append(")");
         }
 
-        return condition;
+        return condition.toString();
     }
 
     /**
@@ -1126,6 +1133,11 @@ public class SqlConstraintUtils {
                     int bitPos = column.getBitPosition();
                     AggStar.Table.Column aggColumn =
                         aggStar.lookupColumn(bitPos);
+                    if (aggColumn == null) {
+                        throw Util.newInternal(
+                            "AggStar " + aggStar + " has no column for "
+                            + column + " (bitPos " + bitPos + ")");
+                    }
                     AggStar.Table table = aggColumn.getTable();
                     table.addToFrom(sqlQuery, false, true);
                     q = aggColumn.generateExprString(sqlQuery);

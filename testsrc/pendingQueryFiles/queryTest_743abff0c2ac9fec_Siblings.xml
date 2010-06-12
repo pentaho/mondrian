@@ -41,34 +41,34 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles].[Store 7]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]</member>
+                    <member>[Store].[USA].[CA].[San Diego].[Store 24]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                    <member>[Store].[USA].[CA].[Beverly Hills].[Store 6]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Alameda].[HQ]</member>
+                    <member>[Store].[USA].[CA].[Alameda].[HQ]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]</member>
+                    <member>[Store].[USA].[CA].[San Francisco].[Store 14]</member>
                 </tuple>
             </tuples>
         </rows>

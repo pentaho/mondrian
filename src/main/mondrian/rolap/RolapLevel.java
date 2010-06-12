@@ -59,7 +59,7 @@ public class RolapLevel extends LevelBase {
      */
     static final int FLAG_UNIQUE = 0x04;
 
-    private RolapLevel closedPeer;
+    private RolapLevel closedPeerLevel;
 
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
@@ -411,7 +411,7 @@ public class RolapLevel extends LevelBase {
         if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
                 .createClosedPeerDimension(this, xmlClosure, xmlDimension);
-            closedPeer =
+            closedPeerLevel =
                     (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
         }
     }
@@ -533,11 +533,11 @@ public class RolapLevel extends LevelBase {
      * an equivalent closed level.
      */
     boolean hasClosedPeer() {
-        return closedPeer != null;
+        return closedPeerLevel != null;
     }
 
     public RolapLevel getClosedPeer() {
-        return closedPeer;
+        return closedPeerLevel;
     }
 
     public static RolapLevel lookupLevel(

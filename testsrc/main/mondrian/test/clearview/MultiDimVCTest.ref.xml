@@ -29,18 +29,18 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[All Products].[Drink], [Time].[1997].[Q1]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q2]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q3]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q4]}
-{[Product].[All Products].[Food], [Time].[1997].[Q1]}
-{[Product].[All Products].[Food], [Time].[1997].[Q2]}
-{[Product].[All Products].[Food], [Time].[1997].[Q3]}
-{[Product].[All Products].[Food], [Time].[1997].[Q4]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}
+{[Product].[Drink], [Time].[1997].[Q1]}
+{[Product].[Drink], [Time].[1997].[Q2]}
+{[Product].[Drink], [Time].[1997].[Q3]}
+{[Product].[Drink], [Time].[1997].[Q4]}
+{[Product].[Food], [Time].[1997].[Q1]}
+{[Product].[Food], [Time].[1997].[Q2]}
+{[Product].[Food], [Time].[1997].[Q3]}
+{[Product].[Food], [Time].[1997].[Q4]}
+{[Product].[Non-Consumable], [Time].[1997].[Q1]}
+{[Product].[Non-Consumable], [Time].[1997].[Q2]}
+{[Product].[Non-Consumable], [Time].[1997].[Q3]}
+{[Product].[Non-Consumable], [Time].[1997].[Q4]}
 Row #0: 5,976
 Row #1: 5,895
 Row #2: 6,065
@@ -85,12 +85,12 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[All Products].[Drink], [Time].[1997].[Q1]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q3]}
-{[Product].[All Products].[Food], [Time].[1997].[Q1]}
-{[Product].[All Products].[Food], [Time].[1997].[Q3]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}
-{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}
+{[Product].[Drink], [Time].[1997].[Q1]}
+{[Product].[Drink], [Time].[1997].[Q3]}
+{[Product].[Food], [Time].[1997].[Q1]}
+{[Product].[Food], [Time].[1997].[Q3]}
+{[Product].[Non-Consumable], [Time].[1997].[Q1]}
+{[Product].[Non-Consumable], [Time].[1997].[Q3]}
 Row #0: 5,976
 Row #1: 6,065
 Row #2: 47,809
@@ -111,7 +111,7 @@ query all Drink product family and all quarters
 With
   Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Time])'
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
-  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[Drink]}'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '[Time].[Quarter].Members'
   Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
@@ -129,10 +129,10 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[All Products].[Drink], [Time].[1997].[Q1]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q2]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q3]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q4]}
+{[Product].[Drink], [Time].[1997].[Q1]}
+{[Product].[Drink], [Time].[1997].[Q2]}
+{[Product].[Drink], [Time].[1997].[Q3]}
+{[Product].[Drink], [Time].[1997].[Q4]}
 Row #0: 5,976
 Row #1: 5,895
 Row #2: 6,065
@@ -151,7 +151,7 @@ query only drink and some quarters
 With
   Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Time])'
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
-  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[Drink]}'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1997].[Q3]}'
   Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
@@ -169,8 +169,8 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[All Products].[Drink], [Time].[1997].[Q1]}
-{[Product].[All Products].[Drink], [Time].[1997].[Q3]}
+{[Product].[Drink], [Time].[1997].[Q1]}
+{[Product].[Drink], [Time].[1997].[Q3]}
 Row #0: 5,976
 Row #1: 6,065
 ]]>
@@ -189,7 +189,7 @@ With
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
   Set [*BASE_MEMBERS_Time] as '[Time].[Quarter].Members'
   Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
-  Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[Drink]}'
   Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200 

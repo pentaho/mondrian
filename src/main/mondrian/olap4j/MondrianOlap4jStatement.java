@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,12 +11,15 @@ package mondrian.olap4j;
 
 import mondrian.olap.*;
 import org.olap4j.*;
+import org.olap4j.Cell;
 import org.olap4j.mdx.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.sql.Connection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Implementation of {@link org.olap4j.OlapStatement}
@@ -48,8 +51,28 @@ class MondrianOlap4jStatement implements OlapStatement {
 
     // implement Statement
 
-    public ResultSet executeQuery(String sql) throws SQLException {
-        throw new UnsupportedOperationException();
+    public ResultSet executeQuery(String mdx) throws SQLException {
+        QueryPart parseTree;
+        try {
+            parseTree = olap4jConnection.connection.parseStatement(mdx);
+        } catch (MondrianException e) {
+            throw olap4jConnection.helper.createException(
+                "mondrian gave exception while parsing query", e);
+        }
+        if (!(parseTree instanceof DrillThrough)) {
+            throw olap4jConnection.helper.createException(
+                "Query does not have relational result. Use a DRILLTHROUGH "
+                + "query, or execute using the executeOlapQuery method.");
+        }
+        DrillThrough drillThrough = (DrillThrough) parseTree;
+        CellSet cellSet = executeOlapQueryInternal(drillThrough.getQuery());
+        final List<Integer> coords = Collections.nCopies(
+            cellSet.getAxes().size(), 0);
+        final MondrianOlap4jCell cell =
+            (MondrianOlap4jCell) cellSet.getCell(coords);
+        return cell.drillThroughInternal(
+            drillThrough.getMaxRowCount(),
+            drillThrough.getFirstRowOrdinal());
     }
 
     private void checkOpen() throws SQLException {

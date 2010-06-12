@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,8 +41,13 @@ public interface ParameterSlot {
      * <p>NOTE: This method will be removed when we store parameter values
      * in the {@link mondrian.olap.Result} rather than in the
      * {@link mondrian.olap.Query}.
+     *
+     * @param value New value
+     * @param assigned Whether {@link #isParameterSet()} should return true;
+     *   supply value {@code false} if this is an internal assignment, to
+     *   remember the default value
      */
-    void setParameterValue(Object value);
+    void setParameterValue(Object value, boolean assigned);
 
     /**
      * Returns the value of this parameter.
@@ -53,9 +58,22 @@ public interface ParameterSlot {
      */
     Object getParameterValue();
 
+    /**
+     * Returns whether the parameter has been assigned a value. (That value
+     * may be null.)
+     *
+     * @return Whether parmaeter has been assigned a value.
+     */
+    boolean isParameterSet();
+
     void setCachedDefaultValue(Object value);
 
     Object getCachedDefaultValue();
+
+    /**
+     * Unsets the parameter value.
+     */
+    void unsetParameterValue();
 }
 
 // End ParameterSlot.java

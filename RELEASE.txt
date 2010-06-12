@@ -1,10 +1,10 @@
-Mondrian 3.1.1.12687 production release notes
+Mondrian 3.2.0.13661 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.1.1.12687 is a minor release version of the leading
+Mondrian 3.2.0.13661 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.org.
 
@@ -32,115 +32,92 @@ For further installation instructions, see
 http://mondrian.pentaho.org/documentation/installation.php
 or the included file doc/installation.html.
 
+* Note that the below is not a complete list of changes
+  in 3.2, we still need to compile a list before the branch 
+  took place that includes changes that were not placed into
+  3.1 but were available in trunk
+
 Main functionality in this release
 ----------------------------------
+ - Improved native performance
+ - olap4j drill through support
+ - Improved XMLA support
+ - Greenplum Dialect
+ - Improved parameter support
 
- - Tuple Aggregate Support
- - Database Dialecting Architecture. Database dialects are
-   now pluggable, which means that they can be added to the
-   classpath and Mondrian will use the most appropriate one.
- - Infobright Dialect Support
- - General performance improvements (SQL generation and
-   sorting algorithms)
- - Allow SSAS2005-compatible syntax for resolving names
-   of dimensions, hierarchies, levels, members, and in
-   particular multiple hierarchies in a
- dimension. Since
-   this is a minor release, we wish to avoid breaking
-   changes, so this functionality is off by default. To
-   enable, set mondrian.olap.SsasCompatibleNaming=true.
- - Netezza Dialect (3.1.1)
- - Various Workbench changes (3.1.1) 
-
-API changes from 3.0 to 3.1
+API changes from 3.1 to 3.2
 ---------------------------
- - High cardinality related array to list changes
- - Database dialect changes
- - AxisOrdinal changes. mondrian.olap.AxisOrdinal used to
-   be an enum, is now an interface. Code that explicitly
-   depends on this class will need to be recompiled.
- - Upgrade to olap4-0.9.7.145.
+ - Changed RolapMember to an interface
+ - The getUniqueName() on Member no longer includes the all
+   member.
+ - Upgraded to olap4j-0.9.7.309
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
 
-Bugs and feature requests fixed since mondrian-3.1.0-12477-RC1
---------------------------------------------------------------
+Bugs and feature requests fixed for 3.2.0.13661
+----------------------------------------------------------
+MONDRIAN-751 - Drill SQL does not include slicer members in WHERE 
+               clause
 
-Bugs:
-MONDRIAN-7   - Heterogeneous axis gives wrong results
-MONDRIAN-473 - Performance bug in RolapEvaluator.setContext (partial fix)
-MONDRIAN-519 - ClassCastException: parent/child and no closure
-MONDRIAN-524 - VB functions: expected primitive type, got java.lang.Object
-MONDRIAN-528 - MySQL database identified as INFOBRIGHT
-MONDRIAN-539 - Problem with the MID function getting last character in a string.
-MONDRIAN-540 - Netezza is an UNKNOWN Dialect
-MONDRIAN-550 - Performance bug with NON EMPTY and large axes
+Bugs and feature requests fixed for 3.2.0.13658
+----------------------------------------------------------
+MONDRIAN-745 - NullPointerException when passing in null param value
+MONDRIAN-746 - Level of calculated member is different when hierarchy
+               is access-controlled
+MONDRIAN-750 - View model with Analyzer where model contains multiple
+               hierarchies beneath a single dimension throws exception
 
-Bugs and feature requests fixed since mondrian-3.0.3
-----------------------------------------------------
+Bugs and feature requests fixed for 3.2.0.13643
+----------------------------------------------------------
+MONDRIAN-560 - StrToMember function doesn't use IgnoreInvalidMembers
+               option
+MONDRIAN-737 - Sybase SQL Dialect is not correctly applied for
+               Sybase Adaptive Server Enterprise 15.5
+MONDRIAN-722 - If ignoreInvalidMembers=true, should ignore
+               grants with invalid members
+MONDRIAN-734 - Exception thrown when creating a 'New Analysis View'
+               with JPivot
+MONDRIAN-728 - Rolap Connection Locale is handled incorrectly in
+               LocalizingDynamicSchemaProcessor.java
+MONDRIAN-738 - Statements not being closed
+MONDRIAN-708 - After change 13351 all Excel pivots fail to update.
+               CellInfo element in XMLA response is wrong
+MONDRIAN-742 - Role security not applied correctly for the 'Top
+               Level' restriction
+MONDRIAN-727 - [Fact count] measure added in change 13506
+               shouldn't be returned in XMLA rowset, not visible 
+               measures shouldn't be
+               returned either
 
-Bugs:
-1971406 - perf regression from change for large dimensions
-1998598 - Non empty function doesn't work for high
-          cardinality
-2046318 - olap4j driver should throw OlapException on
-          validate error
-2062790 - Inline tables do not work on Microsoft SQL Server
-2118478 - periodstodate w/level ought not require dim of
-          type
- time
-2141337 - Roles and virtual cubes
-2150537 - error deducing type of Ytd/Qtd/Mtd functions
-          within Generate
-2186217 - NPE for dimension with Join (patch attached)
-2141503 - Strange SQL condition appears when executing query
-2189467 - ParallelPeriod applied to Levels or StrToMember
-          gives NPE
-2026930 - MondrianOlap4jMember.getCaption() throws exception
-2279539 - mondrian.xsd line 69 MemeberGrant -> MemberGrant
-2414144 - Incorrect getting parent member in parent-child
-          hierarchy
-2489311 - BitKey.compareTo is inefficient
-2488492 - Union between calc mem and head function throws
-          exception
-1961163 - NON EMPTY and Filter() breaking aggregate
-          calculations
-2527862 - Failed to get Hierarchy list for particular
-          dimension
-2384825 - ClassCastException when obtaining RolapCubeLevel
-2207515 - Aggregates incorrect with grouping sets
-2106108 - Schema Workbench setAllTables assumes
-          {"TABLE","VIEW"} 
-2561069 - Schema workbench JDBC Explorer does not work with
-          Oracle
- 10g
-2613265 - readVirtualFile() can return the incorrect file
-2645300 - Move Infobright dialect from EE to CE
-2666196 - Performance degradation with change 11049
-2684180 - mondrian.rolap.SqlTupleReader Swallows Exceptions
-2688790 - Hierarchy Naming Compatibility issue
-2138156 - Workbench Publish name issue
-2138161 - Workbench Dimension selection issue
-2153098 - Mondrian exceptions when clicking on Dimension
-          in Workbench
-2153653 - Database preferences not enforced when modified
-          in Workbench
-2208219 - Workbench fails if the Mondrian schema has a
-          <view> <sql> element
-2208312 - Mouse right click doesn�t work on MAC OS X or
-          Linux
+Bugs and feature requests fixed for 3.2.0.13583
+----------------------------------------------------------
+MONDRIAN-686 - Regression: JPivot output invalid - New Variance
+               Percent column
+MONDRIAN-691 - RolapSchemaReader is not enforcing access control
+               on two APIs
+MONDRIAN-694 - Incorrect handling of child/parent relationship
+               with hierarchy grants
+MONDRIAN-726 - Change 13509 is not Excel 2007 compatible
+MONDRIAN-725 - setParameter function should be able to accept
+               Java string for set value
+MONDRIAN-652 - Add support for generic annotations to Mondrian schema
+MONDRIAN-718 - Direct References to Members on a Dimension that has
+               calculated members defined will not be found
+MONDRIAN-710 - Count with ExcludeEmpty throws an exception when
+               the cube does not have a factCountMeasure 
+MONDRIAN-715 - Constrained Measures can generate incorrect results
+               when evaluated natively
+MONDRIAN-706 - SQL using hierarchy attribute 'Column Name' 
+               instead of 'Column' in the filter
+MONDRIAN-705 - Aggregate with grouping sets turned on causes
+               exception
+MONDRIAN-704 - MDSCHEMA_PROPERTIES should not return internal
+               properties
+MONDRIAN-681 - Add serializable to PropertyList class for caching
+MONDRIAN-678 - VisualTotals gives UnsupportedOperationException
+               calling getOrdinal
+MONDRIAN-679 - VisualTotals gives ClassCastException when called
+               via XMLA
 
-Feature Requests:
-1579663 - Read tuples from aggregate tables
-2155850 - Workbench Database Schema Option
 
-Pentaho Related Bugs (found at jira.pentaho.com):
-
-BISERVER-2379 - Workbench- The MDX Query window fails when
-          connected to SQL server 2000
-BISERVER-2491 - Mondrian: rollupPolicy=partial and queries
-          to upper members don't work
-BISERVER-2786 - Schema Workbench: Provide more information
-          when schema is invalid due to invalid hierarchies
-------------------------------------------------------------

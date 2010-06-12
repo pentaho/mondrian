@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -118,6 +118,9 @@ public interface Member extends OlapElement, Comparable, Annotated {
 
     /**
      * Returns a list of the ancestor members of this member.
+     *
+     * @deprecated Use
+     *     {@link SchemaReader#getMemberAncestors(Member, java.util.List)}.
      */
     List<Member> getAncestorMembers();
 

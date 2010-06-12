@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -148,17 +148,6 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public MemberCalc compileMember(Exp exp) {
-        if (false && exp instanceof DimensionExpr) {
-            DimensionExpr dimensionExpr = (DimensionExpr) exp;
-            final Dimension dimension = dimensionExpr.getDimension();
-            final Hierarchy hierarchy =
-                FunUtil.getDimensionDefaultHierarchy(dimension);
-            if (hierarchy != null) {
-                // The only dimension-typed expression we can convert to a
-                // member is a dimension literal with only one hierarchy.
-                exp = new HierarchyExpr(hierarchy);
-            }
-        }
         final Type type = exp.getType();
         if (type instanceof HierarchyType) {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
@@ -523,6 +512,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         private final int index;
         private Calc defaultValueCalc;
         private Object value;
+        private boolean assigned;
         private Object cachedDefaultValue;
 
         /**
@@ -563,12 +553,22 @@ public class AbstractExpCompiler implements ExpCompiler {
             this.defaultValueCalc = calc;
         }
 
-        public void setParameterValue(Object value) {
+        public void setParameterValue(Object value, boolean assigned) {
             this.value = value;
+            this.assigned = assigned;
         }
 
         public Object getParameterValue() {
             return value;
+        }
+
+        public boolean isParameterSet() {
+            return assigned;
+        }
+
+        public void unsetParameterValue() {
+            this.value = null;
+            this.assigned = false;
         }
 
         public void setCachedDefaultValue(Object value) {

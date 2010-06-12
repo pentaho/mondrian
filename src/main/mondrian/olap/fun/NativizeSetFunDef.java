@@ -17,6 +17,7 @@ import mondrian.olap.type.SetType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import org.apache.log4j.Logger;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
 
@@ -64,6 +65,10 @@ public class NativizeSetFunDef extends FunDefBase {
      * Instance non-final fields.
      */
     private Exp originalExp;
+    private static final String ESTIMATE_MESSAGE =
+        "isHighCardinality=%b: estimate=%,d threshold=%,d";
+    private static final String PARTIAL_ESTIMATE_MESSAGE =
+        "isHighCardinality=%b: partial estimate=%,d threshold=%,d";
 
     public NativizeSetFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
@@ -81,6 +86,13 @@ public class NativizeSetFunDef extends FunDefBase {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         LOGGER.debug("NativizeSetFunDef compileCall");
         Exp funArg = call.getArg(0);
+
+        if (MondrianProperties.instance().UseAggregates.get()
+            || MondrianProperties.instance().ReadAggregates.get())
+        {
+            return funArg.accept(compiler);
+        }
+
         final Calc[] calcs = new Calc[] {compiler.compileList(funArg, true)};
 
         final int arity = ((SetType) calcs[0].getType()).getArity();
@@ -100,7 +112,13 @@ public class NativizeSetFunDef extends FunDefBase {
             }
             return calc;
         } else if (substitutionMap.isEmpty()) {
-            return funArg.accept(compiler);
+            Calc calc = funArg.accept(compiler);
+            if (calc instanceof TupleIterCalc) {
+                return new NonNativeTupleIterCalc((TupleIterCalc) calc);
+            } else if (calc instanceof TupleListCalc) {
+                return new NonNativeTupleListCalc((TupleListCalc) calc);
+            }
+            return calc;
         } else {
             if (isFirstCompileCall) {
                 isFirstCompileCall = false;
@@ -122,30 +140,37 @@ public class NativizeSetFunDef extends FunDefBase {
             int cardinality =
                 evaluator.getSchemaReader()
                     .getLevelCardinality(level, false, true);
-            return cardinality >
-                MondrianProperties.instance()
-                    .NativizeMinThreshold.get();
+            final int minThreshold = MondrianProperties.instance()
+                .NativizeMinThreshold.get();
+            final boolean isHighCard = cardinality > minThreshold;
+            logHighCardinality(
+                ESTIMATE_MESSAGE, minThreshold, cardinality, isHighCard);
+            return isHighCard;
         }
         return false;
     }
 
     private Level findLevel(Exp exp) {
-        if (exp instanceof ResolvedFunCall) {
-            ResolvedFunCall call = (ResolvedFunCall) exp;
-            if (call.getFunDef() instanceof LevelMembersFunDef) {
-                Exp arg = call.getArg(0);
-                if (arg instanceof LevelExpr) {
-                    return ((LevelExpr) arg).getLevel();
-                }
-            } else if (call.getFunDef() instanceof SetFunDef
-                && call.getArgCount() == 1)
-            {
-                return findLevel(call.getArg(0));
-            }
-        } else if (exp instanceof NamedSetExpr) {
-            return findLevel(((NamedSetExpr) exp).getNamedSet().getExp());
+        exp.accept(new FindLevelsVisitor(substitutionMap, dimensions));
+        final Collection<Level> levels = substitutionMap.values();
+        if (levels.size() == 1) {
+            return levels.iterator().next();
         }
         return null;
+    }
+
+    private static void logHighCardinality(
+        final String estimateMessage,
+        long nativizeMinThreshold,
+        long estimatedCardinality,
+        boolean highCardinality)
+    {
+        LOGGER.info(
+            String.format(
+                estimateMessage,
+                highCardinality,
+                estimatedCardinality,
+                nativizeMinThreshold));
     }
 
     static class NonNativeCalc implements Calc {
@@ -234,6 +259,57 @@ public class NativizeSetFunDef extends FunDefBase {
         }
     }
 
+    static class NonNativeTupleIterCalc extends NonNativeCalc
+        implements TupleIterCalc
+    {
+        protected NonNativeTupleIterCalc(TupleIterCalc parent) {
+            super(parent, false);
+        }
+
+        TupleIterCalc parent() {
+            return (TupleIterCalc) parent;
+        }
+
+        public SetType getType() {
+            return parent().getType();
+        }
+
+        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateTupleIterable(evaluator);
+        }
+
+        public Iterable evaluateIterable(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateIterable(evaluator);
+        }
+    }
+
+    static class NonNativeTupleListCalc extends NonNativeCalc
+        implements TupleListCalc
+    {
+        protected NonNativeTupleListCalc(TupleListCalc parent) {
+            super(parent, false);
+        }
+
+        TupleListCalc parent() {
+            return (TupleListCalc) parent;
+        }
+
+        public Type getType() {
+            return parent().getType();
+        }
+
+        public List<Member[]> evaluateTupleList(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateTupleList(evaluator);
+        }
+
+        public List evaluateList(Evaluator evaluator) {
+            evaluator.setNativeEnabled(nativeEnabled);
+            return parent().evaluateList(evaluator);
+        }
+    }
 
     public static class NativeTupleListCalc extends AbstractTupleListCalc {
         private final SubstitutionMap substitutionMap;
@@ -356,13 +432,11 @@ public class NativizeSetFunDef extends FunDefBase {
                         getLevelCardinality(schema, hierarchyLevel);
                     estimatedCardinality *= levelCardinality;
                     if (estimatedCardinality >= nativizeMinThreshold) {
-                        LOGGER.info(
-                            String.format(
-                                "isHighCardinality=%b: "
-                                + "partial estimate=%,d threshold=%,d",
-                                true,
-                                estimatedCardinality,
-                                nativizeMinThreshold));
+                        logHighCardinality(
+                            PARTIAL_ESTIMATE_MESSAGE,
+                            nativizeMinThreshold,
+                            estimatedCardinality,
+                            true);
                         return true;
                     }
                 }
@@ -371,12 +445,11 @@ public class NativizeSetFunDef extends FunDefBase {
             boolean isHighCardinality =
                 (estimatedCardinality >= nativizeMinThreshold);
 
-            LOGGER.info(
-                String.format(
-                    "isHighCardinality=%b: estimate=%,d threshold=%,d",
-                    isHighCardinality,
-                    estimatedCardinality,
-                    nativizeMinThreshold));
+            logHighCardinality(
+                ESTIMATE_MESSAGE,
+                nativizeMinThreshold,
+                estimatedCardinality,
+                isHighCardinality);
             return isHighCardinality;
         }
 
@@ -1511,7 +1584,7 @@ public class NativizeSetFunDef extends FunDefBase {
             Collection<ReassemblyCommand> commands)
         {
             Set<NativeElementType> types =
-                Util.enumSetNoneOf(NativeElementType.class);
+                Olap4jUtil.enumSetNoneOf(NativeElementType.class);
             for (ReassemblyCommand command : commands) {
                 types.add(command.getMemberType());
             }

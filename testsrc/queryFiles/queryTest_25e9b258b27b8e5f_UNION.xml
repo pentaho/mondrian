@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Measures].[Warehouse Sales]} ON COLUMNS, UNION( {[Store].[All Stores].[USA].[WA].Children}, {[Store].[All Stores].[USA].[OR].[Portland]}) ON ROWS FROM [Warehouse] </mdxQuery>
+    <mdxQuery>SELECT {[Measures].[Warehouse Sales]} ON COLUMNS, UNION( {[Store].[USA].[WA].Children}, {[Store].[USA].[OR].[Portland]}) ON ROWS FROM [Warehouse] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -34,28 +34,28 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Bellingham]</member>
+                    <member>[Store].[USA].[WA].[Bellingham]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Seattle]</member>
+                    <member>[Store].[USA].[WA].[Seattle]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                    <member>[Store].[USA].[OR].[Portland]</member>
                 </tuple>
             </tuples>
         </rows>

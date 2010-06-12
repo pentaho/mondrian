@@ -453,41 +453,6 @@
               <LNum name="[Time].[LEVEL_NUMBER]"/>
               <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
             </HierarchyInfo>
-            <HierarchyInfo name="Store">
-              <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Store].[MEMBER_CAPTION]"/>
-              <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Store].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Pay Type">
-              <UName name="[Pay Type].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Pay Type].[MEMBER_CAPTION]"/>
-              <LName name="[Pay Type].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Pay Type].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Pay Type].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Store Type">
-              <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Store Type].[MEMBER_CAPTION]"/>
-              <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Store Type].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Position">
-              <UName name="[Position].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Position].[MEMBER_CAPTION]"/>
-              <LName name="[Position].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Position].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Position].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
-            <HierarchyInfo name="Department">
-              <UName name="[Department].[MEMBER_UNIQUE_NAME]"/>
-              <Caption name="[Department].[MEMBER_CAPTION]"/>
-              <LName name="[Department].[LEVEL_UNIQUE_NAME]"/>
-              <LNum name="[Department].[LEVEL_NUMBER]"/>
-              <DisplayInfo name="[Department].[DISPLAY_INFO]"/>
-            </HierarchyInfo>
           </AxisInfo>
         </AxesInfo>
         <CellInfo>
@@ -523,7 +488,7 @@
             </Tuple>
             <Tuple>
               <Member Hierarchy="Employees">
-                <UName>[Employees].[All Employees].[Sheri Nowmer]</UName>
+                <UName>[Employees].[Sheri Nowmer]</UName>
                 <Caption>Sheri Nowmer</Caption>
                 <LName>[Employees].[Employee Id]</LName>
                 <LNum>1</LNum>
@@ -541,41 +506,6 @@
                 <LName>[Time].[Year]</LName>
                 <LNum>0</LNum>
                 <DisplayInfo>4</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Store">
-                <UName>[Store].[All Stores]</UName>
-                <Caption>All Stores</Caption>
-                <LName>[Store].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>3</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Pay Type">
-                <UName>[Pay Type].[All Pay Types]</UName>
-                <Caption>All Pay Types</Caption>
-                <LName>[Pay Type].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>2</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Store Type">
-                <UName>[Store Type].[All Store Types]</UName>
-                <Caption>All Store Types</Caption>
-                <LName>[Store Type].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>6</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Position">
-                <UName>[Position].[All Position]</UName>
-                <Caption>All Position</Caption>
-                <LName>[Position].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>5</DisplayInfo>
-              </Member>
-              <Member Hierarchy="Department">
-                <UName>[Department].[All Departments]</UName>
-                <Caption>All Departments</Caption>
-                <LName>[Department].[(All)]</LName>
-                <LNum>0</LNum>
-                <DisplayInfo>12</DisplayInfo>
               </Member>
             </Tuple>
           </Tuples>
@@ -655,6 +585,9 @@
             <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
             <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -731,6 +664,9 @@
             <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
             <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -883,6 +819,7 @@
             <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
             <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -967,6 +904,7 @@
             <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
             <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1260,6 +1198,7 @@
             <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
             <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1374,6 +1313,7 @@
             <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
             <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1927,6 +1867,7 @@
             <xsd:element name="MEASURE_IS_VISIBLE" sql:field="MEASURE_IS_VISIBLE" type="xsd:boolean"/>
             <xsd:element minOccurs="0" name="LEVELS_LIST" sql:field="LEVELS_LIST" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEFAULT_FORMAT_STRING" sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
           </xsd:sequence>
         </xsd:complexType>
       </xsd:schema>
@@ -1966,18 +1907,6 @@
         <DATA_TYPE>130</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <MEASURE_NAME>Profit last Period</MEASURE_NAME>
-        <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
-        <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
-        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
-        <DATA_TYPE>130</DATA_TYPE>
-        <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -2363,24 +2292,6 @@
         <PARENT_COUNT>0</PARENT_COUNT>
         <DEPTH>0</DEPTH>
       </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
-        <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <MEMBER_ORDINAL>18</MEMBER_ORDINAL>
-        <MEMBER_NAME>Profit last Period</MEMBER_NAME>
-        <MEMBER_UNIQUE_NAME>[Measures].[Profit last Period]</MEMBER_UNIQUE_NAME>
-        <MEMBER_TYPE>4</MEMBER_TYPE>
-        <MEMBER_CAPTION>Profit last Period</MEMBER_CAPTION>
-        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
-        <PARENT_LEVEL>0</PARENT_LEVEL>
-        <PARENT_COUNT>0</PARENT_COUNT>
-        <DEPTH>0</DEPTH>
-      </row>
     </root>
   </xmla:return>
 </xmla:DiscoverResponse>
@@ -2676,24 +2587,6 @@
         <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
         <MEMBER_TYPE>4</MEMBER_TYPE>
         <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
-        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
-        <PARENT_LEVEL>0</PARENT_LEVEL>
-        <PARENT_COUNT>0</PARENT_COUNT>
-        <DEPTH>0</DEPTH>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-        <CUBE_NAME>Sales</CUBE_NAME>
-        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
-        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
-        <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <MEMBER_ORDINAL>18</MEMBER_ORDINAL>
-        <MEMBER_NAME>Profit last Period</MEMBER_NAME>
-        <MEMBER_UNIQUE_NAME>[Measures].[Profit last Period]</MEMBER_UNIQUE_NAME>
-        <MEMBER_TYPE>4</MEMBER_TYPE>
-        <MEMBER_CAPTION>Profit last Period</MEMBER_CAPTION>
         <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
         <PARENT_LEVEL>0</PARENT_LEVEL>
         <PARENT_COUNT>0</PARENT_COUNT>

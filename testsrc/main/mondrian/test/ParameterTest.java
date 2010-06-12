@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,14 +13,16 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.olap.Connection;
 import mondrian.rolap.RolapConnectionProperties;
 import org.eigenbase.util.property.Property;
+import org.olap4j.impl.Olap4jUtil;
 
+import java.sql.*;
 import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -112,7 +114,7 @@ public class ParameterTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[M]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 135,215\n");
@@ -130,6 +132,196 @@ public class ParameterTest extends FoodMartTestCase {
                 "Parameter(\"S\",STRING,\"x\" || \"y\","
                 + "\"A string parameter\")");
         Assert.assertEquals("xy", s);
+    }
+
+    public void testStringParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default')",
+            "xxx",
+            "foo", "xxx");
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default')",
+            "",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Len(Parameter('foo', STRING, 'default'))",
+            "0",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default') = 'default'",
+            "false",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', STRING, 'default') = ''",
+            "false",
+            "foo", null);
+    }
+
+    public void testNumericParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3)",
+            "234",
+            "foo", 234);
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3)",
+            "",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', NUMERIC, 12.3) * 10",
+            "",
+            "foo", null);
+    }
+
+    public void testMemberParameterNull() {
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "M",
+            "foo", "[Gender].[M]");
+        // explicitly set parameter to null and you should not get default value
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "#null",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Hierarchy.Name",
+            "Gender",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]) is null",
+            "true",
+            "foo", null);
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]) is [Gender].Parent",
+            "true",
+            "foo", null);
+
+        // assign null then assign something else
+        getTestContext().assertParameterizedExprReturns(
+            "Parameter('foo', [Gender], [Gender].[F]).Name",
+            "M",
+            "foo", null,
+            "foo", "[Gender].[All Gender].[M]");
+    }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-745">MONDRIAN-745,
+     * "NullPointerException when passing in null param value"</a>.
+     */
+    public void testNullStrToMember() {
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS, "
+            + "NON EMPTY {StrToMember(Parameter(\"sProduct\", STRING, \"[Gender].[Gender].[F]\"))} ON ROWS "
+            + "from [Sales]");
+
+        // Execute #1: Parameter unset
+        Parameter[] parameters = query.getParameters();
+        final Parameter parameter0 = parameters[0];
+        assertFalse(parameter0.isSet());
+        // ideally, parameter's default value would be available before
+        // execution; but it is what it is
+        assertNull(parameter0.getValue());
+        Result result = connection.execute(query);
+        assertEquals("[Gender].[Gender].[F]", parameter0.getValue());
+        final String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: 131,558\n";
+        TestContext.assertEqualsVerbose(expected, TestContext.toString(result));
+
+        // Execute #2: Parameter set to null
+        assertFalse(parameter0.isSet());
+        parameter0.setValue(null);
+        assertTrue(parameter0.isSet());
+        assertEquals(null, parameter0.getValue());
+        Throwable throwable;
+        try {
+            result = connection.execute(query);
+            Util.discard(result);
+            throwable = null;
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "An MDX expression was expected. An empty expression was specified.");
+
+        // Execute #3: Parameter unset, reverts to default value
+        assertTrue(parameter0.isSet());
+        parameter0.unsetValue();
+        assertFalse(parameter0.isSet());
+        // ideally, parameter's default value would be available before
+        // execution; but it is what it is
+        assertNull(parameter0.getValue());
+        result = connection.execute(query);
+        assertEquals("[Gender].[Gender].[F]", parameter0.getValue());
+        TestContext.assertEqualsVerbose(expected, TestContext.toString(result));
+        assertFalse(parameter0.isSet());
+    }
+
+    public void testSetUnsetParameter() {
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(
+            "with member [Measures].[Foo] as\n"
+            + " len(Parameter(\"sProduct\", STRING, \"foobar\"))\n"
+            + "select {[Measures].[Foo]} ON COLUMNS\n"
+            + "from [Sales]");
+        Parameter[] parameters = query.getParameters();
+        final Parameter parameter0 = parameters[0];
+        assertFalse(parameter0.isSet());
+        if (new Random().nextBoolean()) {
+            // harmless to unset a parameter which is unset
+            parameter0.unsetValue();
+        }
+        final String expect6 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 6\n";
+        final String expect0 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 0\n";
+        final String expect3 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: 3\n";
+
+        // before parameter is set, should get len of default value, viz 6
+        Result result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect6, TestContext.toString(result));
+
+        // after parameter is set to null, should get len of null, viz 0
+        parameter0.setValue(null);
+        assertTrue(parameter0.isSet());
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect0, TestContext.toString(result));
+        assertTrue(parameter0.isSet());
+
+        // after parameter is set to "foo", should get len of foo, viz 3
+        parameter0.setValue("foo");
+        assertTrue(parameter0.isSet());
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect3, TestContext.toString(result));
+        assertTrue(parameter0.isSet());
+
+        // after unset, should get len of default value, viz 6
+        parameter0.unsetValue();
+        result = connection.execute(query);
+        TestContext.assertEqualsVerbose(expect6, TestContext.toString(result));
+        assertFalse(parameter0.isSet());
     }
 
     public void testNumericParameterStringValueFails() {
@@ -247,10 +439,10 @@ public class ParameterTest extends FoodMartTestCase {
             + " {[Marital Status].children} on columns\n"
             + "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",
             "Axis #0:\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[M]}\n"
             + "Axis #1:\n"
-            + "{[Marital Status].[All Marital Status].[M]}\n"
-            + "{[Marital Status].[All Marital Status].[S]}\n"
+            + "{[Marital Status].[M]}\n"
+            + "{[Marital Status].[S]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 66,460\n"
@@ -336,7 +528,7 @@ public class ParameterTest extends FoodMartTestCase {
         TestContext.assertEqualsVerbose(
             "with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'\n"
             + "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'\n"
-            + "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
+            + "select {Parameter(\"P\", [Gender], [Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
             + "  {[Measures].[Unit Sales]} ON ROWS\n"
             + "from [Sales]\n",
             Util.unparse(query));
@@ -359,21 +551,21 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Baked Goods]}\n"
-            + "{[Product].[All Products].[Food].[Baking Goods]}\n"
-            + "{[Product].[All Products].[Food].[Breakfast Foods]}\n"
-            + "{[Product].[All Products].[Food].[Canned Foods]}\n"
-            + "{[Product].[All Products].[Food].[Canned Products]}\n"
-            + "{[Product].[All Products].[Food].[Dairy]}\n"
-            + "{[Product].[All Products].[Food].[Deli]}\n"
-            + "{[Product].[All Products].[Food].[Eggs]}\n"
-            + "{[Product].[All Products].[Food].[Frozen Foods]}\n"
-            + "{[Product].[All Products].[Food].[Meat]}\n"
-            + "{[Product].[All Products].[Food].[Produce]}\n"
-            + "{[Product].[All Products].[Food].[Seafood]}\n"
-            + "{[Product].[All Products].[Food].[Snack Foods]}\n"
-            + "{[Product].[All Products].[Food].[Snacks]}\n"
-            + "{[Product].[All Products].[Food].[Starchy Foods]}\n"
+            + "{[Product].[Food].[Baked Goods]}\n"
+            + "{[Product].[Food].[Baking Goods]}\n"
+            + "{[Product].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[Food].[Canned Foods]}\n"
+            + "{[Product].[Food].[Canned Products]}\n"
+            + "{[Product].[Food].[Dairy]}\n"
+            + "{[Product].[Food].[Deli]}\n"
+            + "{[Product].[Food].[Eggs]}\n"
+            + "{[Product].[Food].[Frozen Foods]}\n"
+            + "{[Product].[Food].[Meat]}\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Seafood]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "{[Product].[Food].[Snacks]}\n"
+            + "{[Product].[Food].[Starchy Foods]}\n"
             + "Row #0: 1,932\n"
             + "Row #1: 5,045\n"
             + "Row #2: 820\n"
@@ -402,7 +594,7 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Eggs].[Eggs]}\n"
+            + "{[Product].[Food].[Eggs].[Eggs]}\n"
             + "Row #0: 918\n",
             resultString);
 
@@ -418,8 +610,8 @@ public class ParameterTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products].[Food].[Deli].[Meat]}\n"
-            + "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n"
+            + "{[Product].[Food].[Deli].[Meat]}\n"
+            + "{[Product].[Food].[Deli].[Side Dishes]}\n"
             + "Row #0: 621\n"
             + "Row #1: 187\n",
             resultString);
@@ -447,9 +639,8 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(
             para, false, new Time(new Date().getTime()),
             "' for parameter 'x', type NUMERIC");
-        assertAssignParameter(
-            para, false, null,
-            "Invalid value 'null' for parameter 'x', type NUMERIC");
+        // OK to assign null
+        assertAssignParameter(para, false, null, null);
     }
 
     /**
@@ -482,7 +673,7 @@ public class ParameterTest extends FoodMartTestCase {
             para, false, "8", "MDX object '[8]' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, "8.24",
-            "MDX object '[8.24]' not found in cube 'Sales'");
+            "MDX object '[8].[24]' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, 8,
             "Invalid value '8' for parameter 'x',"
@@ -504,6 +695,17 @@ public class ParameterTest extends FoodMartTestCase {
         assertAssignParameter(
             para, false, new Time(new Date().getTime()),
             "' for parameter 'x', type MemberType<hierarchy=[Customers]>");
+
+        // string is OK
+        assertAssignParameter(para, false, "[Customers].[Mexico]", null);
+        // now with spurious 'all'
+        assertAssignParameter(
+            para, false, "[Customers].[All Customers].[Canada].[BC]", null);
+        // non-existent member
+        assertAssignParameter(
+            para, false, "[Customers].[Canada].[Bear Province]",
+            "MDX object '[Customers].[Canada].[Bear Province]' not found in "
+            + "cube 'Sales'");
 
         // Valid to set to null. It means use the default member of the
         // hierarchy. (Not necessarily the same as the default value of the
@@ -534,7 +736,14 @@ public class ParameterTest extends FoodMartTestCase {
             false,
             sr.getMemberByUniqueName(
                 Id.Segment.toList("Customers", "USA"), true),
-            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            "Invalid value '[Customers].[USA]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
+        // Same, using string.
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], [Customers].[USA].[CA])",
+            false, "[Customers].[USA]",
+            "Invalid value '[Customers].[USA]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
         // Member of right level.
@@ -555,10 +764,10 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"x\", [Customers], {[Customers].[USA], [Customers].[USA].[CA]})";
         assertAssignParameter(
             para, true, "8",
-            "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+            "MDX object '[8]' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, "foobar",
-            "Invalid value 'foobar' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
+            "MDX object '[foobar]' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, 8,
             "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
@@ -578,6 +787,27 @@ public class ParameterTest extends FoodMartTestCase {
             para, true, new Time(new Date().getTime()),
             "' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");
 
+        // strings are OK
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[USA], [Customers].[All Customers].[Canada].[BC]}",
+            null);
+        // also OK without braces
+        assertAssignParameter(
+            para, true,
+            "[Customers].[USA], [Customers].[All Customers].[Canada].[BC]",
+            null);
+        // also OK with non-standard spacing
+        assertAssignParameter(
+            para, true,
+            "[Customers] . [USA] , [Customers].[Canada].[BC],[Customers].[Mexico]",
+            null);
+        // error if one of the members does not exist
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[USA], [Customers].[Canada].[BC].[Bear City]}",
+            "MDX object '[Customers].[Canada].[BC].[Bear City]' not found in cube 'Sales'");
+
         List<Member> list;
         SchemaReader sr =
             TestContext.instance().getConnection()
@@ -586,6 +816,15 @@ public class ParameterTest extends FoodMartTestCase {
         // Empty list is OK.
         list = Collections.emptyList();
         assertAssignParameter(para, true, list, null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, "", null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, "{}", null);
+
+        // empty string is ok
+        assertAssignParameter(para, true, " { } ", null);
 
         // Not valid to set list to null.
         assertAssignParameter(
@@ -604,6 +843,13 @@ public class ParameterTest extends FoodMartTestCase {
             "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
             + "type MemberType<hierarchy=[Customers]>");
 
+        // as above, strings
+        assertAssignParameter(
+            para, true,
+            "{[Customers].[Mexico], [Time].[1997].[Q2].[5]}",
+            "Invalid value '[Time].[1997].[Q2].[5]' for parameter 'x', "
+            + "type MemberType<hierarchy=[Customers]>");
+
         // List that contains members of correct hierarchy.
         list =
             Arrays.asList(
@@ -617,12 +863,22 @@ public class ParameterTest extends FoodMartTestCase {
         list =
             Arrays.asList(
                 sr.getMemberByUniqueName(
-                    Id.Segment.toList("Customers", "USA"), true));
+                    Id.Segment.toList("Customers", "USA", "CA"), true),
+                sr.getMemberByUniqueName(
+                    Id.Segment.toList("Customers", "Mexico"), true));
         assertAssignParameter(
             "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
             true,
             list,
-            "Invalid value '[Customers].[All Customers].[USA]' for parameter "
+            "Invalid value '[Customers].[Mexico]' for parameter "
+            + "'x', type MemberType<level=[Customers].[State Province]>");
+
+        // as above, strings
+        assertAssignParameter(
+            "Parameter(\"x\", [Customers].[State Province], {[Customers].[USA].[CA]})",
+            true,
+            "{[Customers].[USA].[CA], [Customers].[Mexico]}",
+            "Invalid value '[Customers].[Mexico]' for parameter "
             + "'x', type MemberType<level=[Customers].[State Province]>");
 
         // List that contains members of right level, and a null member.
@@ -754,7 +1010,7 @@ public class ParameterTest extends FoodMartTestCase {
      * statement.
      */
     public void testConnectionPropsCannotBeOverridden() {
-        Set<RolapConnectionProperties> overrideableProps = Util.enumSetOf(
+        Set<RolapConnectionProperties> overrideableProps = Olap4jUtil.enumSetOf(
             RolapConnectionProperties.Catalog,
             RolapConnectionProperties.Locale);
         for (RolapConnectionProperties prop

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,6 +26,7 @@ import mondrian.util.ArrayStack;
 import java.io.*;
 import java.util.*;
 
+import mondrian.util.IdentifierParser;
 import org.apache.commons.collections.collection.CompositeCollection;
 
 /**
@@ -153,11 +154,6 @@ public class Query extends QueryPart {
     private List<RolapCube> baseCubes;
 
     /**
-     * If true, loading schema
-     */
-    private boolean load;
-
-    /**
      * If true, enforce validation even when ignoreInvalidMembers is set.
      */
     private boolean strictValidation;
@@ -192,7 +188,6 @@ public class Query extends QueryPart {
         String cube,
         QueryAxis slicerAxis,
         QueryPart[] cellProps,
-        boolean load,
         boolean strictValidation)
     {
         this(
@@ -203,7 +198,6 @@ public class Query extends QueryPart {
             slicerAxis,
             cellProps,
             new Parameter[0],
-            load,
             strictValidation);
     }
 
@@ -218,7 +212,6 @@ public class Query extends QueryPart {
         QueryAxis slicerAxis,
         QueryPart[] cellProps,
         Parameter[] parameters,
-        boolean load,
         boolean strictValidation)
     {
         this.connection = connection;
@@ -236,7 +229,6 @@ public class Query extends QueryPart {
         // assume, for now, that cross joins on virtual cubes can be
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
-        this.load = load;
         this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         resolve();
@@ -372,7 +364,6 @@ public class Query extends QueryPart {
             (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
             cellProps,
             parameters.toArray(new Parameter[parameters.size()]),
-            load,
             strictValidation);
     }
 
@@ -505,10 +496,12 @@ public class Query extends QueryPart {
     public boolean ignoreInvalidMembers()
     {
         MondrianProperties props = MondrianProperties.instance();
+        final boolean load = ((RolapCube) getCube()).isLoadInProgress();
         return
             !strictValidation
-            && ((load && props.IgnoreInvalidMembers.get())
-                || (!load && props.IgnoreInvalidMembersDuringQuery.get()));
+            && (load
+                ? props.IgnoreInvalidMembers.get()
+                : props.IgnoreInvalidMembersDuringQuery.get());
     }
 
     /**
@@ -832,8 +825,8 @@ public class Query extends QueryPart {
         int category = TypeUtil.typeToCategory(type);
         switch (category) {
         case Category.Numeric:
-            if (value instanceof Number) {
-                return (Number) value;
+            if (value instanceof Number || value == null) {
+                return value;
             }
             if (value instanceof String) {
                 String s = (String) value;
@@ -852,6 +845,9 @@ public class Query extends QueryPart {
             }
             return value.toString();
         case Category.Set:
+            if (value instanceof String) {
+                value = IdentifierParser.parseIdentifierList((String) value);
+            }
             if (!(value instanceof List)) {
                 throw Util.newInternal(
                     "Invalid value '" + value + "' for parameter '"
@@ -875,27 +871,30 @@ public class Query extends QueryPart {
         case Category.Member:
             if (value == null) {
                 // Setting a member parameter to null is the same as setting to
-                // the default member of the hierarchy. May not be equivalent to
-                // the default value of the parameter.
+                // the null member of the hierarchy. May not be equivalent to
+                // the default value of the parameter, nor the same as the all
+                // member.
                 if (type.getHierarchy() != null) {
-                    value = type.getHierarchy().getDefaultMember();
+                    value = type.getHierarchy().getNullMember();
                 } else if (type.getDimension() != null) {
-                    value =
-                        type.getDimension().getHierarchy().getDefaultMember();
+                    value = type.getDimension().getHierarchy().getNullMember();
+                }
+            }
+            if (value instanceof String) {
+                value = Util.parseIdentifier((String) value);
+            }
+            if (value instanceof List
+                && Util.canCast((List) value, Id.Segment.class))
+            {
+                final List<Id.Segment> segmentList = Util.cast((List) value);
+                final OlapElement olapElement = Util.lookup(query, segmentList);
+                if (olapElement instanceof Member) {
+                    value = olapElement;
                 }
             }
             if (value instanceof Member) {
                 if (type.isInstance(value)) {
-                    return (Member) value;
-                }
-            }
-            if (value instanceof String) {
-                String memberName = (String) value;
-                final OlapElement olapElement =
-                    Util.lookup(
-                        query, Util.parseIdentifier(memberName));
-                if (olapElement instanceof Member) {
-                    return (Member) olapElement;
+                    return value;
                 }
             }
             throw Util.newInternal(
@@ -1403,7 +1402,9 @@ public class Query extends QueryPart {
      * Source of metadata within the scope of a query.
      *
      * <p>Note especially that {@link #getCalculatedMember(java.util.List)}
-     * returns the calculated members defined in this query.
+     * returns the calculated members defined in this query. It does not
+     * perform access control; all calculated members defined in a query are
+     * visible to everyone.
      */
     private static class QuerySchemaReader extends DelegatingSchemaReader {
         private final Query query;
@@ -1452,8 +1453,48 @@ public class Query extends QueryPart {
         }
 
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
-            final String uniqueName = Util.implode(nameParts);
-            return query.lookupMemberFromCache(uniqueName);
+            for (final Formula formula : query.formulas) {
+                if (!formula.isMember()) {
+                    continue;
+                }
+                Member member = (Member) formula.getElement();
+                if (member == null) {
+                    continue;
+                }
+                if (!match(member, nameParts)) {
+                    continue;
+                }
+                if (!query.getConnection().getRole().canAccess(member)) {
+                    continue;
+                }
+                return member;
+            }
+            return null;
+        }
+
+        private static boolean match(
+            Member member, List<Id.Segment> nameParts)
+        {
+            Id.Segment segment = nameParts.get(nameParts.size() - 1);
+            while (member.getParentMember() != null) {
+                if (!segment.matches(member.getName())) {
+                    return false;
+                }
+                member = member.getParentMember();
+                nameParts = nameParts.subList(0, nameParts.size() - 1);
+                segment = nameParts.get(nameParts.size() - 1);
+            }
+            if (segment.matches(member.getName())) {
+                return Util.equalName(
+                    member.getHierarchy().getUniqueName(),
+                    Util.implode(nameParts.subList(0, nameParts.size() - 1)));
+            } else if (member.isAll()) {
+                return Util.equalName(
+                    member.getHierarchy().getUniqueName(),
+                    Util.implode(nameParts));
+            } else {
+                return false;
+            }
         }
 
         public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
@@ -1503,7 +1544,7 @@ public class Query extends QueryPart {
             if (mdxElement != null) {
                 return mdxElement;
             }
-            // then look in defined members (removed sf#1084651)
+            // then look in defined members (fixes MONDRIAN-77)
 
             // then in defined sets
             for (Formula formula : query.formulas) {

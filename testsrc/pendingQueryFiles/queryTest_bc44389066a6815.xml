@@ -48,10 +48,10 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Gender].[All Gender].[F]</member>
+                    <member>[Gender].[F]</member>
                 </tuple>
                 <tuple>
-                    <member>[Gender].[All Gender].[M]</member>
+                    <member>[Gender].[M]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -17,7 +17,7 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                     <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Promotions].[All Promotions]</member>
@@ -52,10 +52,10 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                    <member>[Store].[USA].[OR].[Salem]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
             </tuples>
         </rows>

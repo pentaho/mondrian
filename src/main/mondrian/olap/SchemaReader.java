@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,8 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
+import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapMember;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -60,8 +62,7 @@ public interface SchemaReader {
 
     /**
      * Returns number of children parent of a member,
-     *  if the information can be retrieved from cache.
-     * Otherwise  -1 is returned
+     * if the information can be retrieved from cache, otherwise -1.
      */
     int getChildrenCountFromCache(Member member);
 
@@ -132,6 +133,19 @@ public interface SchemaReader {
     List<Member> getMemberChildren(List<Member> members, Evaluator context);
 
     /**
+     * Returns a list of contributing children of a member of a parent-child
+     * hierarchy.
+     *
+     * @param dataMember Data member for a member of the parent-child hierarcy
+     * @param hierarchy Hierarchy
+     * @param list List of members to populate
+     */
+    void getParentChildContributingChildren(
+        Member dataMember,
+        Hierarchy hierarchy,
+        List<Member> list);
+
+    /**
      * Returns the parent of <code>member</code>.
      *
      * @param member Member
@@ -139,6 +153,17 @@ public interface SchemaReader {
      * @return null if member is a root member
      */
     Member getMemberParent(Member member);
+
+    /**
+     * Returns a list of ancestors of <code>member</code>, in depth order.
+     *
+     * <p>For example, for [Store].[USA].[CA], returns
+     * {[Store].[USA], [Store].[All Stores]}.
+     *
+     * @param member Member
+     * @param ancestorList List of ancestors
+     */
+    void getMemberAncestors(Member member, List<Member> ancestorList);
 
     /**
      * Returns the depth of a member.

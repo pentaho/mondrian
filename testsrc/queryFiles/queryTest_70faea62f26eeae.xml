@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>Select {ToggleDrillState({[Store].[All Stores].[USA],[Store].[All Stores].[Canada],[Store].[All Stores].[Mexico]}, {[Store].[All Stores].[USA],[Store].[All Stores].[USA].[WA],[Store].[All Stores].[Mexico]})} on Axis(0) from [Sales]  </mdxQuery>
+    <mdxQuery>Select {ToggleDrillState({[Store].[USA],[Store].[Canada],[Store].[Mexico]}, {[Store].[USA],[Store].[USA].[WA],[Store].[All Stores].[Mexico]})} on Axis(0) from [Sales]  </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -40,40 +40,40 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store].[USA].[WA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[DF]</member>
+                    <member>[Store].[Mexico].[DF]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[Guerrero]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[Jalisco]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[Veracruz]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[Yucatan]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[Zacatecas]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
                 </tuple>
             </tuples>
         </columns>

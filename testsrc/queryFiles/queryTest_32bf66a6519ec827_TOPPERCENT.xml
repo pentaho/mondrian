@@ -41,22 +41,22 @@
                     <member>[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[HeadQuarters]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                    <member>[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                    <member>[Store Type].[Supermarket]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -66,19 +66,19 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                    <member>[Store].[USA].[OR].[Salem]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                    <member>[Store].[USA].[OR].[Portland]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
                 </tuple>
             </tuples>
         </rows>

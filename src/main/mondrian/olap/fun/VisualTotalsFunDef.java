@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -189,14 +189,14 @@ public class VisualTotalsFunDef extends FunDefBase {
     /**
      * Calculated member for <code>VisualTotals</code> function.
      *
-     * It corresponds to a real member, and most of its properties are similar.
-     * The main differences are:<ul>
+     * <p>It corresponds to a real member, and most of its properties are
+     * similar. The main differences are:<ul>
      * <li>its name is derived from the VisualTotals pattern, e.g.
      *     "*Subtotal - Dairy" as opposed to "Dairy"
      * <li>its value is a calculation computed by aggregating all of the
      *     members which occur following it in the list</ul></p>
      */
-    public static class VisualTotalMember extends RolapMember {
+    public static class VisualTotalMember extends RolapMemberBase {
         private final Member member;
         private final Exp exp;
 
@@ -229,6 +229,11 @@ public class VisualTotalsFunDef extends FunDefBase {
             return member.hashCode();
         }
 
+        @Override
+        public String getCaption() {
+            return member.getCaption();
+        }
+
         protected boolean computeCalculated(final MemberType memberType) {
             return true;
         }
@@ -243,7 +248,7 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         public int getOrdinal() {
-            throw new UnsupportedOperationException();
+            return member.getOrdinal();
         }
 
         public Member getDataMember() {
@@ -266,6 +271,16 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public Member getMember() {
             return member;
+        }
+
+        public Object getPropertyValue(String propertyName, boolean matchCase) {
+            Property property = Property.lookup(propertyName, matchCase);
+            switch (property.ordinal) {
+            case Property.CHILDREN_CARDINALITY_ORDINAL:
+                return member.getPropertyValue(propertyName, matchCase);
+            default:
+                return super.getPropertyValue(propertyName, matchCase);
+            }
         }
     }
 

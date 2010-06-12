@@ -51,13 +51,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]</member>
+                    <member>[Store].[Canada].[BC].[Vancouver].[Store 19]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]</member>
+                    <member>[Store].[Mexico].[DF].[Mexico City].[Store 9]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,16 +12,19 @@
 */
 
 package mondrian.test;
+
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.Enumeration;
 import java.util.regex.Pattern;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
+
 import mondrian.olap.fun.*;
 import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.*;
@@ -228,6 +231,7 @@ public class Main extends TestSuite {
             addTest(suite, XmlaErrorTest.class);
             addTest(suite, XmlaExcel2000Test.class);
             addTest(suite, XmlaExcelXPTest.class);
+            addTest(suite, XmlaExcel2007Test.class);
             addTest(suite, XmlaCognosTest.class);
             addTest(suite, XmlaTabularTest.class);
             addTest(suite, XmlaTests.class);

@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,7 +17,6 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.TraversalList;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,7 +56,6 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     {
         String message = "Populating member cache with members for " + targets;
         SqlStatement stmt = null;
-        final ResultSet resultSet;
         boolean execQuery = (partialResult == null);
         try {
             if (execQuery) {
@@ -71,12 +69,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 }
                 String sql = makeLevelMembersSql(dataSource);
                 stmt = RolapUtil.executeQuery(
-                    dataSource, sql, maxRows,
+                    dataSource, sql, maxRows, 0,
                     "HighCardSqlTupleReader.readTuples " + partialTargets,
                     message, -1, -1);
-                resultSet = stmt.getResultSet();
-            } else {
-                resultSet = null;
             }
 
             for (TargetBase target : targets) {
@@ -88,7 +83,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
 
             int currPartialResultIdx = 0;
             if (execQuery) {
-                this.moreRows = resultSet.next();
+                this.moreRows = stmt.getResultSet().next();
                 if (this.moreRows) {
                     ++stmt.rowCount;
                 }
@@ -99,7 +94,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             this.resultLoader =
                 new ResultLoader(
                     enumTargetCount,
-                    targets, stmt, resultSet, execQuery, partialResult,
+                    targets, stmt, execQuery, partialResult,
                     newPartialResult);
 
             // Read first and second elements if exists (or marks
@@ -140,6 +135,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
 
         // List of tuples
         final int n = targets.size();
+        @SuppressWarnings({"unchecked"})
         final List<RolapMember>[] lists = new List[n];
         for (int i = 0; i < n; i++) {
             lists[i] = targets.get(i).close();
@@ -157,13 +153,6 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 Util.<Member[]>cast(tupleList), false, n);
         }
         return tupleList;
-    }
-
-    /**
-     * Avoids loading of more results.
-     */
-    public void noMoreRows() {
-        this.moreRows = false;
     }
 
     /**

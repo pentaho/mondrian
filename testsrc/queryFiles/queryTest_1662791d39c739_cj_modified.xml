@@ -23,51 +23,51 @@
             <tuples>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

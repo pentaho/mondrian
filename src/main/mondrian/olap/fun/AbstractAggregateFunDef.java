@@ -40,11 +40,14 @@ public class AbstractAggregateFunDef extends FunDefBase {
         if (i == 0) {
             if (MondrianProperties.instance().EnableExpCache.get()) {
                 Exp arg = args[0];
-                final Exp cacheCall = new UnresolvedFunCall(
-                        CacheFunDef.NAME,
-                        Syntax.Function,
-                        new Exp[] {arg});
-                return validator.validate(cacheCall, false);
+                if (FunUtil.worthCaching(arg)) {
+                    final Exp cacheCall =
+                        new UnresolvedFunCall(
+                            CacheFunDef.NAME,
+                            Syntax.Function,
+                            new Exp[] {arg});
+                    return validator.validate(cacheCall, false);
+                }
             }
         }
         return super.validateArg(validator, args, i, category);

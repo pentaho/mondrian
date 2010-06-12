@@ -3,14 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.util;
 
-import java.util.Set;
-import java.util.EnumSet;
 import java.util.regex.Pattern;
 import java.math.BigDecimal;
 // Only in Java5 and above
@@ -32,18 +30,6 @@ import java.lang.annotation.Annotation;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk15 implements UtilCompatible {
-    public <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
-        return EnumSet.of(first, rest);
-    }
-
-    public <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
-        return EnumSet.noneOf(elementType);
-    }
-
-    public <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
-        return EnumSet.allOf(elementType);
-    }
-
     /**
      * This generates a BigDecimal with a precision reflecting
      * the precision of the input double.

@@ -24,7 +24,7 @@ WHERE [Store Size in SQFT].[21215].PrevMember</mdxQuery>
                     <member>[Measures].[Unit Sales]</member>
                     <member>[Product].[All Products]</member>
                     <member>[Store].[All Stores]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[20319]</member>
+                    <member>[Store Size in SQFT].[20319]</member>
                     <member>[Store Type].[All Store Types]</member>
                     <member>[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
@@ -41,7 +41,7 @@ WHERE [Store Size in SQFT].[21215].PrevMember</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[High School Degree]</member>
+                    <member>[Education Level].[High School Degree]</member>
                 </tuple>
             </tuples>
         </columns>

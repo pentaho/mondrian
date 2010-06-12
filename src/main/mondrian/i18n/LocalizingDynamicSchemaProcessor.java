@@ -69,7 +69,7 @@ public class LocalizingDynamicSchemaProcessor
         try {
             bundle = ResourceBundle.getBundle(
                 propFile,
-                new Locale(locale),
+                Util.parseLocale(locale),
                 getClass().getClassLoader());
         } catch (Exception e) {
             LOGGER.warn(

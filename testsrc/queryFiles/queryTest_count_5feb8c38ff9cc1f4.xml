@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Product].[All Products].[Product Count] AS 'Count({[Product].[All Products], [Product].[All Products].Children}, IncludeEmpty)'
+    <mdxQuery>WITH MEMBER [Product].[Product Count] AS 'Count({[Product].[All Products], [Product].[All Products].Children}, IncludeEmpty)'
 SELECT {[Store].[All Stores], [Store].[All Stores].Children} ON AXIS(0),
-       {[Product].[All Products], [Product].[All Products].Children, [Product].[All Products].[Product Count]} ON AXIS(1)
+       {[Product].[All Products], [Product].[All Products].Children, [Product].[Product Count]} ON AXIS(1)
 FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
@@ -44,13 +44,13 @@ FROM [Sales]</mdxQuery>
                     <member>[Store].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Canada]</member>
+                    <member>[Store].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[Mexico]</member>
+                    <member>[Store].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[All Stores].[USA]</member>
+                    <member>[Store].[USA]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -63,16 +63,16 @@ FROM [Sales]</mdxQuery>
                     <member>[Product].[All Products]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Drink]</member>
+                    <member>[Product].[Drink]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Product].[Food]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Non-Consumable]</member>
+                    <member>[Product].[Non-Consumable]</member>
                 </tuple>
                 <tuple>
-                    <member>[Product].[All Products].[Product Count]</member>
+                    <member>[Product].[Product Count]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -988,7 +988,7 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>If the value is
      * non-null, it is used by the <code>PropertyValueFactory</code>
      * to create the implementation.  If unset,
-     * {@link mondrian.rolap.RolapMember.DefaultPropertyValueMapFactory}
+     * {@link mondrian.rolap.RolapMemberBase.DefaultPropertyValueMapFactory}
      * will be used. </p>
      */
     public transient final StringProperty PropertyValueMapFactoryClass =
@@ -1127,7 +1127,7 @@ public class MondrianProperties extends TriggerableProperties {
      * is resolved into a fully qualified
      * <blockquote>
      * <p>
-     * [Gender].[All Gender].[M]
+     * [Gender].[M]
      * </blockquote>
      *
      * <p> In a scenario where the schema is very large and dimensions have
@@ -1151,8 +1151,8 @@ public class MondrianProperties extends TriggerableProperties {
      * the member cache control aspects of {@link mondrian.olap.CacheControl},
      * you must set this property to {@code false}.</p>
      *
-     * <p>In future, we plan to make RolapCubeMember more lightweight to
-     * construct, and we will probably obsolete this cache and this
+     * <p>RolapCubeMember has recently become more lightweight to
+     * construct, and we may obsolete this cache and this
      * property.</p>
      */
     public transient final BooleanProperty EnableRolapCubeMemberCache =

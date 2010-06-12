@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,15 +22,16 @@ import mondrian.olap.MondrianProperties;
  * @version $Id$
  * @since Dec 12, 2007
  */
-public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends
-    FoodMartTestCase
+public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
+    extends FoodMartTestCase
 {
-
+    // TODO: use propSaver to restore property values
     boolean originalNonEmptyFlag;
     boolean originalEliminateUnrelatedDimensions;
     private final MondrianProperties prop = MondrianProperties.instance();
 
     protected void setUp() throws Exception {
+        super.setUp();
         originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
         originalEliminateUnrelatedDimensions =
             prop.IgnoreMeasureForNonJoiningDimension.get();
@@ -42,6 +43,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest extends
         prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
         prop.IgnoreMeasureForNonJoiningDimension.set(
             originalEliminateUnrelatedDimensions);
+        super.tearDown();
     }
 
     public void testNoTotalsForCompdMeasureWithComponentsHavingNonJoiningDims()

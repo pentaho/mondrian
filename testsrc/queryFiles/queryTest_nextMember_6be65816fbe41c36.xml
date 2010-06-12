@@ -40,7 +40,7 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Education Level].[All Education Levels].[Graduate Degree]</member>
+                    <member>[Education Level].[Graduate Degree]</member>
                 </tuple>
             </tuples>
         </columns>

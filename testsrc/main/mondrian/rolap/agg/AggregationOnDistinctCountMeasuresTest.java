@@ -186,7 +186,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
             + "and \"time_by_day\".\"the_year\" = 1997 "
             + "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-            + "and (\"store\".\"store_country\" = 'Canada' or \"store\".\"store_state\" = 'CA') "
+            + "and (\"store\".\"store_state\" = 'CA' or \"store\".\"store_country\" = 'Canada') "
             + "group by \"time_by_day\".\"the_year\"";
 
         String mysqlSql =
@@ -195,16 +195,16 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` "
             + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 "
             + "and `sales_fact_1997`.`store_id` = `store`.`store_id` "
-            + "and (`store`.`store_country` = 'Canada' or `store`.`store_state` = 'CA') "
+            + "and (`store`.`store_state` = 'CA' or `store`.`store_country` = 'Canada') "
             + "group by `time_by_day`.`the_year`";
 
-        String oraTeraSql=
+        String oraTeraSql =
             "select \"time_by_day\".\"the_year\" as \"c0\", "
             + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
             + "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"store\" =as= \"store\" "
             + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 "
             + "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-            + "and (\"store\".\"store_country\" = 'Canada' or \"store\".\"store_state\" = 'CA') "
+            + "and (\"store\".\"store_state\" = 'CA' or \"store\".\"store_country\" = 'Canada') "
             + "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
@@ -253,9 +253,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA]}\n"
             + "Axis #2:\n"
-            + "{[Measures].[Customer Count], [Gender].[All Gender].[M]}\n"
+            + "{[Measures].[Customer Count], [Gender].[M]}\n"
             + "Row #0: 1,389\n");
     }
 
@@ -713,8 +713,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
             + "{[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
             + "Row #0: 2,716\n"
             + "Row #1: 1,037\n"
@@ -793,8 +793,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores].[USA].[CA]}\n"
-            + "{[Store].[All Stores].[USA].[OR]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
             + "{[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
             + "Row #0: 2,716\n"
             + "Row #0: 74,748\n"
@@ -880,8 +880,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
             + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[All Gender].[F]}\n"
-            + "{[Gender].[All Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "{[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n"
             + "Row #0: 5,581\n"
             + "Row #1: 2,755\n"
@@ -995,7 +995,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "where [Time.Weekly].[1997]";
         String expected =
             "Axis #0:\n"
-            + "{[Time].[Weekly].[All Weeklys].[1997]}\n"
+            + "{[Time].[Weekly].[1997]}\n"
             + "Axis #1:\n"
             + "{[Product].[Agg]}\n"
             + "Axis #2:\n"

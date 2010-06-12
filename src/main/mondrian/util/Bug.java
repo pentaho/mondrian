@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -180,6 +180,12 @@ public class Bug {
      * is fixed.
      */
     public static final boolean BugMondrian687Fixed = false;
+
+    /**
+     * Whether RolapCubeMember and RolapMember have been fully segregated; any
+     * piece of code should be working with one or the other, not both.
+     */
+    public static final boolean BugSegregateRolapCubeMemberFixed = false;
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

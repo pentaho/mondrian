@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -165,7 +165,29 @@ public class DefaultSaxWriter implements SaxWriter {
         }
     }
 
-    public void element(String tagName, String... attributes) {
+    public void startSequence(String name, String subName) {
+        if (name != null) {
+            startElement(name);
+        } else {
+            stack.push(null);
+        }
+    }
+
+    public void endSequence() {
+        if (stack.peek() == null) {
+            stack.pop();
+        } else {
+            endElement();
+        }
+    }
+
+    public final void textElement(String name, Object data) {
+        startElement(name);
+        characters(data.toString());
+        endElement();
+    }
+
+    public void element(String tagName, Object... attributes) {
         startElement(tagName, attributes);
         endElement();
     }
@@ -175,13 +197,13 @@ public class DefaultSaxWriter implements SaxWriter {
         stack.add(tagName);
     }
 
-    public void startElement(String tagName, String... attributes) {
+    public void startElement(String tagName, Object... attributes) {
         _startElement(null, null, tagName, new StringAttributes(attributes));
         stack.add(tagName);
     }
 
     public void endElement() {
-        String tagName = (String) stack.pop();
+        String tagName = stack.pop();
         _endElement(null, null, tagName);
     }
 
@@ -204,11 +226,11 @@ public class DefaultSaxWriter implements SaxWriter {
             return;
         }
 
-        String currentTagName  = (String) stack.peek();
+        String currentTagName  = stack.peek();
         while (!tagName.equals(currentTagName)) {
             _endElement(null, null, currentTagName);
             stack.pop();
-            currentTagName = (String) stack.peek();
+            currentTagName = stack.peek();
         }
     }
 
@@ -275,9 +297,9 @@ public class DefaultSaxWriter implements SaxWriter {
      * List of SAX attributes based upon a string array.
      */
     public static class StringAttributes implements Attributes {
-        private final String[] strings;
+        private final Object[] strings;
 
-        public StringAttributes(String[] strings) {
+        public StringAttributes(Object[] strings) {
             this.strings = strings;
         }
 
@@ -294,7 +316,7 @@ public class DefaultSaxWriter implements SaxWriter {
         }
 
         public String getQName(int index) {
-            return strings[index * 2];
+            return (String) strings[index * 2];
         }
 
         public String getType(int index) {
@@ -302,7 +324,7 @@ public class DefaultSaxWriter implements SaxWriter {
         }
 
         public String getValue(int index) {
-            return strings[index * 2 + 1];
+            return stringValue(strings[index * 2 + 1]);
         }
 
         public int getIndex(String uri, String localName) {
@@ -312,7 +334,7 @@ public class DefaultSaxWriter implements SaxWriter {
         public int getIndex(String qName) {
             final int count = strings.length / 2;
             for (int i = 0; i < count; i++) {
-                String string = strings[i * 2];
+                String string = (String) strings[i * 2];
                 if (string.equals(qName)) {
                     return i;
                 }
@@ -337,11 +359,14 @@ public class DefaultSaxWriter implements SaxWriter {
             if (index < 0) {
                 return null;
             } else {
-                return strings[index * 2 + 1];
+                return stringValue(strings[index * 2 + 1]);
             }
         }
-    }
 
+        private static String stringValue(Object s) {
+            return s == null ? null : s.toString();
+        }
+    }
 }
 
 // End DefaultSaxWriter.java

@@ -76,6 +76,17 @@ public class RolapEvaluator implements Evaluator {
 
     private final List<Member> slicerMembers;
     private Boolean nativeEnabled;
+    private Member[] nonAllMembers;
+
+    /**
+     * Set of expressions actively being expanded. Prevents infinite cycle of
+     * expansions.
+     *
+     * @return Mutable set of expressions being expanded
+     */
+    public Set<Exp> getActiveNativeExpansions() {
+        return root.activeNativeExpansions;
+    }
 
     /**
      * States of the finite state machine for determining the max solve order
@@ -162,29 +173,14 @@ public class RolapEvaluator implements Evaluator {
         return new RolapEvaluator(root);
     }
 
-    /**
-     * Returns the base (non-virtual) cube that the current measure in the
-     * context belongs to.
-     * @return Cube
-     */
     public RolapCube getMeasureCube() {
-        RolapCube measureCube = null;
-        if (currentMembers[0] instanceof RolapStoredMeasure) {
-            measureCube = ((RolapStoredMeasure) currentMembers[0]).getCube();
+        final RolapMember measure = currentMembers[0];
+        if (measure instanceof RolapStoredMeasure) {
+            return ((RolapStoredMeasure) measure).getCube();
         }
-        return measureCube;
+        return null;
     }
 
-    /**
-     * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
-     * members are on unrelated dimension for the measure in current context
-     * then returns true.
-     *
-     * @param members
-     * dimensions for the members need to be checked whether
-     * related or unrelated
-     * @return boolean
-     */
     public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
         RolapCube virtualCube = getCube();
         RolapCube baseCube = getMeasureCube();
@@ -210,6 +206,24 @@ public class RolapEvaluator implements Evaluator {
         return nativeEnabled;
     }
 
+    public boolean currentIsEmpty() {
+        // If a cell evaluates to null, it is always deemed empty.
+        Object o = evaluateCurrent();
+        if (o == Util.nullValue || o == null) {
+            return true;
+        }
+        final RolapCube measureCube = getMeasureCube();
+        if (measureCube == null) {
+            return false;
+        }
+        // For other cell values (e.g. zero), the cell is deemed empty if the
+        // number of fact table rows is zero.
+        final RolapEvaluator eval2 = push(measureCube.getFactCountMeasure());
+        o = eval2.evaluateCurrent();
+        return o == null
+           || (o instanceof Number && ((Number) o).intValue() == 0);
+    }
+
     public void setNativeEnabled(final Boolean nativeEnabled) {
         this.nativeEnabled = nativeEnabled;
     }
@@ -220,6 +234,17 @@ public class RolapEvaluator implements Evaluator {
 
     public final Member[] getMembers() {
         return currentMembers;
+    }
+
+    public final Member[] getNonAllMembers() {
+        if (nonAllMembers == null) {
+            nonAllMembers = new RolapMember[root.nonAllPositionCount];
+            for (int i = 0; i < root.nonAllPositionCount; i++) {
+                int nonAllPosition = root.nonAllPositions[i];
+                nonAllMembers[i] = currentMembers[nonAllPosition];
+            }
+        }
+        return nonAllMembers;
     }
 
     public final List<List<Member[]>> getAggregationLists() {
@@ -382,10 +407,24 @@ public class RolapEvaluator implements Evaluator {
             removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
+        if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
+            root.nonAllPositions[root.nonAllPositionCount] = ordinal;
+            root.nonAllPositionCount++;
+        }
         if (m.isEvaluated()) {
             addCalcMember(new RolapMemberCalculation(m));
         }
+        nonAllMembers = null;
         return previous;
+    }
+
+    private boolean isNewPosition(int ordinal) {
+        for (int nonAllPosition : root.nonAllPositions) {
+            if (ordinal == nonAllPosition) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public final void setContext(List<Member> memberList) {
@@ -598,9 +637,9 @@ public class RolapEvaluator implements Evaluator {
     public final Object getProperty(String name, Object defaultValue) {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
-        for (int i = 0; i < currentMembers.length; i++) {
-            final Member member = currentMembers[i];
-
+        int i = -1;
+        for (Member member : getNonAllMembers()) {
+            i++;
             // more than one usage
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {

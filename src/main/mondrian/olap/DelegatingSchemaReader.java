@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -74,6 +74,13 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
 
     public List<Member> getMemberChildren(List<Member> members) {
         return schemaReader.getMemberChildren(members);
+    }
+
+    public void getParentChildContributingChildren(
+        Member dataMember, Hierarchy hierarchy, List<Member> list)
+    {
+        schemaReader.getParentChildContributingChildren(
+            dataMember, hierarchy, list);
     }
 
     public int getMemberDepth(Member member) {
@@ -209,6 +216,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         List<Member> members, Evaluator context)
     {
         return schemaReader.getMemberChildren(members, context);
+    }
+
+    public void getMemberAncestors(Member member, List<Member> ancestorList) {
+        schemaReader.getMemberAncestors(member, ancestorList);
     }
 
     public Member lookupMemberChildByName(

@@ -37,22 +37,22 @@
                     <member>[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[HeadQuarters]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                    <member>[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                    <member>[Store Type].[Supermarket]</member>
                 </tuple>
             </tuples>
         </rows>

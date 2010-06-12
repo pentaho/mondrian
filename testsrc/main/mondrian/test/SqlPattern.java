@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test;
 
-import mondrian.olap.Util;
 import mondrian.spi.Dialect;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.util.Set;
 
@@ -76,7 +76,7 @@ public class SqlPattern {
          final String sql,
          final String triggerSql)
     {
-        this(Util.enumSetOf(databaseProduct), sql, triggerSql);
+        this(Olap4jUtil.enumSetOf(databaseProduct), sql, triggerSql);
     }
 
     /**

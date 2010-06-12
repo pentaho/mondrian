@@ -902,7 +902,11 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.MYSQL;
         } else if (productName.startsWith("HP Neoview")) {
             return DatabaseProduct.NEOVIEW;
-        } else if (upperProductName.indexOf("SYBASE") >= 0) {
+        } else if (upperProductName.indexOf("SYBASE") >= 0
+            || upperProductName.indexOf("ADAPTIVE SERVER") >= 0)
+        {
+            // Sysbase Adaptive Server Enterprise 15.5 via jConnect 6.05 returns
+            // "Adaptive Server Enterprise" as a product name.
             return DatabaseProduct.SYBASE;
         } else if (upperProductName.indexOf("TERADATA") >= 0) {
             return DatabaseProduct.TERADATA;

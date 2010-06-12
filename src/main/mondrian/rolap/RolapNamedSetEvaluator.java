@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -62,152 +62,12 @@ class RolapNamedSetEvaluator
 
     public Iterable<Member> evaluateMemberIterable() {
         ensureList();
-        return new Collection<Member>() {
-            public Iterator<Member> iterator() {
-                return new Iterator<Member>() {
-                    int i = -1;
-
-                    public boolean hasNext() {
-                        return i < list.size() - 1;
-                    }
-
-                    public Member next() {
-                        currentOrdinal = ++i;
-                        return (Member) list.get(i);
-                    }
-
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-
-            // The following are included to fill out the Collection
-            // interface, but anything that would alter the collection
-            // or is not strictly needed elsewhere is unsupported
-            public boolean add(Member o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean addAll(Collection<? extends Member> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public void clear() {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean contains(Object o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean containsAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean isEmpty() {
-                return list.isEmpty();
-            }
-
-            public boolean remove(Object o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean removeAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean retainAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public int size() {
-                return list.size();
-            }
-
-            public Object[] toArray() {
-                throw new UnsupportedOperationException();
-            }
-
-            public <T> T[] toArray(T[] a) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new IterableCollection<Member>();
     }
 
     public Iterable<Member[]> evaluateTupleIterable() {
         ensureList();
-        return new Collection<Member[]>() {
-            public Iterator<Member[]> iterator() {
-                return new Iterator<Member[]>() {
-                    int i = -1;
-
-                    public boolean hasNext() {
-                        return i < list.size() - 1;
-                    }
-
-                    public Member[] next() {
-                        currentOrdinal = ++i;
-                        return (Member[]) list.get(i);
-                    }
-
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-
-            // The following are included to fill out the Collection
-            // interface, but anything that would alter the collection
-            // or is not strictly needed elsewhere is unsupported
-            public boolean add(Member[] o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean addAll(Collection<? extends Member[]> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public void clear() {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean contains(Object o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean containsAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean isEmpty() {
-                return list.isEmpty();
-            }
-
-            public boolean remove(Object o) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean removeAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public boolean retainAll(Collection<?> c) {
-                throw new UnsupportedOperationException();
-            }
-
-            public int size() {
-                return list.size();
-            }
-
-            public Object[] toArray() {
-                throw new UnsupportedOperationException();
-            }
-
-            public <T> T[] toArray(T[] a) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new IterableCollection<Member[]>();
     }
 
     /**
@@ -245,9 +105,10 @@ class RolapNamedSetEvaluator
         // need to materialize it, to ensure that all cell values are in
         // cache.
         if (o instanceof List) {
+            //noinspection unchecked
             rawList = (List<T>) o;
         } else {
-            Iterable<T> iter = (Iterable<T>) o;
+            Iterable<T> iter = Util.castToIterable(o);
             rawList = new ArrayList<T>();
             for (T e : iter) {
                 rawList.add(e);
@@ -318,6 +179,90 @@ class RolapNamedSetEvaluator
 
     public Member currentMember() {
         return (Member) list.get(currentOrdinal);
+    }
+
+    /**
+     * Collection that implements only methods {@code iterator}, {@code size},
+     * {@code isEmpty}.
+     *
+     * <p>Implements {@link Iterable} explicitly because Collection does not
+     * implement Iterable until JDK1.5. This way, we don't have to use a wrapper
+     * that hides the size method.
+     *
+     * @param <T> Element type
+     */
+    // TODO: should also implement List -- save a copy
+    private class IterableCollection<T> implements Collection<T>, Iterable<T> {
+        public Iterator<T> iterator() {
+            return new Iterator<T>() {
+                int i = -1;
+
+                public boolean hasNext() {
+                    return i < list.size() - 1;
+                }
+
+                public T next() {
+                    currentOrdinal = ++i;
+                    //noinspection unchecked
+                    return (T) list.get(i);
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        // The following are included to fill out the Collection
+        // interface, but anything that would alter the collection
+        // or is not strictly needed elsewhere is unsupported
+        public boolean add(T o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(Collection<? extends T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isEmpty() {
+            return list.isEmpty();
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int size() {
+            return list.size();
+        }
+
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
 

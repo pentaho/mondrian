@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,6 +39,7 @@ import org.apache.commons.vfs.*;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
+import org.olap4j.impl.Olap4jUtil;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -54,19 +55,19 @@ public class RolapSchema implements Schema {
     private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     private static final Set<Access> schemaAllowed =
-        Util.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
 
     private static final Set<Access> cubeAllowed =
-        Util.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
 
     private static final Set<Access> dimensionAllowed =
-        Util.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
 
     private static final Set<Access> hierarchyAllowed =
-        Util.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
 
     private static final Set<Access> memberAllowed =
-        Util.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
 
     private String name;
 
@@ -624,9 +625,19 @@ public class RolapSchema implements Schema {
                                 "You may only specify <MemberGrant> if "
                                 + "<Hierarchy> has access='custom'");
                         }
+                        final boolean ignoreInvalidMembers =
+                            MondrianProperties.instance().IgnoreInvalidMembers
+                                .get();
                         Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member), true);
-                        assert member != null;
+                            Util.parseIdentifier(memberGrant.member),
+                            !ignoreInvalidMembers);
+                        if (member == null) {
+                            // They asked to ignore members that don't exist
+                            // (e.g. [Store].[USA].[Foo]), so ignore this grant
+                            // too.
+                            assert ignoreInvalidMembers;
+                            continue;
+                        }
                         if (member.getHierarchy() != hierarchy) {
                             throw Util.newError(
                                 "Member '" + member

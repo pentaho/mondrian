@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,7 +17,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.*;
-import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -114,8 +113,8 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             // E.g.
             // List consists of:
             //  (Gender.[All Gender], [Product].[All Products]),
-            //  (Gender.[All Gender].[F], [Product].[All Products].[Drink]),
-            //  (Gender.[All Gender].[M], [Product].[All Products].[Food])
+            //  (Gender.[F], [Product].[Drink]),
+            //  (Gender.[M], [Product].[Food])
             // Can be optimized to:
             //  (Gender.[All Gender], [Product].[All Products])
             //
@@ -127,7 +126,18 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 tupleList =  (List<Member[]>) list;
             }
 
-            tupleList = optimizeTupleList(evaluator, tupleList);
+            if (evaluator instanceof RolapEvaluator
+                && ((RolapEvaluator) evaluator).getDialect()
+                .supportsUnlimitedValueList())
+            {
+                // If the DBMS does not have an upper limit on IN list
+                // predicate size, then don't attempt any list
+                // optimization, since the current algorithm is
+                // very slow.  May want to revisit this if someone
+                // improves the algorithm.
+            } else {
+                tupleList = optimizeTupleList(evaluator, tupleList);
+            }
 
             // Can't aggregate distinct-count values in the same way
             // which is used for other types of aggregations. To evaluate a
@@ -146,43 +156,22 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             Evaluator evaluator,
             List<Member[]> tupleList)
         {
-            RolapEvaluator rolapEvaluator = null;
-            if (evaluator instanceof RolapEvaluator) {
-                rolapEvaluator = (RolapEvaluator) evaluator;
+            // FIXME: We remove overlapping tuple entries only to pass
+            // AggregationOnDistinctCountMeasuresTest
+            // .testOptimizeListWithTuplesOfLength3 on Access. Without
+            // the optimization, we generate a statement 7000
+            // characters long and Access gives "Query is too complex".
+            // The optimization is expensive, so we only want to do it
+            // if the DBMS can't execute the query otherwise.
+            if (false) {
+                tupleList = removeOverlappingTupleEntries(tupleList);
             }
-
-            if ((rolapEvaluator != null)
-                && rolapEvaluator.getDialect().supportsUnlimitedValueList())
-            {
-                // If the DBMS does not have an upper limit on IN list
-                // predicate size, then don't attempt any list
-                // optimization, since the current algorithm is
-                // very slow.  May want to revisit this if someone
-                // improves the algorithm.
-            } else {
-                // FIXME: We remove overlapping tuple entries only to pass
-                // AggregationOnDistinctCountMeasuresTest
-                // .testOptimizeListWithTuplesOfLength3 on Access. Without
-                // the optimization, we generate a statement 7000
-                // characters long and Access gives "Query is too complex".
-                // The optimization is expensive, so we only want to do it
-                // if the DBMS can't execute the query otherwise.
-                if ((rolapEvaluator != null)
-                    && rolapEvaluator.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.ACCESS
-                    && false)
-                {
-                    tupleList = removeOverlappingTupleEntries(tupleList);
-                }
-                if (true) {
-                    tupleList =
-                        optimizeChildren(
-                            tupleList,
-                            evaluator.getSchemaReader(),
-                            evaluator.getMeasureCube());
-                }
-                checkIfAggregationSizeIsTooLarge(tupleList);
-            }
+            tupleList =
+                optimizeChildren(
+                    tupleList,
+                    evaluator.getSchemaReader(),
+                    evaluator.getMeasureCube());
+            checkIfAggregationSizeIsTooLarge(tupleList);
             return tupleList;
         }
 
@@ -195,8 +184,8 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * E.g.
          * List consists of:
          *  (Gender.[All Gender], [Product].[All Products]),
-         *  (Gender.[All Gender].[F], [Product].[All Products].[Drink]),
-         *  (Gender.[All Gender].[M], [Product].[All Products].[Food])
+         *  (Gender.[F], [Product].[Drink]),
+         *  (Gender.[M], [Product].[Food])
          * Can be optimized to:
          *  (Gender.[All Gender], [Product].[All Products])
          *
@@ -296,19 +285,19 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * <p>
          * E.g.
          * List consist of:
-         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA]),
-         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[OR]),
-         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[CA]),
-         *  (Gender.[All Gender].[F], [Store].[All Stores].[USA].[WA]),
-         *  (Gender.[All Gender].[F], [Store].[All Stores].[CANADA])
-         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA]),
-         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[OR]),
-         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[CA]),
-         *  (Gender.[All Gender].[M], [Store].[All Stores].[USA].[WA]),
-         *  (Gender.[All Gender].[M], [Store].[All Stores].[CANADA])
+         *  (Gender.[F], [Store].[USA]),
+         *  (Gender.[F], [Store].[USA].[OR]),
+         *  (Gender.[F], [Store].[USA].[CA]),
+         *  (Gender.[F], [Store].[USA].[WA]),
+         *  (Gender.[F], [Store].[CANADA])
+         *  (Gender.[M], [Store].[USA]),
+         *  (Gender.[M], [Store].[USA].[OR]),
+         *  (Gender.[M], [Store].[USA].[CA]),
+         *  (Gender.[M], [Store].[USA].[WA]),
+         *  (Gender.[M], [Store].[CANADA])
          * Can be optimized to:
-         *  (Gender.[All Gender], [Store].[All Stores].[USA])
-         *  (Gender.[All Gender], [Store].[All Stores].[CANADA])
+         *  (Gender.[All Gender], [Store].[USA])
+         *  (Gender.[All Gender], [Store].[CANADA])
          *
          * @param tuples Tuples
          * @param reader Schema reader
@@ -325,7 +314,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             int tupleLength = tuples.get(0).length;
 
             //noinspection unchecked
-            Set<Member>[] sets = new HashSet[tupleLength];
+            Set<Member>[] sets = new Set[tupleLength];
             boolean optimized = false;
             for (int i = 0; i < tupleLength; i++) {
                 if (areOccurencesEqual(membersOccurencesInTuple[i].values())) {
@@ -333,7 +322,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     int originalSize = members.size();
                     sets[i] =
                         optimizeMemberSet(
-                            new HashSet<Member>(members),
+                            new LinkedHashSet<Member>(members),
                             reader,
                             baseCubeForMeasure);
                     if (sets[i].size() != originalSize) {
@@ -370,7 +359,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             //noinspection unchecked
             Map<Member, Integer>[] counters = new Map[tupleLength];
             for (int i = 0; i < counters.length; i++) {
-                counters[i] = new HashMap<Member, Integer>();
+                counters[i] = new LinkedHashMap<Member, Integer>();
             }
             for (Member[] tuple : tuples) {
                 for (int i = 0; i < tuple.length; i++) {
@@ -393,8 +382,8 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             Cube baseCubeForMeasure)
         {
             boolean didOptimize;
-            Set<Member> membersToBeOptimized = new HashSet<Member>();
-            Set<Member> optimizedMembers = new HashSet<Member>();
+            Set<Member> membersToBeOptimized = new LinkedHashSet<Member>();
+            Set<Member> optimizedMembers = new LinkedHashSet<Member>();
             while (members.size() > 0) {
                 Iterator<Member> iterator = members.iterator();
                 Member first = iterator.next();

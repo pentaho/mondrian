@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,11 +38,14 @@ import static mondrian.olap.MondrianProperties.SolveOrderModeEnum.*;
 public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     SolveOrderModeEnum defaultSolveOrderMode;
 
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         defaultSolveOrderMode = getSolveOrderMode();
     }
-    public void tearDown() {
+
+    public void tearDown() throws Exception {
         setSolveOrderMode(defaultSolveOrderMode);
+        super.tearDown();
     }
 
     private static final String memberDefs =
@@ -225,8 +228,8 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA]}\n"
-            + "{[Customers].[All Customers].[USA].[WA]}\n"
+            + "{[Customers].[USA]}\n"
+            + "{[Customers].[USA].[WA]}\n"
             + "{[Customers].[USAByWA]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Store Sales]}\n"
@@ -257,8 +260,8 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{[Measures].[ProfitSolveOrder3000]}\n"
             + "Axis #1:\n"
-            + "{[Customers].[All Customers].[USA]}\n"
-            + "{[Customers].[All Customers].[USA].[WA]}\n"
+            + "{[Customers].[USA]}\n"
+            + "{[Customers].[USA].[WA]}\n"
             + "{[Customers].[USAByWA]}\n"
             + "Row #0: $339,610.896400\n"
             + "Row #0: $158,468.912100\n"

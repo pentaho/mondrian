@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,20 +17,18 @@ import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.Dialect;
 import mondrian.xmla.impl.DefaultSaxWriter;
+import static mondrian.xmla.XmlaConstants.*;
+
+import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 import java.io.*;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-
 
 /**
  * An <code>XmlaHandler</code> responds to XML for Analysis (XML/A) requests.
@@ -39,11 +37,10 @@ import java.text.SimpleDateFormat;
  * @version $Id$
  * @since 27 April, 2003
  */
-public class XmlaHandler implements XmlaConstants {
+public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
     private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
-    private final List<String> drillThruColumnNames = new ArrayList<String>();
     private final CatalogLocator catalogLocator;
     private final String prefix;
 
@@ -543,14 +540,14 @@ public class XmlaHandler implements XmlaConstants {
     public void process(XmlaRequest request, XmlaResponse response)
         throws XmlaException
     {
-        int method = request.getMethod();
+        Method method = request.getMethod();
         long start = System.currentTimeMillis();
 
         switch (method) {
-        case METHOD_DISCOVER:
+        case DISCOVER:
             discover(request, response);
             break;
-        case METHOD_EXECUTE:
+        case EXECUTE:
             execute(request, response);
             break;
         default:
@@ -572,14 +569,8 @@ public class XmlaHandler implements XmlaConstants {
         // Check response's rowset format in request
         final Map<String, String> properties = request.getProperties();
         if (request.isDrillThrough()) {
-            final String formatName =
-                properties.get(PropertyDefinition.Format.name());
-            Enumeration.Format format =
-                valueOf(
-                    Enumeration.Format.class,
-                    formatName,
-                    null);
-            if (format != Enumeration.Format.Tabular) {
+            Format format = getFormat(request, null);
+            if (format != Format.Tabular) {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     HSB_DRILL_THROUGH_FORMAT_CODE,
@@ -592,10 +583,9 @@ public class XmlaHandler implements XmlaConstants {
             final String formatName =
                 properties.get(PropertyDefinition.Format.name());
             if (formatName != null) {
-                Enumeration.Format format = valueOf(
-                    Enumeration.Format.class, formatName, null);
-                if (format != Enumeration.Format.Multidimensional
-                    && format != Enumeration.Format.Tabular)
+                Format format = getFormat(request, null);
+                if (format != Format.Multidimensional
+                    && format != Format.Tabular)
                 {
                     throw new UnsupportedOperationException(
                         "<Format>: only 'Multidimensional', 'Tabular' "
@@ -605,10 +595,10 @@ public class XmlaHandler implements XmlaConstants {
             final String axisFormatName =
                 properties.get(PropertyDefinition.AxisFormat.name());
             if (axisFormatName != null) {
-                Enumeration.AxisFormat axisFormat = valueOf(
-                    Enumeration.AxisFormat.class, axisFormatName, null);
+                AxisFormat axisFormat = Util.lookup(
+                    AxisFormat.class, axisFormatName, null);
 
-                if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
+                if (axisFormat != AxisFormat.TupleFormat) {
                     throw new UnsupportedOperationException(
                         "<AxisFormat>: only 'TupleFormat' currently supported");
                 }
@@ -622,24 +612,25 @@ public class XmlaHandler implements XmlaConstants {
         throws XmlaException
     {
         final Map<String, String> properties = request.getProperties();
+
+        // Default responseMimeType is SOAP.
+        Enumeration.ResponseMimeType responseMimeType =
+            getResponseMimeType(request);
+
+        // Default value is SchemaData, or Data for JSON responses.
         final String contentName =
             properties.get(PropertyDefinition.Content.name());
-        // default value is SchemaData
-        Enumeration.Content content =
-            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
+        Content content = Util.lookup(
+            Content.class,
+            contentName,
+            responseMimeType == Enumeration.ResponseMimeType.JSON
+                ? Content.Data
+                : Content.DEFAULT);
 
         // Handle execute
         QueryResult result;
         if (request.isDrillThrough()) {
-            String tabFields =
-                properties.get(PropertyDefinition.TableFields.name());
-            if (tabFields != null && tabFields.length() > 0) {
-                // Presence of TABLE_FIELDS property initiates advanced
-                // drill-through.
-                result = executeColumnQuery(request);
-            } else {
-                result = executeDrillThroughQuery(request);
-            }
+            result = executeDrillThroughQuery(request);
         } else {
             result = executeQuery(request);
         }
@@ -653,7 +644,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement(prefix + ":return");
         boolean rowset =
             request.isDrillThrough()
-            || Enumeration.Format.Tabular.name().equals(
+            || Format.Tabular.name().equals(
                 request.getProperties().get(
                     PropertyDefinition.Format.name()));
         writer.startElement(
@@ -668,8 +659,8 @@ public class XmlaHandler implements XmlaConstants {
             "xmlns:xsd", NS_XSD,
             "xmlns:EX", NS_XMLA_EX);
 
-        if ((content == Enumeration.Content.Schema)
-            || (content == Enumeration.Content.SchemaData))
+        if ((content == Content.Schema)
+            || (content == Content.SchemaData))
         {
             if (result != null) {
                 if (result instanceof MDDataSet_Tabular) {
@@ -690,13 +681,15 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         try {
-            if ((content == Enumeration.Content.Data)
-                || (content == Enumeration.Content.SchemaData)
-                || (content == Enumeration.Content.DataOmitDefaultSlicer))
-            {
+            switch (content) {
+            case Data:
+            case SchemaData:
+            case DataOmitDefaultSlicer:
+            case DataIncludeDefaultSlicer:
                 if (result != null) {
                     result.unparse(writer);
                 }
+                break;
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -725,15 +718,15 @@ public class XmlaHandler implements XmlaConstants {
     static void writeDatasetXmlSchema(SaxWriter writer, SetType settype) {
         String setNsXmla =
             (settype == SetType.ROW_SET)
-            ? XmlaConstants.NS_XMLA_ROWSET
-            : XmlaConstants.NS_XMLA_MDDATASET;
+            ? NS_XMLA_ROWSET
+            : NS_XMLA_MDDATASET;
 
         writer.startElement(
             "xsd:schema",
-            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "xmlns:xsd", NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:xsi", NS_XSI,
             "xmlns:sql", NS_XML_SQL,
             "elementFormDefault", "qualified");
 
@@ -766,7 +759,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement(
             "xsd:sequence",
             "maxOccurs", "unbounded",
-            "minOccurs", "0");
+            "minOccurs", 0);
         writer.element(
             "xsd:any",
             "processContents", "lax",
@@ -847,7 +840,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement("xsd:sequence");
         writer.startElement(
             "xsd:choice",
-            "minOccurs", "0",
+            "minOccurs", 0,
             "maxOccurs", "unbounded");
         writer.element(
             "xsd:element",
@@ -920,7 +913,7 @@ public class XmlaHandler implements XmlaConstants {
                     writer.startElement(
                         "xsd:element",
                         "name", "HierarchyInfo",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.startElement("xsd:complexType");
                     writer.startElement("xsd:sequence");
@@ -947,13 +940,13 @@ public class XmlaHandler implements XmlaConstants {
                         "xsd:element",
                         "name", "DisplayInfo",
                         "type", "PropType",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     if (false) writer.element(
                         "xsd:element",
                         "name", "PARENT_MEMBER_NAME",
                         "type", "PropType",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
@@ -962,7 +955,7 @@ public class XmlaHandler implements XmlaConstants {
                     writer.element(
                         "xsd:any",
                         "processContents", "lax",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     writer.endElement(); // xsd:sequence
 
@@ -998,7 +991,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("xsd:sequence");
             writer.startElement(
                 "xsd:sequence",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.startElement("xsd:choice");
             writer.element(
@@ -1058,7 +1051,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "xsd:sequence",
                 "maxOccurs", "unbounded",
-                "minOccurs", "0");
+                "minOccurs", 0);
             writer.element(
                 "xsd:any",
                 "processContents", "lax",
@@ -1087,7 +1080,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("xsd:complexType");
             writer.startElement(
                 "xsd:choice",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.element(
                 "xsd:element",
@@ -1122,7 +1115,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "xsd:element",
                 "name", "Cell",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "maxOccurs", "unbounded");
             writer.startElement("xsd:complexType");
             writer.startElement(
@@ -1222,13 +1215,13 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     static void writeEmptyDatasetXmlSchema(SaxWriter writer, SetType setType) {
-        String setNsXmla = XmlaConstants.NS_XMLA_ROWSET;
+        String setNsXmla = NS_XMLA_ROWSET;
         writer.startElement(
             "xsd:schema",
-            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "xmlns:xsd", NS_XSD,
             "targetNamespace", setNsXmla,
             "xmlns", setNsXmla,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:xsi", NS_XSI,
             "xmlns:sql", NS_XML_SQL,
             "elementFormDefault", "qualified");
 
@@ -1252,7 +1245,9 @@ public class XmlaHandler implements XmlaConstants {
         final Connection connection = getConnection(dsCatalog, role, roleName);
 
         final String statement = request.getStatement();
-        final Query query = connection.parseQuery(statement);
+        final QueryPart parseTree = connection.parseStatement(statement);
+        final DrillThrough drillThrough = (DrillThrough) parseTree;
+        final Query query = drillThrough.getQuery();
         query.setResultStyle(ResultStyle.LIST);
         final Result result = connection.execute(query);
         // cell [0, 0] in a 2-dimensional query, [0, 0, 0] in 3 dimensions, etc.
@@ -1267,91 +1262,18 @@ public class XmlaHandler implements XmlaConstants {
                 Util.newError("Cannot do DrillThrough operation on the cell"));
         }
 
-        String dtSql = dtCell.getDrillThroughSQL(true);
-        java.sql.Connection sqlConn = null;
-
         try {
             final Map<String, String> properties = request.getProperties();
+            String tabFields =
+                properties.get(PropertyDefinition.TableFields.name());
+            if (tabFields != null && tabFields.length() == 0) {
+                tabFields = null;
+            }
             final String advancedFlag =
                 properties.get(PropertyDefinition.AdvancedFlag.name());
-            if ("true".equals(advancedFlag)) {
-                final Position position =
-                    result.getAxes()[0].getPositions().get(0);
-                Member[] members = position.toArray(
-                    new Member[position.size()]);
-
-                final CellRequest cellRequest =
-                    RolapAggregationManager.makeRequest(members);
-                List<MondrianDef.Relation> relationList =
-                    new ArrayList<MondrianDef.Relation>();
-                final RolapStar.Table factTable =
-                    cellRequest.getMeasure().getStar().getFactTable();
-                MondrianDef.Relation relation = factTable.getRelation();
-                relationList.add(relation);
-
-                for (RolapStar.Table table : factTable.getChildren()) {
-                    relationList.add(table.getRelation());
-                }
-                List<String> truncatedTableList = new ArrayList<String>();
-                sqlConn = connection.getDataSource().getConnection();
-                Statement stmt = null;
-                try {
-                    stmt = sqlConn.createStatement();
-                    List<List<String>> fields = new ArrayList<List<String>>();
-
-                    Map<String, List<String>> tableFieldMap =
-                        new HashMap<String, List<String>>();
-                    for (MondrianDef.Relation relation1 : relationList) {
-                        final String tableName = relation1.toString();
-                        List<String> fieldNameList = new ArrayList<String>();
-                        Dialect dialect =
-                            ((RolapSchema) connection.getSchema()).getDialect();
-                        // FIXME: Include schema name, if specified.
-                        // FIXME: Deal with relations that are not tables.
-                        final StringBuilder buf = new StringBuilder();
-                        buf.append("SELECT * FROM ");
-                        dialect.quoteIdentifier(buf, tableName);
-                        buf.append(" WHERE 1=2");
-                        String sql = buf.toString();
-                        ResultSet rs = stmt.executeQuery(sql);
-                        ResultSetMetaData rsMeta = rs.getMetaData();
-                        for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
-                            // FIXME: In some JDBC drivers,
-                            // ResultSetMetaData.getColumnName(int) does strange
-                            // things with aliased columns. See MONDRIAN-654
-                            // http://jira.pentaho.com/browse/MONDRIAN-654 for
-                            // details. Therefore, we don't want to use that
-                            // method. It seems harmless here, but I'd still
-                            // like to phase out use of getColumnName. After
-                            // PhysTable is introduced (coming in mondrian-4.0)
-                            // we should be able to just use its column list.
-                            String colName = rsMeta.getColumnName(j);
-                            boolean colNameExists = false;
-                            for (List<String> prvField : fields) {
-                                if (prvField.contains(colName)) {
-                                    colNameExists = true;
-                                    break;
-                                }
-                            }
-                            if (!colNameExists) {
-                                fieldNameList.add(colName);
-                            }
-                        }
-                        fields.add(fieldNameList);
-                        String truncatedTableName =
-                            tableName.substring(tableName.lastIndexOf(".") + 1);
-                        truncatedTableList.add(truncatedTableName);
-                        tableFieldMap.put(truncatedTableName, fieldNameList);
-                    }
-                    return new TabularRowSet(tableFieldMap, truncatedTableList);
-                } finally {
-                    if (stmt != null) {
-                        try {
-                            stmt.close();
-                        } catch (SQLException ignored) {
-                        }
-                    }
-                }
+            final boolean advanced = Boolean.parseBoolean(advancedFlag);
+            if (advanced) {
+                return executeDrillThroughAdvanced(connection, result);
             } else {
                 int count = -1;
                 if (MondrianProperties.instance().EnableTotalCount
@@ -1359,31 +1281,14 @@ public class XmlaHandler implements XmlaConstants {
                 {
                     count = dtCell.getDrillThroughCount();
                 }
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("drill through sql: " + dtSql);
-                }
-                int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
-                int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-                Dialect dialect =
-                    ((RolapSchema) connection.getSchema()).getDialect();
-                if (!dialect.supportsResultSetConcurrency(
-                    resultSetType, resultSetConcurrency))
-                {
-                    // downgrade to non-scroll cursor, since we can
-                    // fake absolute() via forward fetch
-                    resultSetType = ResultSet.TYPE_FORWARD_ONLY;
-                }
                 SqlStatement stmt2 =
-                    RolapUtil.executeQuery(
-                        connection.getDataSource(), dtSql, -1,
-                        "XmlaHandler.executeDrillThroughQuery",
-                        "Error in drill through",
-                        resultSetType, resultSetConcurrency);
-                return new TabularRowSet(
-                    stmt2, request.drillThroughMaxRows(),
-                    request.drillThroughFirstRowset(), count,
-                    resultSetType);
+                    ((RolapCell) dtCell).drillThroughInternal(
+                        drillThrough.getMaxRowCount(),
+                        Math.max(drillThrough.getFirstRowOrdinal(), 1),
+                        tabFields,
+                        true,
+                        LOGGER);
+                return new TabularRowSet(stmt2, count);
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -1399,7 +1304,91 @@ public class XmlaHandler implements XmlaConstants {
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 e);
+        }
+    }
+
+    private QueryResult executeDrillThroughAdvanced(
+        Connection connection,
+        Result result)
+        throws SQLException
+    {
+        java.sql.Connection sqlConn = null;
+        Statement stmt = null;
+        try {
+            final Axis axis = result.getAxes()[0];
+            final Position position = axis.getPositions().get(0);
+            Member[] members = position.toArray(
+                new Member[position.size()]);
+
+            final CellRequest cellRequest =
+                RolapAggregationManager.makeRequest(members);
+            List<MondrianDef.Relation> relationList =
+                new ArrayList<MondrianDef.Relation>();
+            final RolapStar.Table factTable =
+                cellRequest.getMeasure().getStar().getFactTable();
+            MondrianDef.Relation relation = factTable.getRelation();
+            relationList.add(relation);
+
+            for (RolapStar.Table table : factTable.getChildren()) {
+                relationList.add(table.getRelation());
+            }
+            List<String> truncatedTableList = new ArrayList<String>();
+            sqlConn = connection.getDataSource().getConnection();
+            stmt = sqlConn.createStatement();
+            List<List<String>> fields = new ArrayList<List<String>>();
+
+            Map<String, List<String>> tableFieldMap =
+                new HashMap<String, List<String>>();
+            for (MondrianDef.Relation relation1 : relationList) {
+                final String tableName = relation1.toString();
+                List<String> fieldNameList = new ArrayList<String>();
+                Dialect dialect =
+                    ((RolapSchema) connection.getSchema()).getDialect();
+                // FIXME: Include schema name, if specified.
+                // FIXME: Deal with relations that are not tables.
+                final StringBuilder buf = new StringBuilder();
+                buf.append("SELECT * FROM ");
+                dialect.quoteIdentifier(buf, tableName);
+                buf.append(" WHERE 1=2");
+                String sql = buf.toString();
+                ResultSet rs = stmt.executeQuery(sql);
+                ResultSetMetaData rsMeta = rs.getMetaData();
+                for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
+                    // FIXME: In some JDBC drivers,
+                    // ResultSetMetaData.getColumnName(int) does strange
+                    // things with aliased columns. See MONDRIAN-654
+                    // http://jira.pentaho.com/browse/MONDRIAN-654 for
+                    // details. Therefore, we don't want to use that
+                    // method. It seems harmless here, but I'd still
+                    // like to phase out use of getColumnName. After
+                    // PhysTable is introduced (coming in mondrian-4.0)
+                    // we should be able to just use its column list.
+                    String colName = rsMeta.getColumnName(j);
+                    boolean colNameExists = false;
+                    for (List<String> prvField : fields) {
+                        if (prvField.contains(colName)) {
+                            colNameExists = true;
+                            break;
+                        }
+                    }
+                    if (!colNameExists) {
+                        fieldNameList.add(colName);
+                    }
+                }
+                fields.add(fieldNameList);
+                String truncatedTableName =
+                    tableName.substring(tableName.lastIndexOf(".") + 1);
+                truncatedTableList.add(truncatedTableName);
+                tableFieldMap.put(truncatedTableName, fieldNameList);
+            }
+            return new TabularRowSet(tableFieldMap, truncatedTableList);
         } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ignored) {
+                }
+            }
             if (sqlConn != null) {
                 try {
                     sqlConn.close();
@@ -1436,20 +1425,12 @@ public class XmlaHandler implements XmlaConstants {
          * <p>Closes the SqlStatement when it is done.
          *
          * @param stmt SqlStatement
-         * @param maxRows Maximum row count
-         * @param firstRowset Ordinal of row to skip to (1-based), or 0 to
-         *   start from beginning
          * @param totalCount Total number of rows. If >= 0, writes the
-         *   "totalCount" attribute.
-         * @param resultSetType Type of ResultSet, for example
-         *    {@link ResultSet#TYPE_FORWARD_ONLY}.
+         *   "totalCount" attribute into the XMLA response.
          */
         public TabularRowSet(
             SqlStatement stmt,
-            int maxRows,
-            int firstRowset,
-            int totalCount,
-            int resultSetType)
+            int totalCount)
         {
             this.totalCount = totalCount;
             ResultSet rs = stmt.getResultSet();
@@ -1465,28 +1446,21 @@ public class XmlaHandler implements XmlaConstants {
                             md.getColumnType(i + 1)));
                 }
 
-                // skip to first rowset specified in request
-                int firstRow = (firstRowset <= 0 ? 1 : firstRowset);
-                if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
-                    for (int i = 0; i < firstRow; ++i) {
-                        if (!rs.next()) {
-                            break;
-                        }
-                    }
-                } else {
-                    rs.absolute(firstRow);
-                }
-
-                // populate data
+                // Populate data; assume that SqlStatement is already positioned
+                // on first row (or isDone() is true), and assume that the
+                // number of rows returned is limited.
                 rows = new ArrayList<Object[]>();
-                maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
-                do {
-                    Object[] row = new Object[columnCount];
-                    for (int i = 0; i < columnCount; i++) {
-                        row[i] = rs.getObject(i + 1);
-                    }
-                    rows.add(row);
-                } while (rs.next() && --maxRows > 0);
+                final List<SqlStatement.Accessor> accessors =
+                    stmt.getAccessors();
+                if (!stmt.isDone()) {
+                    do {
+                        Object[] row = new Object[columnCount];
+                        for (int i = 0; i < columnCount; i++) {
+                            row[i] = accessors.get(i).get();
+                        }
+                        rows.add(row);
+                    } while (rs.next());
+                }
             } catch (SQLException e) {
                 throw stmt.handle(e);
             } finally {
@@ -1564,10 +1538,10 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.startElement(
                 "xsd:schema",
-                "xmlns:xsd", XmlaConstants.NS_XSD,
+                "xmlns:xsd", NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
-                "xmlns:xsi", XmlaConstants.NS_XSI,
+                "xmlns:xsi", NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
                 "elementFormDefault", "qualified");
 
@@ -1580,7 +1554,7 @@ public class XmlaHandler implements XmlaConstants {
                 writer.element(
                     "xsd:element",
                     "maxOccurs", "unbounded",
-                    "minOccurs", "0",
+                    "minOccurs", 0,
                     "name", "row",
                     "type", "row");
                 writer.endElement(); // xsd:sequence
@@ -1610,7 +1584,7 @@ public class XmlaHandler implements XmlaConstants {
                 for (Column column : columns) {
                     writer.element(
                         "xsd:element",
-                        "minOccurs", "0",
+                        "minOccurs", 0,
                         "name", column.encodedName,
                         "sql:field", column.name,
                         "type", column.xsdType);
@@ -1702,32 +1676,54 @@ public class XmlaHandler implements XmlaConstants {
                     ex);
             }
 
-            final String formatName =
-                request.getProperties().get(
-                    PropertyDefinition.Format.name());
-            Enumeration.Format format =
-                valueOf(
-                    Enumeration.Format.class,
-                    formatName,
-                    null);
-
-            if (format == Enumeration.Format.Multidimensional) {
-                final String contentName =
-                    request.getProperties()
-                        .get(PropertyDefinition.Content.name());
-                Enumeration.Content content =
-                    valueOf(
-                        Enumeration.Content.class,
-                        contentName,
-                        CONTENT_DEFAULT);
-                final boolean omitDefaultSlicer =
-                    (content == Enumeration.Content.DataOmitDefaultSlicer);
-                return
-                    new MDDataSet_Multidimensional(result, omitDefaultSlicer);
+            final Format format = getFormat(request, null);
+            final Content content = getContent(request);
+            final Enumeration.ResponseMimeType responseMimeType =
+                getResponseMimeType(request);
+            if (format == Format.Multidimensional) {
+                return new MDDataSet_Multidimensional(
+                    result,
+                    content != Content.DataIncludeDefaultSlicer,
+                    responseMimeType == Enumeration.ResponseMimeType.JSON);
             } else {
                 return new MDDataSet_Tabular(result);
             }
         }
+    }
+
+    private static Format getFormat(
+        XmlaRequest request,
+        Format defaultValue)
+    {
+        final String formatName =
+            request.getProperties().get(
+                PropertyDefinition.Format.name());
+        return Util.lookup(
+            Format.class,
+            formatName, defaultValue);
+    }
+
+    private static Content getContent(XmlaRequest request) {
+        final String contentName =
+            request.getProperties().get(
+                PropertyDefinition.Content.name());
+        return Util.lookup(
+            Content.class,
+            contentName,
+            Content.DEFAULT);
+    }
+
+    private static Enumeration.ResponseMimeType getResponseMimeType(
+        XmlaRequest request)
+    {
+        Enumeration.ResponseMimeType mimeType =
+            Enumeration.ResponseMimeType.MAP.get(
+                request.getProperties().get(
+                    PropertyDefinition.ResponseMimeType.name()));
+        if (mimeType == null) {
+            mimeType = Enumeration.ResponseMimeType.SOAP;
+        }
+        return mimeType;
     }
 
     static abstract class MDDataSet implements QueryResult {
@@ -1738,10 +1734,10 @@ public class XmlaHandler implements XmlaConstants {
             "FmtValue",
             "FormatString"};
 
-        protected static final String[] cellPropLongs = new String[] {
-            Property.VALUE.name,
-            Property.FORMATTED_VALUE.name,
-            Property.FORMAT_STRING.name};
+        protected static final Property[] cellPropLongs = {
+            Property.VALUE,
+            Property.FORMATTED_VALUE,
+            Property.FORMAT_STRING};
 
         protected static final String[] defaultProps = new String[] {
             "UName",
@@ -1770,17 +1766,17 @@ public class XmlaHandler implements XmlaConstants {
 
     static class MDDataSet_Multidimensional extends MDDataSet {
         private List<Hierarchy> slicerAxisHierarchies;
-        private boolean omitDefaultSlicerInfo;
-
-        protected MDDataSet_Multidimensional(Result result) {
-            this(result, false);
-        }
+        private final boolean omitDefaultSlicerInfo;
+        private final boolean json;
 
         protected MDDataSet_Multidimensional(
-            Result result, boolean isDataOmitDefaultSlicerContentType)
+            Result result,
+            boolean omitDefaultSlicerInfo,
+            boolean json)
         {
             super(result);
-            this.omitDefaultSlicerInfo = isDataOmitDefaultSlicerContentType;
+            this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
+            this.json = json;
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1796,15 +1792,13 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("OlapInfo");
             writer.startElement("CubeInfo");
             writer.startElement("Cube");
-            writer.startElement("CubeName");
-            writer.characters(result.getQuery().getCube().getName());
-            writer.endElement();
+            writer.textElement("CubeName", cube.getName());
             writer.endElement();
             writer.endElement(); // CubeInfo
 
             // create AxesInfo for axes
             // -----------
-            writer.startElement("AxesInfo");
+            writer.startSequence("AxesInfo", "AxisInfo");
             final Axis[] axes = result.getAxes();
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
@@ -1844,7 +1838,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 writer.startElement(
                     "AxisInfo",
-                    new String[] { "name", "SlicerAxis"});
+                    "name", "SlicerAxis");
                 writeHierarchyInfo(
                     writer, hierarchies, getProps(slicerQueryAxis));
                 writer.endElement(); // AxisInfo
@@ -1853,29 +1847,33 @@ public class XmlaHandler implements XmlaConstants {
             //
             ///////////////////////////////////////////////
 
+            writer.endSequence(); // AxesInfo
 
-            writer.endElement(); // AxesInfo
             // -----------
             writer.startElement("CellInfo");
-            if (shouldReturnCellProperty(Property.VALUE.getName())) {
-                writer.element(
-                    "Value",
-                    "name", "VALUE");
-            }
-            if (shouldReturnCellProperty(Property.FORMATTED_VALUE.getName())) {
-                writer.element(
-                    "FmtValue",
-                    "name", "FORMATTED_VALUE");
-            }
-
-            if (shouldReturnCellProperty(Property.FORMAT_STRING.getName())) {
-                writer.element(
-                    "FormatString",
-                    "name", "FORMAT_STRING");
-            }
+            cellProperty(writer, Property.VALUE, true, "Value");
+            cellProperty(writer, Property.FORMATTED_VALUE, true, "FmtValue");
+            cellProperty(writer, Property.FORMAT_STRING, true, "FormatString");
+            cellProperty(writer, Property.LANGUAGE, false, "Language");
+            cellProperty(writer, Property.BACK_COLOR, false, "BackColor");
+            cellProperty(writer, Property.FORE_COLOR, false, "ForeColor");
+            cellProperty(writer, Property.FONT_FLAGS, false, "FontFlags");
             writer.endElement(); // CellInfo
             // -----------
             writer.endElement(); // OlapInfo
+        }
+
+        private void cellProperty(
+            SaxWriter writer,
+            Property cellProperty,
+            boolean evenEmpty,
+            String elementName)
+        {
+            if (shouldReturnCellProperty(cellProperty, evenEmpty)) {
+                writer.element(
+                    elementName,
+                    "name", cellProperty.name);
+            }
         }
 
         private List<Hierarchy> axisInfo(
@@ -1914,21 +1912,24 @@ public class XmlaHandler implements XmlaConstants {
             List<Hierarchy> hierarchies,
             String[] props)
         {
+            writer.startSequence(null, "HierarchyInfo");
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
                     "HierarchyInfo",
                     "name", hierarchy.getName());
                 for (final String prop : props) {
+                    final String encodedProp = XmlaUtil.encodeElementName(prop);
                     writer.element(
-                        prop, getAttributes(prop, hierarchy));
+                        encodedProp, getAttributes(encodedProp, hierarchy));
                 }
                 writer.endElement(); // HierarchyInfo
             }
+            writer.endSequence(); // "HierarchyInfo"
         }
 
-        private String[] getAttributes(String prop, Hierarchy hierarchy) {
+        private Object[] getAttributes(String prop, Hierarchy hierarchy) {
             String actualPropName = getPropertyName(prop);
-            List<String> values = new ArrayList<String>();
+            List<Object> values = new ArrayList<Object>();
             values.add("name");
             values.add(
                 hierarchy.getUniqueName() + "." + Util.quoteMdxIdentifier(
@@ -1938,7 +1939,7 @@ public class XmlaHandler implements XmlaConstants {
                 values.add("type");
                 values.add(getXsdType(actualPropName));
             }
-            return values.toArray(new String[values.size()]);
+            return values.toArray();
         }
 
         private String getXsdType(String prop) {
@@ -1964,7 +1965,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void axes(SaxWriter writer) {
-            writer.startElement("Axes");
+            writer.startSequence("Axes", "Axis");
             //axis(writer, result.getSlicerAxis(), "SlicerAxis");
             final Axis[] axes = result.getAxes();
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
@@ -1994,8 +1995,8 @@ public class XmlaHandler implements XmlaConstants {
                 writer.startElement(
                     "Axis",
                     "name", "SlicerAxis");
-                writer.startElement("Tuples");
-                writer.startElement("Tuple");
+                writer.startSequence("Tuples", "Tuple");
+                writer.startSequence("Tuple", "Member");
 
                 Map<String, Integer> memberMap = new HashMap<String, Integer>();
                 Member positionMember;
@@ -2050,15 +2051,15 @@ public class XmlaHandler implements XmlaConstants {
                             + hierarchy.getUniqueName());
                     }
                 }
-                writer.endElement(); // Tuple
-                writer.endElement(); // Tuples
+                writer.endSequence(); // Tuple
+                writer.endSequence(); // Tuples
                 writer.endElement(); // Axis
             }
 
             //
             ////////////////////////////////////////////
 
-            writer.endElement(); // Axes
+            writer.endSequence(); // Axes
         }
 
         private String[] getProps(QueryAxis queryAxis) {
@@ -2073,8 +2074,12 @@ public class XmlaHandler implements XmlaConstants {
                 new String[defaultProps.length + dimensionProperties.length];
             System.arraycopy(defaultProps, 0, props, 0, defaultProps.length);
             for (int i = 0; i < dimensionProperties.length; i++) {
+                // If a property is compound [Foo].[Bar], use only the last
+                // segment "Bar".
+                final List<Id.Segment> segmentList =
+                    dimensionProperties[i].getSegments();
                 props[defaultProps.length + i] =
-                        dimensionProperties[i].toStringArray()[0];
+                    segmentList.get(segmentList.size() - 1).name;
             }
             return props;
         }
@@ -2088,7 +2093,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement(
                 "Axis",
                 "name", axisName);
-            writer.startElement("Tuples");
+            writer.startSequence("Tuples", "Tuple");
 
             List<Position> positions = axis.getPositions();
             Iterator<Position> pit = positions.iterator();
@@ -2096,18 +2101,18 @@ public class XmlaHandler implements XmlaConstants {
             Position position = pit.hasNext() ? pit.next() : null;
             Position nextPosition = pit.hasNext() ? pit.next() : null;
             while (position != null) {
-                writer.startElement("Tuple");
+                writer.startSequence("Tuple", "Member");
                 int k = 0;
                 for (Member member : position) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }
-                writer.endElement(); // Tuple
+                writer.endSequence(); // Tuple
                 prevPosition = position;
                 position = nextPosition;
                 nextPosition = pit.hasNext() ? pit.next() : null;
             }
-            writer.endElement(); // Tuples
+            writer.endSequence(); // Tuples
             writer.endElement(); // Axis
         }
 
@@ -2141,11 +2146,10 @@ public class XmlaHandler implements XmlaConstants {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.startElement(prop); // Properties
-                    writer.characters(value.toString());
-                    writer.endElement(); // Properties
+                    writer.textElement(XmlaUtil.encodeElementName(prop), value);
                 }
             }
+
             writer.endElement(); // Member
         }
 
@@ -2181,9 +2185,7 @@ public class XmlaHandler implements XmlaConstants {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.startElement(prop); // Properties
-                    writer.characters(value.toString());
-                    writer.endElement(); // Properties
+                    writer.textElement(prop, value);
                 }
             }
             writer.endElement(); // Member
@@ -2217,7 +2219,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void cellData(SaxWriter writer) {
-            writer.startElement("CellData");
+            writer.startSequence("CellData", "Cell");
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
@@ -2226,7 +2228,7 @@ public class XmlaHandler implements XmlaConstants {
             int axisOrdinal = axisCount - 1;
             recurse(writer, pos, axisOrdinal, evaluator, cellOrdinal);
 
-            writer.endElement(); // CellData
+            writer.endSequence(); // CellData
         }
 
         private void recurse(
@@ -2262,43 +2264,18 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.startElement(
                 "Cell",
-                "CellOrdinal", Integer.toString(ordinal));
+                "CellOrdinal", ordinal);
             for (int i = 0; i < cellProps.length; i++) {
-                String cellPropLong = cellPropLongs[i];
-                Object value = cell.getPropertyValue(cellPropLong);
-
-/*
-                if (value != null && shouldReturnCellProperty(cellPropLong)) {
-                    if (cellPropLong.equals(Property.VALUE.name)) {
-                        String valueType = deduceValueType(evaluator, value);
-                        writer.startElement(
-                            cellProps[i],"xsi:type", valueType});
-                    } else {
-                        writer.startElement(cellProps[i]);
-                    }
-
-                    String valueString = value.toString();
-
-                    if (cellPropLong.equals(Property.VALUE.name)
-                        && value instanceof Number)
-                    {
-                        valueString =
-                            XmlaUtil.normalizeNumericString(valueString);
-                    }
-
-                    writer.characters(valueString);
-                    writer.endElement();
-                }
-*/
+                Property cellPropLong = cellPropLongs[i];
+                Object value = cell.getPropertyValue(cellPropLong.name);
                 if (value == null) {
                     continue;
                 }
-                if (! shouldReturnCellProperty(cellPropLong)) {
+                if (!shouldReturnCellProperty(cellPropLong, true)) {
                     continue;
                 }
-                boolean isDecimal = false;
 
-                if (cellPropLong.equals(Property.VALUE.name)) {
+                if (!json && cellPropLong == Property.VALUE) {
                     if (cell.isNull()) {
                         // Return cell without value as in case of AS2005
                         continue;
@@ -2308,31 +2285,43 @@ public class XmlaHandler implements XmlaConstants {
                             Property.DATATYPE.getName(), null);
                     final ValueInfo vi = new ValueInfo(dataType, value);
                     final String valueType = vi.valueType;
-                    value = vi.value;
-                    isDecimal = vi.isDecimal;
+                    final String valueString;
+                    if (vi.isDecimal) {
+                        valueString =
+                            XmlaUtil.normalizeNumericString(
+                                vi.value.toString());
+                    } else {
+                        valueString = vi.value.toString();
+                    }
 
                     writer.startElement(
                         cellProps[i],
-                        new String[] {"xsi:type", valueType});
+                        "xsi:type", valueType);
+                    writer.characters(valueString);
+                    writer.endElement();
                 } else {
-                    writer.startElement(cellProps[i]);
+                    writer.textElement(cellProps[i], value);
                 }
-                String valueString = value.toString();
-
-                if (isDecimal) {
-                    valueString = XmlaUtil.normalizeNumericString(valueString);
-                }
-
-                writer.characters(valueString);
-                writer.endElement();
             }
             writer.endElement(); // Cell
         }
 
-        private boolean shouldReturnCellProperty(String cellPropLong) {
+        /**
+         * Returns whether we should return a cell property in the XMLA result.
+         *
+         * @param cellProperty Cell property definition
+         * @param evenEmpty Whether to return even if cell has no properties
+         * @return Whether to return cell property in XMLA result
+         */
+        private boolean shouldReturnCellProperty(
+            Property cellProperty,
+            boolean evenEmpty)
+        {
             Query query = result.getQuery();
-            return query.isCellPropertyEmpty()
-                || query.hasCellProperty(cellPropLong);
+            return
+                (evenEmpty
+                 && query.isCellPropertyEmpty())
+                || query.hasCellProperty(cellProperty.name);
         }
     }
 
@@ -2364,7 +2353,7 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.element(
                 "xsd:element",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "name", encodedName,
                 "sql:field", name);
         }
@@ -2433,7 +2422,7 @@ public class XmlaHandler implements XmlaConstants {
         public void metadata(SaxWriter writer) {
             writer.element(
                 "xsd:element",
-                "minOccurs", "0",
+                "minOccurs", 0,
                 "name", encodedName,
                 "sql:field", name,
                 "type", XSD_STRING);
@@ -2584,10 +2573,10 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.startElement(
                 "xsd:schema",
-                "xmlns:xsd", XmlaConstants.NS_XSD,
+                "xmlns:xsd", NS_XSD,
                 "targetNamespace", NS_XMLA_ROWSET,
                 "xmlns", NS_XMLA_ROWSET,
-                "xmlns:xsi", XmlaConstants.NS_XSI,
+                "xmlns:xsi", NS_XSI,
                 "xmlns:sql", NS_XML_SQL,
                 "elementFormDefault", "qualified");
 
@@ -2600,7 +2589,7 @@ public class XmlaHandler implements XmlaConstants {
                 writer.element(
                     "xsd:element",
                     "maxOccurs", "unbounded",
-                    "minOccurs", "0",
+                    "minOccurs", 0,
                     "name", "row",
                     "type", "row");
                 writer.endElement(); // xsd:sequence
@@ -2730,14 +2719,8 @@ public class XmlaHandler implements XmlaConstants {
             RowsetDefinition.valueOf(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
 
-        final String formatName =
-            request.getProperties().get(PropertyDefinition.Format.name());
-        Enumeration.Format format =
-            valueOf(
-                Enumeration.Format.class,
-                formatName,
-                Enumeration.Format.Tabular);
-        if (format != Enumeration.Format.Tabular) {
+        Format format = getFormat(request, Format.Tabular);
+        if (format != Format.Tabular) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_DISCOVER_FORMAT_CODE,
@@ -2746,11 +2729,7 @@ public class XmlaHandler implements XmlaConstants {
                     "<Format>: only 'Tabular' allowed in Discover method "
                     + "type"));
         }
-        final String contentName =
-            request.getProperties().get(PropertyDefinition.Content.name());
-        // default value is SchemaData
-        Enumeration.Content content =
-            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
+        final Content content = getContent(request);
 
         SaxWriter writer = response.getWriter();
         writer.startDocument();
@@ -2766,15 +2745,15 @@ public class XmlaHandler implements XmlaConstants {
             "xmlns:xsd", NS_XSD,
             "xmlns:EX", NS_XMLA_EX);
 
-        if ((content == Enumeration.Content.Schema)
-            || (content == Enumeration.Content.SchemaData))
+        if ((content == Content.Schema)
+            || (content == Content.SchemaData))
         {
             rowset.rowsetDefinition.writeRowsetXmlSchema(writer);
         }
 
         try {
-            if ((content == Enumeration.Content.Data)
-                || (content == Enumeration.Content.SchemaData))
+            if ((content == Content.Data)
+                || (content == Content.SchemaData))
             {
                 rowset.unparse(response);
             }
@@ -2794,29 +2773,6 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         writer.endDocument();
-    }
-
-    /**
-     * Returns enum constant of the specified enum type with the given name.
-     *
-     * @param enumType Enumerated type
-     * @param name Name of constant
-     * @param defaultValue Default value if constant is not found
-     * @return Value, or null if name is null or value does not exist
-     */
-    private <E extends Enum<E>> E valueOf(
-        Class<E> enumType,
-        String name, E defaultValue)
-    {
-        if (name == null) {
-            return defaultValue;
-        } else {
-            try {
-                return Enum.valueOf(enumType, name);
-            } catch (IllegalArgumentException e) {
-                return defaultValue;
-            }
-        }
     }
 
     /**
@@ -3033,120 +2989,6 @@ public class XmlaHandler implements XmlaConstants {
                 Util.newError("no catalog named '" + catalogName + "'"));
         }
         return dsCatalog;
-    }
-
-    private TabularRowSet executeColumnQuery(XmlaRequest request)
-        throws XmlaException
-    {
-        checkFormat(request);
-
-        DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
-        String roleName = request.getRoleName();
-        Role role = request.getRole();
-
-        final Connection connection = getConnection(dsCatalog, role, roleName);
-
-        final String statement = request.getStatement();
-        final Query query = connection.parseQuery(statement);
-        query.setResultStyle(ResultStyle.LIST);
-        final Result result = connection.execute(query);
-        Cell dtCell = result.getCell(new int[] {0, 0});
-
-        if (!dtCell.canDrillThrough()) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_CODE,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_FAULT_FS,
-                Util.newError("Cannot do DillThrough operation on the cell"));
-        }
-
-        final Map<String, String> properties = request.getProperties();
-        String dtSql = dtCell.getDrillThroughSQL(true);
-
-        int index = dtSql.indexOf("from");
-        String whereClause = " " + dtSql.substring(index);
-        final String fieldNames =
-            properties.get(PropertyDefinition.TableFields.name());
-        StringTokenizer st = new StringTokenizer(fieldNames, ",");
-        drillThruColumnNames.clear();
-        while (st.hasMoreTokens()) {
-            drillThruColumnNames.add(st.nextToken());
-        }
-
-        // Create Select Clause
-        StringBuilder buf = new StringBuilder("select ");
-        int k = -1;
-        for (String drillThruColumnName : drillThruColumnNames) {
-            if (++k > 0) {
-                buf.append(",");
-            }
-            buf.append(drillThruColumnName);
-        }
-        buf.append(' ');
-        buf.append(whereClause);
-        dtSql = buf.toString();
-
-        DataSource dataSource = connection.getDataSource();
-        try {
-            int count = -1;
-            if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
-                String temp = dtSql.toUpperCase();
-                int fromOff = temp.indexOf("FROM");
-                buf.setLength(0);
-                buf.append("select count(*) ");
-                buf.append(dtSql.substring(fromOff));
-
-                String countSql = buf.toString();
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Advanced drill through counting sql: " + countSql);
-                }
-                SqlStatement smt =
-                    RolapUtil.executeQuery(
-                        dataSource, countSql, -1,
-                        "XmlaHandler.executeColumnQuery",
-                        "Advanced drill-through",
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
-
-                try {
-                    ResultSet rs = smt.getResultSet();
-                    if (rs.next()) {
-                        count = rs.getInt(1);
-                        ++smt.rowCount;
-                    }
-                } catch (SQLException e) {
-                    throw smt.handle(e);
-                } finally {
-                    smt.close();
-                }
-            }
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Advanced drill through sql: " + dtSql);
-            }
-            SqlStatement stmt =
-                RolapUtil.executeQuery(
-                    dataSource, dtSql, -1, "XmlaHandler.executeColumnQuery",
-                    "Advanced drill-through",
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            return new TabularRowSet(
-                stmt, request.drillThroughMaxRows(),
-                request.drillThroughFirstRowset(), count,
-                ResultSet.TYPE_FORWARD_ONLY);
-        } catch (XmlaException xex) {
-            throw xex;
-        } catch (RuntimeException rte) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_DRILL_THROUGH_SQL_CODE,
-                HSB_DRILL_THROUGH_SQL_FAULT_FS,
-                rte);
-        }
     }
 
     public static void main(String[] args) {

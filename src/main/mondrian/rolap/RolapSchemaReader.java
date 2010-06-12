@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -175,11 +175,17 @@ public class RolapSchemaReader
         return children;
     }
 
-    /**
-     * check, whether members children are cached, and
-     * if yes - return children count
-     * if no  - return -1
-     */
+    public void getParentChildContributingChildren(
+        Member dataMember,
+        Hierarchy hierarchy,
+        List<Member> list)
+    {
+        final List<RolapMember> rolapMemberList = Util.cast(list);
+        list.add(dataMember);
+        ((RolapHierarchy) hierarchy).getMemberReader().getMemberChildren(
+            (RolapMember) dataMember, rolapMemberList);
+    }
+
     public int getChildrenCountFromCache(Member member) {
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
@@ -331,6 +337,14 @@ public class RolapSchemaReader
         }
     }
 
+    public void getMemberAncestors(Member member, List<Member> ancestorList) {
+        Member parentMember = getMemberParent(member);
+        while (parentMember != null) {
+            ancestorList.add(parentMember);
+            parentMember = getMemberParent(parentMember);
+        }
+    }
+
     public Cube getCube() {
         throw new UnsupportedOperationException();
     }
@@ -396,7 +410,10 @@ public class RolapSchemaReader
     public Member lookupMemberChildByName(
         Member parent, Id.Segment childName, MatchType matchType)
     {
-        LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "looking for child \"" + childName + "\" of " + parent);
+        }
         assert !(parent instanceof RolapHierarchy.LimitedRollupMember);
         try {
             MemberChildrenConstraint constraint;
@@ -481,14 +498,32 @@ public class RolapSchemaReader
 
     public List<Dimension> getCubeDimensions(Cube cube) {
         assert cube != null;
-        // REVIEW: access control?
-        return Arrays.asList(cube.getDimensions());
+        final List<Dimension> dimensions = new ArrayList<Dimension>();
+        for (Dimension dimension : cube.getDimensions()) {
+            switch (role.getAccess(dimension)) {
+            case NONE:
+                continue;
+            default:
+                dimensions.add(dimension);
+                break;
+            }
+        }
+        return dimensions;
     }
 
     public List<Hierarchy> getDimensionHierarchies(Dimension dimension) {
         assert dimension != null;
-        // REVIEW: access control?
-        return Arrays.asList(dimension.getHierarchies());
+        final List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
+        for (Hierarchy hierarchy : dimension.getHierarchies()) {
+            switch (role.getAccess(hierarchy)) {
+            case NONE:
+                continue;
+            default:
+                hierarchies.add(hierarchy);
+                break;
+            }
+        }
+        return hierarchies;
     }
 
     public List<Level> getHierarchyLevels(Hierarchy hierarchy) {

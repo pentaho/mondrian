@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -290,6 +290,7 @@ class SqlMemberSource
                 dataSource, sql, "SqlMemberSource.getMembers",
                 "while building member cache");
         try {
+            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
             Map<MemberKey, RolapMember> map =
                 new HashMap<MemberKey, RolapMember>();
@@ -316,7 +317,7 @@ class SqlMemberSource
                     if (level.isAll()) {
                         continue;
                     }
-                    Object value = resultSet.getObject(column + 1);
+                    Object value = accessors.get(column).get();
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
@@ -324,8 +325,10 @@ class SqlMemberSource
                     MemberKey key = new MemberKey(parent, value);
                     member = map.get(key);
                     if (member == null) {
-                        member = new RolapMember(parent, level, value);
-                        member.setOrdinal(lastOrdinal++);
+                        RolapMemberBase memberBase =
+                            new RolapMemberBase(parent, level, value);
+                        memberBase.setOrdinal(lastOrdinal++);
+                        member = memberBase;
 /*
 RME is this right
                         if (level.getOrdinalExp() != level.getKeyExp()) {
@@ -345,8 +348,8 @@ RME is this right
 
                     if (!level.getOrdinalExp().equals(level.getKeyExp())) {
                         if (assignOrderKeys) {
-                            Object orderKey = resultSet.getObject(column + 1);
-                            setOrderKey(member, orderKey);
+                            Object orderKey = accessors.get(column).get();
+                            setOrderKey((RolapMemberBase) member, orderKey);
                         }
                         column++;
                     }
@@ -361,7 +364,7 @@ RME is this right
                          */
                         member.setProperty(
                             property.getName(),
-                            resultSet.getObject(column + 1));
+                            accessors.get(column).get());
                         column++;
                     }
                 }
@@ -375,7 +378,7 @@ RME is this right
         }
     }
 
-    private void setOrderKey(RolapMember member, Object orderKey) {
+    private void setOrderKey(RolapMemberBase member, Object orderKey) {
         if ((orderKey != null) && !(orderKey instanceof Comparable)) {
             orderKey = orderKey.toString();
         }
@@ -527,9 +530,9 @@ RME is this right
     // implement MemberSource
     public List<RolapMember> getRootMembers() {
         return getMembersInLevel(
-                (RolapLevel) hierarchy.getLevels()[0],
-                0,
-                Integer.MAX_VALUE);
+            (RolapLevel) hierarchy.getLevels()[0],
+            0,
+            Integer.MAX_VALUE);
     }
 
     /**
@@ -685,7 +688,7 @@ RME is this right
 
         // Convert global ordinal to cube based ordinal (the 0th dimension
         // is always [Measures])
-        final Member[] members = evaluator.getMembers();
+        final Member[] members = evaluator.getNonAllMembers();
 
         // if measure is calculated, we can't continue
         if (!(members[0] instanceof RolapBaseCubeMeasure)) {
@@ -930,7 +933,12 @@ RME is this right
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
 
+            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
+            RolapMember parentMember2 =
+                parentMember instanceof RolapCubeMember
+                    ? ((RolapCubeMember) parentMember).getRolapMember()
+                    : parentMember;
             while (resultSet.next()) {
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
@@ -939,28 +947,27 @@ RME is this right
                         .ex(limit);
                 }
 
-                Object value = resultSet.getObject(1);
+                Object value = accessors.get(0).get();
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;
                 }
                 Object captionValue;
-                int columnOffset;
+                int columnOffset = 1;
                 if (childLevel.hasCaptionColumn()) {
                     // The columnOffset needs to take into account
                     // the caption column if one exists
-                    columnOffset = 2;
-                    captionValue = resultSet.getObject(columnOffset);
+                    captionValue = accessors.get(columnOffset++).get();
                 } else {
-                    columnOffset = 1;
                     captionValue = null;
                 }
-                Object key = cache.makeKey(parentMember, value);
+                Object key = cache.makeKey(parentMember2, value);
                 RolapMember member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
-                    member = makeMember(
-                            parentMember, childLevel, value, captionValue,
-                            parentChild, resultSet, key, columnOffset);
+                    member =
+                        makeMember(
+                            parentMember2, childLevel, value, captionValue,
+                            parentChild, stmt, key, columnOffset);
                 }
                 if (value == RolapUtil.sqlNullValue) {
                     children.toArray();
@@ -982,12 +989,13 @@ RME is this right
         Object value,
         Object captionValue,
         boolean parentChild,
-        ResultSet resultSet,
+        SqlStatement stmt,
         Object key,
         int columnOffset)
         throws SQLException
     {
-        RolapMember member = new RolapMember(parentMember, childLevel, value);
+        RolapMemberBase member =
+            new RolapMemberBase(parentMember, childLevel, value);
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             member.setOrdinal(lastOrdinal++);
         }
@@ -1010,9 +1018,10 @@ RME is this right
             member = parentChildMember;
         }
         Property[] properties = childLevel.getProperties();
+        final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             if (assignOrderKeys) {
-                Object orderKey = resultSet.getObject(columnOffset + 1);
+                Object orderKey = accessors.get(columnOffset).get();
                 setOrderKey(member, orderKey);
             }
             ++columnOffset;
@@ -1020,13 +1029,20 @@ RME is this right
         for (int j = 0; j < properties.length; j++) {
             Property property = properties[j];
             member.setProperty(
-                    property.getName(),
-                    getPooledValue(resultSet.getObject(columnOffset + j + 1)));
+                property.getName(),
+                getPooledValue(accessors.get(columnOffset + j).get()));
         }
         cache.putMember(key, member);
         return member;
     }
 
+    public RolapMember allMember() {
+        final RolapHierarchy rolapHierarchy =
+            hierarchy instanceof RolapCubeHierarchy
+                ? ((RolapCubeHierarchy) hierarchy).getRolapHierarchy()
+                : hierarchy;
+        return rolapHierarchy.getAllMember();
+    }
 
     /**
      * <p>Looks up an object (and if needed, stores it) in a cached value pool.
@@ -1245,7 +1261,7 @@ RME is this right
      * to a corresponding member of the auxiliary dimension which maps onto
      * the closure table.
      */
-    private static class RolapParentChildMember extends RolapMember {
+    private static class RolapParentChildMember extends RolapMemberBase {
         private final RolapMember dataMember;
         private int depth = 0;
 
@@ -1264,24 +1280,6 @@ RME is this right
 
         public Member getDataMember() {
             return dataMember;
-        }
-
-        public Object getPropertyValue(String propertyName, boolean matchCase) {
-            if (Util.equal(
-                propertyName, Property.CONTRIBUTING_CHILDREN.name, matchCase))
-            {
-                List<RolapMember> list = new ArrayList<RolapMember>();
-                list.add(dataMember);
-                RolapHierarchy hierarchy = getHierarchy();
-                if (hierarchy instanceof RolapCubeHierarchy) {
-                    hierarchy =
-                        ((RolapCubeHierarchy) hierarchy).getRolapHierarchy();
-                }
-                hierarchy.getMemberReader().getMemberChildren(dataMember, list);
-                return list;
-            } else {
-                return super.getPropertyValue(propertyName, matchCase);
-            }
         }
 
         /**
