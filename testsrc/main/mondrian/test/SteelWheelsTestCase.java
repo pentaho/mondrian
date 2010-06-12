@@ -222,7 +222,7 @@ public class SteelWheelsTestCase extends TestCase {
             "With \n"
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
             + "Select\n"
-            + "From [SteelWheelsSales]\n" 
+            + "From [SteelWheelsSales]\n"
             + "Where [Measures].[*FORMATTED_MEASURE_0]");
 
         // Two-dimensional query, using trivial calc member.
@@ -288,7 +288,8 @@ public class SteelWheelsTestCase extends TestCase {
             InputStream stream) throws Exception
         {
             String schema = super.filter(schemaUrl, connectInfo, stream);
-            return Util.replace(schema, " hasAll=\"true\"", " hasAll=\"false\"");
+            return Util.replace(
+                schema, " hasAll=\"true\"", " hasAll=\"false\"");
         }
     }
 }
