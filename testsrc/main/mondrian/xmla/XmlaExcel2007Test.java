@@ -52,7 +52,8 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
         String filename,
         String content)
     {
-        if (testCaseName.startsWith("testMemberPropertiesAndSlicer")
+        if ((testCaseName.startsWith("testMemberPropertiesAndSlicer")
+             || testCaseName.equals("testBugMondrian761"))
             && filename.equals("response"))
         {
             Dialect dialect = TestContext.instance().getDialect();
