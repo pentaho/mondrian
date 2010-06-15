@@ -198,7 +198,7 @@ public class VisualTotalsFunDef extends FunDefBase {
      */
     public static class VisualTotalMember extends RolapMemberBase {
         private final Member member;
-        private final Exp exp;
+        private Exp exp;
 
         VisualTotalMember(
             Member member,
@@ -247,6 +247,36 @@ public class VisualTotalsFunDef extends FunDefBase {
             return exp;
         }
 
+        public void setExpression(Exp exp) {
+            this.exp = exp;
+        }
+
+        public void setExpression(
+            Evaluator evaluator,
+            List<Member> childMembers)
+        {
+            final Exp exp = makeExpr(childMembers);
+            final Validator validator = evaluator.getQuery().createValidator();
+            final Exp validatedExp = exp.accept(validator);
+            setExpression(validatedExp);
+        }
+
+        private Exp makeExpr(final List childMemberList) {
+            Exp[] memberExprs = new Exp[childMemberList.size()];
+            for (int i = 0; i < childMemberList.size(); i++) {
+                final Member childMember = (Member) childMemberList.get(i);
+                memberExprs[i] = new MemberExpr(childMember);
+            }
+            return new UnresolvedFunCall(
+                    "Aggregate",
+                    new Exp[] {
+                        new UnresolvedFunCall(
+                                "{}",
+                                Syntax.Braces,
+                                memberExprs)
+                    });
+        }
+
         public int getOrdinal() {
             return member.getOrdinal();
         }
@@ -275,6 +305,9 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public Object getPropertyValue(String propertyName, boolean matchCase) {
             Property property = Property.lookup(propertyName, matchCase);
+            if (property == null) {
+                return null;
+            }
             switch (property.ordinal) {
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 return member.getPropertyValue(propertyName, matchCase);

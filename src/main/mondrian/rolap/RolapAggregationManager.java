@@ -15,6 +15,7 @@ package mondrian.rolap;
 
 import mondrian.rolap.agg.*;
 import mondrian.olap.*;
+import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -361,7 +362,8 @@ public abstract class RolapAggregationManager {
         for (RolapMember[] aggregation : aggregationList) {
             boolean isTuple;
             if (aggregation.length > 0
-                && aggregation[0] instanceof RolapCubeMember)
+                && (aggregation[0] instanceof RolapCubeMember
+                    || aggregation[0] instanceof VisualTotalMember))
             {
                 isTuple = true;
             } else {
@@ -375,7 +377,12 @@ public abstract class RolapAggregationManager {
             tuple = new RolapCubeMember[aggregation.length];
             int i = 0;
             for (Member member : aggregation) {
-                tuple[i] = (RolapCubeMember)member;
+                if (member instanceof VisualTotalMember) {
+                    tuple[i] = (RolapCubeMember)
+                        ((VisualTotalMember) member).getMember();
+                } else {
+                    tuple[i] = (RolapCubeMember)member;
+                }
                 i++;
             }
 

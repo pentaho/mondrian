@@ -16,6 +16,7 @@ package mondrian.rolap;
 import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.util.Bug;
 
 /**
@@ -89,7 +90,14 @@ public class RolapCubeMember
 
     public int compareTo(Object o) {
         // light wrapper around rolap member compareTo
-        RolapCubeMember other = (RolapCubeMember) o;
+        RolapCubeMember other = null;
+        if (o instanceof VisualTotalMember) {
+            // REVIEW: Maybe VisualTotalMember should extend/implement
+            // RolapCubeMember. Then we can remove special-cases such as this.
+            other = (RolapCubeMember) ((VisualTotalMember) o).getMember();
+        } else {
+            other = (RolapCubeMember) o;	
+        }
         return member.compareTo(other.member);
     }
 

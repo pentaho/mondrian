@@ -104,30 +104,24 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-679">
      * bug MONDRIAN-679, "VisualTotals gives ClassCastException when called via
      * XMLA"</a>.
-     *
-     * @throws Exception on error
      */
-    public void test01() throws Exception {
+    public void test01() {
         helperTest(false);
     }
 
     /**
      * Test that checks that (a) member properties are in correct format for
      * Excel 2007, (b) the slicer axis is in the correct format for Excel 2007.
-     *
-     * @throws Exception on error
      */
-    public void testMemberPropertiesAndSlicer() throws Exception {
+    public void testMemberPropertiesAndSlicer() {
         helperTestExpect(false);
     }
 
     /**
      * Test that executes MDSCHEMA_PROPERTIES with
      * {@link org.olap4j.metadata.Property.TypeFlag#MEMBER}.
-     *
-     * @throws Exception on error
      */
-    public void testMdschemaPropertiesMember() throws Exception {
+    public void testMdschemaPropertiesMember() {
         helperTest(false);
     }
 
@@ -137,7 +131,7 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
      *
      * @throws Exception on error
      */
-    public void testMdschemaPropertiesCell() throws Exception {
+    public void testMdschemaPropertiesCell() {
         helperTest(false);
     }
 
@@ -176,10 +170,17 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
      *
      * <p>Currently most properties are not implemented or not defined.
      * If they get implemented then test needs to be changed.
-     *
-     * @throws Exception on error
      */
-    public void testCellInfo() throws Exception {
+    public void testCellInfo() {
+        helperTest(false);
+    }
+
+    /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-761">
+     * bug MONDRIAN-761, "VisualTotalMember cannot be cast to
+     * RolapCubeMember"</a>.
+     */
+    public void testBugMondrian761() {
         helperTest(false);
     }
 }

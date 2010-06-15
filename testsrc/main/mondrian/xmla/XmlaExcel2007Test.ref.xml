@@ -10,9 +10,9 @@
   <Command>
     <Statement>
 WITH SET [XL_Row_Dim_0] as 'VisualTotals(Distinct(Hierarchize({
-  Ascendants([Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]), 
-  Descendants([Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]), 
-  Ascendants([Customers].[Mexico]), 
+  Ascendants([Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]),
+  Descendants([Customers].[USA].[CA].[Beverly Hills].[Ari Tweten]),
+  Ascendants([Customers].[Mexico]),
   Descendants([Customers].[Mexico])
 })))'
 select NON EMPTY
@@ -22,7 +22,7 @@ select NON EMPTY
         {{DrilldownMember(
           {{DrilldownLevel(
             {[Customers].[All Customers]})}},
-          {[Customers].[USA]})}}, 
+          {[Customers].[USA]})}},
         {[Customers].[USA].[CA]}),
     [XL_Row_Dim_0])) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS
 from [Sales]
@@ -181,10 +181,10 @@ where [Measures].[Unit Sales]
         <Resource name="request">
             <![CDATA[<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
      />
   </Header>
   <Body>
@@ -202,7 +202,7 @@ where [Measures].[Unit Sales]
                     <VisualMode>1</VisualMode>
                 </PropertyList>
             </Properties>
-    </Execute> 
+    </Execute>
   </Body>
 </Envelope>
 ]]>
@@ -1999,10 +1999,10 @@ where [Measures].[Unit Sales]
         <Resource name="request">
             <![CDATA[<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
      />
   </Header>
   <Body>
@@ -2020,7 +2020,7 @@ where [Measures].[Unit Sales]
                     <VisualMode>1</VisualMode>
                 </PropertyList>
             </Properties>
-    </Execute> 
+    </Execute>
   </Body>
 </Envelope>
 ]]>
@@ -2311,6 +2311,291 @@ where [Measures].[Unit Sales]
                         <Cell CellOrdinal="0">
                             <Value xsi:type="xsd:double">266773</Value>
                             <FormatString>Standard</FormatString>
+                        </Cell>
+                    </CellData>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBugMondrian761">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header/>
+  <Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
+{Ascendants([Store].[USA].[WA].[Yakima]), Descendants([Store].[USA].[WA].[Yakima]), Ascendants([Store].[USA].[WA].[Walla Walla]), Descendants([Store].[USA].[WA].[Walla Walla]), Ascendants([Store].[USA].[WA].[Tacoma]), Descendants([Store].[USA].[WA].[Tacoma]), Ascendants([Store].[USA].[WA].[Spokane]), Descendants([Store].[USA].[WA].[Spokane]), Ascendants([Store].[USA].[WA].[Seattle]), Descendants([Store].[USA].[WA].[Seattle]), Ascendants([Store].[USA].[WA].[Bremerton]), Descendants([Store].[USA].[WA].[Bremerton]), Ascendants([Store].[USA].[OR]), Descendants([Store].[USA].[OR])})))'  SELECT NON EMPTY Hierarchize(Intersect(DrilldownMember({{DrilldownMember({{DrilldownMember({{DrilldownLevel({[Store].[All Stores]})}}, {[Store].[USA]})}}, {[Store].[USA].[WA]})}}, {[Store].[USA].[WA].[Bremerton]}), [XL_Row_Dim_0])) DIMENSION PROPERTIES PARENT_UNIQUE_NAME,[Store].[Store Name].[Store Type],[Store].[Store Name].[Store Manager],[Store].[Store Name].[Store Sqft],[Store].[Store Name].[Grocery Sqft],[Store].[Store Name].[Frozen Sqft],[Store].[Store Name].[Meat Sqft],[Store].[Store Name].[Has coffee bar],[Store].[Store Name].[Street address] ON COLUMNS
+  FROM [HR] WHERE ([Measures].[Number of Employees]) CELL PROPERTIES VALUE, FORMAT_STRING, LANGUAGE, BACK_COLOR, FORE_COLOR, FONT_FLAGS
+    </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <Catalog>FoodMart</Catalog>
+      <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+      <Format>Multidimensional</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+      <Content>Data</Content>
+    </PropertyList>
+  </Properties>
+</Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <OlapInfo>
+                        <CubeInfo>
+                            <Cube>
+                                <CubeName>HR</CubeName>
+                            </Cube>
+                        </CubeInfo>
+                        <AxesInfo>
+                            <AxisInfo name="Axis0">
+                                <HierarchyInfo name="Store">
+                                    <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Store].[MEMBER_CAPTION]"/>
+                                    <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Store].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <Store_x0020_Type
+                                    name="[Store].[Store_x0020_Type]" type="xsd:string"/>
+                                    <Store_x0020_Manager
+                                    name="[Store].[Store_x0020_Manager]" type="xsd:string"/>
+                                    <Store_x0020_Sqft
+                                    name="[Store].[Store_x0020_Sqft]" type="xsd:string"/>
+                                    <Grocery_x0020_Sqft
+                                    name="[Store].[Grocery_x0020_Sqft]" type="xsd:string"/>
+                                    <Frozen_x0020_Sqft
+                                    name="[Store].[Frozen_x0020_Sqft]" type="xsd:string"/>
+                                    <Meat_x0020_Sqft
+                                    name="[Store].[Meat_x0020_Sqft]" type="xsd:string"/>
+                                    <Has_x0020_coffee_x0020_bar
+                                    name="[Store].[Has_x0020_coffee_x0020_bar]" type="xsd:string"/>
+                                    <Street_x0020_address
+                                    name="[Store].[Street_x0020_address]" type="xsd:string"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis">
+                                <HierarchyInfo name="Measures">
+                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
+                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
+                            </AxisInfo>
+                        </AxesInfo>
+                        <CellInfo>
+                            <Value name="VALUE"/>
+                            <FormatString name="FORMAT_STRING"/>
+                            <Language name="LANGUAGE"/>
+                            <BackColor name="BACK_COLOR"/>
+                            <ForeColor name="FORE_COLOR"/>
+                            <FontFlags name="FONT_FLAGS"/>
+                        </CellInfo>
+                    </OlapInfo>
+                    <Axes>
+                        <Axis name="Axis0">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[All Stores]</UName>
+                                    <Caption>All Stores</Caption>
+                                    <LName>[Store].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Store].[Store Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[OR]</UName>
+                                    <Caption>OR</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA]</UName>
+                                    <Caption>WA</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>196615</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Bremerton]</UName>
+                                    <Caption>Bremerton</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>65537</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+
+                                    <UName>[Store].[USA].[WA].[Bremerton].[Store 3]</UName>
+                                    <Caption>Store 3</Caption>
+                                    <LName>[Store].[Store Name]</LName>
+                                    <LNum>4</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA].[Bremerton]</PARENT_UNIQUE_NAME>
+                                    <Store_x0020_Type>Supermarket</Store_x0020_Type>
+                                    <Store_x0020_Manager>Davis</Store_x0020_Manager>
+                                    <Store_x0020_Sqft>39696</Store_x0020_Sqft>
+                                    <Grocery_x0020_Sqft>24390</Grocery_x0020_Sqft>
+                                    <Frozen_x0020_Sqft>9184</Frozen_x0020_Sqft>
+                                    <Meat_x0020_Sqft>6122</Meat_x0020_Sqft>
+                                    <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
+                                    <Street_x0020_address>1501
+                                    Ramsey Circle</Street_x0020_address>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Seattle]</UName>
+                                    <Caption>Seattle</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>1</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Spokane]</UName>
+                                    <Caption>Spokane</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Tacoma]</UName>
+                                    <Caption>Tacoma</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Walla Walla]</UName>
+                                    <Caption>Walla Walla</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                                <Tuple>
+                                    <Member Hierarchy="Store">
+                                    <UName>[Store].[USA].[WA].[Yakima]</UName>
+                                    <Caption>Yakima</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                        <Axis name="SlicerAxis">
+                            <Tuples>
+                                <Tuple>
+                                    <Member Hierarchy="Measures">
+                                    <UName>[Measures].[Number of Employees]</UName>
+                                    <Caption>Number of Employees</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    </Member>
+                                </Tuple>
+                            </Tuples>
+                        </Axis>
+                    </Axes>
+                    <CellData>
+                        <Cell CellOrdinal="0">
+                            <Value xsi:type="xsd:double">419</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="1">
+                            <Value xsi:type="xsd:double">419</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="2">
+                            <Value xsi:type="xsd:double">136</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="3">
+                            <Value xsi:type="xsd:double">283</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="4">
+                            <Value xsi:type="xsd:double">62</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="5">
+                            <Value xsi:type="xsd:double">62</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="6">
+                            <Value xsi:type="xsd:double">62</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="7">
+                            <Value xsi:type="xsd:double">62</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="8">
+                            <Value xsi:type="xsd:double">74</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="9">
+                            <Value xsi:type="xsd:double">4</Value>
+                            <FormatString>#,#</FormatString>
+                        </Cell>
+                        <Cell CellOrdinal="10">
+                            <Value xsi:type="xsd:double">19</Value>
+                            <FormatString>#,#</FormatString>
                         </Cell>
                     </CellData>
                 </root>

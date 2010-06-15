@@ -10333,6 +10333,200 @@ Intel platforms):
     }
 
     /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-682">
+     * bug MONDRIAN-682, "VisualTotals + Distinct-count measure gives wrong
+     * results"</a>.
+     */
+    public void testVisualTotalsDistinctCountMeasure() {
+        // distinct measure
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [HR] "
+            + "where [Measures].[Number of Employees]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 193\n"
+            + "Row #0: 193\n");
+
+        // distinct measure
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA].[Beverly Hills]),\n"
+            + "        Descendants([Store].[USA].[CA].[Beverly Hills]),\n"
+            + "        Ascendants([Store].[USA].[CA].[Los Angeles]),\n"
+            + "        Descendants([Store].[USA].[CA].[Los Angeles])})))"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [HR] "
+            + "where [Measures].[Number of Employees]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 110\n"
+            + "Row #0: 110\n");
+
+        // distinct measure on columns
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select {[Measures].[Count], [Measures].[Number of Employees]} on COLUMNS,"
+            + " NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON ROWS\n"
+            + "from [HR] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Count]}\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 2,316\n"
+            + "Row #0: 193\n"
+            + "Row #1: 2,316\n"
+            + "Row #1: 193\n");
+
+        // distinct measure with tuples
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "     [Marital Status].[M]\n"
+            + "     * {DrilldownLevel({[Store].[USA]})}\n"
+            + "     * [Gender].[F],\n"
+            + "     [Marital Status].[M]\n"
+            + "     * [XL_Row_Dim_0]\n"
+            + "     * [Gender].[F])) ON COLUMNS\n"
+            + "from [Sales] "
+            + "where [Measures].[Customer count]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #1:\n"
+            + "{[Marital Status].[M], [Store].[USA], [Gender].[F]}\n"
+            + "{[Marital Status].[M], [Store].[USA].[CA], [Gender].[F]}\n"
+            + "Row #0: 654\n"
+            + "Row #0: 654\n");
+    }
+
+    /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-761">
+     * bug MONDRIAN-761, "VisualTotalMember cannot be cast to
+     * RolapCubeMember"</a>.
+     */
+    public void testVisualTotalsClassCast() {
+        assertQueryReturns(
+            "WITH  SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[WA].[Yakima]), \n"
+            + "        Descendants([Store].[USA].[WA].[Yakima]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Walla Walla]), \n"
+            + "        Descendants([Store].[USA].[WA].[Walla Walla]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Tacoma]), \n"
+            + "        Descendants([Store].[USA].[WA].[Tacoma]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Spokane]), \n"
+            + "        Descendants([Store].[USA].[WA].[Spokane]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Seattle]), \n"
+            + "        Descendants([Store].[USA].[WA].[Seattle]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Bremerton]), \n"
+            + "        Descendants([Store].[USA].[WA].[Bremerton]), \n"
+            + "        Ascendants([Store].[USA].[OR]), \n"
+            + "        Descendants([Store].[USA].[OR])}))) \n"
+            + " SELECT NON EMPTY \n"
+            + " Hierarchize(\n"
+            + "   Intersect(\n"
+            + "     DrilldownMember(\n"
+            + "       {{DrilldownMember(\n"
+            + "         {{DrilldownMember(\n"
+            + "           {{DrilldownLevel(\n"
+            + "             {[Store].[All Stores]})}},\n"
+            + "           {[Store].[USA]})}},\n"
+            + "         {[Store].[USA].[WA]})}},\n"
+            + "       {[Store].[USA].[WA].[Bremerton]}),\n"
+            + "       [XL_Row_Dim_0]))\n"
+            + "DIMENSION PROPERTIES \n"
+            + "  PARENT_UNIQUE_NAME, \n"
+            + "  [Store].[Store Name].[Store Type],\n"
+            + "  [Store].[Store Name].[Store Manager],\n"
+            + "  [Store].[Store Name].[Store Sqft],\n"
+            + "  [Store].[Store Name].[Grocery Sqft],\n"
+            + "  [Store].[Store Name].[Frozen Sqft],\n"
+            + "  [Store].[Store Name].[Meat Sqft],\n"
+            + "  [Store].[Store Name].[Has coffee bar],\n"
+            + "  [Store].[Store Name].[Street address] ON COLUMNS \n"
+            + "FROM [HR]\n"
+            + "WHERE \n"
+            + "  ([Measures].[Number of Employees])\n"
+            + "CELL PROPERTIES\n"
+            + "  VALUE,\n"
+            + "  FORMAT_STRING,\n"
+            + "  LANGUAGE,\n"
+            + "  BACK_COLOR,\n"
+            + "  FORE_COLOR,\n"
+            + "  FONT_FLAGS",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "Row #0: 419\n"
+            + "Row #0: 419\n"
+            + "Row #0: 136\n"
+            + "Row #0: 283\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 74\n"
+            + "Row #0: 4\n"
+            + "Row #0: 19\n");
+    }
+
+    /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-678">
      * bug MONDRIAN-678, "VisualTotals gives UnsupportedOperationException
      * calling getOrdinal"</a>. Key difference from previous test is that there
