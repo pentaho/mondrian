@@ -96,7 +96,7 @@ public class RolapCubeMember
             // RolapCubeMember. Then we can remove special-cases such as this.
             other = (RolapCubeMember) ((VisualTotalMember) o).getMember();
         } else {
-            other = (RolapCubeMember) o;	
+            other = (RolapCubeMember) o;
         }
         return member.compareTo(other.member);
     }
