@@ -522,7 +522,7 @@ public class RolapResult extends ResultBase {
             }
             if (! mList.isEmpty()) {
                 changed = true;
-                it.set(mList);
+                it.set(new ArrayList<Member>(mList));
             }
         }
         return changed;
