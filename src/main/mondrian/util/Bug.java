@@ -11,6 +11,7 @@ package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.spi.Dialect;
+import org.apache.log4j.Logger;
 
 /**
  * Holder for constants which indicate whether particular issues have been
@@ -182,6 +183,14 @@ public class Bug {
     public static final boolean BugMondrian687Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-759"> MONDRIAN-759, "use
+     * dynamic parameters and PreparedStatement for frequently executed SQL
+     * patterns"</a> is fixed.
+     */
+    public static final boolean BugMondrian759Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
@@ -200,6 +209,32 @@ public class Bug {
     public static boolean avoidMemoryOverflow(Dialect dialect) {
         return dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
             && MondrianProperties.instance().MemoryMonitor.get();
+    }
+
+    /**
+     * Returns true if we are running against
+     * {@link mondrian.spi.Dialect.DatabaseProduct#LUCIDDB} and we wish to
+     * avoid slow tests.
+     *
+     * <p>This is because some tests involving parent-child hierarchies are
+     * very slow. If we are running performance tests (indicated by the
+     * {@code mondrian.test.PerforceTest} logger set at
+     * {@link org.apache.log4j.Level#DEBUG} or higher), we expect the suite to
+     * take a long time, so we enable the tests.
+     *
+     * <p>Fixing either {@link #BugMondrian759Fixed MONDRIAN-759} or
+     * <a href="http://issues.eigenbase.org/browse/FRG-400">FRG-400, "rewrite
+     * statements containing literals to use internally-managed dynamic
+     * parameters instead"</a> would solve the problem.
+     *
+     * @return Whether we are running LucidDB and we wish to avoid slow tests.
+     */
+    public static boolean avoidSlowTestOnLucidDB(Dialect dialect) {
+        return
+            !BugMondrian759Fixed
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB
+            && !Logger.getLogger("mondrian.test.PerformanceTest")
+                .isDebugEnabled();
     }
 }
 

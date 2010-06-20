@@ -10,6 +10,7 @@
 
 package mondrian.test.loader;
 
+import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
@@ -162,7 +163,7 @@ import java.util.regex.Pattern;
  * NOTE: Much of the code appearing in this class came from the
  * MondrianFoodMartLoader class.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public abstract class DBLoader {
@@ -637,6 +638,7 @@ public abstract class DBLoader {
             throw firstEx;
         }
     }
+
     public void dropTable(Table table) throws Exception {
         String dropTableStmt = table.getDropTableStmt();
         if (dropTableStmt != null) {
@@ -647,12 +649,15 @@ public abstract class DBLoader {
     public void setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
+
     public File getOutputDirectory() {
         return this.outputDirectory;
     }
+
     public void setForce(boolean force) {
         this.force = force;
     }
+
     public boolean getForce() {
         return this.force;
     }
@@ -660,30 +665,39 @@ public abstract class DBLoader {
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
+
     public int getBatchSize() {
         return this.batchSize;
     }
+
     public void setJdbcDriver(String jdbcDriver) {
         this.jdbcDriver = jdbcDriver;
     }
+
     public String getJdbcDriver() {
         return this.jdbcDriver;
     }
+
     public void setJdbcURL(String jdbcURL) {
         this.jdbcURL = jdbcURL;
     }
+
     public String getJdbcURL() {
         return this.jdbcURL;
     }
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
     public String getUserName() {
         return this.userName;
     }
+
     public void setPassword(String password) {
         this.password = password;
     }
+
     public String getPassword() {
         return this.password;
     }
@@ -713,9 +727,11 @@ public abstract class DBLoader {
 
         String productName = metaData.getDatabaseProductName();
         String version = metaData.getDatabaseProductVersion();
-
         LOGGER.info("Output connection is " + productName + ", " + version);
 
+        if (!metaData.supportsBatchUpdates()) {
+            this.batchSize = 1;
+        }
         this.dialect = DialectManager.createDialect(null, this.connection);
         this.initialize = true;
     }
@@ -730,6 +746,7 @@ public abstract class DBLoader {
             generateStatements(table);
         }
     }
+
     protected void generateStatements(Table table) throws Exception {
         Column[] columns = table.getColumns();
         initializeColumns(columns);
@@ -757,16 +774,19 @@ public abstract class DBLoader {
             dropIndexList.set(i, dropIndexStmt);
         }
     }
+
     protected void generateDropTable(Table table) {
         String tableName = table.getName();
         String dropTableStmt = "DROP TABLE " + quoteId(tableName);
         table.setDropTableStmt(dropTableStmt);
     }
+
     protected void generateDropTableRows(Table table) {
         String tableName = table.getName();
         String dropTableRowsStmt = "DELETE FROM " + quoteId(tableName);
         table.setDropTableRowsStmt(dropTableRowsStmt);
     }
+
     protected void generateCreateTable(Table  table) {
         String tableName = table.getName();
         Column[] columns = table.getColumns();
@@ -798,6 +818,7 @@ public abstract class DBLoader {
         String ddl = buf.toString();
         table.setCreateTableStmt(ddl);
     }
+
     protected void generateAfterActions(Table table) {
         List<String> createIndexList = table.getAfterActions();
         if (createIndexList.isEmpty()) {
@@ -824,6 +845,7 @@ public abstract class DBLoader {
             table.executeStatements();
         }
     }
+
     protected void executeStatements(Table table) throws Exception {
         executeBeforeActions(table);
 
@@ -866,6 +888,7 @@ public abstract class DBLoader {
             return false;
         }
     }
+
     protected void closeFileWriter() {
         try {
             if (this.fileWriter != null) {
@@ -1044,7 +1067,6 @@ public abstract class DBLoader {
     }
 
     protected int executeLoadTableRows(Table table) {
-        int rowsAdded = 0;
         try {
             String suffix =
                 System.getProperty(
@@ -1053,14 +1075,15 @@ public abstract class DBLoader {
             makeFileWriter(table, "." + suffix);
 
             Table.Controller controller = table.getController();
+            int rowsAdded = 0;
             if (controller.loadRows()) {
                 String[] batch = new String[this.batchSize];
                 int nosInBatch = 0;
 
-                Iterator it = controller.rows();
+                Iterator<Row> it = controller.rows();
                 boolean displayedInsert = false;
                 while (it.hasNext()) {
-                    Row row = (Row) it.next();
+                    Row row = it.next();
                     Object[] values = row.values();
                     String insertStatement =
                         createInsertStatement(table, values);
@@ -1079,14 +1102,12 @@ public abstract class DBLoader {
                     rowsAdded += writeBatch(batch, nosInBatch);
                 }
             }
+            return rowsAdded;
         } catch (Exception e) {
-// RME
-e.printStackTrace();
-            LOGGER.warn("Load of " + table.getName() + " failed. Ignored");
+            throw Util.newError(e, "Load of " + table.getName() + " failed.");
         } finally {
             closeFileWriter();
         }
-        return rowsAdded;
     }
 
     protected String createInsertStatement(Table table, Object[] values)
@@ -1424,7 +1445,9 @@ e.printStackTrace();
                 this.fileWriter.write(nl);
             }
         } else {
-            connection.setAutoCommit(false);
+            if (connection.getMetaData().supportsTransactions()) {
+                connection.setAutoCommit(false);
+            }
             Statement stmt = connection.createStatement();
             if (batchSize == 1) {
                 // Don't use batching if there's only one item. This allows
@@ -1460,9 +1483,13 @@ e.printStackTrace();
                         + " versus " + updates);
                 }
             }
-            connection.commit();
+            if (connection.getMetaData().supportsTransactions()) {
+                connection.commit();
+            }
             stmt.close();
-            connection.setAutoCommit(true);
+            if (connection.getMetaData().supportsTransactions()) {
+                connection.setAutoCommit(true);
+            }
         }
         return batchSize;
     }

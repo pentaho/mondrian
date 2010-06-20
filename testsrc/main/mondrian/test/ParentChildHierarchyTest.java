@@ -13,6 +13,7 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -511,6 +512,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Script from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_02.txt">here</a>.
      */
     public void testParentChildDescendantsLeavesTop() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         assertQueryReturns(
             "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES)'\n"
             + " set [Parents] as 'Generate([Leaves], {[Employees].CurrentMember.Parent})'\n"
@@ -623,6 +627,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * dimensions (3) than the depth of the emp dimension (6).
      */
     public void testHierarchyFalseCycle() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         // On the regular HR cube, this has always worked.
         assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns,\n"
@@ -939,10 +946,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     /**
      * Tests that a parent-child hierarchy is sorted correctly if the
-     * "ordinalColumn" attribute is included in its definition.
-     * Testcase for bug 1522608, "Sorting of Parent/Child Hierarchy is wrong".
+     * "ordinalColumn" attribute is included in its definition. Testcase for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-203">MONDRIAN-203,
+     * "Sorting of Parent/Child Hierarchy is wrong"</a>.
      */
     public void testParentChildOrdinal() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"HR-ordered\">\n"
@@ -1126,10 +1137,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Verifies the fix for MONDRIAN-519, a class cast exception when using
-     * non-closure parent child hierarchies.
+     * Verifies the fix for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-519">MONDRIAN-519</a>,
+     * a class cast exception when using non-closure parent child hierarchies.
      */
     public void testClosureVsNoClosure() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         String cubestart =
             "<Cube name=\"HR4C\">\n"
             + "  <Table name=\"salary\"/>\n"

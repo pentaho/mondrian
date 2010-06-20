@@ -109,8 +109,11 @@ farrago() {
 # 
 # jdbc:luciddb:http://localhost> create schema foodmart;
 # jdbc:luciddb:http://localhost> create user "foodmart" identified by 'foodmart';
+# jdbc:luciddb:http://localhost> grant execute on specific procedure
+#                              >   applib.estimate_statistics_for_schema_no_samplingrate
+#                              >   to "foodmart";
 luciddb() {
-    export LUCIDDB_HOME=/usr/local/luciddb-0.9.2
+    export LUCIDDB_HOME=/usr/local/luciddb
     java -cp "${CP}${PS}${LUCIDDB_HOME}/plugin/LucidDbClient.jar" \
         mondrian.test.loader.MondrianFoodMartLoader \
         -verbose -aggregates -tables -data -indexes -analyze \

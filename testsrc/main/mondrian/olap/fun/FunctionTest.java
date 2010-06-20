@@ -4558,6 +4558,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDescendantsParentChildLeaves() {
         final TestContext testContext = getTestContext().withCube("HR");
+        if (Bug.avoidSlowTestOnLucidDB(testContext.getDialect())) {
+            return;
+        }
 
         // leaves, restricted by level
         testContext.assertAxisReturns(
