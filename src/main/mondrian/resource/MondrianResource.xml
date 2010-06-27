@@ -424,6 +424,18 @@
     <text>Not a named set</text>
 </exception>
 
+<exception id="40350" name="HierarchyHasNoLevels">
+    <text>Hierarchy ''{0}'' must have at least one level.</text>
+</exception>
+
+<exception id="40360" name="HierarchyLevelNamesNotUnique">
+    <text>Level names within hierarchy ''{0}'' are not unique; there is more than one level with name ''{1}''.</text>
+</exception>
+
+<exception id="40370" name="IllegalLeftDeepJoin">
+    <text>Left side of join must not be a join; mondrian only supports right-deep joins.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 

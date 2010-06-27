@@ -235,6 +235,20 @@ public class RolapHierarchy extends HierarchyBase {
         }
         this.allMember.setOrdinal(0);
 
+        if (xmlHierarchy.levels.length == 0) {
+            throw MondrianResource.instance().HierarchyHasNoLevels.ex(
+                getUniqueName());
+        }
+
+        Set<String> levelNameSet = new HashSet<String>();
+        for (MondrianDef.Level level : xmlHierarchy.levels) {
+            if (!levelNameSet.add(level.name)) {
+                throw MondrianResource.instance().HierarchyLevelNamesNotUnique
+                    .ex(
+                        getUniqueName(), level.name);
+            }
+        }
+
         // If the hierarchy has an 'all' member, the 'all' level is level 0.
         if (hasAll) {
             this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];

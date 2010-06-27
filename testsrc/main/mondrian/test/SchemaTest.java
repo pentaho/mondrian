@@ -178,6 +178,34 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #0: 131,558\n");
     }
 
+    public void testHierarchyNoLevelsFails() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Gender no levels' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        testContext.assertQueryThrows(
+            "select {[Gender no levels]} on columns from [Sales]",
+            "Hierarchy '[Gender no levels]' must have at least one level.");
+    }
+
+    public void testHierarchyNonUniqueLevelsFails() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Gender dup levels' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        testContext.assertQueryThrows(
+            "select {[Gender dup levels]} on columns from [Sales]",
+            "Level names within hierarchy '[Gender dup levels]' are not unique; there is more than one level with name 'Gender'.");
+    }
+
     /**
      * Tests a measure based on 'count'.
      */
@@ -2933,6 +2961,292 @@ public class SchemaTest extends FoodMartTestCase {
             Member member, String propertyName, Object propertyValue)
         {
             return null;
+        }
+    }
+
+    /**
+     * Unit test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">
+     * MONDRIAN-747, "When using DimensionUsage to join a shared dimension into
+     * a cube at a level other than its leaf level, Mondrian gives wrong
+     * results."</a>.
+     */
+    public void testBugMondrian747() {
+        // Test case requires a pecular inline view, and it works on dialects
+        // that scalar subqery, viz oracle. I believe that the mondrian code
+        // being works in all dialects.
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case ORACLE:
+            break;
+        default:
+            return;
+        }
+        final TestContext testContext = TestContext.create(
+            "<Schema name='Test_DimensionUsage'> \n"
+            + "  <Dimension type='StandardDimension' name='Store'> \n"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'> \n"
+            + "      <Table name='store'> \n"
+            + "      </Table> \n"
+            + "      <Level name='country' column='store_country' type='String' uniqueMembers='false' levelType='Regular' hideMemberIf='Never'> \n"
+            + "      </Level> \n"
+            + "      <Level name='state' column='store_state' type='String' uniqueMembers='false' levelType='Regular' hideMemberIf='Never'> \n"
+            + "      </Level> \n"
+            + "      <Level name='city' column='store_city' type='String' uniqueMembers='false' levelType='Regular' hideMemberIf='Never'> \n"
+            + "      </Level> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Dimension type='StandardDimension' name='Product'> \n"
+            + "    <Hierarchy name='New Hierarchy 0' hasAll='true' primaryKey='product_id'> \n"
+            + "      <Table name='product'> \n"
+            + "      </Table> \n"
+            + "      <Level name='product_name' column='product_name' type='String' uniqueMembers='false' levelType='Regular' hideMemberIf='Never'> \n"
+            + "      </Level> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Cube name='cube1' cache='true' enabled='true'> \n"
+            + "    <Table name='sales_fact_1997'> \n"
+            + "    </Table> \n"
+            + "    <DimensionUsage source='Store' name='Store' foreignKey='store_id'> \n"
+            + "    </DimensionUsage> \n"
+            + "    <DimensionUsage source='Product' name='Product' foreignKey='product_id'> \n"
+            + "    </DimensionUsage> \n"
+            + "    <Measure name='unitsales1' column='unit_sales' datatype='Numeric' aggregator='sum' visible='true'> \n"
+            + "    </Measure> \n"
+            + "  </Cube> \n"
+            + "  <Cube name='cube2' cache='true' enabled='true'> \n"
+//            + "    <Table name='sales_fact_1997_test'/> \n"
+            + "    <View alias='sales_fact_1997_test'> \n"
+            + "      <SQL dialect='generic'>select \"product_id\", \"time_id\", \"customer_id\", \"promotion_id\", \"store_id\", \"store_sales\", \"store_cost\", \"unit_sales\", (select \"store_state\" from \"store\" where \"store_id\" = \"sales_fact_1997\".\"store_id\") as \"sales_state_province\" from \"sales_fact_1997\"</SQL>\n"
+            + "    </View> \n"
+            + "    <DimensionUsage source='Store' level='state' name='Store' foreignKey='sales_state_province'> \n"
+            + "    </DimensionUsage> \n"
+            + "    <DimensionUsage source='Product' name='Product' foreignKey='product_id'> \n"
+            + "    </DimensionUsage> \n"
+            + "    <Measure name='unitsales2' column='unit_sales' datatype='Numeric' aggregator='sum' visible='true'> \n"
+            + "    </Measure> \n"
+            + "  </Cube> \n"
+            + "  <VirtualCube enabled='true' name='virtual_cube'> \n"
+            + "    <VirtualCubeDimension name='Store'> \n"
+            + "    </VirtualCubeDimension> \n"
+            + "    <VirtualCubeDimension name='Product'> \n"
+            + "    </VirtualCubeDimension> \n"
+            + "    <VirtualCubeMeasure cubeName='cube1' name='[Measures].[unitsales1]' visible='true'> \n"
+            + "    </VirtualCubeMeasure> \n"
+            + "    <VirtualCubeMeasure cubeName='cube2' name='[Measures].[unitsales2]' visible='true'> \n"
+            + "    </VirtualCubeMeasure> \n"
+            + "  </VirtualCube> \n"
+            + "</Schema>");
+        testContext.assertQueryReturns(
+            "select non empty {[Measures].[unitsales2], [Measures].[unitsales1]} on 0,\n"
+            + " non empty [Store].members on 1\n"
+            + "from [virtual_cube]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[unitsales2]}\n"
+            + "{[Measures].[unitsales1]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 1,379,620\n"
+            + "Row #1: 266,773\n"
+            + "Row #2: 373,740\n"
+            + "Row #2: 74,748\n"
+            + "Row #3: \n"
+            + "Row #3: 21,333\n"
+            + "Row #4: \n"
+            + "Row #4: 25,663\n"
+            + "Row #5: \n"
+            + "Row #5: 25,635\n"
+            + "Row #6: \n"
+            + "Row #6: 2,117\n"
+            + "Row #7: 135,318\n"
+            + "Row #7: 67,659\n"
+            + "Row #8: \n"
+            + "Row #8: 26,079\n"
+            + "Row #9: \n"
+            + "Row #9: 41,580\n"
+            + "Row #10: 870,562\n"
+            + "Row #10: 124,366\n"
+            + "Row #11: \n"
+            + "Row #11: 2,237\n"
+            + "Row #12: \n"
+            + "Row #12: 24,576\n"
+            + "Row #13: \n"
+            + "Row #13: 25,011\n"
+            + "Row #14: \n"
+            + "Row #14: 23,591\n"
+            + "Row #15: \n"
+            + "Row #15: 35,257\n"
+            + "Row #16: \n"
+            + "Row #16: 2,203\n"
+            + "Row #17: \n"
+            + "Row #17: 11,491\n");
+    }
+
+    /**
+     * Unit test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-463">
+     * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
+     */
+    public void testBugMondrian463() {
+        // To build a dimension that is a 3-way snowflake, take the 2-way
+        // product -> product_class join and convert to product -> store ->
+        // product_class.
+        //
+        // It works because product_class_id covers the range 1 .. 110;
+        // store_id covers every value in 0 .. 24;
+        // region_id has 24 distinct values in the range 0 .. 106 (region_id 25
+        // occurs twice).
+        // Therefore in store, store_id -> region_id is a 25 to 24 mapping.
+        checkBugMondrian463(
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Product3' foreignKey='product_id'>\n"
+                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
+                + "    <Join leftKey='product_class_id' rightKey='store_id'>\n"
+                + "      <Table name='product'/>\n"
+                + "      <Join leftKey='region_id' rightKey='product_class_id'>\n"
+                + "        <Table name='store'/>\n"
+                + "        <Table name='product_class'/>\n"
+                + "      </Join>\n"
+                + "    </Join>\n"
+                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
+                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Class' table='store' column='store_id' uniqueMembers='true'/>\n"
+                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // As above, but using shared dimension.
+        checkBugMondrian463(
+            TestContext.create(
+                "<?xml version='1.0'?>\n"
+                + "<Schema name='FoodMart'>\n"
+                + "<Dimension name='Product3'>\n"
+                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
+                + "    <Join leftKey='product_class_id' rightKey='store_id'>\n"
+                + "      <Table name='product'/>\n"
+                + "      <Join leftKey='region_id' rightKey='product_class_id'>\n"
+                + "        <Table name='store'/>\n"
+                + "        <Table name='product_class'/>\n"
+                + "      </Join>\n"
+                + "    </Join>\n"
+                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
+                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Class' table='store' column='store_id' uniqueMembers='true'/>\n"
+                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n"
+                + "<Cube name='Sales'>\n"
+                + "  <Table name='sales_fact_1997'/>\n"
+                + "  <Dimension name='Time' type='TimeDimension' foreignKey='time_id'>\n"
+                + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
+                + "      <Table name='time_by_day'/>\n"
+                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
+                + "          levelType='TimeYears'/>\n"
+                + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
+                + "          levelType='TimeQuarters'/>\n"
+                + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
+                + "          levelType='TimeMonths'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <DimensionUsage source='Product3' name='Product3' foreignKey='product_id'/>\n"
+                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n"
+                + "</Schema>"));
+    }
+
+    private void checkBugMondrian463(TestContext testContext) {
+        testContext.assertQueryReturns(
+            "select [Measures] on 0,\n"
+            + " head([Product3].members, 10) on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product3].[All Product3s]}\n"
+            + "{[Product3].[Drink]}\n"
+            + "{[Product3].[Drink].[Baking Goods]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo].[Amigo Lox]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew].[Curlew Lox]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 2,647\n"
+            + "Row #2: 835\n"
+            + "Row #3: 835\n"
+            + "Row #4: 835\n"
+            + "Row #5: 835\n"
+            + "Row #6: 175\n"
+            + "Row #7: 175\n"
+            + "Row #8: 186\n"
+            + "Row #9: 186\n");
+    }
+
+    /**
+     * Tests that a join nested left-deep, that is (Join (Join A B) C), fails.
+     * The correct way to use a join is right-deep, that is (Join A (Join B C)).
+     * Same schema as {@link #testBugMondrian463}, except left-deep.
+     */
+    public void testLeftDeepJoinFails() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Product3' foreignKey='product_id'>\n"
+            + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
+            + "    <Join leftKey='store_id' rightKey='product_class_id'>\n"
+            + "      <Join leftKey='product_class_id' rightKey='region_id'>\n"
+            + "        <Table name='product'/>\n"
+            + "        <Table name='store'/>\n"
+            + "      </Join>\n"
+            + "      <Table name='product_class'/>\n"
+            + "    </Join>\n"
+            + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
+            + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
+            + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
+            + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
+            + "    <Level name='Product Class' table='store' column='store_id' uniqueMembers='true'/>\n"
+            + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+            + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        try {
+            testContext.assertSimpleQuery();
+            fail("expected error");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Left side of join must not be a join; mondrian only supports right-deep joins.",
+                e.getMessage());
         }
     }
 }

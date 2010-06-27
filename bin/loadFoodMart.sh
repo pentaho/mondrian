@@ -21,6 +21,28 @@ export CP="${CP}${PS}lib/eigenbase-properties.jar"
 export CP="${CP}${PS}lib/eigenbase-xom.jar"
 export CP="${CP}${PS}lib/eigenbase-resgen.jar"
 
+usage() {
+    echo "Usage: loadFoodMart.sh [ --help | --db <database> ]"
+    echo
+    echo "Populate FoodMart database, calling the MondrianFoodMartLoader"
+    echo "program with a typical set of arguments. This script does not aim to"
+    echo "be 100% customizable from the command line; you will almost certainly"
+    echo "have to edit it with the URL and options of your database. But for"
+    echo "each database engine, the command given here will be reasonably"
+    echo "close to what you need."
+    echo
+    echo "Options:"
+    echo "   --help  Prints this help"
+    echo "   --db <database> Loads into target database, where <database> is"
+    echo "           one of: ${dbs}"
+}
+
+error() {
+    echo "Error: $1"
+    echo
+    usage
+}
+
 oracle() {
     #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
     java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
@@ -153,7 +175,40 @@ hsqldb() {
         -outputJdbcPassword=""
 }
 
+dbs="\
+farrago \
+hsqldb \
+infobright \
+luciddb \
+mysql \
+oracle \
+oracleTrickle \
+postgresql \
+teradata \
+"
+
+db=
+while [ $# -gt 0 ]; do
+    case "$1" in
+    (--help) usage; exit 0;;
+    (--db) shift; db="$1"; shift;;
+    (*) error "Unknown argument '$1'"; exit 1;;
+    esac
+done
+
 cd $(dirname $0)/..
-hsqldb
+case "$db" in
+('') error "You must specify a database."; exit 1;;
+(farrago) farrago;;
+(hsqldb) hsqldb;;
+(infobright) infobright;;
+(luciddb) luciddb;;
+(mysql) mysql;;
+(oracle) oracle;;
+(oracleTrickle) oracleTrickle;;
+(postgresql) postgresql;;
+(teradata) teradata;;
+(*) error "Unknown database '$db'."; exit 1;;
+esac
 
 # End loadFoodMart.sh

@@ -14,6 +14,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.AggregationKey;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -305,8 +306,12 @@ public class RolapStar {
         } else if (relOrJoin instanceof MondrianDef.Join) {
             // determine if the join starts from the left or right side
             MondrianDef.Join join = (MondrianDef.Join)relOrJoin;
-            MondrianDef.RelationOrJoin left = null;
-            MondrianDef.RelationOrJoin right = null;
+
+            if (join.left instanceof MondrianDef.Join) {
+                throw MondrianResource.instance().IllegalLeftDeepJoin.ex();
+            }
+            MondrianDef.RelationOrJoin left;
+            MondrianDef.RelationOrJoin right;
             if (join.getLeftAlias().equals(joinKeyTable)) {
                 // first manage left then right
                 left =
@@ -332,7 +337,7 @@ public class RolapStar {
                         parent, join.left, join.rightKey,
                         join.leftKey, join.getLeftAlias());
             } else {
-                new MondrianException(
+                throw new MondrianException(
                     "failed to match primary key table to join tables");
             }
 
