@@ -556,6 +556,13 @@ public class DialectTest extends TestCase {
             nameList, typeList,
             new String[]{"a", "1"}, new String[]{"bb", "2"});
 
+        // string containing single quote (problem for all database) and a
+        // backslash (problem for mysql; appears as a double backslash for
+        // java's benefit, but is a single backslash by the time it gets to SQL)
+        assertInline(
+            nameList, typeList,
+            new String[]{"can't stop", "1"}, new String[]{"back\\slash", "2"});
+
         // date value
         final List<String> typeList2 = Arrays.asList("String", "Date");
         assertInline(
