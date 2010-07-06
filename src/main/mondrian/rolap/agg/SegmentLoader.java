@@ -416,6 +416,7 @@ public class SegmentLoader {
         final RowList processedRows = new RowList(processedTypes, 100);
 
         while (rawRows.next()) {
+            ++stmt.rowCount;
             processedRows.createRow();
             // get the columns
             int columnIndex = 0;
