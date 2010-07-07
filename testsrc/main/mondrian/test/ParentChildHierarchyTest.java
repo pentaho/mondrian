@@ -15,6 +15,8 @@ import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 
+import java.util.List;
+
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
  *
@@ -1221,6 +1223,40 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #8: 60\n";
         testClosureContext.assertQueryReturns(mdx, expected);
         testNoClosureContext.assertQueryReturns(mdx, expected);
+    }
+
+    public void testSchemaReaderLevelMembers()
+    {
+        final SchemaReader schemaReader =
+            TestContext.instance().getConnection().getSchemaReader();
+        int found = 0;
+        for (Cube cube : schemaReader.getCubes()) {
+            if (!cube.getName().equals("HR")) {
+                continue;
+            }
+            for (Dimension dimension : schemaReader.getCubeDimensions(cube)) {
+                for (Hierarchy hierarchy
+                    : schemaReader.getDimensionHierarchies(dimension))
+                {
+                    if (!hierarchy.getName().equals("Employees")) {
+                        continue;
+                    }
+                    ++found;
+                    final Level level = hierarchy.getLevels()[1];
+                    assertEquals("Employee Id", level.getName());
+                    final List<Member> memberList =
+                        schemaReader.getLevelMembers(level, true);
+                    assertEquals(1155, memberList.size());
+                    assertEquals(
+                        "[Employees].[Sheri Nowmer]",
+                        memberList.get(0).getUniqueName());
+                    assertEquals(
+                        "[Employees].[Sheri Nowmer].[Derrick Whelply]",
+                        memberList.get(1).getUniqueName());
+                }
+            }
+        }
+        assertEquals(1, found);
     }
 }
 

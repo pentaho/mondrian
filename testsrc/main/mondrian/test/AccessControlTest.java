@@ -1282,6 +1282,60 @@ public class AccessControlTest extends FoodMartTestCase {
         checkQuery(testContext, mdx2);
     }
 
+    public void testParentChildUserDefinedRole()
+    {
+        TestContext testContext = getTestContext().withCube("HR");
+
+        final Connection connection = testContext.getConnection();
+        final Role savedRole = connection.getRole();
+        try {
+            // Run queries as top-level employee.
+            connection.setRole(
+                new PeopleRole(
+                    savedRole, connection.getSchema(), "Sheri Nowmer"));
+            testContext.assertExprReturns(
+                "[Employees].Members.Count",
+                "1,156");
+
+            // Level 2 employee
+            connection.setRole(
+                new PeopleRole(
+                    savedRole, connection.getSchema(), "Derrick Whelply"));
+            testContext.assertExprReturns(
+                "[Employees].Members.Count",
+                "605");
+            testContext.assertAxisReturns(
+                "Head([Employees].Members, 4),"
+                + "Tail([Employees].Members, 2)",
+                "[Employees].[All Employees]\n"
+                + "[Employees].[Sheri Nowmer]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Merrill Steel]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Melissa Marple]");
+
+            // Leaf employee
+            connection.setRole(
+                new PeopleRole(
+                    savedRole, connection.getSchema(), "Ann Weyerhaeuser"));
+            testContext.assertExprReturns(
+                "[Employees].Members.Count",
+                "7");
+            testContext.assertAxisReturns(
+                "[Employees].Members",
+                "[Employees].[All Employees]\n"
+                + "[Employees].[Sheri Nowmer]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman]\n"
+                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Ann Weyerhaeuser]");
+
+        } finally {
+            connection.setRole(savedRole);
+        }
+    }
+
     /**
      * Test case for
      * <a href="http://jira.pentaho.com/browse/BISERVER-1574">BISERVER-1574,
@@ -1956,6 +2010,48 @@ public class AccessControlTest extends FoodMartTestCase {
         final Member member2 = rowPos.get(2).get(0);
         assertEquals("Foo", member2.getName());
         assertEquals("Store City", member2.getLevel().getName());
+    }
+
+    // ~ Inner classes =========================================================
+
+    public static class PeopleRole extends DelegatingRole {
+        private final String repName;
+
+        public PeopleRole(Role role, Schema schema, String repName) {
+            super(((RoleImpl)role).makeMutableClone());
+            this.repName = repName;
+            defineGrantsForUser(schema);
+        }
+
+        private void defineGrantsForUser(Schema schema) {
+            RoleImpl role = (RoleImpl)this.role;
+            role.grant(schema, Access.NONE);
+
+            Cube cube = schema.lookupCube("HR", true);
+            role.grant(cube, Access.ALL);
+
+            Hierarchy hierarchy = cube.lookupHierarchy(
+                new Id.Segment("Employees", Id.Quoting.QUOTED), false);
+
+            Level[] levels = hierarchy.getLevels();
+            Level topLevel = levels[1];
+
+            role.grant(hierarchy, Access.CUSTOM, null, null, RollupPolicy.FULL);
+            role.grant(hierarchy.getAllMember(), Access.NONE);
+
+            boolean foundMember = false;
+
+            List <Member> members =
+                schema.getSchemaReader().getLevelMembers(topLevel, true);
+
+            for (Member member : members) {
+                if (member.getUniqueName().contains("[" + repName + "]")){
+                    foundMember = true;
+                    role.grant(member, Access.ALL);
+                }
+            }
+            assertTrue(foundMember);
+        }
     }
 }
 
