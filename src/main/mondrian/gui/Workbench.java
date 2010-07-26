@@ -17,28 +17,75 @@
 
 package mondrian.gui;
 
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.text.DefaultEditorKit;
+
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util.PropertyList;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.UnionIterator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-
 import org.eigenbase.xom.XMLOutput;
-
-import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.basic.BasicArrowButton;
-import javax.swing.text.DefaultEditorKit;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.List;
+import org.pentaho.di.core.Const;
+import org.pentaho.di.core.KettleEnvironment;
+import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.exception.KettleDatabaseException;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.ui.database.DatabaseConnectionDialog;
+import org.pentaho.ui.database.Messages;
+import org.pentaho.ui.database.event.DataHandler;
+import org.pentaho.ui.xul.XulDomContainer;
+import org.pentaho.ui.xul.XulException;
+import org.pentaho.ui.xul.XulLoader;
+import org.pentaho.ui.xul.containers.XulDialog;
+import org.pentaho.ui.xul.swing.SwingXulLoader;
 
 /**
  * @author sean
@@ -48,6 +95,7 @@ public class Workbench extends javax.swing.JFrame {
 
     static String WORKBENCH_USER_HOME_DIR;
     static String WORKBENCH_CONFIG_FILE;
+    static String DB_META_CONFIG_FILE;
 
     private static final String LAST_USED1 = "lastUsed1";
     private static final String LAST_USED1_URL = "lastUsedUrl1";
@@ -94,6 +142,12 @@ public class Workbench extends javax.swing.JFrame {
         new ArrayList<JInternalFrame>();
     private int windowMenuMapIndex = 1;
 
+    private static final String KETTLE_PLUGIN_BASE_FOLDERS = "kettle-plugins,"
+            + Const.getKettleDirectory() + Const.FILE_SEPARATOR + "plugins";
+    private XulDialog connectionDialog = null;
+    private DataHandler connectionDialogController = null;
+    private DatabaseMeta dbMeta = null;
+
     /**
      * Creates new form Workbench
      */
@@ -109,9 +163,12 @@ public class Workbench extends javax.swing.JFrame {
             + ".schemaWorkbench";
         WORKBENCH_CONFIG_FILE =
             WORKBENCH_USER_HOME_DIR + File.separator + "workbench.properties";
+        DB_META_CONFIG_FILE = WORKBENCH_USER_HOME_DIR + File.separator
+                + "databaseMeta.xml";
 
         loadWorkbenchProperties();
-        initDataSource();
+        loadDatabaseMeta();
+        initOptions();
         initComponents();
         loadMenubarPlugins();
 
@@ -149,8 +206,8 @@ public class Workbench extends javax.swing.JFrame {
         workbenchProperties = new Properties();
         try {
             workbenchResourceBundle = ResourceBundle.getBundle(
-                WorkbenchInfoResourceName, Locale.getDefault(), myClassLoader);
-
+                    WorkbenchInfoResourceName, Locale.getDefault(),
+                    myClassLoader);
             File f = new File(WORKBENCH_CONFIG_FILE);
             if (f.exists()) {
                 workbenchProperties.load(new FileInputStream(f));
@@ -160,6 +217,26 @@ public class Workbench extends javax.swing.JFrame {
         } catch (Exception e) {
             // TODO deal with exception
             LOGGER.error("loadWorkbenchProperties", e);
+        }
+    }
+
+    /**
+     * load database meta
+     */
+    public void loadDatabaseMeta() {
+        if (dbMeta == null) {
+            File file = new File(DB_META_CONFIG_FILE);
+            if (file.exists()) {
+                try {
+                    dbMeta = getDbMeta(FileUtils.readFileToString(file));
+                } catch (Exception e) {
+                    LOGGER.error("loadDatabaseMeta", e);
+                }
+            }
+        }
+
+        if (dbMeta != null) {
+            syncToWorkspace(dbMeta);
         }
     }
 
@@ -247,14 +324,25 @@ public class Workbench extends javax.swing.JFrame {
     }
 
     /**
-     * Initialize the data source from a property file
+     * save database meta
      */
-    private void initDataSource() {
-        jdbcDriverClassName = getWorkbenchProperty("jdbcDriverClassName");
-        jdbcConnectionUrl = getWorkbenchProperty("jdbcConnectionUrl");
-        jdbcUsername = getWorkbenchProperty("jdbcUsername");
-        jdbcPassword = getWorkbenchProperty("jdbcPassword");
-        jdbcSchema = getWorkbenchProperty("jdbcSchema");
+    public void storeDatabaseMeta() {
+        if (dbMeta != null) {
+            try {
+                File file = new File(DB_META_CONFIG_FILE);
+                PrintWriter pw = new PrintWriter(new FileWriter(file));
+                pw.println(dbMeta.getXML());
+                pw.close();
+            } catch (IOException e) {
+                LOGGER.error("storeDatabaseMeta", e);
+            }
+        }
+    }
+
+    /**
+     * Initialize the UI options
+     */
+    private void initOptions() {
         requireSchema = "true".equals(getWorkbenchProperty("requireSchema"));
     }
 
@@ -274,6 +362,7 @@ public class Workbench extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         toolbarPreferencesButton = new javax.swing.JButton();
+        requireSchemaCheckboxMenuItem = new javax.swing.JCheckBoxMenuItem();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenu = new javax.swing.JMenu();
@@ -322,6 +411,7 @@ public class Workbench extends javax.swing.JFrame {
             new WindowAdapter() {
                 public void windowClosing(WindowEvent evt) {
                     storeWorkbenchProperties();
+                    storeDatabaseMeta();
                     closeAllSchemaFrames(true);
                 }
             });
@@ -467,11 +557,11 @@ public class Workbench extends javax.swing.JFrame {
                     getResourceConverter().getGUIReference("preferences"))));
         toolbarPreferencesButton.setToolTipText(
             getResourceConverter().getString(
-                "workbench.toolbar.preferences", "Preferences"));
+                "workbench.toolbar.connection", "Connection"));
         toolbarPreferencesButton.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    toolbarPreferencesButtonActionPerformed(evt);
+                    connectionButtonActionPerformed(evt);
                 }
             });
 
@@ -660,20 +750,31 @@ public class Workbench extends javax.swing.JFrame {
         viewMenu.add(viewXmlMenuItem);
         menuBar.add(viewMenu);
 
-        toolsMenu.setText(
-            getResourceConverter().getString(
-                "workbench.menu.tools", "Tools"));
+        toolsMenu.setText(getResourceConverter().getString(
+                "workbench.menu.options", "Options"));
         toolsMenu.setMnemonic(KeyEvent.VK_O);
-        preferencesMenuItem.setText(
-            getResourceConverter().getString(
-                "workbench.menu.preferences", "Preferences"));
+        preferencesMenuItem.setText(getResourceConverter().getString(
+                "workbench.menu.connection", "Connection"));
         preferencesMenuItem.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    toolbarPreferencesButtonActionPerformed(evt);
+                    connectionButtonActionPerformed(evt);
                 }
             });
         toolsMenu.add(preferencesMenuItem);
+
+        requireSchemaCheckboxMenuItem.setText(
+                getResourceConverter().getString(
+                        "workbench.menu.requireSchema", "Require Schema"));
+        requireSchemaCheckboxMenuItem.setSelected(requireSchema);
+        requireSchemaCheckboxMenuItem.addActionListener(
+            new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    requireSchemaActionPerformed(e);
+                }
+            });
+
+        toolsMenu.add(requireSchemaCheckboxMenuItem);
         menuBar.add(toolsMenu);
 
 
@@ -1117,12 +1218,12 @@ public class Workbench extends javax.swing.JFrame {
             windowMenu.add(closeAllMenuItem, -1);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                this,
-                getResourceConverter().getFormattedString(
+                    this, getResourceConverter()
+                    .getFormattedString(
                     "workbench.new.JDBCExplorer.exception",
                     "Database connection not successful.\n{0}",
-                    ex.getLocalizedMessage()),
-                getResourceConverter().getString(
+                            ex.getLocalizedMessage()), getResourceConverter()
+                    .getString(
                     "workbench.new.JDBCExplorer.exception.title",
                     "Database Connection Error"),
                 JOptionPane.ERROR_MESSAGE);
@@ -1130,35 +1231,110 @@ public class Workbench extends javax.swing.JFrame {
         }
     }
 
-    private void toolbarPreferencesButtonActionPerformed(ActionEvent evt) {
-        PreferencesDialog pd = new PreferencesDialog(this, true);
-        pd.setJDBCConnectionUrl(jdbcConnectionUrl);
-        pd.setJDBCDriverClassName(jdbcDriverClassName);
-        pd.setJDBCUsername(jdbcUsername);
-        pd.setJDBCPassword(jdbcPassword);
-        pd.setDatabaseSchema(jdbcSchema);
-        pd.setRequireSchema(requireSchema);
+    /**
+     * Convenience method for retrieving the dbMeta instance that handles
+     * required Kettle initialization.
+     *
+     * @param xml
+     *            output of {@link DatabaseMeta#getXML()} or <code>null</code>
+     * @return the current {@link DatabaseMeta} instance
+     */
+    private DatabaseMeta getDbMeta(String xml) {
+        try {
+            if (!KettleEnvironment.isInitialized()) {
+                System.setProperty(
+                        "KETTLE_PLUGIN_BASE_FOLDERS",
+                        KETTLE_PLUGIN_BASE_FOLDERS);
+                KettleEnvironment.init();
+            }
+            if (dbMeta != null) {
+                return dbMeta;
+            }
+            if (xml == null) {
+                dbMeta = new DatabaseMeta();
+            } else {
+                dbMeta = new DatabaseMeta(xml);
+            }
+        } catch (KettleException e) {
+            throw new RuntimeException(
+                    getResourceConverter()
+                    .getFormattedString(
+                            "workbench.new.Kettle.exception",
+                            "Kettle failed to initialize."), e);
+        }
+        return dbMeta;
+    }
 
-        pd.setVisible(true);
+    private void connectionButtonActionPerformed(ActionEvent evt) {
+        if (connectionDialog == null) {
+            dbMeta = getDbMeta(null);
+            connectionDialogController = new DataHandler();
+            connectionDialogController.setName("dataHandler");
 
-        if (pd.accepted()) {
-            jdbcConnectionUrl = pd.getJdbcConnectionUrl();
-            jdbcDriverClassName = pd.getJdbcDriverClassName();
-            jdbcUsername = pd.getJdbcUsername();
-            jdbcPassword = pd.getJdbcPassword();
-            jdbcSchema = pd.getDatabaseSchema();
-            requireSchema = pd.getRequireSchema();
+            XulDomContainer container = null;
 
-            setWorkbenchProperty("jdbcDriverClassName", jdbcDriverClassName);
-            setWorkbenchProperty("jdbcConnectionUrl", jdbcConnectionUrl);
-            setWorkbenchProperty("jdbcUsername", jdbcUsername);
-            setWorkbenchProperty("jdbcPassword", jdbcPassword);
-            setWorkbenchProperty("jdbcSchema", jdbcSchema);
-            setWorkbenchProperty("requireSchema", "" + requireSchema);
-            // Enforces the JDBC preferences entered througout all schemas
+            try {
+                XulLoader loader = new SwingXulLoader();
+                container = loader.loadXul(
+                        DatabaseConnectionDialog.DIALOG_DEFINITION_FILE,
+                        Messages.getBundle());
+            } catch (XulException e) {
+                throw new RuntimeException("Xul failed to initialize", e);
+            }
+            container.addEventHandler(connectionDialogController);
+            connectionDialogController.loadConnectionData();
+            connectionDialogController.setData(dbMeta);
+            connectionDialog = (XulDialog) container.getDocumentRoot()
+                    .getRootElement();
+        }
+
+        connectionDialog.show();
+
+        dbMeta = (DatabaseMeta) connectionDialogController.getData();
+        if (dbMeta.hasChanged()) {
+            dbMeta.clearChanged();
+            syncToWorkspace(dbMeta);
+            // Enforces the JDBC preferences entered throughout all schemas
             //currently opened in the workbench.
             resetWorkbench();
         }
+    }
+
+    private void syncToWorkspace(DatabaseMeta databaseMeta) {
+        // sync from dbmeta to wkspc
+        try {
+            jdbcConnectionUrl = databaseMeta.getURL();
+        } catch (KettleDatabaseException e) {
+            throw new RuntimeException("Failed to determine JDBC URL", e);
+        }
+        jdbcDriverClassName = databaseMeta.getDriverClass();
+        jdbcUsername = databaseMeta.getUsername();
+        jdbcPassword = databaseMeta.getPassword();
+        jdbcSchema = databaseMeta.getPreferredSchemaName();
+
+        // saving to workbench properties for documentation purposes only, since
+        // persistence
+        // of the dbmeta object is handled by a separate xml file now
+        if (jdbcDriverClassName != null) {
+            setWorkbenchProperty("jdbcDriverClassName", jdbcDriverClassName);
+        }
+        if (jdbcConnectionUrl != null) {
+            setWorkbenchProperty("jdbcConnectionUrl", jdbcConnectionUrl);
+        }
+        if (jdbcUsername != null) {
+            setWorkbenchProperty("jdbcUsername", jdbcUsername);
+        }
+        if (jdbcPassword != null) {
+            setWorkbenchProperty("jdbcPassword", jdbcPassword);
+        }
+        if (jdbcSchema != null) {
+            setWorkbenchProperty("jdbcSchema", jdbcSchema);
+        }
+    }
+
+    private void requireSchemaActionPerformed(ActionEvent evt) {
+        requireSchema = ((JCheckBoxMenuItem) evt.getSource()).isSelected();
+        setWorkbenchProperty("requireSchema", "" + requireSchema);
     }
 
 
@@ -1465,6 +1641,7 @@ public class Workbench extends javax.swing.JFrame {
         setWorkbenchProperty(LAST_USED1_URL, url);
         updateLastUsedMenu();
         storeWorkbenchProperties();
+        storeDatabaseMeta();
     }
 
     private void updateLastUsedMenu() {
@@ -1899,6 +2076,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private void exitMenuItemActionPerformed(ActionEvent evt) {
         storeWorkbenchProperties();
+        storeDatabaseMeta();
         closeAllSchemaFrames(true);
     }
 
@@ -1934,8 +2112,9 @@ public class Workbench extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        Workbench w = null;
         try {
-            Workbench w = new Workbench();
+            w = new Workbench();
             w.parseArgs(args);
             w.setSize(800, 600);
             // if user specified a file to open, do so now.
@@ -1951,6 +2130,18 @@ public class Workbench extends javax.swing.JFrame {
             }
             w.setVisible(true);
         } catch (Throwable ex) {
+            if (w != null) {
+            JOptionPane.showMessageDialog(
+                    w,
+                    w.getResourceConverter().getFormattedString(
+                        "workbench.main.uncoverable_error",
+                        "Pentaho Schema Workbench has encountered an unrecoverable error. \n{0}",
+                        ex.getLocalizedMessage()),
+                    w.getResourceConverter().getString(
+                        "workbench.main.uncoverable_error.title",
+                        "PSW Fatal Error"),
+                    JOptionPane.ERROR_MESSAGE);
+            }
             LOGGER.error("main", ex);
         }
     }
@@ -1991,6 +2182,7 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem newSchemaMenuItem2;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JButton toolbarPreferencesButton;
+    private javax.swing.JCheckBoxMenuItem requireSchemaCheckboxMenuItem;
     private javax.swing.JCheckBoxMenuItem viewMeasuresMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem pasteMenuItem;

@@ -25,5 +25,12 @@
 	<classpathentry kind="lib" path="lib/commons-vfs.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/olap4j.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-core.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-db.jar" sourcepath="/home/aaron/workspaces/pentaho/Kettle trunk/src-db"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-engine.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-database.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-xul-core.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-xul-swing.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/commons-io.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
