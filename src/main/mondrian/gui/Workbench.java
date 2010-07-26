@@ -29,7 +29,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1308,8 +1307,7 @@ public class Workbench extends javax.swing.JFrame {
         } catch (KettleDatabaseException e) {
             throw new RuntimeException("Failed to determine JDBC URL", e);
         }
-        jdbcDriverClassName = databaseMeta.getDriverClass().getClass()
-                .getName();
+        jdbcDriverClassName = databaseMeta.getDriverClass();
         jdbcUsername = databaseMeta.getUsername();
         jdbcPassword = databaseMeta.getPassword();
         jdbcSchema = databaseMeta.getPreferredSchemaName();

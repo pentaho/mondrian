@@ -32,15 +32,14 @@
         <dependency org="junit" name="junit" rev="4.0"/>
         <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="1.0.34319"/>
         
-        <dependency org="pentaho" name="pentaho-xul-core" rev="TRUNK-SNAPSHOT" changing="true" />
+        <dependency org="pentaho" name="pentaho-xul-core" rev="${dependency.pentaho-xul.revision}" changing="true" />
+        <dependency org="pentaho" name="pentaho-xul-swing" rev="${dependency.pentaho-xul.revision}" changing="true" />
 	    <dependency org="commons-beanutils" name="commons-beanutils" rev="1.6" transitive="false"/>
 	    <dependency org="org.codehaus.groovy" name="groovy-all" rev="1.5.6" transitive="false"/>
-
-        <dependency org="pentaho" name="pentaho-xul-swing" rev="TRUNK-SNAPSHOT" changing="true" />
-        <dependency org="pentaho"          name="pentaho-database" rev="TRUNK-SNAPSHOT" changing="true" />
-        <dependency org="pentaho.kettle"   name="kettle-core" rev="TRUNK-SNAPSHOT"  changing="true"/>
-        <dependency org="pentaho.kettle"   name="kettle-db" rev="TRUNK-SNAPSHOT"  changing="true"/>
-        <dependency org="pentaho.kettle"   name="kettle-engine" rev="TRUNK-SNAPSHOT"  changing="true"/>
+        <dependency org="pentaho" name="pentaho-database" rev="${dependency.pentaho-database.revision}" changing="true" />
+        <dependency org="pentaho.kettle" name="kettle-core" rev="${dependency.kettle.revision}"  changing="true"/>
+        <dependency org="pentaho.kettle" name="kettle-db" rev="${dependency.kettle.revision}"  changing="true"/>
+        <dependency org="pentaho.kettle" name="kettle-engine" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
         
 
