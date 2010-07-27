@@ -126,7 +126,7 @@
     </Element>
 
     <!-- CubeDimension ==================================================== -->
-    <Class class="CubeDimension">
+    <Element type="CubeDimension" abstract="true">
         <Doc>
             A CubeDimension is either a usage of a Dimension ('shared
             dimension', in MSOLAP parlance), or a 'private dimension'.
@@ -176,7 +176,7 @@
              */
             public abstract Dimension getDimension(Schema schema);]]>
         </Code>
-    </Class>
+    </Element>
 
     <!-- Cube ============================================================ -->
     <Element type="Cube">
@@ -1169,7 +1169,7 @@
         <Attribute name="value"/>
     </Element>
 
-    <Class class="RelationOrJoin">
+    <Element type="RelationOrJoin" abstract="true">
         <Doc>A table or a join</Doc>
         <Code>
             public abstract Relation find(String seekAlias);
@@ -1180,14 +1180,14 @@
                 return System.identityHashCode(this);
             }
         </Code>
-    </Class>
+    </Element>
 
-    <Class class="Relation" superclass="RelationOrJoin">
+    <Element type="Relation" class="RelationOrJoin" abstract="true">
         <Doc>A table, inline table or view</Doc>
         <Code>
             public abstract String getAlias();
         </Code>
-    </Class>
+    </Element>
 
     <Element type="View" class="Relation">
         <Doc>
@@ -1620,7 +1620,7 @@
     </Element>
 
     <!-- AggTable ======================================================= -->
-    <Class class="AggTable">
+    <Element type="AggTable" abstract="true">
         <Doc>
             A definition of an aggregate table for a base fact table.
             This aggregate table must be in the same schema as the
@@ -1661,7 +1661,8 @@
                 return levels;
             }
         </Code>
-    </Class>
+    </Element>
+
     <Element type="AggName" class="AggTable">
         <Attribute name="name" required="true">
             <Doc>
@@ -1674,6 +1675,7 @@
             }
         </Code>
     </Element>
+
     <Element type="AggPattern" class="AggTable">
         <Attribute name="pattern" required="true">
             <Doc>
@@ -1721,7 +1723,7 @@
         </Code>
     </Element>
 
-    <Class class="AggColumnName">
+    <Element type="AggColumnName" abstract="true">
         <Attribute name="column" required="true">
             <Doc>
                 The name of the fact count column.
@@ -1732,7 +1734,7 @@
                 return column;
             }
         </Code>
-    </Class>
+    </Element>
 
     <Element type="AggFactCount" class= "AggColumnName"/>
 
@@ -1867,7 +1869,7 @@
         </Code>
     </Element>
 
-    <Class class="ExpressionView" superclass="Expression">
+    <Element type="ExpressionView" class="Expression" abstract="true">
         <Doc>
             A collection of SQL expressions, one per dialect.
         </Doc>
@@ -1919,7 +1921,7 @@
             }
             ]]>
         </Code>
-    </Class>
+    </Element>
 
     <Element type="KeyExpression" class="ExpressionView"/>
     <Element type="ParentExpression" class="ExpressionView"/>

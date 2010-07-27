@@ -392,7 +392,8 @@ public class SchemaPropertyCellEditor
             listEditor.removeActionListener(al);
 
             ComboBoxModel cAccess =
-                new DefaultComboBoxModel(MondrianGuiDef.Grant._access_values);
+                new DefaultComboBoxModel(
+                    MondrianGuiDef.SchemaGrant._access_values);
 
             if (targetClassz == MondrianGuiDef.SchemaGrant.class) {
                 cAccess = new DefaultComboBoxModel(
