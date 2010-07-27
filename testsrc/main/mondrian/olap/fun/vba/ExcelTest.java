@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -86,7 +86,7 @@ public class ExcelTest extends TestCase {
 
     public void testLog10() {
         assertEquals(1.0, Excel.log10(10));
-        assertEquals(-2.0, Excel.log10(.01));
+        assertEquals(-2.0, Excel.log10(.01), 0.00000000000001);
     }
 
     public void testPi() {
