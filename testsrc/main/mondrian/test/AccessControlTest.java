@@ -1330,7 +1330,6 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey]\n"
                 + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman]\n"
                 + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Ann Weyerhaeuser]");
-
         } finally {
             connection.setRole(savedRole);
         }
@@ -2045,7 +2044,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 schema.getSchemaReader().getLevelMembers(topLevel, true);
 
             for (Member member : members) {
-                if (member.getUniqueName().contains("[" + repName + "]")){
+                if (member.getUniqueName().contains("[" + repName + "]")) {
                     foundMember = true;
                     role.grant(member, Access.ALL);
                 }
