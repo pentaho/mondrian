@@ -1194,6 +1194,28 @@ Revision is $Id$
                 sql.cdata = code;
                 selects[selects.length - 1] = sql;
             }
+
+            public boolean equals(Object o) {
+                if (o instanceof View) {
+                    View that = (View) o;
+                    if (!this.alias.equals(that.alias)) {
+                        return false;
+                    }
+                    if (this.selects == null || that.selects == null || this.selects.length != that.selects.length) {
+                        return false;
+                    }
+                    for (int i = 0; i &lt; selects.length; i++) {
+                        if (!Util.equals(this.selects[i].dialect, that.selects[i].dialect)
+                            || !Util.equals(this.selects[i].cdata, that.selects[i].cdata))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
             </Code>
     </Element>
 

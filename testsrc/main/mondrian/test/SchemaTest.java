@@ -1296,6 +1296,71 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests a cube whose fact table is a &lt;View&gt; element as well as a degenerate dimension.
+     */
+    public void testViewDegenerateDims() {
+        TestContext testContext = TestContext.create(
+            null,
+
+            // Warehouse cube where the default member in the Warehouse
+            // dimension is USA.
+            "<Cube name=\"Warehouse (based on view)\">\n"
+            + "  <View alias=\"FACT\">\n"
+            + "    <SQL dialect=\"generic\">\n"
+            + "     <![CDATA[select * from \"inventory_fact_1997\" as \"FOOBAR\"]]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect=\"oracle\">\n"
+            + "     <![CDATA[select * from \"inventory_fact_1997\" \"FOOBAR\"]]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect=\"mysql\">\n"
+            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect=\"infobright\">\n"
+            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "  </View>\n"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "  <Dimension name=\"Warehouse\">\n"
+            + "    <Hierarchy hasAll=\"true\"> \n"
+            + "      <View alias=\"FACT\">\n"
+            + "        <SQL dialect=\"generic\">\n"
+            + "         <![CDATA[select * from \"inventory_fact_1997\" as \"FOOBAR\"]]>\n"
+            + "        </SQL>\n"
+            + "        <SQL dialect=\"oracle\">\n"
+            + "         <![CDATA[select * from \"inventory_fact_1997\" \"FOOBAR\"]]>\n"
+            + "        </SQL>\n"
+            + "        <SQL dialect=\"mysql\">\n"
+            + "         <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "        </SQL>\n"
+            + "        <SQL dialect=\"infobright\">\n"
+            + "         <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "        </SQL>\n"
+            + "      </View>\n"
+            + "      <Level name=\"Warehouse ID\" column=\"warehouse_id\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n"
+            + "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n"
+            + "</Cube>", null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select\n"
+            + " NON EMPTY {[Time].[1997], [Time].[1997].[Q3]} on columns,\n"
+            + " NON EMPTY {[Store].[USA].Children} on rows\n"
+            + "From [Warehouse (based on view)]\n"
+            + "where [Warehouse].[2]",
+            "Axis #0:\n"
+            + "{[Warehouse].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "Row #0: 917.554\n");
+    }
+
+    /**
      * Tests a cube whose fact table is a &lt;View&gt; element.
      */
     public void testViewFactTable() {
