@@ -1296,7 +1296,8 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests a cube whose fact table is a &lt;View&gt; element as well as a degenerate dimension.
+     * Tests a cube whose fact table is a &lt;View&gt; element as well as a
+     * degenerate dimension.
      */
     public void testViewDegenerateDims() {
         TestContext testContext = TestContext.create(
