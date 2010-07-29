@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 public class RolapCubeDimension extends RolapDimension {

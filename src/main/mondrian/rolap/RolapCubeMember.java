@@ -25,7 +25,7 @@ import mondrian.util.Bug;
  * reference the wrapped Member.  Methods that only contain calls to other
  * methods do not need wrapped.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 public class RolapCubeMember

@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde and others.
+// Copyright (C) 2006-2010 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // Global style-sheet for mondrian project.
 */
 
-/* http://mondrian.pentaho.org/css/styles.css */
+/* http://mondrian.pentaho.com/css/styles.css */
 #mtm_wrap {
     border:1px solid black;
     width:642px;
@@ -70,7 +70,7 @@ table.items tr.item td {
 }
 
 
-/* http://mondrian.pentaho.org/css/primary.css */
+/* http://mondrian.pentaho.com/css/primary.css */
 
 .bodyMain {
 	background-color: #ededed;
@@ -571,7 +571,7 @@ p {
 	PADDING-RIGHT: 0px; 
 	DISPLAY: block; 
 	PADDING-LEFT: 0px; 
-	BACKGROUND: url(http://www.pentaho.org/images/stories/images/btn_download.gif) no-repeat 0px 0px; 
+	BACKGROUND: url(http://www.pentaho.com/images/stories/images/btn_download.gif) no-repeat 0px 0px; 
 	PADDING-BOTTOM: 8px; 
 	FONT: bold 13px sans-serif; 
 	WIDTH: 228px; 
@@ -628,7 +628,7 @@ dfn {
 
 
 
-/* http://mondrian.pentaho.org/css/transmenu.css */
+/* http://mondrian.pentaho.com/css/transmenu.css */
 
 
 /* this is the clipping region for the menu. it's width and height get set by script, depending on the size of the items table */

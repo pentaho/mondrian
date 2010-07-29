@@ -19,7 +19,7 @@
         <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
         <repository name="pentaho-repository" url="http://repo.pentaho.org/artifactory"/>
-        <description homepage="http://mondrian.pentaho.org">
+        <description homepage="http://mondrian.pentaho.com">
             Mondrian is an OLAP (online analytical processing) engine written
             in Java. It reads from JDBC data sources, aggregates data in a
             memory cache, and implements the MDX language and the olap4j and

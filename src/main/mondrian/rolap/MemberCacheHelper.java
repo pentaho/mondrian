@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Encapsulation of member caching.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 public class MemberCacheHelper implements MemberCache {

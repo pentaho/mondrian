@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Converts documentation from Mondrian's source format to Pentaho's web site.
 #
 # The file structure looks like this:
@@ -56,6 +56,7 @@ doImg() {
 ROOT=$(cd $(dirname $0); pwd -P)
 cd $ROOT
 
+site=changeme@mondrian.pentaho.com
 javadoc=true
 deploy=true
 scp=true
@@ -80,8 +81,8 @@ if $headJavadoc; then
   rm -rf headapi
   mv api headapi
   tar -cvz -f headJavadoc.tar.gz headapi
-  scp -oConnectTimeout=300 headJavadoc.tar.gz mondrian@mondrian.pentaho.org:httpdocs
-  ssh -oConnectTimeout=300 mondrian@mondrian.pentaho.org <<EOF
+  scp -oConnectTimeout=300 headJavadoc.tar.gz ${site}:httpdocs
+  ssh -oConnectTimeout=300 ${site} <<EOF
     cd httpdocs
     tar xvfz headJavadoc.tar.gz
 
@@ -139,11 +140,11 @@ tar -cvz -f mondrianPentaho.tar.gz content images api
 
 # Copy file to server, and deploy.
 if $scp; then
-  scp -oConnectTimeout=300 mondrianPentaho.tar.gz mondrian@mondrian.pentaho.org:httpdocs
+  scp -oConnectTimeout=300 mondrianPentaho.tar.gz ${site}:httpdocs
 fi
 
 if $deploy; then
-  ssh -oConnectTimeout=300 mondrian@mondrian.pentaho.org <<EOF
+  ssh -oConnectTimeout=300 ${site} <<EOF
     cd httpdocs
     tar xvfz mondrianPentaho.tar.gz
 
@@ -178,4 +179,3 @@ EOF
 fi
 
 # End doc2web.sh
-

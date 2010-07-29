@@ -6521,7 +6521,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     /**
      * Tests various ways to sum the properties of the descendants of a member,
      * inspired by forum post
-     * <a href="http://forums.pentaho.org/showthread.php?p=177135">summing
+     * <a href="http://forums.pentaho.com/showthread.php?p=177135">summing
      * properties</a>.
      */
     public void testSummingProperties() {
@@ -6742,7 +6742,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * Testcase for Pentaho bug
-     * <a href="http://jira.pentaho.org/browse/BISERVER-1323">BISERVER-1323</a>,
+     * <a href="http://jira.pentaho.com/browse/BISERVER-1323">BISERVER-1323</a>,
      * empty SQL query generated when crossjoining more than two sets each
      * containing just the 'all' member.
      */

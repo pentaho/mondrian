@@ -21,7 +21,7 @@ import mondrian.olap.*;
  * <p>A minor extension to {@link mondrian.rolap.RolapCubeMember} because the
  * naming rules are different.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 class RolapAllCubeMember
