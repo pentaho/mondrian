@@ -125,6 +125,21 @@ public class Format {
         new HashMap<String, FormatLocale>();
 
     /**
+     * Maps macro token names with their related object. Used
+     * to fast-resolve a macro token without iterating.
+     */
+    private static final Map<String, MacroToken> macroTokenMap =
+        new HashMap<String, MacroToken>();
+
+    /**
+     * Cache of parsed format strings and their thousand separator
+     * tokens length. Used so we don't have to tokenize a format string
+     * over and over again.
+     */
+    private static final Map<String, ArrayStack<Integer>>
+        thousandSeparatorTokenMap = new HashMap<String, ArrayStack<Integer>>();
+
+    /**
      * Locale for US English, also the default for English and for all
      * locales.
      */
@@ -217,31 +232,31 @@ public class Format {
             this.code = code;
         }
 
-        void formatNull(StringBuilder buf) {
+        void formatNull(StringBuilder buf, String formatString) {
             // SSAS formats null values as the empty string. However, SQL Server
             // Management Studio's pivot table formats them as "(null)", so many
             // people believe that this is the server's behavior.
         }
 
-        void format(double d, StringBuilder buf) {
+        void format(double d, StringBuilder buf, String formatString) {
             throw new Error();
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             throw new Error();
         }
 
-        void format(String s, StringBuilder buf) {
+        void format(String s, StringBuilder buf, String formatString) {
             throw new Error();
         }
 
-        void format(Date date, StringBuilder buf) {
+        void format(Date date, StringBuilder buf, String formatString) {
             Calendar calendar = Calendar.getInstance(); // todo: use locale
             calendar.setTime(date);
-            format(calendar, buf);
+            format(calendar, buf, formatString);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
             throw new Error();
         }
 
@@ -299,15 +314,15 @@ public class Format {
             assert formats.length >= 1;
         }
 
-        void formatNull(StringBuilder buf) {
+        void formatNull(StringBuilder buf, String formatString) {
             if (formats.length >= 4) {
-                formats[3].format(0, buf);
+                formats[3].format(0, buf, formatString);
             } else {
-                super.formatNull(buf);
+                super.formatNull(buf, formatString);
             }
         }
 
-        void format(double n, StringBuilder buf) {
+        void format(double n, StringBuilder buf, String formatString) {
             if (formats.length == 0) {
                 buf.append(n);
             } else {
@@ -353,7 +368,7 @@ public class Format {
                                 int size = buf.length();
                                 buf.append('-');
                                 n = -n;
-                                formats[i].format(n, buf);
+                                formats[i].format(n, buf, formatString);
                                 if (buf.substring(size, size + 2).equals(
                                     "-|"))
                                 {
@@ -371,11 +386,11 @@ public class Format {
                 } else {
                     i = 0;
                 }
-                formats[i].format(n, buf);
+                formats[i].format(n, buf, formatString);
             }
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             if (formats.length == 0) {
                 buf.append(n);
             } else {
@@ -421,7 +436,7 @@ public class Format {
                                 final int size = buf.length();
                                 buf.append('-');
                                 n = -n;
-                                formats[i].format(n, buf);
+                                formats[i].format(n, buf, formatString);
                                 if (buf.substring(size, size + 2).equals(
                                     "-|"))
                                 {
@@ -439,20 +454,20 @@ public class Format {
                 } else {
                     i = 0;
                 }
-                formats[i].format(n, buf);
+                formats[i].format(n, buf, formatString);
             }
         }
 
-        void format(String s, StringBuilder buf) {
-            formats[0].format(s, buf);
+        void format(String s, StringBuilder buf, String formatString) {
+            formats[0].format(s, buf, formatString);
         }
 
-        void format(Date date, StringBuilder buf) {
-            formats[0].format(date, buf);
+        void format(Date date, StringBuilder buf, String formatString) {
+            formats[0].format(date, buf, formatString);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
-            formats[0].format(calendar, buf);
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
+            formats[0].format(calendar, buf, formatString);
         }
     }
 
@@ -477,23 +492,23 @@ public class Format {
             this.s = s;
         }
 
-        void format(double d, StringBuilder buf) {
+        void format(double d, StringBuilder buf, String formatString) {
             buf.append(s);
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             buf.append(s);
         }
 
-        void format(String str, StringBuilder buf) {
+        void format(String str, StringBuilder buf, String formatString) {
             buf.append(s);
         }
 
-        void format(Date date, StringBuilder buf) {
+        void format(Date date, StringBuilder buf, String formatString) {
             buf.append(s);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
             buf.append(s);
         }
     }
@@ -514,33 +529,33 @@ public class Format {
             assert formats.length >= 2;
         }
 
-        void format(double v, StringBuilder buf) {
+        void format(double v, StringBuilder buf, String formatString) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, buf);
+                formats[i].format(v, buf, formatString);
             }
         }
 
-        void format(long v, StringBuilder buf) {
+        void format(long v, StringBuilder buf, String formatString) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, buf);
+                formats[i].format(v, buf, formatString);
             }
         }
 
-        void format(String v, StringBuilder buf) {
+        void format(String v, StringBuilder buf, String formatString) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, buf);
+                formats[i].format(v, buf, formatString);
             }
         }
 
-        void format(Date v, StringBuilder buf) {
+        void format(Date v, StringBuilder buf, String formatString) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, buf);
+                formats[i].format(v, buf, formatString);
             }
         }
 
-        void format(Calendar v, StringBuilder buf) {
+        void format(Calendar v, StringBuilder buf, String formatString) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, buf);
+                formats[i].format(v, buf, formatString);
             }
         }
 
@@ -574,23 +589,23 @@ public class Format {
         // No need to override format(Object,PrintWriter) or
         // format(Date,PrintWriter).
 
-        void format(double d, StringBuilder buf) {
+        void format(double d, StringBuilder buf, String formatString) {
             // NOTE (jhyde, 2006/12/1): We'd use
             // NumberFormat(double,StringBuilder,FieldPosition) if it existed.
             buf.append(numberFormat.format(d));
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             // NOTE (jhyde, 2006/12/1): We'd use
             // NumberFormat(long,StringBuilder,FieldPosition) if it existed.
             buf.append(numberFormat.format(n));
         }
 
-        void format(String s, StringBuilder buf) {
+        void format(String s, StringBuilder buf, String formatString) {
             buf.append(s);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
             // NOTE (jhyde, 2006/12/1): We'd use
             // NumberFormat(Date,StringBuilder,FieldPosition) if it existed.
             buf.append(dateFormat.format(calendar.getTime()));
@@ -612,19 +627,19 @@ public class Format {
             this.token = token;
         }
 
-        void format(double d, StringBuilder buf) {
+        void format(double d, StringBuilder buf, String formatString) {
             buf.append(token);
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             buf.append(token);
         }
 
-        void format(String s, StringBuilder buf) {
+        void format(String s, StringBuilder buf, String formatString) {
             buf.append(token);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
             buf.append(token);
         }
     }
@@ -700,7 +715,7 @@ public class Format {
             this.decimalShift = 0; // set later
         }
 
-        void format(double n, StringBuilder buf)
+        void format(double n, StringBuilder buf, String formatString)
         {
             FloatingDecimal fd = new FloatingDecimal(n);
             fd.shift(decimalShift);
@@ -720,7 +735,9 @@ public class Format {
                 expSign,
                 zeroesRightOfExp,
                 useThouSep ? locale.thousandSeparator : '\0',
-                useDecimal);
+                useDecimal,
+                formatString,
+                locale);
             buf.append(s);
         }
 
@@ -752,7 +769,7 @@ public class Format {
             return false;
         }
 
-        void format(long n, StringBuilder buf)
+        void format(long n, StringBuilder buf, String formatString)
         {
             mondrian.util.Format.FloatingDecimal fd =
                 new mondrian.util.Format.FloatingDecimal(n);
@@ -766,7 +783,9 @@ public class Format {
                 expSign,
                 zeroesRightOfExp,
                 useThouSep ? locale.thousandSeparator : '\0',
-                useDecimal);
+                useDecimal,
+                formatString,
+                locale);
             buf.append(s);
         }
     }
@@ -801,12 +820,16 @@ public class Format {
             this.twelveHourClock = twelveHourClock;
         }
 
-        void format(Calendar calendar, StringBuilder buf)
+        void format(Calendar calendar, StringBuilder buf, String formatString)
         {
-            format(code, calendar, buf);
+            format(code, calendar, buf, formatString);
         }
 
-        private void format(int code, Calendar calendar, StringBuilder buf)
+        private void format(
+            int code,
+            Calendar calendar,
+            StringBuilder buf,
+            String formatString)
         {
             switch (code) {
             case FORMAT_C:
@@ -819,13 +842,13 @@ public class Format {
                     &&  calendar.get(Calendar.MINUTE) == 0
                     && calendar.get(Calendar.HOUR) == 0);
                 if (dateSet) {
-                    format(FORMAT_DDDDD, calendar, buf);
+                    format(FORMAT_DDDDD, calendar, buf, formatString);
                 }
                 if (dateSet && timeSet) {
                     buf.append(' ');
                 }
                 if (timeSet) {
-                    format(FORMAT_TTTTT, calendar, buf);
+                    format(FORMAT_TTTTT, calendar, buf, formatString);
                 }
                 break;
             }
@@ -861,20 +884,20 @@ public class Format {
                 // Officially, we should use the system's short date
                 // format. But for now, we always print using the default
                 // format, m/d/yy.
-                format(FORMAT_M, calendar, buf);
+                format(FORMAT_M, calendar, buf, formatString);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_D, calendar, buf);
+                format(FORMAT_D, calendar, buf, formatString);
                 buf.append(locale.dateSeparator);
-                format(FORMAT_YY, calendar, buf);
+                format(FORMAT_YY, calendar, buf, formatString);
                 break;
             }
             case FORMAT_DDDDDD:
             {
-                format(FORMAT_MMMM_UPPER, calendar, buf);
+                format(FORMAT_MMMM_UPPER, calendar, buf, formatString);
                 buf.append(" ");
-                format(FORMAT_DD, calendar, buf);
+                format(FORMAT_DD, calendar, buf, formatString);
                 buf.append(", ");
-                format(FORMAT_YYYY, calendar, buf);
+                format(FORMAT_YYYY, calendar, buf, formatString);
                 break;
             }
             case FORMAT_W:
@@ -998,11 +1021,11 @@ public class Format {
             {
                 // Officially, we should use the system's time format. But
                 // for now, we always print using the default format, h:mm:ss.
-                format(FORMAT_H, calendar, buf);
+                format(FORMAT_H, calendar, buf, formatString);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_NN, calendar, buf);
+                format(FORMAT_NN, calendar, buf, formatString);
                 buf.append(locale.timeSeparator);
-                format(FORMAT_SS, calendar, buf);
+                format(FORMAT_SS, calendar, buf, formatString);
                 break;
             }
             case FORMAT_AMPM:
@@ -1132,7 +1155,7 @@ public class Format {
         }
 
         @Override
-        void format(String s, StringBuilder buf) {
+        void format(String s, StringBuilder buf, String formatString) {
             switch (stringCase) {
             case UPPER:
                 s = s.toUpperCase();
@@ -1144,19 +1167,19 @@ public class Format {
             buf.append(s);
         }
 
-        void format(double d, StringBuilder buf) {
+        void format(double d, StringBuilder buf, String formatString) {
             buf.append(literal);
         }
 
-        void format(long n, StringBuilder buf) {
+        void format(long n, StringBuilder buf, String formatString) {
             buf.append(literal);
         }
 
-        void format(Date date, StringBuilder buf) {
+        void format(Date date, StringBuilder buf, String formatString) {
             buf.append(literal);
         }
 
-        void format(Calendar calendar, StringBuilder buf) {
+        void format(Calendar calendar, StringBuilder buf, String formatString) {
             buf.append(literal);
         }
     }
@@ -1747,6 +1770,7 @@ public class Format {
             this.name = name;
             this.translation = translation;
             this.description = description;
+            macroTokenMap.put(name, this);
         }
     }
 
@@ -2135,23 +2159,21 @@ public class Format {
         // todo: Parse the string for ;s
 
         // Look for the format string in the table of named formats.
-        for (int i = 0; i < macroTokens.length; i++) {
-            if (formatString.equals(macroTokens[i].name)) {
-                if (macroTokens[i].translation == null) {
-                    // this macro requires special-case code
-                    if (macroTokens[i].name.equals("Currency")) {
-                        // e.g. "$#,##0.00;($#,##0.00)"
-                        formatString = locale.currencyFormat
-                                       + ";("  + locale.currencyFormat + ")";
-                    } else {
-                        throw new Error(
-                            "Format: internal: token " + macroTokens[i].name
-                            + " should have translation");
-                    }
+        if (macroTokenMap.containsKey(formatString)) {
+            MacroToken macroToken = macroTokenMap.get(formatString);
+            if (macroToken.translation == null) {
+                // this macro requires special-case code
+                if (macroToken.name.equals("Currency")) {
+                    // e.g. "$#,##0.00;($#,##0.00)"
+                    formatString = locale.currencyFormat
+                                   + ";("  + locale.currencyFormat + ")";
                 } else {
-                    formatString = macroTokens[i].translation;
+                    throw new Error(
+                        "Format: internal: token " + macroToken.name
+                        + " should have translation");
                 }
-                break;
+            } else {
+                formatString = macroToken.translation;
             }
         }
 
@@ -2555,32 +2577,34 @@ public class Format {
 
     private StringBuilder format(Object o, StringBuilder buf) {
         if (o == null) {
-            format.formatNull(buf);
+            format.formatNull(buf, formatString);
         } else {
             // For final classes, it is more efficient to switch using
             // class equality than using 'instanceof'.
             Class<? extends Object> clazz = o.getClass();
             if (clazz == Double.class) {
-                format.format((Double) o, buf);
+                format.format((Double) o, buf, formatString);
             } else if (clazz == Float.class) {
-                format.format((Float) o, buf);
+                format.format((Float) o, buf, formatString);
             } else if (clazz == Integer.class) {
-                format.format((Integer) o, buf);
+                format.format((Integer) o, buf, formatString);
             } else if (clazz == Long.class) {
-                format.format((Long) o, buf);
+                format.format((Long) o, buf, formatString);
             } else if (clazz == Short.class) {
-                format.format((Short) o, buf);
+                format.format((Short) o, buf, formatString);
             } else if (clazz == Byte.class) {
-                format.format((Byte) o, buf);
+                format.format((Byte) o, buf, formatString);
             } else if (o instanceof BigDecimal) {
-                format.format(((BigDecimal) o).doubleValue(), buf);
+                format.format(
+                    ((BigDecimal) o).doubleValue(), buf, formatString);
             } else if (o instanceof BigInteger) {
-                format.format(((BigInteger) o).longValue(), buf);
+                format.format(
+                    ((BigInteger) o).longValue(), buf, formatString);
             } else if (clazz == String.class) {
-                format.format((String) o, buf);
+                format.format((String) o, buf, formatString);
             } else if (o instanceof java.util.Date) {
                 // includes java.sql.Date, java.sql.Time and java.sql.Timestamp
-                format.format((Date) o, buf);
+                format.format((Date) o, buf, formatString);
             } else {
                 buf.append(o.toString());
             }
@@ -3542,7 +3566,9 @@ static class FloatingDecimal {
         boolean expSign, // whether to print '+' if exp is positive
         int minExpDigits, // minimum digits in exponent
         char thousandChar, // ',' or '.', or 0
-        boolean useDecimal)
+        boolean useDecimal,
+        String formatString,
+        FormatLocale locale)
     {
         // char result[] = new char[nDigits + 10]; // crashes for 1.000.000,00
         // the result length does *not* depend from nDigits
@@ -3556,7 +3582,7 @@ static class FloatingDecimal {
         int i = toJavaFormatString(
             result, 0, minDigitsLeftOfDecimal, decimalChar,
             minDigitsRightOfDecimal, maxDigitsRightOfDecimal, expChar, expSign,
-            minExpDigits, thousandChar, useDecimal);
+            minExpDigits, thousandChar, useDecimal, formatString, locale);
         return new String(result, 0, i);
     }
 
@@ -3572,7 +3598,9 @@ static class FloatingDecimal {
         boolean expSign, // whether to print '+' if exp is positive
         int minExpDigits, // minimum digits in exponent
         char thousandChar, // ',' or '.' or 0
-        boolean useDecimal)
+        boolean useDecimal,
+        String formatString,
+        FormatLocale locale)
     {
         if (isNegative) {
             result[i++] = '-';
@@ -3672,17 +3700,114 @@ static class FloatingDecimal {
                 lastDigitToPrint = wholeDigits + minDigitsRightOfDecimal;
             }
 
-            // Now print the number.
-            for (int j = firstDigitToPrint; j < wholeDigits; j++) {
-                if (thousandChar != '\0'
-                    && (wholeDigits - j) % 3 == 0
-                    && j > firstDigitToPrint
-                    && j < wholeDigits - 1)
-                {
-                    result[i++] = thousandChar;
+            // Check if we're dealing with a format macro token rather than
+            // an actual format string.
+            if (macroTokenMap.containsKey(formatString)) {
+                MacroToken macroToken = macroTokenMap.get(formatString);
+                if (macroToken.name.equals("Currency")) {
+                    formatString = locale.currencyFormat
+                        + ";("  + locale.currencyFormat + ")";
+                } else {
+                    formatString = macroToken.translation;
                 }
-                result[i++] = digits2[j];
             }
+
+            if (thousandChar != '\0'
+                    && formatString != null
+                    && formatString.contains(tokens[FORMAT_THOUSEP].token))
+            {
+                final ArrayStack<Integer> cachedFormatTokens;
+                if (thousandSeparatorTokenMap.containsKey(formatString)) {
+                    cachedFormatTokens =
+                        thousandSeparatorTokenMap.get(formatString);
+                } else {
+                    // To provide backwards compatibility, we apply the old
+                    // formatting rules if there are less than 2 thousand
+                    // separators in the format string.
+                    if (countOccurrences(
+                        formatString,
+                        tokens[FORMAT_THOUSEP].token.charAt(0)) > 1)
+                    {
+                        // Extract the whole part of the format string
+                        final int decimalPos =
+                            formatString.indexOf(tokens[FORMAT_DECIMAL].token);
+                        final int endIndex =
+                            decimalPos == -1
+                            ? formatString.length()
+                                    : decimalPos;
+                            final String wholeFormat =
+                                formatString.substring(0, endIndex);
+
+                            // Tokenize it so we can analyze it's structure
+                            final StringTokenizer st =
+                                new StringTokenizer(
+                                    wholeFormat,
+                                    String.valueOf(
+                                        tokens[FORMAT_THOUSEP].token));
+
+                            // We ignore the first token.
+                            // ie: #,###,###
+                            st.nextToken();
+
+                            // Now we build a list of the token lenghts in
+                            // reverse order. The last one in the reversed
+                            // list will be re-applied if the number is
+                            // longer than the format string.
+                            cachedFormatTokens = new ArrayStack<Integer>();
+                            while (st.hasMoreTokens()) {
+                                cachedFormatTokens.push(
+                                    st.nextToken().length());
+                            }
+                    } else {
+                        // Use old style formatting.
+                        cachedFormatTokens = new ArrayStack<Integer>();
+                        cachedFormatTokens.add(3);
+                    }
+                    thousandSeparatorTokenMap.put(
+                        formatString, cachedFormatTokens);
+                }
+
+                // Defensive copy
+                ArrayStack<Integer> formatTokens = new ArrayStack<Integer>();
+                formatTokens.addAll(cachedFormatTokens);
+
+                // Now print the number. That will happen backwards, so we
+                // store it temporarely and then invert.
+                ArrayStack<Character> formatedWholeDigits =
+                    new ArrayStack<Character>();
+                // We need to keep track of how many digits we printed in the
+                // current token.
+                int nbInserted = 0;
+                for (int j = wholeDigits - 1; j >= firstDigitToPrint; j--) {
+                    // Check if we need to insert another thousand separator
+                    if (nbInserted % formatTokens.peek() == 0
+                        && nbInserted > 0)
+                    {
+                        formatedWholeDigits.push(thousandChar);
+                        nbInserted = 0;
+                        // The last format token is kept because we re-apply it
+                        // until the end of the digits.
+                        if (formatTokens.size() > 1) {
+                            formatTokens.pop();
+                        }
+                    }
+                    // Insert the next digit.
+                    formatedWholeDigits.push(digits2[j]);
+                    nbInserted++;
+                }
+                // We're done. Invert the print out and add it to
+                // the result array.
+                while (formatedWholeDigits.size() > 0) {
+                    result[i++] = formatedWholeDigits.pop();
+                }
+            } else {
+                // There are no thousand separators. Just put the
+                // digits in the results array.
+                for (int j = firstDigitToPrint; j < wholeDigits; j++) {
+                    result[i++] = digits2[j];
+                }
+            }
+
             if (wholeDigits < lastDigitToPrint
                 || (useDecimal
                     && wholeDigits == lastDigitToPrint))
@@ -3701,7 +3826,7 @@ static class FloatingDecimal {
             i = toJavaFormatString(
                 result, i, minDigitsLeftOfDecimal, decimalChar,
                 minDigitsRightOfDecimal, maxDigitsRightOfDecimal, (char) 0,
-                false, minExpDigits, '\0', useDecimal);
+                false, minExpDigits, '\0', useDecimal, formatString, locale);
             decExponent = oldExp;
             isNegative = oldIsNegative;
 
@@ -3738,6 +3863,17 @@ static class FloatingDecimal {
             }
         }
         return i;
+    }
+
+    public static int countOccurrences(final String s, final char c) {
+        final char[] chars = s.toCharArray();
+        int count = 0;
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == c) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static final int small5pow[] = {
