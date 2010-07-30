@@ -217,9 +217,9 @@ public class Format {
      *
      * The base implementation of most of these methods throws an error, there
      * is no requirement that a derived class implements all of these methods.
-     * It is up to {@link Format#parseFormatString} to ensure that, for example,
-     * the {@link #format(double,StringBuilder)} method is never called for
-     * {@link DateFormat}.
+     * It is up to {@link Format#parseFormatString} to ensure that, for
+     * example, the {@link #format(double,StringBuilder,String)} method is
+     * never called for {@link DateFormat}.
      */
     static class BasicFormat {
         int code;
@@ -794,8 +794,8 @@ public class Format {
      * DateFormat is an element of a {@link Format.CompoundFormat} which has a
      * value when applied to a {@link Calendar} object.  (Values of type {@link
      * Date} are automatically converted into {@link Calendar}s when you call
-     * {@link Format.BasicFormat#format(java.util.Date,StringBuilder)} calls to format
-     * other kinds of values give a runtime error.)
+     * {@link Format.BasicFormat#format(Date, StringBuilder, String)} calls
+     * to format other kinds of values give a runtime error.)
      *
      * <p>In a typical use of this class, a format string such as "m/d/yy" is
      * parsed into DateFormat objects for "m", "d", and "yy", and {@link
