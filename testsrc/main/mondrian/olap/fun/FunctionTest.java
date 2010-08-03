@@ -4957,48 +4957,6 @@ public class FunctionTest extends FoodMartTestCase {
             "1,234.50");
     }
 
-    public void testFormatThousands() {
-        assertExprReturns(
-                "Format(123456.7, \"######.00\")",
-                "123456.70");
-        assertExprReturns(
-                "Format(123456, \"######\")",
-                "123456");
-        assertExprReturns(
-            "Format(123456.7, \"#,##,###.00\")",
-            "1,23,456.70");
-        assertExprReturns(
-                "Format(123456.7, \"#,##,###\")",
-                "1,23,457");
-        assertExprReturns(
-                "Format(9123456.7, \"#,#.00\")",
-                "9,123,456.70");
-        assertExprReturns(
-                "Format(123456.7, \"#,#\")",
-                "123,457");
-        assertExprReturns(
-                "Format(123456789.1, \"#,#\")",
-                "123,456,789");
-        assertExprReturns(
-                "Format(123456.7, \"################,#\")",
-                "123,457");
-        assertExprReturns(
-                "Format(123456.7, \"################,#\")",
-                "123,457");
-        assertExprReturns(
-                "Format(123456.7, \"####,#############\")",
-                "123,457");
-        assertExprReturns(
-                "Format(0.02, \"#,###.000\")",
-                ".020");
-        assertExprReturns(
-                "Format(0.02, \"#,##0.000\")",
-                "0.020");
-        assertExprReturns(
-                "Format(123456789123, \"#,##,#,##,#,##,#,##\")",
-                "1,23,4,56,7,89,1,23");
-    }
-
     public void testFormatMember() {
         assertExprReturns(
             "Format([Store].[USA].[CA], \"#,#\" || \"#0.00\")",

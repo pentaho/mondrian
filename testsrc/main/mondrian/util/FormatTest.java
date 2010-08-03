@@ -655,6 +655,74 @@ public class FormatTest extends TestCase {
         // spec and SSAS 2005 disagree
         checkFormat(null, string, "\"fixed\"", "fixed");
     }
+
+    public void testFormatThousands() {
+        checkFormat(
+            null,
+            123456.7,
+            "######.00",
+            "123456.70");
+        checkFormat(
+            null,
+            123456,
+            "######",
+            "123456");
+        checkFormat(
+            null,
+            123456.7,
+            "#,##,###.00",
+            "1,23,456.70");
+        checkFormat(
+            null,
+            123456.7,
+            "#,##,###",
+            "1,23,457");
+        checkFormat(
+            null,
+            9123456.7,
+            "#,#.00",
+            "9,123,456.70");
+        checkFormat(
+            null,
+            123456.7,
+            "#,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456789.1,
+            "#,#",
+            "123,456,789");
+        checkFormat(
+            null,
+            123456.7,
+            "##################,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456.7,
+            "#################,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456.7,
+            "###,################",
+            "123,457");
+        checkFormat(
+            null,
+            0.02,
+            "#,###.000",
+            ".020");
+        checkFormat(
+            null,
+            0.02,
+            "#,##0.000",
+            "0.020");
+        checkFormat(
+            null,
+            123456789123l,
+            "#,##,#,##,#,##,#,##",
+            "1,23,4,56,7,89,1,23");
+    }
 }
 
 // End FormatTest.java

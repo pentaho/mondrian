@@ -26,6 +26,22 @@ import java.util.EmptyStackException;
  */
 public class ArrayStack<E> extends ArrayList<E> {
     /**
+     * Default constructor.
+     */
+    public ArrayStack() {
+        super();
+    }
+
+    /**
+     * Copy Constructor
+     * @param toCopy Instance of {@link ArrayStack} to copy.
+     */
+    public ArrayStack(ArrayStack<E> toCopy) {
+        super();
+        this.addAll(toCopy);
+    }
+
+    /**
      * Analogous to {@link java.util.Stack#push}.
      */
     public E push(E item) {
