@@ -10,6 +10,7 @@ package mondrian.rolap;
 
 import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -974,6 +975,73 @@ public class FilterTest extends BatchTestCase {
             + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
             + "Row #0: 22,478\n"
             + "Row #1: 20,319\n");
+    }
+
+    /**
+     * Tests the bug MONDRIAN-779. The {@link MemberListCrossJoinArg}
+     * was not considering the 'exclude' attribute in its hash code.
+     * This resulted in two filters being chained within two different
+     * named sets to register a cache element with the same key, even
+     * though they were the different because of the added "NOT" keyword.
+     */
+    public void testBug779() {
+        final String query1 =
+            "With Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))' Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,(Ancestor([Product].CurrentMember, [Product].[Product Family]) In {[Product].[Drink],[Product].[Food]}) AND ([Product].CurrentMember In {[Product].[Drink].[Dairy]}))' Select [Measures].[Unit Sales] on columns, [*NATIVE_CJ_SET] on rows From [Sales]";
+        final String query2 =
+            "With Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))' Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,(Ancestor([Product].CurrentMember, [Product].[Product Family]) In {[Product].[Drink],[Product].[Food]}) AND ([Product].CurrentMember Not In {[Product].[Drink].[Dairy]}))' Select [Measures].[Unit Sales] on columns, [*NATIVE_CJ_SET] on rows From [Sales]";
+
+        final String expectedResult1 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Dairy]}\n"
+            + "Row #0: 4,186\n";
+
+        final String expectedResult2 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Food].[Baked Goods]}\n"
+            + "{[Product].[Food].[Baking Goods]}\n"
+            + "{[Product].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[Food].[Canned Foods]}\n"
+            + "{[Product].[Food].[Canned Products]}\n"
+            + "{[Product].[Food].[Dairy]}\n"
+            + "{[Product].[Food].[Deli]}\n"
+            + "{[Product].[Food].[Eggs]}\n"
+            + "{[Product].[Food].[Frozen Foods]}\n"
+            + "{[Product].[Food].[Meat]}\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Seafood]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "{[Product].[Food].[Snacks]}\n"
+            + "{[Product].[Food].[Starchy Foods]}\n"
+            + "Row #0: 6,838\n"
+            + "Row #1: 13,573\n"
+            + "Row #2: 7,870\n"
+            + "Row #3: 20,245\n"
+            + "Row #4: 3,317\n"
+            + "Row #5: 19,026\n"
+            + "Row #6: 1,812\n"
+            + "Row #7: 12,885\n"
+            + "Row #8: 12,037\n"
+            + "Row #9: 4,132\n"
+            + "Row #10: 26,655\n"
+            + "Row #11: 1,714\n"
+            + "Row #12: 37,792\n"
+            + "Row #13: 1,764\n"
+            + "Row #14: 30,545\n"
+            + "Row #15: 6,884\n"
+            + "Row #16: 5,262\n";
+
+        assertQueryReturns(query1, expectedResult1);
+        assertQueryReturns(query2, expectedResult2);
     }
 }
 

@@ -261,6 +261,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         if (restrictMemberTypes) {
             c += 1;
         }
+        if (exclude) {
+            c += 7;
+        }
         return c;
     }
 
@@ -270,6 +273,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         }
         MemberListCrossJoinArg that = (MemberListCrossJoinArg) obj;
         if (this.restrictMemberTypes != that.restrictMemberTypes) {
+            return false;
+        }
+        if (this.exclude != that.exclude) {
             return false;
         }
         for (int i = 0; i < members.size(); i++) {
