@@ -12,9 +12,7 @@ package mondrian.olap4j;
 import mondrian.olap.MondrianServer;
 import mondrian.xmla.XmlaUtil;
 
-import org.olap4j.OlapDatabaseMetaData;
-import org.olap4j.OlapException;
-import org.olap4j.OlapConnection;
+import org.olap4j.*;
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.*;
@@ -925,6 +923,14 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     // implement OlapDatabaseMetaData
+
+    public Set<CellSetListener.Granularity>
+    getSupportedCellSetListenerGranularities()
+        throws OlapException
+    {
+        // Cell set listener API not supported in this version of mondrian.
+        return Collections.emptySet();
+    }
 
     public ResultSet getActions(
         String catalog,

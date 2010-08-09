@@ -2313,7 +2313,7 @@ public class FunUtil extends Util {
                 @Override
                 public void memberComplete() {
                     members[0] = resolveMember(hierarchyList.get(0));
-                    nameList.clear();
+                    segmentList.clear();
                 }
             };
         return IdentifierParser.parseMember(builder, string, i);

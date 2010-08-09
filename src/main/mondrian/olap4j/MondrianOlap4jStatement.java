@@ -333,6 +333,14 @@ class MondrianOlap4jStatement implements OlapStatement {
         return executeOlapQuery(mdx);
     }
 
+    public void addListener(
+        CellSetListener.Granularity granularity,
+        CellSetListener cellSetListener) throws OlapException
+    {
+        // Cell set listener API not supported in this version of mondrian.
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Converts a {@link org.olap4j.mdx.ParseTreeNode} to MDX string.
      *

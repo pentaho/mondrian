@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == (C) Copyright 2005-2007 Julian Hyde and others.
+  == (C) Copyright 2005-2010 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -191,7 +191,7 @@ Revision is $Id$
     </Element>
 
     <!-- Base ======================================================= -->
-    <Class class="Base">
+    <Element type="Base" abstract="true">
         <Doc>
             Base is the base class for all of the elements.
             All elements can be enabled or not, have a tag, and
@@ -212,10 +212,10 @@ Revision is $Id$
             public abstract void validate(final AggRules rules,
                                           final mondrian.recorder.MessageRecorder msgRecorder);
         </Code>
-    </Class>
+    </Element>
 
     <!-- CaseMatcher ==================================================== -->
-    <Class class="CaseMatcher" superclass="Base" >
+    <Element type="CaseMatcher" abstract="true" class="Base" >
         <Doc>
             This is a base class for all elements that can match strings
             where the case of the string is important. In addition,
@@ -256,10 +256,10 @@ Revision is $Id$
                 return charcase;
             }
         </Code>
-    </Class>
+    </Element>
 
     <!-- NameMatcher ================================================== -->
-    <Class class="NameMatcher" superclass="CaseMatcher" >
+    <Element type="NameMatcher" abstract="true" class="CaseMatcher" >
         <Doc>
             A NameMatcher is a CaseMatcher that prepends and appends
             regular expressions to a given string as part of creating
@@ -443,7 +443,7 @@ Revision is $Id$
                 };
             }
         ]]></Code>
-    </Class>
+    </Element>
 
     <!-- FactCountMatch ================================================== -->
     <Element type="FactCountMatch" class="NameMatcher" >
@@ -533,7 +533,7 @@ Revision is $Id$
     </Element>
 
     <!-- Mapper ===================================================== -->
-    <Class class="Mapper" superclass="CaseMatcher" >
+    <Element type="Mapper" abstract="true" class="CaseMatcher" >
         <Doc>
             This allows one to create an element that matches against a
             single template, where the template is an attribute.
@@ -797,7 +797,7 @@ Revision is $Id$
             }
 
         ]]></Code>
-    </Class>
+    </Element>
 
     <Element type="Regex" class="CaseMatcher" >
         <Doc>
@@ -1109,7 +1109,7 @@ Revision is $Id$
         ]]></Code>
     </Element>
 
-    <Class class="RegexMapper" superclass="Base" >
+    <Element type="RegexMapper" abstract="true" class="Base" >
         <Doc>
         </Doc>
         <Attribute name="id" required="true">
@@ -1203,10 +1203,10 @@ Revision is $Id$
             }
 
         ]]></Code>
-    </Class>
+    </Element>
 
     <!-- Ref ============================================================ -->
-    <Class class="Ref" superclass="Base" >
+    <Element type="Ref" abstract="true" class="Base" >
         <Attribute name="refId" required="true">
             <Doc>.</Doc>
         </Attribute>
@@ -1218,7 +1218,7 @@ Revision is $Id$
                 return refId;
             }
         </Code>
-    </Class>
+    </Element>
 
     <!-- LevelMapRef ===================================================== -->
     <Element type="LevelMapRef" class="Ref" >

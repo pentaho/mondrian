@@ -26,8 +26,10 @@ import mondrian.util.ArrayStack;
 import java.io.*;
 import java.util.*;
 
-import mondrian.util.IdentifierParser;
+import org.olap4j.impl.IdentifierParser;
+
 import org.apache.commons.collections.collection.CompositeCollection;
+import org.olap4j.mdx.IdentifierNode;
 
 /**
  * <code>Query</code> is an MDX query.
@@ -887,6 +889,18 @@ public class Query extends QueryPart {
                 && Util.canCast((List) value, Id.Segment.class))
             {
                 final List<Id.Segment> segmentList = Util.cast((List) value);
+                final OlapElement olapElement = Util.lookup(query, segmentList);
+                if (olapElement instanceof Member) {
+                    value = olapElement;
+                }
+            }
+            if (value instanceof List
+                && Util.canCast((List) value, IdentifierNode.Segment.class))
+            {
+                final List<IdentifierNode.Segment> olap4jSegmentList =
+                    Util.cast((List) value);
+                final List<Id.Segment> segmentList =
+                    Util.convert(olap4jSegmentList);
                 final OlapElement olapElement = Util.lookup(query, segmentList);
                 if (olapElement instanceof Member) {
                     value = olapElement;
