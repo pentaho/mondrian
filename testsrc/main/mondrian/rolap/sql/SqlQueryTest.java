@@ -10,15 +10,12 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.spi.Dialect;
-import mondrian.util.Pair;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -105,7 +102,7 @@ public class SqlQueryTest extends BatchTestCase {
 
 
     public void testToStringForForcedIndexHint() {
-        Map<String, String> hints = new HashMap();
+        Map<String, String> hints = new HashMap<String, String>();
         hints.put("force_index", "myIndex");
 
         String unformattedMysql =
@@ -611,6 +608,61 @@ public class SqlQueryTest extends BatchTestCase {
         assertNoQuerySql(
             "select {[Time.Weekly].[All Time.Weeklys]} ON COLUMNS from [Sales]",
             patterns);
+    }
+
+    /**
+     * This test makes sure that a level which specifies an
+     * approxRowCount property prevents Mondrian from executing a
+     * count() sql query. It was discovered in bug MONDRIAN-711
+     * that the aggregate tables predicates optimization code was
+     * not considering the approxRowCount property. It is fixed and
+     * this test will ensure it won't happen again.
+     */
+    public void testApproxRowCountOverridesCount() {
+        final String cubeSchema =
+            "<Cube name=\"ApproxTest\"> \n"
+            + "  <Table name=\"sales_fact_1997\"/> \n"
+            + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" approxRowCount=\"2\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+            + "</Cube>";
+
+        final String mdxQuery =
+            "SELECT {[Gender].[Gender].Members} ON ROWS, {[Measures].[Unit Sales]} ON COLUMNS FROM [ApproxTest]";
+
+        final String forbiddenSqlOracle =
+            "select count(distinct \"customer\".\"gender\") as \"c0\" from \"customer\" \"customer\"";
+
+        final String forbiddenSqlMysql =
+            "select count(distinct `customer`.`gender`) as `c0` from `customer` `customer`;";
+
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, forbiddenSqlOracle, null),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, forbiddenSqlMysql, null)
+        };
+
+        final TestContext testContext =
+            TestContext.create(
+                null,
+                cubeSchema,
+                null,
+                null,
+                null,
+                null);
+
+        assertQuerySqlOrNot(
+            testContext,
+            mdxQuery,
+            patterns,
+            true,
+            true,
+            true);
     }
 }
 

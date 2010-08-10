@@ -1056,7 +1056,11 @@ public class RolapStar {
         /** this has a unique value per star */
         private final int bitPosition;
 
-        private int cardinality = -1;
+        /**
+         * The estimated cardinality of the column.
+         * {@link Integer#MIN_VALUE} means unknown.
+         */
+        private int approxCardinality = Integer.MIN_VALUE;
 
         private Column(
             String name,
@@ -1064,7 +1068,9 @@ public class RolapStar {
             MondrianDef.Expression expression,
             Dialect.Datatype datatype)
         {
-            this(name, table, expression, datatype, null, null, null);
+            this(
+                name, table, expression, datatype, null,
+                null, null, Integer.MIN_VALUE);
         }
 
         private Column(
@@ -1074,7 +1080,8 @@ public class RolapStar {
             Dialect.Datatype datatype,
             Column nameColumn,
             Column parentColumn,
-            String usagePrefix)
+            String usagePrefix,
+            int approxCardinality)
         {
             this.name = name;
             this.table = table;
@@ -1084,6 +1091,7 @@ public class RolapStar {
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
+            this.approxCardinality = approxCardinality;
             if (nameColumn != null) {
                 nameColumn.isNameColumn = true;
             }
@@ -1104,6 +1112,7 @@ public class RolapStar {
             this.nameColumn = null;
             this.usagePrefix = null;
             this.bitPosition = 0;
+            this.approxCardinality = Integer.MIN_VALUE;
         }
 
         public boolean equals(Object obj) {
@@ -1181,7 +1190,7 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (cardinality == -1) {
+            if (approxCardinality == Integer.MIN_VALUE) {
                 RolapStar star = getStar();
                 RolapSchema schema = star.getSchema();
                 Integer card =
@@ -1190,18 +1199,18 @@ public class RolapStar {
                         expression);
 
                 if (card != null) {
-                    cardinality = card.intValue();
+                    approxCardinality = card.intValue();
                 } else {
                     // If not cached, issue SQL to get the cardinality for
                     // this column.
-                    cardinality = getCardinality(star.getDataSource());
+                    approxCardinality = getCardinality(star.getDataSource());
                     schema.putCachedRelationExprCardinality(
                         table.getRelation(),
                         expression,
-                        cardinality);
+                        approxCardinality);
                 }
             }
-            return cardinality;
+            return approxCardinality;
         }
 
         private int getCardinality(DataSource dataSource) {
@@ -1778,7 +1787,8 @@ public class RolapStar {
                     datatype,
                     nameColumn,
                     parentColumn,
-                    usagePrefix);
+                    usagePrefix,
+                    level.getApproxRowCount());
                 addColumn(column);
             }
             return column;
