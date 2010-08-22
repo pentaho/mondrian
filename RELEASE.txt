@@ -6,7 +6,7 @@ Introduction
 
 Mondrian 3.2.0.13661 is a minor release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
-to http://mondrian.pentaho.org.
+to http://mondrian.pentaho.com.
 
 Contents
 --------
@@ -29,7 +29,7 @@ mondrian-jdk14.jar for mondrian.jar, and add
 retroweaver-rt-1.2.4.jar to your classpath.
 
 For further installation instructions, see
-http://mondrian.pentaho.org/documentation/installation.php
+http://mondrian.pentaho.com/documentation/installation.php
 or the included file doc/installation.html.
 
 * Note that the below is not a complete list of changes

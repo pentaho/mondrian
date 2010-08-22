@@ -30,7 +30,7 @@ import mondrian.util.UnsupportedList;
 /**
  * Hierarchy that is associated with a specific Cube.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 public class RolapCubeHierarchy extends RolapHierarchy {

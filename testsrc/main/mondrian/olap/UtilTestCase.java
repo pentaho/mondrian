@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,6 +18,8 @@ import mondrian.util.*;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util}.
+ *
+ * @version $Id$
  */
 public class UtilTestCase extends TestCase {
     public UtilTestCase(String s) {
@@ -416,9 +418,9 @@ public class UtilTestCase extends TestCase {
         try {
             strings = Util.parseIdentifier("[foo].[bar].");
             fail("expected exception, got " + strings);
-        } catch (MondrianException e) {
+        } catch (IllegalArgumentException e) {
             assertEquals(
-                "Mondrian Error:Internal error: Expected identifier after '.', "
+                "Expected identifier after '.', "
                 + "in member identifier '[foo].[bar].'",
                 e.getMessage());
         }
@@ -426,77 +428,20 @@ public class UtilTestCase extends TestCase {
         try {
             strings = Util.parseIdentifier("[foo].[bar");
             fail("expected exception, got " + strings);
-        } catch (MondrianException e) {
+        } catch (IllegalArgumentException e) {
             assertEquals(
-                "Mondrian Error:Internal error: Expected ']', in member "
-                + "identifier '[foo].[bar'",
+                "Expected ']', in member identifier '[foo].[bar'",
                 e.getMessage());
         }
 
         try {
             strings = Util.parseIdentifier("[Foo].[Bar], [Baz]");
             fail("expected exception, got " + strings);
-        } catch (MondrianException e) {
+        } catch (IllegalArgumentException e) {
             assertEquals(
-                "Mondrian Error:Invalid member identifier '[Foo].[Bar], [Baz]'",
+                "Invalid member identifier '[Foo].[Bar], [Baz]'",
                 e.getMessage());
         }
-    }
-
-    /**
-     * Tests the {@link IdentifierParser#parseIdentifierList(String)} method.
-     */
-    public void testParseIdentifierList() {
-        List<List<Id.Segment>> list;
-
-        list = IdentifierParser.parseIdentifierList("{foo, baz.baz}");
-        assertEquals(2, list.size());
-        assertEquals(1, list.get(0).size());
-        assertEquals(2, list.get(1).size());
-
-        // now without braces
-        list = IdentifierParser.parseIdentifierList("foo, baz.baz");
-        assertEquals(2, list.size());
-
-        // now with spaces
-        list = IdentifierParser.parseIdentifierList(" {  foo , baz.baz }   ");
-        assertEquals(2, list.size());
-
-        // now with spaces & without braces
-        list = IdentifierParser.parseIdentifierList(" {  foo , baz.baz }   ");
-        assertEquals(2, list.size());
-
-        // now with mismatched braces
-        try {
-            list = IdentifierParser.parseIdentifierList(" {  foo , baz.baz ");
-            fail("expected error, got " + list);
-        } catch (MondrianException e) {
-            assertEquals(
-                "Mondrian Error:Internal error: mismatched '{' and '}' in "
-                + "' {  foo , baz.baz '",
-                e.getMessage());
-        }
-
-        // now with mismatched braces
-        try {
-            list = IdentifierParser.parseIdentifierList("  foo , baz.baz } ");
-            fail("expected error, got " + list);
-        } catch (MondrianException e) {
-            assertEquals(
-                "Mondrian Error:Internal error: mismatched '{' and '}' in "
-                + "'  foo , baz.baz } '",
-                e.getMessage());
-        }
-
-        // empty string yields empty list
-        list = IdentifierParser.parseIdentifierList("{}");
-        assertEquals(0, list.size());
-        list = IdentifierParser.parseIdentifierList(" {  } ");
-        assertEquals(0, list.size());
-        list = IdentifierParser.parseIdentifierList("");
-        assertEquals(0, list.size());
-        list = IdentifierParser.parseIdentifierList(" \t\n");
-        assertEquals(0, list.size());
     }
 
     public void testReplaceProperties() {
@@ -769,6 +714,13 @@ public class UtilTestCase extends TestCase {
         };
         for (Locale locale : locales) {
             assertEquals(locale, Util.parseLocale(locale.toString()));
+        }
+        // Example locale names in Locale.toString() javadoc.
+        String[] localeNames = {
+            "en", "de_DE", "_GB", "en_US_WIN", "de__POSIX", "fr__MAC"
+        };
+        for (String localeName : localeNames) {
+            assertEquals(localeName, Util.parseLocale(localeName).toString());
         }
     }
 }

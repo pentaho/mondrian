@@ -22,7 +22,7 @@ import mondrian.rolap.agg.ValueColumnPredicate;
 /**
  * RolapCubeLevel wraps a RolapLevel for a specific Cube.
  *
- * @author Will Gorman (wgorman@pentaho.org)
+ * @author Will Gorman
  * @version $Id$
  */
 public class RolapCubeLevel extends RolapLevel {

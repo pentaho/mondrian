@@ -7139,7 +7139,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Verifies that the order function works with a defined member.
      * See this forum post for additional information:
-     * http://forums.pentaho.org/showthread.php?p=179473#post179473
+     * http://forums.pentaho.com/showthread.php?p=179473#post179473
      */
     public void testOrderWithMember() {
         assertQueryReturns(

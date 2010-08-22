@@ -34,6 +34,8 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
 
+import org.olap4j.mdx.IdentifierNode;
+
 /**
  * Utility functions used throughout mondrian. All methods are static.
  *
@@ -416,7 +418,8 @@ public class Util extends XOMUtil {
      * @return List of segments
      */
     public static List<Id.Segment> parseIdentifier(String s)  {
-        return IdentifierParser.parseIdentifier(s);
+        return convert(
+            org.olap4j.impl.IdentifierParser.parseIdentifier(s));
     }
 
     /**
@@ -1446,6 +1449,52 @@ public class Util extends XOMUtil {
         default:
             throw newInternal(
                 "bad locale string '" + localeString + "'");
+        }
+    }
+
+    /**
+     * Converts a list of olap4j-style segments to a list of mondrian-style
+     * segments.
+     *
+     * @param olap4jSegmentList List of olap4j segments
+     * @return List of mondrian segments
+     */
+    public static List<Id.Segment> convert(
+        List<IdentifierNode.Segment> olap4jSegmentList)
+    {
+        final List<Id.Segment> list = new ArrayList<Id.Segment>();
+        for (IdentifierNode.Segment olap4jSegment : olap4jSegmentList) {
+            list.add(convert(olap4jSegment));
+        }
+        return list;
+    }
+
+    /**
+     * Converts an olap4j-style segment to a mondrian-style segment.
+     *
+     * @param olap4jSegment olap4j segment
+     * @return mondrian segment
+     */
+    public static Id.Segment convert(IdentifierNode.Segment olap4jSegment) {
+        if (olap4jSegment instanceof IdentifierNode.NameSegment) {
+            IdentifierNode.NameSegment nameSegment =
+                (IdentifierNode.NameSegment) olap4jSegment;
+            return new Id.Segment(
+                nameSegment.getName(),
+                nameSegment.getQuoting() == IdentifierNode.Quoting.QUOTED
+                    ? Id.Quoting.QUOTED
+                    : Id.Quoting.UNQUOTED);
+        } else {
+            // Mondrian's representation of segments is inferior to olap4j's.
+            // 1. Mondrian assumes that the key has only one part
+            // 2. Mondrian does not specify whether key is quoted (e.g. &[foo]
+            //    vs. &foo)
+            final IdentifierNode.KeySegment keySegment =
+                (IdentifierNode.KeySegment) olap4jSegment;
+            assert keySegment.getKeyParts().size() == 1 : keySegment;
+            return new Id.Segment(
+                keySegment.getKeyParts().get(0).getName(),
+                Id.Quoting.KEY);
         }
     }
 

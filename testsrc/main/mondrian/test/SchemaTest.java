@@ -126,7 +126,7 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test case for the issue described in
-     * <a href="http://forums.pentaho.org/showthread.php?p=190737">Pentaho
+     * <a href="http://forums.pentaho.com/showthread.php?p=190737">Pentaho
      * forum post 'wrong unique name for default member when hasAll=false'</a>.
      */
     public void testDefaultMemberName() {
