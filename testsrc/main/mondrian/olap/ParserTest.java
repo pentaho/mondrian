@@ -18,6 +18,7 @@ import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -560,6 +561,54 @@ public class ParserTest extends FoodMartTestCase {
             + "  [Bar] ON ROWS\n"
             + "from [Cube]\n"
             + " return  return [Xxx].[AAa], [YYY]");
+    }
+
+    public void testCanHaveMemberWithSameNameAsLevel() throws SQLException {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+             "<Dimension name=\"SameName\" foreignKey=\"customer_id\">\n"
+             + " <Hierarchy hasAll=\"true\" primaryKey=\"id\">\n"
+             + " <InlineTable alias=\"sn\">\n"
+             + " <ColumnDefs>\n"
+             + " <ColumnDef name=\"id\" type=\"Numeric\" />\n"
+             + " <ColumnDef name=\"desc\" type=\"String\" />\n"
+             + " </ColumnDefs>\n"
+             + " <Rows>\n"
+             + " <Row>\n"
+             + " <Value column=\"id\">1</Value>\n"
+             + " <Value column=\"desc\">SameName</Value>\n"
+             + " </Row>\n"
+             + " </Rows>\n"
+             + " </InlineTable>\n"
+             + " <Level name=\"SameName\" column=\"desc\" uniqueMembers=\"true\" />\n"
+             + " </Hierarchy>\n"
+             + "</Dimension>");
+
+        org.olap4j.metadata.Member member = testContext.getOlap4jConnection()
+            .getSchema().getCubes().get("Sales").getDimensions()
+            .get("SameName").getHierarchies().get("SameName").getLevels()
+            .get("SameName").getMembers().get(0);
+        assertEquals(
+            "[SameName].[SameName].[SameName]",
+            member.getUniqueName());
+
+        try {
+            testContext.executeQuery(
+                "select {[SameName].[SameName]} on 0 from Sales");
+            fail();
+        } catch (Exception e) {
+            assertEquals(
+                "Mondrian Error:No function matches signature '{<Level>}'",
+                e.getCause().getCause().getMessage());
+        }
+
+        testContext.assertQueryReturns(
+            "select {[SameName].[SameName].[SameName]} on 0 from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[SameName].[SameName].[SameName]}\n"
+            + "Row #0: \n");
     }
 
     /**
