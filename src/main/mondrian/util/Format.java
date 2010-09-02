@@ -115,7 +115,7 @@ public class Format {
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December", "",
     };
-    static final char intlCurrencySymbol = '\u08a4';
+    static final char intlCurrencySymbol = '\u00a4';
 
     /**
      * Maps strings representing locales (for example, "en_US_Boston", "en_US",
@@ -2104,12 +2104,25 @@ public class Format {
         buf.append(currencyRight);
         String currencyFormatString = buf.toString();
 
+        /*
+         * If the locale passed is only a language, Java cannot
+         * resolve the currency symbol and will instead return
+         * u00a4 (The international currency symbol). For those cases,
+         * we use the default system locale currency symbol.
+         */
+        String currencySymbol = decimalSymbols.getCurrencySymbol();
+        if (currencySymbol.equals(Format.intlCurrencySymbol + "")) {
+            final DecimalFormatSymbols defaultDecimalSymbols =
+                new DecimalFormatSymbols(Locale.getDefault());
+            currencySymbol = defaultDecimalSymbols.getCurrencySymbol();
+        }
+
         return createLocale(
             decimalSymbols.getGroupingSeparator(),
             decimalSymbols.getDecimalSeparator(),
             dateSeparator,
             timeSeparator,
-            decimalSymbols.getCurrencySymbol(),
+            currencySymbol,
             currencyFormatString,
             dateSymbols.getShortWeekdays(),
             dateSymbols.getWeekdays(),

@@ -53,7 +53,7 @@ public class FormatTest extends TestCase {
 
     /** Locale gleaned from Java's German locale. */
     private final Format.FormatLocale localeDe = Format.createLocale(
-            Locale.GERMAN);
+            Locale.GERMANY);
 
     final Number d = new BigDecimal("3141592.653589793");
 
@@ -722,6 +722,41 @@ public class FormatTest extends TestCase {
             123456789123l,
             "#,##,#,##,#,##,#,##",
             "1,23,4,56,7,89,1,23");
+    }
+
+    /**
+     * Tests the international currency symbol parsing
+     * in format strings according to different locales.
+     */
+    public void testCurrency() {
+        checkFormat(
+            localeDe,
+            123456,
+            "Currency",
+            "123.456,00 \u20AC");
+        checkFormat(
+            localeDe,
+            123456,
+            "###,###.00" + Format.intlCurrencySymbol,
+            "123.456,00\u20AC");
+        checkFormat(
+            localeFra,
+            123456,
+            "###,###.00" + Format.intlCurrencySymbol,
+            "123.456,00FF");
+        checkFormat(
+            localeFra,
+            123456,
+            "Currency",
+            "123.456,00FF");
+        // Tests whether the format conversion can fallback to
+        // the system default locale to resolve the currency
+        // symbol it must use.
+        checkFormat(
+             Format.createLocale(Locale.JAPANESE),
+             123456,
+             "Currency",
+             "$ 123,456.00");
     }
 }
 
