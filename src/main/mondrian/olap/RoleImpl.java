@@ -15,6 +15,9 @@ package mondrian.olap;
 
 import java.util.*;
 
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeDimension;
+
 /**
  * <code>RoleImpl</code> is Mondrian's default implementation for the
  * <code>Role</code> interface.
@@ -202,7 +205,29 @@ public class RoleImpl implements Role {
             }
             final Dimension[] dimensions = cubeGrant.getKey().getDimensions();
             for (Dimension dimension1 : dimensions) {
-                if (dimension1.equals(dimension)) {
+                // If the dimensions have the same identity,
+                // we found an access rule.
+                if (dimension == dimension1) {
+                    return access;
+                }
+                // If the passed dimension argument is of class
+                // RolapCubeDimension, we must validate the cube
+                // assignment and make sure the cubes are the same.
+                // If not, skip to the next grant.
+                if (dimension instanceof RolapCubeDimension
+                    && dimension.equals(dimension1)
+                    && !((RolapCubeDimension)dimension1)
+                        .getCube()
+                            .equals(cubeGrant.getKey()))
+                {
+                    continue;
+                }
+                // Last thing is to allow for equality correspondences
+                // to work with virtual cubes.
+                if (cubeGrant.getKey() instanceof RolapCube
+                    && ((RolapCube)cubeGrant.getKey()).isVirtual()
+                    && dimension.equals(dimension1))
+                {
                     return access;
                 }
             }

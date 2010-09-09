@@ -1990,6 +1990,54 @@ public class AccessControlTest extends FoodMartTestCase {
                 .withRole("Role1"));
     }
 
+    /**
+     * Test for bug MONDRIAN-568. Grants on OLAP elements are validated
+     * by name, thus granting implicit access to all cubes which have
+     * a dimension with the same name.
+     */
+    public void testBugMondrian568() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"none\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Measures]\" access=\"custom\">\n"
+                + "        <MemberGrant member=\"[Measures].[Unit Sales]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role2\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\"/>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>");
+
+        final TestContext testContextRole1 =
+            testContext
+                .withRole("Role1")
+                    .withCube("Sales");
+        final TestContext testContextRole12 =
+            testContext
+                .withRole("Role1,Role2")
+                    .withCube("Sales");
+
+        assertMemberAccess(
+            testContextRole1.getConnection(),
+            Access.NONE,
+            "[Measures].[Store Cost]");
+
+        assertMemberAccess(
+            testContextRole12.getConnection(),
+            Access.NONE,
+            "[Measures].[Store Cost]");
+    }
+
+    public void testDoubleUsageDoesNotGiveImplicitGrant() {
+
+    }
+
     private void checkCalcMemberLevel(TestContext testContext) {
         Result result = testContext.executeQuery(
             "with member [Store].[USA].[CA].[Foo] as\n"
