@@ -12,7 +12,9 @@ package mondrian.test.clearview;
 
 import junit.framework.*;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.test.*;
+import mondrian.util.Bug;
 
 /**
  * <code>SummaryTest</code> is a test suite which tests scenarios of
@@ -48,6 +50,18 @@ public class SummaryTest extends ClearViewBase {
         return constructSuite(getDiffReposStatic(), SummaryTest.class);
     }
 
+    @Override
+    protected void runTest() throws Exception {
+        if (!Bug.BugMondrian785Fixed
+            && (getName().equals("testRankExpandNonNative")
+                || getName().equals("testCountExpandNonNative")
+                || getName().equals("testCountOverTimeExpandNonNative"))
+            && MondrianProperties.instance().EnableNativeCrossJoin.get())
+        {
+            return;
+        }
+        super.runTest();
+    }
 }
 
 // End SummaryTest.java

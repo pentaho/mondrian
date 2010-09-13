@@ -31,6 +31,13 @@ public class FilterTest extends BatchTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+    }
+
     public void testInFilterSimple() throws Exception {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
@@ -911,7 +918,9 @@ public class FilterTest extends BatchTestCase {
             0,
             20,
             "select Filter(CrossJoin([Store].[Store Name].members, "
-            + "                        [Store Type].[Store Type].members), "
+            + "                        "
+            + TestContext.hierarchyName("Store Type", "Store Type")
+            + ".[Store Type].members), "
             + "                        Not IsEmpty([Measures].[Store Sqft])) on rows, "
             + "{[Measures].[Store Sqft]} on columns "
             + "from [Store]",

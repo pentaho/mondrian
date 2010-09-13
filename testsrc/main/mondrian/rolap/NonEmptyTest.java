@@ -55,6 +55,15 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, true);
+    }
+
+    @Override
     public TestContext getTestContext() {
         return localTestContext != null
             ? localTestContext : super.getTestContext();

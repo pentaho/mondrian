@@ -205,7 +205,9 @@ public class PerformanceTest extends FoodMartTestCase {
         long start = System.currentTimeMillis();
         Result result = executeQuery(
             "WITH SET [cjoin] AS "
-            + "crossjoin(customers.members, [store type].[store type].members) "
+            + "crossjoin(customers.members, "
+            + TestContext.hierarchyName("store type", "store type")
+            + ".[store type].members) "
             + "MEMBER [Measures].[total_available_count] "
             + "AS Format(COUNT([cjoin]), \"#####\") "
             + "SELECT"

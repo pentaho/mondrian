@@ -3017,9 +3017,13 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCountExcludeEmptyNull() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Foo] AS\n"
-            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, NULL)\n"
+            + "    Iif("
+            + TestContext.hierarchyName("Time", "Time")
+            + ".CurrentMember.Name = 'Q2', 1, NULL)\n"
             + "  MEMBER [Measures].[Bar] AS\n"
-            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, 0)\n"
+            + "    Iif("
+            + TestContext.hierarchyName("Time", "Time")
+            + ".CurrentMember.Name = 'Q2', 1, 0)\n"
             + "  MEMBER [Time].[CountExc] AS\n"
             + "    Count([Time].[1997].Children, EXCLUDEEMPTY),\n"
             + "    SOLVE_ORDER = 2\n"

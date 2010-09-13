@@ -35,6 +35,9 @@ public class HighDimensionsTest extends FoodMartTestCase {
     }
 
     public void testBug1971406() throws Exception {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            return;
+        }
         final Connection connection = TestContext.instance()
             .getFoodMartConnection();
         Query query = connection.parseQuery(

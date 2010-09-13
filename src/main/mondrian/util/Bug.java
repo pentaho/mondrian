@@ -191,6 +191,13 @@ public class Bug {
     public static final boolean BugMondrian759Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-785"> MONDRIAN-785,
+     * "Native evaluation does not respect ordering"</a> is fixed.
+     */
+    public static final boolean BugMondrian785Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
