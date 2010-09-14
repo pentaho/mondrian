@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project relativePaths="true" version="4">
+<project version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
   </component>
@@ -10,13 +10,8 @@
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
   </component>
-  <component name="CodeStyleSettingsManager">
-    <option name="PER_PROJECT_SETTINGS" />
-    <option name="USE_PER_PROJECT_SETTINGS" value="false" />
-  </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
-    <option name="DEPLOY_AFTER_MAKE" value="0" />
     <excludeFromCompile>
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/sample/SpringSample.java" />
       <file url="file://$PROJECT_DIR$/../../olap4j/src/mondrian/olap4j/FactoryJdbc3Impl.java" />
@@ -38,6 +33,10 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
+    <annotationProcessing enabled="false" useClasspath="true" />
+  </component>
+  <component name="CopyrightManager" default="">
+    <module2copyright />
   </component>
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
@@ -46,11 +45,8 @@
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
   <component name="EclipseCompilerSettings">
-    <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="true" />
     <option name="DEPRECATION" value="false" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-    <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="EclipseEmbeddedCompilerSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -79,54 +75,6 @@
     </autodetection-disabled>
   </component>
   <component name="IdProvider" IDEtalkID="56AEB67D7DB6A080C3C46E677522A8E5" />
-  <component name="InspectionProjectProfileManager">
-    <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
-    <scopes />
-    <profiles>
-      <profile version="1.0" is_locked="false">
-        <option name="myName" value="Project Default" />
-        <option name="myLocal" value="false" />
-        <inspection_tool class="JavaDoc" level="WARNING" enabled="true">
-          <option name="TOP_LEVEL_CLASS_OPTIONS">
-            <value>
-              <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
-              <option name="REQUIRED_TAGS" value="" />
-            </value>
-          </option>
-          <option name="INNER_CLASS_OPTIONS">
-            <value>
-              <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
-              <option name="REQUIRED_TAGS" value="" />
-            </value>
-          </option>
-          <option name="METHOD_OPTIONS">
-            <value>
-              <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
-              <option name="REQUIRED_TAGS" value="@return@param@throws or @exception" />
-            </value>
-          </option>
-          <option name="FIELD_OPTIONS">
-            <value>
-              <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
-              <option name="REQUIRED_TAGS" value="" />
-            </value>
-          </option>
-          <option name="IGNORE_DEPRECATED" value="false" />
-          <option name="IGNORE_JAVADOC_PERIOD" value="true" />
-          <option name="myAdditionalJavadocTags" value="" />
-        </inspection_tool>
-      </profile>
-    </profiles>
-    <list size="0" />
-  </component>
-  <component name="JavacSettings">
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="DEPRECATION" value="true" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-    <option name="MAXIMUM_HEAP_SIZE" value="128" />
-  </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
     <option name="OPTION_SCOPE" value="protected" />
@@ -143,14 +91,6 @@
     <option name="HEAP_SIZE" />
     <option name="LOCALE" />
     <option name="OPEN_IN_BROWSER" value="true" />
-  </component>
-  <component name="JikesSettings">
-    <option name="JIKES_PATH" value="" />
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="DEPRECATION" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="IS_EMACS_ERRORS_MODE" value="true" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
   <component name="LogConsolePreferences">
     <option name="FILTER_ERRORS" value="false" />
@@ -282,12 +222,10 @@
   <component name="ProjectDetails">
     <option name="projectName" value="mondrian" />
   </component>
-  <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/mondrian.iml" filepath="$PROJECT_DIR$/mondrian.iml" />
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../olap4j/olap4j.iml" filepath="$PROJECT_DIR$/../../olap4j/olap4j.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK" />
@@ -298,15 +236,9 @@
       </value>
     </option>
   </component>
-  <component name="RmicSettings">
-    <option name="IS_EANABLED" value="false" />
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="GENERATE_IIOP_STUBS" value="false" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-  </component>
   <component name="SvnBranchConfigurationManager">
     <option name="myVersion" value="124" />
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="TestDox.ConfigurationController">
     <option name="allowCustomPackages" value="false" />
@@ -349,7 +281,6 @@
         <root url="jar://$PROJECT_DIR$/../lib/jsp-api.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/xalan.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/javacup.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/jpivot.war!/" />
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-xom.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-resgen.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/commons-vfs.jar!/" />
@@ -358,6 +289,7 @@
         <root url="jar://$PROJECT_DIR$/../lib/log4j.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/jlfgr.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/servlet-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-io.jar!/" />
       </CLASSES>
       <JAVADOC>
         <root url="jar://$PROJECT_DIR$/../lib/commons-math-javadoc.jar!/" />
@@ -410,6 +342,30 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+    </library>
+    <library name="pentaho">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-mondrianschemaworkbench-plugins.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-db.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-swing.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-engine.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-core.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-database.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-core.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="olap4j">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="http://www.olap4j.org/api" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-source.jar!/" />
+      </SOURCES>
     </library>
   </component>
 </project>
