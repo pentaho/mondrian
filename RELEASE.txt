@@ -1,10 +1,10 @@
-Mondrian 3.2.0.13661 production release notes
+Mondrian 3.2.1.13841 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.2.0.13661 is a minor release version of the leading
+Mondrian 3.2.1.13841 is a patch release version of the leading
 open-source OLAP engine. To find out more about mondrian, go
 to http://mondrian.pentaho.com.
 
@@ -54,6 +54,37 @@ API changes from 3.1 to 3.2
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed for 3.2.1.13841
+----------------------------------------------------------
+MONDRIAN-799 - Currency format string shows a junk character for the
+               currency symbol
+MONDRIAN-779 - Include/exclude filter not working
+MONDRIAN-777 - The identical view acting as a relation for a dimension
+               table and fact table is determined not equal, causing 
+               issues with degenerate dimensions in views
+MONDRIAN-776 - mondrian.xsd updated to new specifications
+MONDRIAN-769 - row counts coming back as zero
+MONDRIAN-766 - Bug in escaping strings containing backslash for MySQL
+MONDRIAN-761 - mondrian.olap.fun.VisualTotalsFunDef$VisualTotalMember
+               cannot be cast to mondrian.rolap.RolapCubeMember
+MONDRIAN-756 - Error in RolapResult.replaceNonAllMembers leads to NPE
+MONDRIAN-755 - Getting drillthrough count results in exception
+MONDRIAN-735 - Indian format strings
+MONDRIAN-724 - Cannot reference Member that has the same name as the
+               Level.
+MONDRIAN-711 - Wrong behaviour with approxRowCount attribute added in
+               a Level element
+MONDRIAN-568 - If two cubes have dimension with same name, mondrian
+               treats grant to one as grant to other
+MONDRIAN-463 - New error messages if hierarchy has no levels; if
+               hierarchy has
+BISERVER-4618 - PSW Duplicate catalog entry in datasources.xml
+PSW-87 - As a BI Pracitioner, I would like Schema Workbench to use the
+         same connection creation dialog as the rest of the Pentaho
+         products
+PSW-84 - Column in schema workbench wont allow as measure if data type 
+         in RDBMS is BIGINT
 
 Bugs and feature requests fixed for 3.2.0.13661
 ----------------------------------------------------------
