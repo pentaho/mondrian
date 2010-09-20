@@ -2034,10 +2034,6 @@ public class AccessControlTest extends FoodMartTestCase {
             "[Measures].[Store Cost]");
     }
 
-    public void testDoubleUsageDoesNotGiveImplicitGrant() {
-
-    }
-
     private void checkCalcMemberLevel(TestContext testContext) {
         Result result = testContext.executeQuery(
             "with member [Store].[USA].[CA].[Foo] as\n"
