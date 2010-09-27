@@ -1,3 +1,4 @@
+
 rem ---------------------------------------------------------------------------
 rem Finds a suitable Java
 rem
@@ -11,9 +12,15 @@ rem
 rem The order of the search is as follows:
 rem 
 rem 1. environment variable PENTAHO_JAVA_HOME - path to Java home
-rem 2. environment variable JAVA_HOME - path to Java home
-rem 3. environment variable JRE_HOME - path to Java home
-rem 4. argument #1 - path to Java home
+rem 2. jre folder at current folder level
+rem 3. java folder at current folder level
+rem 4. jre folder one level up
+rem 5. java folder one level up
+rem 6. jre folder two levels up
+rem 7. java folder two levels up
+rem 8. environment variable JAVA_HOME - path to Java home
+rem 9. environment variable JRE_HOME - path to Java home
+rem 10. argument #1 - path to Java home
 rem 
 rem If a suitable Java is found at one of these locations, then 
 rem _PENTAHO_JAVA_HOME is set to that location and _PENTAHO_JAVA is set to the 
@@ -36,6 +43,12 @@ goto checkPentahoJavaHome
 
 :checkPentahoJavaHome
 if not "%PENTAHO_JAVA_HOME%" == "" goto gotPentahoJavaHome
+if exist "%~dp0jre" goto gotJreCurrentFolder
+if exist "%~dp0java" goto gotJavaCurrentFolder
+if exist "%~dp0..\jre" goto gotJreOneFolderUp
+if exist "%~dp0..\java" goto gotJavaOneFolderUp
+if exist "%~dp0..\..\jre" goto gotJreTwoFolderUp
+if exist "%~dp0..\..\java" goto gotJavaTwoFolderUp
 if not "%JAVA_HOME%" == "" goto gotJdkHome
 if not "%JRE_HOME%" == "" goto gotJreHome
 goto tryValueFromCaller 
@@ -43,6 +56,42 @@ goto tryValueFromCaller
 :gotPentahoJavaHome
 echo DEBUG: Using PENTAHO_JAVA_HOME
 set _PENTAHO_JAVA_HOME=%PENTAHO_JAVA_HOME%
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJreCurrentFolder
+echo DEBUG: Found JRE at the current folder
+set _PENTAHO_JAVA_HOME=%~dp0jre
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJavaCurrentFolder
+echo DEBUG: Found JAVA at the current folder
+set _PENTAHO_JAVA_HOME=%~dp0java
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJreOneFolderUp
+echo DEBUG: Found JRE one folder up
+set _PENTAHO_JAVA_HOME=%~dp0..\jre
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJavaOneFolderUp
+echo DEBUG: Found JAVA one folder up
+set _PENTAHO_JAVA_HOME=%~dp0..\java
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJreTwoFolderUp
+echo DEBUG: Found JRE two folder up
+set _PENTAHO_JAVA_HOME=%~dp0..\..\jre
+set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
+goto end
+
+:gotJavaTwoFolderUp
+echo DEBUG: Found JAVA two folder up
+set _PENTAHO_JAVA_HOME=%~dp0..\..\java
 set _PENTAHO_JAVA=%_PENTAHO_JAVA_HOME%\bin\%__LAUNCHER%
 goto end
 

@@ -82,12 +82,12 @@ JAVA_FLAGS="-Xms100m -Xmx500m"
 
 # Standard pentaho environment. Script lives in workbench directory in a
 # development environment, MONDRIAN_HOME otherwise.
-if test -x "$MONDRIAN_HOME/workbench/set-pentaho-java.sh"; then
-    . "$MONDRIAN_HOME/workbench/set-pentaho-java.sh"
+if test -x "$MONDRIAN_HOME/workbench/set-pentaho-env.sh"; then
+    . "$MONDRIAN_HOME/workbench/set-pentaho-env.sh"
 else
-    . "$MONDRIAN_HOME/set-pentaho-java.sh"
+    . "$MONDRIAN_HOME/set-pentaho-env.sh"
 fi
-setPentahoJava
+setPentahoEnv
 
 exec "$_PENTAHO_JAVA" $JAVA_FLAGS -cp "$CP" mondrian.gui.Workbench
 
