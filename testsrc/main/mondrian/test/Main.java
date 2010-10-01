@@ -37,7 +37,7 @@ import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
-import mondrian.udf.NullValueTest;
+import mondrian.udf.*;
 import mondrian.util.*;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
@@ -233,6 +233,7 @@ public class Main extends TestSuite {
             addTest(suite, CacheControlTest.class);
             addTest(suite, MemberCacheControlTest.class);
             addTest(suite, FunctionTest.class);
+            addTest(suite, CurrentDateMemberUdfTest.class);
             addTest(suite, PartialSortTest.class);
             addTest(suite, VbaTest.class);
             addTest(suite, ExcelTest.class);
@@ -383,7 +384,7 @@ public class Main extends TestSuite {
         throws Exception
     {
         TestSuite newSuite = new TestSuite(suite.getName());
-        Enumeration tests = suite.tests();
+        Enumeration<?> tests = suite.tests();
         while (tests.hasMoreElements()) {
             Test test = (Test) tests.nextElement();
             if (test instanceof TestCase) {
