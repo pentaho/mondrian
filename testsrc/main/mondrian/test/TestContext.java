@@ -42,6 +42,7 @@ import java.lang.reflect.*;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
+import org.olap4j.layout.TraditionalCellSetFormatter;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -1259,6 +1260,23 @@ public class TestContext {
         PrintWriter pw = new PrintWriter(sw);
         result.print(pw);
         pw.flush();
+        return sw.toString();
+    }
+
+    /**
+     * Converts a {@link CellSet} to text in traditional format.
+     *
+     * <p>For more exotic formats, see
+     * {@link org.olap4j.layout.CellSetFormatter}.
+     *
+     * @param cellSet Query result
+     * @return Result as text
+     */
+    public static String toString(CellSet cellSet) {
+        final StringWriter sw = new StringWriter();
+        new TraditionalCellSetFormatter().format(
+            cellSet,
+            new PrintWriter(sw));
         return sw.toString();
     }
 

@@ -407,7 +407,7 @@ public class RolapCell implements Cell {
                 throw Util.newError(
                     "Cannot write to cell: one of the coordinates ("
                     + member.getUniqueName()
-                    + ") is a calculcated member");
+                    + ") is a calculated member");
             }
         }
         if (scenario == null) {
@@ -417,13 +417,17 @@ public class RolapCell implements Cell {
             allocationArgs = new Object[0];
         }
         final Object currentValue = getValue();
-        if (!(currentValue instanceof Number)) {
+        double doubleCurrentValue;
+        if (currentValue == null) {
+            doubleCurrentValue = 0d;
+        } else if (currentValue instanceof Number) {
+            doubleCurrentValue = ((Number) currentValue).doubleValue();
+        } else {
             // Cell is not a number. Likely it is a string or a
             // MondrianEvaluationException. Do not attempt to change the value
             // in this case. (REVIEW: Is this the correct behavior?)
             return;
         }
-        double doubleCurrentValue = ((Number) currentValue).doubleValue();
         double doubleNewValue = ((Number) newValue).doubleValue();
         ((ScenarioImpl) scenario).setCellValue(
             result.getQuery().getConnection(),
