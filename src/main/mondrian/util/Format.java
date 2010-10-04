@@ -736,28 +736,39 @@ public class Format {
                 // To provide backwards compatibility, we apply the old
                 // formatting rules if there are less than 2 thousand
                 // separators in the format string.
+                String formatStringBuffer = formatString;
+
+                // If the format includes a negative format part, we strip it.
+                final int semiPos =
+                    formatStringBuffer.indexOf(getFormatToken(FORMAT_SEMI));
+                if (semiPos > 0) {
+                    formatStringBuffer =
+                        formatStringBuffer.substring(0, semiPos);
+                }
+
                 final int nbThousandSeparators =
                     countOccurrences(
-                        formatString,
-                        tokens[FORMAT_THOUSEP].token.charAt(0));
+                        formatStringBuffer,
+                        getFormatToken(FORMAT_THOUSEP).charAt(0));
                 cachedThousandSeparatorPositions = new ArrayStack<Integer>();
                 if (nbThousandSeparators > 1) {
                     // Extract the whole part of the format string
                     final int decimalPos =
-                        formatString.indexOf(tokens[FORMAT_DECIMAL].token);
+                        formatStringBuffer.indexOf(
+                            getFormatToken(FORMAT_DECIMAL));
                     final int endIndex =
                         decimalPos == -1
-                        ? formatString.length()
+                        ? formatStringBuffer.length()
                                 : decimalPos;
                         final String wholeFormat =
-                            formatString.substring(0, endIndex);
+                            formatStringBuffer.substring(0, endIndex);
 
                         // Tokenize it so we can analyze it's structure
                         final StringTokenizer st =
                             new StringTokenizer(
                                 wholeFormat,
                                 String.valueOf(
-                                    tokens[FORMAT_THOUSEP].token));
+                                    getFormatToken(FORMAT_THOUSEP)));
 
                         // We ignore the first token.
                         // ie: #,###,###
@@ -1335,17 +1346,32 @@ public class Format {
     private static final int FORMAT_MMMM_LOWER = 56;
     private static final int FORMAT_USD = 57;
 
+    private static final Map<Integer, String> formatTokenToFormatString =
+        new HashMap<Integer, String>();
+
     private static Token nfe(
         int code, int flags, String token, String purpose, String description)
     {
         Util.discard(purpose);
         Util.discard(description);
+        formatTokenToFormatString.put(code, token);
         return new Token(code, flags, token);
     }
 
     public static List<Token> getTokenList()
     {
         return Collections.unmodifiableList(Arrays.asList(tokens));
+    }
+
+    /**
+     * Returns the format token as a string representation
+     * which corresponds to a given token code.
+     * @param code The code of the token to obtain.
+     * @return The string representation of that token.
+     */
+    public static String getFormatToken(int code)
+    {
+        return formatTokenToFormatString.get(code);
     }
 
     private static final Token[] tokens = {
