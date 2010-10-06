@@ -1,5 +1,7 @@
 @echo off
 
+cd /D %~dp0
+
 rem Schema Workbench launch script
 
 rem base Mondrian JARs need to be included
