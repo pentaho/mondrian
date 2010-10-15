@@ -29,8 +29,7 @@ import mondrian.olap.fun.*;
 import mondrian.olap.fun.vba.*;
 import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
-import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
-import mondrian.rolap.agg.SegmentLoaderTest;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
@@ -294,6 +293,7 @@ public class Main extends TestSuite {
             if (Bug.BugMondrian503Fixed) {
                 addTest(suite, RolapResultTest.class);
             }
+            addTest(suite, RolapAggTest.class);
             addTest(suite, ConstantCalcTest.class);
             addTest(suite, SharedDimensionTest.class);
             addTest(suite, CellPropertyTest.class);

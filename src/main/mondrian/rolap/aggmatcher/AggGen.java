@@ -120,6 +120,14 @@ public class AggGen {
         if (expr instanceof MondrianDef.Column) {
             MondrianDef.Column cx = (MondrianDef.Column) expr;
             return cx.getColumnName();
+        } else if (expr instanceof MondrianDef.KeyExpression) {
+            MondrianDef.KeyExpression columnExpr =
+                (MondrianDef.KeyExpression) rColumn.getExpression();
+            return columnExpr.toString();
+        } else if (expr instanceof MondrianDef.MeasureExpression) {
+            MondrianDef.MeasureExpression mExpr =
+                (MondrianDef.MeasureExpression) expr;
+            return mExpr.toString();
         }
         return null;
     }
