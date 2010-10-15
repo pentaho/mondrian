@@ -1556,14 +1556,6 @@ public class RolapStar {
                     if (columnExpr.name.equals(columnName)) {
                         l.add(column);
                     }
-                } else if (column.getExpression()
-                    instanceof MondrianDef.KeyExpression)
-                {
-                    MondrianDef.KeyExpression columnExpr =
-                        (MondrianDef.KeyExpression) column.getExpression();
-                    if (columnExpr.toString().equals(columnName)) {
-                        l.add(column);
-                    }
                 }
             }
             return l.toArray(new Column[l.size()]);
@@ -1575,14 +1567,6 @@ public class RolapStar {
                     MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
                     if (columnExpr.name.equals(columnName)) {
-                        return column;
-                    }
-                } else if (column.getExpression()
-                    instanceof MondrianDef.KeyExpression)
-                {
-                    MondrianDef.KeyExpression columnExpr =
-                        (MondrianDef.KeyExpression) column.getExpression();
-                    if (columnExpr.toString().equals(columnName)) {
                         return column;
                     }
                 } else if (column.getName().equals(columnName)) {
