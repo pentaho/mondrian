@@ -2235,7 +2235,7 @@ public class NonEmptyTest extends BatchTestCase {
         ca = ((RolapCubeMember) ca).getRolapMember();
         sf = ((RolapCubeMember) sf).getRolapMember();
 
-        List list = ssmrch.mapMemberToChildren.get(
+        List<RolapMember> list = ssmrch.mapMemberToChildren.get(
             ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
         list = ssmrch.mapMemberToChildren.get(
@@ -2349,7 +2349,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
         lmc = scf.getLevelMembersConstraint(context.push(true));
-        List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
+        List<RolapMember> list =
+            smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(20, list.size());
@@ -2389,11 +2390,11 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         Result r = executeQuery(
-                "select \n"
-                + "{[Measures].[Unit Sales]} ON columns,\n"
-                + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
-                + "from [Sales]\n"
-                + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Level[] levels = smr.getHierarchy().getLevels();
         Level nameLevel = levels[levels.length - 1];
 
@@ -2402,7 +2403,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         // make sure that [Customers].[Name].Members IS in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
-        List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
+        List<RolapMember> list =
+            smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(10281, list.size());
@@ -2605,7 +2607,8 @@ public class NonEmptyTest extends BatchTestCase {
         // but non empty children is
         Evaluator evaluator = getEvaluator(result, new int[] {0, 0});
         mcc = scf.getMemberChildrenConstraint(evaluator.push(true));
-        List list = ssmrch.mapMemberToChildren.get(burlingame, mcc);
+        List<RolapMember> list =
+            ssmrch.mapMemberToChildren.get(burlingame, mcc);
         assertNotNull(list);
         assertTrue(list.contains(peggy));
 
@@ -4054,14 +4057,25 @@ public class NonEmptyTest extends BatchTestCase {
      * EnableNativeNonEmpty=true"</a>.
      */
     public void testBugMondrian321() {
-        if (true) {
-            return; // TODO: enable
-        }
         assertQueryReturns(
-            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, {[Product].[All Products]})' \n"
+            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
             + "Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
-            "x");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA], [Product].[All Products]}\n"
+            + "{[Customers].[USA].[OR], [Product].[All Products]}\n"
+            + "{[Customers].[USA].[WA], [Product].[All Products]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 159,167.84\n"
+            + "Row #1: 67,659\n"
+            + "Row #1: 142,277.07\n"
+            + "Row #2: 124,366\n"
+            + "Row #2: 263,793.22\n");
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
@@ -4511,6 +4525,62 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 24,597\n"
             + "Row #2: 191,940\n"
             + "Row #3: 50,236\n");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-695">
+     * MONDRIAN-695, "Unexpected data set may returned when MDX slicer contains
+     * multiple dimensions"</a>.
+     */
+    public void testNonEmptyCJWithMultiPositionSlicer() {
+        final String mdx =
+            "select NON EMPTY NonEmptyCrossJoin([Measures].[Sales Count], [Store].[USA].Children) ON COLUMNS, "
+            + "       NON EMPTY CrossJoin({[Customers].[All Customers]}, {([Promotions].[Bag Stuffers] : [Promotions].[Bye Bye Baby])}) ON ROWS "
+            + "from [Sales Ragged] "
+            + "where ({[Product].[Drink]} * {[Time].[1997].[Q1], [Time].[1997].[Q2]})";
+        final String expected =
+            "Axis #0:\n"
+            + "{[Product].[Drink], [Time].[1997].[Q1]}\n"
+            + "{[Product].[Drink], [Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[CA]}\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[USA].[Washington]}\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[WA]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers], [Promotions].[Bag Stuffers]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Best Savings]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Big Promo]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Big Time Savings]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Bye Bye Baby]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 2\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: 13\n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: 9\n"
+            + "Row #3: \n"
+            + "Row #3: 12\n"
+            + "Row #3: \n"
+            + "Row #4: 1\n"
+            + "Row #4: 21\n"
+            + "Row #4: \n";
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            true);
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        checkNative(
+            0,
+            5,
+            mdx,
+            expected,
+            true);
     }
 
     void clearAndHardenCache(MemberCacheHelper helper) {

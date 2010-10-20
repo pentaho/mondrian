@@ -12,11 +12,7 @@ package mondrian.rolap;
 
 import java.util.*;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -61,8 +57,13 @@ public class SqlConstraintUtils {
                 throw Util.newInternal(
                     "can not restrict SQL to calculated Members");
             }
+            if (hasMultiPositionSlicer(evaluator)) {
+                throw Util.newInternal(
+                    "can not restrict SQL to context with multi-position slicer");
+            }
         } else {
             members = removeCalculatedAndDefaultMembers(members);
+            members = removeMultiPositionSlicerMembers(members, evaluator);
         }
 
         final CellRequest request =
@@ -119,6 +120,69 @@ public class SqlConstraintUtils {
                     buf.toString());
             }
         }
+    }
+
+    /**
+     * Looks at the given <code>evaluator</code> to determine if it has more
+     * than one slicer member from any particular hierarchy.
+     * @param evaluator the evaluator to look at
+     * @return <code>true</code> if the evaluator's slicer has more than one
+     *  member from any particular hierarchy
+     */
+    public static boolean hasMultiPositionSlicer(Evaluator evaluator) {
+        if (evaluator instanceof RolapEvaluator) {
+            Map<Hierarchy, Member> mapOfSlicerMembers =
+                new HashMap<Hierarchy, Member>();
+            for (
+                Member slicerMember
+                : ((RolapEvaluator)evaluator).getSlicerMembers())
+            {
+                Hierarchy hierarchy = slicerMember.getHierarchy();
+                if (mapOfSlicerMembers.containsKey(hierarchy)) {
+                    // We have found a second member in this hierarchy
+                    return true;
+                }
+                mapOfSlicerMembers.put(hierarchy, slicerMember);
+            }
+        }
+        return false;
+    }
+
+    protected static Member[] removeMultiPositionSlicerMembers(
+            Member[] members,
+            Evaluator evaluator)
+    {
+        List<Member> slicerMembers = null;
+        if (evaluator instanceof RolapEvaluator) {
+            // get the slicer members from the evaluator
+            slicerMembers =
+                ((RolapEvaluator)evaluator).getSlicerMembers();
+        }
+        if (slicerMembers != null) {
+            // Iterate the list of slicer members, grouping them by hierarchy
+            Map<Hierarchy, Set<Member>> mapOfSlicerMembers =
+                new HashMap<Hierarchy, Set<Member>>();
+            for (Member slicerMember : slicerMembers) {
+                Hierarchy hierarchy = slicerMember.getHierarchy();
+                if (!mapOfSlicerMembers.containsKey(hierarchy)) {
+                    mapOfSlicerMembers.put(hierarchy, new HashSet<Member>());
+                }
+                mapOfSlicerMembers.get(hierarchy).add(slicerMember);
+            }
+            List<Member> listOfMembers = new ArrayList<Member>();
+            // Iterate the given list of members, removing any whose hierarchy
+            // has multiple members on the slicer axis
+            for (Member member : members) {
+                Hierarchy hierarchy = member.getHierarchy();
+                if (!mapOfSlicerMembers.containsKey(hierarchy)
+                        || mapOfSlicerMembers.get(hierarchy).size() < 2)
+                {
+                    listOfMembers.add(member);
+                }
+            }
+            members = listOfMembers.toArray(new Member[listOfMembers.size()]);
+        }
+        return members;
     }
 
     /**
