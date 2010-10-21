@@ -935,8 +935,30 @@ public class FilterTest extends BatchTestCase {
      * filter"</a>.
      */
     public void testBugMondrian706() {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().DisableCaching,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().CompareSiblingsByOrderKey,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().NullDenominatorProducesNull,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeFilter,
+            true);
         // With bug MONDRIAN-706, would generate
         //
         // ((`store`.`store_name`, `store`.`store_city`, `store`.`store_state`)
@@ -944,6 +966,38 @@ public class FilterTest extends BatchTestCase {
         //
         // Notice that the '11' and '14' store ID is applied on the store_name
         // instead of the store_id. So it would return no rows.
+        final String badMysqlSQL =
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4`, `store`.`store_type` as `c5`, `store`.`store_manager` as `c6`, `store`.`store_sqft` as `c7`, `store`.`grocery_sqft` as `c8`, `store`.`frozen_sqft` as `c9`, `store`.`meat_sqft` as `c10`, `store`.`coffee_bar` as `c11`, `store`.`store_street_address` as `c12` from `FOODMART`.`store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_name`,`store`.`store_city`,`store`.`store_state`) in (('11','Portland','OR'),('14','San Francisco','CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name`, `store`.`store_type`, `store`.`store_manager`, `store`.`store_sqft`, `store`.`grocery_sqft`, `store`.`frozen_sqft`, `store`.`meat_sqft`, `store`.`coffee_bar`, `store`.`store_street_address` having NOT((sum(`store`.`store_sqft`) is null)) order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`store`.`store_id`), `store`.`store_id` ASC";
+        final String goodMysqlSQL =
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null))  order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`store`.`store_id`), `store`.`store_id` ASC";
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Store].CurrentMember, [Store].[Store Country]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store State]).OrderKey,BASC,Ancestor([Store].CurrentMember,\n"
+            + "[Store].[Store City]).OrderKey,BASC,[Store].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Store] as 'Filter([Store].[Store Name].Members,(Ancestor([Store].CurrentMember, [Store].[Store State]) In {[Store].[All Stores].[USA].[CA],[Store].[All Stores].[USA].[OR]}) AND ([Store].CurrentMember In\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11],[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}))'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "[*SORTED_ROW_AXIS] on rows\n"
+            + "From [Store] \n";
+        final SqlPattern[] badPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                badMysqlSQL,
+                null)
+        };
+        final SqlPattern[] goodPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                goodMysqlSQL,
+                null)
+        };
         final TestContext testContext =
             TestContext.createSubstitutingCube(
                 "Store",
@@ -961,20 +1015,10 @@ public class FilterTest extends BatchTestCase {
                 + "      <Level name='Store Name' column='store_id' type='Numeric' nameColumn='store_name' uniqueMembers='false'/>\n"
                 + "    </Hierarchy>\n"
                 + "  </Dimension>\n");
+        assertQuerySqlOrNot(testContext, mdx, badPatterns, true, true, true);
+        assertQuerySqlOrNot(testContext, mdx, goodPatterns, false, true, true);
         testContext.assertQueryReturns(
-            "With \n"
-            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))' \n"
-            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Store].CurrentMember, [Store].[Store Country]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store State]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store City]).OrderKey,BASC,[Store].CurrentMember.OrderKey,BASC)' \n"
-            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' \n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})' \n"
-            + "Set [*BASE_MEMBERS_Store] as 'Filter([Store].[Store Name].Members,(Ancestor([Store].CurrentMember, [Store].[Store State]) In {[Store].[All Stores].[USA].[CA],[Store].[All Stores].[USA].[OR]}) AND ([Store].CurrentMember In {[Store].[All Stores].[USA].[OR].[Portland].[Store 11],[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}))' \n"
-            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400 \n"
-            + "Select \n"
-            + "[*BASE_MEMBERS_Measures] on columns, \n"
-            + "[*SORTED_ROW_AXIS] on rows \n"
-            + "From [Store] ",
+            mdx,
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
