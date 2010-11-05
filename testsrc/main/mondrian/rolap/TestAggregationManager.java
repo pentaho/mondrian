@@ -1551,7 +1551,8 @@ public class TestAggregationManager extends BatchTestCase {
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
             + "    <Table name=\"promotion\"/>\n"
             + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
-            + "      <KeyExpression><SQL>ERROR_TEST_FUNCTION_NAME(" + colName + ")</SQL></KeyExpression>\n"
+            + "      <KeyExpression><SQL>ERROR_TEST_FUNCTION_NAME("
+            + colName + ")</SQL></KeyExpression>\n"
             + "    </Level>\n"
             + "  </Hierarchy>\n"
             + "</Dimension>");
@@ -1565,7 +1566,8 @@ public class TestAggregationManager extends BatchTestCase {
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
             + "    <Table name=\"promotion\"/>\n"
             + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
-            + "      <KeyExpression><SQL>RTRIM(" + colName + ")</SQL></KeyExpression>\n"
+            + "      <KeyExpression><SQL>RTRIM("
+            + colName + ")</SQL></KeyExpression>\n"
             + "    </Level>\n"
             + "  </Hierarchy>\n"
             + "</Dimension>");
