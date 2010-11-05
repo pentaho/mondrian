@@ -34,7 +34,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
 
-import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -1460,10 +1460,10 @@ public class Util extends XOMUtil {
      * @return List of mondrian segments
      */
     public static List<Id.Segment> convert(
-        List<IdentifierNode.Segment> olap4jSegmentList)
+        List<IdentifierSegment> olap4jSegmentList)
     {
         final List<Id.Segment> list = new ArrayList<Id.Segment>();
-        for (IdentifierNode.Segment olap4jSegment : olap4jSegmentList) {
+        for (IdentifierSegment olap4jSegment : olap4jSegmentList) {
             list.add(convert(olap4jSegment));
         }
         return list;
@@ -1475,13 +1475,13 @@ public class Util extends XOMUtil {
      * @param olap4jSegment olap4j segment
      * @return mondrian segment
      */
-    public static Id.Segment convert(IdentifierNode.Segment olap4jSegment) {
-        if (olap4jSegment instanceof IdentifierNode.NameSegment) {
-            IdentifierNode.NameSegment nameSegment =
-                (IdentifierNode.NameSegment) olap4jSegment;
+    public static Id.Segment convert(IdentifierSegment olap4jSegment) {
+        if (olap4jSegment instanceof NameSegment) {
+            NameSegment nameSegment =
+                (NameSegment) olap4jSegment;
             return new Id.Segment(
                 nameSegment.getName(),
-                nameSegment.getQuoting() == IdentifierNode.Quoting.QUOTED
+                nameSegment.getQuoting() == Quoting.QUOTED
                     ? Id.Quoting.QUOTED
                     : Id.Quoting.UNQUOTED);
         } else {
@@ -1489,8 +1489,8 @@ public class Util extends XOMUtil {
             // 1. Mondrian assumes that the key has only one part
             // 2. Mondrian does not specify whether key is quoted (e.g. &[foo]
             //    vs. &foo)
-            final IdentifierNode.KeySegment keySegment =
-                (IdentifierNode.KeySegment) olap4jSegment;
+            final KeySegment keySegment =
+                (KeySegment) olap4jSegment;
             assert keySegment.getKeyParts().size() == 1 : keySegment;
             return new Id.Segment(
                 keySegment.getKeyParts().get(0).getName(),

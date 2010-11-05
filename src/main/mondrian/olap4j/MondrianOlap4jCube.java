@@ -9,6 +9,9 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Id;
+import mondrian.olap.Util;
+import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
@@ -119,7 +122,9 @@ class MondrianOlap4jCube implements Cube, Named {
         return cube.getDescription();
     }
 
-    public MondrianOlap4jMember lookupMember(String... nameParts) {
+    public MondrianOlap4jMember lookupMember(
+        List<IdentifierSegment> nameParts)
+    {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.SchemaReader schemaReader =
@@ -127,10 +132,8 @@ class MondrianOlap4jCube implements Cube, Named {
 
         final List<mondrian.olap.Id.Segment> segmentList =
             new ArrayList<mondrian.olap.Id.Segment>();
-        for (String namePart : nameParts) {
-            segmentList.add(
-                new mondrian.olap.Id.Segment(
-                    namePart, mondrian.olap.Id.Quoting.QUOTED));
+        for (IdentifierSegment namePart : nameParts) {
+            segmentList.add(fromOlap4j(namePart));
         }
         final mondrian.olap.Member member =
             schemaReader.getMemberByUniqueName(segmentList, false);
@@ -140,9 +143,22 @@ class MondrianOlap4jCube implements Cube, Named {
         return olap4jConnection.toOlap4j(member);
     }
 
+    private Id.Segment fromOlap4j(IdentifierSegment segment) {
+        switch (segment.getQuoting()) {
+        case KEY:
+            return new Id.Segment(segment.getName(), Id.Quoting.KEY);
+        case QUOTED:
+            return new Id.Segment(segment.getName(), Id.Quoting.QUOTED);
+        case UNQUOTED:
+            return new Id.Segment(segment.getName(), Id.Quoting.UNQUOTED);
+        default:
+            throw Util.unexpected(segment.getQuoting());
+        }
+    }
+
     public List<Member> lookupMembers(
         Set<Member.TreeOp> treeOps,
-        String... nameParts) throws OlapException
+        List<IdentifierSegment> nameParts) throws OlapException
     {
         final MondrianOlap4jMember member = lookupMember(nameParts);
         if (member == null) {
