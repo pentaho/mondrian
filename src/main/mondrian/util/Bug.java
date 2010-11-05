@@ -19,6 +19,23 @@ import org.apache.log4j.Logger;
  * code can be enabled when the bug is fixed. Generally a constant is removed
  * when its bug is fixed.
  *
+ * <h3>Cleanup items</h3>
+ *
+ * The following is a list of cleanup items. They are not bugs per se:
+ * functionality is not wrong, just the organization of the code. If they were
+ * bugs, they would be in jira. It makes sense to have the list here, so that
+ * referenced class, method and variable names show up as uses in code searches.
+ *
+ * <dl>
+ *
+ * <dt>Obsolete {@link mondrian.olap.Id.Segment}</dt>
+ * <dd>Replace it by {@link org.olap4j.mdx.IdentifierSegment}. Likewise
+ * {@link mondrian.olap.Id.Quoting} with {@link org.olap4j.mdx.Quoting}.
+ * Should wait until after the mondrian 4 'big bang', because there are ~300
+ * uses of Segment in the code.</dd>
+ *
+ * </dl>
+ *
  * @author jhyde
  * @version $Id$
  * @since Oct 11, 2006
