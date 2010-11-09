@@ -2480,16 +2480,16 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testFormatOfNulls() {
         assertQueryReturns(
-            "with member [Measures].[Foo] as '([Measures].[Store Sales])',\n"
+            "with member [Measures]._Foo as '([Measures].[Store Sales])',\n"
             + " format_string = '$#,##0.00;($#,##0.00);ZERO;NULL;Nil'\n"
             + "select\n"
-            + " {[Measures].[Foo]} on columns,\n"
+            + " {[Measures].[_Foo]} on columns,\n"
             + " {[Customers].[Country].members} on rows\n"
             + "from Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Foo]}\n"
+            + "{[Measures].[_Foo]}\n"
             + "Axis #2:\n"
             + "{[Customers].[Canada]}\n"
             + "{[Customers].[Mexico]}\n"

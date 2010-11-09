@@ -18,7 +18,6 @@ import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -92,20 +91,59 @@ public class ParserTest extends FoodMartTestCase {
             + "from [sales]\n");
     }
 
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-831">
+     * MONDRIAN-831, "Failure parsing queries with member identifiers beginning
+     * with '_' and not expressed between brackets"</a>.
+     *
+     * <p>According to the spec
+     * <a href="http://msdn.microsoft.com/en-us/library/ms145572.aspx">
+     * Identifiers (MDX)</a>, the first character of a regular identifier
+     * must be a letter (per the unicode standard 2.0) or underscore. Subsequent
+     * characters must be a letter, and underscore, or a digit.
+     */
     public void testScannerPunc() {
-        // '$' is OK inside brackets but not outside
+        assertParseQuery(
+            "with member [Measures].__Foo as 1 + 2\n"
+            + "select __Foo on 0\n"
+            + "from _Bar_Baz",
+            "with member [Measures].__Foo as '(1.0 + 2.0)'\n"
+            + "select __Foo ON COLUMNS\n"
+            + "from [_Bar_Baz]\n");
+
+        // # is not allowed
+        assertParseQueryFails(
+            "with member [Measures].#_Foo as 1 + 2\n"
+            + "select __Foo on 0\n"
+            + "from _Bar#Baz",
+            "Unexpected character '#'");
+        assertParseQueryFails(
+            "with member [Measures].Foo as 1 + 2\n"
+            + "select Foo on 0\n"
+            + "from Bar#Baz",
+            "Unexpected character '#'");
+
+        // The spec doesn't allow $ but SSAS allows it so we allow it too.
+        assertParseQuery(
+            "with member [Measures].$Foo as 1 + 2\n"
+            + "select $Foo on 0\n"
+            + "from Bar$Baz",
+            "with member [Measures].$Foo as '(1.0 + 2.0)'\n"
+            + "select $Foo ON COLUMNS\n"
+            + "from [Bar$Baz]\n");
+        // '$' is OK inside brackets too
         assertParseQuery(
             "select [measures].[$foo] on columns from sales",
             "select [measures].[$foo] ON COLUMNS\n"
             + "from [sales]\n");
-        assertParseQueryFails(
-            "select [measures].$foo on columns from sales",
-            "Unexpected character '$'");
 
         // ']' unexcpected
         assertParseQueryFails(
             "select { Customers].Children } on columns from [Sales]",
             "Unexpected character ']'");
+    }
+
+    public void testUnderscore() {
     }
 
     public void testUnparse() {
