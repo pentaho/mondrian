@@ -9,6 +9,7 @@
 
 package mondrian.xmla.impl;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.CacheControlImpl;
 import mondrian.rolap.RolapSchema;
@@ -27,34 +28,22 @@ import java.util.Map;
  * Extends DefaultXmlaServlet to add dynamic datasource loading capability.
  * Limitations : Catalog name should be unique across the datasources
  *
- * @author Thiyagu, Ajit
+ * <p>The schema is updated every X milliseconds for each request to
+ * {@link DynamicDatasourceXmlaServlet#doPost(HttpServletRequest,
+ * HttpServletResponse)}, where X is
+ * {@link MondrianProperties#XmlaSchemaRefreshInterval}
+ *
+ * @author Thiyagu Ajit, Luc Boudreau
  */
 public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
     protected URL dataSourcesConfigUrl;
     protected String lastDataSourcesConfigString;
 
-    public final static String SCHEMA_UPDATE_DELAY = "SCHEMA_UPDATE_DELAY";
     /**
      * Contains the last timestamp in milis when the
      * schema was checked for updates.
      */
     protected long lastUpdate = System.currentTimeMillis();
-
-    /**
-     * Interval, in miliseconds, at which to check for
-     * an updated schema. This is actually a TTL value checked
-     * at each post request. There are no background tasks running.
-     */
-    protected long updateDelay = 3000;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        if (getInitParameter(SCHEMA_UPDATE_DELAY) != null) {
-            updateDelay = Long.valueOf(
-                getInitParameter(SCHEMA_UPDATE_DELAY));
-        }
-    }
 
     protected void doPost(
         HttpServletRequest request,
@@ -62,7 +51,9 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
         throws ServletException, IOException
     {
         // Check if an update is necessary
-        if (lastUpdate + updateDelay >= System.currentTimeMillis()) {
+        final int refreshInterval =
+            MondrianProperties.instance().XmlaSchemaRefreshInterval.get();
+        if (lastUpdate + refreshInterval >= System.currentTimeMillis()) {
             lastUpdate = System.currentTimeMillis();
             reloadDataSources();
         }
