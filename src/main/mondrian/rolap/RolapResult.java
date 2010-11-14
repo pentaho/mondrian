@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1562,19 +1562,18 @@ public class RolapResult extends ResultBase {
         FormatValueFormatter(Locale locale) {
             this.locale = locale;
         }
+
         public String format(Object value, String formatString) {
             if (value == Util.nullValue) {
-                Format format = getFormat(formatString);
-                return format.format(null);
-            } else if (value instanceof Throwable) {
-                return "#ERR: " + value.toString();
-            } else if (value instanceof String) {
-                return (String) value;
-            } else {
-                Format format = getFormat(formatString);
-                return format.format(value);
+                value = null;
             }
+            if (value instanceof Throwable) {
+                return "#ERR: " + value.toString();
+            }
+            Format format = getFormat(formatString);
+            return format.format(value);
         }
+
         private Format getFormat(String formatString) {
             return Format.get(formatString, locale);
         }

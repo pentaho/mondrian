@@ -704,30 +704,24 @@ public class RolapEvaluator implements Evaluator {
 
     public final String format(Object o) {
         if (o == Util.nullValue) {
-            Format format = getFormat();
-            return format.format(null);
-        } else if (o instanceof Throwable) {
-            return "#ERR: " + o.toString();
-        } else if (o instanceof String) {
-            return (String) o;
-        } else {
-            Format format = getFormat();
-            return format.format(o);
+            o = null;
         }
+        if (o instanceof Throwable) {
+            return "#ERR: " + o.toString();
+        }
+        Format format = getFormat();
+        return format.format(o);
     }
 
     public final String format(Object o, String formatString) {
         if (o == Util.nullValue) {
-            Format format = getFormat(formatString);
-            return format.format(null);
-        } else if (o instanceof Throwable) {
-            return "#ERR: " + o.toString();
-        } else if (o instanceof String) {
-            return (String) o;
-        } else {
-            Format format = getFormat(formatString);
-            return format.format(o);
+            o = null;
         }
+        if (o instanceof Throwable) {
+            return "#ERR: " + o.toString();
+        }
+        Format format = getFormat(formatString);
+        return format.format(o);
     }
 
     /**

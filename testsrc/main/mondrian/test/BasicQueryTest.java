@@ -6021,6 +6021,45 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test format string values. Previously, a bug meant that string values
+     * were printed as is, never passed through the format string.
+     */
+    public void testFormatStringAppliedToStringValue() {
+        // "23" as an integer value: "<" format string is meaningless to
+        // numerics, so is not replaced.
+        // (Checked on SSAS2005; also see FormatTest.testString.)
+        assertQueryReturns(
+            "with member [Measures].[Test] as '23', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |<|arrow=up\n");
+        // "23" as a string value: converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"23\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |23|arrow=up\n");
+        // string value "Foo Bar" -- converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"Foo \" || \"Bar\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |foo bar|arrow=up\n");
+    }
+
+    /**
      * This tests a fix for bug #1603653
      */
     public void testAvgCastProblem() {
