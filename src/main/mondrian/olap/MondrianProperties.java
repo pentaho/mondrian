@@ -1234,9 +1234,8 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Interval, in milliseconds, at which to refresh the
      * list of XML/A catalogs. This is usually known as the
-     * datasources.xml file.
-     *
-     * @see {@link DynamicDatasourceXmlaServlet}
+     * datasources.xml file. See also
+     * {@link DynamicDatasourceXmlaServlet}.
      */
     public transient final IntegerProperty XmlaSchemaRefreshInterval =
         new IntegerProperty(
