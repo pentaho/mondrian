@@ -6495,7 +6495,7 @@ TODO: see above
                         .toMask(
                             property.getType()));
                 row.set(PropertyName.name, property.name());
-                row.set(PropertyCaption.name, property.getCaption(null));
+                row.set(PropertyCaption.name, property.getCaption());
                 row.set(DataType.name, property.getDatatype().xmlaOrdinal());
                 addRow(row, rows);
             }

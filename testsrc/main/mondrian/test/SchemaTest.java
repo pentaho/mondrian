@@ -1937,10 +1937,10 @@ public class SchemaTest extends FoodMartTestCase {
         final NamedList<org.olap4j.metadata.Cube> cubes =
             testContext.getOlap4jConnection().getSchema().getCubes();
         final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
-        assertEquals("Cube with name", cube.getCaption(null));
+        assertEquals("Cube with name", cube.getCaption());
         final org.olap4j.metadata.Cube cube2 =
             cubes.get("Warehouse and Sales with caption");
-        assertEquals("Warehouse and Sales with name", cube2.getCaption(null));
+        assertEquals("Warehouse and Sales with name", cube2.getCaption());
     }
 
     public void testCubeWithNoDimensions() {

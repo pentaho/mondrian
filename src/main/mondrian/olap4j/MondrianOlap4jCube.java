@@ -112,12 +112,12 @@ class MondrianOlap4jCube implements Cube, Named {
         return cube.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: i81n
         return cube.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: i81n
         return cube.getDescription();
     }

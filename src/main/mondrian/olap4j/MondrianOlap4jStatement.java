@@ -198,8 +198,8 @@ class MondrianOlap4jStatement implements OlapStatement {
         throw new UnsupportedOperationException();
     }
 
-    public Connection getConnection() throws SQLException {
-        throw new UnsupportedOperationException();
+    public OlapConnection getConnection() {
+        return olap4jConnection;
     }
 
     public boolean getMoreResults(int current) throws SQLException {
