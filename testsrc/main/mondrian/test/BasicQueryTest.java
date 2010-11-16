@@ -6025,9 +6025,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * were printed as is, never passed through the format string.
      */
     public void testFormatStringAppliedToStringValue() {
-        // "23" as an integer value: "<" format string is meaningless to
-        // numerics, so is not replaced.
-        // (Checked on SSAS2005; also see FormatTest.testString.)
+        // "23" as an integer value
         assertQueryReturns(
             "with member [Measures].[Test] as '23', FORMAT_STRING = '|<|arrow=\"up\"'\n"
             + "select [Measures].[Test] on 0\n"
@@ -6036,7 +6034,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Test]}\n"
-            + "Row #0: |<|arrow=up\n");
+            + "Row #0: |23|arrow=up\n");
         // "23" as a string value: converted to lower case
         assertQueryReturns(
             "with member [Measures].[Test] as '\"23\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"

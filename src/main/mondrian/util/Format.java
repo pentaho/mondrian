@@ -147,31 +147,29 @@ public class Format {
         '\0', '\0', null, null, null, null, null, null, null, null,
         Locale.US);
 
-    /**
-     * Formats an object using a format string, according to a given locale.
-     *
-     * <p>If you need to format many objects using the same format string,
-     * create a formatter object using
-     * {@link mondrian.util.Format#Format(String, java.util.Locale)}.
-     *
-     * @return object formatted using format string
-     */
-    static String format(Object o, String formatString, Locale locale)
-    {
-        Format format = new Format(formatString, locale);
-        return format.format(o);
-    }
-
     static class Token {
-        int code;
-        int flags;
-        String token;
+        final int code;
+        final int flags;
+        final String token;
+        final FormatType formatType;
 
         Token(int code, int flags, String token)
         {
             this.code = code;
             this.flags = flags;
             this.token = token;
+            this.formatType =
+                isNumeric() ? FormatType.NUMERIC
+                    : isDate() ? FormatType.DATE
+                        : isString() ? FormatType.STRING
+                        : null;
+        }
+
+        boolean compatibleWith(FormatType formatType)
+        {
+            return formatType == null
+                || this.formatType == null
+                || formatType == this.formatType;
         }
 
         boolean isSpecial()
@@ -194,14 +192,16 @@ public class Format {
             return (flags & STRING) == STRING;
         }
 
+        FormatType getFormatType() {
+            return formatType;
+        }
+
         BasicFormat makeFormat(FormatLocale locale)
         {
             if (isDate()) {
                 return new DateFormat(code, token, locale, false);
             } else if (isNumeric()) {
                 return new LiteralFormat(code, token);
-            } else if (isString()) {
-                throw new Error();
             } else {
                 return new LiteralFormat(token);
             }
@@ -215,14 +215,14 @@ public class Format {
      * primitive types.  To make it easy to combine formatting objects, all
      * methods write to a {@link PrintWriter}.
      *
-     * The base implementation of most of these methods throws an error, there
+     * <p>The base implementation of most of these methods throws; there
      * is no requirement that a derived class implements all of these methods.
      * It is up to {@link Format#parseFormatString} to ensure that, for
      * example, the {@link #format(double,StringBuilder)} method is
      * never called for {@link DateFormat}.
      */
     static class BasicFormat {
-        int code;
+        final int code;
 
         BasicFormat() {
             this(0);
@@ -230,6 +230,10 @@ public class Format {
 
         BasicFormat(int code) {
             this.code = code;
+        }
+
+        FormatType getFormatType() {
+            return null;
         }
 
         void formatNull(StringBuilder buf) {
@@ -301,17 +305,19 @@ public class Format {
      * <li>null values</li>
      * </ol>
      *
-     * If there are fewer than 4 formats, the first is used as a fall-back.
+     * <p>If there are fewer than 4 formats, the first is used as a fall-back.
      * See the <a href="http://www.apostate.com/programming/vb-format.html">the
      * visual basic format specification</a> for more details.
      */
     static class AlternateFormat extends BasicFormat {
         final BasicFormat[] formats;
+        final JavaFormat javaFormat;
 
-        AlternateFormat(BasicFormat[] formats)
+        AlternateFormat(BasicFormat[] formats, FormatLocale locale)
         {
             this.formats = formats;
             assert formats.length >= 1;
+            this.javaFormat = new JavaFormat(locale.locale);
         }
 
         void formatNull(StringBuilder buf) {
@@ -323,151 +329,173 @@ public class Format {
         }
 
         void format(double n, StringBuilder buf) {
-            if (formats.length == 0) {
-                buf.append(n);
-            } else {
-                int i;
-                if (n == 0
-                    && formats.length >= 3
-                    && formats[2] != null)
+            int i;
+            if (n == 0
+                && formats.length >= 3
+                && formats[2] != null)
+            {
+                i = 2;
+            } else if (n < 0) {
+                if (formats.length >= 2
+                    && formats[1] != null)
                 {
-                    i = 2;
-                } else if (n < 0) {
-                    if (formats.length >= 2
-                        && formats[1] != null)
-                    {
-                        if (formats[1].isApplicableTo(n)) {
-                            n = -n;
-                            i = 1;
-                        } else {
-                            // Does not fit into the negative mask, so use the
-                            // nil mask, if there is one. For example,
-                            // "#.0;(#.0);Nil" formats -0.0001 as "Nil".
-                            if (formats.length >= 3
-                                && formats[2] != null)
-                            {
-                                i = 2;
-                            } else {
-                                i = 0;
-                            }
-                        }
+                    if (formats[1].isApplicableTo(n)) {
+                        n = -n;
+                        i = 1;
                     } else {
-                        i = 0;
-                        if (formats[0].isApplicableTo(n)) {
-                            if (!Bug.BugMondrian687Fixed) {
-                                // Special case for format strings with style,
-                                // like "|#|style='red'". JPivot expects the
-                                // '-' to immediately precede the digits, viz
-                                // "|-6|style='red'|", not "-|6|style='red'|".
-                                // This is not consistent with SSAS 2005, hence
-                                // the bug.
-                                //
-                                // But for other formats, we want '-' to precede
-                                // literals, viz '-$6' not '$-6'. This is SSAS
-                                // 2005's behavior too.
-                                int size = buf.length();
-                                buf.append('-');
-                                n = -n;
-                                formats[i].format(n, buf);
-                                if (buf.substring(size, size + 2).equals(
-                                    "-|"))
-                                {
-                                    buf.setCharAt(size, '|');
-                                    buf.setCharAt(size + 1, '-');
-                                }
-                                return;
-                            }
-                            buf.append('-');
-                            n = -n;
+                        // Does not fit into the negative mask, so use the
+                        // nil mask, if there is one. For example,
+                        // "#.0;(#.0);Nil" formats -0.0001 as "Nil".
+                        if (formats.length >= 3
+                            && formats[2] != null)
+                        {
+                            i = 2;
                         } else {
-                            n = 0;
+                            i = 0;
                         }
                     }
                 } else {
                     i = 0;
+                    if (formats[0].isApplicableTo(n)) {
+                        if (!Bug.BugMondrian687Fixed) {
+                            // Special case for format strings with style,
+                            // like "|#|style='red'". JPivot expects the
+                            // '-' to immediately precede the digits, viz
+                            // "|-6|style='red'|", not "-|6|style='red'|".
+                            // This is not consistent with SSAS 2005, hence
+                            // the bug.
+                            //
+                            // But for other formats, we want '-' to precede
+                            // literals, viz '-$6' not '$-6'. This is SSAS
+                            // 2005's behavior too.
+                            int size = buf.length();
+                            buf.append('-');
+                            n = -n;
+                            formats[i].format(n, buf);
+                            if (buf.substring(size, size + 2).equals(
+                                "-|"))
+                            {
+                                buf.setCharAt(size, '|');
+                                buf.setCharAt(size + 1, '-');
+                            }
+                            return;
+                        }
+                        buf.append('-');
+                        n = -n;
+                    } else {
+                        n = 0;
+                    }
                 }
-                formats[i].format(n, buf);
+            } else {
+                i = 0;
             }
+            formats[i].format(n, buf);
         }
 
         void format(long n, StringBuilder buf) {
-            if (formats.length == 0) {
-                buf.append(n);
-            } else {
-                int i;
-                if (n == 0
-                    && formats.length >= 3
-                    && formats[2] != null)
+            int i;
+            if (n == 0
+                && formats.length >= 3
+                && formats[2] != null)
+            {
+                i = 2;
+            } else if (n < 0) {
+                if (formats.length >= 2
+                    && formats[1] != null)
                 {
-                    i = 2;
-                } else if (n < 0) {
-                    if (formats.length >= 2
-                        && formats[1] != null)
-                    {
-                        if (formats[1].isApplicableTo(n)) {
-                            n = -n;
-                            i = 1;
-                        } else {
-                            // Does not fit into the negative mask, so use the
-                            // nil mask, if there is one. For example,
-                            // "#.0;(#.0);Nil" formats -0.0001 as "Nil".
-                            if (formats.length >= 3
-                                && formats[2] != null)
-                            {
-                                i = 2;
-                            } else {
-                                i = 0;
-                            }
-                        }
+                    if (formats[1].isApplicableTo(n)) {
+                        n = -n;
+                        i = 1;
                     } else {
-                        i = 0;
-                        if (formats[0].isApplicableTo(n)) {
-                            if (!Bug.BugMondrian687Fixed) {
-                                // Special case for format strings with style,
-                                // like "|#|style='red'". JPivot expects the
-                                // '-' to immediately precede the digits, viz
-                                // "|-6|style='red'|", not "-|6|style='red'|".
-                                // This is not consistent with SSAS 2005, hence
-                                // the bug.
-                                //
-                                // But for other formats, we want '-' to precede
-                                // literals, viz '-$6' not '$-6'. This is SSAS
-                                // 2005's behavior too.
-                                final int size = buf.length();
-                                buf.append('-');
-                                n = -n;
-                                formats[i].format(n, buf);
-                                if (buf.substring(size, size + 2).equals(
-                                    "-|"))
-                                {
-                                    buf.setCharAt(size, '|');
-                                    buf.setCharAt(size + 1, '-');
-                                }
-                                return;
-                            }
-                            buf.append('-');
-                            n = -n;
+                        // Does not fit into the negative mask, so use the
+                        // nil mask, if there is one. For example,
+                        // "#.0;(#.0);Nil" formats -0.0001 as "Nil".
+                        if (formats.length >= 3
+                            && formats[2] != null)
+                        {
+                            i = 2;
                         } else {
-                            n = 0;
+                            i = 0;
                         }
                     }
                 } else {
                     i = 0;
+                    if (formats[0].isApplicableTo(n)) {
+                        if (!Bug.BugMondrian687Fixed) {
+                            // Special case for format strings with style,
+                            // like "|#|style='red'". JPivot expects the
+                            // '-' to immediately precede the digits, viz
+                            // "|-6|style='red'|", not "-|6|style='red'|".
+                            // This is not consistent with SSAS 2005, hence
+                            // the bug.
+                            //
+                            // But for other formats, we want '-' to precede
+                            // literals, viz '-$6' not '$-6'. This is SSAS
+                            // 2005's behavior too.
+                            final int size = buf.length();
+                            buf.append('-');
+                            n = -n;
+                            formats[i].format(n, buf);
+                            if (buf.substring(size, size + 2).equals(
+                                "-|"))
+                            {
+                                buf.setCharAt(size, '|');
+                                buf.setCharAt(size + 1, '-');
+                            }
+                            return;
+                        }
+                        buf.append('-');
+                        n = -n;
+                    } else {
+                        n = 0;
+                    }
                 }
-                formats[i].format(n, buf);
+            } else {
+                i = 0;
             }
+            formats[i].format(n, buf);
         }
 
         void format(String s, StringBuilder buf) {
-            formats[0].format(s, buf);
-        }
-
-        void format(Date date, StringBuilder buf) {
-            formats[0].format(date, buf);
+            // since it is not a number, ignore all format strings
+            buf.append(s);
         }
 
         void format(Calendar calendar, StringBuilder buf) {
-            formats[0].format(calendar, buf);
+            // We're passing a date to a numeric format string. Convert it to
+            // the number of days since 1900.
+            BigDecimal bigDecimal = daysSince1900(calendar);
+
+            // since it is not a number, ignore all format strings
+            format(bigDecimal.doubleValue(), buf);
+        }
+
+        private static BigDecimal daysSince1900(Calendar calendar) {
+            final long dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+            final long year = calendar.get(Calendar.YEAR);
+            long yearForLeap = year;
+            if (calendar.get(Calendar.MONTH) < 2) {
+                --yearForLeap;
+            }
+            final long leapDays =
+                (yearForLeap - 1900) / 4
+                - (yearForLeap - 1900) / 100
+                + (yearForLeap - 2000) / 400;
+            final long days =
+                (year - 1900) * 365
+                + leapDays
+                + dayOfYear
+                + 2; // kludge factor to agree with Excel
+            final long millis =
+                calendar.get(Calendar.HOUR_OF_DAY) * 3600000
+                + calendar.get(Calendar.MINUTE) * 60000
+                + calendar.get(Calendar.SECOND) * 1000
+                + calendar.get(Calendar.MILLISECOND);
+            return BigDecimal.valueOf(days).add(
+                BigDecimal.valueOf(millis).divide(
+                    BigDecimal.valueOf(86400000),
+                    8,
+                    BigDecimal.ROUND_FLOOR));
         }
     }
 
@@ -582,8 +610,11 @@ public class Format {
         JavaFormat(Locale locale)
         {
             this.numberFormat = NumberFormat.getNumberInstance(locale);
-            this.dateFormat = java.text.DateFormat.getDateInstance(
-                java.text.DateFormat.SHORT, locale);
+            this.dateFormat =
+                java.text.DateFormat.getDateTimeInstance(
+                    java.text.DateFormat.SHORT,
+                    java.text.DateFormat.MEDIUM,
+                    locale);
         }
 
         // No need to override format(Object,PrintWriter) or
@@ -619,7 +650,7 @@ public class Format {
      */
     static abstract class FallbackFormat extends BasicFormat
     {
-        String token;
+        final String token;
 
         FallbackFormat(int code, String token)
         {
@@ -652,7 +683,7 @@ public class Format {
      * <p>It is implemented using {@link FloatingDecimal}, which is a
      * barely-modified version of <code>java.lang.FloatingDecimal</code>.
      */
-    static class NumericFormat extends FallbackFormat
+    static class NumericFormat extends JavaFormat
     {
         final FormatLocale locale;
         final int digitsLeftOfPoint;
@@ -676,7 +707,8 @@ public class Format {
         final ArrayStack<Integer> cachedThousandSeparatorPositions;
 
         NumericFormat(
-            String token, FormatLocale locale,
+            String token,
+            FormatLocale locale,
             int expFormat,
             int digitsLeftOfPoint, int zeroesLeftOfPoint,
             int digitsRightOfPoint, int zeroesRightOfPoint,
@@ -684,7 +716,7 @@ public class Format {
             boolean useDecimal, boolean useThouSep,
             String formatString)
         {
-            super(FORMAT_NULL, token);
+            super(locale.locale);
             this.locale = locale;
             switch (expFormat) {
             case FORMAT_E_MINUS_UPPER:
@@ -789,6 +821,10 @@ public class Format {
                 thousandSeparatorTokenMap.put(
                     formatString, cachedThousandSeparatorPositions);
             }
+        }
+
+        FormatType getFormatType() {
+            return FormatType.NUMERIC;
         }
 
         private ArrayStack<Integer> getThousandSeparatorPositions() {
@@ -903,6 +939,10 @@ public class Format {
             super(code, s);
             this.locale = locale;
             this.twelveHourClock = twelveHourClock;
+        }
+
+        FormatType getFormatType() {
+            return FormatType.DATE;
         }
 
         void setTwelveHourClock(boolean twelveHourClock)
@@ -1236,11 +1276,13 @@ public class Format {
     {
         final StringCase stringCase;
         final String literal;
+        final JavaFormat javaFormat;
 
-        StringFormat(StringCase stringCase, String literal) {
+        StringFormat(StringCase stringCase, String literal, Locale locale) {
             assert stringCase != null;
             this.stringCase = stringCase;
             this.literal = literal;
+            this.javaFormat = new JavaFormat(locale);
         }
 
         @Override
@@ -1257,19 +1299,35 @@ public class Format {
         }
 
         void format(double d, StringBuilder buf) {
-            buf.append(literal);
+            final int x = buf.length();
+            javaFormat.format(d, buf);
+            String s = buf.substring(x);
+            buf.setLength(x);
+            format(s, buf);
         }
 
         void format(long n, StringBuilder buf) {
-            buf.append(literal);
+            final int x = buf.length();
+            javaFormat.format(n, buf);
+            String s = buf.substring(x);
+            buf.setLength(x);
+            format(s, buf);
         }
 
         void format(Date date, StringBuilder buf) {
-            buf.append(literal);
+            final int x = buf.length();
+            javaFormat.format(date, buf);
+            String s = buf.substring(x);
+            buf.setLength(x);
+            format(s, buf);
         }
 
         void format(Calendar calendar, StringBuilder buf) {
-            buf.append(literal);
+            final int x = buf.length();
+            javaFormat.format(calendar, buf);
+            String s = buf.substring(x);
+            buf.setLength(x);
+            format(s, buf);
         }
     }
 
@@ -1280,9 +1338,9 @@ public class Format {
 
     /** Types of Format. */
     private static final int GENERAL = 0;
-    private static final int DATE = 3;
-    private static final int NUMERIC = 4;
-    private static final int STRING = 5;
+    private static final int DATE = 1;
+    private static final int NUMERIC = 2;
+    private static final int STRING = 4;
 
     /** A Format is flagged SPECIAL if it needs special processing
      * during parsing. */
@@ -1973,9 +2031,10 @@ public class Format {
         this.locale = locale;
 
         List<BasicFormat> alternateFormatList = new ArrayList<BasicFormat>();
+        FormatType[] formatType = {null};
         while (formatString.length() > 0) {
             formatString = parseFormatString(
-                formatString, alternateFormatList);
+                formatString, alternateFormatList, formatType);
         }
 
         // If the format string is empty, use a Java format.
@@ -1985,11 +2044,16 @@ public class Format {
             || alternateFormatList.get(0) == null)
         {
             format = new JavaFormat(locale.locale);
+        } else if (alternateFormatList.size() == 1
+                   && (formatType[0] == FormatType.DATE
+                       || formatType[0] == FormatType.STRING))
+        {
+            format = alternateFormatList.get(0);
         } else {
             BasicFormat[] alternateFormats =
                 alternateFormatList.toArray(
                     new BasicFormat[alternateFormatList.size()]);
-            format = new AlternateFormat(alternateFormats);
+            format = new AlternateFormat(alternateFormats, locale);
         }
     }
 
@@ -2251,7 +2315,9 @@ public class Format {
      * the remains of formatString.
      */
     private String parseFormatString(
-        String formatString, List<BasicFormat> alternateFormatList)
+        String formatString,
+        List<BasicFormat> alternateFormatList,
+        FormatType[] formatTypeOut)
     {
         // Cache the original value
         final String originalFormatString = formatString;
@@ -2312,233 +2378,240 @@ public class Format {
             boolean ignoreToken = false;
             for (int i = tokens.length - 1; i > 0; i--) {
                 Token token = tokens[i];
-                if (formatString.startsWith(token.token)) {
-                    // Derive the string we will be looking at next time
-                    // around, by chewing the token off the front of the
-                    // string.  Special-case code below can change this string,
-                    // if it likes.
-                    String matched = token.token;
-                    newFormatString = formatString.substring(matched.length());
-                    if (token.isSpecial()) {
-                        switch (token.code) {
-                        case FORMAT_SEMI:
-                            formatString = newFormatString;
-                            break loop;
+                if (!formatString.startsWith(token.token)) {
+                    continue;
+                }
+                if (!token.compatibleWith(formatTypeOut[0])) {
+                    continue;
+                }
+                String matched = token.token;
+                newFormatString = formatString.substring(matched.length());
+                if (token.isSpecial()) {
+                    switch (token.code) {
+                    case FORMAT_SEMI:
+                        formatString = newFormatString;
+                        break loop;
 
-                        case FORMAT_POUND:
-                            switch (numberState) {
-                            case NOT_IN_A_NUMBER:
-                                numberState = LEFT_OF_POINT;
-                                // fall through
-                            case LEFT_OF_POINT:
-                                digitsLeftOfPoint++;
-                                break;
-                            case RIGHT_OF_POINT:
-                                digitsRightOfPoint++;
-                                break;
-                            case RIGHT_OF_EXP:
-                                digitsRightOfExp++;
-                                break;
-                            default:
-                                throw new Error();
-                            }
+                    case FORMAT_POUND:
+                        switch (numberState) {
+                        case NOT_IN_A_NUMBER:
+                            numberState = LEFT_OF_POINT;
+                            // fall through
+                        case LEFT_OF_POINT:
+                            digitsLeftOfPoint++;
                             break;
-
-                        case FORMAT_0:
-                            switch (numberState) {
-                            case NOT_IN_A_NUMBER:
-                                numberState = LEFT_OF_POINT;
-                                // fall through
-                            case LEFT_OF_POINT:
-                                zeroesLeftOfPoint++;
-                                break;
-                            case RIGHT_OF_POINT:
-                                zeroesRightOfPoint++;
-                                break;
-                            case RIGHT_OF_EXP:
-                                zeroesRightOfExp++;
-                                break;
-                            default:
-                                throw new Error();
-                            }
+                        case RIGHT_OF_POINT:
+                            digitsRightOfPoint++;
                             break;
-
-                        case FORMAT_M:
-                        case FORMAT_MM:
-                        {
-                            // "m" and "mm" mean minute if immediately after
-                            // "h" or "hh"; month otherwise.
-                            boolean theyMeantMinute = false;
-                            int j = formatList.size() - 1;
-                            while (j >= 0) {
-                                BasicFormat prevFormat = formatList.get(j);
-                                if (prevFormat instanceof LiteralFormat) {
-                                    // ignore boilerplate
-                                    j--;
-                                } else if (prevFormat.code == FORMAT_H
-                                           || prevFormat.code == FORMAT_HH)
-                                {
-                                    theyMeantMinute = true;
-                                    break;
-                                } else {
-                                    theyMeantMinute = false;
-                                    break;
-                                }
-                            }
-                            if (theyMeantMinute) {
-                                format = new DateFormat(
-                                    (token.code == FORMAT_M
-                                        ? FORMAT_N
-                                        : FORMAT_NN),
-                                    matched,
-                                    locale,
-                                    false);
-                            } else {
-                                format = token.makeFormat(locale);
-                            }
+                        case RIGHT_OF_EXP:
+                            digitsRightOfExp++;
                             break;
-                        }
-
-                        case FORMAT_DECIMAL:
-                        {
-                            numberState = RIGHT_OF_POINT;
-                            useDecimal = true;
-                            break;
-                        }
-
-                        case FORMAT_THOUSEP:
-                        {
-                            if (numberState == LEFT_OF_POINT) {
-                                // e.g. "#,##"
-                                useThouSep = true;
-                            } else {
-                                // e.g. "ddd, mmm dd, yyy"
-                                format = token.makeFormat(locale);
-                            }
-                            break;
-                        }
-
-                        case FORMAT_TIMESEP:
-                        {
-                            format = new LiteralFormat(locale.timeSeparator);
-                            break;
-                        }
-
-                        case FORMAT_DATESEP:
-                        {
-                            format = new LiteralFormat(locale.dateSeparator);
-                            break;
-                        }
-
-                        case FORMAT_BACKSLASH:
-                        {
-                            // Display the next character in the format string.
-                            String s;
-                            if (formatString.length() == 1) {
-                                // Backslash is the last character in the
-                                // string.
-                                s = "";
-                                newFormatString = "";
-                            } else {
-                                s = formatString.substring(1, 2);
-                                newFormatString = formatString.substring(2);
-                            }
-                            format = new LiteralFormat(s);
-                            break;
-                        }
-
-                        case FORMAT_E_MINUS_UPPER:
-                        case FORMAT_E_PLUS_UPPER:
-                        case FORMAT_E_MINUS_LOWER:
-                        case FORMAT_E_PLUS_LOWER:
-                        {
-                            numberState = RIGHT_OF_EXP;
-                            expFormat = token.code;
-                            if (zeroesLeftOfPoint == 0
-                                && zeroesRightOfPoint == 0)
-                            {
-                                // We need a mantissa, so that format(123.45,
-                                // "E+") gives "1E+2", not "0E+2" or "E+2".
-                                zeroesLeftOfPoint = 1;
-                            }
-                            break;
-                        }
-
-                        case FORMAT_QUOTE:
-                        {
-                            // Display the string inside the double quotation
-                            // marks.
-                            String s;
-                            int j = formatString.indexOf("\"", 1);
-                            if (j == -1) {
-                                // The string did not contain a closing quote.
-                                // Use the whole string.
-                                s = formatString.substring(1);
-                                newFormatString = "";
-                            } else {
-                                // Take the string inside the quotes.
-                                s = formatString.substring(1, j);
-                                newFormatString = formatString.substring(
-                                    j + 1);
-                            }
-                            format = new LiteralFormat(s);
-                            break;
-                        }
-
-                        case FORMAT_UPPER:
-                        {
-                            format = new StringFormat(StringCase.UPPER, ">");
-                            break;
-                        }
-
-                        case FORMAT_LOWER:
-                        {
-                            format = new StringFormat(StringCase.LOWER, "<");
-                            break;
-                        }
-
-                        case FORMAT_FILL_FROM_LEFT:
-                        {
-                            fillFromRight = false;
-                            break;
-                        }
-
-                        case FORMAT_GENERAL_NUMBER:
-                        {
-                            format = new JavaFormat(locale.locale);
-                            break;
-                        }
-
-                        case FORMAT_GENERAL_DATE:
-                        {
-                            format = new JavaFormat(locale.locale);
-                            break;
-                        }
-
-                        case FORMAT_INTL_CURRENCY:
-                        {
-                            format = new LiteralFormat(locale.currencySymbol);
-                            break;
-                        }
-
                         default:
                             throw new Error();
                         }
-                        if (format == null) {
-                            // If the special-case code does not set format,
-                            // we should not create a format element.  (The
-                            // token probably caused some flag to be set.)
-                            ignoreToken = true;
-                            ignored.append(matched);
-                        } else {
-                            prevIgnored = ignored.toString();
-                            ignored.setLength(0);
+                        break;
+
+                    case FORMAT_0:
+                        switch (numberState) {
+                        case NOT_IN_A_NUMBER:
+                            numberState = LEFT_OF_POINT;
+                            // fall through
+                        case LEFT_OF_POINT:
+                            zeroesLeftOfPoint++;
+                            break;
+                        case RIGHT_OF_POINT:
+                            zeroesRightOfPoint++;
+                            break;
+                        case RIGHT_OF_EXP:
+                            zeroesRightOfExp++;
+                            break;
+                        default:
+                            throw new Error();
                         }
-                    } else {
-                        format = token.makeFormat(locale);
+                        break;
+
+                    case FORMAT_M:
+                    case FORMAT_MM:
+                    {
+                        // "m" and "mm" mean minute if immediately after
+                        // "h" or "hh"; month otherwise.
+                        boolean theyMeantMinute = false;
+                        int j = formatList.size() - 1;
+                        while (j >= 0) {
+                            BasicFormat prevFormat = formatList.get(j);
+                            if (prevFormat instanceof LiteralFormat) {
+                                // ignore boilerplate
+                                j--;
+                            } else if (prevFormat.code == FORMAT_H
+                                       || prevFormat.code == FORMAT_HH)
+                            {
+                                theyMeantMinute = true;
+                                break;
+                            } else {
+                                theyMeantMinute = false;
+                                break;
+                            }
+                        }
+                        if (theyMeantMinute) {
+                            format = new DateFormat(
+                                (token.code == FORMAT_M
+                                    ? FORMAT_N
+                                    : FORMAT_NN),
+                                matched,
+                                locale,
+                                false);
+                        } else {
+                            format = token.makeFormat(locale);
+                        }
+                        break;
                     }
-                    break;
+
+                    case FORMAT_DECIMAL:
+                    {
+                        numberState = RIGHT_OF_POINT;
+                        useDecimal = true;
+                        break;
+                    }
+
+                    case FORMAT_THOUSEP:
+                    {
+                        if (numberState == LEFT_OF_POINT) {
+                            // e.g. "#,##"
+                            useThouSep = true;
+                        } else {
+                            // e.g. "ddd, mmm dd, yyy"
+                            format = token.makeFormat(locale);
+                        }
+                        break;
+                    }
+
+                    case FORMAT_TIMESEP:
+                    {
+                        format = new LiteralFormat(locale.timeSeparator);
+                        break;
+                    }
+
+                    case FORMAT_DATESEP:
+                    {
+                        format = new LiteralFormat(locale.dateSeparator);
+                        break;
+                    }
+
+                    case FORMAT_BACKSLASH:
+                    {
+                        // Display the next character in the format string.
+                        String s;
+                        if (formatString.length() == 1) {
+                            // Backslash is the last character in the
+                            // string.
+                            s = "";
+                            newFormatString = "";
+                        } else {
+                            s = formatString.substring(1, 2);
+                            newFormatString = formatString.substring(2);
+                        }
+                        format = new LiteralFormat(s);
+                        break;
+                    }
+
+                    case FORMAT_E_MINUS_UPPER:
+                    case FORMAT_E_PLUS_UPPER:
+                    case FORMAT_E_MINUS_LOWER:
+                    case FORMAT_E_PLUS_LOWER:
+                    {
+                        numberState = RIGHT_OF_EXP;
+                        expFormat = token.code;
+                        if (zeroesLeftOfPoint == 0
+                            && zeroesRightOfPoint == 0)
+                        {
+                            // We need a mantissa, so that format(123.45,
+                            // "E+") gives "1E+2", not "0E+2" or "E+2".
+                            zeroesLeftOfPoint = 1;
+                        }
+                        break;
+                    }
+
+                    case FORMAT_QUOTE:
+                    {
+                        // Display the string inside the double quotation
+                        // marks.
+                        String s;
+                        int j = formatString.indexOf("\"", 1);
+                        if (j == -1) {
+                            // The string did not contain a closing quote.
+                            // Use the whole string.
+                            s = formatString.substring(1);
+                            newFormatString = "";
+                        } else {
+                            // Take the string inside the quotes.
+                            s = formatString.substring(1, j);
+                            newFormatString = formatString.substring(
+                                j + 1);
+                        }
+                        format = new LiteralFormat(s);
+                        break;
+                    }
+
+                    case FORMAT_UPPER:
+                    {
+                        format =
+                            new StringFormat(
+                                StringCase.UPPER, ">", locale.locale);
+                        break;
+                    }
+
+                    case FORMAT_LOWER:
+                    {
+                        format =
+                            new StringFormat(
+                                StringCase.LOWER, "<", locale.locale);
+                        break;
+                    }
+
+                    case FORMAT_FILL_FROM_LEFT:
+                    {
+                        fillFromRight = false;
+                        break;
+                    }
+
+                    case FORMAT_GENERAL_NUMBER:
+                    {
+                        format = new JavaFormat(locale.locale);
+                        break;
+                    }
+
+                    case FORMAT_GENERAL_DATE:
+                    {
+                        format = new JavaFormat(locale.locale);
+                        break;
+                    }
+
+                    case FORMAT_INTL_CURRENCY:
+                    {
+                        format = new LiteralFormat(locale.currencySymbol);
+                        break;
+                    }
+
+                    default:
+                        throw new Error();
+                    }
+                    if (formatTypeOut[0] == null) {
+                        formatTypeOut[0] = token.getFormatType();
+                    }
+                    if (format == null) {
+                        // If the special-case code does not set format,
+                        // we should not create a format element.  (The
+                        // token probably caused some flag to be set.)
+                        ignoreToken = true;
+                        ignored.append(matched);
+                    } else {
+                        prevIgnored = ignored.toString();
+                        ignored.setLength(0);
+                    }
+                } else {
+                    format = token.makeFormat(locale);
                 }
+                break;
             }
 
             if (format == null && !ignoreToken) {
@@ -2564,6 +2637,9 @@ public class Format {
                 }
 
                 formatList.add(format);
+                if (formatTypeOut[0] == null) {
+                    formatTypeOut[0] = format.getFormatType();
+                }
             }
 
             formatString = newFormatString;
@@ -2726,6 +2802,8 @@ public class Format {
             } else if (o instanceof java.util.Date) {
                 // includes java.sql.Date, java.sql.Time and java.sql.Timestamp
                 format.format((Date) o, buf);
+            } else if (o instanceof Calendar) {
+                format.format((Calendar) o, buf);
             } else {
                 buf.append(o.toString());
             }
@@ -2743,6 +2821,12 @@ public class Format {
      */
     public interface LocaleFormatFactory {
         FormatLocale get(Locale locale);
+    }
+
+    private enum FormatType {
+        STRING,
+        DATE,
+        NUMERIC
     }
 
     private static class DummyDecimalFormat extends DecimalFormat {
