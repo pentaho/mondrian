@@ -1512,7 +1512,23 @@ public class XmlaHandler {
             for (Object[] row : rows) {
                 writer.startElement("row");
                 for (int i = 0; i < row.length; i++) {
-                    writer.startElement(columns.get(i).encodedName);
+                    writer.startElement(
+                        columns.get(i).encodedName,
+                        new Object[] {
+                            "xsi:type",
+                            columns.get(i).xsdType});
+
+//                    final String xsdType = columns.get(i).xsdType;
+//                    if (xsdType.equals(XSD_STRING)) {
+//                        writer.startElement(columns.get(i).encodedName);
+//                    } else {
+//                        writer.startElement(
+//                            columns.get(i).encodedName,
+//                            new Object[] {"xsi:type", xsdType});
+//                    }
+
+//                    writer.startElement(columns.get(i).encodedName);
+
                     Object value = row[i];
                     if (value == null) {
                         writer.characters("null");
@@ -1607,9 +1623,10 @@ public class XmlaHandler {
         switch (sqlType) {
         // Integer
         case Types.INTEGER:
-        case Types.BIGINT:
         case Types.SMALLINT:
         case Types.TINYINT:
+            return XSD_INT;
+        case Types.BIGINT:
             return XSD_INTEGER;
         case Types.NUMERIC:
             return XSD_DECIMAL;

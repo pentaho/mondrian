@@ -14364,20 +14364,20 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                     sql:field="Store Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Sqft"
-                                    sql:field="Store Sqft" type="xsd:double"/>
+                                    sql:field="Store Sqft" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Type"
                                     sql:field="Store Type" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Year"
-                                    sql:field="Year" type="xsd:integer"/>
+                                    sql:field="Year" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Quarter" sql:field="Quarter" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Month"
-                                    sql:field="Month" type="xsd:integer"/>
+                                    sql:field="Month" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Week"
-                                    sql:field="Week" type="xsd:decimal"/>
+                                    sql:field="Week" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Day"
-                                    sql:field="Day" type="xsd:decimal"/>
+                                    sql:field="Day" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -14411,7 +14411,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                     sql:field="Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Name_x0020__x0028_Key_x0029_"
-                                    sql:field="Name (Key)" type="xsd:integer"/>
+                                    sql:field="Name (Key)" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Education_x0020_Level"
                                     sql:field="Education Level" type="xsd:string"/>
@@ -14425,7 +14425,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                     sql:field="Yearly Income" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Unit_x0020_Sales"
-                                    sql:field="Unit Sales" type="xsd:double"/>
+                                    sql:field="Unit Sales" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -14460,94 +14460,106 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Unit_x0020_Sales>86</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>3</Month>
-                        <Week>11</Week>
-                        <Day>6</Day>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Drinks</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Flavored Drinks</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Fabulous</Brand_x0020_Name>
-                        <Product_x0020_Name>Fabulous Strawberry Drink</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Berkeley</City>
-                        <Name>Achari Harp</Name>
-                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>M</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Week xsi:type="xsd:int">11</Week>
+                        <Day xsi:type="xsd:int">6</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Drink</Product_x0020_Family>
+                        <Product_x0020_Department xsi:type="xsd:string">Beverages</Product_x0020_Department>
+                        <Product_x0020_Category xsi:type="xsd:string">Drinks</Product_x0020_Category>
+                        <Product_x0020_Subcategory
+                            xsi:type="xsd:string">Flavored Drinks</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Fabulous</Brand_x0020_Name>
+                        <Product_x0020_Name
+                            xsi:type="xsd:string">Fabulous Strawberry Drink</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Berkeley</City>
+                        <Name xsi:type="xsd:string">Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">High School Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">M</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$110K
+                            - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>3</Month>
-                        <Week>11</Week>
-                        <Day>6</Day>
-                        <Product_x0020_Family>Food</Product_x0020_Family>
-                        <Product_x0020_Department>Baked Goods</Product_x0020_Department>
-                        <Product_x0020_Category>Bread</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Sliced Bread</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Sphinx</Brand_x0020_Name>
-                        <Product_x0020_Name>Sphinx Wheat Bread</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Berkeley</City>
-                        <Name>Achari Harp</Name>
-                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>M</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Week xsi:type="xsd:int">11</Week>
+                        <Day xsi:type="xsd:int">6</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Food</Product_x0020_Family>
+                        <Product_x0020_Department
+                            xsi:type="xsd:string">Baked Goods</Product_x0020_Department>
+                        <Product_x0020_Category xsi:type="xsd:string">Bread</Product_x0020_Category>
+                        <Product_x0020_Subcategory
+                            xsi:type="xsd:string">Sliced Bread</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Sphinx</Brand_x0020_Name>
+                        <Product_x0020_Name xsi:type="xsd:string">Sphinx
+                            Wheat Bread</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Berkeley</City>
+                        <Name xsi:type="xsd:string">Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">High School Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">M</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$110K
+                            - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>3</Month>
-                        <Week>11</Week>
-                        <Day>6</Day>
-                        <Product_x0020_Family>Food</Product_x0020_Family>
-                        <Product_x0020_Department>Deli</Product_x0020_Department>
-                        <Product_x0020_Category>Meat</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Bologna</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Red Spade</Brand_x0020_Name>
-                        <Product_x0020_Name>Red Spade Beef Bologna</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Berkeley</City>
-                        <Name>Achari Harp</Name>
-                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>M</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Week xsi:type="xsd:int">11</Week>
+                        <Day xsi:type="xsd:int">6</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Food</Product_x0020_Family>
+                        <Product_x0020_Department xsi:type="xsd:string">Deli</Product_x0020_Department>
+                        <Product_x0020_Category xsi:type="xsd:string">Meat</Product_x0020_Category>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Bologna</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Red Spade</Brand_x0020_Name>
+                        <Product_x0020_Name xsi:type="xsd:string">Red
+                            Spade Beef Bologna</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Berkeley</City>
+                        <Name xsi:type="xsd:string">Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">High School Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">M</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$110K
+                            - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
                     </row>
                 </root>
             </cxmla:return>
@@ -14633,20 +14645,20 @@ FROM Sales
                                     sql:field="Store Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Sqft"
-                                    sql:field="Store Sqft" type="xsd:double"/>
+                                    sql:field="Store Sqft" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Type"
                                     sql:field="Store Type" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Year"
-                                    sql:field="Year" type="xsd:integer"/>
+                                    sql:field="Year" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Quarter" sql:field="Quarter" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Month"
-                                    sql:field="Month" type="xsd:integer"/>
+                                    sql:field="Month" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Week"
-                                    sql:field="Week" type="xsd:decimal"/>
+                                    sql:field="Week" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Day"
-                                    sql:field="Day" type="xsd:decimal"/>
+                                    sql:field="Day" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -14680,7 +14692,7 @@ FROM Sales
                                     sql:field="Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Name_x0020__x0028_Key_x0029_"
-                                    sql:field="Name (Key)" type="xsd:integer"/>
+                                    sql:field="Name (Key)" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Education_x0020_Level"
                                     sql:field="Education Level" type="xsd:string"/>
@@ -14694,7 +14706,7 @@ FROM Sales
                                     sql:field="Yearly Income" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Sales_x0020_Count"
-                                    sql:field="Sales Count" type="xsd:integer"/>
+                                    sql:field="Sales Count" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -14729,64 +14741,72 @@ FROM Sales
                         <Sales_x0020_Count>2</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q1</Quarter>
-                        <Month>2</Month>
-                        <Week>9</Week>
-                        <Day>20</Day>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Juice</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Skinner</Brand_x0020_Name>
-                        <Product_x0020_Name>Skinner Apple Juice</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Concord</City>
-                        <Name>Nina Medina</Name>
-                        <Name_x0020__x0028_Key_x0029_>2948</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$30K - $50K</Yearly_x0020_Income>
-                        <Sales_x0020_Count>1259</Sales_x0020_Count>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">2</Month>
+                        <Week xsi:type="xsd:int">9</Week>
+                        <Day xsi:type="xsd:int">20</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Drink</Product_x0020_Family>
+                        <Product_x0020_Department xsi:type="xsd:string">Beverages</Product_x0020_Department>
+                        <Product_x0020_Category
+                            xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Juice</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Skinner</Brand_x0020_Name>
+                        <Product_x0020_Name
+                            xsi:type="xsd:string">Skinner Apple Juice</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Concord</City>
+                        <Name xsi:type="xsd:string">Nina Medina</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">2948</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">High School Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">M</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">S</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$30K
+                            - $50K</Yearly_x0020_Income>
+                        <Sales_x0020_Count xsi:type="xsd:int">1259</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q3</Quarter>
-                        <Month>9</Month>
-                        <Week>39</Week>
-                        <Day>19</Day>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Juice</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Excellent</Brand_x0020_Name>
-                        <Product_x0020_Name>Excellent Orange Juice</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Concord</City>
-                        <Name>Linda Macias</Name>
-                        <Name_x0020__x0028_Key_x0029_>3956</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>Bachelors Degree</Education_x0020_Level>
-                        <Gender>F</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$50K - $70K</Yearly_x0020_Income>
-                        <Sales_x0020_Count>319</Sales_x0020_Count>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q3</Quarter>
+                        <Month xsi:type="xsd:int">9</Month>
+                        <Week xsi:type="xsd:int">39</Week>
+                        <Day xsi:type="xsd:int">19</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Drink</Product_x0020_Family>
+                        <Product_x0020_Department xsi:type="xsd:string">Beverages</Product_x0020_Department>
+                        <Product_x0020_Category
+                            xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Juice</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Excellent</Brand_x0020_Name>
+                        <Product_x0020_Name
+                            xsi:type="xsd:string">Excellent Orange Juice</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Concord</City>
+                        <Name xsi:type="xsd:string">Linda Macias</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">3956</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">Bachelors Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">F</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">S</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$50K
+                            - $70K</Yearly_x0020_Income>
+                        <Sales_x0020_Count xsi:type="xsd:int">319</Sales_x0020_Count>
                     </row>
                 </root>
             </cxmla:return>
@@ -14875,20 +14895,20 @@ FROM Sales
                                     sql:field="Store Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Sqft"
-                                    sql:field="Store Sqft" type="xsd:double"/>
+                                    sql:field="Store Sqft" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Store_x0020_Type"
                                     sql:field="Store Type" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Year"
-                                    sql:field="Year" type="xsd:integer"/>
+                                    sql:field="Year" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Quarter" sql:field="Quarter" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Month"
-                                    sql:field="Month" type="xsd:integer"/>
+                                    sql:field="Month" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Week"
-                                    sql:field="Week" type="xsd:decimal"/>
+                                    sql:field="Week" type="xsd:int"/>
                                 <xsd:element minOccurs="0" name="Day"
-                                    sql:field="Day" type="xsd:decimal"/>
+                                    sql:field="Day" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Product_x0020_Family"
                                     sql:field="Product Family" type="xsd:string"/>
@@ -14922,7 +14942,7 @@ FROM Sales
                                     sql:field="Name" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Name_x0020__x0028_Key_x0029_"
-                                    sql:field="Name (Key)" type="xsd:integer"/>
+                                    sql:field="Name (Key)" type="xsd:int"/>
                                 <xsd:element minOccurs="0"
                                     name="Education_x0020_Level"
                                     sql:field="Education Level" type="xsd:string"/>
@@ -14936,7 +14956,7 @@ FROM Sales
                                     sql:field="Yearly Income" type="xsd:string"/>
                                 <xsd:element minOccurs="0"
                                     name="Sales_x0020_Count"
-                                    sql:field="Sales Count" type="xsd:integer"/>
+                                    sql:field="Sales Count" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -14971,34 +14991,38 @@ FROM Sales
                         <Sales_x0020_Count>1</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Year>1997</Year>
-                        <Quarter>Q3</Quarter>
-                        <Month>9</Month>
-                        <Week>39</Week>
-                        <Day>19</Day>
-                        <Product_x0020_Family>Drink</Product_x0020_Family>
-                        <Product_x0020_Department>Beverages</Product_x0020_Department>
-                        <Product_x0020_Category>Pure Juice Beverages</Product_x0020_Category>
-                        <Product_x0020_Subcategory>Juice</Product_x0020_Subcategory>
-                        <Brand_x0020_Name>Excellent</Brand_x0020_Name>
-                        <Product_x0020_Name>Excellent Orange Juice</Product_x0020_Name>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <City>Concord</City>
-                        <Name>Linda Macias</Name>
-                        <Name_x0020__x0028_Key_x0029_>3956</Name_x0020__x0028_Key_x0029_>
-                        <Education_x0020_Level>Bachelors Degree</Education_x0020_Level>
-                        <Gender>F</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$50K - $70K</Yearly_x0020_Income>
-                        <Sales_x0020_Count>319</Sales_x0020_Count>
+                        <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
+                        <Store_x0020_State xsi:type="xsd:string">CA</Store_x0020_State>
+                        <Store_x0020_City xsi:type="xsd:string">San Francisco</Store_x0020_City>
+                        <Store_x0020_Name xsi:type="xsd:string">Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft xsi:type="xsd:int">22478</Store_x0020_Sqft>
+                        <Store_x0020_Type xsi:type="xsd:string">Small Grocery</Store_x0020_Type>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q3</Quarter>
+                        <Month xsi:type="xsd:int">9</Month>
+                        <Week xsi:type="xsd:int">39</Week>
+                        <Day xsi:type="xsd:int">19</Day>
+                        <Product_x0020_Family xsi:type="xsd:string">Drink</Product_x0020_Family>
+                        <Product_x0020_Department xsi:type="xsd:string">Beverages</Product_x0020_Department>
+                        <Product_x0020_Category
+                            xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Juice</Product_x0020_Subcategory>
+                        <Brand_x0020_Name xsi:type="xsd:string">Excellent</Brand_x0020_Name>
+                        <Product_x0020_Name
+                            xsi:type="xsd:string">Excellent Orange Juice</Product_x0020_Name>
+                        <Media_x0020_Type xsi:type="xsd:string">No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name xsi:type="xsd:string">No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province xsi:type="xsd:string">CA</State_x0020_Province>
+                        <City xsi:type="xsd:string">Concord</City>
+                        <Name xsi:type="xsd:string">Linda Macias</Name>
+                        <Name_x0020__x0028_Key_x0029_ xsi:type="xsd:int">3956</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level
+                            xsi:type="xsd:string">Bachelors Degree</Education_x0020_Level>
+                        <Gender xsi:type="xsd:string">F</Gender>
+                        <Marital_x0020_Status xsi:type="xsd:string">S</Marital_x0020_Status>
+                        <Yearly_x0020_Income xsi:type="xsd:string">$50K
+                            - $70K</Yearly_x0020_Income>
+                        <Sales_x0020_Count xsi:type="xsd:int">319</Sales_x0020_Count>
                     </row>
                 </root>
             </cxmla:return>
