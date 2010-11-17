@@ -12,7 +12,6 @@ import org.olap4j.CellSetAxisMetaData;
 import org.olap4j.Axis;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Property;
-import org.olap4j.metadata.Dimension;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 
@@ -89,27 +88,15 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
         if (exp == null) {
             return Collections.emptyList();
         }
-        Type type = exp.getType();
-        if (type instanceof SetType) {
-            type = ((SetType) type).getElementType();
+        List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+        for (mondrian.olap.Hierarchy hierarchy
+            : TypeUtil.getHierarchies(exp.getType()))
+        {
+            hierarchyList.add(
+                cellSetMetaData.olap4jStatement.olap4jConnection.toOlap4j(
+                    hierarchy));
         }
-        final MondrianOlap4jConnection olap4jConnection =
-            cellSetMetaData.olap4jStatement.olap4jConnection;
-        if (type instanceof TupleType) {
-            final TupleType tupleType = (TupleType) type;
-            List<Hierarchy> hierarchyList =
-                new ArrayList<Hierarchy>();
-            for (Type elementType : tupleType.elementTypes) {
-                hierarchyList.add(
-                    olap4jConnection.toOlap4j(
-                        elementType.getHierarchy()));
-            }
-            return hierarchyList;
-        } else {
-            return Collections.singletonList(
-                (Hierarchy) olap4jConnection.toOlap4j(
-                    type.getHierarchy()));
-        }
+        return hierarchyList;
     }
 
     public List<Property> getProperties() {

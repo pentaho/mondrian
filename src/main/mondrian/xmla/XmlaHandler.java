@@ -12,6 +12,7 @@ import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
+import mondrian.olap.type.TypeUtil;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
@@ -1832,15 +1833,9 @@ public class XmlaHandler {
             final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
             if (omitDefaultSlicerInfo) {
                 Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    hierarchies =
-                        axisInfo(
-                            writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
-                } else {
-                    hierarchies = new ArrayList<Hierarchy>();
-                }
+                hierarchies =
+                    axisInfo(
+                        writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
             } else {
                 // The slicer axes contains the default hierarchy
                 // of each dimension not seen on another axis.
@@ -1912,9 +1907,9 @@ public class XmlaHandler {
                     hierarchies.add(member.getHierarchy());
                 }
             } else {
-                hierarchies = Collections.emptyList();
-                //final QueryAxis queryAxis = this.result.getQuery().axes[i];
-                // TODO:
+                hierarchies =
+                    TypeUtil.getHierarchies(
+                        queryAxis.getSet().getType());
             }
             String[] props = getProps(queryAxis);
             writeHierarchyInfo(writer, hierarchies, props);
@@ -1998,15 +1993,16 @@ public class XmlaHandler {
                 final QueryAxis slicerQueryAxis =
                     result.getQuery().getSlicerAxis();
                 Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    axis(
-                        writer,
-                        result.getSlicerAxis(),
-                        getProps(slicerQueryAxis),
-                        "SlicerAxis");
-                }
+                // We always write a slicer axis. There are two 'empty' cases:
+                // zero positions (which happens when the WHERE clause evalutes
+                // to an empty set) or one position containing a tuple of zero
+                // members (which happens when there is no WHERE clause) and we
+                // need to be able to distinguish between the two.
+                axis(
+                    writer,
+                    slicerAxis,
+                    getProps(slicerQueryAxis),
+                    "SlicerAxis");
             } else {
                 List<Hierarchy> hierarchies = slicerAxisHierarchies;
                 writer.startElement(
@@ -2031,7 +2027,9 @@ public class XmlaHandler {
                 final QueryAxis slicerQueryAxis =
                     result.getQuery().getSlicerAxis();
                 final List<Member> slicerMembers =
-                    result.getSlicerAxis().getPositions().get(0);
+                    result.getSlicerAxis().getPositions().isEmpty()
+                        ? Collections.<Member>emptyList()
+                        : result.getSlicerAxis().getPositions().get(0);
                 for (Hierarchy hierarchy : hierarchies) {
                     // Find which member is on the slicer.
                     // If it's not explicitly there, use the default member.
