@@ -784,11 +784,12 @@ public class XmlUtil {
         }
         try {
             Document doc = node.getOwnerDocument();
-            OutputFormat format  = null;
+            OutputFormat format;
             if (doc != null) {
                 format = new OutputFormat(doc, null, prettyPrint);
             } else {
                 format = new OutputFormat("xml", null, prettyPrint);
+                format.setLineWidth(0); // don't wrap lines
             }
             if (prettyPrint) {
                 format.setLineSeparator(LINE_SEP);
