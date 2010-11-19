@@ -176,7 +176,7 @@ public class RolapSchema implements Schema {
         final DataSource dataSource,
         final String md5Bytes)
     {
-        this.id = UUID.randomUUID().toString();
+        this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important

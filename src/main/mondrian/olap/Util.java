@@ -74,8 +74,8 @@ public class Util extends XOMUtil {
     /**
      * Whether we are running a version of Java before 1.5.
      *
-     * <p>If this variable is true, we will be running retroweaver. Retroweaver
-     * has some problems involving {@link java.util.EnumSet}.
+     * <p>If (but not only if) this variable is true, {@link #Retrowoven} will
+     * also be true.
      */
     public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
@@ -90,7 +90,9 @@ public class Util extends XOMUtil {
 
     /**
      * Whether the code base has re-engineered using retroweaver.
-     * If this is the case, some functionality is not available.
+     * If this is the case, some functionality is not available, but a lot of
+     * things are available via {@link mondrian.util.UtilCompatible}.
+     * Retroweaver has some problems involving {@link java.util.EnumSet}.
      */
     public static final boolean Retrowoven =
         Access.class.getSuperclass().getName().equals(
@@ -2618,6 +2620,17 @@ public class Util extends XOMUtil {
      */
     public static String quotePattern(String s) {
         return compatible.quotePattern(s);
+    }
+
+    /**
+     * Generates a unique id.
+     *
+     * <p>From JDK 1.5 onwards, uses a {@code UUID}.
+     *
+     * @return A unique id
+     */
+    public static String generateUuidString() {
+        return compatible.generateUuidString();
     }
 
     /**

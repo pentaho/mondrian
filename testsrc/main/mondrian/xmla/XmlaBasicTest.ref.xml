@@ -19222,26 +19222,17 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
     <TestCase name="testMDFunctionsJdk14">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope
-    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:XxxDiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root
-                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <xsd:schema elementFormDefault="qualified"
-                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
-                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
                             <xsd:complexType>
                                 <xsd:sequence>
-                                    <xsd:element maxOccurs="unbounded"
-                                    minOccurs="0" name="row" type="row"/>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
                                 </xsd:sequence>
                             </xsd:complexType>
                         </xsd:element>
@@ -19252,25 +19243,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element name="FUNCTION_NAME"
-                                    sql:field="FUNCTION_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0"
-                                    name="DESCRIPTION"
-                                    sql:field="DESCRIPTION" type="xsd:string"/>
-                                <xsd:element minOccurs="0"
-                                    name="PARAMETER_LIST"
-                                    sql:field="PARAMETER_LIST" type="xsd:string"/>
-                                <xsd:element name="RETURN_TYPE"
-                                    sql:field="RETURN_TYPE" type="xsd:int"/>
-                                <xsd:element name="ORIGIN"
-                                    sql:field="ORIGIN" type="xsd:int"/>
-                                <xsd:element name="INTERFACE_NAME"
-                                    sql:field="INTERFACE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0"
-                                    name="LIBRARY_NAME"
-                                    sql:field="LIBRARY_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0"
-                                    name="CAPTION" sql:field="CAPTION" type="xsd:string"/>
+                                <xsd:element name="FUNCTION_NAME" sql:field="FUNCTION_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="PARAMETER_LIST" sql:field="PARAMETER_LIST" type="xsd:string"/>
+                                <xsd:element name="RETURN_TYPE" sql:field="RETURN_TYPE" type="xsd:int"/>
+                                <xsd:element name="ORIGIN" sql:field="ORIGIN" type="xsd:int"/>
+                                <xsd:element name="INTERFACE_NAME" sql:field="INTERFACE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="LIBRARY_NAME" sql:field="LIBRARY_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CAPTION" sql:field="CAPTION" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -19357,8 +19337,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>:</FUNCTION_NAME>
-                        <DESCRIPTION>Infix colon operator returns the
-                            set of members between a given pair of members.</DESCRIPTION>
+                        <DESCRIPTION>Infix colon operator returns the set of members between a given pair of members.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19367,8 +19346,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            less than another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is less than another.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19377,8 +19355,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            less than another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is less than another.</DESCRIPTION>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19387,8 +19364,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            less than or equal to another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is less than or equal to another.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19397,8 +19373,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            less than or equal to another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is less than or equal to another.</DESCRIPTION>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19407,8 +19382,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;&gt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two expressions are
-                            not equal.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two expressions are not equal.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19417,8 +19391,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&lt;&gt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two expressions are
-                            not equal.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two expressions are not equal.</DESCRIPTION>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19445,8 +19418,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&gt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            greater than another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is greater than another.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19455,8 +19427,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&gt;</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            greater than another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is greater than another.</DESCRIPTION>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19465,8 +19436,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&gt;=</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            greater than or equal to another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is greater than or equal to another.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19475,8 +19445,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>&gt;=</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether an expression is
-                            greater than or equal to another.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an expression is greater than or equal to another.</DESCRIPTION>
                         <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19485,9 +19454,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>_CaseMatch</FUNCTION_NAME>
-                        <DESCRIPTION>Evaluates various expressions, and
-                            returns the corresponding expression for the
-                            first which matches a particular value.</DESCRIPTION>
+                        <DESCRIPTION>Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19496,9 +19463,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>_CaseTest</FUNCTION_NAME>
-                        <DESCRIPTION>Evaluates various conditions, and
-                            returns the corresponding expression for the
-                            first which evaluates to true.</DESCRIPTION>
+                        <DESCRIPTION>Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19543,9 +19508,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Aggregate</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a calculated value using
-                            the appropriate aggregate function, based on
-                            the context of the query.</DESCRIPTION>
+                        <DESCRIPTION>Returns a calculated value using the appropriate aggregate function, based on the context of the query.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19554,9 +19517,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Aggregate</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a calculated value using
-                            the appropriate aggregate function, based on
-                            the context of the query.</DESCRIPTION>
+                        <DESCRIPTION>Returns a calculated value using the appropriate aggregate function, based on the context of the query.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19565,9 +19526,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set that contains all
-                            members, including calculated members, of
-                            the specified hierarchy.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set that contains all members, including calculated members, of the specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19576,9 +19535,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set that contains all
-                            members, including calculated members, of
-                            the specified level.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set that contains all members, including calculated members, of the specified level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19587,8 +19544,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ancestor</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the ancestor of a member at
-                            a specified level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the ancestor of a member at a specified level.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19597,8 +19553,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ancestor</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the ancestor of a member at
-                            a specified level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the ancestor of a member at a specified level.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19642,8 +19597,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ascendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of the ascendants
-                            of a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of the ascendants of a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19706,8 +19660,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Avg</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the average value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the average value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19716,8 +19669,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Avg</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the average value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the average value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19726,9 +19678,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>BottomCount</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a specified number of items
-                            from the bottom of a set, optionally
-                            ordering the set first.</DESCRIPTION>
+                        <DESCRIPTION>Returns a specified number of items from the bottom of a set, optionally ordering the set first.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19737,9 +19687,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>BottomCount</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a specified number of items
-                            from the bottom of a set, optionally
-                            ordering the set first.</DESCRIPTION>
+                        <DESCRIPTION>Returns a specified number of items from the bottom of a set, optionally ordering the set first.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19748,9 +19696,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>BottomPercent</FUNCTION_NAME>
-                        <DESCRIPTION>Sorts a set and returns the bottom
-                            N elements whose cumulative total is at
-                            least a specified percentage.</DESCRIPTION>
+                        <DESCRIPTION>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19759,9 +19705,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>BottomSum</FUNCTION_NAME>
-                        <DESCRIPTION>Sorts a set and returns the bottom
-                            N elements whose cumulative total is at
-                            least a specified value.</DESCRIPTION>
+                        <DESCRIPTION>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19770,8 +19714,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Cache</FUNCTION_NAME>
-                        <DESCRIPTION>Evaluates and returns its sole
-                            argument, applying statement-level caching</DESCRIPTION>
+                        <DESCRIPTION>Evaluates and returns its sole argument, applying statement-level caching</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19780,9 +19723,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CalculatedChild</FUNCTION_NAME>
-                        <DESCRIPTION>Returns an existing calculated
-                            child member with name &lt;String&gt; from
-                            the specified &lt;Member&gt;.</DESCRIPTION>
+                        <DESCRIPTION>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.</DESCRIPTION>
                         <PARAMETER_LIST>Member, String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19917,8 +19858,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ClosingPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the last descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19927,8 +19867,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ClosingPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the last descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19937,8 +19876,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ClosingPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the last descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19947,8 +19885,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ClosingPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the last descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19957,9 +19894,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CoalesceEmpty</FUNCTION_NAME>
-                        <DESCRIPTION>Coalesces an empty cell value to a
-                            different value. All of the expressions must
-                            be of the same type (number or string).</DESCRIPTION>
+                        <DESCRIPTION>Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19968,8 +19903,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Correlation</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the correlation of two
-                            series evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the correlation of two series evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -19978,8 +19912,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Correlation</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the correlation of two
-                            series evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the correlation of two series evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20006,9 +19939,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the number of tuples in a
-                            set, empty cells included unless the
-                            optional EXCLUDEEMPTY flag is used.</DESCRIPTION>
+                        <DESCRIPTION>Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20017,9 +19948,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the number of tuples in a
-                            set, empty cells included unless the
-                            optional EXCLUDEEMPTY flag is used.</DESCRIPTION>
+                        <DESCRIPTION>Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20028,8 +19957,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Count</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the number of tuples in a
-                            set including empty cells.</DESCRIPTION>
+                        <DESCRIPTION>Returns the number of tuples in a set including empty cells.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20038,9 +19966,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Cousin</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member with the same
-                            relative position under &lt;ancestor
-                            member&gt; as the member specified.</DESCRIPTION>
+                        <DESCRIPTION>Returns the member with the same relative position under &lt;ancestor member&gt; as the member specified.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20049,8 +19975,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Covariance</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the covariance of two
-                            series evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the covariance of two series evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20059,8 +19984,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Covariance</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the covariance of two
-                            series evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the covariance of two series evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20069,8 +19993,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CovarianceN</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the covariance of two
-                            series evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the covariance of two series evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20079,8 +20002,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CovarianceN</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the covariance of two
-                            series evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the covariance of two series evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20098,8 +20020,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Current</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current member or tuple
-                            of a named set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the current member or tuple of a named set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20132,8 +20053,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current member along a
-                            hierarchy during an iteration.</DESCRIPTION>
+                        <DESCRIPTION>Returns the current member along a hierarchy during an iteration.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20142,8 +20062,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentOrdinal</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the ordinal of the current
-                            iteration through a named set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the ordinal of the current iteration through a named set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20152,9 +20071,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DataMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the system-generated data
-                            member that is associated with a nonleaf
-                            member of a dimension.</DESCRIPTION>
+                        <DESCRIPTION>Returns the system-generated data member that is associated with a nonleaf member of a dimension.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20182,8 +20099,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>dateDiff</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>String, DateTime, DateTime,
-                            Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, DateTime, DateTime, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20264,9 +20180,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>dDB</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20275,8 +20189,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>dDB</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20302,9 +20215,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20313,9 +20224,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20324,9 +20233,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Level, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20335,9 +20242,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20346,9 +20251,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Numeric Expression, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20357,9 +20260,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            member at a specified level, optionally
-                            including or excluding descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Empty, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20368,10 +20269,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20380,10 +20278,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20392,10 +20287,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Level, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20404,10 +20296,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20416,10 +20305,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20428,10 +20314,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Descendants</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of descendants of a
-                            set of members at a specified level,
-                            optionally including or excluding
-                            descendants in other levels.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set of descendants of a set of members at a specified level, optionally including or excluding descendants in other levels.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Empty, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20440,8 +20323,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified hierarchy.</DESCRIPTION>
+                        <DESCRIPTION>Returns the dimension that contains a specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20450,8 +20332,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified hierarchy.</DESCRIPTION>
+                        <DESCRIPTION>Returns the dimension that contains a specified hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20460,8 +20341,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the dimension that contains a specified level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20470,8 +20350,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the dimension that contains a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20480,9 +20359,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the hierarchy whose
-                            zero-based position within the cube is
-                            specified by a numeric expression.</DESCRIPTION>
+                        <DESCRIPTION>Returns the hierarchy whose zero-based position within the cube is specified by a numeric expression.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20491,8 +20368,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Dimensions</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the hierarchy whose name is
-                            specified by a string.</DESCRIPTION>
+                        <DESCRIPTION>Returns the hierarchy whose name is specified by a string.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20510,10 +20386,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevel</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the members of a set,
-                            at a specified level, to one level below.
-                            Alternatively, drills down on a specified
-                            dimension in the set.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20522,10 +20395,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevel</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the members of a set,
-                            at a specified level, to one level below.
-                            Alternatively, drills down on a specified
-                            dimension in the set.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20534,10 +20404,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevel</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the members of a set,
-                            at a specified level, to one level below.
-                            Alternatively, drills down on a specified
-                            dimension in the set.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Empty, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20546,8 +20413,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the bottommost members
-                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the bottommost members of a set, at a specified level, to one level below.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20556,8 +20422,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the bottommost members
-                            of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the bottommost members of a set, at a specified level, to one level below.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20566,10 +20431,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the bottommost members
-                            of a set, at a specified level, to one level below.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Numeric Expression, Level,
-                            Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Drills down the bottommost members of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20577,10 +20440,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelBottom</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the bottommost members
-                            of a set, at a specified level, to one level below.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Numeric Expression, Empty,
-                            Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Drills down the bottommost members of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Empty, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20588,8 +20449,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the topmost members of
-                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the topmost members of a set, at a specified level, to one level below.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20598,8 +20458,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the topmost members of
-                            a set, at a specified level, to one level below.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the topmost members of a set, at a specified level, to one level below.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20608,10 +20467,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the topmost members of
-                            a set, at a specified level, to one level below.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Numeric Expression, Level,
-                            Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Drills down the topmost members of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Level, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20619,10 +20476,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownLevelTop</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the topmost members of
-                            a set, at a specified level, to one level below.</DESCRIPTION>
-                        <PARAMETER_LIST>Set, Numeric Expression, Empty,
-                            Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Drills down the topmost members of a set, at a specified level, to one level below.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, Numeric Expression, Empty, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20630,8 +20485,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownMember</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the members in a set
-                            that are present in a second specified set.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the members in a set that are present in a second specified set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20640,8 +20494,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>DrilldownMember</FUNCTION_NAME>
-                        <DESCRIPTION>Drills down the members in a set
-                            that are present in a second specified set.</DESCRIPTION>
+                        <DESCRIPTION>Drills down the members in a set that are present in a second specified set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20650,8 +20503,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Except</FUNCTION_NAME>
-                        <DESCRIPTION>Finds the difference between two
-                            sets, optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Finds the difference between two sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20660,8 +20512,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Except</FUNCTION_NAME>
-                        <DESCRIPTION>Finds the difference between two
-                            sets, optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Finds the difference between two sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20670,9 +20521,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Exists</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the the set of tuples of
-                            the first set that exist with one or more
-                            tuples of the second set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the the set of tuples of the first set that exist with one or more tuples of the second set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20690,9 +20539,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Extract</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of tuples from
-                            extracted dimension elements. The opposite
-                            of Crossjoin.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20701,8 +20548,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Filter</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set resulting from
-                            filtering a set based on a search condition.</DESCRIPTION>
+                        <DESCRIPTION>Returns the set resulting from filtering a set based on a search condition.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20720,8 +20566,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>FirstQ</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the 1st quartile value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the 1st quartile value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20730,8 +20575,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>FirstQ</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the 1st quartile value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the 1st quartile value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20740,8 +20584,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>FirstSibling</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first child of the
-                            parent of a member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first child of the parent of a member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20787,8 +20630,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>formatCurrency</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Value, Integer, Integer,
-                            Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20851,8 +20693,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>formatNumber</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Value, Integer, Integer,
-                            Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20897,8 +20738,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>formatPercent</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Value, Integer, Integer,
-                            Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>Value, Integer, Integer, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20943,9 +20783,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>fV</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20954,8 +20792,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>fV</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20964,8 +20801,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>fV</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -20973,8 +20809,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Generate</FUNCTION_NAME>
-                        <DESCRIPTION>Applies a set to each member of
-                            another set and joins the resulting sets by union.</DESCRIPTION>
+                        <DESCRIPTION>Applies a set to each member of another set and joins the resulting sets by union.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20983,8 +20818,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Generate</FUNCTION_NAME>
-                        <DESCRIPTION>Applies a set to each member of
-                            another set and joins the resulting sets by union.</DESCRIPTION>
+                        <DESCRIPTION>Applies a set to each member of another set and joins the resulting sets by union.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -20993,9 +20827,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Generate</FUNCTION_NAME>
-                        <DESCRIPTION>Applies a set to a string
-                            expression and joins resulting sets by
-                            string concatenation.</DESCRIPTION>
+                        <DESCRIPTION>Applies a set to a string expression and joins resulting sets by string concatenation.</DESCRIPTION>
                         <PARAMETER_LIST>Set, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21004,9 +20836,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Generate</FUNCTION_NAME>
-                        <DESCRIPTION>Applies a set to a string
-                            expression and joins resulting sets by
-                            string concatenation.</DESCRIPTION>
+                        <DESCRIPTION>Applies a set to a string expression and joins resulting sets by string concatenation.</DESCRIPTION>
                         <PARAMETER_LIST>Set, String, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21015,8 +20845,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Head</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first specified number
-                            of elements in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first specified number of elements in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21025,8 +20854,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Head</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first specified number
-                            of elements in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first specified number of elements in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21089,8 +20917,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two tuples
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two tuples determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Tuple, Tuple</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21099,8 +20926,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two dimension values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two dimension values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Dimension, Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21109,8 +20935,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two hierarchy values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two hierarchy values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Hierarchy, Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21119,8 +20944,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two level values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two level values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Level, Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21129,10 +20953,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns boolean determined by a
-                            logical test.</DESCRIPTION>
-                        <PARAMETER_LIST>Logical Expression, Logical
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Returns boolean determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Logical Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21140,8 +20962,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two member values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two member values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21150,10 +20971,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two numeric values
-                            determined by a logical test.</DESCRIPTION>
-                        <PARAMETER_LIST>Logical Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Returns one of two numeric values determined by a logical test.</DESCRIPTION>
+                        <PARAMETER_LIST>Logical Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21161,8 +20980,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two set values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two set values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21171,8 +20989,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IIf</FUNCTION_NAME>
-                        <DESCRIPTION>Returns one of two string values
-                            determined by a logical test.</DESCRIPTION>
+                        <DESCRIPTION>Returns one of two string values determined by a logical test.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, String, String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21252,8 +21069,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the intersection of two
-                            input sets, optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Returns the intersection of two input sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21262,8 +21078,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the intersection of two
-                            input sets, optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Returns the intersection of two input sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21281,9 +21096,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>iPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21292,9 +21105,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>iPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21303,8 +21114,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>iPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21375,8 +21185,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IS EMPTY</FUNCTION_NAME>
-                        <DESCRIPTION>Determines if an expression
-                            evaluates to the empty cell value.</DESCRIPTION>
+                        <DESCRIPTION>Determines if an expression evaluates to the empty cell value.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21385,8 +21194,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IS EMPTY</FUNCTION_NAME>
-                        <DESCRIPTION>Determines if an expression
-                            evaluates to the empty cell value.</DESCRIPTION>
+                        <DESCRIPTION>Determines if an expression evaluates to the empty cell value.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21440,8 +21248,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IsEmpty</FUNCTION_NAME>
-                        <DESCRIPTION>Determines if an expression
-                            evaluates to the empty cell value.</DESCRIPTION>
+                        <DESCRIPTION>Determines if an expression evaluates to the empty cell value.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21450,8 +21257,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>IsEmpty</FUNCTION_NAME>
-                        <DESCRIPTION>Determines if an expression
-                            evaluates to the empty cell value.</DESCRIPTION>
+                        <DESCRIPTION>Determines if an expression evaluates to the empty cell value.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21460,10 +21266,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from the tuple
-                            specified in &lt;Tuple&gt;. The member to be
-                            returned is specified by the zero-based
-                            position of the member in the set in &lt;Index&gt;.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from the tuple specified in &lt;Tuple&gt;. The member to be returned is specified by the zero-based position of the member in the set in &lt;Index&gt;.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21472,10 +21275,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set&gt;. The tuple to be
-                            returned is specified by the zero-based
-                            position of the tuple in the set in &lt;Index&gt;.</DESCRIPTION>
+                        <DESCRIPTION>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &lt;Index&gt;.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21484,10 +21284,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set&gt;. The tuple to be
-                            returned is specified by the member name (or
-                            names) in &lt;String&gt;.</DESCRIPTION>
+                        <DESCRIPTION>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the member name (or names) in &lt;String&gt;.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21496,8 +21293,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Lag</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member further along the
-                            specified member's dimension.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member further along the specified member's dimension.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21523,8 +21319,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LastPeriods</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of members prior to
-                            and including a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of members prior to and including a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21533,8 +21328,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LastPeriods</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of members prior to
-                            and including a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of members prior to and including a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21543,8 +21337,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LastSibling</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last child of the
-                            parent of a member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the last child of the parent of a member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21562,8 +21355,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Lead</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member further along the
-                            specified member's dimension.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member further along the specified member's dimension.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21581,8 +21373,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Len</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the number of characters in
-                            a string</DESCRIPTION>
+                        <DESCRIPTION>Returns the number of characters in a string</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21600,8 +21391,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Levels</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the level whose position in
-                            a hierarchy is specified by a numeric expression.</DESCRIPTION>
+                        <DESCRIPTION>Returns the level whose position in a hierarchy is specified by a numeric expression.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21610,8 +21400,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Levels</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the level whose name is
-                            specified by a string expression.</DESCRIPTION>
+                        <DESCRIPTION>Returns the level whose name is specified by a string expression.</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy, String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21620,8 +21409,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Levels</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the level whose name is
-                            specified by a string expression.</DESCRIPTION>
+                        <DESCRIPTION>Returns the level whose name is specified by a string expression.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21630,9 +21418,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegIntercept</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of b in the
-                            regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21641,9 +21427,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegIntercept</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of b in the
-                            regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21652,9 +21436,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegPoint</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of y in the
-                            regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21663,11 +21445,8 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegPoint</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of y in the
-                            regression line y = ax + b.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Set, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21675,8 +21454,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegR2</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns R2 (the coefficient of determination).</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns R2 (the coefficient of determination).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21685,8 +21463,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegR2</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns R2 (the coefficient of determination).</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns R2 (the coefficient of determination).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21695,9 +21472,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegSlope</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of a in the
-                            regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21706,9 +21481,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegSlope</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the value of a in the
-                            regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21717,9 +21490,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegVariance</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the variance associated
-                            with the regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21728,9 +21499,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>LinRegVariance</FUNCTION_NAME>
-                        <DESCRIPTION>Calculates the linear regression of
-                            a set and returns the variance associated
-                            with the regression line y = ax + b.</DESCRIPTION>
+                        <DESCRIPTION>Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21774,8 +21543,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Max</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the maximum value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the maximum value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21784,8 +21552,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Max</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the maximum value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the maximum value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21794,8 +21561,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Median</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the median value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the median value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21804,8 +21570,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Median</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the median value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the median value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21832,8 +21597,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member whose name is
-                            specified by a string expression.</DESCRIPTION>
+                        <DESCRIPTION>Returns the member whose name is specified by a string expression.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21860,8 +21624,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Min</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the minimum value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the minimum value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21870,8 +21633,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Min</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the minimum value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the minimum value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21890,8 +21652,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>MIRR</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Array, Numeric Expression,
-                            Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Array, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -21926,9 +21687,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Mtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Month.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Month.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21937,9 +21696,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Mtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Month.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Month.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -21993,8 +21750,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>NextMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the next member in the
-                            level that contains a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the next member in the level that contains a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22003,9 +21759,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>NonEmptyCrossJoin</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the cross product of two
-                            sets, excluding empty tuples and tuples
-                            without associated fact table data.</DESCRIPTION>
+                        <DESCRIPTION>Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22033,9 +21787,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>nPer</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22069,8 +21821,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22079,8 +21830,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22089,8 +21839,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the first descendant of a
-                            member at a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the first descendant of a member at a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22108,8 +21857,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Order</FUNCTION_NAME>
-                        <DESCRIPTION>Arranges members of a set,
-                            optionally preserving or breaking the hierarchy.</DESCRIPTION>
+                        <DESCRIPTION>Arranges members of a set, optionally preserving or breaking the hierarchy.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22127,8 +21875,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ordinal</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the zero-based ordinal
-                            value associated with a level.</DESCRIPTION>
+                        <DESCRIPTION>Returns the zero-based ordinal value associated with a level.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22137,9 +21884,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ParallelPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from a prior
-                            period in the same relative position as a
-                            specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from a prior period in the same relative position as a specified member.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22148,9 +21893,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ParallelPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from a prior
-                            period in the same relative position as a
-                            specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from a prior period in the same relative position as a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22159,9 +21902,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ParallelPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from a prior
-                            period in the same relative position as a
-                            specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from a prior period in the same relative position as a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Level, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22170,9 +21911,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ParallelPeriod</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from a prior
-                            period in the same relative position as a
-                            specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from a prior period in the same relative position as a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Level, Numeric Expression, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22200,8 +21939,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>Parameter</FUNCTION_NAME>
                         <DESCRIPTION>Returns default value of parameter.</DESCRIPTION>
-                        <PARAMETER_LIST>String, Symbol, Numeric
-                            Expression, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, Symbol, Numeric Expression, String</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22254,9 +21992,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ParamRef</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current value of this
-                            parameter. If it is null, returns the
-                            default value.</DESCRIPTION>
+                        <DESCRIPTION>Returns the current value of this parameter. If it is null, returns the default value.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22274,8 +22010,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Percentile</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the value of the tuple that
-                            is at a given percentile of a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the value of the tuple that is at a given percentile of a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22284,9 +22019,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>PeriodsToDate</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of periods (members)
-                            from a specified level starting with the
-                            first period and ending with a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22295,9 +22028,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>PeriodsToDate</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of periods (members)
-                            from a specified level starting with the
-                            first period and ending with a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22306,9 +22037,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>PeriodsToDate</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a set of periods (members)
-                            from a specified level starting with the
-                            first period and ending with a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Level, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22327,9 +22056,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>pmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22347,9 +22074,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>pPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22358,9 +22083,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>pPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22369,8 +22092,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>pPmt</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22378,8 +22100,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>PrevMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the previous member in the
-                            level that contains a specified member.</DESCRIPTION>
+                        <DESCRIPTION>Returns the previous member in the level that contains a specified member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22398,9 +22119,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>pV</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22408,9 +22127,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Qtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Quarter.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22419,9 +22136,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Qtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Quarter.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22439,8 +22154,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the one-based rank of a
-                            tuple in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the one-based rank of a tuple in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple, Set</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22449,8 +22163,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the one-based rank of a
-                            tuple in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the one-based rank of a tuple in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple, Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22459,8 +22172,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the one-based rank of a
-                            tuple in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the one-based rank of a tuple in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Set</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22469,8 +22181,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Rank</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the one-based rank of a
-                            tuple in a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the one-based rank of a tuple in a set.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>2</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22480,9 +22191,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>rate</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22491,9 +22200,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>rate</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric
-                            Expression, Logical Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22502,8 +22209,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>rate</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22512,8 +22218,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>rate</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22522,8 +22227,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>replace</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>String, String, String, Integer,
-                            Integer, Integer</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String, String, Integer, Integer, Integer</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22621,8 +22325,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Siblings</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the siblings of a specified
-                            member, including the member itself.</DESCRIPTION>
+                        <DESCRIPTION>Returns the siblings of a specified member, including the member itself.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22650,8 +22353,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>sLN</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22722,8 +22424,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Stdev</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the standard deviation of a
-                            numeric expression evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the standard deviation of a numeric expression evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22732,8 +22433,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Stdev</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the standard deviation of a
-                            numeric expression evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the standard deviation of a numeric expression evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22742,8 +22442,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>StdevP</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the standard deviation of a
-                            numeric expression evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the standard deviation of a numeric expression evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22752,8 +22451,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>StdevP</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the standard deviation of a
-                            numeric expression evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the standard deviation of a numeric expression evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22816,8 +22514,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>StrToMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member from a unique name
-                            String in MDX format.</DESCRIPTION>
+                        <DESCRIPTION>Returns a member from a unique name String in MDX format.</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22862,8 +22559,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Sum</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the sum of a numeric
-                            expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the sum of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22872,8 +22568,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Sum</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the sum of a numeric
-                            expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the sum of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22883,8 +22578,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     <row>
                         <FUNCTION_NAME>sYD</FUNCTION_NAME>
                         <DESCRIPTION/>
-                        <PARAMETER_LIST>Numeric Expression, Numeric
-                            Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -22928,8 +22622,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ThirdQ</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the 3rd quartile value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the 3rd quartile value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22938,8 +22631,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ThirdQ</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the 3rd quartile value of a
-                            numeric expression evaluated over a set.</DESCRIPTION>
+                        <DESCRIPTION>Returns the 3rd quartile value of a numeric expression evaluated over a set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22984,9 +22676,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ToggleDrillState</FUNCTION_NAME>
-                        <DESCRIPTION>Toggles the drill state of members.
-                            This function is a combination of
-                            DrillupMember and DrilldownMember.</DESCRIPTION>
+                        <DESCRIPTION>Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -22995,9 +22685,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ToggleDrillState</FUNCTION_NAME>
-                        <DESCRIPTION>Toggles the drill state of members.
-                            This function is a combination of
-                            DrillupMember and DrilldownMember.</DESCRIPTION>
+                        <DESCRIPTION>Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23006,9 +22694,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>TopCount</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a specified number of items
-                            from the top of a set, optionally ordering
-                            the set first.</DESCRIPTION>
+                        <DESCRIPTION>Returns a specified number of items from the top of a set, optionally ordering the set first.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23017,9 +22703,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>TopCount</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a specified number of items
-                            from the top of a set, optionally ordering
-                            the set first.</DESCRIPTION>
+                        <DESCRIPTION>Returns a specified number of items from the top of a set, optionally ordering the set first.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23028,9 +22712,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>TopPercent</FUNCTION_NAME>
-                        <DESCRIPTION>Sorts a set and returns the top N
-                            elements whose cumulative total is at least
-                            a specified percentage.</DESCRIPTION>
+                        <DESCRIPTION>Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23039,9 +22721,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>TopSum</FUNCTION_NAME>
-                        <DESCRIPTION>Sorts a set and returns the top N
-                            elements whose cumulative total is at least
-                            a specified value.</DESCRIPTION>
+                        <DESCRIPTION>Sorts a set and returns the top N elements whose cumulative total is at least a specified value.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23077,8 +22757,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>UCase</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a string that has been
-                            converted to uppercase</DESCRIPTION>
+                        <DESCRIPTION>Returns a string that has been converted to uppercase</DESCRIPTION>
                         <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23087,8 +22766,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Union</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the union of two sets,
-                            optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Returns the union of two sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23097,8 +22775,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Union</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the union of two sets,
-                            optionally retaining duplicates.</DESCRIPTION>
+                        <DESCRIPTION>Returns the union of two sets, optionally retaining duplicates.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set, Symbol</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23143,8 +22820,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Unorder</FUNCTION_NAME>
-                        <DESCRIPTION>Removes any enforced ordering from
-                            a specified set.</DESCRIPTION>
+                        <DESCRIPTION>Removes any enforced ordering from a specified set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23170,9 +22846,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>ValidMeasure</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a valid measure in a
-                            virtual cube by forcing inapplicable
-                            dimensions to their top level.</DESCRIPTION>
+                        <DESCRIPTION>Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23190,8 +22864,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Var</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the variance of a numeric
-                            expression evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the variance of a numeric expression evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23200,8 +22873,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Var</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the variance of a numeric
-                            expression evaluated over a set (unbiased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the variance of a numeric expression evaluated over a set (unbiased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23246,8 +22918,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>VarP</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the variance of a numeric
-                            expression evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the variance of a numeric expression evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23256,8 +22927,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>VarP</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the variance of a numeric
-                            expression evaluated over a set (biased).</DESCRIPTION>
+                        <DESCRIPTION>Returns the variance of a numeric expression evaluated over a set (biased).</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23266,9 +22936,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>VisualTotals</FUNCTION_NAME>
-                        <DESCRIPTION>Dynamically totals child members
-                            specified in a set using a pattern for the
-                            total label in the result set.</DESCRIPTION>
+                        <DESCRIPTION>Dynamically totals child members specified in a set using a pattern for the total label in the result set.</DESCRIPTION>
                         <PARAMETER_LIST>Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23277,9 +22945,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>VisualTotals</FUNCTION_NAME>
-                        <DESCRIPTION>Dynamically totals child members
-                            specified in a set using a pattern for the
-                            total label in the result set.</DESCRIPTION>
+                        <DESCRIPTION>Dynamically totals child members specified in a set using a pattern for the total label in the result set.</DESCRIPTION>
                         <PARAMETER_LIST>Set, String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23315,9 +22981,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Wtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Week.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Week.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23326,9 +22990,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Wtd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Week.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Week.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23337,8 +22999,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>XOR</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two conditions are
-                            mutually exclusive.</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two conditions are mutually exclusive.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Logical Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23356,9 +23017,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ytd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Year.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Year.</DESCRIPTION>
                         <PARAMETER_LIST/>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23367,9 +23026,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                     <row>
                         <FUNCTION_NAME>Ytd</FUNCTION_NAME>
-                        <DESCRIPTION>A shortcut function for the
-                            PeriodsToDate function that specifies the
-                            level to be Year.</DESCRIPTION>
+                        <DESCRIPTION>A shortcut function for the PeriodsToDate function that specifies the level to be Year.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -23396,7 +23053,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                     </row>
                 </root>
             </cxmla:return>
-        </cxmla:XxxDiscoverResponse>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
