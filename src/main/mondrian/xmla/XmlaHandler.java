@@ -1404,14 +1404,14 @@ public class XmlaHandler {
         private final String encodedName;
         private final String xsdType;
 
-        Column(String name, int type) {
+        Column(String name, int type, int scale) {
             this.name = name;
 
             // replace invalid XML element name, like " ", with "_x0020_" in
             // column headers, otherwise will generate a badly-formatted xml
             // doc.
             this.encodedName = XmlaUtil.encodeElementName(name);
-            this.xsdType = sqlToXsdType(type);
+            this.xsdType = sqlToXsdType(type, scale);
         }
     }
 
@@ -1444,7 +1444,8 @@ public class XmlaHandler {
                     columns.add(
                         new Column(
                             md.getColumnLabel(i + 1),
-                            md.getColumnType(i + 1)));
+                            md.getColumnType(i + 1),
+                            md.getScale(i + 1)));
                 }
 
                 // Populate data; assume that SqlStatement is already positioned
@@ -1485,7 +1486,8 @@ public class XmlaHandler {
                     columns.add(
                         new Column(
                             tableName + "." + fieldName,
-                            Types.VARCHAR)); // don't know the real type
+                            Types.VARCHAR, // don't know the real type
+                            0));
                 }
             }
 
@@ -1518,18 +1520,6 @@ public class XmlaHandler {
                         new Object[] {
                             "xsi:type",
                             columns.get(i).xsdType});
-
-//                    final String xsdType = columns.get(i).xsdType;
-//                    if (xsdType.equals(XSD_STRING)) {
-//                        writer.startElement(columns.get(i).encodedName);
-//                    } else {
-//                        writer.startElement(
-//                            columns.get(i).encodedName,
-//                            new Object[] {"xsi:type", xsdType});
-//                    }
-
-//                    writer.startElement(columns.get(i).encodedName);
-
                     Object value = row[i];
                     if (value == null) {
                         writer.characters("null");
@@ -1620,18 +1610,27 @@ public class XmlaHandler {
      * @param sqlType SQL type
      * @return XSD type
      */
-    private static String sqlToXsdType(int sqlType) {
+    private static String sqlToXsdType(final int sqlType, final int scale) {
         switch (sqlType) {
         // Integer
         case Types.INTEGER:
         case Types.SMALLINT:
         case Types.TINYINT:
             return XSD_INT;
+        case Types.NUMERIC:
+        case Types.DECIMAL:
+            /*
+             * Oracle reports all numbers as NUMERIC. We check
+             * the scale of the column and pick the right XSD type.
+             */
+            if (scale == 0) {
+                return XSD_INT;
+            } else {
+                return XSD_DECIMAL;
+            }
         case Types.BIGINT:
             return XSD_INTEGER;
-        case Types.NUMERIC:
-            return XSD_DECIMAL;
-            // Real
+        // Real
         case Types.DOUBLE:
         case Types.FLOAT:
             return XSD_DOUBLE;

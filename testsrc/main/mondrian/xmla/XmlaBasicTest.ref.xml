@@ -13590,7 +13590,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element minOccurs="0" name="Gender" sql:field="Gender" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Marital_x0020_Status" sql:field="Marital Status" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Yearly_x0020_Income" sql:field="Yearly Income" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Unit_x0020_Sales" sql:field="Unit Sales" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Unit_x0020_Sales" sql:field="Unit Sales" type="xsd:decimal"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -13652,7 +13652,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Gender xsi:type="xsd:string">M</Gender>
                         <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
                         <Yearly_x0020_Income xsi:type="xsd:string">$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">3</Unit_x0020_Sales>
                     </row>
                     <row>
                         <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
@@ -13682,7 +13682,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Gender xsi:type="xsd:string">M</Gender>
                         <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
                         <Yearly_x0020_Income xsi:type="xsd:string">$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">3</Unit_x0020_Sales>
                     </row>
                     <row>
                         <Store_x0020_Country xsi:type="xsd:string">USA</Store_x0020_Country>
@@ -13712,7 +13712,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Gender xsi:type="xsd:string">M</Gender>
                         <Marital_x0020_Status xsi:type="xsd:string">M</Marital_x0020_Status>
                         <Yearly_x0020_Income xsi:type="xsd:string">$110K - $130K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales xsi:type="xsd:string">3</Unit_x0020_Sales>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">3</Unit_x0020_Sales>
                     </row>
                 </root>
             </cxmla:return>
