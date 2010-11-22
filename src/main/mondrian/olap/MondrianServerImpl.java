@@ -9,13 +9,13 @@
 */
 package mondrian.olap;
 
+import mondrian.util.LockBox;
+
 import java.net.URL;
 import java.io.*;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.util.List;
-import java.util.Collections;
-import java.util.Arrays;
 
 /**
  * Implementation of {@link MondrianServer}.
@@ -25,6 +25,7 @@ import java.util.Arrays;
  * @since Jun 25, 2006
  */
 class MondrianServerImpl extends MondrianServer {
+    private final LockBox lockBox = new LockBox();
     private static MondrianVersion version = null;
     public static final String[] keywords = new String[] {
         "$AdjustedProbability", "$Distance", "$Probability",
@@ -189,6 +190,11 @@ class MondrianServerImpl extends MondrianServer {
         }
         return new String[] {vendor, title, version};
     }
+
+    public LockBox getLockBox() {
+        return lockBox;
+    }
+
 }
 
 // End MondrianServerImpl.java

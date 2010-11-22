@@ -15228,12 +15228,12 @@ FROM Sales
                         <AxesInfo>
                             <AxisInfo name="Axis0">
                                 <HierarchyInfo name="Customers">
+                                    <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                     <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Customers].[MEMBER_CAPTION]"/>
                                     <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Customers].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                    <KEY name="[Customers].[KEY]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis"/>
@@ -15249,12 +15249,12 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
+                                        <MEMBER_KEY>4422</MEMBER_KEY>
                                         <UName>[Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
                                         <Caption>Alice Cantrell</Caption>
                                         <LName>[Customers].[Name]</LName>
                                         <LNum>4</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <KEY>4422</KEY>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -15290,7 +15290,7 @@ FROM Sales
         <Command>
         <Statement>
 SELECT {customers.[all customers].[USA].[CA].[Altadena].[Alice Cantrell]}
- DIMENSION PROPERTIES KEY ON 0
+ DIMENSION PROPERTIES MEMBER_KEY ON 0
 FROM Sales
          </Statement>
         </Command>
@@ -15500,13 +15500,13 @@ FROM Sales
                             </AxisInfo>
                             <AxisInfo name="Axis1">
                                 <HierarchyInfo name="Gender">
+                                    <PARENT_LEVEL name="[Gender].[PARENT_LEVEL]" type="xsd:unsignedInt"/>
+                                    <PARENT_UNIQUE_NAME name="[Gender].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                     <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Gender].[MEMBER_CAPTION]"/>
                                     <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Gender].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
-                                    <PARENT_LEVEL name="[Gender].[PARENT_LEVEL]" type="xsd:unsignedInt"/>
-                                    <PARENT_UNIQUE_NAME name="[Gender].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -15575,24 +15575,24 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
+                                        <PARENT_LEVEL>0</PARENT_LEVEL>
+                                        <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                         <UName>[Gender].[F]</UName>
                                         <Caption>F</Caption>
                                         <LName>[Gender].[Gender]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_LEVEL>0</PARENT_LEVEL>
-                                        <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Gender">
+                                        <PARENT_LEVEL>0</PARENT_LEVEL>
+                                        <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                         <UName>[Gender].[M]</UName>
                                         <Caption>M</Caption>
                                         <LName>[Gender].[Gender]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>131072</DisplayInfo>
-                                        <PARENT_LEVEL>0</PARENT_LEVEL>
-                                        <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -17320,6 +17320,13 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
+                                <HierarchyInfo name="Time.Weekly">
+                                    <UName name="[Time].[Weekly].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Time].[Weekly].[MEMBER_CAPTION]"/>
+                                    <LName name="[Time].[Weekly].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Time].[Weekly].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Time].[Weekly].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -17461,6 +17468,13 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                         <LName>[Time].[Quarter]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>3</DisplayInfo>
+                                    </Member>
+                                    <Member Hierarchy="Time.Weekly">
+                                    <UName>[Time].[Weekly].[All Weeklys]</UName>
+                                    <Caption>All Time.Weeklys</Caption>
+                                    <LName>[Time].[Weekly].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                         <UName>[Product].[All Products]</UName>
@@ -17787,6 +17801,13 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
+                                <HierarchyInfo name="Time.Weekly">
+                                    <UName name="[Time].[Weekly].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Time].[Weekly].[MEMBER_CAPTION]"/>
+                                    <LName name="[Time].[Weekly].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Time].[Weekly].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Time].[Weekly].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -17928,6 +17949,13 @@ FROM Sales
                                         <LName>[Time].[Year]</LName>
                                         <LNum>0</LNum>
                                         <DisplayInfo>4</DisplayInfo>
+                                    </Member>
+                                    <Member Hierarchy="Time.Weekly">
+                                    <UName>[Time].[Weekly].[All Weeklys]</UName>
+                                    <Caption>All Time.Weeklys</Caption>
+                                    <LName>[Time].[Weekly].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                         <UName>[Product].[All Products]</UName>
@@ -18098,6 +18126,13 @@ FROM Sales
                                     <LNum name="[Time].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
+                                <HierarchyInfo name="Time.Weekly">
+                                    <UName name="[Time].[Weekly].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Time].[Weekly].[MEMBER_CAPTION]"/>
+                                    <LName name="[Time].[Weekly].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Time].[Weekly].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Time].[Weekly].[DISPLAY_INFO]"/>
+                                </HierarchyInfo>
                                 <HierarchyInfo name="Product">
                                     <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Product].[MEMBER_CAPTION]"/>
@@ -18239,6 +18274,13 @@ FROM Sales
                                         <LName>[Time].[Year]</LName>
                                         <LNum>0</LNum>
                                         <DisplayInfo>4</DisplayInfo>
+                                    </Member>
+                                    <Member Hierarchy="Time.Weekly">
+                                        <UName>[Time].[Weekly].[All Weeklys]</UName>
+                                        <Caption>All Time.Weeklys</Caption>
+                                        <LName>[Time].[Weekly].[(All)]</LName>
+                                        <LNum>0</LNum>
+                                        <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Product">
                                         <UName>[Product].[All Products]</UName>

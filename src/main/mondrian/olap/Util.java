@@ -748,15 +748,25 @@ public class Util extends XOMUtil {
                     nameParts.subList(0, nameParts.size() - 1);
                 final String propertyName =
                     nameParts.get(nameParts.size() - 1).name;
-                olapElement =
-                    schemaReaderSansAc.lookupCompound(
+                final Member member =
+                    (Member) schemaReaderSansAc.lookupCompound(
                         cube, namePartsButOne, false, Category.Member);
-                if (olapElement != null
-                    && isValidProperty((Member) olapElement, propertyName))
+                if (member != null
+                    && isValidProperty(propertyName, member.getLevel()))
                 {
                     return new UnresolvedFunCall(
                         propertyName, Syntax.Property, new Exp[] {
-                            createExpr(olapElement)});
+                            createExpr(member)});
+                }
+                final Level level =
+                    (Level) schemaReaderSansAc.lookupCompound(
+                        cube, namePartsButOne, false, Category.Level);
+                if (level != null
+                    && isValidProperty(propertyName, level))
+                {
+                    return new UnresolvedFunCall(
+                        propertyName, Syntax.Property, new Exp[] {
+                            createExpr(level)});
                 }
             }
             // if we're in the middle of loading the schema, the property has
@@ -1051,27 +1061,27 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Returns whether a property is valid for a given member.
-     * It is valid if the property is defined at the member's level or at
+     * Returns whether a property is valid for a member of a given level.
+     * It is valid if the property is defined at the level or at
      * an ancestor level, or if the property is a standard property such as
      * "FORMATTED_VALUE".
      *
-     * @param member Member
      * @param propertyName Property name
+     * @param level Level
      * @return Whether property is valid
      */
     public static boolean isValidProperty(
-        Member member,
-        String propertyName)
+        String propertyName,
+        Level level)
     {
-        return lookupProperty(member.getLevel(), propertyName) != null;
+        return lookupProperty(level, propertyName) != null;
     }
 
     /**
      * Finds a member property called <code>propertyName</code> at, or above,
      * <code>level</code>.
      */
-    protected static Property lookupProperty(
+    public static Property lookupProperty(
         Level level,
         String propertyName)
     {
@@ -1497,6 +1507,83 @@ public class Util extends XOMUtil {
             return new Id.Segment(
                 keySegment.getKeyParts().get(0).getName(),
                 Id.Quoting.KEY);
+        }
+    }
+
+    /**
+     * Applies a collection of filters to an iterable.
+     *
+     * @param iterable Iterable
+     * @param conds Zero or more conditions
+     * @param <T>
+     * @return Iterable that returns only members of underlying iterable for
+     *     for which all conditions evaluate to true
+     */
+    public static <T> Iterable<T> filter(
+        final Iterable<T> iterable,
+        final Functor1<Boolean, T>... conds)
+    {
+        final Functor1<Boolean, T>[] conds2 = optimizeConditions(conds);
+        if (conds2.length == 0) {
+            return iterable;
+        }
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    final Iterator<T> iterator = iterable.iterator();
+                    T next;
+                    boolean hasNext = moveToNext();
+
+                    private boolean moveToNext() {
+                        outer:
+                        while (iterator.hasNext()) {
+                            next = iterator.next();
+                            for (Functor1<Boolean, T> cond : conds2) {
+                                if (!cond.apply(next)) {
+                                    continue outer;
+                                }
+                            }
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    public boolean hasNext() {
+                        return hasNext;
+                    }
+
+                    public T next() {
+                        T t = next;
+                        hasNext = moveToNext();
+                        return t;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
+    private static <T> Functor1<Boolean, T>[] optimizeConditions(
+        Functor1<Boolean, T>[] conds)
+    {
+        final List<Functor1<Boolean, T>> functor1List =
+            new ArrayList<Functor1<Boolean, T>>(Arrays.asList(conds));
+        for (Iterator<Functor1<Boolean, T>> funcIter =
+            functor1List.iterator(); funcIter.hasNext();)
+        {
+            Functor1<Boolean, T> booleanTFunctor1 = funcIter.next();
+            if (booleanTFunctor1 == trueFunctor()) {
+                funcIter.remove();
+            }
+        }
+        if (functor1List.size() < conds.length) {
+            //noinspection unchecked
+            return functor1List.toArray(new Functor1[functor1List.size()]);
+        } else {
+            return conds;
         }
     }
 
@@ -2931,6 +3018,34 @@ public class Util extends XOMUtil {
             return Util.hash(h, t2.hashCode());
         }
     }
+
+    public static interface Functor1<RT, PT> {
+        RT apply(PT param);
+    }
+
+    public static <T> Functor1<T, T> identityFunctor() {
+        //noinspection unchecked
+        return (Functor1) IDENTITY_FUNCTOR;
+    }
+
+    private static final Functor1 IDENTITY_FUNCTOR =
+        new Functor1<Object, Object>() {
+            public Object apply(Object param) {
+                return param;
+            }
+        };
+
+    public static <PT> Functor1<Boolean, PT> trueFunctor() {
+        //noinspection unchecked
+        return (Functor1) TRUE_FUNCTOR;
+    }
+
+    private static final Functor1 TRUE_FUNCTOR =
+        new Functor1<Boolean, Object>() {
+            public Boolean apply(Object param) {
+                return true;
+            }
+        };
 }
 
 // End Util.java

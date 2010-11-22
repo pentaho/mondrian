@@ -11,6 +11,7 @@ package mondrian.olap4j;
 
 import java.util.*;
 
+import org.olap4j.OlapException;
 import org.olap4j.impl.AbstractNamedList;
 import org.olap4j.impl.Named;
 import org.olap4j.impl.NamedListImpl;
@@ -30,8 +31,8 @@ import org.olap4j.metadata.NamedList;
  * @since May 25, 2007
  */
 class MondrianOlap4jHierarchy implements Hierarchy, Named {
-    private final MondrianOlap4jSchema olap4jSchema;
-    private final mondrian.olap.Hierarchy hierarchy;
+    final MondrianOlap4jSchema olap4jSchema;
+    final mondrian.olap.Hierarchy hierarchy;
 
     MondrianOlap4jHierarchy(
         MondrianOlap4jSchema olap4jSchema,
@@ -60,7 +61,11 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
             new NamedListImpl<MondrianOlap4jLevel>();
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        for (mondrian.olap.Level level : hierarchy.getLevels()) {
+        final mondrian.olap.SchemaReader schemaReader =
+            olap4jConnection.getMondrianConnection2().getSchemaReader();
+        for (mondrian.olap.Level level
+            : schemaReader.getHierarchyLevels(hierarchy))
+        {
             list.add(olap4jConnection.toOlap4j(level));
         }
         return Olap4jUtil.cast(list);
@@ -76,12 +81,13 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
         return olap4jConnection.toOlap4j(hierarchy.getDefaultMember());
     }
 
-    public NamedList<Member> getRootMembers() {
+    public NamedList<Member> getRootMembers() throws OlapException {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final List<mondrian.olap.Member> levelMembers =
-            olap4jConnection.connection.getSchemaReader().getLevelMembers(
-                hierarchy.getLevels()[0], true);
+            olap4jConnection.getMondrianConnection().getSchemaReader()
+                .getLevelMembers(
+                    hierarchy.getLevels()[0], true);
 
         return new AbstractNamedList<Member>() {
             protected String getName(Member member) {

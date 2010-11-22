@@ -785,26 +785,17 @@ public class XmlaSupport {
         throws IOException, SAXException, XOMException
     {
         String requestText = XmlaSupport.readFile(file);
-        return processXmla(requestText, connectString, catalogNameUrls, role);
+        return processXmla(requestText, connectString, catalogNameUrls);
     }
 
     public static byte[] processXmla(
         String requestText,
         String connectString,
         Map<String, String> catalogNameUrls)
-        throws IOException, SAXException, XOMException
-    {
-        return processXmla(requestText, connectString, catalogNameUrls, null);
-    }
-    public static byte[] processXmla(
-        String requestText,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        Role role)
         throws IOException, SAXException, XOMException
     {
         Document requestDoc = XmlUtil.parseString(requestText);
-        return processXmla(requestDoc, connectString, catalogNameUrls, role);
+        return processXmla(requestDoc, connectString, catalogNameUrls);
     }
 
     public static byte[] processXmla(
@@ -814,33 +805,13 @@ public class XmlaSupport {
         throws IOException, XOMException
     {
         Element requestElem = requestDoc.getDocumentElement();
-        return processXmla(requestElem, connectString, catalogNameUrls, null);
+        return processXmla(requestElem, connectString, catalogNameUrls);
     }
 
-    public static byte[] processXmla(
-        Document requestDoc,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        Role role)
-        throws IOException, XOMException
-    {
-        Element requestElem = requestDoc.getDocumentElement();
-        return processXmla(requestElem, connectString, catalogNameUrls, role);
-    }
     public static byte[] processXmla(
         Element requestElem,
         String connectString,
         Map<String, String> catalogNameUrls)
-        throws IOException, XOMException
-    {
-        return processXmla(requestElem, connectString, catalogNameUrls, null);
-    }
-
-    public static byte[] processXmla(
-        Element requestElem,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        Role role)
         throws IOException, XOMException
     {
         // make request
@@ -852,14 +823,7 @@ public class XmlaSupport {
         String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
 
-        XmlaRequest request;
-        if (role != null) {
-            request = new DefaultXmlaRequest(requestElem, role);
-        } else if (roleName != null) {
-            request = new DefaultXmlaRequest(requestElem, roleName);
-        } else {
-            request = new DefaultXmlaRequest(requestElem);
-        }
+        XmlaRequest request = new DefaultXmlaRequest(requestElem, roleName);
 
         Enumeration.ResponseMimeType responseMimeType =
             Enumeration.ResponseMimeType.MAP.get(

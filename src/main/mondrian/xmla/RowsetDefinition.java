@@ -9,23 +9,28 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.*;
-import mondrian.olap.fun.FunInfo;
-import mondrian.rolap.*;
+import mondrian.olap.Category;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianServer;
+import mondrian.olap.Util;
 
-import static mondrian.xmla.XmlaConstants.*;
-
+import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.metadata.*;
 import org.olap4j.metadata.Member.TreeOp;
-import org.olap4j.metadata.XmlaConstant;
 import org.olap4j.metadata.XmlaConstants;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.text.SimpleDateFormat;
+import java.sql.SQLException;
 import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static mondrian.olap.Util.filter;
+import static mondrian.xmla.XmlaConstants.*;
 
 /**
  * <code>RowsetDefinition</code> defines a rowset, including the columns it
@@ -37,7 +42,7 @@ import java.text.Format;
  * @author jhyde
  * @version $Id$
  */
-enum RowsetDefinition {
+public enum RowsetDefinition {
     /**
      * Returns a list of XML for Analysis data sources
      * available on the server or Web Service. (For an
@@ -101,7 +106,8 @@ enum RowsetDefinition {
                 "name", "row");
             writer.startElement("xsd:sequence");
             for (Column column : columnDefinitions) {
-                final String name = XmlaUtil.encodeElementName(column.name);
+                final String name =
+                    XmlaUtil.ElementNameEncoder.INSTANCE.encode(column.name);
 
                 if (column == DiscoverSchemaRowsetsRowset.Restrictions) {
                     writer.startElement(
@@ -1204,7 +1210,8 @@ enum RowsetDefinition {
             "name", "row");
         writer.startElement("xsd:sequence");
         for (Column column : columnDefinitions) {
-            final String name = XmlaUtil.encodeElementName(column.name);
+            final String name =
+                XmlaUtil.ElementNameEncoder.INSTANCE.encode(column.name);
             final String xsdType = column.type.columnType;
 
             Object[] attrs;
@@ -1288,14 +1295,15 @@ enum RowsetDefinition {
     }
 
     private static XmlaConstants.DBType getDBTypeFromProperty(Property prop) {
-        switch (prop.getType()) {
-        case TYPE_STRING:
+        switch (prop.getDatatype()) {
+        case STRING:
             return XmlaConstants.DBType.WSTR;
-        case TYPE_NUMERIC:
+        case INTEGER:
+        case UNSIGNED_INTEGER:
+        case DOUBLE:
             return XmlaConstants.DBType.R8;
-        case TYPE_BOOLEAN:
+        case BOOLEAN:
             return XmlaConstants.DBType.BOOL;
-        case TYPE_OTHER:
         default:
             // TODO: what type is it really, its not a string
             return XmlaConstants.DBType.WSTR;
@@ -1556,9 +1564,12 @@ enum RowsetDefinition {
             super(DISCOVER_DATASOURCES, request, handler);
         }
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        protected boolean needConnection() {
+            return false;
+        }
+
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             for (DataSourcesConfig.DataSource ds
@@ -1635,9 +1646,8 @@ enum RowsetDefinition {
             super(DISCOVER_SCHEMA_ROWSETS, request, handler);
         }
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             RowsetDefinition[] rowsetDefinitions =
@@ -1706,11 +1716,11 @@ enum RowsetDefinition {
     }
 
     static class DiscoverPropertiesRowset extends Rowset {
-        private final RestrictionTest propertyNameRT;
+        private final Util.Functor1<Boolean, PropertyDefinition> propNameCond;
 
         DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DISCOVER_PROPERTIES, request, handler);
-            propertyNameRT = getRestrictionTest(PropertyName);
+            propNameCond = makeCondition(PROPDEF_NAME_GETTER, PropertyName);
         }
 
         private static final Column PropertyName =
@@ -1763,15 +1773,18 @@ enum RowsetDefinition {
                 Column.REQUIRED,
                 "The current value of the property.");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        protected boolean needConnection() {
+            return false;
+        }
+
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             for (PropertyDefinition propertyDefinition
                 : PropertyDefinition.class.getEnumConstants())
             {
-                if (!propertyNameRT.passes(propertyDefinition.name())) {
+                if (!propNameCond.apply(propertyDefinition)) {
                     continue;
                 }
                 Row row = new Row();
@@ -1853,9 +1866,8 @@ enum RowsetDefinition {
                 Column.OPTIONAL,
                 "The value of the element.\n" + "Example: 01");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             List<Enumeration> enumerators = getEnumerators();
@@ -1955,9 +1967,8 @@ enum RowsetDefinition {
                 "A list of all the keywords reserved by a provider.\n"
                 + "Example: AND");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             MondrianServer mondrianServer = MondrianServer.forConnection(null);
@@ -2035,9 +2046,8 @@ enum RowsetDefinition {
             "The maximum number of characters in the literal. If there is no "
             + "maximum or the maximum is unknown, the value is ?1.");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
             populate(
@@ -2067,11 +2077,11 @@ enum RowsetDefinition {
     }
 
     static class DbschemaCatalogsRowset extends Rowset {
-        private final RestrictionTest catalogNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
 
         DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_CATALOGS, request, handler);
-            catalogNameRT = getRestrictionTest(CatalogName);
+            catalogNameCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
         }
 
         private static final Column CatalogName =
@@ -2111,40 +2121,24 @@ enum RowsetDefinition {
                 Column.OPTIONAL,
                 "The date that the catalog was last modified.");
 
-        public void populate(
-            XmlaResponse response,
-            List<Row> rows)
-            throws XmlaException
+        public void populateImpl(
+            XmlaResponse response, OlapConnection connection, List<Row> rows)
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                if (!catalogNameRT.passes(dsCatalog.name)) {
-                    continue;
-                }
-                final Schema schema = connection.getSchema();
+            for (Catalog catalog : catIter(connection, catalogNameCond)) {
+            final Schema schema = connection.getSchema();
 
                 Row row = new Row();
-                row.set(CatalogName.name, dsCatalog.name);
+                row.set(CatalogName.name, catalog.getName());
 
                 // TODO: currently schema grammar does not support a description
                 row.set(Description.name, "No description available");
 
                 // get Role names
-                // TODO: this returns ALL roles, no the current user's roles
                 StringBuilder buf = new StringBuilder(100);
-                serialize(buf, ((RolapSchema) schema).roleNames());
+                List<String> roleNames =
+                    handler.getExtra(connection).getSchemaRoleNames(schema);
+                serialize(buf, roleNames);
                 row.set(Roles.name, buf.toString());
 
                 // TODO: currently schema grammar does not support modify date
@@ -2169,15 +2163,15 @@ enum RowsetDefinition {
     }
 
     static class DbschemaColumnsRowset extends Rowset {
-        private final RestrictionTest tableCatalogRT;
-        private final RestrictionTest tableNameRT;
-        private final RestrictionTest columnNameRT;
+        private final Util.Functor1<Boolean, Catalog> tableCatalogCond;
+        private final Util.Functor1<Boolean, Cube> tableNameCond;
+        private final Util.Functor1<Boolean, String> columnNameCond;
 
         DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_COLUMNS, request, handler);
-            tableCatalogRT = getRestrictionTest(TableCatalog);
-            tableNameRT = getRestrictionTest(TableName);
-            columnNameRT = getRestrictionTest(ColumnName);
+            tableCatalogCond = makeCondition(CATALOG_NAME_GETTER, TableCatalog);
+            tableNameCond = makeCondition(ELEMENT_NAME_GETTER, TableName);
+            columnNameCond = makeCondition(ColumnName);
         }
 
         private static final Column TableCatalog =
@@ -2301,63 +2295,39 @@ enum RowsetDefinition {
                 + "DBTYPE_DECIMAL, DBTYPE_NUMERIC, DBTYPE_VARNUMERIC. "
                 + "Otherwise, this is NULL.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, OlapException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
+            for (Catalog catalog : catIter(connection, tableCatalogCond)) {
                 final Schema schema = connection.getSchema();
-                String catalogName = dsCatalog.name;
-                if (!tableCatalogRT.passes(catalogName)) {
-                    continue;
-                }
-
                 final boolean emitInvisibleMembers =
                     XmlaUtil.shouldEmitInvisibleMembers(request);
                 int ordinalPosition = 1;
                 Row row;
 
-                for (Cube cube1 : sortedCubes(schema)) {
-                    RolapCube cube = (RolapCube) cube1;
-                    SchemaReader schemaReader =
-                        cube.getSchemaReader(
-                            connection.getRole());
-                    String cubeName = cube.getName();
-                    if (!tableNameRT.passes(cubeName)) {
-                        continue;
-                    }
+                for (Cube cube : filter(sortedCubes(schema), tableNameCond)) {
                     for (Dimension dimension : cube.getDimensions()) {
-                        Hierarchy[] hierarchies = dimension.getHierarchies();
-                        for (Hierarchy hierarchy : hierarchies) {
-                            ordinalPosition = populateHierarchy(
-                                schemaReader, cube, (HierarchyBase) hierarchy,
-                                ordinalPosition, rows);
+                        for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                            ordinalPosition =
+                                populateHierarchy(
+                                    cube, hierarchy,
+                                    ordinalPosition, rows);
                         }
                     }
 
-                    List<RolapMember> rms = cube.getMeasuresMembers();
+                    List<Measure> rms = cube.getMeasures();
                     for (int k = 1; k < rms.size(); k++) {
-                        RolapMember member = rms.get(k);
+                        Measure member = rms.get(k);
 
                         // null == true for regular cubes
                         // virtual cubes do not set the visible property
                         // on its measures so it might be null.
                         Boolean visible = (Boolean)
-                            member.getPropertyValue(Property.VISIBLE.name);
+                            member.getPropertyValue(
+                                Property.StandardMemberProperty.$visible);
                         if (visible == null) {
                             visible = true;
                         }
@@ -2366,14 +2336,15 @@ enum RowsetDefinition {
                         }
 
                         String memberName = member.getName();
-                        if (!columnNameRT.passes("Measures:" + memberName)) {
+                        final String columnName = "Measures:" + memberName;
+                        if (!columnNameCond.apply(columnName)) {
                             continue;
                         }
 
                         row = new Row();
-                        row.set(TableCatalog.name, catalogName);
-                        row.set(TableName.name, cubeName);
-                        row.set(ColumnName.name, "Measures:" + memberName);
+                        row.set(TableCatalog.name, catalog.getName());
+                        row.set(TableName.name, cube.getName());
+                        row.set(ColumnName.name, columnName);
                         row.set(OrdinalPosition.name, ordinalPosition++);
                         row.set(ColumnHasDefault.name, false);
                         row.set(ColumnFlags.name, 0);
@@ -2396,16 +2367,11 @@ enum RowsetDefinition {
         }
 
         private int populateHierarchy(
-            SchemaReader schemaReader,
-            RolapCube cube,
-            HierarchyBase hierarchy,
+            Cube cube,
+            Hierarchy hierarchy,
             int ordinalPosition,
             List<Row> rows)
         {
-            // Access control
-            if (!canAccess(schemaReader, hierarchy)) {
-                return ordinalPosition;
-            }
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
             String hierarchyName = hierarchy.getName();
@@ -2459,16 +2425,17 @@ enum RowsetDefinition {
                 }
             }
 
-            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
-                ordinalPosition = populateLevel(
-                    cube, hierarchy, level, ordinalPosition, rows);
+            for (Level level : hierarchy.getLevels()) {
+                ordinalPosition =
+                    populateLevel(
+                        cube, hierarchy, level, ordinalPosition, rows);
             }
             return ordinalPosition;
         }
 
         private int populateLevel(
             Cube cube,
-            HierarchyBase hierarchy,
+            Hierarchy hierarchy,
             Level level,
             int ordinalPosition,
             List<Row> rows)
@@ -2527,7 +2494,7 @@ TODO: see above
             row.set(NumericScale.name, 255);
             addRow(row, rows);
 */
-            Property[] props = level.getProperties();
+            NamedList<Property> props = level.getProperties();
             for (Property prop : props) {
                 String propName = prop.getName();
 
@@ -2545,22 +2512,24 @@ TODO: see above
                 XmlaConstants.DBType dbType = getDBTypeFromProperty(prop);
                 row.set(DataType.name, dbType.xmlaOrdinal());
 
-                switch (prop.getType()) {
-                case TYPE_STRING:
+                switch (prop.getDatatype()) {
+                case STRING:
                     row.set(CharacterMaximumLength.name, 0);
                     row.set(CharacterOctetLength.name, 0);
                     break;
-                case TYPE_NUMERIC:
+                case INTEGER:
+                case UNSIGNED_INTEGER:
+                case DOUBLE:
                     // TODO: 16/255 seems to be what MS SQL Server
                     // always returns.
                     row.set(NumericPrecision.name, 16);
                     row.set(NumericScale.name, 255);
                     break;
-                case TYPE_BOOLEAN:
+                case BOOLEAN:
                     row.set(NumericPrecision.name, 255);
                     row.set(NumericScale.name, 255);
                     break;
-                case TYPE_OTHER:
+                default:
                     // TODO: what type is it really, its
                     // not a string
                     row.set(CharacterMaximumLength.name, 0);
@@ -2585,11 +2554,11 @@ TODO: see above
     }
 
     static class DbschemaProviderTypesRowset extends Rowset {
-        private final RestrictionTest dataTypeRT;
+        private final Util.Functor1<Boolean, Integer> dataTypeCond;
 
         DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_PROVIDER_TYPES, request, handler);
-            dataTypeRT = getRestrictionTest(DataType);
+            dataTypeCond = makeCondition(DataType);
         }
 
         /*
@@ -2719,8 +2688,14 @@ TODO: see above
                 "A Boolean that indicates whether the data type is a best "
                 + "match.");
 
-        public void populate(
+        @Override
+        protected boolean needConnection() {
+            return false;
+        }
+
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
             throws XmlaException
         {
@@ -2729,7 +2704,7 @@ TODO: see above
 
             // i4
             Integer dt = XmlaConstants.DBType.I4.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.I4.userName);
                 row.set(DataType.name, dt);
@@ -2746,7 +2721,7 @@ TODO: see above
 
             // R8
             dt = XmlaConstants.DBType.R8.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.R8.userName);
                 row.set(DataType.name, dt);
@@ -2763,7 +2738,7 @@ TODO: see above
 
             // CY
             dt = XmlaConstants.DBType.CY.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.CY.userName);
                 row.set(DataType.name, dt);
@@ -2780,7 +2755,7 @@ TODO: see above
 
             // BOOL
             dt = XmlaConstants.DBType.BOOL.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.BOOL.userName);
                 row.set(DataType.name, dt);
@@ -2797,7 +2772,7 @@ TODO: see above
 
             // I8
             dt = XmlaConstants.DBType.I8.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.I8.userName);
                 row.set(DataType.name, dt);
@@ -2814,7 +2789,7 @@ TODO: see above
 
             // WSTR
             dt = XmlaConstants.DBType.WSTR.xmlaOrdinal();
-            if (dataTypeRT.passes(dt)) {
+            if (dataTypeCond.apply(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.WSTR.userName);
                 row.set(DataType.name, dt);
@@ -2846,11 +2821,11 @@ TODO: see above
     }
 
     static class DbschemaSchemataRowset extends Rowset {
-        private final RestrictionTest catalogNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
 
         DbschemaSchemataRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_SCHEMATA, request, handler);
-            catalogNameRT = getRestrictionTest(CatalogName);
+            catalogNameCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
         }
 
         /*
@@ -2883,31 +2858,16 @@ TODO: see above
                 + "numeric, this is the upper bound on the maximum precision "
                 + "of the data type.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, OlapException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                if (!catalogNameRT.passes(dsCatalog.name)) {
-                    continue;
-                }
+            for (Catalog catalog : catIter(connection, catalogNameCond)) {
                 final Schema schema = connection.getSchema();
                 Row row = new Row();
-                row.set(CatalogName.name, dsCatalog.name);
+                row.set(CatalogName.name, catalog.getName());
                 row.set(SchemaName.name, schema.getName());
                 row.set(SchemaOwner.name, "");
                 addRow(row, rows);
@@ -2927,15 +2887,15 @@ TODO: see above
     }
 
     static class DbschemaTablesRowset extends Rowset {
-        private final RestrictionTest tableCatalogRT;
-        private final RestrictionTest tableNameRT;
-        private final RestrictionTest tableTypeRT;
+        private final Util.Functor1<Boolean, Catalog> tableCatalogCond;
+        private final Util.Functor1<Boolean, Cube> tableNameCond;
+        private final Util.Functor1<Boolean, String> tableTypeCond;
 
         DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_TABLES, request, handler);
-            tableCatalogRT = getRestrictionTest(TableCatalog);
-            tableNameRT = getRestrictionTest(TableName);
-            tableTypeRT = getRestrictionTest(TableType);
+            tableCatalogCond = makeCondition(CATALOG_NAME_GETTER, TableCatalog);
+            tableNameCond = makeCondition(ELEMENT_NAME_GETTER, TableName);
+            tableTypeCond = makeCondition(TableType);
         }
 
         private static final Column TableCatalog =
@@ -3027,57 +2987,30 @@ TODO: see above
                 + "object is a dimension.");
         */
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, OlapException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), tableCatalogCond))
+            {
                 final Schema schema = connection.getSchema();
-                String catalogName = dsCatalog.name;
-                if (!tableCatalogRT.passes(catalogName)) {
-                    continue;
-                }
-
-                //final String schemaName = schema.getName();
-
                 Row row;
-                for (Cube cube1 : sortedCubes(schema)) {
-                    RolapCube cube = (RolapCube) cube1;
-                    String cubeName = cube.getName();
-
-                    if (!tableNameRT.passes(cubeName)) {
-                        continue;
-                    }
-                    SchemaReader schemaReader =
-                        cube.getSchemaReader(
-                            connection.getRole());
-
+                for (Cube cube : filter(sortedCubes(schema), tableNameCond)) {
                     String desc = cube.getDescription();
                     if (desc == null) {
                         //TODO: currently this is always null
-                        desc = catalogName + " - " + cubeName + " Cube";
+                        desc =
+                            catalog.getName() + " - "
+                            + cube.getName() + " Cube";
                     }
 
-
-                    if (tableTypeRT.passes("TABLE")) {
+                    if (tableTypeCond.apply("TABLE")) {
                         row = new Row();
-                        row.set(TableCatalog.name, catalogName);
-                        row.set(TableName.name, cubeName);
+                        row.set(TableCatalog.name, catalog.getName());
+                        row.set(TableName.name, cube.getName());
                         row.set(TableType.name, "TABLE");
                         row.set(Description.name, desc);
                         if (false) {
@@ -3087,19 +3020,18 @@ TODO: see above
                     }
 
 
-                    if (tableTypeRT.passes("SYSTEM TABLE")) {
+                    if (tableTypeCond.apply("SYSTEM TABLE")) {
                         for (Dimension dimension : cube.getDimensions()) {
-                            if (dimension.isMeasures()) {
+                            if (dimension.getDimensionType()
+                                == Dimension.Type.MEASURE)
+                            {
                                 continue;
                             }
-                            Hierarchy[] hierarchies =
-                                dimension.getHierarchies();
-                            for (Hierarchy hierarchy1 : hierarchies) {
-                                HierarchyBase hierarchy =
-                                    (HierarchyBase) hierarchy1;
+                            for (Hierarchy hierarchy
+                                : dimension.getHierarchies())
+                            {
                                 populateHierarchy(
-                                    schemaReader, cube,
-                                    hierarchy, rows);
+                                    cube, hierarchy, rows);
                             }
                         }
                     }
@@ -3108,15 +3040,8 @@ TODO: see above
         }
 
         private void populateHierarchy(
-            SchemaReader schemaReader,
-            RolapCube cube,
-            HierarchyBase hierarchy,
-            List<Row> rows)
+            Cube cube, Hierarchy hierarchy, List<Row> rows)
         {
-            // Access control
-            if (!canAccess(schemaReader, hierarchy)) {
-                return;
-            }
 /*
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -3146,15 +3071,14 @@ TODO: see above
                 addRow(row, rows);
             }
 */
-            Level[] levels = hierarchy.getLevels();
-            for (Level level : levels) {
+            for (Level level : hierarchy.getLevels()) {
                 populateLevel(cube, hierarchy, level, rows);
             }
         }
 
         private void populateLevel(
-            RolapCube cube,
-            HierarchyBase hierarchy,
+            Cube cube,
+            Hierarchy hierarchy,
             Level level,
             List<Row> rows)
         {
@@ -3327,46 +3251,30 @@ TODO: see above
                 Column.OPTIONAL,
                 "Property ID of the table. Return null.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, OlapException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
+            for (Catalog catalog : catIter(connection, catNameCond())) {
                 final Schema schema = connection.getSchema();
-                String catalogName = dsCatalog.name;
-                //final String catalogName = schema.getName();
 
                 //TODO: Is this cubes or tables? SQL Server returns what
                 // in foodmart are cube names for TABLE_NAME
-                for (Cube cube1 : sortedCubes(schema)) {
-                    RolapCube cube = (RolapCube) cube1;
+                for (Cube cube : sortedCubes(schema)) {
                     String cubeName = cube.getName();
                     String desc = cube.getDescription();
                     if (desc == null) {
                         //TODO: currently this is always null
-                        desc = catalogName + " - " + cubeName + " Cube";
+                        desc = catalog.getName() + " - " + cubeName + " Cube";
                     }
                     //TODO: SQL Server returns 1000000 for all tables
                     int cardinality = 1000000;
                     String version = "null";
 
                     Row row = new Row();
-                    row.set(TableCatalog.name, catalogName);
+                    row.set(TableCatalog.name, catalog.getName());
                     row.set(TableName.name, cubeName);
                     row.set(TableType.name, "TABLE");
                     row.set(Bookmarks.name, false);
@@ -3451,8 +3359,9 @@ TODO: see above
         CUBE_SOURCE
     */
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
             throws XmlaException
         {
@@ -3461,20 +3370,20 @@ TODO: see above
         }
     }
 
-    static class MdschemaCubesRowset extends Rowset {
-        private final RestrictionTest catalogNameRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
+    public static class MdschemaCubesRowset extends Rowset {
+        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
 
         MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_CUBES, request, handler);
-            catalogNameRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
+            catalogNameCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
         }
 
-        private static final String MD_CUBTYPE_CUBE = "CUBE";
-        private static final String MD_CUBTYPE_VIRTUAL_CUBE = "VIRTUAL CUBE";
+        public static final String MD_CUBTYPE_CUBE = "CUBE";
+        public static final String MD_CUBTYPE_VIRTUAL_CUBE = "VIRTUAL CUBE";
 
         private static final Column CatalogName =
             new Column(
@@ -3622,117 +3531,96 @@ TODO: see above
                 Column.OPTIONAL,
                 "Measures in this cube.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogNameCond))
+            {
+                for (Schema schema
+                    : filter(catalog.getSchemas(), schemaNameCond))
+                {
+                    for (Cube cube : filter(sortedCubes(schema), cubeNameCond))
+                    {
+                        String desc = cube.getDescription();
+                        if (desc == null) {
+                            desc =
+                                catalog.getName() + " Schema - "
+                                + cube.getName() + " Cube";
+                        }
 
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                String catalogName = dsCatalog.name;
-                if (!catalogNameRT.passes(catalogName)) {
-                    continue;
-                }
-
-                final Schema schema = connection.getSchema();
-                if (!schemaNameRT.passes(schema.getName())) {
-                    continue;
-                }
-                for (Cube cube : sortedCubes(schema)) {
-                    // Access control
-                    if (!canAccess(schema.getSchemaReader(), cube)) {
-                        continue;
-                    }
-                    if (!cubeNameRT.passes(cube.getName())) {
-                        continue;
-                    }
-
-                    String desc = cube.getDescription();
-                    if (desc == null) {
-                        desc =
-                            catalogName + " Schema - "
-                            + cube.getName() + " Cube";
-                    }
-
-                    Row row = new Row();
-                    row.set(CatalogName.name, catalogName);
-                    row.set(SchemaName.name, schema.getName());
-                    row.set(CubeName.name, cube.getName());
-                    row.set(
-                        CubeType.name,
-                        ((RolapCube) cube).isVirtual()
-                            ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
-                    //row.set(CubeGuid.name, "");
-                    //row.set(CreatedOn.name, "");
-                    //row.set(LastSchemaUpdate.name, "");
-                    //row.set(SchemaUpdatedBy.name, "");
-                    //row.set(LastDataUpdate.name, "");
-                    //row.set(DataUpdatedBy.name, "");
-                    row.set(IsDrillthroughEnabled.name, true);
-                    row.set(IsWriteEnabled.name, false);
-                    row.set(IsLinkable.name, false);
-                    row.set(IsSqlEnabled.name, false);
-                    row.set(Description.name, desc);
-                    Format formatter =
-                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                    String formattedDate =
-                        formatter.format(schema.getSchemaLoadDate());
-                    row.set(LastSchemaUpdate.name, formattedDate);
-                    if (deep) {
+                        Row row = new Row();
+                        row.set(CatalogName.name, catalog.getName());
+                        row.set(SchemaName.name, schema.getName());
+                        row.set(CubeName.name, cube.getName());
                         row.set(
-                            Dimensions.name,
-                            new MdschemaDimensionsRowset(
-                                wrapRequest(
-                                    request,
-                                    org.olap4j.impl.Olap4jUtil.mapOf(
-                                        MdschemaDimensionsRowset.CatalogName,
-                                        catalogName,
-                                        MdschemaDimensionsRowset.SchemaName,
-                                        schema.getName(),
-                                        MdschemaDimensionsRowset.CubeName,
-                                        cube.getName())),
-                                handler));
-                        row.set(
-                            Sets.name,
-                            new MdschemaSetsRowset(
-                                wrapRequest(
-                                    request,
-                                    org.olap4j.impl.Olap4jUtil.mapOf(
-                                        MdschemaSetsRowset.CatalogName,
-                                        catalogName,
-                                        MdschemaSetsRowset.SchemaName,
-                                        schema.getName(),
-                                        MdschemaSetsRowset.CubeName,
-                                        cube.getName())),
-                                handler));
-                        row.set(
-                            Measures.name,
-                            new MdschemaMeasuresRowset(
-                                wrapRequest(
-                                    request,
-                                    org.olap4j.impl.Olap4jUtil.mapOf(
-                                        MdschemaMeasuresRowset.CatalogName,
-                                        catalogName,
-                                        MdschemaMeasuresRowset.SchemaName,
-                                        schema.getName(),
-                                        MdschemaMeasuresRowset.CubeName,
-                                        cube.getName())),
-                                handler));
+                            CubeType.name,
+                            handler.getExtra(connection).getCubeType(cube));
+                        //row.set(CubeGuid.name, "");
+                        //row.set(CreatedOn.name, "");
+                        //row.set(LastSchemaUpdate.name, "");
+                        //row.set(SchemaUpdatedBy.name, "");
+                        //row.set(LastDataUpdate.name, "");
+                        //row.set(DataUpdatedBy.name, "");
+                        row.set(IsDrillthroughEnabled.name, true);
+                        row.set(IsWriteEnabled.name, false);
+                        row.set(IsLinkable.name, false);
+                        row.set(IsSqlEnabled.name, false);
+                        row.set(Description.name, desc);
+                        Format formatter =
+                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        String formattedDate =
+                            formatter.format(
+                                handler.getExtra(connection)
+                                    .getSchemaLoadDate(schema));
+                        row.set(LastSchemaUpdate.name, formattedDate);
+                        if (deep) {
+                            row.set(
+                                Dimensions.name,
+                                new MdschemaDimensionsRowset(
+                                    wrapRequest(
+                                        request,
+                                        Olap4jUtil.mapOf(
+                                            MdschemaDimensionsRowset
+                                                .CatalogName,
+                                            catalog.getName(),
+                                            MdschemaDimensionsRowset.SchemaName,
+                                            schema.getName(),
+                                            MdschemaDimensionsRowset.CubeName,
+                                            cube.getName())),
+                                    handler));
+                            row.set(
+                                Sets.name,
+                                new MdschemaSetsRowset(
+                                    wrapRequest(
+                                        request,
+                                        Olap4jUtil.mapOf(
+                                            MdschemaSetsRowset.CatalogName,
+                                            catalog.getName(),
+                                            MdschemaSetsRowset.SchemaName,
+                                            schema.getName(),
+                                            MdschemaSetsRowset.CubeName,
+                                            cube.getName())),
+                                    handler));
+                            row.set(
+                                Measures.name,
+                                new MdschemaMeasuresRowset(
+                                    wrapRequest(
+                                        request,
+                                        Olap4jUtil.mapOf(
+                                            MdschemaMeasuresRowset.CatalogName,
+                                            catalog.getName(),
+                                            MdschemaMeasuresRowset.SchemaName,
+                                            schema.getName(),
+                                            MdschemaMeasuresRowset.CubeName,
+                                            cube.getName())),
+                                    handler));
+                        }
+                        addRow(row, rows);
                     }
-                    addRow(row, rows);
                 }
             }
         }
@@ -3751,19 +3639,21 @@ TODO: see above
     }
 
     static class MdschemaDimensionsRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest dimensionUniqueNameRT;
-        private final RestrictionTest dimensionNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionNameCond;
 
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_DIMENSIONS, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
-            dimensionNameRT = getRestrictionTest(DimensionName);
+            catalogNameCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            dimensionUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, DimensionUniqueName);
+            dimensionNameCond =
+                makeCondition(ELEMENT_NAME_GETTER, DimensionName);
         }
 
         public static final int MD_DIMTYPE_OTHER = 3;
@@ -3927,90 +3817,58 @@ TODO: see above
                 Column.OPTIONAL,
                 "Hierarchies in this dimension.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds =
-                handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                String catalogName = dsCatalog.name;
-                if (!catalogRT.passes(catalogName)) {
-                    continue;
-                }
-
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                populateCatalog(connection, catalogName, rows);
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogNameCond))
+            {
+                populateCatalog(connection, catalog, rows);
             }
         }
 
         protected void populateCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            for (Cube cube : sortedCubes(schema)) {
-                if (!cubeNameRT.passes(cube.getName())) {
-                    continue;
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    populateCube(connection, catalog, cube, rows);
                 }
-                SchemaReader schemaReader =
-                    cube.getSchemaReader(
-                        connection.getRole());
-                populateCube(schemaReader, catalogName, cube, rows);
             }
         }
 
         protected void populateCube(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            for (Dimension dimension : cube.getDimensions()) {
-                String name = dimension.getName();
-                String unique = dimension.getUniqueName();
-                if (dimensionNameRT.passes(name)
-                    && dimensionUniqueNameRT.passes(unique))
-                {
-                    populateDimension(
-                        schemaReader, catalogName,
-                        cube, dimension, rows);
-                }
+            for (Dimension dimension
+                : filter(
+                    cube.getDimensions(),
+                    dimensionNameCond,
+                    dimensionUnameCond))
+            {
+                populateDimension(
+                    connection, catalog, cube, dimension, rows);
             }
         }
 
         protected void populateDimension(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            // Access control
-            if (!canAccess(schemaReader, dimension)) {
-                return;
-            }
-
             String desc = dimension.getDescription();
             if (desc == null) {
                 desc =
@@ -4019,15 +3877,14 @@ TODO: see above
             }
 
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionName.name, dimension.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(DimensionCaption.name, dimension.getCaption());
             row.set(
-                DimensionOrdinal.name,
-                getDimensionOrdinal(cube, dimension));
+                DimensionOrdinal.name, cube.getDimensions().indexOf(dimension));
             row.set(DimensionType.name, getDimensionType(dimension));
 
             //Is this the number of primaryKey members there are??
@@ -4040,11 +3897,9 @@ TODO: see above
             // The '1' might have to do with whether or not the
             // hierarchy has a 'all' member or not - don't know yet.
             // large data set total for Orders cube 0m42.923s
-            Hierarchy firstHierarchy = dimension.getHierarchies()[0];
-            Level[] levels = firstHierarchy.getLevels();
-            Level lastLevel = levels[levels.length - 1];
-
-
+            Hierarchy firstHierarchy = dimension.getHierarchies().get(0);
+            NamedList<Level> levels = firstHierarchy.getLevels();
+            Level lastLevel = levels.get(levels.size() - 1);
 
             /*
             if override config setting is set
@@ -4055,7 +3910,8 @@ TODO: see above
             */
 
             // Added by TWI to returned cached row numbers
-            int n = schemaReader.getLevelCardinality(lastLevel, true, true);
+
+            int n = handler.getExtra(connection).getLevelCardinality(lastLevel);
             row.set(DimensionCardinality.name, n + 1);
 
             // TODO: I think that this is just the dimension name
@@ -4075,9 +3931,9 @@ TODO: see above
                     new MdschemaHierarchiesRowset(
                         wrapRequest(
                             request,
-                            org.olap4j.impl.Olap4jUtil.mapOf(
+                            Olap4jUtil.mapOf(
                                 MdschemaHierarchiesRowset.CatalogName,
-                                catalogName,
+                                catalog.getName(),
                                 MdschemaHierarchiesRowset.SchemaName,
                                 cube.getSchema().getName(),
                                 MdschemaHierarchiesRowset.CubeName,
@@ -4088,10 +3944,6 @@ TODO: see above
             }
 
             addRow(row, rows);
-        }
-
-        private static int getDimensionOrdinal(Cube cube, Dimension dimension) {
-            return Arrays.asList(cube.getDimensions()).indexOf(dimension);
         }
 
         protected void setProperty(
@@ -4106,21 +3958,22 @@ TODO: see above
         }
     }
 
-    static int getDimensionType(Dimension dim) {
-        if (dim.isMeasures()) {
+    static int getDimensionType(Dimension dim) throws OlapException {
+        switch (dim.getDimensionType()) {
+        case MEASURE:
             return MdschemaDimensionsRowset.MD_DIMTYPE_MEASURE;
-        } else if (DimensionType.TimeDimension.equals(dim.getDimensionType())) {
+        case TIME:
             return MdschemaDimensionsRowset.MD_DIMTYPE_TIME;
-        } else {
+        default:
             return MdschemaDimensionsRowset.MD_DIMTYPE_OTHER;
         }
     }
 
-    static class MdschemaFunctionsRowset extends Rowset {
+    public static class MdschemaFunctionsRowset extends Rowset {
         /**
          * http://www.csidata.com/custserv/onlinehelp/VBSdocs/vbs57.htm
          */
-        enum VarType {
+        public enum VarType {
             Empty("Uninitialized (default)"),
             Null("Contains no valid data"),
             Integer("Integer subtype"),
@@ -4139,7 +3992,7 @@ TODO: see above
             Byte("Byte subtype"),
             Array("Array subtype");
 
-            static VarType forCategory(int category) {
+            public static VarType forCategory(int category) {
                 switch (category) {
                 case Category.Unknown:
                     // expression == unknown ???
@@ -4179,11 +4032,11 @@ TODO: see above
             }
         }
 
-        private final RestrictionTest functionNameRT;
+        private final Util.Functor1<Boolean, String> functionNameCond;
 
         MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_FUNCTIONS, request, handler);
-            functionNameRT = getRestrictionTest(FunctionName);
+            functionNameCond = makeCondition(FunctionName);
         }
 
         private static final Column FunctionName =
@@ -4253,109 +4106,35 @@ TODO: see above
                 Column.OPTIONAL,
                 "The display caption for the function.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
+            for (Catalog catalog : catIter(connection, catNameCond())) {
                 final Schema schema = connection.getSchema();
-                FunTable funTable = schema.getFunTable();
+                List<XmlaHandler.XmlaExtra.FunctionDefinition> funDefs =
+                    new ArrayList<XmlaHandler.XmlaExtra.FunctionDefinition>();
 
-                StringBuilder buf = new StringBuilder(50);
-                List<FunInfo> functions = funTable.getFunInfoList();
-                for (FunInfo fi : functions) {
-                    switch (fi.getSyntax()) {
-                    case Empty:
-                    case Internal:
-                    case Parentheses:
-                        continue;
-                    }
-                    if (!functionNameRT.passes(fi.getName())) {
-                        continue;
-                    }
-
-                    int[][] paramCategories = fi.getParameterCategories();
-                    int[] returnCategories = fi.getReturnCategories();
-
-                    // Convert Windows newlines in 'description' to UNIX format.
-                    String description = fi.getDescription();
-                    if (description != null) {
-                        description = Util.replace(
-                            fi.getDescription(),
-                            "\r",
-                            "");
-                    }
-                    if ((paramCategories == null)
-                        || (paramCategories.length == 0))
-                    {
-                        Row row = new Row();
-                        row.set(FunctionName.name, fi.getName());
-                        row.set(Description.name, description);
-                        row.set(ParameterList.name, "(none)");
-                        row.set(ReturnType.name, 1);
-                        row.set(Origin.name, 1);
-                        //row.set(LibraryName.name, "");
-                        // TODO WHAT VALUE should this have
-                        row.set(InterfaceName.name, "");
-                        row.set(Caption.name, fi.getName());
-                        addRow(row, rows);
-
-                    } else {
-                        for (int i = 0; i < paramCategories.length; i++) {
-                            int[] pc = paramCategories[i];
-                            int returnCategory = returnCategories[i];
-
-                            Row row = new Row();
-                            row.set(FunctionName.name, fi.getName());
-                            row.set(Description.name, description);
-
-                            buf.setLength(0);
-                            for (int j = 0; j < pc.length; j++) {
-                                int v = pc[j];
-                                if (j > 0) {
-                                    buf.append(", ");
-                                }
-                                buf.append(Category.instance.getDescription(
-                                    v & Category.Mask));
-                            }
-                            row.set(ParameterList.name, buf.toString());
-
-                            VarType varType =
-                                VarType.forCategory(returnCategory);
-                            row.set(ReturnType.name, varType.ordinal());
-
-                            //TODO: currently FunInfo can not tell us which
-                            // functions are MDX and which are UDFs.
-                            row.set(Origin.name, 1);
-
-                            // TODO: Name of the type library for UDFs. NULL for
-                            // MDX functions.
-                            //row.set(LibraryName.name, "");
-
-                            // TODO: Name of the interface for UDF and Group
-                            // name for the MDX functions.
-                            // TODO WHAT VALUE should this have
-                            row.set(InterfaceName.name, "");
-
-                            row.set(Caption.name, fi.getName());
-                            addRow(row, rows);
-                        }
-                    }
+                // olap4j does not support describing functions. Call an
+                // auxiliary method.
+                handler.getExtra(connection).getSchemaFunctionList(
+                    funDefs,
+                    schema,
+                    functionNameCond);
+                for (XmlaHandler.XmlaExtra.FunctionDefinition funDef : funDefs)
+                {
+                    Row row = new Row();
+                    row.set(FunctionName.name, funDef.functionName);
+                    row.set(Description.name, funDef.description);
+                    row.set(ParameterList.name, funDef.parameterList);
+                    row.set(ReturnType.name, funDef.returnType);
+                    row.set(Origin.name, funDef.origin);
+                    //row.set(LibraryName.name, "");
+                    row.set(InterfaceName.name, funDef.interfaceName);
+                    row.set(Caption.name, funDef.caption);
+                    addRow(row, rows);
                 }
             }
         }
@@ -4374,21 +4153,24 @@ TODO: see above
     }
 
     static class MdschemaHierarchiesRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest dimensionUniqueNameRT;
-        private final RestrictionTest hierarchyUniqueNameRT;
-        private final RestrictionTest hierarchyNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
+        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
+        private final Util.Functor1<Boolean, Hierarchy> hierarchyNameCond;
 
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_HIERARCHIES, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
-            hierarchyNameRT = getRestrictionTest(HierarchyName);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            dimensionUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, DimensionUniqueName);
+            hierarchyUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, HierarchyUniqueName);
+            hierarchyNameCond =
+                makeCondition(ELEMENT_NAME_GETTER, HierarchyName);
         }
 
         private static final Column CatalogName =
@@ -4580,125 +4362,86 @@ TODO: see above
                 Column.OPTIONAL,
                 "Is hierarchy a parent.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds =
-                handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                String catalogName = dsCatalog.name;
-                if (!catalogRT.passes(catalogName)) {
-                    continue;
-                }
-
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                populateCatalog(connection, catalogName, rows);
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                populateCatalog(connection, catalog, rows);
             }
         }
 
         protected void populateCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            for (Cube cube : sortedCubes(schema)) {
-                if (!cubeNameRT.passes(cube.getName())) {
-                    continue;
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    populateCube(connection, catalog, cube, rows);
                 }
-                // RME
-                //SchemaReader schemaReader = connection.getSchemaReader();
-                // want to pick up cube's
-                SchemaReader schemaReader =
-                    cube.getSchemaReader(connection.getRole());
-                populateCube(schemaReader, catalogName, cube, rows);
             }
         }
 
         protected void populateCube(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             int ordinal = 0;
             for (Dimension dimension : cube.getDimensions()) {
-                String unique = dimension.getUniqueName();
                 // Must increment ordinal for all dimensions but
                 // only output some of them.
-                boolean genOutput = dimensionUniqueNameRT.passes(unique);
-                ordinal = populateDimension(
-                    genOutput,
-                    schemaReader, catalogName,
-                    cube, dimension, ordinal, rows);
+                boolean genOutput = dimensionUnameCond.apply(dimension);
+                if (genOutput) {
+                    populateDimension(
+                        connection, catalog, cube, dimension, ordinal, rows);
+                }
+                ordinal += dimension.getHierarchies().size();
             }
         }
 
-        protected int populateDimension(
-            boolean genOutput,
-            SchemaReader schemaReader,
-            String catalogName,
+        protected void populateDimension(
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
             int ordinal,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
-                if (genOutput) {
-                    String unique = hierarchy.getUniqueName();
-                    if (hierarchyNameRT.passes(hierarchy.getName())
-                        && hierarchyUniqueNameRT.passes(unique))
-                    {
-                        populateHierarchy(
-                            schemaReader, catalogName,
-                            cube, dimension, (HierarchyBase) hierarchy,
-                            ordinal++, rows);
-                    } else {
-                        ordinal++;
-                    }
-                } else {
-                    ordinal++;
-                }
+            final NamedList<Hierarchy> hierarchies = dimension.getHierarchies();
+            for (Hierarchy hierarchy
+                : filter(hierarchies, hierarchyNameCond, hierarchyUnameCond))
+            {
+                populateHierarchy(
+                    connection,
+                    catalog,
+                    cube,
+                    dimension,
+                    hierarchy,
+                    ordinal + hierarchies.indexOf(hierarchy),
+                    rows);
             }
-            return ordinal;
         }
 
         protected void populateHierarchy(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
-            HierarchyBase hierarchy,
+            Hierarchy hierarchy,
             int ordinal,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            // Access control
-            if (!canAccess(schemaReader, hierarchy)) {
-                return;
-            }
-
             String desc = hierarchy.getDescription();
             if (desc == null) {
                 desc =
@@ -4707,7 +4450,7 @@ TODO: see above
             }
 
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -4724,22 +4467,24 @@ TODO: see above
             // cardinality. Consumers should not assume that this
             // value is accurate.
             int cardinality =
-                RolapMemberBase.getHierarchyCardinality(
-                    schemaReader, hierarchy);
+                handler.getExtra(connection).getHierarchyCardinality(
+                    hierarchy);
             row.set(HierarchyCardinality.name, cardinality);
 
             row.set(DefaultMember.name, hierarchy.getDefaultMember());
             if (hierarchy.hasAll()) {
                 row.set(
                     AllMember.name,
-                    Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
+                    hierarchy.getRootMembers().get(0).getUniqueName());
             }
             row.set(Description.name, desc);
 
             //TODO: only support:
             // MD_STRUCTURE_FULLYBALANCED (0)
             // MD_STRUCTURE_RAGGEDBALANCED (1)
-            row.set(Structure.name, hierarchy.isRagged() ? 1 : 0);
+            row.set(
+                Structure.name,
+                handler.getExtra(connection).getHierarchyStructure(hierarchy));
 
             row.set(IsVirtual.name, false);
             row.set(IsReadWrite.name, false);
@@ -4755,19 +4500,18 @@ TODO: see above
             // always true
             row.set(DimensionIsShared.name, true);
 
-            RolapLevel nonAllFirstLevel =
-                (RolapLevel) hierarchy.getLevels()[
-                    (hierarchy.hasAll() ? 1 : 0)];
-            row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
+            row.set(
+                ParentChild.name,
+                handler.getExtra(connection).isHierarchyParentChild(hierarchy));
             if (deep) {
                 row.set(
                     Levels.name,
                     new MdschemaLevelsRowset(
                         wrapRequest(
                             request,
-                            org.olap4j.impl.Olap4jUtil.mapOf(
+                            Olap4jUtil.mapOf(
                                 MdschemaLevelsRowset.CatalogName,
-                                catalogName,
+                                catalog.getName(),
                                 MdschemaLevelsRowset.SchemaName,
                                 cube.getSchema().getName(),
                                 MdschemaLevelsRowset.CubeName,
@@ -4795,23 +4539,26 @@ TODO: see above
     }
 
     static class MdschemaLevelsRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest dimensionUniqueNameRT;
-        private final RestrictionTest hierarchyUniqueNameRT;
-        private final RestrictionTest levelUniqueNameRT;
-        private final RestrictionTest levelNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
+        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
+        private final Util.Functor1<Boolean, Level> levelUnameCond;
+        private final Util.Functor1<Boolean, Level> levelNameCond;
 
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_LEVELS, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
-            levelUniqueNameRT = getRestrictionTest(LevelUniqueName);
-            levelNameRT = getRestrictionTest(LevelName);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            dimensionUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, DimensionUniqueName);
+            hierarchyUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, HierarchyUniqueName);
+            levelUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, LevelUniqueName);
+            levelNameCond = makeCondition(ELEMENT_NAME_GETTER, LevelName);
         }
 
         public static final int MDLEVEL_TYPE_UNKNOWN = 0x0000;
@@ -4965,118 +4712,83 @@ TODO: see above
                 "A human-readable description of the level. NULL if no "
                 + "description exists.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                String catalogName = dsCatalog.name;
-                if (!catalogRT.passes(catalogName)) {
-                    continue;
-                }
-
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-                populateCatalog(connection, catalogName, rows);
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                populateCatalog(connection, catalog, rows);
             }
         }
 
         protected void populateCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            for (Cube cube : sortedCubes(schema)) {
-                if (!cubeNameRT.passes(cube.getName())) {
-                    continue;
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    populateCube(connection, catalog, cube, rows);
                 }
-                SchemaReader schemaReader =
-                    cube.getSchemaReader(
-                        connection.getRole());
-                populateCube(schemaReader, catalogName, cube, rows);
             }
         }
 
         protected void populateCube(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            for (Dimension dimension : cube.getDimensions()) {
-                String uniqueName = dimension.getUniqueName();
-                if (dimensionUniqueNameRT.passes(uniqueName)) {
-                    populateDimension(
-                        schemaReader, catalogName,
-                        cube, dimension, rows);
-                }
+            for (Dimension dimension
+                : filter(cube.getDimensions(), dimensionUnameCond))
+            {
+                populateDimension(
+                    connection, catalog, cube, dimension, rows);
             }
         }
 
         protected void populateDimension(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
-                String uniqueName = hierarchy.getUniqueName();
-                if (hierarchyUniqueNameRT.passes(uniqueName)) {
-                    populateHierarchy(
-                        schemaReader, catalogName,
-                        cube, hierarchy, rows);
-                }
+            for (Hierarchy hierarchy
+                : filter(dimension.getHierarchies(), hierarchyUnameCond))
+            {
+                populateHierarchy(
+                    connection, catalog, cube, hierarchy, rows);
             }
         }
 
         protected void populateHierarchy(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Hierarchy hierarchy,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
-                String uniqueName = level.getUniqueName();
-                String name = level.getName();
-                if (levelUniqueNameRT.passes(uniqueName)
-                    && levelNameRT.passes(name))
-                {
-                    outputLevel(
-                        schemaReader,
-                        catalogName, cube, hierarchy, level, rows);
-                }
+            for (Level level
+                : filter(hierarchy.getLevels(), levelUnameCond, levelNameCond))
+            {
+                outputLevel(
+                    connection, catalog, cube, hierarchy, level, rows);
             }
         }
 
         /**
          * Outputs a level.
          *
-         * @param schemaReader Schema reader
-         * @param catalogName Catalog name
+         * @param catalog Catalog name
          * @param cube Cube definition
          * @param hierarchy Hierarchy
          * @param level Level
@@ -5085,18 +4797,14 @@ TODO: see above
          * @throws XmlaException If error occurs
          */
         protected boolean outputLevel(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Hierarchy hierarchy,
             Level level,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            // Access control
-            if (!canAccess(schemaReader, level)) {
-                return false;
-            }
             String desc = level.getDescription();
             if (desc == null) {
                 desc =
@@ -5105,15 +4813,8 @@ TODO: see above
                     + level.getName() + " Level";
             }
 
-            int adjustedLevelDepth = level.getDepth();
-            Role.HierarchyAccess hierarchyAccess =
-                schemaReader.getRole().getAccessDetails(hierarchy);
-            if (hierarchyAccess != null) {
-                adjustedLevelDepth -= hierarchyAccess.getTopLevelDepth();
-            }
-
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(
@@ -5125,12 +4826,13 @@ TODO: see above
             //row.set(LevelGuid.name, "");
             row.set(LevelCaption.name, level.getCaption());
             // see notes on this #getDepth()
-            row.set(LevelNumber.name, adjustedLevelDepth);
+            row.set(LevelNumber.name, level.getDepth());
 
             // Get level cardinality
             // According to microsoft this is:
             //   "The number of members in the level."
-            int n = schemaReader.getLevelCardinality(level, true, true);
+            final XmlaHandler.XmlaExtra extra = handler.getExtra(connection);
+            int n = extra.getLevelCardinality(level);
             row.set(LevelCardinality.name, n);
 
             row.set(LevelType.name, getLevelType(level));
@@ -5138,19 +4840,14 @@ TODO: see above
             // TODO: most of the time this is correct
             row.set(CustomRollupSettings.name, 0);
 
-            if (level instanceof RolapLevel) {
-                RolapLevel rl = (RolapLevel) level;
-                row.set(
-                    LevelUniqueSettings.name,
-                    (rl.isUnique() ? 1 : 0)
-                    + (rl.isAll() ? 2 : 0));
-            } else {
-                // can not access unique member attribute
-                // this is the best we can do.
-                row.set(
-                    LevelUniqueSettings.name,
-                    (level.isAll() ? 2 : 0));
+            int uniqueSettings = 0;
+            if (level.getLevelType() == Level.Type.ALL) {
+                uniqueSettings |= 2;
             }
+            if (extra.isLevelUnique(level)) {
+                uniqueSettings |= 1;
+            }
+            row.set(LevelUniqueSettings.name, uniqueSettings);
             row.set(LevelIsVisible.name, true);
             row.set(Description.name, desc);
             addRow(row, rows);
@@ -5160,43 +4857,41 @@ TODO: see above
         private int getLevelType(Level lev) {
             int ret = 0;
 
-            if (lev.isAll()) {
+            switch (lev.getLevelType()) {
+            case ALL:
                 ret |= MDLEVEL_TYPE_ALL;
-            }
-
-            mondrian.olap.LevelType type = lev.getLevelType();
-            switch (type) {
-            case Regular:
+                break;
+            case REGULAR:
                 ret |= MDLEVEL_TYPE_REGULAR;
                 break;
-            case TimeYears:
+            case TIME_YEARS:
                 ret |= MDLEVEL_TYPE_TIME_YEARS;
                 break;
-            case TimeHalfYear:
+            case TIME_HALF_YEAR:
                 ret |= MDLEVEL_TYPE_TIME_HALF_YEAR;
                 break;
-            case TimeQuarters:
+            case TIME_QUARTERS:
                 ret |= MDLEVEL_TYPE_TIME_QUARTERS;
                 break;
-            case TimeMonths:
+            case TIME_MONTHS:
                 ret |= MDLEVEL_TYPE_TIME_MONTHS;
                 break;
-            case TimeWeeks:
+            case TIME_WEEKS:
                 ret |= MDLEVEL_TYPE_TIME_WEEKS;
                 break;
-            case TimeDays:
+            case TIME_DAYS:
                 ret |= MDLEVEL_TYPE_TIME_DAYS;
                 break;
-            case TimeHours:
+            case TIME_HOURS:
                 ret |= MDLEVEL_TYPE_TIME_HOURS;
                 break;
-            case TimeMinutes:
+            case TIME_MINUTES:
                 ret |= MDLEVEL_TYPE_TIME_MINUTES;
                 break;
-            case TimeSeconds:
+            case TIME_SECONDS:
                 ret |= MDLEVEL_TYPE_TIME_SECONDS;
                 break;
-            case TimeUndefined:
+            case TIME_UNDEFINED:
                 ret |= MDLEVEL_TYPE_TIME_UNDEFINED;
                 break;
             default:
@@ -5219,7 +4914,7 @@ TODO: see above
     }
 
 
-    static class MdschemaMeasuresRowset extends Rowset {
+    public static class MdschemaMeasuresRowset extends Rowset {
         public static final int MDMEASURE_AGGR_UNKNOWN = 0;
         public static final int MDMEASURE_AGGR_SUM = 1;
         public static final int MDMEASURE_AGGR_COUNT = 2;
@@ -5230,19 +4925,20 @@ TODO: see above
         public static final int MDMEASURE_AGGR_STD = 7;
         public static final int MDMEASURE_AGGR_CALCULATED = 127;
 
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest measureUniqueNameRT;
-        private final RestrictionTest measureNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Measure> measureUnameCond;
+        private final Util.Functor1<Boolean, Measure> measureNameCond;
 
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEASURES, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            measureNameRT = getRestrictionTest(MeasureName);
-            measureUniqueNameRT = getRestrictionTest(MeasureUniqueName);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            measureNameCond = makeCondition(ELEMENT_NAME_GETTER, MeasureName);
+            measureUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, MeasureUniqueName);
         }
 
         private static final Column CatalogName =
@@ -5352,68 +5048,46 @@ TODO: see above
                 Column.OPTIONAL,
                 "The default format string for the measure.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-
-                String catalogName = dsCatalog.name;
-                if (catalogRT.passes(catalogName)) {
-                    populateCatalog(connection, catalogName, rows);
-                }
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                populateCatalog(connection, catalog, rows);
             }
         }
 
         protected void populateCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             // SQL Server actually includes the LEVELS_LIST row
             StringBuilder buf = new StringBuilder(100);
 
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            for (Cube cube : sortedCubes(schema)) {
-                if (cubeNameRT.passes(cube.getName())) {
-                    SchemaReader schemaReader =
-                        cube.getSchemaReader(
-                            connection.getRole());
-                    Dimension measuresDimension = cube.getDimensions()[0];
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    Dimension measuresDimension = cube.getDimensions().get(0);
                     Hierarchy measuresHierarchy =
-                        measuresDimension.getHierarchies()[0];
-                    Level measuresLevel =
-                        measuresHierarchy.getLevels()[0];
+                        measuresDimension.getHierarchies().get(0);
 
                     buf.setLength(0);
 
                     int j = 0;
                     for (Dimension dimension : cube.getDimensions()) {
-                        if (dimension.isMeasures()) {
+                        if (dimension.getDimensionType()
+                            == Dimension.Type.MEASURE)
+                        {
                             continue;
                         }
                         for (Hierarchy hierarchy : dimension.getHierarchies()) {
-                            Level[] levels = hierarchy.getLevels();
-                            Level lastLevel = levels[levels.length - 1];
+                            NamedList<Level> levels = hierarchy.getLevels();
+                            Level lastLevel = levels.get(levels.size() - 1);
                             if (j++ > 0) {
                                 buf.append(',');
                             }
@@ -5422,52 +5096,46 @@ TODO: see above
                     }
                     String levelListStr = buf.toString();
 
-                    List<Member> storedMembers =
-                        schemaReader.getLevelMembers(measuresLevel, false);
-                    for (Member member : storedMembers) {
-                        String name = member.getName();
-                        String unique = member.getUniqueName();
-                        if (measureNameRT.passes(name)
-                            && measureUniqueNameRT.passes(unique))
+                    List<Member> calcMembers = new ArrayList<Member>();
+                    for (Level level : measuresHierarchy.getLevels()) {
+                        for (Measure measure
+                            : filter(
+                                Util.<Measure>cast(level.getMembers()),
+                                measureNameCond,
+                                measureUnameCond))
                         {
-                            populateMember(
-                                schemaReader, catalogName,
-                                member, cube, levelListStr, rows);
+                            if (measure.isCalculated()) {
+                                // Output calculated measures after stored
+                                // measures.
+                                calcMembers.add(measure);
+                            } else {
+                                populateMember(
+                                    connection, catalog,
+                                    measure, cube, levelListStr, rows);
+                            }
                         }
                     }
 
-                    for (Member member
-                        : schemaReader.getCalculatedMembers(measuresHierarchy))
-                    {
-                        String name = member.getName();
-                        String unique = member.getUniqueName();
-                        if (measureNameRT.passes(name)
-                            && measureUniqueNameRT.passes(unique))
-                        {
-                            populateMember(
-                                schemaReader, catalogName,
-                                member, cube, null, rows);
-                        }
+                    for (Member member : calcMembers) {
+                        populateMember(
+                            connection, catalog, member, cube, null, rows);
                     }
                 }
             }
         }
 
         private void populateMember(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Member member,
             Cube cube,
             String levelListStr,
             List<Row> rows)
+            throws SQLException
         {
-            // Access control
-            if (!canAccess(schemaReader, member)) {
-                return;
-            }
-
             Boolean visible =
-                (Boolean) member.getPropertyValue(Property.VISIBLE.name);
+                (Boolean) member.getPropertyValue(
+                    Property.StandardMemberProperty.$visible);
             if (visible == null) {
                 visible = true;
             }
@@ -5483,10 +5151,11 @@ TODO: see above
                     + member.getName() + " Member";
             }
             final String formatString =
-                (String) member.getPropertyValue(Property.FORMAT_STRING.name);
+                (String) member.getPropertyValue(
+                    Property.StandardCellProperty.FORMAT_STRING);
 
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(MeasureName.name, member.getName());
@@ -5494,32 +5163,14 @@ TODO: see above
             row.set(MeasureCaption.name, member.getCaption());
             //row.set(MeasureGuid.name, "");
 
-            Object aggProp =
-                member.getPropertyValue(Property.AGGREGATION_TYPE.getName());
-            int aggNumber = MDMEASURE_AGGR_UNKNOWN;
-            if (aggProp != null) {
-                RolapAggregator agg = (RolapAggregator) aggProp;
-                if (agg == RolapAggregator.Sum) {
-                    aggNumber = MDMEASURE_AGGR_SUM;
-                } else if (agg == RolapAggregator.Count) {
-                    aggNumber = MDMEASURE_AGGR_COUNT;
-                } else if (agg == RolapAggregator.Min) {
-                    aggNumber = MDMEASURE_AGGR_MIN;
-                } else if (agg == RolapAggregator.Max) {
-                    aggNumber = MDMEASURE_AGGR_MAX;
-                } else if (agg == RolapAggregator.Avg) {
-                    aggNumber = MDMEASURE_AGGR_AVG;
-                }
-                //TODO: what are VAR and STD
-            } else {
-                aggNumber = MDMEASURE_AGGR_CALCULATED;
-            }
-            row.set(MeasureAggregator.name, aggNumber);
+            row.set(
+                MeasureAggregator.name,
+                handler.getExtra(connection).getMeasureAggregator(member));
 
             // DATA_TYPE DBType best guess is string
             XmlaConstants.DBType dbType = XmlaConstants.DBType.WSTR;
             String datatype = (String)
-                member.getPropertyValue(Property.DATATYPE.getName());
+                member.getPropertyValue(Property.StandardCellProperty.DATATYPE);
             if (datatype != null) {
                 if (datatype.equals("Integer")) {
                     dbType = XmlaConstants.DBType.I4;
@@ -5554,25 +5205,28 @@ TODO: see above
     }
 
     static class MdschemaMembersRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest dimensionUniqueNameRT;
-        private final RestrictionTest hierarchyUniqueNameRT;
-        private final RestrictionTest memberNameRT;
-        private final RestrictionTest memberUniqueNameRT;
-        private final RestrictionTest memberTypeRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
+        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
+        private final Util.Functor1<Boolean, Member> memberNameCond;
+        private final Util.Functor1<Boolean, Member> memberUnameCond;
+        private final Util.Functor1<Boolean, Member> memberTypeCond;
 
         MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEMBERS, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
-            memberNameRT = getRestrictionTest(MemberName);
-            memberUniqueNameRT = getRestrictionTest(MemberUniqueName);
-            memberTypeRT = getRestrictionTest(MemberType);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            dimensionUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, DimensionUniqueName);
+            hierarchyUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, HierarchyUniqueName);
+            memberNameCond = makeCondition(ELEMENT_NAME_GETTER, MemberName);
+            memberUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, MemberUniqueName);
+            memberTypeCond = makeCondition(MEMBER_TYPE_GETTER, MemberType);
         }
 
         private static final Column CatalogName =
@@ -5736,71 +5390,47 @@ TODO: see above
                 Column.OPTIONAL,
                 "depth");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            DataSourcesConfig.DataSource ds =
-                handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-
-                String catalogName = dsCatalog.name;
-                if (catalogRT.passes(catalogName)) {
-                    populateCatalog(connection, catalogName, rows);
-                }
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                populateCatalog(connection, catalog, rows);
             }
         }
 
         protected void populateCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            for (Cube cube : sortedCubes(schema)) {
-                if (cubeNameRT.passes(cube.getName())) {
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
                     if (isRestricted(MemberUniqueName)) {
                         // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
                         // a restriction, then none of the remaining possible
                         // restrictions other than TREE_OP are relevant
                         // (or allowed??).
-                        SchemaReader schemaReader = cube.getSchemaReader(null);
                         outputUniqueMemberName(
-                            schemaReader, catalogName, cube, rows);
+                            connection, catalog, cube, rows);
                     } else {
-                        SchemaReader schemaReader =
-                            cube.getSchemaReader(
-                                connection.getRole());
-                        populateCube(schemaReader, catalogName, cube, rows);
+                        populateCube(connection, catalog, cube, rows);
                     }
                 }
             }
         }
 
         protected void populateCube(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
@@ -5813,62 +5443,46 @@ TODO: see above
                     return;
                 }
 
-                final List<Id.Segment> nameParts =
-                    Util.parseIdentifier(levelUniqueName);
-                Hierarchy hier = cube.lookupHierarchy(nameParts.get(0), false);
-                if (hier == null) {
-                    return;
-                }
-                Level[] levels = hier.getLevels();
-                for (Level level : levels) {
-                    if (!level.getUniqueName().equals(levelUniqueName)) {
-                        continue;
-                    }
+                Level level = lookupLevel(cube, levelUniqueName);
+                if (level != null) {
                     // Get members of this level, without access control, but
                     // including calculated members.
-                    List<Member> members =
-                        cube.getSchemaReader(null).getLevelMembers(level, true);
-                    outputMembers(
-                        schemaReader, members, catalogName, cube, rows);
+                    List<Member> members = level.getMembers();
+                    outputMembers(connection, members, catalog, cube, rows);
                 }
             } else {
-                for (Dimension dimension : cube.getDimensions()) {
-                    String uniqueName = dimension.getUniqueName();
-                    if (dimensionUniqueNameRT.passes(uniqueName)) {
-                        populateDimension(
-                            schemaReader, catalogName,
-                            cube, dimension, rows);
-                    }
+                for (Dimension dimension
+                    : filter(cube.getDimensions(), dimensionUnameCond))
+                {
+                    populateDimension(
+                        connection, catalog, cube, dimension, rows);
                 }
             }
         }
 
         protected void populateDimension(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
-                String uniqueName = hierarchy.getUniqueName();
-                if (hierarchyUniqueNameRT.passes(uniqueName)) {
-                    populateHierarchy(
-                        schemaReader, catalogName,
-                        cube, hierarchy, rows);
-                }
+            for (Hierarchy hierarchy
+                : filter(dimension.getHierarchies(), hierarchyUnameCond))
+            {
+                populateHierarchy(
+                    connection, catalog, cube, hierarchy, rows);
             }
         }
 
         protected void populateHierarchy(
-            SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Hierarchy hierarchy,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             if (isRestricted(LevelNumber)) {
                 int levelNumber = getRestrictionValueAsInt(LevelNumber);
@@ -5878,35 +5492,32 @@ TODO: see above
                         + "LevelNumber invalid");
                     return;
                 }
-                Level[] levels = hierarchy.getLevels();
-                if (levelNumber >= levels.length) {
+                NamedList<Level> levels = hierarchy.getLevels();
+                if (levelNumber >= levels.size()) {
                     LOGGER.warn(
                         "RowsetDefinition.populateHierarchy: "
                         + "LevelNumber ("
                         + levelNumber
                         + ") is greater than number of levels ("
-                        + levels.length
+                        + levels.size()
                         + ") for hierarchy \""
                         + hierarchy.getUniqueName()
                         + "\"");
                     return;
                 }
 
-                Level level = levels[levelNumber];
-                List<Member> members =
-                    schemaReader.getLevelMembers(level, false);
-                outputMembers(schemaReader, members, catalogName, cube, rows);
+                Level level = levels.get(levelNumber);
+                List<Member> members = level.getMembers();
+                outputMembers(connection, members, catalog, cube, rows);
             } else {
                 // At this point we get ALL of the members associated with
                 // the Hierarchy (rather than getting them one at a time).
                 // The value returned is not used at this point but they are
                 // now cached in the SchemaReader.
-                List<List<Member>> membersArray =
-                    RolapMemberBase.getAllMembers(schemaReader, hierarchy);
-                for (List<Member> members : membersArray) {
+                for (Level level : hierarchy.getLevels()) {
                     outputMembers(
-                        schemaReader, members,
-                        catalogName, cube, rows);
+                        connection, level.getMembers(),
+                        catalog, cube, rows);
                 }
             }
         }
@@ -5925,44 +5536,42 @@ TODO: see above
          * hierarchy.
          */
         private void populateMember(
-            final SchemaReader schemaReader,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             Cube cube,
             Member member,
             int treeOp,
             List<Row> rows)
+            throws SQLException
         {
             // Visit node itself.
             if (mask(treeOp, TreeOp.SELF.xmlaOrdinal())) {
-                outputMember(schemaReader, member, catalogName, cube, rows);
+                outputMember(connection, member, catalog, cube, rows);
             }
             // Visit node's siblings (not including itself).
             if (mask(treeOp, TreeOp.SIBLINGS.xmlaOrdinal())) {
-                final Member parent =
-                    schemaReader.getMemberParent(member);
-                final List<Member> siblings =
-                    (parent == null)
-                        ? schemaReader.getHierarchyRootMembers(
-                        member.getHierarchy())
-                        : schemaReader.getMemberChildren(parent);
-
+                final List<Member> siblings;
+                final Member parent = member.getParentMember();
+                if (parent == null) {
+                    siblings = member.getHierarchy().getRootMembers();
+                } else {
+                    siblings = Olap4jUtil.cast(parent.getChildMembers());
+                }
                 for (Member sibling : siblings) {
                     if (sibling.equals(member)) {
                         continue;
                     }
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, sibling,
                         TreeOp.SELF.xmlaOrdinal(), rows);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
             if (mask(treeOp, TreeOp.DESCENDANTS.xmlaOrdinal())) {
-                final List<Member> children =
-                    schemaReader.getMemberChildren(member);
-                for (Member child : children) {
+                for (Member child : member.getChildMembers()) {
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, child,
                         TreeOp.SELF.xmlaOrdinal() |
                         TreeOp.DESCENDANTS.xmlaOrdinal(),
@@ -5971,30 +5580,28 @@ TODO: see above
             } else if (mask(
                 treeOp, TreeOp.CHILDREN.xmlaOrdinal()))
             {
-                final List<Member> children =
-                    schemaReader.getMemberChildren(member);
-                for (Member child : children) {
+                for (Member child : member.getChildMembers()) {
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, child,
                         TreeOp.SELF.xmlaOrdinal(), rows);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
             if (mask(treeOp, TreeOp.ANCESTORS.xmlaOrdinal())) {
-                final Member parent = schemaReader.getMemberParent(member);
+                final Member parent = member.getParentMember();
                 if (parent != null) {
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, parent,
                         TreeOp.SELF.xmlaOrdinal() |
                         TreeOp.ANCESTORS.xmlaOrdinal(), rows);
                 }
             } else if (mask(treeOp, TreeOp.PARENT.xmlaOrdinal())) {
-                final Member parent = schemaReader.getMemberParent(member);
+                final Member parent = member.getParentMember();
                 if (parent != null) {
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, parent,
                         TreeOp.SELF.xmlaOrdinal(), rows);
                 }
@@ -6014,21 +5621,24 @@ TODO: see above
         }
 
         private void outputMembers(
-            final SchemaReader schemaReader,
+            OlapConnection connection,
             List<Member> members,
-            final String catalogName,
-            Cube cube, List<Row> rows)
+            final Catalog catalog,
+            Cube cube,
+            List<Row> rows)
+            throws SQLException
         {
             for (Member member : members) {
-                outputMember(schemaReader, member, catalogName, cube, rows);
+                outputMember(connection, member, catalog, cube, rows);
             }
         }
 
         private void outputUniqueMemberName(
-            final SchemaReader schemaReader,
-            final String catalogName,
+            final OlapConnection connection,
+            final Catalog catalog,
             Cube cube,
             List<Row> rows)
+            throws SQLException
         {
             final Object unameRestrictions =
                 restrictions.get(MemberUniqueName.name);
@@ -6039,12 +5649,10 @@ TODO: see above
                 list = (List<String>) unameRestrictions;
             }
             for (String memberUniqueName : list) {
-                final List<Id.Segment> nameParts =
-                    Util.parseIdentifier(memberUniqueName);
-
-                Member member = schemaReader.getMemberByUniqueName(
-                    nameParts, false);
-
+                final IdentifierNode identifierNode =
+                    IdentifierNode.parseIdentifier(memberUniqueName);
+                Member member =
+                    cube.lookupMember(identifierNode.getSegmentList());
                 if (member == null) {
                     return;
                 }
@@ -6054,40 +5662,35 @@ TODO: see above
                         return;
                     }
                     populateMember(
-                        schemaReader, catalogName,
+                        connection, catalog,
                         cube, member, treeOp, rows);
                 } else {
-                    outputMember(
-                        schemaReader, member, catalogName, cube, rows);
+                    outputMember(connection, member, catalog, cube, rows);
                 }
             }
         }
 
         private void outputMember(
-            final SchemaReader schemaReader,
+            OlapConnection connection,
             Member member,
-            final String catalogName,
+            final Catalog catalog,
             Cube cube,
             List<Row> rows)
+            throws SQLException
         {
-            // Access control
-            if (!canAccess(schemaReader, member)) {
+            if (!memberNameCond.apply(member)) {
                 return;
             }
-            if (! memberNameRT.passes(member.getName())) {
-                return;
-            }
-            if (! memberTypeRT.passes(member.getMemberType())) {
+            if (!memberTypeCond.apply(member)) {
                 return;
             }
 
-            if (member.getOrdinal() == -1) {
-                RolapMemberBase.setOrdinals(schemaReader, member);
-            }
+            handler.getExtra(connection).checkMemberOrdinal(member);
 
             // Check whether the member is visible, otherwise do not dump.
             Boolean visible =
-                (Boolean) member.getPropertyValue(Property.VISIBLE.name);
+                (Boolean) member.getPropertyValue(
+                    Property.StandardMemberProperty.$visible);
             if (visible == null) {
                 visible = true;
             }
@@ -6100,14 +5703,9 @@ TODO: see above
             final Dimension dimension = hierarchy.getDimension();
 
             int adjustedLevelDepth = level.getDepth();
-            Role.HierarchyAccess hierarchyAccess =
-                schemaReader.getRole().getAccessDetails(hierarchy);
-            if (hierarchyAccess != null) {
-                adjustedLevelDepth -= hierarchyAccess.getTopLevelDepth();
-            }
 
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -6122,7 +5720,8 @@ TODO: see above
             row.set(MemberCaption.name, member.getCaption());
             row.set(
                 ChildrenCardinality.name,
-                member.getPropertyValue(Property.CHILDREN_CARDINALITY.name));
+                member.getPropertyValue(
+                    Property.StandardMemberProperty.CHILDREN_CARDINALITY));
             row.set(ChildrenCardinality.name, 100);
 
             if (adjustedLevelDepth == 0) {
@@ -6156,18 +5755,18 @@ TODO: see above
     }
 
     static class MdschemaSetsRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest setNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, NamedSet> setUnameCond;
         private static final String GLOBAL_SCOPE = "1";
 
         MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_SETS, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            setNameRT = getRestrictionTest(SetName);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            setUnameCond = makeCondition(ELEMENT_UNAME_GETTER, SetName);
         }
 
         private static final Column CatalogName =
@@ -6227,65 +5826,40 @@ TODO: see above
                 true,
                 "A human-readable description of the measure.");
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, OlapException
         {
-            DataSourcesConfig.DataSource ds =
-                handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-
-                String catalogName = dsCatalog.name;
-                if (!catalogRT.passes(catalogName)) {
-                    continue;
-                }
-                processCatalog(connection, catalogName, rows);
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                processCatalog(connection, catalog, rows);
             }
         }
 
         private void processCatalog(
-            Connection connection,
-            String catalogName,
+            OlapConnection connection,
+            Catalog catalog,
             List<Row> rows)
+            throws OlapException
         {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
-            }
-            Cube[] cubes = connection.getSchemaReader().getCubes();
-            for (Cube cube : cubes) {
-                if (!cubeNameRT.passes(cube.getName())) {
-                    continue;
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    populateNamedSets(cube, catalog, rows);
                 }
-                populateNamedSets(cube, catalogName, rows);
             }
         }
 
         private void populateNamedSets(
             Cube cube,
-            String catalogName,
+            Catalog catalog,
             List<Row> rows)
         {
-            for (NamedSet namedSet : cube.getNamedSets()) {
-                if (!setNameRT.passes(namedSet.getUniqueName())) {
-                    continue;
-                }
+            for (NamedSet namedSet : filter(cube.getSets(), setUnameCond)) {
                 Row row = new Row();
-                row.set(CatalogName.name, catalogName);
+                row.set(CatalogName.name, catalog.getName());
                 row.set(SchemaName.name, cube.getSchema().getName());
                 row.set(CubeName.name, cube.getName());
                 row.set(SetName.name, namedSet.getUniqueName());
@@ -6297,21 +5871,23 @@ TODO: see above
     }
 
     static class MdschemaPropertiesRowset extends Rowset {
-        private final RestrictionTest catalogRT;
-        private final RestrictionTest schemaNameRT;
-        private final RestrictionTest cubeNameRT;
-        private final RestrictionTest dimensionUniqueNameRT;
-        private final RestrictionTest hierarchyUniqueNameRT;
-        private final RestrictionTest propertyNameRT;
+        private final Util.Functor1<Boolean, Catalog> catalogCond;
+        private final Util.Functor1<Boolean, Schema> schemaNameCond;
+        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
+        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
+        private final Util.Functor1<Boolean, Property> propertyNameCond;
 
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_PROPERTIES, request, handler);
-            catalogRT = getRestrictionTest(CatalogName);
-            schemaNameRT = getRestrictionTest(SchemaName);
-            cubeNameRT = getRestrictionTest(CubeName);
-            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
-            propertyNameRT = getRestrictionTest(PropertyName);
+            catalogCond = makeCondition(CATALOG_NAME_GETTER, CatalogName);
+            schemaNameCond = makeCondition(SCHEMA_NAME_GETTER, SchemaName);
+            cubeNameCond = makeCondition(ELEMENT_NAME_GETTER, CubeName);
+            dimensionUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, DimensionUniqueName);
+            hierarchyUnameCond =
+                makeCondition(ELEMENT_UNAME_GETTER, HierarchyUniqueName);
+            propertyNameCond = makeCondition(ELEMENT_NAME_GETTER, PropertyName);
         }
 
         private static final Column CatalogName =
@@ -6421,57 +5997,35 @@ TODO: see above
                 Column.OPTIONAL,
                 "A human-readable description of the measure.");
 
-        private void populate2(List<Row> rows)
-        {
-            DataSourcesConfig.DataSource ds =
-                handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs =
-                handler.getCatalogs(request, ds);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (dsCatalog == null || dsCatalog.definition == null) {
-                    continue;
-                }
-                Connection connection =
-                    handler.getConnection(dsCatalog, role, roleName);
-                if (connection == null) {
-                    continue;
-                }
-
-                String catalogName = dsCatalog.name;
-                if (catalogRT.passes(catalogName)) {
-                    populateCatalog(connection, catalogName, rows);
-                }
-            }
+        protected boolean needConnection() {
+            return false;
         }
 
-        public void populate(
+        public void populateImpl(
             XmlaResponse response,
+            OlapConnection connection,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             // Default PROPERTY_TYPE is MDPROP_MEMBER.
             @SuppressWarnings({"unchecked"})
             final List<String> list =
                 (List<String>) restrictions.get(PropertyType.name);
-            Set<org.olap4j.metadata.Property.TypeFlag> typeFlags;
+            Set<Property.TypeFlag> typeFlags;
             if (list == null) {
                 typeFlags =
                     Olap4jUtil.enumSetOf(
-                        org.olap4j.metadata.Property.TypeFlag.MEMBER);
+                        Property.TypeFlag.MEMBER);
             } else {
                 typeFlags =
-                    org.olap4j.metadata.Property.TypeFlag.getDictionary()
-                        .forMask(
+                    Property.TypeFlag.getDictionary().forMask(
                         Integer.valueOf(list.get(0)));
             }
 
-            for (org.olap4j.metadata.Property.TypeFlag typeFlag : typeFlags) {
+            for (Property.TypeFlag typeFlag : typeFlags) {
                 switch (typeFlag) {
                 case MEMBER:
-                    populate2(rows);
+                    populateMember(rows);
                     break;
                 case CELL:
                     populateCell(rows);
@@ -6485,13 +6039,13 @@ TODO: see above
         }
 
         private void populateCell(List<Row> rows) {
-            for (org.olap4j.metadata.Property.StandardCellProperty property
-                : org.olap4j.metadata.Property.StandardCellProperty.values())
+            for (Property.StandardCellProperty property
+                : Property.StandardCellProperty.values())
             {
                 Row row = new Row();
                 row.set(
                     PropertyType.name,
-                    org.olap4j.metadata.Property.TypeFlag.getDictionary()
+                    Property.TypeFlag.getDictionary()
                         .toMask(
                             property.getType()));
                 row.set(PropertyName.name, property.name());
@@ -6501,32 +6055,32 @@ TODO: see above
             }
         }
 
-        protected void populateCatalog(
-            Connection connection,
-            String catalogName,
-            List<Row> rows)
-            throws XmlaException
-        {
-            Schema schema = connection.getSchema();
-            if (!schemaNameRT.passes(schema.getName())) {
-                return;
+        private void populateMember(List<Row> rows) throws SQLException {
+            OlapConnection connection = handler.getConnection(request);
+            for (Catalog catalog
+                : catIter(connection, catNameCond(), catalogCond))
+            {
+                populateCatalog(catalog, rows);
             }
-            for (Cube cube : sortedCubes(schema)) {
-                if (cubeNameRT.passes(cube.getName())) {
-                    SchemaReader schemaReader =
-                        cube.getSchemaReader(
-                            connection.getRole());
-                    populateCube(schemaReader, catalogName, cube, rows);
+        }
+
+        protected void populateCatalog(
+            Catalog catalog,
+            List<Row> rows)
+            throws XmlaException, SQLException
+        {
+            for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
+                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                    populateCube(catalog, cube, rows);
                 }
             }
         }
 
         protected void populateCube(
-            SchemaReader schemaReader,
-            String catalogName,
+            Catalog catalog,
             Cube cube,
             List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
@@ -6538,89 +6092,72 @@ TODO: see above
                     // which means that nothing will match.
                     return;
                 }
-                final List<Id.Segment> nameParts =
-                    Util.parseIdentifier(levelUniqueName);
-                Hierarchy hier = cube.lookupHierarchy(nameParts.get(0), false);
-                if (hier == null) {
+                Level level = lookupLevel(cube, levelUniqueName);
+                if (level == null) {
                     return;
                 }
-                for (Level level : schemaReader.getHierarchyLevels(hier)) {
-                    if (level.getUniqueName().equals(levelUniqueName)) {
-                        populateLevel(
-                            schemaReader, catalogName,
-                            cube, level, rows);
-                        break;
-                    }
-                }
-
+                populateLevel(
+                    catalog, cube, level, rows);
             } else {
-                for (Dimension dimension : cube.getDimensions()) {
-                    String uniqueName = dimension.getUniqueName();
-                    if (dimensionUniqueNameRT.passes(uniqueName)) {
-                        populateDimension(
-                            schemaReader, catalogName,
-                            cube, dimension, rows);
-                    }
+                for (Dimension dimension
+                    : filter(cube.getDimensions(), dimensionUnameCond))
+                {
+                    populateDimension(
+                        catalog, cube, dimension, rows);
                 }
             }
         }
 
         private void populateDimension(
-            final SchemaReader schemaReader,
-            final String catalogName,
+            Catalog catalog,
             Cube cube,
             Dimension dimension,
             List<Row> rows)
+            throws SQLException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
-                String unique = hierarchy.getUniqueName();
-                if (hierarchyUniqueNameRT.passes(unique)) {
-                    populateHierarchy(
-                        schemaReader, catalogName,
-                        cube, hierarchy, rows);
-                }
+            for (Hierarchy hierarchy
+                : filter(dimension.getHierarchies(), hierarchyUnameCond))
+            {
+                populateHierarchy(
+                    catalog, cube, hierarchy, rows);
             }
         }
 
         private void populateHierarchy(
-            final SchemaReader schemaReader,
-            final String catalogName,
+            Catalog catalog,
             Cube cube,
             Hierarchy hierarchy,
             List<Row> rows)
+            throws SQLException
         {
-            for (Level level : schemaReader.getHierarchyLevels(hierarchy)) {
-                populateLevel(
-                    schemaReader, catalogName,
-                    cube, level, rows);
+            for (Level level : hierarchy.getLevels()) {
+                populateLevel(catalog, cube, level, rows);
             }
         }
 
         private void populateLevel(
-            final SchemaReader schemaReader,
-            final String catalogName,
+            Catalog catalog,
             Cube cube,
             Level level,
             List<Row> rows)
+            throws SQLException
         {
-            Property[] properties = level.getProperties();
-            for (Property property : properties) {
-                if (property.isInternal()) {
+            final XmlaHandler.XmlaExtra extra =
+                handler.getExtra(catalog.getMetaData().getConnection());
+            for (Property property
+                : filter(extra.getLevelProperties(level), propertyNameCond))
+            {
+                if (extra.isPropertyInternal(property)) {
                     continue;
                 }
-                if (propertyNameRT.passes(property.getName())) {
-                    outputProperty(
-                        schemaReader, property,
-                        catalogName, cube, level, rows);
-                }
+                outputProperty(
+                    property, catalog, cube, level, rows);
             }
         }
 
         private void outputProperty(
-            final SchemaReader schemaReader,
             Property property,
-            final String catalogName,
+            Catalog catalog,
             Cube cube,
             Level level,
             List<Row> rows)
@@ -6631,7 +6168,7 @@ TODO: see above
             String propertyName = property.getName();
 
             Row row = new Row();
-            row.set(CatalogName.name, catalogName);
+            row.set(CatalogName.name, catalog.getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -6644,10 +6181,10 @@ TODO: see above
             // Only member properties now
             row.set(
                 PropertyType.name,
-                org.olap4j.metadata.Property.TypeFlag.MEMBER.xmlaOrdinal());
+                Property.TypeFlag.MEMBER.xmlaOrdinal());
             row.set(
                 PropertyContentType.name,
-                org.olap4j.metadata.Property.ContentType.REGULAR.xmlaOrdinal());
+                Property.ContentType.REGULAR.xmlaOrdinal());
             row.set(PropertyCaption.name, property.getCaption());
             XmlaConstants.DBType dbType = getDBTypeFromProperty(property);
             row.set(DataType.name, dbType.xmlaOrdinal());
@@ -6675,13 +6212,51 @@ TODO: see above
         }
     }
 
-    private static boolean canAccess(
-        SchemaReader schemaReader,
-        OlapElement elem)
-    {
-        Role role = schemaReader.getRole();
-        return role.canAccess(elem);
-    }
+    public static final Util.Functor1<String, Catalog> CATALOG_NAME_GETTER =
+        new Util.Functor1<String, Catalog>() {
+            public String apply(Catalog catalog) {
+                return catalog.getName();
+            }
+        };
+
+    public static final Util.Functor1<String, Schema> SCHEMA_NAME_GETTER =
+        new Util.Functor1<String, Schema>() {
+            public String apply(Schema schema) {
+                return schema.getName();
+            }
+        };
+
+    public static final Util.Functor1<String, MetadataElement>
+        ELEMENT_NAME_GETTER =
+        new Util.Functor1<String, MetadataElement>() {
+            public String apply(MetadataElement element) {
+                return element.getName();
+            }
+        };
+
+    public static final Util.Functor1<String, MetadataElement>
+        ELEMENT_UNAME_GETTER =
+        new Util.Functor1<String, MetadataElement>() {
+            public String apply(MetadataElement element) {
+                return element.getUniqueName();
+            }
+        };
+
+    public static final Util.Functor1<Member.Type, Member>
+        MEMBER_TYPE_GETTER =
+        new Util.Functor1<Member.Type, Member>() {
+            public Member.Type apply(Member member) {
+                return member.getMemberType();
+            }
+        };
+
+    public static final Util.Functor1<String, PropertyDefinition>
+        PROPDEF_NAME_GETTER =
+        new Util.Functor1<String, PropertyDefinition>() {
+            public String apply(PropertyDefinition property) {
+                return property.name();
+            }
+        };
 
     private static <T extends Comparable> List<T> sort(
         Collection<T> collection)
@@ -6691,13 +6266,14 @@ TODO: see above
         return Util.cast(Arrays.asList(a));
     }
 
-    private static <T> List<T> sortArray(
-        T[] a,
+    private static <T> List<T> sort(
+        Collection<T> collection,
         Comparator<T> comparator)
     {
-        T[] a2 = a.clone();
-        Arrays.sort(a2, comparator);
-        return Arrays.asList(a2);
+        Object[] a = collection.toArray(new Object[collection.size()]);
+        //noinspection unchecked
+        Arrays.sort(a, (Comparator<? super Object>) comparator);
+        return Util.cast(Arrays.asList(a));
     }
 
     static void serialize(StringBuilder buf, Collection<String> strings) {
@@ -6710,11 +6286,22 @@ TODO: see above
         }
     }
 
-    static List<Cube> sortedCubes(Schema schema) {
-        final Cube[] cubes = schema.getCubes();
-        return sortArray(
-            cubes,
-            new Comparator<Cube>() {
+    private static Level lookupLevel(Cube cube, String levelUniqueName) {
+        for (Dimension dimension : cube.getDimensions()) {
+            for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                for (Level level : hierarchy.getLevels()) {
+                    if (level.getUniqueName().equals(levelUniqueName)) {
+                        return level;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    static Iterable<Cube> sortedCubes(Schema schema) throws OlapException {
+        return sort(
+            schema.getCubes(), new Comparator<Cube>() {
                 public int compare(Cube o1, Cube o2) {
                     return o1.getName().compareTo(o2.getName());
                 }
@@ -6752,6 +6339,48 @@ TODO: see above
         };
     }
 
+    /**
+     * Returns an iterator over the catalogs in a connection, setting the
+     * connection's catalog to each successful catalog in turn.
+     *
+     * @param connection Connection
+     * @param conds Zero or more conditions to be applied to catalogs
+     * @return Iterator over catalogs
+     */
+    private static Iterable<Catalog> catIter(
+        final OlapConnection connection,
+        final Util.Functor1<Boolean, Catalog>... conds)
+    {
+        return new Iterable<Catalog>() {
+            public Iterator<Catalog> iterator() {
+                return new Iterator<Catalog>() {
+                    final Iterator<Catalog> catalogIter =
+                        Util.filter(
+                            connection.getCatalogs(),
+                            conds).iterator();
+
+                    public boolean hasNext() {
+                        return catalogIter.hasNext();
+                    }
+
+                    public Catalog next() {
+                        Catalog catalog = catalogIter.next();
+                        try {
+                            connection.setCatalog(catalog.getName());
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return catalog;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
     private static class DelegatingXmlaRequest implements XmlaRequest {
         protected final XmlaRequest request;
 
@@ -6777,10 +6406,6 @@ TODO: see above
 
         public String getRoleName() {
             return request.getRoleName();
-        }
-
-        public Role getRole() {
-            return request.getRole();
         }
 
         public String getRequestType() {

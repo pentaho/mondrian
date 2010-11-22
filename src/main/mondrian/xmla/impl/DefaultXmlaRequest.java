@@ -12,7 +12,6 @@ package mondrian.xmla.impl;
 import java.util.*;
 
 import mondrian.olap.Util;
-import mondrian.olap.Role;
 import mondrian.xmla.*;
 
 import static org.olap4j.metadata.XmlaConstants.*;
@@ -39,7 +38,6 @@ public class DefaultXmlaRequest
     private Method method;
     private Map<String, String> properties;
     private final String roleName;
-    private final Role role;
 
     /* EXECUTE content */
     private String statement;
@@ -49,32 +47,11 @@ public class DefaultXmlaRequest
     private String requestType;
     private Map<String, Object> restrictions;
 
-
-    public DefaultXmlaRequest(final Element xmlaRoot) {
-        this(xmlaRoot, null, null);
-    }
-
     public DefaultXmlaRequest(final Element xmlaRoot, final String roleName)
-        throws XmlaException
-    {
-        this(xmlaRoot, roleName, null);
-    }
-
-    public DefaultXmlaRequest(final Element xmlaRoot, final Role role)
-        throws XmlaException
-    {
-        this(xmlaRoot, null, role);
-    }
-
-    protected DefaultXmlaRequest(
-        final Element xmlaRoot,
-        final String roleName,
-        final Role role)
         throws XmlaException
     {
         init(xmlaRoot);
         this.roleName = roleName;
-        this.role = role;
     }
 
     /* Interface implmentation */
@@ -106,16 +83,6 @@ public class DefaultXmlaRequest
     public String getRoleName() {
         return roleName;
     }
-
-    public Role getRole() {
-        return role;
-    }
-
-/*
-    public void setRole(String roleName) {
-        this.role = role;
-    }
-*/
 
     public String getRequestType() {
         if (method != Method.DISCOVER) {

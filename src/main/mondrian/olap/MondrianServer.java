@@ -9,6 +9,8 @@
 */
 package mondrian.olap;
 
+import mondrian.util.LockBox;
+
 import java.util.List;
 
 /**
@@ -46,6 +48,12 @@ public abstract class MondrianServer {
      * @return list of MDX keywords
      */
     public abstract List<String> getKeywords();
+
+    /**
+     * Returns the lock box that can be used to pass objects via their string
+     * key.
+     */
+    public abstract LockBox getLockBox();
 
     /**
      * Description of the version of the server.

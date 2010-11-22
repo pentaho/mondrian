@@ -17,6 +17,8 @@ import mondrian.xmla.impl.DefaultXmlaResponse;
 import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.apache.log4j.Logger;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -28,6 +30,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
@@ -106,7 +109,7 @@ public class XmlaUtil implements XmlaConstants {
      * @param name Name of XML element
      * @return encoded name
      */
-    public static String encodeElementName(String name) {
+    private static String encodeElementName(String name) {
         StringBuilder buf = new StringBuilder();
         char[] nameChars = name.toCharArray();
         for (char ch : nameChars) {
@@ -342,10 +345,11 @@ way too noisy
      * @return Set of rows and column headings
      */
     public static MetadataRowset getMetadataRowset(
-        final Connection connection,
+        final OlapConnection connection,
         String catalogName,
         String methodName,
         final Map<String, Object> restrictionMap)
+        throws OlapException
     {
         RowsetDefinition rowsetDefinition =
             RowsetDefinition.valueOf(methodName);
@@ -394,10 +398,6 @@ way too noisy
                         return null;
                     }
 
-                    public Role getRole() {
-                        return connection.getRole();
-                    }
-
                     public String getRequestType() {
                         throw new UnsupportedOperationException();
                     }
@@ -415,9 +415,8 @@ way too noisy
                     null,
                     "xmla")
                 {
-                    protected Connection getConnection(
+                    protected OlapConnection getConnection(
                         final DataSourcesConfig.Catalog catalog,
-                        final Role role,
                         final String roleName)
                         throws XmlaException
                     {
@@ -431,6 +430,7 @@ way too noisy
                 new ByteArrayOutputStream(),
                 Charset.defaultCharset().name(),
                 Enumeration.ResponseMimeType.SOAP),
+            connection,
             rowList);
         MetadataRowset result = new MetadataRowset();
         final List<RowsetDefinition.Column> colDefs =
@@ -651,6 +651,22 @@ way too noisy
             }
         }
         return buf.toString();
+    }
+
+    public static class ElementNameEncoder {
+        private final Map<String, String> map =
+            new ConcurrentHashMap<String, String>();
+        public static final ElementNameEncoder INSTANCE =
+            new ElementNameEncoder();
+
+        public String encode(String name) {
+            String encoded = map.get(name);
+            if (encoded == null) {
+                encoded = encodeElementName(name);
+                map.put(name, encoded);
+            }
+            return encoded;
+        }
     }
 }
 

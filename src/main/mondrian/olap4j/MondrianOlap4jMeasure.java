@@ -34,10 +34,6 @@ public class MondrianOlap4jMeasure
         super(olap4jSchema, measure);
     }
 
-    public String toString() {
-        return getUniqueName();
-    }
-
     public Aggregator getAggregator() {
         if (!(member instanceof RolapStoredMeasure)) {
             return Aggregator.UNKNOWN;

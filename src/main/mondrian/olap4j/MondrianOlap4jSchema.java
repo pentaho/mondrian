@@ -33,16 +33,13 @@ import mondrian.olap.Hierarchy;
  */
 class MondrianOlap4jSchema implements Schema, Named {
     final MondrianOlap4jCatalog olap4jCatalog;
-    private final mondrian.olap.Schema schema;
-    final SchemaReader schemaReader;
+    final mondrian.olap.Schema schema;
 
     MondrianOlap4jSchema(
         MondrianOlap4jCatalog olap4jCatalog,
-        SchemaReader schemaReader,
         mondrian.olap.Schema schema)
     {
         this.olap4jCatalog = olap4jCatalog;
-        this.schemaReader = schemaReader;
         this.schema = schema;
     }
 

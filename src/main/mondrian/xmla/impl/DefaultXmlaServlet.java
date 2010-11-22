@@ -390,18 +390,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
             ByteArrayOutputStream osBuf = new ByteArrayOutputStream();
 
-            // use context variable `role' as this request's XML/A role
+            // use context variable 'role_name' as this request's XML/A role
             String roleName = (String) context.get(CONTEXT_ROLE_NAME);
-            Role role = (Role) context.get(CONTEXT_ROLE);
 
-            XmlaRequest xmlaReq;
-            if (role != null) {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, role);
-            } else if (roleName != null) {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
-            } else {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem);
-            }
+            XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
 
             // "ResponseMimeType" may be in the context if the "Accept" HTTP
             // header was specified. But override if the SOAP request has the

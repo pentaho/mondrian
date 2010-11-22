@@ -10,6 +10,7 @@
 package mondrian.olap4j;
 
 import mondrian.olap.MondrianServer;
+import mondrian.rolap.RolapConnection;
 import mondrian.xmla.XmlaUtil;
 
 import org.olap4j.*;
@@ -37,20 +38,25 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     final MondrianServer mondrianServer;
 
     // A mondrian instance contains only one catalog (and one schema).
-    private final MondrianOlap4jCatalog olap4jCatalog =
-        new MondrianOlap4jCatalog(this);
+    private final MondrianOlap4jCatalog olap4jCatalog;
 
     /**
      * Creates a MondrianOlap4jDatabaseMetaData.
      *
      * @param olap4jConnection Connection
+     * @param mondrianConnection Mondrian connection
      */
     MondrianOlap4jDatabaseMetaData(
-        MondrianOlap4jConnection olap4jConnection)
+        MondrianOlap4jConnection olap4jConnection,
+        RolapConnection mondrianConnection)
     {
         this.olap4jConnection = olap4jConnection;
-        mondrianServer =
-            MondrianServer.forConnection(olap4jConnection.connection);
+        this.olap4jCatalog =
+            new MondrianOlap4jCatalog(
+                this,
+                mondrianConnection.getSchema().getName());
+        this.mondrianServer =
+            MondrianServer.forConnection(mondrianConnection);
     }
 
     // helpers
@@ -66,10 +72,13 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
      * pairs. If the parameter value is null, it is ignored.
      *
      * @return Result set of metadata
+     *
+     * @throws org.olap4j.OlapException on error
      */
     private ResultSet getMetadata(
         String methodName,
         Object... patternValues)
+        throws OlapException
     {
         Map<String, Object> restrictionMap =
             new HashMap<String, Object>();
@@ -86,8 +95,8 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         }
         XmlaUtil.MetadataRowset rowset =
             XmlaUtil.getMetadataRowset(
-                olap4jConnection.connection,
-                MondrianOlap4jConnection.LOCALDB_CATALOG_NAME,
+                olap4jConnection,
+                olap4jConnection.olap4jSchema.olap4jCatalog.name,
                 methodName,
                 restrictionMap);
         return olap4jConnection.factory.newFixedResultSet(
@@ -110,7 +119,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     /**
      * Returns the catalogs in this database.
      *
-     * Intentionally package-protected; not part of the JDBC or olap4j API.
+     * <p>Intentionally package-protected; not part of the JDBC or olap4j API.
      *
      * @return List of catalogs in this database
      */
@@ -133,7 +142,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public String getURL() throws SQLException {
-        return olap4jConnection.connection.getConnectString();
+        return olap4jConnection.getMondrianConnection().getConnectString();
     }
 
     public String getUserName() throws SQLException {

@@ -10,6 +10,8 @@
 */
 package mondrian.gui;
 
+import mondrian.util.CompositeList;
+
 import javax.swing.tree.*;
 import java.util.*;
 
@@ -64,7 +66,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             MondrianGuiDef.Cube c = (MondrianGuiDef.Cube) parent;
             // Return children in this order: fact table, dimensions, measures,
             // calculatedMembers, namedSets
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 ifList(c.fact),
                 Arrays.asList(c.dimensions),
                 Arrays.asList(c.measures),
@@ -73,7 +75,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.Dimension) {
             MondrianGuiDef.Dimension d = (MondrianGuiDef.Dimension) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList((Object[]) d.hierarchies),
                 ifList(d.annotations));
         } else if (parent instanceof MondrianGuiDef.ExpressionView) {
@@ -82,7 +84,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return Arrays.asList((Object[]) ev.expressions);
         } else if (parent instanceof MondrianGuiDef.Hierarchy) {
             MondrianGuiDef.Hierarchy h = (MondrianGuiDef.Hierarchy) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList(h.levels),
                 Arrays.asList(h.memberReaderParameters),
                 ifList(h.relation),
@@ -94,7 +96,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 j.right);
         } else if (parent instanceof MondrianGuiDef.Level) {
             MondrianGuiDef.Level level = (MondrianGuiDef.Level) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList(level.properties),
                 ifList(level.keyExp),
                 ifList(level.nameExp),
@@ -105,26 +107,26 @@ public class SchemaTreeModel extends DefaultTreeModel {
         } else if (parent instanceof MondrianGuiDef.CalculatedMember) {
             MondrianGuiDef.CalculatedMember c =
                 (MondrianGuiDef.CalculatedMember) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 ifList(c.formulaElement),
                 arrayList(c.memberProperties),
                 ifList(c.annotations));
         } else if (parent instanceof MondrianGuiDef.Measure) {
             MondrianGuiDef.Measure m = (MondrianGuiDef.Measure) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 ifList(m.measureExp),
                 arrayList(m.memberProperties),
                 ifList(m.annotations));
         } else if (parent instanceof MondrianGuiDef.NamedSet) {
             MondrianGuiDef.NamedSet m = (MondrianGuiDef.NamedSet) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 ifList((Object) m.formulaElement),
                 ifList(m.annotations));
         } else if (parent instanceof MondrianGuiDef.Schema) {
             MondrianGuiDef.Schema s = (MondrianGuiDef.Schema) parent;
             // Return children in this order: cubes, dimensions, namedSets,
             // userDefinedFunctions, virtual cubes, roles
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList(s.cubes),
                 Arrays.asList(s.dimensions),
                 Arrays.asList(s.namedSets),
@@ -136,12 +138,12 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 ifList(s.annotations));
         } else if (parent instanceof MondrianGuiDef.Table) {
             MondrianGuiDef.Table t = (MondrianGuiDef.Table) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 arrayList(t.aggTables),
                 arrayList(t.aggExcludes));
         } else if (parent instanceof MondrianGuiDef.AggTable) {
             MondrianGuiDef.AggTable t = (MondrianGuiDef.AggTable) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 ifList(t.factcount),
                 Arrays.asList(t.ignoreColumns),
                 Arrays.asList(t.foreignKeys),
@@ -155,7 +157,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return Arrays.asList((Object[]) v.selects);
         } else if (parent instanceof MondrianGuiDef.VirtualCube) {
             MondrianGuiDef.VirtualCube c = (MondrianGuiDef.VirtualCube) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList(c.dimensions),
                 Arrays.asList(c.measures),
                 Arrays.asList(c.calculatedMembers),
@@ -170,7 +172,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return ifList((Object)m.annotations);
         } else if (parent instanceof MondrianGuiDef.Role) {
             MondrianGuiDef.Role c = (MondrianGuiDef.Role) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList((Object[]) c.schemaGrants),
                 ifList((Object)c.annotations));
         } else if (parent instanceof MondrianGuiDef.SchemaGrant) {
@@ -178,7 +180,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return Arrays.asList((Object[]) c.cubeGrants);
         } else if (parent instanceof MondrianGuiDef.CubeGrant) {
             MondrianGuiDef.CubeGrant c = (MondrianGuiDef.CubeGrant) parent;
-            return new CompoundList<Object>(
+            return new CompositeList<Object>(
                 Arrays.asList(c.dimensionGrants),
                 Arrays.asList(c.hierarchyGrants));
         } else if (parent instanceof MondrianGuiDef.HierarchyGrant) {
@@ -313,46 +315,6 @@ public class SchemaTreeModel extends DefaultTreeModel {
         //super.valueForPathChanged(path, newValue);
     }
 
-    /**
-     * List composed of several lists.
-     *
-     * @param <T> element type
-     */
-    private static class CompoundList<T> extends AbstractList<T> {
-        private final List<? extends T>[] lists;
-
-        /**
-         * Creates a compound list.
-         *
-         * @param lists Component lists
-         */
-        CompoundList(
-            List<? extends T>... lists)
-        {
-            this.lists = lists;
-        }
-
-        public T get(int index) {
-            int n = 0;
-            for (List<? extends T> list : lists) {
-                int next = n + list.size();
-                if (index < next) {
-                    return list.get(index - n);
-                }
-                n = next;
-            }
-            throw new IndexOutOfBoundsException(
-                "index" + index + " out of bounds in list of size " + n);
-        }
-
-        public int size() {
-            int n = 0;
-            for (List<? extends T> array : lists) {
-                n += array.size();
-            }
-            return n;
-        }
-    }
 }
 
 // End SchemaTreeModel.java

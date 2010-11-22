@@ -9,12 +9,12 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Role;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.*;
 import mondrian.tui.*;
 
+import mondrian.util.LockBox;
 import org.olap4j.metadata.XmlaConstants;
 
 import junit.framework.AssertionFailedError;
@@ -63,10 +63,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String SALES_CUBE       = "Sales";// format
     public static final String FORMAT_PROP     = "format";
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
+    public static final String ROLE_PROP = "Role";
     protected static final boolean DEBUG = false;
-
-    // Associate a Role with a query
-    private static final ThreadLocal<Role> roles = new ThreadLocal<Role>();
 
     protected String generateExpectedString(Properties props)
         throws Exception
@@ -255,10 +253,6 @@ System.out.println("Got CONTINUE");
             HttpServletResponse response,
             Map<String, Object> context) throws Exception
         {
-            Role role = roles.get();
-            if (role != null) {
-                context.put(mondrian.xmla.XmlaConstants.CONTEXT_ROLE, role);
-            }
             return true;
         }
 
@@ -551,6 +545,18 @@ System.out.println("Got CONTINUE");
         if (content != null) {
             props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
         }
+
+        // Even though it is not used, it is important that entry is in scope
+        // until after request has returned. Prevents role's lock box entry from
+        // being garbage collected.
+        LockBox.Entry entry = null;
+        if (role != null) {
+            final MondrianServer mondrianServer =
+                MondrianServer.forConnection(testContext.getConnection());
+            entry = mondrianServer.getLockBox().register(role);
+            connectString += "; Role='" + entry.getMoniker() + "'";
+            props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
+        }
         soapRequestText = Util.replaceProperties(
             soapRequestText, Util.toMap(props));
 
@@ -560,7 +566,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role);
+                xmlaReqDoc, connectString, catalogNameUrls);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -571,23 +577,12 @@ System.out.println("Got CONTINUE");
         }
 
         // do SOAP-XMLA
-        try {
-            String callBackClassName = CallBack.class.getName();
-            if (role != null) {
-                roles.set(role);
-            }
-            bytes = XmlaSupport.processSoapXmla(
-                soapReqDoc,
-                connectString,
-                catalogNameUrls,
-                callBackClassName);
-        } finally {
-            if (role != null) {
-                // Java4 does not support the ThreadLocal remove() method
-                // so we use the set(null).
-                roles.set(null);
-            }
-        }
+        String callBackClassName = CallBack.class.getName();
+        bytes = XmlaSupport.processSoapXmla(
+            soapReqDoc,
+            connectString,
+            catalogNameUrls,
+            callBackClassName);
 
         if (DEBUG) {
             System.out.println(
@@ -595,6 +590,7 @@ System.out.println("Got CONTINUE");
         }
 
         validate(bytes, expectedDoc, testContext, replace);
+        Util.discard(entry);
     }
 
     protected void doTestsJson(
@@ -610,6 +606,13 @@ System.out.println("Got CONTINUE");
         if (content != null) {
             props.setProperty(XmlaBasicTest.CONTENT_PROP, content.name());
         }
+        if (role != null) {
+            final MondrianServer mondrianServer =
+                MondrianServer.forConnection(testContext.getConnection());
+            final LockBox.Entry entry =
+                mondrianServer.getLockBox().register(role);
+            props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
+        }
         soapRequestText = Util.replaceProperties(
             soapRequestText, Util.toMap(props));
 
@@ -619,7 +622,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role);
+                xmlaReqDoc, connectString, catalogNameUrls);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -630,23 +633,12 @@ System.out.println("Got CONTINUE");
         }
 
         // do SOAP-XMLA
-        try {
-            String callBackClassName = CallBack.class.getName();
-            if (role != null) {
-                roles.set(role);
-            }
-            bytes = XmlaSupport.processSoapXmla(
-                soapReqDoc,
-                connectString,
-                catalogNameUrls,
-                callBackClassName);
-        } finally {
-            if (role != null) {
-                // Java4 does not support the ThreadLocal remove() method
-                // so we use the set(null).
-                roles.set(null);
-            }
-        }
+        String callBackClassName = CallBack.class.getName();
+        bytes = XmlaSupport.processSoapXmla(
+            soapReqDoc,
+            connectString,
+            catalogNameUrls,
+            callBackClassName);
         if (DEBUG) {
             System.out.println(
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));

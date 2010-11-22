@@ -24,10 +24,7 @@ import javax.sql.DataSource;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.util.FilteredIterableList;
-import mondrian.util.MemoryMonitor;
-import mondrian.util.MemoryMonitorFactory;
-import mondrian.util.Pair;
+import mondrian.util.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 
@@ -181,7 +178,19 @@ public class RolapConnection extends ConnectionBase {
                 List<String> roleNames = Util.parseCommaList(roleNameList);
                 List<Role> roleList = new ArrayList<Role>();
                 for (String roleName : roleNames) {
-                    Role role1 = schema.lookupRole(roleName);
+                    MondrianServer server = MondrianServer.forConnection(this);
+                    final LockBox.Entry entry =
+                        server.getLockBox().get(roleName);
+                    Role role1;
+                    if (entry != null) {
+                        try {
+                            role1 = (Role) entry.getValue();
+                        } catch (ClassCastException e) {
+                            role1 = null;
+                        }
+                    } else {
+                        role1 = schema.lookupRole(roleName);
+                    }
                     if (role1 == null) {
                         throw Util.newError(
                             "Role '" + roleName + "' not found");

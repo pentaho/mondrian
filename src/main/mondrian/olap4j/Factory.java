@@ -10,6 +10,8 @@
 package mondrian.olap4j;
 
 import mondrian.olap.Query;
+import mondrian.rolap.RolapConnection;
+import org.olap4j.OlapException;
 
 import java.util.Properties;
 import java.util.List;
@@ -67,6 +69,7 @@ interface Factory {
      * Creates a cell set.
      *
      * @param olap4jStatement Statement
+     * @param query Mondrian query
      * @return Cell set
      */
     MondrianOlap4jCellSet newCellSet(
@@ -79,18 +82,31 @@ interface Factory {
      * @param mdx MDX query text
      * @param olap4jConnection Connection
      * @return Prepared statement
+     * @throws org.olap4j.OlapException on database error
      */
     MondrianOlap4jPreparedStatement newPreparedStatement(
-        String mdx, MondrianOlap4jConnection olap4jConnection);
+        String mdx,
+        MondrianOlap4jConnection olap4jConnection)
+        throws OlapException;
 
     /**
      * Creates a metadata object.
      *
      * @param olap4jConnection Connection
+     * @param mondrianConnection Mondrian connection
      * @return Metadata object
      */
     MondrianOlap4jDatabaseMetaData newDatabaseMetaData(
-        MondrianOlap4jConnection olap4jConnection);
+        MondrianOlap4jConnection olap4jConnection,
+        RolapConnection mondrianConnection);
+
+    /**
+     * Sets the helper that locates schemas, catalogs. Allows the client and
+     * engine drivers to handle this differently.
+     *
+     * @param catalogFinder Catalog finder
+     */
+    void setCatalogFinder(CatalogFinder catalogFinder);
 }
 
 // End Factory.java

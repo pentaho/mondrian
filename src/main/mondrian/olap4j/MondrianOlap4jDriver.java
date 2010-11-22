@@ -64,7 +64,7 @@ import java.util.Map;
  * @since May 22, 2007
  */
 public class MondrianOlap4jDriver implements Driver {
-    private final Factory factory;
+    protected final Factory factory;
 
     static {
         try {

@@ -785,6 +785,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             + "            <Catalog>${catalog}</Catalog>\n"
             + "            <DataSourceInfo>${data.source.info}</DataSourceInfo>\n"
             + "            <Format>${format}</Format>\n"
+            + "            <Role>${format}</Role>\n"
             + "            <AxisFormat>TupleFormat</AxisFormat>\n"
             + "          </PropertyList>\n"
             + "        </Properties>\n"

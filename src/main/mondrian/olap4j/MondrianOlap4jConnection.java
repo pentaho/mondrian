@@ -11,13 +11,14 @@ package mondrian.olap4j;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.Member;
 import mondrian.rolap.*;
 
+import mondrian.xmla.XmlaHandler;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.impl.UnmodifiableArrayList;
+import org.olap4j.impl.*;
 import org.olap4j.mdx.*;
 import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
@@ -50,8 +51,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     /**
      * Underlying mondrian connection. Set on creation, cleared on close.
+     * Developers, please keep this member private. Access it via
+     * {@link #getMondrianConnection()} or {@link #getMondrianConnection2()},
+     * and these will throw if the connection has been closed.
      */
-    mondrian.olap.Connection connection;
+    private RolapConnection mondrianConnection;
 
     /**
      * Current schema.
@@ -66,11 +70,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     private final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
 
-    /**
-     * The name of the sole catalog.
-     */
-    static final String LOCALDB_CATALOG_NAME = "LOCALDB";
     private static final String CONNECT_STRING_PREFIX = "jdbc:mondrian:";
+
+    private static final String ENGINE_CONNECT_STRING_PREFIX =
+        "jdbc:mondrian:engine:";
 
     final Factory factory;
     final MondrianOlap4jDriver driver;
@@ -78,6 +81,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private String roleName;
     private boolean autoCommit;
     private boolean readOnly;
+    boolean preferList;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -85,8 +89,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
      * <p>This method is intentionally package-protected. The public API
      * uses the traditional JDBC {@link java.sql.DriverManager}.
      * See {@link mondrian.olap4j.MondrianOlap4jDriver} for more details.
-     *
-     * @pre acceptsURL(url)
      *
      * @param factory Factory
      * @param driver Driver
@@ -101,24 +103,32 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         Properties info)
         throws SQLException
     {
+        // Required for the logic below to work.
+        assert ENGINE_CONNECT_STRING_PREFIX.startsWith(CONNECT_STRING_PREFIX);
+
         this.factory = factory;
         this.driver = driver;
-        if (!acceptsURL(url)) {
+        String x;
+        if (url.startsWith(ENGINE_CONNECT_STRING_PREFIX)) {
+            x = url.substring(ENGINE_CONNECT_STRING_PREFIX.length());
+        } else if (url.startsWith(CONNECT_STRING_PREFIX)) {
+            x = url.substring(CONNECT_STRING_PREFIX.length());
+        } else {
             // This is not a URL we can handle.
             // DriverManager should not have invoked us.
             throw new AssertionError(
                 "does not start with '" + CONNECT_STRING_PREFIX + "'");
         }
-        String x = url.substring(CONNECT_STRING_PREFIX.length());
         Util.PropertyList list = Util.parseConnectString(x);
         for (Map.Entry<String, String> entry : toMap(info).entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
-        this.connection =
-            mondrian.olap.DriverManager.getConnection(list, null);
+        this.mondrianConnection =
+            (RolapConnection)
+                mondrian.olap.DriverManager.getConnection(list, null);
         this.olap4jDatabaseMetaData =
-            factory.newDatabaseMetaData(this);
-        this.olap4jSchema = toOlap4j(connection.getSchema());
+            factory.newDatabaseMetaData(this, mondrianConnection);
+        this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
     }
 
     static boolean acceptsURL(String url) {
@@ -129,16 +139,16 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return new MondrianOlap4jStatement(this);
     }
 
-    public ScenarioImpl createScenario() {
-        return ((RolapConnection) connection).createScenario();
+    public ScenarioImpl createScenario() throws OlapException {
+        return getMondrianConnection().createScenario();
     }
 
-    public void setScenario(Scenario scenario) {
-        ((RolapConnection) connection).setScenario(scenario);
+    public void setScenario(Scenario scenario) throws OlapException {
+        getMondrianConnection().setScenario(scenario);
     }
 
-    public Scenario getScenario() {
-        return ((RolapConnection) connection).getScenario();
+    public Scenario getScenario() throws OlapException {
+        return getMondrianConnection().getScenario();
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -170,15 +180,15 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void close() throws SQLException {
-        if (connection != null) {
-            mondrian.olap.Connection c = connection;
-            connection = null;
+        if (mondrianConnection != null) {
+            RolapConnection c = mondrianConnection;
+            mondrianConnection = null;
             c.close();
         }
     }
 
     public boolean isClosed() throws SQLException {
-        return connection == null;
+        return mondrianConnection == null;
     }
 
     public OlapDatabaseMetaData getMetaData() {
@@ -199,14 +209,14 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public void setCatalog(String catalog) throws SQLException {
         if (catalog != null
-            && !catalog.equals(LOCALDB_CATALOG_NAME))
+            && !catalog.equals(olap4jSchema.olap4jCatalog.name))
         {
             throw new UnsupportedOperationException();
         }
     }
 
     public String getCatalog() throws SQLException {
-        return LOCALDB_CATALOG_NAME;
+        return olap4jSchema.olap4jCatalog.name;
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
@@ -327,15 +337,18 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public <T> T unwrap(Class<T> iface) throws SQLException {
         if (iface.isInstance(this)) {
             return iface.cast(this);
-        } else if (iface.isInstance(connection)) {
-            return iface.cast(connection);
+        } else if (iface.isInstance(mondrianConnection)) {
+            return iface.cast(mondrianConnection);
+        }
+        if (iface == XmlaHandler.XmlaExtra.class) {
+            return iface.cast(MondrianOlap4jExtra.INSTANCE);
         }
         throw helper.createException("does not implement '" + iface + "'");
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return iface.isInstance(this)
-            || iface.isInstance(connection);
+            || iface.isInstance(mondrianConnection);
     }
 
     // implement OlapConnection
@@ -378,11 +391,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         MondrianOlap4jSchema olap4jSchema = schemaMap.get(schema);
         if (olap4jSchema == null) {
             final MondrianOlap4jCatalog olap4jCatalog =
-                (MondrianOlap4jCatalog) getCatalogs().get(LOCALDB_CATALOG_NAME);
+                (MondrianOlap4jCatalog) getCatalogs().get(0);
             olap4jSchema =
                 new MondrianOlap4jSchema(
                     olap4jCatalog,
-                    schema.getSchemaReader(),
                     schema);
             schemaMap.put(schema, olap4jSchema);
         }
@@ -482,6 +494,23 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return types;
     }
 
+    NamedList<MondrianOlap4jMember> toOlap4j(
+        final List<Member> memberList)
+    {
+        return new AbstractNamedList<MondrianOlap4jMember>() {
+            protected String getName(MondrianOlap4jMember olap4jMember) {
+                return olap4jMember.getName();
+            }
+
+            public MondrianOlap4jMember get(int index) {
+                return toOlap4j(memberList.get(index));
+            }
+
+            public int size() {
+                return memberList.size();
+            }
+        };
+    }
     /**
      * Converts a Properties object to a Map with String keys and values.
      *
@@ -532,12 +561,13 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public void setRoleName(String roleName) throws OlapException {
         final Role role;
+        final RolapConnection connection1 = getMondrianConnection();
         if (roleName == null) {
-            role = ((RolapSchema) this.connection.getSchema())
+            role = ((RolapSchema) connection1.getSchema())
                 .getInternalConnection().getRole();
             assert role != null;
         } else {
-            role = this.connection.getSchema().lookupRole(roleName);
+            role = connection1.getSchema().lookupRole(roleName);
             if (role == null) {
                 throw helper.createException("Unknown role '" + roleName + "'");
             }
@@ -545,16 +575,46 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         // Remember the name of the role, because mondrian roles don't know
         // their own name.
         this.roleName = roleName;
-        this.connection.setRole(role);
+        connection1.setRole(role);
     }
 
     public String getRoleName() {
         return roleName;
     }
 
-    public List<String> getAvailableRoleNames() {
+    public List<String> getAvailableRoleNames() throws OlapException {
         return UnmodifiableArrayList.of(
-            ((RolapSchema) connection.getSchema()).roleNames());
+            ((RolapSchema) getMondrianConnection().getSchema()).roleNames());
+    }
+
+    public void setPreferList(boolean preferList) {
+        this.preferList = preferList;
+    }
+
+    /**
+     * Cop-out version of {@link #getMondrianConnection()} that doesn't throw
+     * a checked exception. For those situations where the olap4j API doesn't
+     * declare 'throws OlapException', but we need an open connection anyway.
+     * Use {@link #getMondrianConnection()} where possible.
+     *
+     * @return Mondrian connection
+     * @throws RuntimeException if connection is closed
+     */
+    RolapConnection getMondrianConnection2() throws RuntimeException {
+        try {
+            return getMondrianConnection();
+        } catch (OlapException e) {
+            // Demote from checked to unchecked exception.
+            throw new RuntimeException(e);
+        }
+    }
+
+    RolapConnection getMondrianConnection() throws OlapException {
+        final RolapConnection connection1 = mondrianConnection;
+        if (connection1 == null) {
+            throw helper.createException("Connection is closed.");
+        }
+        return connection1;
     }
 
     // inner classes
@@ -651,7 +711,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 selectNode.unparse(new ParseTreeWriter(new PrintWriter(sw)));
                 String mdx = sw.toString();
                 Query query =
-                    connection.connection
+                    connection.mondrianConnection
                         .parseQuery(mdx);
                 query.resolve();
                 return connection.toOlap4j(query);

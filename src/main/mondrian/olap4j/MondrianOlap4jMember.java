@@ -31,7 +31,7 @@ import mondrian.rolap.RolapMeasure;
  */
 class MondrianOlap4jMember implements Member, Named {
     final mondrian.olap.Member member;
-    private final MondrianOlap4jSchema olap4jSchema;
+    final MondrianOlap4jSchema olap4jSchema;
 
     MondrianOlap4jMember(
         MondrianOlap4jSchema olap4jSchema,
@@ -53,9 +53,16 @@ class MondrianOlap4jMember implements Member, Named {
         return member.hashCode();
     }
 
-    public NamedList<MondrianOlap4jMember> getChildMembers() {
+    public String toString() {
+        return getUniqueName();
+    }
+
+    public NamedList<MondrianOlap4jMember> getChildMembers()
+        throws OlapException
+    {
         final List<mondrian.olap.Member> children =
-            olap4jSchema.schemaReader.getMemberChildren(
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection
+                .getMondrianConnection().getSchemaReader().getMemberChildren(
                 member);
         return new AbstractNamedList<MondrianOlap4jMember>() {
             protected String getName(MondrianOlap4jMember member) {
@@ -73,13 +80,20 @@ class MondrianOlap4jMember implements Member, Named {
         };
     }
 
-    public int getChildMemberCount() {
-        return olap4jSchema.schemaReader.getMemberChildren(member).size();
+    public int getChildMemberCount() throws OlapException {
+        return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+            .olap4jConnection.getMondrianConnection().getSchemaReader()
+            .getMemberChildren(member).size();
     }
 
     public MondrianOlap4jMember getParentMember() {
         final mondrian.olap.Member parentMember = member.getParentMember();
-        if (parentMember == null) {
+        if (parentMember == null
+            || !olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+            .olap4jConnection.getMondrianConnection2().getSchemaReader()
+            .isVisible(
+                parentMember))
+        {
             return null;
         }
         return new MondrianOlap4jMember(olap4jSchema, parentMember);

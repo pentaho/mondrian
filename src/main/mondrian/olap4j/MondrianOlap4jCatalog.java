@@ -26,11 +26,14 @@ import org.olap4j.impl.*;
  */
 class MondrianOlap4jCatalog implements Catalog, Named {
     final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
+    final String name;
 
     MondrianOlap4jCatalog(
-        MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData)
+        MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData,
+        String name)
     {
         this.olap4jDatabaseMetaData = olap4jDatabaseMetaData;
+        this.name = name;
     }
 
     public NamedList<Schema> getSchemas() throws OlapException {
@@ -39,14 +42,15 @@ class MondrianOlap4jCatalog implements Catalog, Named {
         NamedList<MondrianOlap4jSchema> list =
             new NamedListImpl<MondrianOlap4jSchema>();
         final mondrian.olap.Schema schema =
-            olap4jDatabaseMetaData.olap4jConnection.connection.getSchema();
+            olap4jDatabaseMetaData.olap4jConnection.getMondrianConnection()
+                .getSchema();
         list.add(
             olap4jDatabaseMetaData.olap4jConnection.toOlap4j(schema));
         return Olap4jUtil.cast(list);
     }
 
     public String getName() {
-        return MondrianOlap4jConnection.LOCALDB_CATALOG_NAME;
+        return name;
     }
 
     public OlapDatabaseMetaData getMetaData() {
