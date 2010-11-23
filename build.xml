@@ -180,6 +180,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
     <fileset dir="${lib.dir}">
+      <include name="olap4j-tck.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
@@ -195,6 +196,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses-jdk14.dir}"/>
     <fileset dir="${lib.dir}">
+      <include name="olap4j-tck.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
