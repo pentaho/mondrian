@@ -295,7 +295,10 @@ public class RolapConnectionTest extends TestCase {
         final List<String> lookupCalls = new ArrayList<String>();
         // mock the JNDI naming manager to provide that datasource
         THREAD_INITIAL_CONTEXT.set(
-            new InitialContext() {
+            // Use lazy initialization. Otherwise during initialization of this
+            // initial context JNDI tries to create a default initial context
+            // and bumps into itself coming the other way.
+            new InitialContext(true) {
                 public Object lookup(String str) {
                     lookupCalls.add("Called");
                     return dataSource;

@@ -251,6 +251,7 @@ public class Main extends TestSuite {
             addTest(suite, CustomizedParserTest.class);
             addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
+            addTest(suite, Olap4jTckTest.class, "suite");
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);
             addTest(suite, XmlaExcel2000Test.class);
