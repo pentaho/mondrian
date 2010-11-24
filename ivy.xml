@@ -64,7 +64,7 @@
             <artifact name="olap4j" type="source" ext="jar"
                     m:classifier="sources"/>
         </dependency>
-        <dependency org="org.olap4j" name="olap4j-tck" rev="0.9.9.371" changing="true">
+        <dependency org="org.olap4j" name="olap4j-tck" rev="0.9.9.372" changing="true">
             <artifact name="olap4j-tck"/>
         </dependency>
 

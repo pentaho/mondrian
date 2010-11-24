@@ -89,6 +89,21 @@ public class Olap4jTckTest extends TestCase {
     }
 
     public static class MondrianTester implements TestContext.Tester {
+        private final TestContext testContext;
+
+        /**
+         * Public constructor as required by
+         * {@link org.olap4j.test.TestContext.Tester} API.
+         *
+         * @param testContext Test context
+         */
+        public MondrianTester(TestContext testContext) {
+            this.testContext = testContext;
+        }
+
+        public TestContext getTestContext() {
+            return testContext;
+        }
 
         public Connection createConnection() throws SQLException {
             try {
@@ -102,7 +117,8 @@ public class Olap4jTckTest extends TestCase {
                     new Properties());
         }
 
-        public Connection createConnectionWithUserPassword() throws SQLException {
+        public Connection createConnectionWithUserPassword() throws SQLException
+        {
             return DriverManager.getConnection(
                 getURL(), USER, PASSWORD);
         }
@@ -118,7 +134,7 @@ public class Olap4jTckTest extends TestCase {
         public String getURL() {
             // This property is usually defined in build.properties. See
             // examples in that file.
-            return TestContext.getTestProperties().getProperty(
+            return testContext.getProperties().getProperty(
                 TestContext.Property.CONNECT_URL.path);
         }
 
