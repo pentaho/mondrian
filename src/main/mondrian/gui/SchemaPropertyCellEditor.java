@@ -15,6 +15,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.JTextComponent;
+
+import mondrian.gui.MondrianGuiDef.Hierarchy;
+
+import org.eigenbase.xom.NodeDef;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -186,12 +191,8 @@ public class SchemaPropertyCellEditor
         final int column)
     {
         PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
-        Class parentClassz = null;
-        if (tableModel.getParentTarget() != null) {
-            parentClassz = tableModel.getParentTarget().getClass();
-        }
         Object value = tableModel.getValue();
-        Class targetClassz = tableModel.target.getClass();
+        Class<?> targetClassz = tableModel.target.getClass();
         Object parent = this.getParentObject();
 
         MondrianGuiDef.RelationOrJoin relation = null;
@@ -224,11 +225,11 @@ public class SchemaPropertyCellEditor
         final int column)
     {
         PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
-        Class parentClassz = null;
+        Class<?> parentClassz = null;
         if (tableModel.getParentTarget() != null) {
             parentClassz = tableModel.getParentTarget().getClass();
         }
-        Class targetClassz = tableModel.target.getClass();
+        Class<?> targetClassz = tableModel.target.getClass();
         String propertyName = tableModel.getRowName(row);
         String selectedFactTable = tableModel.getFactTable();
         String selectedFactTableSchema = tableModel.getFactTableSchema();
@@ -421,7 +422,7 @@ public class SchemaPropertyCellEditor
                    || (targetClassz == MondrianGuiDef.HierarchyGrant.class
                        && propertyName.equals("hierarchy")))
         {
-            List<String> source = getDimensions();
+            List<String> source = getHierarchies();
             ComboBoxModel cAllsource =
                 new DefaultComboBoxModel(new Vector<String>(source));
 
@@ -1334,6 +1335,40 @@ public class SchemaPropertyCellEditor
             }
         }
         return dims;
+    }
+
+    private List<String> getHierarchies() {
+        List<String> hiers = new ArrayList<String>();
+        Object po = getParentObject(); //cubegrant
+        if (po != null) {
+            MondrianGuiDef.CubeGrant parent = (MondrianGuiDef.CubeGrant) po;
+            if (!(parent.cube == null || parent.cube.equals(""))) {
+                MondrianGuiDef.Schema s = getSchema();
+                if (s != null) {
+                    for (int i = 0; i < s.cubes.length; i++) {
+                        if (s.cubes[i].name.equals(parent.cube)) {
+                            for (int j = 0; j < s.cubes[i].dimensions.length;
+                                j++)
+                            {
+                                NodeDef[] children =
+                                    s.cubes[i].dimensions[j].getChildren();
+                                for (int k = 0; k < children.length; k++) {
+                                    if (children[k] instanceof Hierarchy
+                                        && (((Hierarchy) children[k]).name
+                                            != null))
+                                    {
+                                        hiers.add(
+                                            ((Hierarchy) children[k]).name);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return hiers;
     }
 
     private String cacheCube = "";
