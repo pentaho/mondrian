@@ -31,6 +31,7 @@ import java.util.*;
 
 import static mondrian.olap.Util.filter;
 import static mondrian.xmla.XmlaConstants.*;
+import static mondrian.xmla.XmlaHandler.getExtra;
 
 /**
  * <code>RowsetDefinition</code> defines a rowset, including the columns it
@@ -70,7 +71,10 @@ public enum RowsetDefinition {
             DiscoverDatasourcesRowset.ProviderType,
             DiscoverDatasourcesRowset.AuthenticationMode,
         },
-        null /* not sorted */)
+        // XMLA does not specify a sort order, but olap4j does.
+        new Column[] {
+            DiscoverDatasourcesRowset.DataSourceName,
+        })
     {
         public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
             return new DiscoverDatasourcesRowset(request, handler);
@@ -289,7 +293,8 @@ public enum RowsetDefinition {
      */
     DBSCHEMA_CATALOGS(
         6,
-        "Returns information about literals supported by the provider.",
+        "Identifies the physical attributes associated with catalogs "
+        + "accessible from the provider.",
         new Column[] {
             DbschemaCatalogsRowset.CatalogName,
             DbschemaCatalogsRowset.Description,
@@ -1564,27 +1569,26 @@ public enum RowsetDefinition {
             super(DISCOVER_DATASOURCES, request, handler);
         }
 
-        protected boolean needConnection() {
-            return false;
-        }
+        private static final Column[] columns = {
+            DataSourceName,
+            DataSourceDescription,
+            URL,
+            DataSourceInfo,
+            ProviderName,
+            ProviderType,
+            AuthenticationMode,
+        };
 
         public void populateImpl(
             XmlaResponse response, OlapConnection connection, List<Row> rows)
-            throws XmlaException
+            throws XmlaException, SQLException
         {
-            for (DataSourcesConfig.DataSource ds
-                : handler.getDataSourceEntries().values())
-            {
+            final XmlaHandler.XmlaExtra extra = getExtra(connection);
+            for (Map<String, Object> ds : extra.getDataSources(connection)) {
                 Row row = new Row();
-                row.set(DataSourceName.name, ds.getDataSourceName());
-                row.set(
-                    DataSourceDescription.name,
-                    ds.getDataSourceDescription());
-                row.set(URL.name, ds.getURL());
-                row.set(DataSourceInfo.name, ds.getDataSourceName());
-                row.set(ProviderName.name, ds.getProviderName());
-                row.set(ProviderType.name, ds.getProviderType());
-                row.set(AuthenticationMode.name, ds.getAuthenticationMode());
+                for (Column column : columns) {
+                    row.set(column.name, ds.get(column.name));
+                }
                 addRow(row, rows);
             }
         }
@@ -1921,6 +1925,7 @@ public enum RowsetDefinition {
         }
 
         private static List<Enumeration> getEnumerators() {
+            // Build a set because we need to eliminate duplicates.
             SortedSet<Enumeration> enumeratorSet = new TreeSet<Enumeration>(
                 new Comparator<Enumeration>() {
                     public int compare(Enumeration o1, Enumeration o2) {
@@ -1971,7 +1976,7 @@ public enum RowsetDefinition {
             XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException
         {
-            MondrianServer mondrianServer = MondrianServer.forConnection(null);
+            MondrianServer mondrianServer = MondrianServer.forId(null);
             for (String keyword : mondrianServer.getKeywords()) {
                 Row row = new Row();
                 row.set(Keyword.name, keyword);
@@ -2126,7 +2131,7 @@ public enum RowsetDefinition {
             throws XmlaException, SQLException
         {
             for (Catalog catalog : catIter(connection, catalogNameCond)) {
-            final Schema schema = connection.getSchema();
+                final Schema schema = connection.getSchema();
 
                 Row row = new Row();
                 row.set(CatalogName.name, catalog.getName());
@@ -2137,7 +2142,7 @@ public enum RowsetDefinition {
                 // get Role names
                 StringBuilder buf = new StringBuilder(100);
                 List<String> roleNames =
-                    handler.getExtra(connection).getSchemaRoleNames(schema);
+                    getExtra(connection).getSchemaRoleNames(schema);
                 serialize(buf, roleNames);
                 row.set(Roles.name, buf.toString());
 
@@ -2865,12 +2870,13 @@ TODO: see above
             throws XmlaException, OlapException
         {
             for (Catalog catalog : catIter(connection, catalogNameCond)) {
-                final Schema schema = connection.getSchema();
-                Row row = new Row();
-                row.set(CatalogName.name, catalog.getName());
-                row.set(SchemaName.name, schema.getName());
-                row.set(SchemaOwner.name, "");
-                addRow(row, rows);
+                for (Schema schema : catalog.getSchemas()) {
+                    Row row = new Row();
+                    row.set(CatalogName.name, catalog.getName());
+                    row.set(SchemaName.name, schema.getName());
+                    row.set(SchemaOwner.name, "");
+                    addRow(row, rows);
+                }
             }
         }
 
@@ -3556,9 +3562,9 @@ TODO: see above
                         row.set(CatalogName.name, catalog.getName());
                         row.set(SchemaName.name, schema.getName());
                         row.set(CubeName.name, cube.getName());
-                        row.set(
-                            CubeType.name,
-                            handler.getExtra(connection).getCubeType(cube));
+                        final XmlaHandler.XmlaExtra extra =
+                            getExtra(connection);
+                        row.set(CubeType.name, extra.getCubeType(cube));
                         //row.set(CubeGuid.name, "");
                         //row.set(CreatedOn.name, "");
                         //row.set(LastSchemaUpdate.name, "");
@@ -3574,8 +3580,7 @@ TODO: see above
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
                         String formattedDate =
                             formatter.format(
-                                handler.getExtra(connection)
-                                    .getSchemaLoadDate(schema));
+                                extra.getSchemaLoadDate(schema));
                         row.set(LastSchemaUpdate.name, formattedDate);
                         if (deep) {
                             row.set(
@@ -3911,7 +3916,7 @@ TODO: see above
 
             // Added by TWI to returned cached row numbers
 
-            int n = handler.getExtra(connection).getLevelCardinality(lastLevel);
+            int n = getExtra(connection).getLevelCardinality(lastLevel);
             row.set(DimensionCardinality.name, n + 1);
 
             // TODO: I think that this is just the dimension name
@@ -4112,6 +4117,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            final XmlaHandler.XmlaExtra extra = getExtra(connection);
             for (Catalog catalog : catIter(connection, catNameCond())) {
                 final Schema schema = connection.getSchema();
                 List<XmlaHandler.XmlaExtra.FunctionDefinition> funDefs =
@@ -4119,7 +4125,7 @@ TODO: see above
 
                 // olap4j does not support describing functions. Call an
                 // auxiliary method.
-                handler.getExtra(connection).getSchemaFunctionList(
+                extra.getSchemaFunctionList(
                     funDefs,
                     schema,
                     functionNameCond);
@@ -4442,6 +4448,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            final XmlaHandler.XmlaExtra extra = getExtra(connection);
             String desc = hierarchy.getDescription();
             if (desc == null) {
                 desc =
@@ -4466,9 +4473,7 @@ TODO: see above
             // value can be an approximation of the real
             // cardinality. Consumers should not assume that this
             // value is accurate.
-            int cardinality =
-                handler.getExtra(connection).getHierarchyCardinality(
-                    hierarchy);
+            int cardinality = extra.getHierarchyCardinality(hierarchy);
             row.set(HierarchyCardinality.name, cardinality);
 
             row.set(DefaultMember.name, hierarchy.getDefaultMember());
@@ -4482,9 +4487,7 @@ TODO: see above
             //TODO: only support:
             // MD_STRUCTURE_FULLYBALANCED (0)
             // MD_STRUCTURE_RAGGEDBALANCED (1)
-            row.set(
-                Structure.name,
-                handler.getExtra(connection).getHierarchyStructure(hierarchy));
+            row.set(Structure.name, extra.getHierarchyStructure(hierarchy));
 
             row.set(IsVirtual.name, false);
             row.set(IsReadWrite.name, false);
@@ -4500,9 +4503,7 @@ TODO: see above
             // always true
             row.set(DimensionIsShared.name, true);
 
-            row.set(
-                ParentChild.name,
-                handler.getExtra(connection).isHierarchyParentChild(hierarchy));
+            row.set(ParentChild.name, extra.isHierarchyParentChild(hierarchy));
             if (deep) {
                 row.set(
                     Levels.name,
@@ -4805,6 +4806,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            final XmlaHandler.XmlaExtra extra = getExtra(connection);
             String desc = level.getDescription();
             if (desc == null) {
                 desc =
@@ -4831,7 +4833,6 @@ TODO: see above
             // Get level cardinality
             // According to microsoft this is:
             //   "The number of members in the level."
-            final XmlaHandler.XmlaExtra extra = handler.getExtra(connection);
             int n = extra.getLevelCardinality(level);
             row.set(LevelCardinality.name, n);
 
@@ -5163,9 +5164,8 @@ TODO: see above
             row.set(MeasureCaption.name, member.getCaption());
             //row.set(MeasureGuid.name, "");
 
-            row.set(
-                MeasureAggregator.name,
-                handler.getExtra(connection).getMeasureAggregator(member));
+            final XmlaHandler.XmlaExtra extra = getExtra(connection);
+            row.set(MeasureAggregator.name, extra.getMeasureAggregator(member));
 
             // DATA_TYPE DBType best guess is string
             XmlaConstants.DBType dbType = XmlaConstants.DBType.WSTR;
@@ -5685,7 +5685,7 @@ TODO: see above
                 return;
             }
 
-            handler.getExtra(connection).checkMemberOrdinal(member);
+            getExtra(connection).checkMemberOrdinal(member);
 
             // Check whether the member is visible, otherwise do not dump.
             Boolean visible =
@@ -6143,7 +6143,7 @@ TODO: see above
             throws SQLException
         {
             final XmlaHandler.XmlaExtra extra =
-                handler.getExtra(catalog.getMetaData().getConnection());
+                getExtra(catalog.getMetaData().getConnection());
             for (Property property
                 : filter(extra.getLevelProperties(level), propertyNameCond))
             {
@@ -6258,27 +6258,9 @@ TODO: see above
             }
         };
 
-    private static <T extends Comparable> List<T> sort(
-        Collection<T> collection)
-    {
-        Object[] a = collection.toArray(new Object[collection.size()]);
-        Arrays.sort(a);
-        return Util.cast(Arrays.asList(a));
-    }
-
-    private static <T> List<T> sort(
-        Collection<T> collection,
-        Comparator<T> comparator)
-    {
-        Object[] a = collection.toArray(new Object[collection.size()]);
-        //noinspection unchecked
-        Arrays.sort(a, (Comparator<? super Object>) comparator);
-        return Util.cast(Arrays.asList(a));
-    }
-
     static void serialize(StringBuilder buf, Collection<String> strings) {
         int k = 0;
-        for (String name : sort(strings)) {
+        for (String name : Util.sort(strings)) {
             if (k++ > 0) {
                 buf.append(',');
             }
@@ -6300,8 +6282,9 @@ TODO: see above
     }
 
     static Iterable<Cube> sortedCubes(Schema schema) throws OlapException {
-        return sort(
-            schema.getCubes(), new Comparator<Cube>() {
+        return Util.sort(
+            schema.getCubes(),
+            new Comparator<Cube>() {
                 public int compare(Cube o1, Cube o2) {
                     return o1.getName().compareTo(o2.getName());
                 }

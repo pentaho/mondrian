@@ -267,6 +267,17 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             (MondrianOlap4jProperty) property;
         return olap4jProperty.property.isInternal();
     }
+
+    public List<Map<String, Object>> getDataSources(OlapConnection connection)
+        throws OlapException
+    {
+        MondrianOlap4jConnection olap4jConnection =
+            (MondrianOlap4jConnection) connection;
+        MondrianServer server =
+            MondrianServer.forConnection(
+                olap4jConnection.getMondrianConnection());
+        return server.getDataSources(olap4jConnection.getMondrianConnection());
+    }
 }
 
 // End MondrianOlap4jExtra.java

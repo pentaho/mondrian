@@ -1170,7 +1170,7 @@ public class Util extends XOMUtil {
      */
     public static String maskVersion(String str) {
         MondrianServer.MondrianVersion mondrianVersion =
-            MondrianServer.forConnection(null).getVersion();
+            MondrianServer.forId(null).getVersion();
         String versionString = mondrianVersion.getVersionString();
         return replace(str, versionString, "${mondrianVersion}");
     }
@@ -1585,6 +1585,40 @@ public class Util extends XOMUtil {
         } else {
             return conds;
         }
+    }
+
+    /**
+     * Sorts a collection of {@link Comparable} objects and returns a list.
+     *
+     * @param collection Collection
+     * @param <T> Element type
+     * @return Sorted list
+     */
+    public static <T extends Comparable> List<T> sort(
+        Collection<T> collection)
+    {
+        Object[] a = collection.toArray(new Object[collection.size()]);
+        Arrays.sort(a);
+        return cast(Arrays.asList(a));
+    }
+
+    /**
+     * Sorts a collection of objects using a {@link java.util.Comparator} and returns a
+     * list.
+     *
+     * @param collection Collection
+     * @param comparator Comparator
+     * @param <T> Element type
+     * @return Sorted list
+     */
+    public static <T> List<T> sort(
+        Collection<T> collection,
+        Comparator<T> comparator)
+    {
+        Object[] a = collection.toArray(new Object[collection.size()]);
+        //noinspection unchecked
+        Arrays.sort(a, (Comparator<? super Object>) comparator);
+        return cast(Arrays.asList(a));
     }
 
     public static class ErrorCellValue {
@@ -2319,7 +2353,7 @@ public class Util extends XOMUtil {
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
      * @return content of Reader as String or null if Reader was empty.
-     * @throws IOException
+     * @throws IOException on I/O error
      */
     public static String readFully(final Reader rdr, final int bufferSize)
         throws IOException
@@ -2342,37 +2376,33 @@ public class Util extends XOMUtil {
         return (s.length() == 0) ? null : s;
     }
 
-
-    /**
-     * Read URL and return String containing content.
-     *
-     * @param urlStr actually a catalog URL
-     * @return String containing content of catalog.
-     * @throws MalformedURLException
-     * @throws IOException
-     */
-    public static String readURL(final String urlStr)
-        throws IOException
-    {
-        return readURL(urlStr, null);
-    }
-
     /**
      * Returns the contents of a URL, substituting tokens.
      *
-     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     * <p>Replaces the tokens "${key}" if the map is not null and "key" occurs
+     * in the key-value map.
+     *
+     * <p>If the URL string starts with "inline:" the contents are the
+     * rest of the URL.
      *
      * @param urlStr  URL string
      * @param map Key/value map
      * @return Contents of URL with tokens substituted
-     * @throws MalformedURLException
-     * @throws IOException
+     * @throws IOException on I/O error
      */
     public static String readURL(final String urlStr, Map<String, String> map)
         throws IOException
     {
-        final URL url = new URL(urlStr);
-        return readURL(url, map);
+        if (urlStr.startsWith("inline:")) {
+            String content = urlStr.substring("inline:".length());
+            if (map != null) {
+                content = Util.replaceProperties(content, map);
+            }
+            return content;
+        } else {
+            final URL url = new URL(urlStr);
+            return readURL(url, map);
+        }
     }
 
     /**
@@ -2380,7 +2410,7 @@ public class Util extends XOMUtil {
      *
      * @param url URL
      * @return Contents of URL
-     * @throws IOException
+     * @throws IOException on I/O error
      */
     public static String readURL(final URL url) throws IOException {
         return readURL(url, null);
@@ -2389,12 +2419,13 @@ public class Util extends XOMUtil {
     /**
      * Returns the contents of a URL, substituting tokens.
      *
-     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     * <p>Replaces the tokens "${key}" if the map is not null and "key" occurs
+     * in the key-value map.
      *
      * @param url URL
      * @param map Key/value map
      * @return Contents of URL with tokens substituted
-     * @throws IOException
+     * @throws IOException on I/O error
      */
     public static String readURL(
         final URL url,

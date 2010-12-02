@@ -55,10 +55,10 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <DataSourceName>MondrianFoodMart</DataSourceName>
+                        <DataSourceName>FoodMart</DataSourceName>
                         <DataSourceDescription>Mondrian FoodMart data source</DataSourceDescription>
                         <URL>http://localhost:8080/mondrian/xmla</URL>
-                        <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                        <DataSourceInfo>FoodMart</DataSourceInfo>
                         <ProviderName>Mondrian</ProviderName>
                         <ProviderType>MDP</ProviderType>
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
@@ -76,12 +76,12 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <BeginSession 
-        mustUnderstand="1" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <BeginSession
+        mustUnderstand="1"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
-    <NamespaceCompatibility 
-        xmlns="http://schemas.microsoft.com/analysisservices/2003/xmla" 
+    <NamespaceCompatibility
+        xmlns="http://schemas.microsoft.com/analysisservices/2003/xmla"
         mustUnderstand="0"
     />
   </Header>
@@ -92,7 +92,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Tabular</Format>
         </PropertyList>
@@ -147,7 +147,7 @@
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
-                        <Description>Returns information about literals supported by the provider.</Description>
+                        <Description>Identifies the physical attributes associated with catalogs accessible from the provider.</Description>
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_COLUMNS</SchemaName>
@@ -610,10 +610,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -623,7 +623,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -683,10 +683,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -700,7 +700,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -765,10 +765,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -782,7 +782,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -847,10 +847,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <EndSession 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <EndSession
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -861,7 +861,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
         </PropertyList>
       </Properties>
     </Execute>
@@ -895,9 +895,9 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <BeginSession 
-        mustUnderstand="1" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <BeginSession
+        mustUnderstand="1"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -908,7 +908,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
         </PropertyList>
       </Properties>
@@ -943,10 +943,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -960,7 +960,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1030,10 +1030,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -1047,7 +1047,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1129,9 +1129,9 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session mustUnderstand="1" 
-    SessionId="${session.id}" 
-    xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session mustUnderstand="1"
+    SessionId="${session.id}"
+    xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
   />
   </Header>
   <Body>
@@ -1145,7 +1145,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1219,10 +1219,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -1236,7 +1236,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1616,10 +1616,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -1633,7 +1633,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1698,10 +1698,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -1715,7 +1715,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1895,10 +1895,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -1912,7 +1912,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2079,10 +2079,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -2096,7 +2096,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2164,10 +2164,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -2182,7 +2182,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2301,10 +2301,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
      />
   </Header>
   <Body>
@@ -2319,7 +2319,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2472,10 +2472,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
      />
   </Header>
   <Body>
@@ -2486,7 +2486,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Tabular</Format>
           <Content>SchemaData</Content>
@@ -2591,10 +2591,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <EndSession 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <EndSession
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -2605,7 +2605,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
         </PropertyList>
       </Properties>
@@ -2690,10 +2690,10 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <DataSourceName>MondrianFoodMart</DataSourceName>
+                        <DataSourceName>FoodMart</DataSourceName>
                         <DataSourceDescription>Mondrian FoodMart data source</DataSourceDescription>
                         <URL>http://localhost:8080/mondrian/xmla</URL>
-                        <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                        <DataSourceInfo>FoodMart</DataSourceInfo>
                         <ProviderName>Mondrian</ProviderName>
                         <ProviderType>MDP</ProviderType>
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
@@ -2711,12 +2711,12 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <BeginSession 
-        mustUnderstand="1" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <BeginSession
+        mustUnderstand="1"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
-    <NamespaceCompatibility 
-        xmlns="http://schemas.microsoft.com/analysisservices/2003/xmla" 
+    <NamespaceCompatibility
+        xmlns="http://schemas.microsoft.com/analysisservices/2003/xmla"
         mustUnderstand="0"
     />
   </Header>
@@ -2727,7 +2727,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Tabular</Format>
         </PropertyList>
@@ -2782,7 +2782,7 @@
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
-                        <Description>Returns information about literals supported by the provider.</Description>
+                        <Description>Identifies the physical attributes associated with catalogs accessible from the provider.</Description>
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_COLUMNS</SchemaName>
@@ -3245,10 +3245,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -3258,7 +3258,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3318,10 +3318,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -3335,7 +3335,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3400,10 +3400,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <XA:Session 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+    <XA:Session
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -3417,7 +3417,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3482,10 +3482,10 @@
             <![CDATA[
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Header>
-    <EndSession 
-        mustUnderstand="1" 
-        SessionId="${session.id}" 
-        xmlns="urn:schemas-microsoft-com:xml-analysis" 
+    <EndSession
+        mustUnderstand="1"
+        SessionId="${session.id}"
+        xmlns="urn:schemas-microsoft-com:xml-analysis"
     />
   </Header>
   <Body>
@@ -3496,7 +3496,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
         </PropertyList>
       </Properties>
     </Execute>

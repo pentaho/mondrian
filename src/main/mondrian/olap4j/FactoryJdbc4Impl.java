@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -27,8 +27,6 @@ import mondrian.olap.Query;
  * @since Jun 14, 2007
  */
 class FactoryJdbc4Impl implements Factory {
-    private CatalogFinder catalogFinder;
-
     public Connection newConnection(
         MondrianOlap4jDriver driver,
         String url,
@@ -77,10 +75,6 @@ class FactoryJdbc4Impl implements Factory {
     {
         return new MondrianOlap4jDatabaseMetaDataJdbc4(
             olap4jConnection, mondrianConnection);
-    }
-
-    public void setCatalogFinder(CatalogFinder catalogFinder) {
-        this.catalogFinder = catalogFinder;
     }
 
     // Inner classes

@@ -14,7 +14,6 @@ import junit.framework.TestSuite;
 import mondrian.olap.Util;
 import org.olap4j.test.TestContext;
 
-import java.sql.*;
 import java.util.Properties;
 
 /**
@@ -37,16 +36,8 @@ public class Olap4jTckTest extends TestCase {
         suite.setName("olap4j TCK");
         suite.addTest(createMondrianSuite(connStr, false));
         suite.addTest(createMondrianSuite(connStr, true));
-        if (false) {
-            // Disabled due to errors:
-            // ConnectionTest.testInvalidStatement
-            // ConnectionTest.testMetadata
-            // MetadataTest.testDatabaseMetaDataGetCatalogs
-            // MetadataTest.testDatabaseMetaDataGetSchemas
-            // MetadataTest.testDatabaseMetaDataGetCubes
-            suite.addTest(createXmlaSuite(connStr, catalog, false));
-            suite.addTest(createXmlaSuite(connStr, catalog, true));
-        }
+        suite.addTest(createXmlaSuite(connStr, catalog, false));
+        suite.addTest(createXmlaSuite(connStr, catalog, true));
         return suite;
     }
 
@@ -77,81 +68,14 @@ public class Olap4jTckTest extends TestCase {
         properties.setProperty("org.olap4j.test.connectUrl", connStr);
         properties.setProperty(
             "org.olap4j.test.helperClassName",
-            MondrianTester.class.getName());
+            MondrianOlap4jTester.class.getName());
         properties.setProperty(
             "org.olap4j.test.wrapper",
             wrapper ? "NONE" : "DBCP");
-        String name = "mondrian olap4j driver";
-        if (wrapper) {
-            name += " (DBCP wrapper)";
-        }
+        final String name =
+            "mondrian olap4j driver"
+            + (wrapper ? " (DBCP wrapper)" : "");
         return TestContext.createTckSuite(properties, name);
-    }
-
-    public static class MondrianTester implements TestContext.Tester {
-        private final TestContext testContext;
-
-        /**
-         * Public constructor as required by
-         * {@link org.olap4j.test.TestContext.Tester} API.
-         *
-         * @param testContext Test context
-         */
-        public MondrianTester(TestContext testContext) {
-            this.testContext = testContext;
-        }
-
-        public TestContext getTestContext() {
-            return testContext;
-        }
-
-        public Connection createConnection() throws SQLException {
-            try {
-                Class.forName(DRIVER_CLASS_NAME);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("oops", e);
-            }
-            return
-                DriverManager.getConnection(
-                    getURL(),
-                    new Properties());
-        }
-
-        public Connection createConnectionWithUserPassword() throws SQLException
-        {
-            return DriverManager.getConnection(
-                getURL(), USER, PASSWORD);
-        }
-
-        public String getDriverUrlPrefix() {
-            return DRIVER_URL_PREFIX;
-        }
-
-        public String getDriverClassName() {
-            return DRIVER_CLASS_NAME;
-        }
-
-        public String getURL() {
-            // This property is usually defined in build.properties. See
-            // examples in that file.
-            return testContext.getProperties().getProperty(
-                TestContext.Property.CONNECT_URL.path);
-        }
-
-        public Flavor getFlavor() {
-            return Flavor.MONDRIAN;
-        }
-
-        public TestContext.Wrapper getWrapper() {
-            return TestContext.Wrapper.NONE;
-        }
-
-        public static final String DRIVER_CLASS_NAME =
-            "mondrian.olap4j.MondrianOlap4jDriver";
-
-        public static final String DRIVER_URL_PREFIX = "jdbc:mondrian:";
-        private static final String USER = "sa";
-        private static final String PASSWORD = "sa";
     }
 }
 

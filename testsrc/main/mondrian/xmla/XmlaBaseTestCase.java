@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 /**
@@ -55,7 +56,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String REQUEST_TYPE_PROP =
         "request.type";// data.source.info
     public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
-    public static final String DATA_SOURCE_INFO = "MondrianFoodMart";// catalog
+    public static final String DATA_SOURCE_INFO = "FoodMart";// catalog
     public static final String CATALOG_PROP     = "catalog";
     public static final String CATALOG_NAME_PROP = "catalog.name";
     public static final String CATALOG          = "FoodMart";// cube
@@ -65,6 +66,13 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
     public static final String ROLE_PROP = "Role";
     protected static final boolean DEBUG = false;
+
+    /**
+     * Cache servlet instances between test invocations. Prevents creation
+     * of many spurious MondrianServer instances.
+     */
+    private static final HashMap<List<String>,WeakReference<Servlet>>
+        SERVLET_CACHE = new HashMap<List<String>, WeakReference<Servlet>>();
 
     protected String generateExpectedString(Properties props)
         throws Exception
@@ -566,7 +574,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls);
+                xmlaReqDoc, connectString, catalogNameUrls, role);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -582,7 +590,9 @@ System.out.println("Got CONTINUE");
             soapReqDoc,
             connectString,
             catalogNameUrls,
-            callBackClassName);
+            callBackClassName,
+            role,
+            SERVLET_CACHE);
 
         if (DEBUG) {
             System.out.println(
@@ -622,7 +632,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls);
+                xmlaReqDoc, connectString, catalogNameUrls, role);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -638,7 +648,9 @@ System.out.println("Got CONTINUE");
             soapReqDoc,
             connectString,
             catalogNameUrls,
-            callBackClassName);
+            callBackClassName,
+            role,
+            SERVLET_CACHE);
         if (DEBUG) {
             System.out.println(
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));

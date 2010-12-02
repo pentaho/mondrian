@@ -1188,7 +1188,9 @@ META-INF/**"
           dir="${testclasses.dir}"
           includes="
 mondrian/test/loader/**/*.class,
-mondrian/olap4j/MondrianInprocProxy*.class"/>
+mondrian/olap4j/MondrianInprocProxy*.class,
+mondrian/test/AbstractMondrianOlap4jTester.class,
+mondrian/test/MondrianOlap4jTester.class"/>
       <zipfileset
           dir="${javatest.dir}"
           includes="

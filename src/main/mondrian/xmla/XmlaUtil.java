@@ -17,6 +17,7 @@ import mondrian.xmla.impl.DefaultXmlaResponse;
 import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.apache.log4j.Logger;
+import org.eigenbase.xom.*;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.w3c.dom.*;
@@ -29,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -42,7 +44,6 @@ import java.nio.charset.Charset;
  */
 public class XmlaUtil implements XmlaConstants {
 
-    private static final Logger LOGGER = Logger.getLogger(XmlaUtil.class);
     /**
      * Invalid characters for XML element name.
      *
@@ -176,52 +177,6 @@ public class XmlaUtil implements XmlaConstants {
         }
     }
 
-    /**
-     * Returns the first child element of an XML element, or null if there is
-     * no first child.
-     *
-     * @param parent XML element
-     * @param ns     Namespace
-     * @param lname  Local name of child
-     * @return First child, or null if there is no child element
-     */
-    public static Element firstChildElement(
-        Element parent,
-        String ns,
-        String lname)
-    {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaUtil.firstChildElement: "
-                + " ns=\"" + ns
-                + "\", lname=\"" + lname + "\"");
-        }
-        NodeList nlst = parent.getChildNodes();
-        for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
-            Node n = nlst.item(i);
-            if (n instanceof Element) {
-                Element e = (Element) n;
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "XmlaUtil.firstChildElement: "
-                        + " e.getNamespaceURI()=\""
-                        + e.getNamespaceURI()
-                        + "\", e.getLocalName()=\""
-                        + e.getLocalName()
-                        + "\"");
-                }
-
-                if ((ns == null || ns.equals(e.getNamespaceURI()))
-                    && (lname == null || lname.equals(e.getLocalName())))
-                {
-                    return e;
-                }
-            }
-        }
-        return null;
-    }
-
     public static Element[] filterChildElements(
         Element parent,
         String ns,
@@ -339,14 +294,12 @@ way too noisy
      * is exposed here for use by mondrian's olap4j driver.
      *
      * @param connection Connection
-     * @param catalogName Catalog name
      * @param methodName Metadata method name per XMLA (e.g. "MDSCHEMA_CUBES")
      * @param restrictionMap Restrictions
      * @return Set of rows and column headings
      */
     public static MetadataRowset getMetadataRowset(
         final OlapConnection connection,
-        String catalogName,
         String methodName,
         final Map<String, Object> restrictionMap)
         throws OlapException
@@ -354,72 +307,57 @@ way too noisy
         RowsetDefinition rowsetDefinition =
             RowsetDefinition.valueOf(methodName);
 
-        final Map<String, String> propertyMap = new HashMap<String, String>();
-        final String dataSourceName = "xxx";
-        propertyMap.put(
-            PropertyDefinition.DataSourceInfo.name(),
-            dataSourceName);
+        final XmlaHandler.ConnectionFactory connectionFactory =
+            new XmlaHandler.ConnectionFactory() {
+                public OlapConnection getConnection(
+                    String catalog, String schema, String roleName)
+                    throws SQLException
+                {
+                    return connection;
+                }
+            };
+        final XmlaRequest request = new XmlaRequest() {
+            public Method getMethod() {
+                return Method.DISCOVER;
+            }
 
-        DataSourcesConfig.DataSource dataSource =
-            new DataSourcesConfig.DataSource();
-        dataSource.name = dataSourceName;
-        DataSourcesConfig.DataSources dataSources =
-            new DataSourcesConfig.DataSources();
-        dataSources.dataSources =
-            new DataSourcesConfig.DataSource[] {dataSource};
-        DataSourcesConfig.Catalog catalog = new DataSourcesConfig.Catalog();
-        catalog.name = catalogName;
-        catalog.definition = "dummy"; // any not-null value will do
-        dataSource.catalogs =
-            new DataSourcesConfig.Catalogs();
-        dataSource.catalogs.catalogs =
-            new DataSourcesConfig.Catalog[] {catalog};
+            public Map<String, String> getProperties() {
+                return Collections.emptyMap();
+            }
 
-        Rowset rowset =
+            public Map<String, Object> getRestrictions() {
+                return restrictionMap;
+            }
+
+            public String getStatement() {
+                return null;
+            }
+
+            public String getRoleName() {
+                return null;
+            }
+
+            public String getRequestType() {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean isDrillThrough() {
+                throw new UnsupportedOperationException();
+            }
+
+            public Format getFormat() {
+                throw new UnsupportedOperationException();
+            }
+        };
+        final Rowset rowset =
             rowsetDefinition.getRowset(
-                new XmlaRequest() {
-                    public Method getMethod() {
-                        return Method.DISCOVER;
-                    }
-
-                    public Map<String, String> getProperties() {
-                        return propertyMap;
-                    }
-
-                    public Map<String, Object> getRestrictions() {
-                        return restrictionMap;
-                    }
-
-                    public String getStatement() {
-                        return null;
-                    }
-
-                    public String getRoleName() {
-                        return null;
-                    }
-
-                    public String getRequestType() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                    public boolean isDrillThrough() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                    public Format getFormat() {
-                        throw new UnsupportedOperationException();
-                    }
-                },
+                request,
                 new XmlaHandler(
-                    dataSources,
-                    null,
+                    connectionFactory,
                     "xmla")
                 {
-                    protected OlapConnection getConnection(
-                        final DataSourcesConfig.Catalog catalog,
-                        final String roleName)
-                        throws XmlaException
-                    {
+                    @Override
+                    public OlapConnection getConnection(XmlaRequest request) {
                         return connection;
                     }
                 }
@@ -532,6 +470,37 @@ way too noisy
         return Boolean.parseBoolean(value);
     }
 
+    public static DataSourcesConfig.DataSources parseDataSources(
+        String dataSourcesConfigString,
+        Logger logger)
+    {
+        try {
+            if (dataSourcesConfigString == null) {
+                logger.warn("XmlaServlet.parseDataSources: null input");
+                return null;
+            }
+            dataSourcesConfigString =
+                Util.replaceProperties(
+                    dataSourcesConfigString,
+                    Util.toMap(System.getProperties()));
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "XmlaServlet.parseDataSources: dataSources="
+                    + dataSourcesConfigString);
+            }
+            final org.eigenbase.xom.Parser parser =
+                XOMUtil.createDefaultParser();
+            final DOMWrapper doc = parser.parse(dataSourcesConfigString);
+            return new DataSourcesConfig.DataSources(doc);
+        } catch (XOMException e) {
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config: "
+                + dataSourcesConfigString);
+        }
+    }
+
     /**
      * Result of a metadata query.
      */
@@ -550,107 +519,6 @@ way too noisy
         public Wildcard(String pattern) {
             this.pattern = pattern;
         }
-    }
-
-    /**
-     * Generates descriptions of the columns returned by each metadata query,
-     * in javadoc format, suitable for pasting into
-     * <code>OlapDatabaseMetaData</code>.
-     */
-    public static void generateMetamodelJavadoc() throws IOException {
-        PrintWriter pw =
-            new PrintWriter(
-                new FileWriter("C:/open/mondrian/olap4j_javadoc.java"));
-        pw.println("    /**");
-        String prefix = "     * ";
-        for (RowsetDefinition o : RowsetDefinition.values()) {
-            pw.println(prefix);
-            pw.println(prefix + "<p>" + o.name() + "</p>");
-            pw.println(prefix + "<ol>");
-            for (RowsetDefinition.Column columnDefinition : o.columnDefinitions)
-            {
-                String columnName = columnDefinition.name;
-                if (LOWERCASE_PATTERN.matcher(columnName).matches()) {
-                    columnName = Util.camelToUpper(columnName);
-                }
-                if (columnName.equals("VALUE")) {
-                    columnName = "PROPERTY_VALUE";
-                }
-                String type;
-                switch (columnDefinition.type) {
-                case StringSometimesArray:
-                case EnumString:
-                case UUID:
-                    type = "String";
-                    break;
-                case DateTime:
-                    type = "Timestamp";
-                    break;
-                case Boolean:
-                    type = "boolean";
-                    break;
-                case UnsignedLong:
-                case Long:
-                    type = "long";
-                    break;
-                case UnsignedInteger:
-                case Integer:
-                    type = "int";
-                    break;
-                default:
-                    type = columnDefinition.type.name();
-                }
-                String s = prefix + "<li><b>" + columnName + "</b> "
-                    + type
-                    + (columnDefinition.nullable
-                    ? " (may be <code>null</code>)"
-                    : "")
-                    + " => " + columnDefinition.description
-                    + "</li>";
-                s = s.replaceAll("\n|\r|\r\n", "<br/>");
-                final String between =
-                    System.getProperty("line.separator") + prefix + "        ";
-                pw.println(breakLines(s, 79, between));
-            }
-            pw.println(prefix + "</ol>");
-        }
-        pw.close();
-    }
-
-    private static String breakLines(
-        String s, int lineLen, String between)
-    {
-        StringBuilder buf = new StringBuilder();
-        final int originalLineLen = lineLen;
-        while (s.length() > 0) {
-            if (s.length() > lineLen) {
-                int space = s.lastIndexOf(' ', lineLen);
-                if (space >= 0) {
-                    // best, break at last space before line limit
-                    buf.append(s.substring(0, space));
-                    buf.append(between);
-                    lineLen = originalLineLen - between.length();
-                    s = s.substring(space + 1);
-                } else {
-                    // next best, break at first space after line limit
-                    space = s.indexOf(' ', lineLen);
-                    if (space >= 0) {
-                        buf.append(s.substring(0, space));
-                        buf.append(between);
-                        lineLen = originalLineLen - between.length();
-                        s = s.substring(space + 1);
-                    } else {
-                        // worst, keep the whole line
-                        buf.append(s);
-                        s = "";
-                    }
-                }
-            } else {
-                buf.append(s);
-                s = "";
-            }
-        }
-        return buf.toString();
     }
 
     public static class ElementNameEncoder {

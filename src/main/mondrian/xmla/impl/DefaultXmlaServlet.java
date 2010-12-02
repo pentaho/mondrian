@@ -27,9 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import mondrian.xmla.*;
 import mondrian.olap.Util;
-import mondrian.olap.Role;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -45,8 +43,6 @@ import org.xml.sax.SAXException;
  */
 public class DefaultXmlaServlet extends XmlaServlet {
 
-    private static final Logger LOGGER =
-        Logger.getLogger(DefaultXmlaServlet.class);
     protected static final String nl = Util.nl;
 
     private DocumentBuilderFactory domFactory = null;
@@ -326,7 +322,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
         if (callbacks.size() > 0) {
             // get only the first callback if it exists
             XmlaRequestCallback callback = callbacks.get(0);
-            return (String) callback.generateSessionId(context);
+            return callback.generateSessionId(context);
         } else {
             // what to do here, should Mondrian generate a Session Id?
             // TODO: Maybe Mondrian ought to generate all Session Ids and
@@ -564,7 +560,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
                         int writeSize = 0;
                         while ((writeSize += wch.write(buffer)) < readSize) {
-                            ;
                         }
                     } while (readSize == bufferSize);
                     rch.close();

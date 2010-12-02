@@ -9,6 +9,7 @@
 */
 package mondrian.xmla.test;
 
+import mondrian.server.StringRepositoryContentFinder;
 import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaRequest;
@@ -133,11 +134,14 @@ public class XmlaTest extends TestCase {
 
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-
+        MondrianServer server =
+            MondrianServer.createWithRepository(
+                new StringRepositoryContentFinder(
+                    context.getDataSourcesString()),
+                XmlaTestContext.CATALOG_LOCATOR);
         XmlaHandler handler =
             new XmlaHandler(
-                context.dataSources(),
-                XmlaTestContext.CATALOG_LOCATOR,
+                (XmlaHandler.ConnectionFactory) server,
                 "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
         XmlaResponse response =

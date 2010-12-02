@@ -10,16 +10,22 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.*;
-import mondrian.spi.CatalogLocator;
 import mondrian.util.CompositeList;
-import mondrian.util.Pair;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
 import org.olap4j.*;
+import org.olap4j.Cell;
+import org.olap4j.Position;
 import org.olap4j.metadata.*;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.Property;
 import org.olap4j.metadata.Property.StandardCellProperty;
 import org.olap4j.metadata.Property.StandardMemberProperty;
+import org.olap4j.metadata.Schema;
 import org.xml.sax.SAXException;
 
 import org.apache.log4j.Logger;
@@ -28,8 +34,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -47,8 +51,7 @@ import static org.olap4j.metadata.XmlaConstants.*;
 public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
-    private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
-    private final CatalogLocator catalogLocator;
+    final ConnectionFactory connectionFactory;
     private final String prefix;
 
     public static XmlaExtra getExtra(OlapConnection connection) {
@@ -65,19 +68,14 @@ public class XmlaHandler {
     }
 
     public OlapConnection getConnection(XmlaRequest request) {
-        DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+        final Map<String, String> properties = request.getProperties();
+        final String dataSourceInfo =
+            properties.get(PropertyDefinition.DataSourceInfo.name());
+        final String catalog =
+            properties.get(PropertyDefinition.Catalog.name());
         String roleName = request.getRoleName();
 
-        for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-            if (dsCatalog == null || dsCatalog.definition == null) {
-                continue;
-            }
-            OlapConnection connection =
-                getConnection(dsCatalog, roleName);
-            return connection;
-        }
-        throw new RuntimeException(); // TODO: XMLA error
+        return getConnection(dataSourceInfo, catalog, roleName);
     }
 
     private enum SetType {
@@ -531,41 +529,15 @@ public class XmlaHandler {
     /**
      * Creates an <code>XmlaHandler</code>.
      *
-     * @param dataSources Data sources
-     * @param catalogLocator Catalog locator
+     * @param connectionFactory Connection factory
      * @param prefix XML Namespace. Typical value is "xmla", but a value of
      *   "cxmla" works around an Internet Explorer 7 bug
      */
-    public XmlaHandler(
-        DataSourcesConfig.DataSources dataSources,
-        CatalogLocator catalogLocator,
-        String prefix)
+    public XmlaHandler(ConnectionFactory connectionFactory, String prefix)
     {
-        this.catalogLocator = catalogLocator;
         assert prefix != null;
+        this.connectionFactory = connectionFactory;
         this.prefix = prefix;
-        Map<String, DataSourcesConfig.DataSource> map =
-            new HashMap<String, DataSourcesConfig.DataSource>();
-        if (dataSources != null) {
-            for (DataSourcesConfig.DataSource ds : dataSources.dataSources) {
-                if (map.containsKey(ds.getDataSourceName())) {
-                    // This is not an XmlaException
-                    throw Util.newError(
-                        "duplicated data source name '"
-                        + ds.getDataSourceName() + "'");
-                }
-                // Set parent pointers.
-                for (DataSourcesConfig.Catalog catalog : ds.catalogs.catalogs) {
-                    catalog.setDataSource(ds);
-                }
-                map.put(ds.getDataSourceName(), ds);
-            }
-        }
-        dataSourcesMap = Collections.unmodifiableMap(map);
-    }
-
-    public Map<String, DataSourcesConfig.DataSource> getDataSourceEntries() {
-        return dataSourcesMap;
     }
 
     /**
@@ -1294,7 +1266,7 @@ public class XmlaHandler {
         OlapStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = getOlapConnection(request);
+            connection = getConnection(request);
             statement = connection.createStatement();
             resultSet =
                 getExtra(connection).executeDrillthrough(
@@ -1343,14 +1315,6 @@ public class XmlaHandler {
                 }
             }
         }
-    }
-
-    private OlapConnection getOlapConnection(XmlaRequest request) {
-        DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
-        String roleName = request.getRoleName();
-
-        return getConnection(dsCatalog, roleName);
     }
 
     static class Column {
@@ -1612,14 +1576,14 @@ public class XmlaHandler {
         checkFormat(request);
 
         OlapConnection connection = null;
-        OlapStatement statement = null;
+        PreparedOlapStatement statement = null;
         CellSet cellSet = null;
         boolean success = false;
         try {
-            connection = getOlapConnection(request);
+            connection = getConnection(request);
             getExtra(connection).setPreferList(connection);
             try {
-                statement = connection.createStatement();
+                statement = connection.prepareOlapStatement(mdx);
             } catch (XmlaException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -1630,7 +1594,7 @@ public class XmlaHandler {
                     ex);
             }
             try {
-                cellSet = statement.executeOlapQuery(mdx);
+                cellSet = statement.executeQuery();
 
                 final Format format = getFormat(request, null);
                 final Content content = getContent(request);
@@ -1795,6 +1759,10 @@ public class XmlaHandler {
                 public String getDescription() {
                     return property.getDescription();
                 }
+
+                public boolean isVisible() {
+                    return property.isVisible();
+                }
             };
         }
     }
@@ -1816,10 +1784,7 @@ public class XmlaHandler {
             super(cellSet);
             this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
             this.json = json;
-            this.extra =
-                getExtra(
-                    (OlapConnection)
-                        cellSet.getStatement().getConnection());
+            this.extra = getExtra(cellSet.getStatement().getConnection());
         }
 
         public void unparse(SaxWriter writer)
@@ -2816,64 +2781,26 @@ public class XmlaHandler {
      * for the generated lock box entry. The server will retrieve the role from
      * the moniker.
      *
-     * @param catalog Catalog
-     * @param roleName User role name
+     * @param catalog Catalog name
+     * @param schema Schema name
+     * @param role User role name
      * @return Connection
      * @throws XmlaException If error occurs
      */
     protected OlapConnection getConnection(
-        final DataSourcesConfig.Catalog catalog,
-        final String roleName)
+        String catalog,
+        String schema,
+        final String role)
         throws XmlaException
     {
-        DataSourcesConfig.DataSource ds = catalog.getDataSource();
-
-        Util.PropertyList connectProperties =
-            Util.parseConnectString(catalog.getDataSourceInfo());
-
-        String catalogUrl = catalogLocator.locate(catalog.definition);
-
-        if (LOGGER.isDebugEnabled()) {
-            if (catalogUrl == null) {
-                LOGGER.debug("XmlaHandler.getConnection: catalogUrl is null");
-            } else {
-                LOGGER.debug(
-                    "XmlaHandler.getConnection: catalogUrl=" + catalogUrl);
-            }
-        }
-
-        connectProperties.put(
-            RolapConnectionProperties.Catalog.name(), catalogUrl);
-
-        // Checking access
-        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
-            .equalsIgnoreCase(
-                ds.getAuthenticationMode())
-            && (roleName == null))
-        {
+        try {
+            return connectionFactory.getConnection(catalog, schema, role);
+        } catch (SecurityException e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_ACCESS_DENIED_CODE,
                 HSB_ACCESS_DENIED_FAULT_FS,
-                new SecurityException(
-                    "Access denied for data source needing authentication"));
-        }
-
-        // Role in request overrides role in connect string, if present.
-        if (roleName != null) {
-            connectProperties.put(
-                RolapConnectionProperties.Role.name(), roleName);
-        }
-
-        final Properties properties = new Properties();
-        for (Pair<String, String> p : connectProperties) {
-            properties.setProperty(p.getKey(), p.getValue());
-        }
-        try {
-            final Connection connection =
-                DriverManager.getConnection(
-                    "jdbc:mondrian:", properties);
-            return ((OlapWrapper) connection).unwrap(OlapConnection.class);
+                e);
         } catch (SQLException e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2881,50 +2808,6 @@ public class XmlaHandler {
                 HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
                 e);
         }
-    }
-
-    /**
-     * Returns the DataSource associated with the request property or null if
-     * one was not specified.
-     *
-     * @param request Request
-     * @return DataSource for this request
-     * @throws XmlaException If error occurs
-     */
-    public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
-        throws XmlaException
-    {
-        Map<String, String> properties = request.getProperties();
-        final String dataSourceInfo =
-            properties.get(PropertyDefinition.DataSourceInfo.name());
-        if (!dataSourcesMap.containsKey(dataSourceInfo)) {
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_CONNECTION_DATA_SOURCE_CODE,
-                HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError(
-                    "no data source is configured with name '"
-                    + dataSourceInfo + "'"));
-        }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaHandler.getDataSource: dataSourceInfo="
-                + dataSourceInfo);
-        }
-
-        final DataSourcesConfig.DataSource ds =
-            dataSourcesMap.get(dataSourceInfo);
-        if (LOGGER.isDebugEnabled()) {
-            if (ds == null) {
-                // TODO: this if a failure situation
-                LOGGER.debug("XmlaHandler.getDataSource: ds is null");
-            } else {
-                LOGGER.debug(
-                    "XmlaHandler.getDataSource: ds.dataSourceInfo="
-                    + ds.getDataSourceInfo());
-            }
-        }
-        return ds;
     }
 
     /**
@@ -2961,23 +2844,18 @@ public class XmlaHandler {
      * catalog name that is part of the request properties or
      * null if there is no catalog with that name.
      *
-     * @param request Request
      * @param ds DataSource
      * @param required Whether to throw an error if catalog name is not
      * specified
      *
+     * @param catalogName
      * @return DataSourcesConfig Catalog or null
      * @throws XmlaException If error occurs
      */
     public DataSourcesConfig.Catalog getCatalog(
-        XmlaRequest request,
-        DataSourcesConfig.DataSource ds,
-        boolean required)
+        DataSourcesConfig.DataSource ds, boolean required, String catalogName)
         throws XmlaException
     {
-        Map<String, String> properties = request.getProperties();
-        final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name());
         DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
         if (dsCatalog == null) {
             if (catalogName == null) {
@@ -3089,6 +2967,19 @@ public class XmlaHandler {
         List<Property> getLevelProperties(Level level);
 
         boolean isPropertyInternal(Property property);
+
+        /**
+         * Returns a list of the data sources in this server. One element
+         * per data source, each element a map whose keys are the XMLA fields
+         * describing a data source: "DataSourceName", "DataSourceDescription",
+         * "URL", etc. Unrecognized fields are ignored.
+         *
+         * @param connection Connection
+         * @return List of data source definitions
+         * @throws OlapException
+         */
+        List<Map<String, Object>> getDataSources(OlapConnection connection)
+            throws OlapException;
 
         class FunctionDefinition {
             public final String functionName;
@@ -3208,6 +3099,20 @@ public class XmlaHandler {
                 || property instanceof Property.StandardCellProperty
                 && ((Property.StandardCellProperty) property).isInternal();
         }
+
+        public List<Map<String, Object>> getDataSources(
+            OlapConnection connection)
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    public interface ConnectionFactory {
+        OlapConnection getConnection(
+            String catalog,
+            String schema,
+            String roleName)
+            throws SQLException;
     }
 
     public static void main(String[] args) {

@@ -55,10 +55,10 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <DataSourceName>MondrianFoodMart</DataSourceName>
+                        <DataSourceName>FoodMart</DataSourceName>
                         <DataSourceDescription>Mondrian FoodMart data source</DataSourceDescription>
                         <URL>http://localhost:8080/mondrian/xmla</URL>
-                        <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                        <DataSourceInfo>FoodMart</DataSourceInfo>
                         <ProviderName>Mondrian</ProviderName>
                         <ProviderType>MDP</ProviderType>
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
@@ -86,7 +86,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -141,7 +141,7 @@
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
-                        <Description>Returns information about literals supported by the provider.</Description>
+                        <Description>Identifies the physical attributes associated with catalogs accessible from the provider.</Description>
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_COLUMNS</SchemaName>
@@ -613,7 +613,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -686,7 +686,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -764,7 +764,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -839,7 +839,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
         </PropertyList>
       </Properties>
     </Execute>
@@ -883,7 +883,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
         </PropertyList>
       </Properties>
@@ -931,7 +931,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1014,7 +1014,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1109,7 +1109,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1196,7 +1196,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1274,7 +1274,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1454,7 +1454,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1537,7 +1537,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1841,7 +1841,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -1936,7 +1936,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2018,7 +2018,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2150,7 +2150,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2246,7 +2246,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
@@ -2409,7 +2409,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
         </PropertyList>
       </Properties>
@@ -2454,7 +2454,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Multidimensional</Format>
           <AxisFormat>TupleFormat</AxisFormat>
@@ -2933,10 +2933,10 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <DataSourceName>MondrianFoodMart</DataSourceName>
+                        <DataSourceName>FoodMart</DataSourceName>
                         <DataSourceDescription>Mondrian FoodMart data source</DataSourceDescription>
                         <URL>http://localhost:8080/mondrian/xmla</URL>
-                        <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                        <DataSourceInfo>FoodMart</DataSourceInfo>
                         <ProviderName>Mondrian</ProviderName>
                         <ProviderType>MDP</ProviderType>
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
@@ -2964,7 +2964,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3019,7 +3019,7 @@
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
-                        <Description>Returns information about literals supported by the provider.</Description>
+                        <Description>Identifies the physical attributes associated with catalogs accessible from the provider.</Description>
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_COLUMNS</SchemaName>
@@ -3491,7 +3491,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3564,7 +3564,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3642,7 +3642,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Content>SchemaData</Content>
           <Format>Tabular</Format>
         </PropertyList>
@@ -3717,7 +3717,7 @@
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
         </PropertyList>
       </Properties>
     </Execute>

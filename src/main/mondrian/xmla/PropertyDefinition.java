@@ -158,7 +158,7 @@ public enum PropertyDefinition {
         RowsetDefinition.Type.String,
         null,
         XmlaConstants.Access.Read,
-        MondrianServer.forConnection(null).getVersion().getVersionString(),
+        MondrianServer.forId(null).getVersion().getVersionString(),
         XmlaConstants.Method.DISCOVER,
         "The version of the Mondrian XMLA Provider"),
 

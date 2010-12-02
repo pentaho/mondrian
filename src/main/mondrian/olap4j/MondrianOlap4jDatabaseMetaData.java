@@ -10,12 +10,13 @@
 package mondrian.olap4j;
 
 import mondrian.olap.MondrianServer;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapSchema;
 import mondrian.xmla.XmlaUtil;
 
 import org.olap4j.*;
-import org.olap4j.impl.NamedListImpl;
-import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
 
 import java.sql.ResultSet;
@@ -36,9 +37,21 @@ import java.util.*;
 abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     final MondrianOlap4jConnection olap4jConnection;
     final MondrianServer mondrianServer;
+    private final NamedList<MondrianOlap4jCatalog> olap4jCatalogList;
 
-    // A mondrian instance contains only one catalog (and one schema).
-    private final MondrianOlap4jCatalog olap4jCatalog;
+    private static final Comparator<Catalog> CATALOG_COMP =
+        new Comparator<Catalog>() {
+            public int compare(Catalog o1, Catalog o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        };
+
+    private static final Comparator<Schema> SCHEMA_COMP =
+        new Comparator<Schema>() {
+            public int compare(Schema o1, Schema o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        };
 
     /**
      * Creates a MondrianOlap4jDatabaseMetaData.
@@ -51,12 +64,26 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         RolapConnection mondrianConnection)
     {
         this.olap4jConnection = olap4jConnection;
-        this.olap4jCatalog =
-            new MondrianOlap4jCatalog(
-                this,
-                mondrianConnection.getSchema().getName());
         this.mondrianServer =
             MondrianServer.forConnection(mondrianConnection);
+        final CatalogFinder catalogFinder =
+            (CatalogFinder) mondrianServer;
+        final NamedList<MondrianOlap4jCatalog> olap4jCatalogList =
+            new NamedListImpl<MondrianOlap4jCatalog>();
+        for (String catalogName
+            : catalogFinder.getCatalogNames(mondrianConnection))
+        {
+            final Map<String, RolapSchema> schemaMap =
+                catalogFinder.getCatalogSchemas(
+                    mondrianConnection, catalogName);
+            olap4jCatalogList.add(
+                new MondrianOlap4jCatalog(
+                    this,
+                    catalogName,
+                    schemaMap));
+        }
+        this.olap4jCatalogList =
+            MondrianOlap4jConnection.unmodifiableNamedList(olap4jCatalogList);
     }
 
     // helpers
@@ -64,6 +91,10 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     /**
      * Executes a metadata query and returns the result as a JDBC
      * {@link ResultSet}.
+     *
+     * <p>The XMLA specification usually specifies that the returned list is
+     * ordered by particular attributes. XMLA notwithstanding, the result from
+     * this method is always ordered.
      *
      * @param methodName Name of the metadata request. Corresponds to the XMLA
      * method name, e.g. "MDSCHEMA_CUBES"
@@ -96,7 +127,6 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         XmlaUtil.MetadataRowset rowset =
             XmlaUtil.getMetadataRowset(
                 olap4jConnection,
-                olap4jConnection.olap4jSchema.olap4jCatalog.name,
                 methodName,
                 restrictionMap);
         return olap4jConnection.factory.newFixedResultSet(
@@ -119,16 +149,15 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     /**
      * Returns the catalogs in this database.
      *
+     * <p>In natural order; not necessarily sorted.
+     *
      * <p>Intentionally package-protected; not part of the JDBC or olap4j API.
      *
      * @return List of catalogs in this database
      */
     // package-protected
     NamedList<Catalog> getCatalogObjects() {
-        NamedList<MondrianOlap4jCatalog> list =
-            new NamedListImpl<MondrianOlap4jCatalog>();
-        list.add(olap4jCatalog);
-        return Olap4jUtil.cast(list);
+        return Olap4jUtil.cast(olap4jCatalogList);
     }
 
     // implement DatabaseMetaData
@@ -654,11 +683,13 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         List<String> headerList =
             Arrays.asList("TABLE_SCHEM", "TABLE_CAT");
         List<List<Object>> rowList = new ArrayList<List<Object>>();
-        for (Schema schema : olap4jCatalog.getSchemas()) {
-            rowList.add(
-                Arrays.asList(
-                    (Object) schema.getName(),
-                    schema.getCatalog().getName()));
+        for (Catalog catalog : Util.sort(getCatalogObjects(), CATALOG_COMP)) {
+            for (Schema schema : Util.sort(catalog.getSchemas(), SCHEMA_COMP)) {
+                rowList.add(
+                    Arrays.<Object>asList(
+                        schema.getName(),
+                        catalog.getName()));
+            }
         }
         return olap4jConnection.factory.newFixedResultSet(
             olap4jConnection, headerList, rowList);
@@ -673,9 +704,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
 
         List<String> headerList =
             Arrays.asList("TABLE_CAT");
-        List<List<Object>> rowList =
-            Collections.singletonList(
-                Arrays.asList((Object) olap4jCatalog.getName()));
+        List<List<Object>> rowList = new ArrayList<List<Object>>();
+        for (Catalog catalog : Util.sort(getCatalogObjects(), CATALOG_COMP)) {
+            rowList.add(
+                Collections.<Object>singletonList(catalog.getName()));
+        }
         return olap4jConnection.factory.newFixedResultSet(
             olap4jConnection, headerList, rowList);
     }
@@ -888,7 +921,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public int getDatabaseMinorVersion() throws SQLException {
-        return mondrianServer.getVersion().getMajorVersion();
+        return mondrianServer.getVersion().getMinorVersion();
     }
 
     public int getJDBCMajorVersion() throws SQLException {

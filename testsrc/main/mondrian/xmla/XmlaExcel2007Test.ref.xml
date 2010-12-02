@@ -32,7 +32,7 @@ where [Measures].[Unit Sales]
   <Properties>
     <PropertyList>
       <Catalog>FoodMart</Catalog>
-      <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+      <DataSourceInfo>FoodMart</DataSourceInfo>
       <Format>Multidimensional</Format>
       <AxisFormat>TupleFormat</AxisFormat>
       <Content>Data</Content>
@@ -191,7 +191,7 @@ where [Measures].[Unit Sales]
                 <PropertyList>
                     <Format>Multidimensional</Format>
                     <AxisFormat>TupleFormat</AxisFormat>
-                    <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                    <DataSourceInfo>FoodMart</DataSourceInfo>
                     <LocaleIdentifier>2057</LocaleIdentifier>
                     <Catalog>FoodMart</Catalog>
                     <VisualMode>1</VisualMode>
@@ -638,7 +638,7 @@ where [Measures].[Unit Sales]
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <DataSourceInfo>FoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Tabular</Format>
         </PropertyList>
@@ -1810,7 +1810,7 @@ where [Measures].[Unit Sales]
                 <PropertyList>
                     <Format>Multidimensional</Format>
                     <AxisFormat>TupleFormat</AxisFormat>
-                    <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+                    <DataSourceInfo>FoodMart</DataSourceInfo>
                     <LocaleIdentifier>2057</LocaleIdentifier>
                     <Catalog>FoodMart</Catalog>
                     <VisualMode>1</VisualMode>
@@ -2068,7 +2068,7 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
   <Properties>
     <PropertyList>
       <Catalog>FoodMart</Catalog>
-      <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+      <DataSourceInfo>FoodMart</DataSourceInfo>
       <Format>Multidimensional</Format>
       <AxisFormat>TupleFormat</AxisFormat>
       <Content>Data</Content>
