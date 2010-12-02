@@ -207,6 +207,11 @@ class MondrianOlap4jMember implements Member, Named {
     public String getDescription() {
         return member.getDescription();
     }
+
+    public boolean isVisible() {
+        return (Boolean) member.getPropertyValue(
+            mondrian.olap.Property.VISIBLE.getName());
+    }
 }
 
 // End MondrianOlap4jMember.java

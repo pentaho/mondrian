@@ -70,6 +70,10 @@ class MondrianOlap4jProperty implements Property, Named {
         return property.getDescription();
     }
 
+    public boolean isVisible() {
+        return !property.isInternal();
+    }
+
     public ContentType getContentType() {
         return ContentType.REGULAR;
     }
