@@ -96,6 +96,10 @@ export ENABLE_GSETS="\
     mondrian.rolap.groupingsets.enable=true"
 export ENABLE_CMCACHE="\
     mondrian.rolap.EnableRolapCubeMemberCache=true"
+export ENABLE_SSAS="\
+    mondrian.olap.SsasCompatibleNaming=true"
+export DISBLE_SSAS="\
+    mondrian.olap.SsasCompatibleNaming=false"
 
 doTest() {
   if [ -f test.properties ]; then
@@ -152,7 +156,8 @@ doTest2() {
     return
   fi
 
-  JAVA_HOME=$(chooseJavaHome $jdk)
+  export JAVA_HOME=$(chooseJavaHome $jdk)
+  export PATH="$JAVA_HOME/bin:$PATH"
 
   # Use a version of ant (and in particular junit) compatible with the JDK.
   # Some versions of ant don't work on JDK1.4.
@@ -733,7 +738,6 @@ doRandom() {
 
 doQuick() {
   doTest jdk1.6 oracle
-# doTest --olap4j jdk1.6 oracle
   if false; then
   for db in mysql derby oracle; do
     for tf in true false; do
@@ -745,14 +749,20 @@ doQuick() {
 
 # Runs the tests that are believed to be working.
 doWorking() {
-  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
-  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${ENABLE_AGGS}
-  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS}
-  doTest jdk1.6 mysql ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_CMCACHE}
-  doTest jdk1.6 derby ${ENABLE_NATIVE} ${ENABLE_AGGS}
-  doTest jdk1.6 derby ${ENABLE_NATIVE} ${DISABLE_AGGS}
-  doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
-  doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS}
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_SSAS}
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${ENABLE_SSAS}
+  doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${DISABLE_SSAS}
+  doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
+  doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS} ${ENABLE_CMCACHE}
+  doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_SSAS}
+  doTest jdk1.6 derby  ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${DISABLE_SSAS}
+  doTest jdk1.6 derby  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
+  doTest jdk1.5 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
+  doTest jdk1.4 oracle ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
+  # not necessarily working
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${ENABLE_AGGS}
+  doTest jdk1.6 oracle ${ENABLE_NATIVE} ${ENABLE_AGGS} ${ENABLE_GSETS}
 }
 
 doAllTests() {
@@ -821,6 +831,7 @@ doTests() {
 
 checkJavadoc() {
   export JAVA_HOME=$(chooseJavaHome jdk1.6)
+  export PATH="$JAVA_HOME/bin:$PATH"
   export ANT_HOME=$(chooseAntHome jdk1.6)
 
   $ANT_HOME/bin/ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
