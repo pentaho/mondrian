@@ -14974,15 +14974,7 @@ FROM Sales
                                     <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Measures">
-                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
-                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -15007,15 +14999,7 @@ FROM Sales
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                    </Member>
-                                </Tuple>
+                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -15244,23 +15228,15 @@ FROM Sales
                         <AxesInfo>
                             <AxisInfo name="Axis0">
                                 <HierarchyInfo name="Customers">
+                                    <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                     <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
                                     <Caption name="[Customers].[MEMBER_CAPTION]"/>
                                     <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Customers].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                    <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Measures">
-                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
-                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -15273,27 +15249,19 @@ FROM Sales
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
+                                        <MEMBER_KEY>4422</MEMBER_KEY>
                                         <UName>[Customers].[USA].[CA].[Altadena].[Alice Cantrell]</UName>
                                         <Caption>Alice Cantrell</Caption>
                                         <LName>[Customers].[Name]</LName>
                                         <LNum>4</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <MEMBER_KEY>4422</MEMBER_KEY>
                                     </Member>
                                 </Tuple>
                             </Tuples>
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                    </Member>
-                                </Tuple>
+                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -17642,15 +17610,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Measures">
-                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
-                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -17714,15 +17674,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                    </Member>
-                                </Tuple>
+                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -18776,15 +18728,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Measures">
-                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
-                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -18895,15 +18839,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                    </Member>
-                                </Tuple>
+                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -19133,15 +19069,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis">
-                                <HierarchyInfo name="Measures">
-                                    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Measures].[MEMBER_CAPTION]"/>
-                                    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Measures].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
-                                </HierarchyInfo>
-                            </AxisInfo>
+                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -19300,15 +19228,7 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                    </Member>
-                                </Tuple>
+                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>

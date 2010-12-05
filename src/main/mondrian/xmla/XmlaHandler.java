@@ -1771,7 +1771,6 @@ public class XmlaHandler {
         private List<Hierarchy> slicerAxisHierarchies;
         private final boolean omitDefaultSlicerInfo;
         private final boolean json;
-        private final Hierarchy measuresHierarchy;
         private XmlaUtil.ElementNameEncoder encoder =
             XmlaUtil.ElementNameEncoder.INSTANCE;
         private XmlaExtra extra;
@@ -1785,8 +1784,6 @@ public class XmlaHandler {
             super(cellSet);
             this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
             this.json = json;
-            this.measuresHierarchy =
-                cellSet.getMetaData().getCube().getHierarchies().get(0);
             this.extra = getExtra(cellSet.getStatement().getConnection());
         }
 
@@ -1912,12 +1909,6 @@ public class XmlaHandler {
                 hierarchies = new ArrayList<Hierarchy>();
                 for (Member member : position.getMembers()) {
                     hierarchies.add(member.getHierarchy());
-                }
-                if (hierarchies.isEmpty()
-                    && axis.getAxisOrdinal().isFilter())
-                {
-                    // Excel 2007 abhors empty slicer.
-                    hierarchies.add(measuresHierarchy);
                 }
             } else {
                 hierarchies = axis.getAxisMetaData().getHierarchies();
@@ -2109,14 +2100,7 @@ public class XmlaHandler {
             while (position != null) {
                 writer.startSequence("Tuple", "Member");
                 int k = 0;
-                List<Member> memberList = position.getMembers();
-                if (axis.getAxisOrdinal().isFilter()
-                    && memberList.size() == 0)
-                {
-                    memberList = Collections.singletonList(
-                        measuresHierarchy.getDefaultMember());
-                }
-                for (Member member : memberList) {
+                for (Member member : position.getMembers()) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }
@@ -2326,17 +2310,12 @@ public class XmlaHandler {
                     } else {
                         valueString = vi.value.toString();
                     }
-                    if (vi.value instanceof String) {
-                    	writer.startElement(cellProps.get(i).getName());
-                        writer.characters(valueString);
-                        writer.endElement();
-                    } else {
-                        writer.startElement(
-                            cellProps.get(i).getName(),
-                            "xsi:type", valueType);
-                        writer.characters(valueString);
-                        writer.endElement();
-                    }
+
+                    writer.startElement(
+                        cellProps.get(i).getName(),
+                        "xsi:type", valueType);
+                    writer.characters(valueString);
+                    writer.endElement();
                 } else {
                     writer.textElement(cellProps.get(i).getName(), value);
                 }
