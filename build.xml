@@ -612,7 +612,8 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString">
+      depends="compile,compile.tests,unzip-databases,set.connectString"
+      unless="tests.skip">
     <antcall target="test-nobuild"/>
   </target>
 
@@ -620,7 +621,11 @@ META-INF/**"/>
     <antcall target="subfloor.cobertura"/>
   </target>
 
-  <condition property="tests.skip" value="true">
+  <target name="cobertura.test-instrumented" unless="tests.skip">
+    <antcall target="subfloor.cobertura.test-instrumented"/>
+  </target>
+
+	<condition property="tests.skip" value="true">
     <isset property="mondrian.tests.skip"/>
   </condition>
 
