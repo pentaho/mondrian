@@ -612,9 +612,14 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString">
+      depends="compile,compile.tests,unzip-databases,set.connectString"
+      unless="tests.skip">
     <antcall target="test-nobuild"/>
   </target>
+
+  <condition property="tests.skip" value="true">
+    <isset property="mondrian.tests.skip"/>
+  </condition>
 
   <target name="test-list">
     <property name="test.args" value="-l"/>
