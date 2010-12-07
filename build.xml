@@ -612,8 +612,7 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString"
-      unless="tests.skip">
+      depends="compile,compile.tests,unzip-databases,set.connectString">
     <antcall target="test-nobuild"/>
   </target>
 
@@ -635,7 +634,8 @@ META-INF/**"/>
       depends="set.connectString"
       description="
 Runs all JUnit tests, using the given database connection
-in {mondrian.foodmart.jdbcURL}.">
+in {mondrian.foodmart.jdbcURL}."
+    unless="tests.skip">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <echo>Connect String: ${mondrian.test.connectString}</echo>
     <delete quiet="true">
@@ -669,7 +669,7 @@ in {mondrian.foodmart.jdbcURL}.">
     </java>
   </target>
 
-  <target name="junit-main" depends="compile,compile.tests,set.connectString">
+  <target name="junit-main" depends="compile,compile.tests,set.connectString" unless="tests.skip">
     <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure">
         <classpath>
@@ -724,7 +724,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
   </target>
 
-  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString">
+  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString" unless="tests.skip">
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
         <classpath>
             <path refid="project.test.classpath"/>
@@ -756,7 +756,7 @@ in {mondrian.foodmart.jdbcURL}.">
     </fail>
   </target>
 
-  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString">
+  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString" unless="tests.skip">
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
         <classpath>
             <path refid="project.test.classpath"/>
