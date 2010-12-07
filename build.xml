@@ -616,6 +616,10 @@ META-INF/**"/>
     <antcall target="test-nobuild"/>
   </target>
 
+  <target name="cobertura" unless="tests.skip">
+    <antcall target="subfloor.cobertura"/>
+  </target>
+
   <condition property="tests.skip" value="true">
     <isset property="mondrian.tests.skip"/>
   </condition>
