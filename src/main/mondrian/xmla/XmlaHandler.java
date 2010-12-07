@@ -2793,8 +2793,39 @@ public class XmlaHandler {
         final String role)
         throws XmlaException
     {
+        return this.getConnection(
+            catalog, schema, role,
+            new Properties());
+    }
+
+    /**
+     * Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and the name of a user role.
+     *
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link mondrian.olap.MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalog Catalog name
+     * @param schema Schema name
+     * @param role User role name
+     * @param props Properties to pass down to the native driver.
+     * @return Connection
+     * @throws XmlaException If error occurs
+     */
+    protected OlapConnection getConnection(
+        String catalog,
+        String schema,
+        final String role,
+        Properties props)
+        throws XmlaException
+    {
         try {
-            return connectionFactory.getConnection(catalog, schema, role);
+            return
+                connectionFactory.getConnection(
+                    catalog, schema, role, props);
         } catch (SecurityException e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -3113,6 +3144,25 @@ public class XmlaHandler {
             String schema,
             String roleName)
             throws SQLException;
+        /**
+         * Extended version of
+         * {@link ConnectionFactory#getConnection(String, String, String)}
+         * which takes a properties list as a supplemental argument.
+         * The properties must be passed to the underlying driver.
+         * @param catalog The name of the catalog to use.
+         * @param schema The name of the schema to use.
+         * @param roleName The name of the role to use, or NULL.
+         * @param props Properties to be passed to the underlying
+         * native driver.
+         * @return An OlapConnection object.
+         * @throws SQLException If the you know what hits the fan.
+         */
+        OlapConnection getConnection(
+                String catalog,
+                String schema,
+                String roleName,
+                Properties props)
+                throws SQLException;
     }
 
     public static void main(String[] args) {

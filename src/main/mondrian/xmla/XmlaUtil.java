@@ -309,8 +309,15 @@ way too noisy
 
         final XmlaHandler.ConnectionFactory connectionFactory =
             new XmlaHandler.ConnectionFactory() {
-                public OlapConnection getConnection(
+            public OlapConnection getConnection(
                     String catalog, String schema, String roleName)
+                    throws SQLException
+                {
+                    return connection;
+                }
+                public OlapConnection getConnection(
+                    String catalog, String schema, String roleName,
+                    Properties props)
                     throws SQLException
                 {
                     return connection;

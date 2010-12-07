@@ -18,6 +18,7 @@ import org.olap4j.OlapConnection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Interface by which to control an instance of Mondrian.
@@ -122,6 +123,34 @@ public abstract class MondrianServer {
         String catalogName,
         String schemaName,
         String roleName)
+        throws SQLException, SecurityException;
+
+    /**
+     * Extended version of
+     * {@link MondrianServer#getConnection(String, String, String)}
+     * taking a list of properties to pass down to the native connection.
+     *
+     * <p>Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and the name of a user role.
+     *
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalogName Catalog name
+     * @param schemaName Schema name
+     * @param roleName User role name
+     * @param props Properties to pass down to the native driver.
+     * @return Connection
+     * @throws SQLException If error occurs
+     */
+    public abstract OlapConnection getConnection(
+        String catalogName,
+        String schemaName,
+        String roleName,
+        Properties props)
         throws SQLException, SecurityException;
 
     /**

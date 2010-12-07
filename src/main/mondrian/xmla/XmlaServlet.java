@@ -54,7 +54,7 @@ public abstract class XmlaServlet
 
     public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
 
-    private MondrianServer server;
+    protected MondrianServer server;
     protected RepositoryContentFinder contentFinder;
 
     public enum Phase {

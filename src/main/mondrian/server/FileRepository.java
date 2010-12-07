@@ -52,7 +52,8 @@ public class FileRepository implements Repository {
         MondrianServer server,
         String catalogName,
         String schemaName,
-        String roleName)
+        String roleName,
+        Properties props)
         throws SQLException
     {
         final CatalogInfo catalogInfo;
@@ -96,6 +97,7 @@ public class FileRepository implements Repository {
                 RolapConnectionProperties.Role.name(),
                 roleName);
         }
+        properties.putAll(props);
         final java.sql.Connection connection =
             java.sql.DriverManager.getConnection(connectString, properties);
         return ((OlapWrapper) connection).unwrap(OlapConnection.class);

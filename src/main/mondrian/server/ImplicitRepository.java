@@ -52,7 +52,8 @@ public class ImplicitRepository implements Repository {
         MondrianServer server,
         String catalogName,
         String schemaName,
-        String roleName)
+        String roleName,
+        Properties props)
     {
         // This method does not make sense in an ImplicitRepository. The
         // catalog and schema are gleaned from the connection, not vice

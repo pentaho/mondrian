@@ -10,9 +10,12 @@
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.util.LockBox;
 
 import java.sql.*;
 import java.util.*;
+
+import org.olap4j.impl.Olap4jUtil;
 
 /**
  * Olap4j driver for Mondrian.
@@ -63,6 +66,12 @@ import java.util.*;
 public class MondrianOlap4jDriver implements Driver {
     protected final Factory factory;
 
+    /**
+     * Lockbox containing the datasources and other objects to pass
+     * statically through the JVM.
+     */
+    private final static LockBox lockbox = new LockBox();
+
     static {
         try {
             register();
@@ -89,7 +98,7 @@ public class MondrianOlap4jDriver implements Driver {
             factoryClassName = "mondrian.olap4j.FactoryJdbc3Impl";
         }
         try {
-            final Class clazz = Class.forName(factoryClassName);
+            final Class<?> clazz = Class.forName(factoryClassName);
             return (Factory) clazz.newInstance();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -98,6 +107,17 @@ public class MondrianOlap4jDriver implements Driver {
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Provides access to the driver's lockbox. Used to
+     * pass Java objects to the driver through the JDBC
+     * API. It is usually used in combinaison with the
+     * driver JDBC properties.
+     * @return A lockbox in which to store objects
+     */
+    public static LockBox getLockBox() {
+        return lockbox;
     }
 
     /**
@@ -145,6 +165,13 @@ public class MondrianOlap4jDriver implements Driver {
                     p.name(),
                     null));
         }
+        // Next add all LockBox moniker properties.
+        for (Moniker mon : Moniker.values()) {
+            list.add(
+                new DriverPropertyInfo(
+                    mon.name(),
+                    null));
+        }
         return list.toArray(new DriverPropertyInfo[list.size()]);
     }
 
@@ -174,6 +201,24 @@ public class MondrianOlap4jDriver implements Driver {
 
     public boolean jdbcCompliant() {
         return false;
+    }
+
+    /**
+     * Properties supported by this driver
+     */
+    public enum Moniker {
+        /**
+         * Moniker token of a java.sql.DataSource object placed in the
+         * driver's LockBox. This DataSource will be used internally
+         * by Mondrian to establish a connection to the backend RDBMS.
+         */
+        SharedDataSource(),
+        /**
+         * Moniker token of a mondrian.spi.CatalogLocator object placed in the
+         * driver's LockBox. This CatalogLocator will be used internally by
+         * Mondrian to seek the catalog.
+         */
+        SharedCatalogLocator();
     }
 }
 

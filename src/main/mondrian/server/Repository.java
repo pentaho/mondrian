@@ -17,6 +17,7 @@ import org.olap4j.OlapConnection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
 * Callback by which a {@link mondrian.olap.MondrianServer} finds its catalogs
@@ -47,7 +48,8 @@ public interface Repository {
         MondrianServer server,
         String catalogName,
         String schemaName,
-        String roleName)
+        String roleName,
+        Properties props)
         throws SQLException;
 }
 

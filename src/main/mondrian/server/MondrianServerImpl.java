@@ -152,8 +152,21 @@ class MondrianServerImpl
         String roleName)
         throws SQLException
     {
+        return this.getConnection(
+            catalogName, schemaName, roleName,
+            new Properties());
+    }
+
+    @Override
+    public OlapConnection getConnection(
+        String catalogName,
+        String schemaName,
+        String roleName,
+        Properties props)
+        throws SQLException
+    {
         return repository.getConnection(
-            this, catalogName, schemaName, roleName);
+            this, catalogName, schemaName, roleName, props);
     }
 
     public List<Map<String, Object>> getDataSources(
