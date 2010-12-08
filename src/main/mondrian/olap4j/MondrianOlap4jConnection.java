@@ -13,6 +13,8 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.rolap.*;
+import mondrian.spi.CatalogLocator;
+import mondrian.util.LockBox;
 
 import mondrian.xmla.XmlaHandler;
 import org.olap4j.Axis;
@@ -31,6 +33,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
+
+import javax.sql.DataSource;
 
 /**
  * Implementation of {@link org.olap4j.OlapConnection}
@@ -128,9 +132,46 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
+        final LockBox driverLockBox =
+            MondrianOlap4jDriver.getLockBox();
+        CatalogLocator catalogLocator = null;
+        DataSource dataSource = null;
+        if (list.get(MondrianOlap4jDriver.Moniker.SharedDataSource.name())
+                != null)
+        {
+            final mondrian.util.LockBox.Entry datasourceEntry =
+                driverLockBox.get(
+                    list.get(
+                        MondrianOlap4jDriver.Moniker.SharedDataSource
+                            .name()));
+            if (datasourceEntry != null
+                    && datasourceEntry.getValue() != null
+                    && datasourceEntry.getValue() instanceof DataSource)
+            {
+                dataSource = (DataSource) datasourceEntry.getValue();
+            }
+        }
+        if (list.get(MondrianOlap4jDriver.Moniker.SharedCatalogLocator.name())
+                != null)
+        {
+            final mondrian.util.LockBox.Entry catalogEntry =
+                driverLockBox.get(
+                    list.get(
+                        MondrianOlap4jDriver.Moniker.SharedCatalogLocator
+                            .name()));
+            if (catalogEntry != null
+                    && catalogEntry.getValue() != null
+                    && catalogEntry.getValue() instanceof CatalogLocator)
+            {
+                catalogLocator = (CatalogLocator) catalogEntry.getValue();
+            }
+        }
         this.mondrianConnection =
-            (RolapConnection) mondrian.olap.DriverManager.getConnection(
-                list, null);
+            (RolapConnection) mondrian.olap.DriverManager
+                .getConnection(
+                    list,
+                    catalogLocator,
+                    dataSource);
         this.olap4jDatabaseMetaData =
             factory.newDatabaseMetaData(this, mondrianConnection);
         this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
