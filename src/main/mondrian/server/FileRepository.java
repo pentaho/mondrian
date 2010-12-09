@@ -143,12 +143,29 @@ public class FileRepository implements Repository {
             for (DataSourcesConfig.Catalog xmlCatalog
                 : xmlDataSource.catalogs.catalogs)
             {
+                String connectString =
+                    xmlCatalog.dataSourceInfo != null
+                        ? xmlCatalog.dataSourceInfo
+                        : xmlDataSource.dataSourceInfo;
+                if (connectString.startsWith("jdbc:mondrian:")) { //$NON-NLS-1$
+                    final Util.PropertyList connectProperties =
+                        Util.parseConnectString(
+                            connectString.replace(
+                                "jdbc:mondrian:", //$NON-NLS-1$
+                                "")); //$NON-NLS-1$
+                    if (connectProperties.get(
+                        RolapConnectionProperties.Catalog.name()) == null)
+                    {
+                        connectString += ";" //$NON-NLS-1$
+                            + RolapConnectionProperties.Catalog.name()
+                            + "=" //$NON-NLS-1$
+                            + xmlCatalog.definition;
+                    }
+                }
                 final SchemaInfo schemaInfo =
                     new SchemaInfo(
                         xmlCatalog.name,
-                        xmlCatalog.dataSourceInfo != null
-                            ? xmlCatalog.dataSourceInfo
-                            : xmlDataSource.dataSourceInfo);
+                        connectString);
                 catalogInfo.schemaMap.put(
                     schemaInfo.name,
                     schemaInfo);
