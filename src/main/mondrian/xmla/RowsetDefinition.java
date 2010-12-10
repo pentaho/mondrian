@@ -2131,27 +2131,28 @@ public enum RowsetDefinition {
             throws XmlaException, SQLException
         {
             for (Catalog catalog : catIter(connection, catalogNameCond)) {
-                final Schema schema = connection.getSchema();
+                for (Schema schema : catalog.getSchemas()) {
 
-                Row row = new Row();
-                row.set(CatalogName.name, catalog.getName());
+                    Row row = new Row();
+                    row.set(CatalogName.name, schema.getName());
 
-                // TODO: currently schema grammar does not support a description
-                row.set(Description.name, "No description available");
+                    // TODO: currently schema grammar does not support a description
+                    row.set(Description.name, "No description available");
 
-                // get Role names
-                StringBuilder buf = new StringBuilder(100);
-                List<String> roleNames =
-                    getExtra(connection).getSchemaRoleNames(schema);
-                serialize(buf, roleNames);
-                row.set(Roles.name, buf.toString());
+                    // get Role names
+                    StringBuilder buf = new StringBuilder(100);
+                    List<String> roleNames =
+                        getExtra(connection).getSchemaRoleNames(schema);
+                    serialize(buf, roleNames);
+                    row.set(Roles.name, buf.toString());
 
-                // TODO: currently schema grammar does not support modify date
-                // so we return just some date for now.
-                if (false) {
-                    row.set(DateModified.name, dateModified);
+                    // TODO: currently schema grammar does not support modify date
+                    // so we return just some date for now.
+                    if (false) {
+                        row.set(DateModified.name, dateModified);
+                    }
+                    addRow(row, rows);
                 }
-                addRow(row, rows);
             }
         }
 

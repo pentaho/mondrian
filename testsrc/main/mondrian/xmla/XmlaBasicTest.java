@@ -10,13 +10,7 @@
 package mondrian.xmla;
 
 import mondrian.olap.*;
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.NamedSet;
-import mondrian.olap.Schema;
+import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
@@ -55,6 +49,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public XmlaBasicTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Class.forName(MondrianOlap4jDriver.class.getName());
     }
 
     protected DiffRepository getDiffRepos() {
