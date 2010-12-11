@@ -9,8 +9,8 @@
 */
 package mondrian.test;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import junit.framework.*;
+
 import mondrian.olap.Util;
 import org.olap4j.test.TestContext;
 
@@ -25,6 +25,21 @@ import java.util.Properties;
  * @version $Id$
  */
 public class Olap4jTckTest extends TestCase {
+    private static final Util.Functor1<Boolean, Test> CONDITION =
+        new Util.Functor1<Boolean, Test>() {
+            public Boolean apply(Test test) {
+                if (!(test instanceof TestCase)) {
+                    return true;
+                }
+                final TestCase testCase = (TestCase) test;
+                final String testCaseName = testCase.getName();
+                return !testCaseName.equals("testStatementTimeout")
+                    && !testCaseName.equals("testStatementCancel")
+                    && !testCaseName.equals("testDatabaseMetaDataGetCatalogs")
+                    && !testCaseName.equals("testCellSetBug");
+            }
+        };
+
     public static TestSuite suite() {
         final Util.PropertyList list =
             mondrian.test.TestContext.instance()
@@ -33,6 +48,10 @@ public class Olap4jTckTest extends TestCase {
         final String catalog = list.get("Catalog");
 
         final TestSuite suite = new TestSuite();
+        if (Util.PreJdk15) {
+            // olap4j doesn't run on JDK1.4. (Not without effort.)
+            return suite;
+        }
         suite.setName("olap4j TCK");
         suite.addTest(createMondrianSuite(connStr, false));
         suite.addTest(createMondrianSuite(connStr, true));
@@ -58,7 +77,11 @@ public class Olap4jTckTest extends TestCase {
         if (wrapper) {
             name += " (DBCP wrapper)";
         }
-        return TestContext.createTckSuite(properties, name);
+        final TestSuite suite = TestContext.createTckSuite(properties, name);
+        if (CONDITION == null) {
+            return suite;
+        }
+        return mondrian.test.TestContext.copySuite(suite, CONDITION);
     }
 
     private static TestSuite createMondrianSuite(
@@ -75,7 +98,11 @@ public class Olap4jTckTest extends TestCase {
         final String name =
             "mondrian olap4j driver"
             + (wrapper ? " (DBCP wrapper)" : "");
-        return TestContext.createTckSuite(properties, name);
+        final TestSuite suite = TestContext.createTckSuite(properties, name);
+        if (CONDITION == null) {
+            return suite;
+        }
+        return mondrian.test.TestContext.copySuite(suite, CONDITION);
     }
 }
 
