@@ -686,7 +686,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void Q()
+    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
         throws Exception
     {
         String requestType = "EXECUTE";
@@ -884,6 +884,17 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTestInline(
             requestType, request, "response",
             props, TestContext.instance(), role);
+    }
+
+    public void testExecuteBugMondrian762()
+        throws Exception
+    {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        propSaver.set(
+            MondrianProperties.instance().EnableRolapCubeMemberCache,
+            false);
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void doTestRT(String requestType, TestContext testContext)

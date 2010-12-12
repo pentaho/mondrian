@@ -953,7 +953,7 @@ public class RolapCube extends CubeBase {
 
         calculatedMemberList.add(formula);
 
-        Member member = formula.getMdxMember();
+        final RolapMember member = (RolapMember) formula.getMdxMember();
 
         Boolean visible = xmlCalcMember.visible;
         if (visible == null) {
@@ -975,17 +975,11 @@ public class RolapCube extends CubeBase {
                 Property.DESCRIPTION.name, xmlCalcMember.description);
         }
 
-        // Remove RolapCubeMember wrapper.
-        final Member member1;
-        if (member instanceof RolapCubeMember) {
-            member1 = ((RolapCubeMember) member).getRolapMember();
-        } else {
-            member1 = member;
-        }
+        final RolapMember member1 = RolapUtil.strip(member);
         ((RolapCalculatedMember) member1).setAnnotationMap(
             RolapHierarchy.createAnnotationMap(xmlCalcMember.annotations));
 
-        memberList.add((RolapMember) member);
+        memberList.add(member);
     }
 
     private void preCalcMember(
