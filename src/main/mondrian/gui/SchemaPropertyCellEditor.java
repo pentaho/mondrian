@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2010 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -1322,7 +1322,7 @@ public class SchemaPropertyCellEditor
                 if (s != null) {
                     for (int i = 0; i < s.cubes.length; i++) {
                         if (s.cubes[i].name.equals(parent.cube)) {
-                            dims.add("Measures"); //$NON-NLS-1$
+                            dims.add("Measures");
                             for (int j = 0; j < s.cubes[i].dimensions.length;
                                 j++)
                             {

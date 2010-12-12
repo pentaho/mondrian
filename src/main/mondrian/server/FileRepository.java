@@ -154,9 +154,10 @@ public class FileRepository implements Repository {
                 if (connectProperties.get(
                     RolapConnectionProperties.Catalog.name()) == null)
                 {
-                    connectString += ";" //$NON-NLS-1$
+                    connectString +=
+                        ";"
                         + RolapConnectionProperties.Catalog.name()
-                        + "=" //$NON-NLS-1$
+                        + "="
                         + xmlCatalog.definition;
                 }
                 final SchemaInfo schemaInfo =
