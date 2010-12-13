@@ -17,9 +17,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.type.SetType;
 import mondrian.olap.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Definition of the <code>Filter</code> MDX function.
@@ -189,15 +187,19 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
+            List<Member> origmembers = lcalc.evaluateMemberList(evaluator);
             // make list mutable
-            members = new ArrayList<Member>(members);
-            Iterator<Member> it = members.iterator();
+            /*
+             * TODO: can we guess what a good
+             * initalCapacity for the new list is?
+             */
+            List<Member> members = new ArrayList<Member>();
+            Iterator<Member> it = origmembers.iterator();
             while (it.hasNext()) {
                 Member member = it.next();
                 evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.add(member);
                 }
             }
             return members;
@@ -305,16 +307,20 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
+            List<Member[]> origmembers = lcalc.evaluateTupleList(evaluator);
 
             // make list mutable
-            members = new ArrayList<Member[]>(members);
-            Iterator<Member[]> it = members.iterator();
+            /*
+             * TODO: can we guess what a good
+             * initalCapacity for the new list is?
+             */
+            List<Member[]> members = new ArrayList<Member[]>();
+            Iterator<Member[]> it = origmembers.iterator();
             while (it.hasNext()) {
                 Member[] member = it.next();
                 evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.add(member);
                 }
             }
             return members;
@@ -492,16 +498,20 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
+            List<Member> origmembers = lcalc.evaluateMemberList(evaluator);
 
             // make list mutable
-            members = new ArrayList<Member>(members);
-            Iterator<Member> it = members.iterator();
+            /*
+             * TODO: can we guess what a good
+             * initalCapacity for the new list is?
+             */
+            List<Member> members = new ArrayList<Member>();
+            Iterator<Member> it = origmembers.iterator();
             while (it.hasNext()) {
                 Member member = it.next();
                 evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.add(member);
                 }
             }
             return members;
@@ -552,16 +562,20 @@ class FilterFunDef extends FunDefBase {
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
+            List<Member[]> origmembers = lcalc.evaluateTupleList(evaluator);
 
             // make list mutable
-            members = new ArrayList<Member[]>(members);
-            Iterator<Member[]> it = members.iterator();
+            /*
+             * TODO: can we guess what a good
+             * initalCapacity for the new list is?
+             */
+            List<Member[]> members = new ArrayList<Member[]>();
+            Iterator<Member[]> it = origmembers.iterator();
             while (it.hasNext()) {
                 Member[] member = it.next();
                 evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.add(member);
                 }
             }
             return members;

@@ -347,6 +347,26 @@ public class PerformanceTest extends FoodMartTestCase {
         printDuration("in-memory calc", start);
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-843">
+     * Bug MONDRIAN-843, where Filter is inefficient.</a>
+     */
+    public void testBugMondrian843() {
+        // On my core i7 laptop:
+        // takes 2.5 seconds before bug fixed
+        // takes 0.4 seconds after bug fixed
+        long start = System.currentTimeMillis();
+        executeQuery(
+            "WITH SET [filtered] AS "
+            + "FILTER({customers.members, customers.members, customers.members, customers.members, customers.members}, [Measures].[Unit Sales] > 100) "
+            + "SELECT"
+            + "{[Measures].[Unit Sales]} ON COLUMNS, "
+            + "{[filtered]} ON ROWS "
+            + "FROM sales");
+        printDuration("Bug 843 (filter() performance)", start);
+    }
+
     private void printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
