@@ -2134,7 +2134,7 @@ public enum RowsetDefinition {
                 for (Schema schema : catalog.getSchemas()) {
 
                     Row row = new Row();
-                    row.set(CatalogName.name, schema.getName());
+                    row.set(CatalogName.name, catalog.getName());
 
                     // TODO: currently schema grammar does not support a description
                     row.set(Description.name, "No description available");
