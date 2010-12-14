@@ -5646,6 +5646,46 @@ public class FunctionTest extends FoodMartTestCase {
             "No function matches signature");
     }
 
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-853">
+     * bug MONDRIAN-853, "When using CASE WHEN in a CalculatedMember values are
+     * not returned the way expected"</a>.
+     */
+    public void testCaseTuple() {
+        // The case in the bug, simplified. With the bug, returns a member array
+        // "[Lmondrian.olap.Member;@151b0a5". Type deduction should realize
+        // that the result is a scalar, therefore a tuple (represented by a
+        // member array) needs to be evaluated to a scalar. I think that if we
+        // get the type deduction right, the MDX exp compiler will handle the
+        // rest.
+        if (true) assertExprReturns(
+            "case 1 when 0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // "case when" variant always worked
+        assertExprReturns(
+            "case when 1=0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // case 2: cannot deduce type (tuple x) vs. (tuple y). Should be able
+        // to deduce that the result type is tuple-type<member-type<Gender>,
+        // member-type<Measures>>.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Gender].[M], [Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
+
+        // case 3: mixture of member & tuple. Should be able to deduce that
+        // result type is an expression.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
+    }
+
     public void testPropertiesExpr() {
         assertExprReturns(
             "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")",
