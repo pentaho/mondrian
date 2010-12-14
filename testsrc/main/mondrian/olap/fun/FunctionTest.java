@@ -5659,7 +5659,7 @@ public class FunctionTest extends FoodMartTestCase {
         // member array) needs to be evaluated to a scalar. I think that if we
         // get the type deduction right, the MDX exp compiler will handle the
         // rest.
-        if (true) assertExprReturns(
+        if (false) assertExprReturns(
             "case 1 when 0 then 1.5\n"
             + " else ([Gender].[M], [Measures].[Unit Sales]) end",
             "135,215");
