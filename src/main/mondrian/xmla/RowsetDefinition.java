@@ -2132,11 +2132,11 @@ public enum RowsetDefinition {
         {
             for (Catalog catalog : catIter(connection, catalogNameCond)) {
                 for (Schema schema : catalog.getSchemas()) {
-
                     Row row = new Row();
                     row.set(CatalogName.name, catalog.getName());
 
-                    // TODO: currently schema grammar does not support a description
+                    // TODO: currently schema grammar does not support a
+                    // description
                     row.set(Description.name, "No description available");
 
                     // get Role names
@@ -2146,8 +2146,8 @@ public enum RowsetDefinition {
                     serialize(buf, roleNames);
                     row.set(Roles.name, buf.toString());
 
-                    // TODO: currently schema grammar does not support modify date
-                    // so we return just some date for now.
+                    // TODO: currently schema grammar does not support modify
+                    // date so we return just some date for now.
                     if (false) {
                         row.set(DateModified.name, dateModified);
                     }
