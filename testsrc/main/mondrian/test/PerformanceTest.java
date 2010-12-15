@@ -41,7 +41,7 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550() {
         final TestContext testContext = getBugMondrian550Schema();
-
+        long start = System.currentTimeMillis();
         // On my Latitude D630:
         // Takes 137 seconds before bug fixed.
         // Takes 13 seconds after bug fixed.
@@ -50,6 +50,7 @@ public class PerformanceTest extends FoodMartTestCase {
             + "  NON EMPTY Hierarchize(Union({[ACC].[All]}, [ACC].[All].Children)) ON ROWS\n"
             + "from [Sales]\n"
             + "where ([Time].[1997].[Q4], [Measures].[EXP2])");
+        printDuration("testBugMondrian550 execution time: ", start);
         assertEquals(13, result.getAxes()[0].getPositions().size());
         assertEquals(3262, result.getAxes()[1].getPositions().size());
     }
@@ -59,7 +60,7 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550Tuple() {
         final TestContext testContext = getBugMondrian550Schema();
-
+        long start = System.currentTimeMillis();
         // On my Latitude D630:
         // Takes 252 seconds before bug fixed.
         // Takes 45 seconds after bug fixed.
@@ -69,6 +70,7 @@ public class PerformanceTest extends FoodMartTestCase {
             + "   * [Gender].Children ON ROWS\n"
             + "from [Sales]\n"
             + "where ([Time].[1997].[Q4], [Measures].[EXP2])");
+        printDuration("testBugMondrian550Tuple execution time: ", start);
         assertEquals(13, result2.getAxes()[0].getPositions().size());
         assertEquals(3263, result2.getAxes()[1].getPositions().size());
     }
@@ -89,7 +91,7 @@ public class PerformanceTest extends FoodMartTestCase {
                     + "crossjoin( [store type].[store type].members,  "
                     + "product.[product name].members)) }"
                     + " on 0 from sales");
-            printDuration("Bug ", start);
+            printDuration("Bug 641 ", start);
             assertEquals(51148, result.getAxes()[0].getPositions().size());
         }
     }

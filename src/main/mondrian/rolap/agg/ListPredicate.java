@@ -46,20 +46,12 @@ public abstract class ListPredicate implements StarPredicate {
     protected final List<RolapStar.Column> columns =
         new ArrayList<RolapStar.Column>();
 
-    protected BitKey columnBitKey;
+    private BitKey columnBitKey = null;
 
     protected ListPredicate(List<StarPredicate> predicateList) {
-        columnBitKey = null;
         childrenHashMap = null;
         hashValue = 0;
         for (StarPredicate predicate : predicateList) {
-            if (columnBitKey == null) {
-                columnBitKey =
-                    predicate.getConstrainedColumnBitKey().copy();
-            } else {
-                columnBitKey =
-                    columnBitKey.or(predicate.getConstrainedColumnBitKey());
-            }
             children.add(predicate);
             for (RolapStar.Column column
                 : predicate.getConstrainedColumnList())
@@ -76,6 +68,17 @@ public abstract class ListPredicate implements StarPredicate {
     }
 
     public BitKey getConstrainedColumnBitKey() {
+        if (columnBitKey == null) {
+            for (StarPredicate predicate : children) {
+                if (columnBitKey == null) {
+                    columnBitKey =
+                        predicate.getConstrainedColumnBitKey().copy();
+                } else {
+                    columnBitKey =
+                        columnBitKey.or(predicate.getConstrainedColumnBitKey());
+                }
+            }
+        }
         return columnBitKey;
     }
 

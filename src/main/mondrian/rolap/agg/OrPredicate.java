@@ -89,7 +89,7 @@ public class OrPredicate extends ListPredicate {
         Map<BitKey, List<StarPredicate>> predicateMap)
     {
         BitKey inListRHSBitKey;
-
+        BitKey columnBitKey = getConstrainedColumnBitKey();
         if (predicate instanceof ValueColumnPredicate) {
             // OR of column values from the same column
             inListRHSBitKey =
@@ -149,7 +149,9 @@ public class OrPredicate extends ListPredicate {
         // in the IN list
 
         boolean firstNullColumnPredicate = true;
-        for (Integer colPos : columnBitKey.andNot(inListRHSBitKey)) {
+        for (Integer colPos :
+                getConstrainedColumnBitKey().andNot(inListRHSBitKey))
+        {
             if (firstNullColumnPredicate) {
                 firstNullColumnPredicate = false;
             } else {
