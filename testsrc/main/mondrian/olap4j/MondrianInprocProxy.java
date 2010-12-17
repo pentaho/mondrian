@@ -59,7 +59,15 @@ public class MondrianInprocProxy
 
     // Use single-threaded executor for ease of debugging.
     private static final ExecutorService singleThreadExecutor =
-        new InlineExecutorService();
+        Executors.newSingleThreadExecutor(
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    Thread t = Executors.defaultThreadFactory().newThread(r);
+                    t.setDaemon(true);
+                    return t;
+               }
+            }
+        );
 
     public byte[] get(URL url, String request) throws IOException {
         try {
@@ -89,43 +97,6 @@ public class MondrianInprocProxy
 
     public String getEncodingCharsetName() {
         return "UTF-8";
-    }
-
-    /**
-     * Trivial executor service that executes all requests using the submitter's
-     * thread.
-     */
-    private static class InlineExecutorService extends AbstractExecutorService {
-        private boolean shutdown = false;
-        private boolean terminated = false;
-
-        public void shutdown() {
-            shutdown = true;
-        }
-
-        public List<Runnable> shutdownNow() {
-            shutdown = true;
-            return Collections.emptyList();
-        }
-
-        public boolean isShutdown() {
-            return shutdown;
-        }
-
-        public boolean isTerminated() {
-            return terminated;
-        }
-
-        public boolean awaitTermination(long timeout, TimeUnit unit)
-            throws InterruptedException
-        {
-            terminated = true;
-            return true;
-        }
-
-        public void execute(Runnable command) {
-            command.run();
-        }
     }
 }
 
