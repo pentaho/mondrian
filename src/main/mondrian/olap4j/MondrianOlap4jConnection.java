@@ -29,6 +29,8 @@ import org.olap4j.type.DimensionType;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 
@@ -825,10 +827,17 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 if (literal.getCategory() == Category.Symbol) {
                     return LiteralNode.createSymbol(
                         null, (String) literal.getValue());
-                } else if (value instanceof Double) {
-                    return LiteralNode.create(null, (Double) value);
-                } else if (value instanceof Integer) {
-                    return LiteralNode.create(null, (Integer) value);
+                } else if (value instanceof Number) {
+                    Number number = (Number) value;
+                    BigDecimal bd = bigDecimalFor(number);
+                    mondrian.util.Bug.olap4jUpgrade(
+                        "Switch to LiteralNode.create(ParseRegion, BigDecimal)"
+                        + "when we next upgrade olap4j.");
+                    try {
+                        return LiteralNode.create(null, bd.intValueExact());
+                    } catch (ArithmeticException e) {
+                        return LiteralNode.create(null, bd.doubleValue());
+                    }
                 } else if (value instanceof String) {
                     return LiteralNode.createString(null, (String) value);
                 } else if (value == null) {
@@ -838,6 +847,34 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 }
             }
             throw Util.needToImplement(exp.getClass());
+        }
+
+        /**
+         * Converts a number to big decimal, non-lossy if possible.
+         *
+         * @param number Number
+         * @return BigDecimal
+         */
+        private static BigDecimal bigDecimalFor(Number number) {
+            if (number instanceof BigDecimal) {
+                return (BigDecimal) number;
+            } else if (number instanceof BigInteger) {
+                return new BigDecimal((BigInteger) number);
+            } else if (number instanceof Integer) {
+                return new BigDecimal((Integer) number);
+            } else if (number instanceof Double) {
+                return new BigDecimal((Double) number);
+            } else if (number instanceof Float) {
+                return new BigDecimal((Float) number);
+            } else if (number instanceof Long) {
+                return new BigDecimal((Long) number);
+            } else if (number instanceof Short) {
+                return new BigDecimal((Short) number);
+            } else if (number instanceof Byte) {
+                return new BigDecimal((Byte) number);
+            } else {
+                return new BigDecimal(number.doubleValue());
+            }
         }
 
         private ParseTreeNode toOlap4j(ResolvedFunCall call) {

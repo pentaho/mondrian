@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 
+import mondrian.parser.*;
 import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
@@ -88,7 +89,7 @@ public abstract class ConnectionBase implements Connection {
         FunTable funTable,
         boolean strictValidation)
     {
-        Parser parser = new Parser();
+        MdxParserValidator parser = createParser();
         boolean debug = false;
 
         if (funTable == null) {
@@ -111,6 +112,12 @@ public abstract class ConnectionBase implements Connection {
         }
     }
 
+    private MdxParserValidator createParser() {
+        return true
+            ? new JavaccParserValidatorImpl()
+            : new MdxParserValidatorImpl();
+    }
+
     public Exp parseExpression(String expr) {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
@@ -120,7 +127,7 @@ public abstract class ConnectionBase implements Connection {
                 + expr);
         }
         try {
-            Parser parser = new Parser();
+            MdxParserValidator parser = createParser();
             final FunTable funTable = getSchema().getFunTable();
             return parser.parseExpression(this, expr, debug, funTable);
         } catch (Throwable exception) {

@@ -389,7 +389,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Measures].[Foo] as ' Filter([Product].members, 1 <> 0) '"
             + "select {[Measures].[Foo]} on columns from [Sales]";
         String pattern =
-            "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must "
+            "Member expression 'Filter([Product].Members, (1 <> 0))' must "
             + "not be a set";
         assertQueryThrows(queryString, pattern);
 
@@ -561,13 +561,39 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberWithQuote() {
+        // MSAS ignores single-quotes
+        assertQueryReturns(
+            "with member [Measures].[Foo] as '1 + 2'\n"
+            + "select from [Sales] where [Measures].[Foo]",
+            "Axis #0:\n"
+            + "{[Measures].[Foo]}\n"
+            + "3");
+
+        // As above
+        assertQueryReturns(
+            "with member [Measures].[Foo] as 1 + 2\n"
+            + "select from [Sales] where [Measures].[Foo]",
+            "Axis #0:\n"
+            + "{[Measures].[Foo]}\n"
+            + "3");
+
+        // MSAS treats doubles-quotes as strings
+        assertQueryReturns(
+            "with member [Measures].[Foo] as \"1 + 2\"\n"
+            + "select from [Sales] where [Measures].[Foo]",
+            "Axis #0:\n"
+            + "{[Measures].[Foo]}\n"
+            + "1 + 2");
+
         // single-quote inside double-quoted string literal
         // MSAS does not allow this
         assertQueryThrows(
             "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' "
             + "select {[Measures].[Foo]} on columns "
             + "from [Sales]",
-            "Syntax error at line 1, column 57, token 'apostrophe'");
+            "mondrian.parser.TokenMgrError: "
+            + "Lexical error at line 2, column 0.  "
+            + "Encountered: <EOF> after : \"\\\"quoted string with \\n\"");
 
         // Escaped single quote in double-quoted string literal inside
         // single-quoted member declaration.
@@ -1622,7 +1648,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Foo]}\n"
-            + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Expected value of type NUMERIC; got value '123.0' (STRING)\n");
+            + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Expected value of type NUMERIC; got value '123' (STRING)\n");
 
         // Tom's original query should generate a cast error (not a
         // ClassCastException) because solve orders are wrong.

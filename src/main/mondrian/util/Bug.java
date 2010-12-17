@@ -60,6 +60,15 @@ public class Bug {
     public static final boolean Ssas2005Compatible = false;
 
     /**
+     * If you want to tag a piece of code in mondrian that needs to be changed
+     * when we upgrade to a future version of olap4j, reference this function.
+     * It will always return false.
+     */
+    public static boolean olap4jUpgrade(String reason) {
+        return false;
+    }
+
+    /**
      * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-229">MONDRIAN-229,
      * "NON EMPTY when hierarchy's default member is not 'all'"</a>

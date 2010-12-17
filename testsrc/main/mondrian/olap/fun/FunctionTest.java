@@ -3700,7 +3700,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 'foo',\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token 'foo'");
+            "Syntax error at line 3, column 46, token ''foo''");
 
         // 'set AS numeric' is invalid
         assertQueryThrows(
@@ -3709,7 +3709,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 1234,\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token '1234.0'");
+            "Syntax error at line 3, column 46, token '1234'");
 
         // 'numeric AS identifier' is invalid
         assertQueryThrows(
@@ -4508,7 +4508,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMEmptyLeavesFail() {
         assertAxisThrows(
             "Descendants([Time].[1997],)",
-            "Syntax error at line 1, column 36, token ')'");
+            "No function matches signature 'Descendants(<Member>, <Empty>)");
     }
 
     public void testDescendantsMEmptyLeavesFail2() {
@@ -10819,7 +10819,7 @@ Intel platforms):
         // An integer constant is not allowed as a type
         assertExprThrows(
             "Cast(1 AS 5)",
-            "Syntax error at line 1, column 11, token '5.0'");
+            "Syntax error at line 1, column 11, token '5'");
 
         assertExprReturns("Cast('tr' || 'ue' AS boolean)", "true");
     }

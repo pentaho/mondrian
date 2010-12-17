@@ -252,8 +252,8 @@ public class SchemaTest extends FoodMartTestCase {
         testContext.assertSimpleQuery();
         // FIXME: Should give better error.
         testContext.assertQueryThrows(
-            "select [Yearly Income3].Children from [Sales]",
-            "Error while parsing MDX statement");
+            "select [Yearly Income3].Children on 0 from [Sales]",
+            "Internal error: while building member cache");
     }
 
     public void testPrimaryKeyTableNotFound() {

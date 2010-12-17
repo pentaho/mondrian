@@ -121,6 +121,12 @@
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
+${java.dir}/mondrian/parser/MdxParserImpl.java,
+${java.dir}/mondrian/parser/MdxParserImplTokenManager.java,
+${java.dir}/mondrian/parser/ParseException.java,
+${java.dir}/mondrian/parser/SimpleCharStream.java,
+${java.dir}/mondrian/parser/Token.java,
+${java.dir}/mondrian/parser/TokenMgrError.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
@@ -519,11 +525,16 @@ META-INF/**"/>
   </target>
 
   <target name="parser" depends="define-tasks">
+    <!-- Old parser. -->
     <javacup
         srcdir="${java.dir}"
         input="${java.dir}/mondrian/olap/Parser.cup"
         expect="63"
         interface="true"/>
+    <!-- New parser. -->
+    <javacc
+        target="${java.dir}/mondrian/parser/MdxParser.jj"
+        javacchome="${lib.dir}"/>
   </target>
 
   <target name="def" depends="define-tasks">
@@ -886,6 +897,7 @@ ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
+${java.dir}/**/*.jj,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.png,
 ${java.dir}/**/*.html,
