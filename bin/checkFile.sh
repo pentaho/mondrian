@@ -60,7 +60,13 @@ doCheck() {
     */mondrian/rolap/aggmatcher/DefaultDef.java| \
     */mondrian/resource/MondrianResource*.java| \
     */mondrian/olap/Parser.java| \
-    */mondrian/olap/ParserSym.java)
+    */mondrian/olap/ParserSym.java| \
+    */mondrian/parser/ParseException.java| \
+    */mondrian/parser/Token.java| \
+    */mondrian/parser/TokenMgrError.java| \
+    */mondrian/parser/SimpleCharStream.java| \
+    */mondrian/parser/MdxParserImplTokenManager.java| \
+    */mondrian/parser/MdxParserImpl.java)
         # mondrian.util.Base64 is checked in as is, so don't check it
         # Other files above are generated.
         return
@@ -123,7 +129,7 @@ doCheck() {
         fi
         ;;
 
-    # Only validate .java and .cup files at present.
+    # Only validate .java and parser files at present.
     *.java|*.cup|*.h|*.cpp)
         ;;
 
