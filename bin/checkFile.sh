@@ -65,6 +65,7 @@ doCheck() {
     */mondrian/parser/Token.java| \
     */mondrian/parser/TokenMgrError.java| \
     */mondrian/parser/SimpleCharStream.java| \
+    */mondrian/parser/MdxParserImplConstants.java| \
     */mondrian/parser/MdxParserImplTokenManager.java| \
     */mondrian/parser/MdxParserImpl.java)
         # mondrian.util.Base64 is checked in as is, so don't check it
@@ -165,12 +166,14 @@ doCheckDeferred() {
     if [ -s "${deferred_file}" ]; then
         maxLineLength=80
         cat "${deferred_file}" |
-        xargs gawk -f "$CHECKFILE_AWK" \
+        xargs -P $(expr ${CORE_COUNT} \* 2) -n 100 gawk -f "$CHECKFILE_AWK" \
             -v lenient="$lenient" \
             -v maxLineLength="$maxLineLength"
    fi
    rm -f "${deferred_file}"
 }
+
+export CORE_COUNT=$(cat /proc/cpuinfo | awk '$1 == "processor"' | wc -l)
 
 export deferred=true
 
