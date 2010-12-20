@@ -1052,11 +1052,8 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testCurrentAndCurrentOrdinal() {
         // This test checks that <Named Set>.Current and
-        // <Named Set>.CurrentOrdinal basically work - that is, don't give an
-        // error - but the results are currently off. Note that every cell says
-        // that CurrentOrdinal=8. This is because by the time cells
-        // are evaluated, the evaluator context that produced the axes has
-        // already been lost. Could do better.
+        // <Named Set>.CurrentOrdinal work, and return the
+        // correct value
         assertQueryReturns(
             "with set [Gender Marital Status] as\n"
             + " [Gender].members * [Marital Status].members\n"
@@ -1087,29 +1084,29 @@ public class NamedSetTest extends FoodMartTestCase {
             + "{[Gender].[M], [Marital Status].[M]}\n"
             + "{[Gender].[M], [Marital Status].[S]}\n"
             + "Row #0: 266,773\n"
-            + "Row #0: 8\n"
-            + "Row #0: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #0: 0\n"
+            + "Row #0: ([Gender].[All Gender], [Marital Status].[All Marital Status])\n"
             + "Row #1: 131,796\n"
-            + "Row #1: 8\n"
-            + "Row #1: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #1: 1\n"
+            + "Row #1: ([Gender].[All Gender], [Marital Status].[M])\n"
             + "Row #2: 134,977\n"
-            + "Row #2: 8\n"
-            + "Row #2: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #2: 2\n"
+            + "Row #2: ([Gender].[All Gender], [Marital Status].[S])\n"
             + "Row #3: 131,558\n"
-            + "Row #3: 8\n"
-            + "Row #3: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #3: 3\n"
+            + "Row #3: ([Gender].[F], [Marital Status].[All Marital Status])\n"
             + "Row #4: 65,336\n"
-            + "Row #4: 8\n"
-            + "Row #4: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #4: 4\n"
+            + "Row #4: ([Gender].[F], [Marital Status].[M])\n"
             + "Row #5: 66,222\n"
-            + "Row #5: 8\n"
-            + "Row #5: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #5: 5\n"
+            + "Row #5: ([Gender].[F], [Marital Status].[S])\n"
             + "Row #6: 135,215\n"
-            + "Row #6: 8\n"
-            + "Row #6: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #6: 6\n"
+            + "Row #6: ([Gender].[M], [Marital Status].[All Marital Status])\n"
             + "Row #7: 66,460\n"
-            + "Row #7: 8\n"
-            + "Row #7: ([Gender].[M], [Marital Status].[S])\n"
+            + "Row #7: 7\n"
+            + "Row #7: ([Gender].[M], [Marital Status].[M])\n"
             + "Row #8: 68,755\n"
             + "Row #8: 8\n"
             + "Row #8: ([Gender].[M], [Marital Status].[S])\n");

@@ -186,31 +186,16 @@ class RolapNamedSetEvaluator
      * {@code isEmpty}.
      *
      * <p>Implements {@link Iterable} explicitly because Collection does not
-     * implement Iterable until JDK1.5. This way, we don't have to use a wrapper
-     * that hides the size method.
+     * implement Iterable until JDK1.5. This way, we don't have to use a
+     * wrapper that hides the size method.
      *
      * @param <T> Element type
      */
-    // TODO: should also implement List -- save a copy
-    private class IterableCollection<T> implements Collection<T>, Iterable<T> {
+    private class IterableCollection<T>
+            implements Collection<T>, Iterable<T>, List<T>
+    {
         public Iterator<T> iterator() {
-            return new Iterator<T>() {
-                int i = -1;
-
-                public boolean hasNext() {
-                    return i < list.size() - 1;
-                }
-
-                public T next() {
-                    currentOrdinal = ++i;
-                    //noinspection unchecked
-                    return (T) list.get(i);
-                }
-
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-            };
+            return listIterator();
         }
 
         // The following are included to fill out the Collection
@@ -257,11 +242,99 @@ class RolapNamedSetEvaluator
         }
 
         public Object[] toArray() {
-            throw new UnsupportedOperationException();
+            return list.toArray();
         }
 
         public <T> T[] toArray(T[] a) {
+            return (T[]) list.toArray(a);
+        }
+
+        // the rest fill out the List interface, again mostly unsupported
+        public void add(int index, T element) {
             throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(int index, Collection<? extends T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public T get(int index) {
+            return (T)list.get(index);
+        }
+
+        public int indexOf(Object o) {
+            return list.indexOf(o);
+        }
+
+        public int lastIndexOf(Object o) {
+            return list.lastIndexOf(o);
+        }
+
+        public ListIterator<T> listIterator() {
+            return new ListIterator<T>() {
+                int i = -1;
+
+                public boolean hasNext() {
+                    return i < list.size() - 1;
+                }
+
+                public boolean hasPrevious() {
+                    return i > 0;
+                }
+
+                public T next() {
+                    currentOrdinal = ++i;
+                    //noinspection unchecked
+                    return (T) list.get(i);
+                }
+
+                public T previous() {
+                    currentOrdinal = --i;
+                    return (T)list.get(i);
+                }
+
+                public int nextIndex() {
+                    return i + 1;
+                }
+
+                public int previousIndex() {
+                    return i;
+                }
+
+                public void set(T o) {
+                    throw new UnsupportedOperationException();
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+
+                public void add(T o) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        public ListIterator<T> listIterator(int index) {
+            // TODO: should actually implement a bidirectional
+            //       iterator here, have listIterator() call
+            //       this, and have iterator() call listIterator().
+            //       for now, nothing seems to call listIterator(),
+            //       so this works, and saves a copy from iterable
+            //       to list higher up in the call stack
+            throw new UnsupportedOperationException();
+        }
+
+        public T remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        public T set(int index, T element) {
+            return (T)list.set(index, element);
+        }
+
+        public List<T> subList(int fromIndex, int toIndex) {
+            return list.subList(fromIndex, toIndex);
         }
     }
 }
