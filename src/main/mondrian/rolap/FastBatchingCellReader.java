@@ -393,9 +393,9 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public final void add(CellRequest request) {
-            final List<StarColumnPredicate> values = request.getValueList();
-            for (int j = 0; j < columns.length; j++) {
-                valueSets[j].add(values.get(j));
+            final int limit = request.getNumValues();
+            for (int j = 0; j < limit; j++) {
+                valueSets[j].add(request.getValueAt(j));
             }
             final RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {

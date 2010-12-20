@@ -29,21 +29,46 @@ public final class CellRequest {
     private final RolapStar.Measure measure;
     public final boolean extendedContext;
     public final boolean drillThrough;
-    /**
-     * List of {@link mondrian.rolap.RolapStar.Column}s which have values
-     * in this request, stored according to their integer bit positions.
-     */
-    private final List<Integer> constrainedColumnList =
-        new ArrayList<Integer>();
 
-    private final List<StarColumnPredicate> columnPredicateList =
-        new ArrayList<StarColumnPredicate>();
+    /*
+     * Sparsely populated array of column predicates.  Each predicate will
+     * be located according to the bitPosition of the column to which it
+     * corresponds.  This costs a little memory in terms of unused array
+     * slots, but avoids the need to explicitly sort the column predicates
+     * into a canonical order. There aren't usually a lot of predicates to
+     * sort, but that time adds up quickly.
+     */
+    private StarColumnPredicate[] sparseColumnPredicateList;
 
     /**
-     * Maps column integer bit positions to {@link mondrian.rolap.RolapStar.Column}s
+     * An array that contains the bit positions of each constrained
+     * column.
+     *
+     * <p>Used to allow us to convert from a numeric index (i.e., give me the
+     * third constrained column) to the actual column as referenced
+     * by bit position.
+     *
+     * For example, if the three constrained columns have bitPositions 3, 16,
+     * and 21, the contents of this array should be [3,16,21].
      */
-    private final Map<Integer, RolapStar.Column> bitToColumnMap =
-        new HashMap<Integer, RolapStar.Column>();
+    private int[] columnBitPositions;
+
+    /**
+     * Tracks the number of column constraints actually associated with this
+     * CellRequest. We could figure this out by iterating over
+     * sparseColumnPredicateList, but it's quicker to just track them
+     * as they are added.
+     */
+    private int numColumns;
+
+    /**
+     * Reference back to the CellRequest's star.  All CellRequests in a
+     * given query are associated with a single star. Keeping this
+     * reference allows us to maintain a list of columns by bit position
+     * in just one place (the star) rather than duplicate that
+     * information in each CellRequest.
+     */
+    private RolapStar star = null;
 
     /*
      * Array of column values;
@@ -52,13 +77,19 @@ public final class CellRequest {
     private Object[] singleValues;
 
     /**
-     * After all of the columns are loaded into the {@link
-     * #constrainedColumnList} instance variable, this columnsCache is created
-     * the first time the getColumns method is called.
+     * After all of the columns are loaded, the columnsCache is created
+     * the first time the getColumns method (or any method that itself
+     * calls the check method) is called.
      *
      * <p>It is assumed that the call to all additional columns,
-     * {@link #addConstrainedColumn}, will not be called after the first call to
-     * the {@link #getConstrainedColumns()} method.
+     * {@link #addConstrainedColumn}, will not be called after the first call
+     * to the {@link #getConstrainedColumns()} method.
+     *
+     * <p>TODO: Since the expectation is that the columns do not change once
+     * set, it may be worth either caching these structures so that only one
+     * exists for every unique combination, or eliminating the cache and
+     * creating a wrapper that makes the bit key + star's column list look
+     * like a column array.
      */
     private RolapStar.Column[] columnsCache = null;
 
@@ -121,6 +152,8 @@ public final class CellRequest {
         this.drillThrough = drillThrough;
         this.constrainedColumnsBitKey =
             BitKey.Factory.makeBitKey(measure.getStar().getColumnCount());
+        this.sparseColumnPredicateList =
+            new StarColumnPredicate[measure.getStar().getColumnCount()];
     }
 
     /**
@@ -136,15 +169,21 @@ public final class CellRequest {
     {
         assert columnsCache == null;
 
+        // Sanity check; we should never be adding column constraints
+        // from more than one star
+        if (star == null) {
+            star = column.getStar();
+        } else {
+            assert (star == column.getStar());
+        }
+
         final int bitPosition = column.getBitPosition();
         if (this.constrainedColumnsBitKey.get(bitPosition)) {
-            // This column is already constrained. Unless the value is the same,
-            // or this value or the previous value is null (meaning
+            // This column is already constrained. Unless the value is the
+            // same, or this value or the previous value is null (meaning
             // unconstrained) the request will never return any results.
-            int index = constrainedColumnList.indexOf(bitPosition);
-            assert index >= 0;
             final StarColumnPredicate prevValue =
-                columnPredicateList.get(index);
+                sparseColumnPredicateList[bitPosition];
             if (prevValue == null) {
                 // Previous column was unconstrained. Constrain on new
                 // value.
@@ -159,14 +198,13 @@ public final class CellRequest {
                 predicate = null;
                 unsatisfiable = true;
             }
-            columnPredicateList.set(index, predicate);
-
         } else {
-            this.constrainedColumnList.add(bitPosition);
-            this.bitToColumnMap.put(bitPosition, column);
             this.constrainedColumnsBitKey.set(bitPosition);
-            this.columnPredicateList.add(predicate);
+            numColumns++;
         }
+
+        // Note: it is possible and valid for predicate to be null here
+        this.sparseColumnPredicateList[bitPosition] = predicate;
     }
 
     /**
@@ -227,38 +265,52 @@ public final class CellRequest {
     }
 
     /**
-     * Builds the {@link #columnsCache} and reorders the
-     * {@link #columnPredicateList}
+     * Builds the {@link #columnsCache} and {@link #columnBitPositions}
      * based upon bit key position of the columns.
      */
     private void check() {
         if (isDirty) {
-            final int size = constrainedColumnList.size();
-            this.columnsCache = new RolapStar.Column[size];
-            final StarColumnPredicate[] oldColumnPredicates =
-                columnPredicateList.toArray(
-                    new StarColumnPredicate[columnPredicateList.size()]);
-            columnPredicateList.clear();
+            columnsCache = new RolapStar.Column[numColumns];
+            columnBitPositions = new int[numColumns];
             int i = 0;
             for (int bitPos = constrainedColumnsBitKey.nextSetBit(0);
                 bitPos >= 0;
                 bitPos = constrainedColumnsBitKey.nextSetBit(bitPos + 1))
             {
-                int index = constrainedColumnList.indexOf(bitPos);
-                if (index >= 0) {
-                    final StarColumnPredicate value =
-                            oldColumnPredicates[index];
-                    columnPredicateList.add(value);
-                    columnsCache[i++] = this.bitToColumnMap.get(bitPos);
-                }
+                columnBitPositions[i] = bitPos;
+                columnsCache[i] = this.star.getColumn(bitPos);
+                i++;
             }
             isDirty = false;
         }
     }
 
-    public List<StarColumnPredicate> getValueList() {
+    /**
+     * Return the predicate value associated with the given index.  Note that
+     * index is different than bit position; if there are three constraints then
+     * the indices are 0, 1, and 2, while the bitPositions could span a larger
+     * range.
+     *
+     * <p> It is valid for the predicate at a given index to be null (there
+     * should always be a column at that index, but it may not have an
+     * associated predicate).
+     *
+     * @param index Index of the constraint we're looking up
+     * @return predicate value associated with the given index
+     */
+    public StarColumnPredicate getValueAt(int index) {
         check();
-        return columnPredicateList;
+        return sparseColumnPredicateList[columnBitPositions[index]];
+    }
+
+    /**
+     * Return the number of column constraints associated with this CellRequest.
+     *
+     * @return number of columns in the CellRequest
+     */
+    public int getNumValues() {
+        check();
+        return numColumns;
     }
 
     /**
@@ -275,12 +327,12 @@ public final class CellRequest {
         assert !unsatisfiable;
         if (singleValues == null) {
             check();
-            singleValues = new Object[columnPredicateList.size()];
-            final int size = columnPredicateList.size();
-            for (int i = 0; i < size; i++) {
+            singleValues = new Object[numColumns];
+            int i = 0;
+            for (int bitPos : columnBitPositions) {
                 ValueColumnPredicate predicate =
-                    (ValueColumnPredicate) columnPredicateList.get(i);
-                singleValues[i] = predicate.getValue();
+                    (ValueColumnPredicate) sparseColumnPredicateList[bitPos];
+                singleValues[i++] = predicate.getValue();
             }
         }
         return singleValues;

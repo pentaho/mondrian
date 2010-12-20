@@ -120,7 +120,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
-        final StarColumnPredicate constr = request.getValueList().get(i);
+        final StarColumnPredicate constr = request.getValueAt(i);
         return (constr == null)
             ? LiteralStarPredicate.TRUE
             : constr;
