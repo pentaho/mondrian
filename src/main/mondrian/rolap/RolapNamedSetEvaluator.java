@@ -302,7 +302,7 @@ class RolapNamedSetEvaluator
                 }
 
                 public void set(T o) {
-                    throw new UnsupportedOperationException();
+                    // no op.
                 }
 
                 public void remove() {
