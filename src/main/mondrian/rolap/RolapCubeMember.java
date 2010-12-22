@@ -34,15 +34,6 @@ public class RolapCubeMember
 {
     protected final RolapCubeLevel cubeLevel;
     protected final RolapCubeMember parentCubeMember;
-    //cache these at construction time to minimize overhead
-    //of extra function call in tight loops
-    private final boolean isCalculated;
-    private final boolean isEvaluated;
-    private final boolean isAll;
-    private final Object key;
-    private final int hashCode;
-    private final RolapCubeHierarchy hierarchy;
-    private final RolapCubeDimension dimension;
 
     /**
      * Creates a RolapCubeMember.
@@ -55,15 +46,8 @@ public class RolapCubeMember
         RolapCubeMember parent, RolapMember member, RolapCubeLevel cubeLevel)
     {
         super(member);
-        this.isCalculated = member.isCalculated();
-        this.isEvaluated = member.isEvaluated();
-        this.isAll = member.isAll();
-        this.hashCode = member.hashCode();
-        this.key = member.getKey();
         this.parentCubeMember = parent;
         this.cubeLevel = cubeLevel;
-        this.hierarchy = cubeLevel.getHierarchy();
-        this.dimension = cubeLevel.getDimension();
         assert !member.isAll() || getClass() != RolapCubeMember.class;
     }
 
@@ -79,26 +63,6 @@ public class RolapCubeMember
         // minimize the number of calls to this method.
         return cubeLevel.getHierarchy().convertMemberName(
             member.getUniqueName());
-    }
-
-    @Override
-    public boolean isCalculated() {
-        return this.isCalculated;
-    }
-
-    @Override
-    public boolean isEvaluated() {
-        return this.isEvaluated;
-    }
-
-    @Override
-    public boolean isAll() {
-        return this.isAll;
-    }
-
-    @Override
-    public Object getKey() {
-        return this.key;
     }
 
     /**
@@ -142,7 +106,7 @@ public class RolapCubeMember
     }
 
     public int hashCode() {
-        return hashCode;
+        return member.hashCode();
     }
 
     public boolean equals(Object o) {
@@ -174,12 +138,12 @@ public class RolapCubeMember
 
     // override with stricter return type; final important for performance
     public final RolapCubeHierarchy getHierarchy() {
-        return hierarchy;
+        return cubeLevel.getHierarchy();
     }
 
     // override with stricter return type; final important for performance
     public final RolapCubeDimension getDimension() {
-        return dimension;
+        return cubeLevel.getDimension();
     }
 
     /**
@@ -275,6 +239,7 @@ public class RolapCubeMember
         return
             schemaReader.lookupMemberChildByName(this, childName, matchType);
     }
+
 }
 
 // End RolapCubeMember.java

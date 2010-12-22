@@ -34,9 +34,6 @@ public class Formula extends QueryPart {
     private Exp exp;
     // properties/solve order of member
     private final MemberProperty[] memberProperties;
-    //cache this to prevent potentially expensive lookup
-    private Number solveOrder;
-    private boolean solveOrderCached = false;
 
     /**
      * <code>true</code> is this is a member,
@@ -348,12 +345,7 @@ public class Formula extends QueryPart {
      *   or is not a number or is not constant
      */
     public Number getSolveOrder() {
-        if (!this.solveOrderCached) {
-            this.solveOrder =
-                getIntegerMemberProperty(Property.SOLVE_ORDER.name);
-            this.solveOrderCached = true;
-        }
-        return this.solveOrder;
+        return getIntegerMemberProperty(Property.SOLVE_ORDER.name);
     }
 
     /**
