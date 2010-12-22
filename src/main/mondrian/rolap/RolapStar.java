@@ -130,8 +130,8 @@ public class RolapStar {
     private int columnCount;
 
     /**
-     * Keeps track of the columns across all tables.  Should have a number of elements
-     * equal to columnCount.
+     * Keeps track of the columns across all tables. Should have
+     * a number of elements equal to columnCount.
      */
     private List<Column> columnList;
 
