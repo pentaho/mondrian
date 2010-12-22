@@ -1,5 +1,5 @@
 /*
-// $Id$Id: //open/mondrian/src/main/mondrian/rolap/RolapCubeUsages.java#6 $
+// $Id$Id: //open/mondrian-release/lagunitas/src/main/mondrian/rolap/RolapCubeUsages.java#1 $
  */
 
 public class RolapCubeUsages {
