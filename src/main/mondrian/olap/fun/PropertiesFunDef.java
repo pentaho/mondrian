@@ -120,9 +120,11 @@ class PropertiesFunDef extends FunDefBase {
             if (hierarchy == null) {
                 return Category.Value;
             }
-            Level[] levels = hierarchy.getLevels();
-            Property property = lookupProperty(
-                levels[levels.length - 1], propertyName);
+            List<Level> levels = hierarchy.getLevelList();
+            Property property =
+                lookupProperty(
+                    levels.get(levels.size() - 1),
+                    propertyName);
             if (property == null) {
                 // we'll likely get a runtime error
                 return Category.Value;

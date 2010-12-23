@@ -179,7 +179,11 @@ public class SqlStatement {
             // driver).
             accessors.clear();
             for (Type type : guessTypes()) {
-                accessors.add(createAccessor(accessors.size(), type));
+                // REVIEW: Is caching always needed? Some drivers don't need it;
+                //   some columns are only used once.
+                final boolean caching = true;
+                accessors.add(
+                    createAccessor(accessors.size(), type, caching));
             }
         } catch (Exception e) {
             status = ", failed (" + e + ")";
@@ -339,7 +343,35 @@ public class SqlStatement {
         }
     }
 
-    private Accessor createAccessor(int column, Type type) {
+    /**
+     * Creates an accessor that returns the value of a given column, converting
+     * to the required type.
+     *
+     * <p>Caching is necessary on JDBC drivers (e.g. sun's JDBC-ODBC bridge)
+     * that only allow you to get the value of a column once per row.
+     *
+     * @param column Column ordinal (0-based)
+     * @param type Desired type
+     * @param caching Whether accessor should cache value for if the same
+     *     column's value is accessed more than once on the same row
+     * @return Value
+     */
+    private Accessor createAccessor(int column, Type type, boolean caching) {
+        if (caching) {
+            final Accessor accessor = createAccessor(column, type, false);
+            return new Accessor() {
+                int lastRowCount = -1;
+                Object lastValue;
+
+                public Object get() throws SQLException {
+                    if (SqlStatement.this.rowCount > lastRowCount) {
+                        lastValue = accessor.get();
+                        lastRowCount = SqlStatement.this.rowCount;
+                    }
+                    return lastValue;
+                }
+            };
+        }
         final int columnPlusOne = column + 1;
         switch (type) {
         case OBJECT:

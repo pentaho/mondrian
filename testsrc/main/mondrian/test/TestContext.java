@@ -12,14 +12,12 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import junit.framework.ComparisonFailure;
+import junit.framework.*;
 
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
-import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cell;
 import mondrian.olap.Axis;
@@ -27,18 +25,18 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
-import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.spi.Dialect;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
 import java.io.*;
+import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.lang.reflect.*;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
@@ -69,6 +67,10 @@ public class TestContext {
      */
     private Connection foodMartConnection;
     private Dialect dialect;
+
+    private int errorStart;
+    private int errorEnd;
+    private String schema;
 
     protected static final String nl = Util.nl;
     private static final String indent = "                ";
@@ -183,10 +185,10 @@ public class TestContext {
         }
         if (catalogURL == null) {
             // Works if we are running in root directory of source tree
-            File file = new File("demo/FoodMart.xml");
+            File file = new File("demo/NewFoodMart.xml");
             if (!file.exists()) {
                 // Works if we are running in bin directory of runtime env
-                file = new File("../demo/FoodMart.xml");
+                file = new File("../demo/NewFoodMart.xml");
             }
             try {
                 catalogURL = Util.toURL(file);
@@ -278,6 +280,7 @@ public class TestContext {
         String catalogContent)
     {
         Util.PropertyList properties = getFoodMartConnectionProperties();
+        catalogContent = checkErrorLocation(catalogContent);
         properties.put(
             RolapConnectionProperties.CatalogContent.name(),
             catalogContent);
@@ -293,6 +296,7 @@ public class TestContext {
         String role)
     {
         Util.PropertyList properties = getFoodMartConnectionProperties();
+        catalogContent = checkErrorLocation(catalogContent);
         properties.put(
             RolapConnectionProperties.CatalogContent.name(),
             catalogContent);
@@ -900,6 +904,13 @@ public class TestContext {
                 "<Employees>80000.0000</Employees>",
                 "<Employees>80000</Employees>");
         }
+        if (true) {
+            // mondrian-4
+            actual = Util.replace(
+                actual,
+                "[Promotion.Media Type]",
+                "[Promotion Media]");
+        }
         return actual;
     }
 
@@ -945,6 +956,13 @@ public class TestContext {
                 queryString,
                 "[Time.Weekly].[All Time.Weeklys]",
                 "[Time].[Weekly].[All Weeklys]");
+        }
+        // New foodmart schema.
+        if (true) {
+            queryString = Util.replace(
+                queryString,
+                "[Promotion Media].[Media Type]",
+                "[Promotion].[Media Type]");
         }
         return queryString;
     }
@@ -1315,6 +1333,30 @@ public class TestContext {
     }
 
     /**
+     * Asserts that a particular error is given while validating a schema.
+     *
+     * <p>At present errors are regarded as fatal, therefore there can be at
+     * most one. That may change; if so, this method will behave more like
+     * {@link #getSchemaWarnings()} followed by
+     * {@link #assertContains(java.util.List, String, String)}.
+     *
+     * @param expected Expected message
+     * @param errorLoc Location of error
+     */
+    public void assertSchemaError(
+        String expected,
+        String errorLoc)
+    {
+        final List<Exception> exceptionList = new ArrayList<Exception>();
+        try {
+            assertSimpleQuery();
+        } catch (Exception e) {
+            exceptionList.add(e);
+        }
+        assertContains(exceptionList, expected, errorLoc);
+    }
+
+    /**
      * Wrapper around a string that indicates that all line endings have been
      * converted to platform-specific line endings.
      *
@@ -1439,7 +1481,7 @@ public class TestContext {
     {
         // if the actual SQL isn't in the current dialect we have some
         // problems... probably with the dialectize method
-        assertEqualsVerbose(actualSql, dialectize(actualSql));
+        assertEqualsVerbose(actualSql, fold(dialectize(actualSql)).s);
 
         String transformedExpectedSql = removeQuotes(dialectize(expectedSql));
         String transformedActualSql = removeQuotes(actualSql);
@@ -1709,17 +1751,51 @@ public class TestContext {
     {
         return new TestContext() {
             public Util.PropertyList getFoodMartConnectionProperties() {
-                final String schema = getFoodMartSchema(
+                String catalogContent = getFoodMartSchema(
                     parameterDefs, cubeDefs, virtualCubeDefs, namedSetDefs,
                     udfDefs, roleDefs);
                 Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
+                catalogContent = checkErrorLocation(catalogContent);
                 properties.put(
                     RolapConnectionProperties.CatalogContent.name(),
-                    schema);
+                    catalogContent);
                 return properties;
             }
         };
+    }
+
+    protected String checkErrorLocation(String schema) {
+        int firstCaret = schema.indexOf('^');
+        int secondCaret = -1;
+        if (firstCaret >= 0) {
+            schema = schema.substring(0, firstCaret)
+                + schema.substring(firstCaret + 1);
+            secondCaret = schema.indexOf('^', firstCaret);
+            if (secondCaret >= 0) {
+                schema = schema.substring(0, secondCaret)
+                    + schema.substring(secondCaret + 1);
+            }
+        }
+        setErrorLocation(schema, firstCaret, secondCaret);
+        return schema;
+    }
+
+    /**
+     * Sets the position in the schema text where a validation error is
+     * expected to occur.
+     *
+     * @param errorStart Offset of start of error
+     * @param errorEnd Offset of end of error, or -1
+     */
+    protected void setErrorLocation(
+        String schema,
+        int errorStart,
+        int errorEnd)
+    {
+        this.schema = schema;
+        this.errorStart = errorStart;
+        this.errorEnd = errorEnd;
     }
 
     /**
@@ -1727,14 +1803,17 @@ public class TestContext {
      *
      * @return TestContext which contains the given schema
      */
-    public static TestContext create(final String schema) {
+    public static TestContext create(final String catalogContent) {
         return new TestContext() {
             public Util.PropertyList getFoodMartConnectionProperties() {
                 Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
-                properties.put(
-                    RolapConnectionProperties.CatalogContent.name(),
-                    schema);
+                if (catalogContent != null) {
+                    String catalogContent2 = checkErrorLocation(catalogContent);
+                    properties.put(
+                        RolapConnectionProperties.CatalogContent.name(),
+                        catalogContent2);
+                }
                 return properties;
             }
         };
@@ -1793,15 +1872,16 @@ public class TestContext {
     {
         return new TestContext() {
             public Util.PropertyList getFoodMartConnectionProperties() {
-                final String schema =
+                String catalogContent =
                     getFoodMartSchemaSubstitutingCube(
                         cubeName, dimensionDefs,
                         measureDefs, memberDefs, namedSetDefs);
                 Util.PropertyList properties =
                     super.getFoodMartConnectionProperties();
+                catalogContent = checkErrorLocation(catalogContent);
                 properties.put(
                     RolapConnectionProperties.CatalogContent.name(),
-                    schema);
+                    catalogContent);
                 return properties;
             }
         };
@@ -1898,6 +1978,133 @@ public class TestContext {
             }
             .getFoodMartConnection();
         return connection.getSchema().getWarnings();
+    }
+
+    /**
+     * Asserts that a list of exceptions (probably from
+     * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+     * exception.
+     *
+     * <p>If the expected string contains the token "${pos}", it is replaced
+     * with the range indicated by carets when the schema was created: see
+     * {@link #setErrorLocation(String, int, int)}.
+     *
+     * @param exceptionList List of exceptions
+     * @param expected Expected message
+     * @param errorLoc Location of error
+     */
+    public void assertContains(
+        List<Exception> exceptionList,
+        String expected,
+        String errorLoc)
+    {
+        final StringBuilder buf = new StringBuilder();
+        final StringWriter sw = new StringWriter();
+        final int posPos = expected.indexOf("${pos}");
+        for (Exception exception : exceptionList) {
+            RolapSchema.XmlLocation xmlLocation = null;
+            if (exception instanceof RolapSchema.MondrianSchemaException) {
+                final RolapSchema.MondrianSchemaException mse =
+                    (RolapSchema.MondrianSchemaException) exception;
+                xmlLocation = mse.getXmlLocation();
+            }
+            String expected2 = expected;
+            if (posPos >= 0 && xmlLocation != null) {
+                String pos = xmlLocation.toString();
+                expected2 =
+                    expected.substring(0, posPos)
+                    + pos
+                    + expected.substring(posPos + "${pos}".length());
+            }
+            final String message = exception.getMessage();
+            if (message != null && message.matches(expected2)) {
+                if (xmlLocation == null) {
+                    Assert.fail(
+                        "Actual message matched expected message, '"
+                        + message
+                        + "'; but we expected an error location and actual "
+                        + "exception had no location");
+                    return;
+                }
+                if (errorLoc == null && errorStart != -1) {
+                    throw new AssertionFailedError(
+                        "Test must specify expected error location. Either use "
+                        + "carets (^) in the schema string, or specify the "
+                        + "errorLoc parameter");
+                }
+                if (errorLoc != null) {
+                    int errorStart = -1;
+                    while ((errorStart
+                        = schema.indexOf(errorLoc, errorStart + 1)) >= 0)
+                    {
+                        int errorEnd = errorStart + errorLoc.length();
+                        sw.append(schema.substring(errorStart, errorEnd))
+                            .append(", start=")
+                            .append(String.valueOf(errorStart))
+                            .append(", end=")
+                            .append(String.valueOf(errorEnd))
+                            .append(", range=")
+                            .append(xmlLocation.getRange())
+                            .append(nl);
+                        if (xmlLocation.getRange().equals(
+                            errorStart + "-" + errorEnd))
+                        {
+                            return;
+                        }
+                    }
+                }
+                if (errorStart != -1) {
+                    if (xmlLocation.getRange().equals(
+                        errorStart + "-" + errorEnd))
+                    {
+                        return;
+                    }
+                }
+                throw new AssertionFailedError(
+                    "Actual message matched expected, but actual error "
+                    + "location " + xmlLocation + " did not match expected"
+                    + Util.nl + "Other info:" + Util.nl + sw);
+            }
+            if (buf.length() > 0) {
+                buf.append(Util.nl);
+            }
+            buf.append(message);
+        }
+        throw new AssertionFailedError(
+            "Exception list did not contain expected exception '"
+            + expected + "'. Exception list is:" + Util.nl
+            + buf + Util.nl
+            + "Other info:" + Util.nl + sw);
+    }
+
+    /**
+     * Asserts that a list of exceptions (probably from
+     * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+     * exception.
+     *
+     * @param exceptionList List of exceptions
+     * @param expected Expected message
+     */
+    protected void assertContains(
+        List<Exception> exceptionList,
+        String expected)
+    {
+        StringBuilder buf = new StringBuilder();
+        for (Exception exception : exceptionList) {
+            if (exception.getMessage().matches(expected)) {
+                return;
+            }
+            if (buf.length() > 0) {
+                buf.append(Util.nl);
+            }
+            buf.append(exception.getMessage());
+        }
+        Assert.fail(
+            "Exception list did not contain expected exception '"
+            + expected
+            + "'. Exception list is:"
+            + Util.nl
+            + buf.toString());
     }
 
     public OlapConnection getOlap4jConnection() throws SQLException {

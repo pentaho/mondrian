@@ -95,9 +95,8 @@ public class SmartMemberReader implements MemberReader {
     // implement MemberReader
     public List<RolapMember> getMembers() {
         List<RolapMember> v = new ConcatenableList<RolapMember>();
-        RolapLevel[] levels = (RolapLevel[]) getHierarchy().getLevels();
         // todo: optimize by walking to children for members we know about
-        for (RolapLevel level : levels) {
+        for (RolapLevel level : getHierarchy().getRolapLevelList()) {
             List<RolapMember> membersInLevel = getMembersInLevel(
                 level,
                 0,
@@ -250,7 +249,7 @@ public class SmartMemberReader implements MemberReader {
         Map<RolapMember, List<RolapMember>> tempMap =
             new HashMap<RolapMember, List<RolapMember>>();
         for (RolapMember member1 : members) {
-            tempMap.put(member1, Collections.EMPTY_LIST);
+            tempMap.put(member1, Collections.<RolapMember>emptyList());
         }
         for (final RolapMember child : children) {
             // todo: We could optimize here. If members.length is small, it's

@@ -8,8 +8,6 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.spi.Dialect;
-
 import java.util.List;
 import java.util.Calendar;
 import java.sql.*;
@@ -96,6 +94,7 @@ public class AccessDialect extends JdbcDialectImpl {
             columnNames, columnTypes, valueList,
             " from `days` where `day` = 1", false);
     }
+
 }
 
 // End AccessDialect.java

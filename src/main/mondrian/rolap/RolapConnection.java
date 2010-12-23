@@ -98,7 +98,7 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a RolapConnection.
      *
-     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+     * <p>Only {@link RolapSchemaPool#get} calls this with
      * schema != null (to
      * create a schema's internal connection). Other uses retrieve a schema
      * from the cache based upon the <code>Catalog</code> property.
@@ -116,7 +116,7 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a RolapConnection.
      *
-     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+     * <p>Only {@link RolapSchemaPool#get} calls this with
      * schema != null (to create a schema's internal connection).
      * Other uses retrieve a schema from the cache based upon
      * the <code>Catalog</code> property.
@@ -163,14 +163,14 @@ public class RolapConnection extends ConnectionBase {
                     jdbcConnectString
                     + getJdbcProperties(connectInfo).toString();
 
-                schema = RolapSchema.Pool.instance().get(
+                schema = RolapSchemaPool.instance().get(
                     catalogUrl,
                     connectionKey,
                     jdbcUser,
                     strDataSource,
                     connectInfo);
             } else {
-                schema = RolapSchema.Pool.instance().get(
+                schema = RolapSchemaPool.instance().get(
                     catalogUrl,
                     dataSource,
                     connectInfo);

@@ -99,21 +99,12 @@ public interface Cube extends OlapElement, Annotated {
     Member createCalculatedMember(String xml);
 
     /**
-     * Finds out non joining dimensions for this cube.
+     * Returns the first level of a given type in this cube.
      *
-     * @param tuple array of members
-     * @return Set of dimensions that do not exist (non joining) in this cube
+     * @param levelType Level type
+     * @return First level of given type, or null
      */
-    Set<Dimension> nonJoiningDimensions(Member[] tuple);
-
-    /**
-     * Finds out non joining dimensions for this cube.
-     *
-     * @param otherDims Set of dimensions to be tested for existence
-     *     in this cube
-     * @return Set of dimensions that do not exist (non joining) in this cube
-     */
-    Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims);
+    Level getTimeLevel(org.olap4j.metadata.Level.Type levelType);
 }
 
 // End Cube.java

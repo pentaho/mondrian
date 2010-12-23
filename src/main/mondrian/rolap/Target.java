@@ -16,7 +16,7 @@ import mondrian.rolap.sql.TupleConstraint;
 import java.sql.SQLException;
 import java.util.*;
 
- /**
+/**
  * Helper class for {@link mondrian.rolap.HighCardSqlTupleReader} that
  * keeps track of target levels and constraints for adding to SQL query.
  *
@@ -33,6 +33,8 @@ public class Target extends TargetBase {
     private RolapLevel[] levels;
     private int levelDepth;
 
+    SqlTupleReader.ColumnLayout layout;
+
     public Target(
         final RolapLevel level,
         final TupleReader.MemberBuilder memberBuilder,
@@ -47,7 +49,8 @@ public class Target extends TargetBase {
     }
 
     public void open() {
-        levels = (RolapLevel[]) level.getHierarchy().getLevels();
+        levels = level.getHierarchy().getRolapLevelList().toArray(
+            new RolapLevel[level.getHierarchy().getRolapLevelList().size()]);
         // REVIEW: ArrayDeque is preferable to LinkedList (JDK1.6 and up) but it
         //   doesn't implement List, so we can't easily interoperate the two.
         setList(new LinkedList<RolapMember>());
@@ -55,7 +58,7 @@ public class Target extends TargetBase {
         parentChild = level.isParentChild();
     }
 
-    int internalAddRow(SqlStatement stmt, int column)
+    void internalAddRow(SqlStatement stmt)
         throws SQLException
     {
         RolapMember member = null;
@@ -71,22 +74,24 @@ public class Target extends TargetBase {
                     continue;
                 }
 
-                if (childLevel.isParentChild()) {
-                    column++;
+                Object[] keys = new Object[layout.keyOrdinals.length];
+                for (int j = 0, n = layout.keyOrdinals.length; j < n; j++) {
+                    int keyOrdinal = layout.keyOrdinals[j];
+                    Object value = accessors.get(keyOrdinal).get();
+                    if (value == null) {
+                        value = RolapUtil.sqlNullValue;
+                    }
+                    keys[j] = value;
                 }
-
-                Object value = accessors.get(column++).get();
-                if (value == null) {
-                    value = RolapUtil.sqlNullValue;
-                }
+                List<Object> keyList = Arrays.asList(keys);
                 Object captionValue;
-                if (childLevel.hasCaptionColumn()) {
-                    captionValue = accessors.get(column++).get();
+                if (layout.captionOrdinal >= 0) {
+                    captionValue = accessors.get(layout.captionOrdinal).get();
                 } else {
                     captionValue = null;
                 }
                 RolapMember parentMember = member;
-                Object key = cache.makeKey(parentMember, value);
+                Object key = keys.length == 1 ? keys[0] : keyList;
                 member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
@@ -94,28 +99,25 @@ public class Target extends TargetBase {
                         RolapNativeCrossJoin.NonEmptyCrossJoinConstraint
                         && childLevel.isParentChild())
                     {
-                        member = castToNonEmptyCJConstraint(constraint)
-                            .findMember(value);
+                        member =
+                            ((RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)
+                                constraint).findMember(key);
                     }
                     if (member == null) {
+                        final Object keyClone = RolapMember.Key.create(keys);
                         member = memberBuilder.makeMember(
-                            parentMember, childLevel, value, captionValue,
-                            parentChild, stmt, key, column);
+                            parentMember, childLevel, keyClone, captionValue,
+                            parentChild, stmt, layout);
                     }
                 }
-
-                // Skip over the columns consumed by makeMember
-                if (!childLevel.getOrdinalExp().equals(
-                    childLevel.getKeyExp()))
-                {
-                    ++column;
-                }
-                column += childLevel.getProperties().length;
             }
             setCurrMember(member);
         }
         getList().add(member);
-        return column;
+    }
+
+    public void setColumnLayout(SqlTupleReader.ColumnLayout layout) {
+        this.layout = layout;
     }
 
     public List<RolapMember> close() {
@@ -143,7 +145,6 @@ public class Target extends TargetBase {
                         new Throwable().printStackTrace();
                     }
                 }
-
                 return getList().size();
             }
 
@@ -151,7 +152,6 @@ public class Target extends TargetBase {
                 if (asList) {
                     return getList().get(idx);
                 }
-
                 if (idx == 0 && this.firstMemberAssigned) {
                     return this.first;
                 }
@@ -213,7 +213,6 @@ public class Target extends TargetBase {
             public Iterator<RolapMember> iterator() {
                 return new Iterator<RolapMember>() {
                     private int cursor = 0;
-
                     public boolean hasNext() {
                         try {
                             get(cursor);
@@ -222,11 +221,9 @@ public class Target extends TargetBase {
                             return false;
                         }
                     }
-
                     public RolapMember next() {
                         return get(cursor++);
                     }
-
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }

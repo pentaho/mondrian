@@ -406,7 +406,7 @@ public class CompatibilityTest extends FoodMartTestCase {
      * Tests that NULL values sort last on all platforms. On some platforms,
      * such as MySQL, NULLs naturally come before other values, so we have to
      * generate a modified ORDER BY clause.
-      */
+     */
     public void testNullCollation() {
         if (!getTestContext().getDialect().supportsGroupByExpressions()) {
             // Derby does not support expressions in the GROUP BY clause,
@@ -419,12 +419,12 @@ public class CompatibilityTest extends FoodMartTestCase {
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"store\"/>\n"
-            + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
-            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\">\n"
             + "      <Level name=\"Store Name\" column=\"store_name\"  uniqueMembers=\"true\">\n"
             + "       <OrdinalExpression>\n"
             + "        <SQL dialect=\"access\">\n"
-            + "           Iif(store_name = 'HQ', null, store_name)\n"
+            + "           Iif(<Column table=\"store\" name=\"store_name\"/>  = 'HQ', null, <Column table=\"store\" name=\"store_name\"/>)\n"
             + "       </SQL>\n"
             + "        <SQL dialect=\"oracle\">\n"
             + "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n"

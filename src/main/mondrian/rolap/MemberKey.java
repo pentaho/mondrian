@@ -12,8 +12,15 @@
 */
 package mondrian.rolap;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * <code>MemberKey</code> todo:
+ *
+ * @see mondrian.olap.Util#deprecated(Object, boolean) Review to ensure that
+ * this data structure is as memory-efficient as possible. Compare with
+ * RolapMemberBase.key.
  *
  * @author jhyde
  * @since 21 March, 2002
@@ -21,11 +28,18 @@ package mondrian.rolap;
  */
 class MemberKey {
     private final RolapMember parent;
-    private final Object value;
-    MemberKey(RolapMember parent, Object value) {
+    private final Object[] value;
+
+    MemberKey(RolapMember parent, Object[] value) {
         this.parent = parent;
         this.value = value;
     }
+
+    MemberKey(RolapMember parent, List<Object> value) {
+        this.parent = parent;
+        this.value = value.toArray(new Object[value.size()]);
+    }
+
     // override Object
     public boolean equals(Object o) {
         if (!(o instanceof MemberKey)) {
@@ -33,8 +47,9 @@ class MemberKey {
         }
         MemberKey other = (MemberKey) o;
         return (other.parent == this.parent)
-            && other.value.equals(this.value);
+            && Arrays.equals(other.value, this.value);
     }
+
     // override Object
     public int hashCode() {
         return ((parent == null)

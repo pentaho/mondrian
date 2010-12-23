@@ -170,7 +170,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 optimizeChildren(
                     tupleList,
                     evaluator.getSchemaReader(),
-                    evaluator.getMeasureCube());
+                    evaluator.getMeasureGroup());
             checkIfAggregationSizeIsTooLarge(tupleList);
             return tupleList;
         }
@@ -301,13 +301,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          *
          * @param tuples Tuples
          * @param reader Schema reader
-         * @param baseCubeForMeasure Cube
+         * @param measureGroup Cube
          * @return xxxx
          */
         public static List<Member[]> optimizeChildren(
             List<Member[]> tuples,
             SchemaReader reader,
-            Cube baseCubeForMeasure)
+            RolapMeasureGroup measureGroup)
         {
             Map<Member, Integer>[] membersOccurencesInTuple =
                 membersVersusOccurencesInTuple(tuples);
@@ -324,7 +324,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                         optimizeMemberSet(
                             new LinkedHashSet<Member>(members),
                             reader,
-                            baseCubeForMeasure);
+                            measureGroup);
                     if (sets[i].size() != originalSize) {
                         optimized = true;
                     }
@@ -379,7 +379,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         private static Set<Member> optimizeMemberSet(
             Set<Member> members,
             SchemaReader reader,
-            Cube baseCubeForMeasure)
+            RolapMeasureGroup measureGroup)
         {
             boolean didOptimize;
             Set<Member> membersToBeOptimized = new LinkedHashSet<Member>();
@@ -422,7 +422,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 }
                 if (childCountOfParent != -1
                     && membersToBeOptimized.size() == childCountOfParent
-                    && canOptimize(firstParentMember, baseCubeForMeasure))
+                    && canOptimize(firstParentMember, measureGroup))
                 {
                     optimizedMembers.add(firstParentMember);
                     didOptimize = true;
@@ -461,10 +461,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
         private static boolean canOptimize(
             Member parentMember,
-            Cube baseCube)
+            RolapMeasureGroup measureGroup)
         {
             return dimensionJoinsToBaseCube(
-                parentMember.getDimension(), baseCube)
+                parentMember.getDimension(), measureGroup)
                 || !parentMember.isAll();
         }
 
@@ -484,11 +484,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
         private static boolean dimensionJoinsToBaseCube(
             Dimension dimension,
-            Cube baseCube)
+            RolapMeasureGroup measureGroup)
         {
             HashSet<Dimension> dimensions = new HashSet<Dimension>();
             dimensions.add(dimension);
-            return baseCube.nonJoiningDimensions(dimensions).size() == 0;
+            return measureGroup.nonJoiningDimensions(dimensions).size() == 0;
         }
 
         private static int getChildCount(

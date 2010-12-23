@@ -173,26 +173,25 @@ public class RolapEvaluator implements Evaluator {
         return new RolapEvaluator(root);
     }
 
-    public RolapCube getMeasureCube() {
+    public RolapMeasureGroup getMeasureGroup() {
         final RolapMember measure = currentMembers[0];
         if (measure instanceof RolapStoredMeasure) {
-            return ((RolapStoredMeasure) measure).getCube();
+            return ((RolapStoredMeasure) measure).getMeasureGroup();
         }
         return null;
     }
 
     public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
         RolapCube virtualCube = getCube();
-        RolapCube baseCube = getMeasureCube();
-        if (virtualCube.isVirtual() && baseCube != null) {
-            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
-            {
+        RolapMeasureGroup measureGroup = getMeasureGroup();
+        if (measureGroup != null) {
+            if (measureGroup.ignoreUnrelatedDimensions) {
                 return false;
             } else if (MondrianProperties.instance()
                 .IgnoreMeasureForNonJoiningDimension.get())
             {
                 Set<Dimension> nonJoiningDimensions =
-                    baseCube.nonJoiningDimensions(members);
+                    measureGroup.nonJoiningDimensions(members);
                 if (!nonJoiningDimensions.isEmpty()) {
                     return true;
                 }
@@ -212,7 +211,7 @@ public class RolapEvaluator implements Evaluator {
         if (o == Util.nullValue || o == null) {
             return true;
         }
-        final RolapCube measureCube = getMeasureCube();
+        final RolapMeasureGroup measureCube = getMeasureGroup();
         if (measureCube == null) {
             return false;
         }
@@ -992,14 +991,8 @@ public class RolapEvaluator implements Evaluator {
         this.evalAxes = evalAxes;
     }
 
-    /**
-     * Checks if unrelated dimensions to the measure in the current context
-     * should be ignored.
-     * @return boolean
-     */
     public boolean shouldIgnoreUnrelatedDimensions() {
-        return getCube().shouldIgnoreUnrelatedDimensions(
-            getMeasureCube().getName());
+        return getMeasureGroup().ignoreUnrelatedDimensions;
     }
 }
 

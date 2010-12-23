@@ -121,6 +121,7 @@ public class Test {
                     new Id.Segment("Customers", Id.Quoting.QUOTED), false);
         testMemberReader(customerHierarchy.getMemberReader());
     }
+
     void testMemberReader(MemberReader reader)
     {
         pw.println();
@@ -132,11 +133,12 @@ public class Test {
         print(rootMembers);
         pw.println();
 
-        Level[] levels = rootMembers.get(0).getHierarchy().getLevels();
-        Level level = levels[levels.length > 1 ? 1 : 0];
+        List<RolapLevel> levels =
+            rootMembers.get(0).getHierarchy().getRolapLevelList();
+        RolapLevel level = levels.get(levels.size() > 1 ? 1 : 0);
         pw.print("Members at level " + level.getUniqueName() + " are ");
         List<RolapMember> members =
-            reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+            reader.getMembersInLevel(level, 0, Integer.MAX_VALUE);
         print(members);
         pw.println();
 
@@ -167,6 +169,7 @@ public class Test {
         }
         pw.println("}");
     }
+
     private void print(RolapMember member)
     {
         if (member == null) {
@@ -175,6 +178,7 @@ public class Test {
         }
         pw.print("Member(" + member.getUniqueName() + ")");
     }
+
     private void print(List<RolapMember> members)
     {
         pw.print("{");

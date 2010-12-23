@@ -14,8 +14,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TypeUtil;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -75,7 +74,6 @@ public class ValidMeasureFunDef extends FunDefBase
                     ((TupleCalc)calc).evaluateTuple(evaluator);
                 memberList = Arrays.asList(tupleMembers);
             }
-            RolapCube baseCube = null;
             RolapCube virtualCube = (RolapCube) evaluator.getCube();
             // find the measure in the tuple
             int measurePosition = -1;
@@ -86,12 +84,11 @@ public class ValidMeasureFunDef extends FunDefBase
                 }
             }
             // problem: if measure is in two base cubes
-            baseCube =
-                getBaseCubeofMeasure(
-                    evaluator, memberList.get(measurePosition), baseCube);
+            RolapMeasureGroup measureGroup =
+                getMeasureGroup(memberList.get(measurePosition));
             List<Dimension> vMinusBDimensions =
                 getDimensionsToForceToAllLevel(
-                    virtualCube, baseCube, memberList);
+                    virtualCube, measureGroup, memberList);
             // declare members array and fill in with all needed members
             final List<Member> validMeasureMembers =
                 new ArrayList<Member>(memberList);
@@ -136,29 +133,13 @@ public class ValidMeasureFunDef extends FunDefBase
             return new Calc[]{calc};
         }
 
-        private RolapCube getBaseCubeofMeasure(
-            Evaluator evaluator, Member member, RolapCube baseCube)
-        {
-            final Cube[] cubes = evaluator.getSchemaReader().getCubes();
-            for (Cube cube1 : cubes) {
-                RolapCube cube = (RolapCube) cube1;
-                if (!cube.isVirtual()) {
-                    for (RolapMember measure : cube.getMeasuresMembers()) {
-                        if (measure.getName().equals(member.getName())) {
-                            baseCube = cube;
-                        }
-                    }
-                }
-                if (baseCube != null) {
-                    break;
-                }
-            }
-            return baseCube;
+        private RolapMeasureGroup getMeasureGroup(Member member) {
+            return ((RolapStoredMeasure) member).getMeasureGroup();
         }
 
         private List<Dimension> getDimensionsToForceToAllLevel(
             RolapCube virtualCube,
-            RolapCube baseCube,
+            RolapMeasureGroup measureGroup,
             List<Member> memberList)
         {
             List<Dimension> vMinusBDimensions = new ArrayList<Dimension>();
@@ -166,7 +147,7 @@ public class ValidMeasureFunDef extends FunDefBase
             virtualCubeDims.addAll(Arrays.asList(virtualCube.getDimensions()));
 
             Set<Dimension> nonJoiningDims =
-                baseCube.nonJoiningDimensions(virtualCubeDims);
+                measureGroup.nonJoiningDimensions(virtualCubeDims);
 
             for (Dimension nonJoiningDim : nonJoiningDims) {
                 if (!isDimInMembersList(memberList, nonJoiningDim)) {

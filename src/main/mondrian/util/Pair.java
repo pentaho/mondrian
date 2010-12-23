@@ -52,6 +52,17 @@ public class Pair <L, R>
         this.right = entry.getValue();
     }
 
+    /**
+     * Creates a pair, inferring type parameters from the arguments.
+     *
+     * @param left Left value
+     * @param right Right value
+     * @return Pair
+     */
+    public static <L, R> Pair<L, R> of(L left, R right) {
+        return new Pair<L, R>(left, right);
+    }
+
     public boolean equals(Object obj) {
         if (obj instanceof Pair) {
             //noinspection unchecked

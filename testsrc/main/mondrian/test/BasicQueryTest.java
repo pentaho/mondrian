@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnectionProperties;
@@ -247,6 +248,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Food].[Dairy]}\n"
             + "{[Product].[Drink].[Dairy]}\n"
             + "{[Product].[Non-Consumable].[Checkout]}\n"
+            +  (FunctionTest.FILTER_SNOWFLAKE
+                ? ""
+                : "{[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Food].[Packaged Foods]}\n")
             + "Row #0: 2,756.80\n"
             + "Row #0: 6,941.46\n"
             + "Row #0: 151.79%\n"
@@ -315,7 +320,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #21: 149.34%\n"
             + "Row #22: 1,525.04\n"
             + "Row #22: 3,767.71\n"
-            + "Row #22: 147.06%\n"),
+            + "Row #22: 147.06%\n"
+            + (FunctionTest.FILTER_SNOWFLAKE
+                ? ""
+                : "Row #23: \n"
+                  + "Row #23: \n"
+                  + "Row #23: \n"
+                  + "Row #24: \n"
+                  + "Row #24: \n"
+                  + "Row #24: \n")),
 
         // 6
         new QueryAndResult(
@@ -1027,7 +1040,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Product].members} on rows\n"
             + "from Sales");
         final int rowCount = result.getAxes()[1].getPositions().size();
-        assertEquals(2256, rowCount);
+        assertEquals(FunctionTest.FILTER_SNOWFLAKE ? 2256 : 2266, rowCount);
         assertEquals(
             "152",
             result.getCell(
@@ -1055,7 +1068,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             new HashMap<String, Hierarchy>();
         for (Dimension dimension : result.getQuery().getCube().getDimensions())
         {
-            for (Hierarchy hierarchy : dimension.getHierarchies()) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 hierarchyMap.put(hierarchy.getUniqueName(), hierarchy);
             }
         }
@@ -2403,16 +2416,25 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "7,786.21"));
 
     public void testTaglib0() {
+        if (!FunctionTest.FILTER_SNOWFLAKE) {
+            return;
+        }
         assertQueryReturns(
             taglibQueries.get(0).query, taglibQueries.get(0).result);
     }
 
     public void testTaglib1() {
+        if (!FunctionTest.FILTER_SNOWFLAKE) {
+            return;
+        }
         assertQueryReturns(
             taglibQueries.get(1).query, taglibQueries.get(1).result);
     }
 
     public void testTaglib2() {
+        if (!FunctionTest.FILTER_SNOWFLAKE) {
+            return;
+        }
         assertQueryReturns(
             taglibQueries.get(2).query, taglibQueries.get(2).result);
     }
@@ -5574,7 +5596,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  <Dimension name=\"Cities\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Cities\" primaryKey=\"customer_id\">\n"
             + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"true\"/> \n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
             + "  <Dimension name=\"Customers\" foreignKey=\"customer_id\">\n"

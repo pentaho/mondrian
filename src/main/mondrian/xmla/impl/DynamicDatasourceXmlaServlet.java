@@ -19,9 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Extends DefaultXmlaServlet to add dynamic datasource loading capability.
@@ -140,11 +138,9 @@ public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
     }
 
     void flushCatalog(String catalogName) {
-        Iterator schemas = RolapSchema.getRolapSchemas();
-        while (schemas.hasNext()) {
-            RolapSchema curSchema = (RolapSchema) schemas.next();
-            if (curSchema.getName().equals(catalogName)) {
-                new CacheControlImpl().flushSchema(curSchema);
+        for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
+            if (schema.getName().equals(catalogName)) {
+                new CacheControlImpl().flushSchema(schema);
             }
         }
     }

@@ -13,33 +13,27 @@
 
 package mondrian.rolap;
 
-import java.io.*;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-
-import javax.sql.DataSource;
-
 import mondrian.olap.*;
+import mondrian.olap.Member;
 import mondrian.olap.fun.*;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.StringType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.*;
+import mondrian.util.DirectedGraph;
 
 import org.apache.log4j.Logger;
-import org.apache.commons.vfs.*;
 
 import org.eigenbase.xom.*;
-import org.eigenbase.xom.Parser;
-import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.UnmodifiableArrayList;
+
+import javax.sql.DataSource;
+import java.lang.reflect.*;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -51,25 +45,10 @@ import org.olap4j.impl.Olap4jUtil;
  * @since 26 July, 2001
  * @version $Id$
  */
-public class RolapSchema implements Schema {
-    private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
+    static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
-    private static final Set<Access> schemaAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
-
-    private static final Set<Access> cubeAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
-
-    private static final Set<Access> dimensionAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
-
-    private static final Set<Access> hierarchyAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
-
-    private static final Set<Access> memberAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
-
-    private String name;
+    final String name;
 
     /**
      * Internal use only.
@@ -95,18 +74,18 @@ public class RolapSchema implements Schema {
      */
     private RoleImpl defaultRole;
 
-    private final String md5Bytes;
+    final String md5Bytes;
 
     /**
      * A schema's aggregation information
      */
-    private AggTableManager aggTableManager;
+    AggTableManager aggTableManager;
 
     /**
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
-    private String key;
+    final String key;
 
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
@@ -140,33 +119,51 @@ public class RolapSchema implements Schema {
      * identifies a relational expression(e.g. a column) specified
      * in the xml schema.
      */
-    private final Map<
-        MondrianDef.Relation,
-        Map<MondrianDef.Expression, Integer>>
-        relationExprCardinalityMap;
+    private final Map<PhysRelation, Map<PhysExpr, Integer>>
+        relationExprCardinalityMap =
+        new HashMap<PhysRelation, Map<PhysExpr, Integer>>();
+
+    PhysSchema physicalSchema;
 
     /**
      * List of warnings. Populated when a schema is created by a connection
      * that has
      * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
      */
-    private final List<Exception> warningList = new ArrayList<Exception>();
-    private Map<String, Annotation> annotationMap;
+    private final List<MondrianSchemaException> warningList =
+        new ArrayList<MondrianSchemaException>();
+
+    private final Map<String, Annotation> annotationMap;
 
     /**
-     * This is ONLY called by other constructors (and MUST be called
-     * by them) and NEVER by the Pool.
+     * Number of errors (messages logged via {@link #error}) encountered during
+     * validation. If there are any errors, the schema is not viable for
+     * queries. Fatal errors (logged via {@link #fatal}) will already have
+     * aborted the validation process; warnings (logged via {@link #warning})
+     * will have been logged without incrementing the error count.
+     */
+    private int errorCount;
+
+    /**
+     * Creates a schema.
+     *
+     * <p>Must be called from {@link mondrian.rolap.RolapSchemaLoader}, and
+     * then immediately loaded. Never directly from the pool.
      *
      * @param key Key
      * @param connectInfo Connect properties
      * @param dataSource Data source
      * @param md5Bytes MD5 hash
+     * @param name Name
+     * @param annotationMap Annotation map
      */
-    private RolapSchema(
+    RolapSchema(
         final String key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
-        final String md5Bytes)
+        final String md5Bytes,
+        String name,
+        Map<String, Annotation> annotationMap)
     {
         this.key = key;
         this.md5Bytes = md5Bytes;
@@ -183,41 +180,11 @@ public class RolapSchema implements Schema {
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
             createDataSourceChangeListener(connectInfo);
-        this.relationExprCardinalityMap =
-            new HashMap<
-                MondrianDef.Relation,
-                Map<MondrianDef.Expression, Integer>>();
-    }
-
-    /**
-     * Create RolapSchema given the MD5 hash, catalog name and string (content)
-     * and the connectInfo object.
-     *
-     * @param md5Bytes may be null
-     * @param catalogUrl URL of catalog
-     * @param catalogStr may be null
-     * @param connectInfo Connection properties
-     */
-    private RolapSchema(
-            final String key,
-            final String md5Bytes,
-            final String catalogUrl,
-            final String catalogStr,
-            final Util.PropertyList connectInfo,
-            final DataSource dataSource)
-    {
-        this(key, connectInfo, dataSource, md5Bytes);
-        load(catalogUrl, catalogStr);
-    }
-
-    private RolapSchema(
-            final String key,
-            final String catalogUrl,
-            final Util.PropertyList connectInfo,
-            final DataSource dataSource)
-    {
-        this(key, connectInfo, dataSource, null);
-        load(catalogUrl, null);
+        this.name = name;
+        if (name == null || name.equals("")) {
+            throw Util.newError("<Schema> name must be set");
+        }
+        this.annotationMap = annotationMap;
     }
 
     protected void finalCleanUp() {
@@ -248,78 +215,7 @@ public class RolapSchema implements Schema {
         return LOGGER;
     }
 
-    /**
-     * Method called by all constructors to load the catalog into DOM and build
-     * application mdx and sql objects.
-     *
-     * @param catalogUrl URL of catalog
-     * @param catalogStr Text of catalog, or null
-     */
-    protected void load(String catalogUrl, String catalogStr) {
-        try {
-            final Parser xmlParser = XOMUtil.createDefaultParser();
-
-            final DOMWrapper def;
-            if (catalogStr == null) {
-                InputStream in = null;
-                try {
-                    in = Util.readVirtualFile(catalogUrl);
-                    def = xmlParser.parse(in);
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
-                }
-
-                if (getLogger().isDebugEnabled()) {
-                    try {
-                        StringBuilder buf = new StringBuilder(1000);
-                        InputStream debugIn = Util.readVirtualFile(catalogUrl);
-                        int n;
-                        while ((n = debugIn.read()) != -1) {
-                            buf.append((char) n);
-                        }
-                        getLogger().debug(
-                            "RolapSchema.load: content: \n" + buf.toString());
-                    } catch (java.io.IOException ex) {
-                        getLogger().debug("RolapSchema.load: ex=" + ex);
-                    }
-                }
-
-            } else {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapSchema.load: catalogStr: \n" + catalogStr);
-                }
-
-                def = xmlParser.parse(catalogStr);
-            }
-
-            xmlSchema = new MondrianDef.Schema(def);
-
-            if (getLogger().isDebugEnabled()) {
-                StringWriter sw = new StringWriter(4096);
-                PrintWriter pw = new PrintWriter(sw);
-                pw.println("RolapSchema.load: dump xmlschema");
-                xmlSchema.display(pw, 2);
-                pw.flush();
-                getLogger().debug(sw.toString());
-            }
-
-            load(xmlSchema);
-        } catch (XOMException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogUrl);
-        } catch (FileSystemException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogUrl);
-        } catch (IOException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogUrl);
-        }
-
-        aggTableManager.initialize();
-        setSchemaLoadDate();
-    }
-
-    private void setSchemaLoadDate() {
+    void setSchemaLoadDate() {
         schemaLoadDate = new Date();
     }
 
@@ -328,7 +224,7 @@ public class RolapSchema implements Schema {
     }
 
     public List<Exception> getWarnings() {
-        return Collections.unmodifiableList(warningList);
+        return Collections.unmodifiableList(Util.<Exception>cast(warningList));
     }
 
     RoleImpl getDefaultRole() {
@@ -340,8 +236,6 @@ public class RolapSchema implements Schema {
     }
 
     public String getName() {
-        Util.assertPostcondition(name != null, "return != null");
-        Util.assertPostcondition(name.length() > 0, "return.length() > 0");
         return name;
     }
 
@@ -362,134 +256,89 @@ public class RolapSchema implements Schema {
         return DialectManager.createDialect(dataSource, null);
     }
 
-    private void load(MondrianDef.Schema xmlSchema) {
-        this.name = xmlSchema.name;
-        if (name == null || name.equals("")) {
-            throw Util.newError("<Schema> name must be set");
-        }
-
-        this.annotationMap =
-            RolapHierarchy.createAnnotationMap(xmlSchema.annotations);
-        // Validate user-defined functions. Must be done before we validate
-        // calculated members, because calculated members will need to use the
-        // function table.
-        final Map<String, UserDefinedFunction> mapNameToUdf =
-            new HashMap<String, UserDefinedFunction>();
-        for (MondrianDef.UserDefinedFunction udf
-            : xmlSchema.userDefinedFunctions)
-        {
-            defineFunction(mapNameToUdf, udf.name, udf.className);
-        }
-        final RolapSchemaFunctionTable funTable =
-            new RolapSchemaFunctionTable(mapNameToUdf.values());
-        funTable.init();
-        this.funTable = funTable;
-
-        // Validate public dimensions.
-        for (MondrianDef.Dimension xmlDimension : xmlSchema.dimensions) {
-            if (xmlDimension.foreignKey != null) {
-                throw MondrianResource.instance()
-                    .PublicDimensionMustNotHaveForeignKey.ex(
-                    xmlDimension.name);
-            }
-        }
-
-        // Create parameters.
-        Set<String> parameterNames = new HashSet<String>();
-        for (MondrianDef.Parameter xmlParameter : xmlSchema.parameters) {
-            String name = xmlParameter.name;
-            if (!parameterNames.add(name)) {
-                throw MondrianResource.instance().DuplicateSchemaParameter.ex(
-                    name);
-            }
-            Type type;
-            if (xmlParameter.type.equals("String")) {
-                type = new StringType();
-            } else if (xmlParameter.type.equals("Numeric")) {
-                type = new NumericType();
-            } else {
-                type = new MemberType(null, null, null, null);
-            }
-            final String description = xmlParameter.description;
-            final boolean modifiable = xmlParameter.modifiable;
-            String defaultValue = xmlParameter.defaultValue;
-            RolapSchemaParameter param =
-                new RolapSchemaParameter(
-                    this, name, defaultValue, description, type, modifiable);
-            Util.discard(param);
-        }
-
-        // Create cubes.
-        for (MondrianDef.Cube xmlCube : xmlSchema.cubes) {
-            if (xmlCube.isEnabled()) {
-                RolapCube cube = new RolapCube(this, xmlSchema, xmlCube, true);
-                Util.discard(cube);
-            }
-        }
-
-        // Create virtual cubes.
-        for (MondrianDef.VirtualCube xmlVirtualCube : xmlSchema.virtualCubes) {
-            if (xmlVirtualCube.isEnabled()) {
-                RolapCube cube =
-                    new RolapCube(this, xmlSchema, xmlVirtualCube, true);
-                Util.discard(cube);
-            }
-        }
-
-        // Create named sets.
-        for (MondrianDef.NamedSet xmlNamedSet : xmlSchema.namedSets) {
-            mapNameToSet.put(xmlNamedSet.name, createNamedSet(xmlNamedSet));
-        }
-
-        // Create roles.
-        for (MondrianDef.Role xmlRole : xmlSchema.roles) {
-            Role role = createRole(xmlRole);
-            mapNameToRole.put(xmlRole.name, role);
-        }
-
-        // Set default role.
-        if (xmlSchema.defaultRole != null) {
-            Role role = lookupRole(xmlSchema.defaultRole);
-            if (role == null) {
-                error(
-                    "Role '" + xmlSchema.defaultRole + "' not found",
-                    locate(xmlSchema, "defaultRole"));
-            } else {
-                // At this stage, the only roles in mapNameToRole are
-                // RoleImpl roles so it is safe to case.
-                defaultRole = (RoleImpl) role;
-            }
-        }
-    }
-
-    /**
-     * Returns the location of an element or attribute in an XML document.
-     *
-     * <p>TODO: modify eigenbase-xom parser to return position info
-     *
-     * @param node Node
-     * @param attributeName Attribute name, or null
-     * @return Location of node or attribute in an XML document
-     */
-    XmlLocation locate(ElementDef node, String attributeName) {
-        return null;
-    }
-
-    /**
-     * Reports an error. If we are tolerant of errors
-     * (see {@link mondrian.rolap.RolapConnectionProperties#Ignore}), adds
-     * it to the stack, overwise throws. A thrown exception will typically
-     * abort the attempt to create the exception.
-     *
-     * @param message Message
-     * @param xmlLocation Location of XML element or attribute that caused
-     * the error, or null
-     */
-    void error(
-        String message,
-        XmlLocation xmlLocation)
+    void resolve(
+        PhysSchema physSchema,
+        UnresolvedColumn unresolvedColumn)
     {
-        final RuntimeException ex = new RuntimeException(message);
+        try {
+            if (unresolvedColumn.state == UnresolvedColumn.State.ACTIVE) {
+                warning(
+                    "Calculated column '" + unresolvedColumn.name
+                    + "' in table '" + unresolvedColumn.tableName
+                    + "' has cyclic expression",
+                    unresolvedColumn.xml,
+                    null);
+                return;
+            }
+            unresolvedColumn.state = UnresolvedColumn.State.ACTIVE;
+            final PhysRelation table =
+                physSchema.tablesByName.get(unresolvedColumn.tableName);
+            if (table == null) {
+                warning(
+                    "Unknown table '" + unresolvedColumn.tableName
+                    + "'" + unresolvedColumn.getContext() + ".",
+                    unresolvedColumn.xml,
+                    null);
+                return;
+            }
+            final PhysColumn column =
+                table.getColumn(
+                    unresolvedColumn.name, false);
+            if (column == null) {
+                warning(
+                    "Reference to unknown column '" + unresolvedColumn.name
+                    + "' in table '" + unresolvedColumn.tableName + "'"
+                    + unresolvedColumn.getContext() + ".",
+                    unresolvedColumn.xml,
+                    null);
+            } else {
+                if (column instanceof PhysCalcColumn) {
+                    PhysCalcColumn physCalcColumn =
+                        (PhysCalcColumn) column;
+                    for (Object o : physCalcColumn.list) {
+                        if (o instanceof UnresolvedColumn) {
+                            resolve(
+                                physSchema,
+                                (UnresolvedColumn) o);
+                        }
+                    }
+                }
+                unresolvedColumn.state = UnresolvedColumn.State.RESOLVED;
+                unresolvedColumn.onResolve(column);
+            }
+        } finally {
+            if (unresolvedColumn.state == UnresolvedColumn.State.ACTIVE) {
+                unresolvedColumn.state = UnresolvedColumn.State.ERROR;
+            }
+        }
+    }
+
+    public XmlLocation locate(NodeDef node, String attributeName) {
+        final Location location = node.getLocation();
+        if (location == null) {
+            return null;
+        }
+        return new XmlLocationImpl(node, location, attributeName);
+    }
+
+    public void warning(
+        String message,
+        NodeDef node,
+        String attributeName)
+    {
+        warning(message, node, attributeName, null);
+    }
+
+    public void warning(
+        String message,
+        NodeDef node,
+        String attributeName,
+        Throwable cause)
+    {
+        final XmlLocation xmlLocation = locate(node, attributeName);
+        final MondrianSchemaException ex =
+            new MondrianSchemaException(
+                message, describe(node), xmlLocation, Severity.WARNING, cause);
         if (internalConnection != null
             && "true".equals(
             internalConnection.getProperty(
@@ -501,664 +350,80 @@ public class RolapSchema implements Schema {
         }
     }
 
-    private NamedSet createNamedSet(MondrianDef.NamedSet xmlNamedSet) {
-        final String formulaString = xmlNamedSet.getFormula();
-        final Exp exp;
-        try {
-            exp = getInternalConnection().parseExpression(formulaString);
-        } catch (Exception e) {
-            throw MondrianResource.instance().NamedSetHasBadFormula.ex(
-                    xmlNamedSet.name, e);
+    private String describe(NodeDef node) {
+        // TODO: If node is not a namedElement, list its ancestors until we
+        // hit a NamedElement. For example: Key in Dimension 'foo'.
+        // Will require a new method DOMWrapper Annotator.getParent(DOMWrapper).
+        if (node == null) {
+            return null;
+        } else if (node instanceof MondrianDef.NamedElement) {
+            return node.getName()
+                   + " '"
+                   + ((MondrianDef.NamedElement) node).getNameAttribute()
+                   + "'";
+        } else {
+            return node.getName();
         }
-        final Formula formula =
-            new Formula(
-                new Id(
-                    new Id.Segment(
-                        xmlNamedSet.name,
-                        Id.Quoting.UNQUOTED)),
-                exp);
-        return formula.getNamedSet();
     }
 
-    private Role createRole(MondrianDef.Role xmlRole) {
-        if (xmlRole.union != null) {
-            if (xmlRole.schemaGrants != null
-                && xmlRole.schemaGrants.length > 0)
-            {
-                throw MondrianResource.instance().RoleUnionGrants.ex();
-            }
-            List<Role> roleList = new ArrayList<Role>();
-            for (MondrianDef.RoleUsage roleUsage : xmlRole.union.roleUsages) {
-                final Role role = mapNameToRole.get(roleUsage.roleName);
-                if (role == null) {
-                    throw MondrianResource.instance().UnknownRole.ex(
-                        roleUsage.roleName);
-                }
-                roleList.add(role);
-            }
-            return RoleImpl.union(roleList);
+    public void error(
+        String message,
+        NodeDef node,
+        String attributeName)
+    {
+        final XmlLocation xmlLocation = locate(node, attributeName);
+        final Throwable cause = null;
+        final MondrianSchemaException ex =
+            new MondrianSchemaException(
+                message, describe(node), xmlLocation, Severity.ERROR, cause);
+        if (internalConnection != null
+            && "true".equals(
+            internalConnection.getProperty(
+                RolapConnectionProperties.Ignore.name())))
+        {
+            ++errorCount;
+            warningList.add(ex);
+        } else {
+            throw ex;
         }
-        RoleImpl role = new RoleImpl();
-        for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
-            role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
-            for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
-                RolapCube cube = lookupCube(cubeGrant.cube);
-                if (cube == null) {
-                    throw Util.newError(
-                        "Unknown cube '" + cubeGrant.cube + "'");
-                }
-                role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
-                final SchemaReader schemaReader = cube.getSchemaReader(null);
-                for (MondrianDef.DimensionGrant dimensionGrant
-                    : cubeGrant.dimensionGrants)
-                {
-                    Dimension dimension = (Dimension)
-                        schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(dimensionGrant.dimension),
-                            true,
-                            Category.Dimension);
-                    role.grant(
-                        dimension,
-                        getAccess(dimensionGrant.access, dimensionAllowed));
-                }
-                for (MondrianDef.HierarchyGrant hierarchyGrant
-                    : cubeGrant.hierarchyGrants)
-                {
-                    Hierarchy hierarchy = (Hierarchy)
-                        schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.hierarchy),
-                            true,
-                            Category.Hierarchy);
-                    final Access hierarchyAccess =
-                        getAccess(hierarchyGrant.access, hierarchyAllowed);
-                    Level topLevel = null;
-                    if (hierarchyGrant.topLevel != null) {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify 'topLevel' if "
-                                + "access='custom'");
-                        }
-                        topLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.topLevel),
-                            true,
-                            Category.Level);
-                    }
-                    Level bottomLevel = null;
-                    if (hierarchyGrant.bottomLevel != null) {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify 'bottomLevel' if "
-                                + "access='custom'");
-                        }
-                        bottomLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.bottomLevel),
-                            true,
-                            Category.Level);
-                    }
-                    Role.RollupPolicy rollupPolicy;
-                    if (hierarchyGrant.rollupPolicy != null) {
-                        try {
-                            rollupPolicy =
-                                Role.RollupPolicy.valueOf(
-                                    hierarchyGrant.rollupPolicy.toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            throw Util.newError(
-                                "Illegal rollupPolicy value '"
-                                + hierarchyGrant.rollupPolicy
-                                + "'");
-                        }
-                    } else {
-                        rollupPolicy = Role.RollupPolicy.FULL;
-                    }
-                    role.grant(
-                        hierarchy, hierarchyAccess, topLevel, bottomLevel,
-                        rollupPolicy);
-                    for (MondrianDef.MemberGrant memberGrant
-                        : hierarchyGrant.memberGrants)
-                    {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify <MemberGrant> if "
-                                + "<Hierarchy> has access='custom'");
-                        }
-                        final boolean ignoreInvalidMembers =
-                            MondrianProperties.instance().IgnoreInvalidMembers
-                                .get();
-                        Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member),
-                            !ignoreInvalidMembers);
-                        if (member == null) {
-                            // They asked to ignore members that don't exist
-                            // (e.g. [Store].[USA].[Foo]), so ignore this grant
-                            // too.
-                            assert ignoreInvalidMembers;
-                            continue;
-                        }
-                        if (member.getHierarchy() != hierarchy) {
-                            throw Util.newError(
-                                "Member '" + member
-                                + "' is not in hierarchy '" + hierarchy + "'");
-                        }
-                        role.grant(
-                            member,
-                            getAccess(memberGrant.access, memberAllowed));
-                    }
-                }
-            }
-        }
-        role.makeImmutable();
-        return role;
     }
 
-    private Access getAccess(String accessString, Set<Access> allowed) {
-        final Access access = Access.valueOf(accessString.toUpperCase());
-        if (allowed.contains(access)) {
-            return access; // value is ok
-        }
-        throw Util.newError("Bad value access='" + accessString + "'");
+    public void error(
+        MondrianException message, NodeDef node, String attributeName)
+    {
+        error(message.toString(), node, attributeName);
+    }
+
+    public RuntimeException fatal(
+        String message,
+        NodeDef node,
+        String attributeName)
+    {
+        final XmlLocation xmlLocation = locate(node, attributeName);
+        final Throwable cause = null;
+        return new MondrianSchemaException(
+            message, describe(node), xmlLocation, Severity.FATAL, cause);
     }
 
     public Dimension createDimension(Cube cube, String xml) {
-        MondrianDef.CubeDimension xmlDimension;
-        try {
-            final Parser xmlParser = XOMUtil.createDefaultParser();
-            final DOMWrapper def = xmlParser.parse(xml);
-            final String tagName = def.getTagName();
-            if (tagName.equals("Dimension")) {
-                xmlDimension = new MondrianDef.Dimension(def);
-            } else if (tagName.equals("DimensionUsage")) {
-                xmlDimension = new MondrianDef.DimensionUsage(def);
-            } else {
-                throw new XOMException(
-                    "Got <" + tagName
-                    + "> when expecting <Dimension> or <DimensionUsage>");
-            }
-        } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Error while adding dimension to cube '" + cube
-                + "' from XML [" + xml + "]");
-        }
-        return ((RolapCube) cube).createDimension(xmlDimension, xmlSchema);
+        return new RolapSchemaLoader(this).createDimension(
+            (RolapCube) cube, xml, Collections.<String, String>emptyMap());
     }
 
     public Cube createCube(String xml) {
-        RolapCube cube;
-        try {
-            final Parser xmlParser = XOMUtil.createDefaultParser();
-            final DOMWrapper def = xmlParser.parse(xml);
-            final String tagName = def.getTagName();
-            if (tagName.equals("Cube")) {
-                // Create empty XML schema, to keep the method happy. This is
-                // okay, because there are no forward-references to resolve.
-                final MondrianDef.Schema xmlSchema = new MondrianDef.Schema();
-                MondrianDef.Cube xmlDimension = new MondrianDef.Cube(def);
-                cube = new RolapCube(this, xmlSchema, xmlDimension, false);
-            } else if (tagName.equals("VirtualCube")) {
-                // Need the real schema here.
-                MondrianDef.Schema xmlSchema = getXMLSchema();
-                MondrianDef.VirtualCube xmlDimension =
-                        new MondrianDef.VirtualCube(def);
-                cube = new RolapCube(this, xmlSchema, xmlDimension, false);
-            } else {
-                throw new XOMException(
-                    "Got <" + tagName + "> when expecting <Cube>");
-            }
-        } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Error while creating cube from XML [" + xml + "]");
-        }
-        return cube;
+        return new RolapSchemaLoader(this).createCube(xml);
     }
 
-    /**
-     * A collection of schemas, identified by their connection properties
-     * (catalog name, JDBC URL, and so forth).
-     *
-     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
-     */
-    static class Pool {
-        private final MessageDigest md;
-
-        private static Pool pool = new Pool();
-
-        private Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
-            new HashMap<String, SoftReference<RolapSchema>>();
-
-
-        private Pool() {
-            // Initialize the MD5 digester.
-            try {
-                md = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        static Pool instance() {
-            return pool;
-        }
-
-        /**
-         * Creates an MD5 hash of String.
-         *
-         * @param value String to create one way hash upon.
-         * @return MD5 hash.
-         */
-        private synchronized String encodeMD5(final String value) {
-            md.reset();
-            final byte[] bytes = md.digest(value.getBytes());
-            return (bytes != null) ? new String(bytes) : null;
-        }
-
-        synchronized RolapSchema get(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr,
-            final Util.PropertyList connectInfo)
-        {
-            return get(
-                catalogUrl,
-                connectionKey,
-                jdbcUser,
-                dataSourceStr,
-                null,
-                connectInfo);
-        }
-
-        synchronized RolapSchema get(
-            final String catalogUrl,
-            final DataSource dataSource,
-            final Util.PropertyList connectInfo)
-        {
-            return get(
-                catalogUrl,
-                null,
-                null,
-                null,
-                dataSource,
-                connectInfo);
-        }
-
-        private RolapSchema get(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr,
-            final DataSource dataSource,
-            final Util.PropertyList connectInfo)
-        {
-            String key =
-                (dataSource == null)
-                ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-                : makeKey(catalogUrl, dataSource);
-
-            RolapSchema schema = null;
-
-            String dynProcName = connectInfo.get(
-                RolapConnectionProperties.DynamicSchemaProcessor.name());
-
-            String catalogStr = connectInfo.get(
-                RolapConnectionProperties.CatalogContent.name());
-            if (catalogUrl == null && catalogStr == null) {
-                throw MondrianResource.instance()
-                    .ConnectStringMandatoryProperties.ex(
-                    RolapConnectionProperties.Catalog.name(),
-                    RolapConnectionProperties.CatalogContent.name());
-            }
-
-            // If CatalogContent is specified in the connect string, ignore
-            // everything else. In particular, ignore the dynamic schema
-            // processor.
-            if (catalogStr != null) {
-                dynProcName = null;
-                // REVIEW: Are we including enough in the key to make it
-                // unique?
-                key = catalogStr;
-            }
-
-            final boolean useContentChecksum =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseContentChecksum.name()));
-
-            // Use the schema pool unless "UseSchemaPool" is explicitly false.
-            final boolean useSchemaPool =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseSchemaPool.name(),
-                        "true"));
-
-            // If there is a dynamic processor registered, use it. This
-            // implies there is not MD5 based caching, but, as with the previous
-            // implementation, if the catalog string is in the connectInfo
-            // object as catalog content then it is used.
-            if (! Util.isEmpty(dynProcName)) {
-                assert catalogStr == null;
-
-                try {
-                    @SuppressWarnings("unchecked")
-                    final Class<DynamicSchemaProcessor> clazz =
-                        (Class<DynamicSchemaProcessor>)
-                            Class.forName(dynProcName);
-                    final Constructor<DynamicSchemaProcessor> ctor =
-                        clazz.getConstructor();
-                    final DynamicSchemaProcessor dynProc = ctor.newInstance();
-                    catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-                } catch (Exception e) {
-                    throw Util.newError(
-                        e,
-                        "loading DynamicSchemaProcessor " + dynProcName);
-                }
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: create schema \"" + catalogUrl
-                        + "\" using dynamic processor");
-                }
-            }
-
-            if (!useSchemaPool) {
-                schema = new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
-
-            } else if (useContentChecksum) {
-                // Different catalogUrls can actually yield the same
-                // catalogStr! So, we use the MD5 as the key as well as
-                // the key made above - its has two entries in the
-                // mapUrlToSchema Map. We must then also during the
-                // remove operation make sure we remove both.
-
-                String md5Bytes = null;
-                try {
-                    if (catalogStr == null) {
-                        // Use VFS to get the content
-                        InputStream in = null;
-                        try {
-                            in = Util.readVirtualFile(catalogUrl);
-                            StringBuilder buf = new StringBuilder(1000);
-                            int n;
-                            while ((n = in.read()) != -1) {
-                                buf.append((char) n);
-                            }
-                            catalogStr = buf.toString();
-                        } finally {
-                            if (in != null) {
-                                in.close();
-                            }
-                        }
-                    }
-
-                    md5Bytes = encodeMD5(catalogStr);
-                } catch (Exception ex) {
-                    // Note, can not throw an Exception from this method
-                    // but just to show that all is not well in Mudville
-                    // we print stack trace (for now - better to change
-                    // method signature and throw).
-                    ex.printStackTrace();
-                }
-
-                if (md5Bytes != null) {
-                    SoftReference<RolapSchema> ref =
-                        mapUrlToSchema.get(md5Bytes);
-                    if (ref != null) {
-                        schema = ref.get();
-                        if (schema == null) {
-                            // clear out the reference since schema is null
-                            mapUrlToSchema.remove(key);
-                            mapUrlToSchema.remove(md5Bytes);
-                        }
-                    }
-                }
-
-                if (schema == null
-                    || md5Bytes == null
-                    || schema.md5Bytes == null
-                    || ! schema.md5Bytes.equals(md5Bytes))
-                {
-                    schema = new RolapSchema(
-                        key,
-                        md5Bytes,
-                        catalogUrl,
-                        catalogStr,
-                        connectInfo,
-                        dataSource);
-
-                    SoftReference<RolapSchema> ref =
-                        new SoftReference<RolapSchema>(schema);
-                    if (md5Bytes != null) {
-                        mapUrlToSchema.put(md5Bytes, ref);
-                    }
-                    mapUrlToSchema.put(key, ref);
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl
-                            + "\" with MD5");
-                    }
-
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already with MD5");
-                }
-
-            } else {
-                SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-                if (ref != null) {
-                    schema = ref.get();
-                    if (schema == null) {
-                        // clear out the reference since schema is null
-                        mapUrlToSchema.remove(key);
-                    }
-                }
-
-                if (schema == null) {
-                    if (catalogStr == null) {
-                        schema = new RolapSchema(
-                            key,
-                            catalogUrl,
-                            connectInfo,
-                            dataSource);
-                    } else {
-                        schema = new RolapSchema(
-                            key,
-                            null,
-                            catalogUrl,
-                            catalogStr,
-                            connectInfo,
-                            dataSource);
-                    }
-
-                    mapUrlToSchema.put(
-                        key,
-                        new SoftReference<RolapSchema>(schema));
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl + "\"");
-                    }
-
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already ");
-                }
-            }
-            return schema;
-        }
-
-        synchronized void remove(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            final String key = makeKey(
-                catalogUrl,
-                connectionKey,
-                jdbcUser,
-                dataSourceStr);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource string \"" + dataSourceStr + "\"");
-            }
-            remove(key);
-        }
-
-        synchronized void remove(
-            final String catalogUrl,
-            final DataSource dataSource)
-        {
-            final String key = makeKey(catalogUrl, dataSource);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource object");
-            }
-            remove(key);
-        }
-
-        synchronized void remove(RolapSchema schema) {
-            if (schema != null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.remove: schema \"" + schema.name
-                        + "\" and datasource object");
-                }
-                remove(schema.key);
-            }
-        }
-
-        private void remove(String key) {
-            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-            if (ref != null) {
-                RolapSchema schema = ref.get();
-                if (schema != null) {
-                    if (schema.md5Bytes != null) {
-                        mapUrlToSchema.remove(schema.md5Bytes);
-                    }
-                    schema.finalCleanUp();
-                }
-            }
-            mapUrlToSchema.remove(key);
-        }
-
-        synchronized void clear() {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Pool.clear: clearing all RolapSchemas");
-            }
-
-            for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
-                if (ref != null) {
-                    RolapSchema schema = ref.get();
-                    if (schema != null) {
-                        schema.finalCleanUp();
-                    }
-                }
-            }
-            mapUrlToSchema.clear();
-            JdbcSchema.clearAllDBs();
-        }
-
-        /**
-         * This returns an iterator over a copy of the RolapSchema's container.
-         *
-         * @return Iterator over RolapSchemas
-         */
-        synchronized Iterator<RolapSchema> getRolapSchemas() {
-            List<RolapSchema> list = new ArrayList<RolapSchema>();
-            for (Iterator<SoftReference<RolapSchema>> it =
-                mapUrlToSchema.values().iterator(); it.hasNext();)
-            {
-                SoftReference<RolapSchema> ref = it.next();
-                RolapSchema schema = ref.get();
-                // Schema is null if already garbage collected
-                if (schema != null) {
-                    list.add(schema);
-                } else {
-                    // We will remove the stale reference
-                    try {
-                        it.remove();
-                    } catch (Exception ex) {
-                        // Should not happen, so
-                        // warn but otherwise ignore
-                        LOGGER.warn(ex);
-                    }
-                }
-            }
-            return list.iterator();
-        }
-
-        synchronized boolean contains(RolapSchema rolapSchema) {
-            return mapUrlToSchema.containsKey(rolapSchema.key);
-        }
-
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            appendIfNotNull(buf, connectionKey);
-            appendIfNotNull(buf, jdbcUser);
-            appendIfNotNull(buf, dataSourceStr);
-
-            return buf.toString();
-        }
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final DataSource dataSource)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            buf.append('.');
-            buf.append("external#");
-            buf.append(System.identityHashCode(dataSource));
-
-            return buf.toString();
-        }
-
-        private static void appendIfNotNull(StringBuilder buf, String s) {
-            if (s != null) {
-                if (buf.length() > 0) {
-                    buf.append('.');
-                }
-                buf.append(s);
-            }
-        }
+    public PhysSchema getPhysicalSchema() {
+        return physicalSchema;
     }
 
-    public static Iterator<RolapSchema> getRolapSchemas() {
-        return Pool.instance().getRolapSchemas();
+    public static List<RolapSchema> getRolapSchemas() {
+        return RolapSchemaPool.instance().getRolapSchemas();
     }
 
     public static boolean cacheContains(RolapSchema rolapSchema) {
-        return Pool.instance().contains(rolapSchema);
+        return RolapSchemaPool.instance().contains(rolapSchema);
     }
 
     public Cube lookupCube(final String cube, final boolean failIfNotFound) {
@@ -1187,30 +452,48 @@ public class RolapSchema implements Schema {
         final String cubeName)
     {
         List<Id.Segment> nameParts = Util.parseIdentifier(calcMemberName);
-        for (final MondrianDef.Cube cube : xmlSchema.cubes) {
-            if (Util.equalName(cube.name, cubeName)) {
-                for (final MondrianDef.CalculatedMember calculatedMember
-                        : cube.calculatedMembers)
+        for (final MondrianDef.Cube cube
+            : Util.filter(xmlSchema.children, MondrianDef.Cube.class))
+        {
+            if (!Util.equalName(cube.name, cubeName)) {
+                continue;
+            }
+            for (MondrianDef.CalculatedMember calculatedMember
+                : Util.filter(
+                cube.children, MondrianDef.CalculatedMember.class))
+            {
+                if (Util.equalName(
+                        calculatedMember.dimension, nameParts.get(0).name)
+                    && Util.equalName(
+                        calculatedMember.name,
+                        nameParts.get(nameParts.size() - 1).name))
                 {
-                    if (Util.equalName(
-                            calculatedMember.dimension, nameParts.get(0).name)
-                        && Util.equalName(
-                            calculatedMember.name,
-                            nameParts.get(nameParts.size() - 1).name))
-                    {
-                        return calculatedMember;
-                    }
+                    return calculatedMember;
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Returns a list of cubes that have at least one measure in the given
+     * star.
+     *
+     * @param star Star
+     * @return List of cubes whose measures are in the given star
+     */
     public List<RolapCube> getCubesWithStar(RolapStar star) {
         List<RolapCube> list = new ArrayList<RolapCube>();
+        cubeLoop:
         for (RolapCube cube : mapNameToCube.values()) {
-            if (star == cube.getStar()) {
-                list.add(cube);
+            for (Member member : cube.getMeasures()) {
+                if (member instanceof RolapStoredMeasure) {
+                    RolapStoredMeasure measure = (RolapStoredMeasure) member;
+                    if (measure.getStarMeasure().getStar() == star) {
+                        list.add(cube);
+                        continue cubeLoop;
+                    }
+                }
             }
         }
         return list;
@@ -1224,6 +507,10 @@ public class RolapSchema implements Schema {
         mapNameToCube.put(
                 Util.normalizeName(cube.getName()),
                 cube);
+    }
+
+    protected void addNamedSet(String name, NamedSet namedSet) {
+        mapNameToSet.put(name, namedSet);
     }
 
     public boolean removeCube(final String cubeName) {
@@ -1282,7 +569,7 @@ public class RolapSchema implements Schema {
      *   The class must implement {@link mondrian.spi.UserDefinedFunction}
      *   (otherwise it is a user-error).
      */
-    private void defineFunction(
+    void defineFunction(
         Map<String, UserDefinedFunction> mapNameToUdf,
         String name,
         String className)
@@ -1364,48 +651,19 @@ public class RolapSchema implements Schema {
         final RolapHierarchy hierarchy,
         final String memberReaderClass)
     {
+        assert sharedName == null; // TODO: re-enable sharing
         MemberReader reader;
         if (sharedName != null) {
             reader = mapSharedHierarchyToReader.get(sharedName);
-            if (reader == null) {
-                reader = createMemberReader(hierarchy, memberReaderClass);
-                // share, for other uses of the same shared hierarchy
-                if (false) {
-                    mapSharedHierarchyToReader.put(sharedName, reader);
-                }
-/*
-System.out.println("RolapSchema.createMemberReader: "+
-"add to sharedHierName->Hier map"+
-" sharedName=" + sharedName +
-", hierarchy=" + hierarchy.getName() +
-", hierarchy.dim=" + hierarchy.getDimension().getName()
-);
-if (mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
-System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
-} else {
-                mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
-}
-*/
-                if (! mapSharedHierarchyNameToHierarchy.containsKey(
-                    sharedName))
-                {
-                    mapSharedHierarchyNameToHierarchy.put(
-                        sharedName, hierarchy);
-                }
-                //mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
-            } else {
-//                final RolapHierarchy sharedHierarchy = (RolapHierarchy)
-//                        mapSharedHierarchyNameToHierarchy.get(sharedName);
-//                final RolapDimension sharedDimension = (RolapDimension)
-//                        sharedHierarchy.getDimension();
-//                final RolapDimension dimension =
-//                    (RolapDimension) hierarchy.getDimension();
-//                Util.assertTrue(
-//                        dimension.getGlobalOrdinal() ==
-//                        sharedDimension.getGlobalOrdinal());
-            }
         } else {
+            reader = null;
+        }
+        if (reader == null) {
             reader = createMemberReader(hierarchy, memberReaderClass);
+        }
+        if (sharedName != null) {
+            // share, for other uses of the same shared hierarchy
+            mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
         }
         return reader;
     }
@@ -1531,12 +789,13 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @return the cardinality map
      */
     Integer getCachedRelationExprCardinality(
-        MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr)
+        PhysRelation relation,
+        PhysExpr columnExpr)
     {
+        Util.deprecated("maybe move cardinality into PhysExpr", false);
         Integer card = null;
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
+            Map<PhysExpr, Integer> exprCardinalityMap =
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap != null) {
                 card = exprCardinalityMap.get(columnExpr);
@@ -1553,16 +812,15 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * @param cardinality the cardinality for the column expression
      */
     void putCachedRelationExprCardinality(
-        MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr,
+        PhysRelation relation,
+        PhysExpr columnExpr,
         Integer cardinality)
     {
         synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
+            Map<PhysExpr, Integer> exprCardinalityMap =
                 relationExprCardinalityMap.get(relation);
             if (exprCardinalityMap == null) {
-                exprCardinalityMap =
-                    new HashMap<MondrianDef.Expression, Integer>();
+                exprCardinalityMap = new HashMap<PhysExpr, Integer>();
                 relationExprCardinalityMap.put(relation, exprCardinalityMap);
             }
             exprCardinalityMap.put(columnExpr, cardinality);
@@ -1576,17 +834,32 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return role;
     }
 
-    private RolapStar makeRolapStar(final MondrianDef.Relation fact) {
+    private RolapStar makeRolapStar(final PhysRelation fact) {
         DataSource dataSource = getInternalConnection().getDataSource();
         return new RolapStar(this, dataSource, fact);
+    }
+
+    void registerRoles(Map<String, Role> roles, RoleImpl defaultRole) {
+        for (Map.Entry<String, Role> entry : roles.entrySet()) {
+            mapNameToRole.put(entry.getKey(), entry.getValue());
+        }
+
+        this.defaultRole = defaultRole;
+    }
+
+    void initFunctionTable(
+        Collection<UserDefinedFunction> userDefinedFunctions)
+    {
+        funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
+        ((RolapSchemaFunctionTable) funTable).init();
     }
 
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
     class RolapStarRegistry {
-        private final Map<String, RolapStar> stars =
-            new HashMap<String, RolapStar>();
+        private final Map<PhysRelation, RolapStar> stars =
+            new HashMap<PhysRelation, RolapStar>();
 
         RolapStarRegistry() {
         }
@@ -1594,16 +867,15 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         /**
          * Looks up a {@link RolapStar}, creating it if it does not exist.
          *
-         * <p> {@link RolapStar.Table#addJoin} works in a similar way.
+         * <p> {@link RolapSchemaUpgrader#addJoin} works in a similar way.
          */
         synchronized RolapStar getOrCreateStar(
-            final MondrianDef.Relation fact)
+            final PhysRelation fact)
         {
-            String factTableName = fact.toString();
-            RolapStar star = stars.get(factTableName);
+            RolapStar star = stars.get(fact);
             if (star == null) {
                 star = makeRolapStar(fact);
-                stars.put(factTableName, star);
+                stars.put(fact, star);
             }
             return star;
         }
@@ -1657,15 +929,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * Checks whether there are modifications in the aggregations cache.
-     */
-    public void checkAggregateModifications() {
-        for (RolapStar star : getStars()) {
-            star.checkAggregateModifications();
-        }
-    }
-
-    /**
      * Pushes all modifications of the aggregations to global cache,
      * so other queries can start using the new cache
      */
@@ -1700,7 +963,1537 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     /**
      * Location of a node in an XML document.
      */
-    private interface XmlLocation {
+    public interface XmlLocation {
+        String getRange();
+
+        /**
+         * Returns a similar location, but specifying an attribute.
+         *
+         * @param attributeName Attribute name (may be null)
+         * @return Location of attribute
+         */
+        XmlLocation at(String attributeName);
+    }
+
+    /**
+     * Implementation of XmlLocation based on {@link Location}.
+     */
+    private static class XmlLocationImpl implements XmlLocation {
+        private final NodeDef node;
+        private final Location location;
+        private final String attributeName;
+
+        /**
+         * Creates an XmlLocationImpl.
+         *
+         * @param node XML node
+         * @param location Location
+         * @param attributeName Attribute name (may be null)
+         */
+        public XmlLocationImpl(
+            NodeDef node, Location location, String attributeName)
+        {
+            this.node = node;
+            this.location = location;
+            this.attributeName = attributeName;
+        }
+
+        public String toString() {
+            return location == null ? "null" : location.toString();
+        }
+
+        public String getRange() {
+            final int start = location.getStartPos();
+            final int end = start + location.getText(true).length();
+            return start + "-" + end;
+        }
+
+        public XmlLocation at(String attributeName) {
+            if (Util.equals(attributeName, this.attributeName)) {
+                return this;
+            }
+            return new XmlLocationImpl(node, location, attributeName);
+        }
+    }
+
+    /**
+     * Collection of relations and links (relationships) between them.
+     *
+     * <p>The directed graph formed by the relations and links is connected and
+     * acyclic: there is a unique path from any relation to any other relation,
+     * following a sequence of links in the appropriate direction.
+     */
+    public static class PhysSchema {
+        // We use a linked hash map for determinacy; the order that tables are
+        // declared doesn't matter (except that if there are duplicates, the
+        // later one will be discarded).
+        final LinkedHashMap<String, PhysRelation> tablesByName =
+            new LinkedHashMap<String, PhysRelation>();
+        final Dialect dialect;
+        final JdbcSchema jdbcSchema;
+
+        private final Set<PhysLink> linkSet = new HashSet<PhysLink>();
+
+        private final Map<PhysRelation, List<PhysLink>> hardLinksFrom =
+            new HashMap<PhysRelation, List<PhysLink>>();
+
+        private int nextAliasId = 0;
+
+        private final PhysSchemaGraph schemaGraph =
+            new PhysSchemaGraph(
+                this, Collections.<RolapSchema.PhysLink>emptyList());
+
+        /**
+         * Creates a physical schema.
+         *
+         * @param dialect Dialect
+         * @param dataSource JDBC data source
+         */
+        public PhysSchema(
+            Dialect dialect,
+            DataSource dataSource)
+        {
+            this.dialect = dialect;
+            this.jdbcSchema = JdbcSchema.makeDB(dataSource);
+            try {
+                jdbcSchema.load();
+            } catch (SQLException e) {
+                throw Util.newError(e, "Error while loading JDBC schema");
+            }
+        }
+
+        /**
+         * Adds a link to this schema.
+         *
+         * @param sourceKey Key (usually primary) of source table
+         * @param targetRelation Target table (contains foreign key)
+         * @param columnList List of foreign key columns
+         * @param hard Whether the link is hard; that is, whether a join over
+         * the link should be generated every time the source of the link is
+         * referenced
+         * @return whether the link was added (per {@link Set#add(Object)})
+         */
+        public boolean addLink(
+            PhysKey sourceKey,
+            PhysRelation targetRelation,
+            List<PhysColumn> columnList,
+            boolean hard)
+        {
+            final PhysLink physLink =
+                new PhysLink(sourceKey, targetRelation, columnList);
+            if (hard) {
+                List<PhysLink> list = hardLinksFrom.get(targetRelation);
+                if (list == null) {
+                    list = new ArrayList<PhysLink>(1);
+                    hardLinksFrom.put(targetRelation, list);
+                }
+                list.add(physLink);
+            }
+            if (linkSet.add(physLink)) {
+                this.schemaGraph.addLink(physLink);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public List<PhysLink> hardLinksFrom(PhysRelation from) {
+            Util.deprecated("not used - remove", false);
+            final List<PhysLink> linkList = hardLinksFrom.get(from);
+            if (linkList == null) {
+                return Collections.emptyList();
+            } else {
+                return linkList;
+            }
+        }
+
+        /**
+         * Generates a new alias, distinct from aliases of relations registered
+         * in this schema and other aliases that have been generated by this
+         * method for this schema.
+         *
+         * <p>There is no guarantee that a relation will not be subsequently
+         * registered with a matching user-defined alias, but this is unlikely.
+         *
+         * @return Unique relation alias
+         */
+        public String newAlias() {
+            while (true) {
+                String alias = "_" + nextAliasId++;
+                if (!tablesByName.containsKey(alias)) {
+                    return alias;
+                }
+            }
+        }
+
+        /**
+         * Returns the default graph for this schema. The graph contains all
+         * relations and links.
+         *
+         * @return Default graph
+         */
+        public PhysSchemaGraph getGraph() {
+            return schemaGraph;
+        }
+    }
+
+    public static abstract class AttributeLink
+        implements DirectedGraph.Edge<RolapAttribute>
+    {
+    }
+
+    /**
+     * A view onto a schema containing all of the nodes (relations), all of
+     * the arcs (directed links between relations) and perhaps some extra arcs.
+     */
+    public static class AttributeGraph {
+
+        private final DirectedGraph<RolapAttribute, AttributeLink> graph =
+            new DirectedGraph<RolapAttribute, AttributeLink>();
+
+        /**
+         * Creates an AttributeGraph.
+         */
+        public AttributeGraph()
+        {
+        }
+    }
+
+    /**
+     * A view onto a schema containing all of the nodes (relations), all of
+     * the arcs (directed links between relations) and perhaps some extra arcs.
+     */
+    public static class PhysSchemaGraph {
+        private final PhysSchema physSchema;
+
+        private final DirectedGraph<PhysRelation, PhysLink> graph =
+            new DirectedGraph<PhysRelation, PhysLink>();
+
+        /**
+         * Creates a PhysSchemaGraph.
+         *
+         * @param physSchema Schema
+         * @param linkList Links of the graph; a subset of the links in the
+         * schema
+         */
+        public PhysSchemaGraph(
+            PhysSchema physSchema,
+            Collection<PhysLink> linkList)
+        {
+            this.physSchema = physSchema;
+
+            // Populate the graph. Check that every link connects a pair of
+            // nodes in the schema, and is registered in the schema.
+            for (PhysLink link : linkList) {
+                addLink(link);
+            }
+        }
+
+        /**
+         * Adds a link to this graph. The link and nodes at the ends of the link
+         * must belong to the same {@link mondrian.rolap.RolapSchema.PhysSchema}
+         * as the graph. If the graph already contains this link, does not add
+         * it again.
+         *
+         * @param link Link
+         * @return Whether link was added
+         */
+        public boolean addLink(PhysLink link) {
+            assert link.getFrom().getSchema() == physSchema;
+            assert link.getTo().getSchema() == physSchema;
+            assert physSchema.linkSet.contains(link);
+
+            if (!graph.edgeList().contains(link)) {
+                graph.addEdge(link);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Adds to a list the hops necessary to go from one relation to another.
+         *
+         * @param pathBuilder Path builder to which to add path
+         * @param prevRelation Relation to start at
+         * @param nextRelation Relation to jump to
+         *
+         * @throws PhysSchemaException if there is not a unique path
+         */
+        private void addHopsBetween(
+            PhysPathBuilder pathBuilder,
+            PhysRelation prevRelation,
+            PhysRelation nextRelation)
+            throws PhysSchemaException
+        {
+            if (prevRelation == nextRelation) {
+                return;
+            }
+            final List<List<PhysLink>> pathList =
+                graph.findAllPaths(prevRelation, nextRelation);
+            if (pathList.size() != 1) {
+                throw new PhysSchemaException(
+                    "Needed to find exactly one path from " + prevRelation
+                    + " to " + nextRelation + ", but found "
+                    + pathList.size() + " (" + pathList + ")");
+            }
+            for (PhysLink link : pathList.get(0)) {
+                pathBuilder.add(link, link.sourceKey.relation);
+            }
+        }
+
+        /**
+         * Creates a path from one relation to another.
+         *
+         * @param relation Start relation
+         * @param relation1 Relation to jump to
+         * @return path, never null
+         *
+         * @throws PhysSchemaException if there is not a unique path
+         */
+        public PhysPath findPath(
+            PhysRelation relation,
+            PhysRelation relation1)
+            throws PhysSchemaException
+        {
+            final PhysPathBuilder pathBuilder = new PhysPathBuilder(relation);
+            addHopsBetween(
+                pathBuilder,
+                relation,
+                relation1);
+            return pathBuilder.done();
+        }
+
+        /**
+         * Appends to a path builder a path from the last step of the path
+         * in the path builder to the given relation.
+         *
+         * <p>If there is no such path, throws.
+         *
+         * @param pathBuilder Path builder
+         * @param relation Relation to hop to
+         * @throws mondrian.rolap.RolapSchema.PhysSchemaException If no path
+         *   can be found
+         */
+        public void findPath(
+            PhysPathBuilder pathBuilder,
+            PhysRelation relation)
+            throws PhysSchemaException
+        {
+            addHopsBetween(
+                pathBuilder,
+                pathBuilder.hopList.get(
+                    pathBuilder.hopList.size() - 1).relation,
+                relation);
+        }
+    }
+
+    public interface PhysRelation {
+
+        /**
+         * Returns the column in this relation with a given name. If the column
+         * is not found, throws an error (if {@code fail} is true) or returns
+         * null (if {@code fail} is false).
+         *
+         * @param columnName Column name
+         * @param fail Whether to fail if column is not found
+         * @return Column, or null if column is not found and fail is false
+         */
+        PhysColumn getColumn(String columnName, boolean fail);
+
+        String getAlias();
+
+        PhysSchema getSchema();
+
+        /**
+         * Defines a key in this relation.
+         *
+         * @param keyName Name of the key; must not be null, by convention, the
+         *     key is called "primary" if user did not explicitly name it
+         * @param keyColumnList List of columns in the key. May be empty if
+         *     the columns have not been resolved yet
+         * @return Key
+         */
+        PhysKey addKey(String keyName, List<PhysColumn> keyColumnList);
+
+        /**
+         * Looks up a key by the constituent columns, optionally creating the
+         * key if not found.
+         *
+         * <p>Returns null if the key is not found and {@code add} is false.
+         *
+         * @param physColumnList Key columns
+         * @param add Whether to add if not found
+         * @return Key, if found or created, otherwise null
+         */
+        PhysKey lookupKey(List<PhysColumn> physColumnList, boolean add);
+
+        /**
+         * Looks up a key by name.
+         *
+         * @param key Key name
+         * @return Key, or null if not found
+         */
+        PhysKey lookupKey(String key);
+
+        Collection<PhysKey> getKeyList();
+
+        /**
+         * Returns the volume of the table. (Number of rows multiplied by the
+         * size of a row in bytes.)
+         */
+        int getVolume();
+
+        /**
+         * Returns the number of rows in the table.
+         */
+        int getNumberOfRows();
+    }
+
+    static abstract class PhysRelationImpl implements PhysRelation {
+        final PhysSchema physSchema;
+        final String alias;
+        final LinkedHashMap<String, PhysColumn> columnsByName =
+            new LinkedHashMap<String, PhysColumn>();
+        final LinkedHashMap<String, PhysKey> keysByName =
+            new LinkedHashMap<String, PhysKey>();
+        private boolean populated;
+        private int totalColumnByteCount;
+        private int rowCount;
+
+        PhysRelationImpl(
+            PhysSchema physSchema,
+            String alias)
+        {
+            this.alias = alias;
+            this.physSchema = physSchema;
+        }
+
+        public abstract int hashCode();
+
+        public abstract boolean equals(Object obj);
+
+        public PhysSchema getSchema() {
+            return physSchema;
+        }
+
+        public PhysColumn getColumn(String columnName, boolean fail) {
+            final PhysColumn column = columnsByName.get(columnName);
+            if (column == null && fail) {
+                throw Util.newError(
+                    "Column '" + columnName + "' not found in relation '"
+                    + this + "'");
+            }
+            return column;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+
+        public Collection<PhysKey> getKeyList() {
+            return keysByName.values();
+        }
+
+        public int getVolume() {
+            return getTotalColumnSize() * getNumberOfRows();
+        }
+
+        protected int getTotalColumnSize() {
+            return totalColumnByteCount;
+        }
+
+        public int getNumberOfRows() {
+            return rowCount;
+        }
+
+        public PhysKey lookupKey(
+            List<PhysColumn> physColumnList, boolean add)
+        {
+            for (PhysKey key : keysByName.values()) {
+                if (key.columnList.equals(physColumnList)) {
+                    return key;
+                }
+            }
+            if (add) {
+                // generate a name of the key, unique within the table
+                int i = keysByName.size();
+                String keyName;
+                for (;;) {
+                    keyName = "key$" + i;
+                    if (!keysByName.containsKey(keyName)) {
+                        break;
+                    }
+                    ++i;
+                }
+                return addKey(keyName, physColumnList);
+            }
+            return null;
+        }
+
+        public PhysKey lookupKey(String keyName) {
+            return keysByName.get(keyName);
+        }
+
+        public PhysKey addKey(String keyName, List<PhysColumn> keyColumnList) {
+            final PhysKey key = new PhysKey(this, keyName, keyColumnList);
+            final PhysKey previous = keysByName.put(keyName, key);
+            assert previous == null;
+            return key;
+        }
+
+        /**
+         * Loads this table's column definitions from the schema, if that has
+         * not been done already. Returns whether the columns were successfully
+         * populated this time or previously.
+         *
+         * <p>If the table does not exist or the view is invalid, returns false,
+         * and calls {@link mondrian.rolap.RolapSchema#warning} to indicate
+         * the problem.
+         *
+         * @param schema Schema (for logging errors)
+         * @param xmlNode XML element
+         * @return whether was populated successfully this call or previously
+         */
+        public boolean ensurePopulated(
+            RolapSchema schema,
+            NodeDef xmlNode)
+        {
+            if (!populated) {
+                final int[] rowCountAndSize = new int[2];
+                populated = populateColumns(schema, xmlNode, rowCountAndSize);
+                rowCount = rowCountAndSize[0];
+                totalColumnByteCount = rowCountAndSize[1];
+            }
+            return populated;
+        }
+
+        /**
+         * Populates the columns of a table by querying JDBC metadata.
+         *
+         * <p>Throws if table was not found or view had an error.
+         *
+         * @return Whether table was found  @param schema Schema (for logging errors)
+         * @param xmlNode XML element
+         * @param rowCountAndSize Output array, to hold the number of rows in
+         */
+        protected abstract boolean populateColumns(
+            RolapSchema schema,
+            NodeDef xmlNode,
+            int[] rowCountAndSize);
+    }
+
+    /**
+     * A relation defined by a SQL string.
+     *
+     * <p>Column names and types are resolved, in
+     * {@link mondrian.rolap.RolapSchema.PhysRelationImpl#populateColumns(RolapSchema,org.eigenbase.xom.NodeDef,int[])},
+     * by preparing a query based on the SQL string.
+     *
+     * <p>In Mondrian's schema file, each {@link Dialect} can have its own SQL
+     * string, but here we already know which dialect we are dealing with, so
+     * there is a single SQL string.
+     */
+    public static class PhysView
+        extends PhysRelationImpl
+        implements PhysRelation
+    {
+        private final String sqlString;
+
+        /**
+         * Creates a view.
+         *
+         * @param alias Alias
+         * @param physSchema Schema
+         * @param sqlString SQL string
+         */
+        PhysView(
+            String alias,
+            PhysSchema physSchema,
+            String sqlString)
+        {
+            super(physSchema, alias);
+            this.sqlString = sqlString;
+            assert sqlString != null && sqlString.length() > 0 : sqlString;
+        }
+
+        /**
+         * Returns the SQL query that defines this view in the current dialect.
+         *
+         * @return SQL query
+         */
+        public String getSqlString() {
+            return sqlString;
+        }
+
+        public int hashCode() {
+            return Util.hashV(0, physSchema, alias, sqlString);
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof PhysView) {
+                PhysView that = (PhysView) obj;
+                return this.alias.equals(that.alias)
+                    && this.sqlString.equals(that.sqlString)
+                    && this.physSchema.equals(that.physSchema);
+            }
+            return false;
+        }
+
+        protected boolean populateColumns(
+            RolapSchema schema,
+            NodeDef xmlNode,
+            int[] rowCountAndSize)
+        {
+            java.sql.Connection connection = null;
+            try {
+                connection =
+                    physSchema.jdbcSchema.getDataSource().getConnection();
+                final PreparedStatement pstmt =
+                    connection.prepareStatement(sqlString);
+                final ResultSetMetaData metaData = pstmt.getMetaData();
+                final int columnCount = metaData.getColumnCount();
+                for (int i = 0; i < columnCount; i++) {
+                    final String columnName =  metaData.getColumnName(i + 1);
+                    final String typeName = metaData.getColumnTypeName(i + 1);
+                    final int type = metaData.getColumnType(i + 1);
+                    // REVIEW: We want the physical size of the column in bytes.
+                    //  Ideally it would be comparable with the value returned
+                    //  from DatabaseMetaData.getColumns for a base table.
+                    final int columnSize = metaData.getColumnDisplaySize(i + 1);
+                    assert columnSize > 0;
+                    final Dialect.Datatype datatype =
+                        physSchema.dialect.sqlTypeToDatatype(typeName, type);
+                    if (datatype == null) {
+                        schema.warning(
+                            "Unknown data type "
+                                + typeName + " (" + type + ") for column "
+                                + columnName + " of view; mondrian is probably"
+                                + " not familiar with this database's type"
+                                + " system", xmlNode,
+                            null);
+                    }
+                    columnsByName.put(
+                        columnName,
+                        new RolapSchema.PhysRealColumn(
+                            this, columnName, datatype, columnSize));
+                }
+                final int rowCount = 1; // TODO:
+                int rowByteCount = 0;
+                for (PhysColumn physColumn : columnsByName.values()) {
+                    rowByteCount += physColumn.getColumnSize();
+                }
+                rowCountAndSize[0] = rowCount;
+                rowCountAndSize[1] = rowByteCount;
+                return true;
+            } catch (SQLException e) {
+                schema.warning(
+                    "View is invalid: " + e.getMessage(),
+                    xmlNode,
+                    null,
+                    e);
+                return false;
+            } finally {
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Relation defined by a fixed set of explicit row values. The number of
+     * rows is generally small.
+     */
+    public static class PhysInlineTable
+        extends PhysRelationImpl
+        implements PhysRelation
+    {
+        final List<String[]> rowList = new ArrayList<String[]>();
+
+        /**
+         * Creates an inline table.
+         *
+         * @param physSchema Schema
+         * @param alias Name of table within schema
+         */
+        PhysInlineTable(
+            PhysSchema physSchema,
+            String alias)
+        {
+            super(physSchema, alias);
+        }
+
+        public int hashCode() {
+            return Util.hashV(0, physSchema, alias);
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof PhysInlineTable) {
+                PhysInlineTable that = (PhysInlineTable) obj;
+                return this.alias.equals(that.alias)
+                    && this.physSchema.equals(that.physSchema);
+            }
+            return false;
+        }
+
+        protected boolean populateColumns(
+            RolapSchema schema, NodeDef xmlNode, int[] rowCountAndSize)
+        {
+            // not much to do; was populated on creation
+            rowCountAndSize[0] = rowList.size();
+            rowCountAndSize[1] = columnsByName.size() * 4;
+            return true;
+        }
+    }
+
+    public static class PhysTable extends PhysRelationImpl
+    {
+        final String schemaName;
+        final String name;
+        private Map<String, String> hintMap;
+        private int rowCount;
+
+        /**
+         * Creates a table.
+         *
+         * <p>Does not populate the column definitions from JDBC; see
+         * {@link mondrian.rolap.RolapSchema.PhysRelationImpl#ensurePopulated}
+         * for that.
+         *
+         * <p>The {@code hintMap} parameter is a map from hint type to hint
+         * text. It is never null, but frequently empty. It is treated as
+         * immutable; the constructor does not clone the collection. How to
+         * generate hints into SQL is up to the {@link Dialect}.
+         *
+         * @param physSchema Schema
+         * @param schemaName Schema name
+         * @param name Table name
+         * @param alias Table alias that identifies this use of the table, must
+         *     be unique within relations in this schema
+         * @param hintMap Map from hint type to hint text
+         */
+        public PhysTable(
+            PhysSchema physSchema,
+            String schemaName,
+            String name,
+            String alias,
+            Map<String, String> hintMap)
+        {
+            super(physSchema, alias);
+            this.schemaName = schemaName;
+            this.name = name;
+            this.hintMap = hintMap;
+            assert name != null;
+            assert alias != null;
+        }
+
+        public String toString() {
+            return (schemaName == null ? "" : (schemaName + '.'))
+                + name
+                + (name.equals(alias) ? "" : (" as " + alias));
+        }
+
+        public int hashCode() {
+            return Util.hashV(
+                0, physSchema, schemaName, name, alias);
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof PhysTable) {
+                PhysTable that = (PhysTable) obj;
+                return alias.equals(that.alias)
+                    && name.equals(that.name)
+                    && schemaName.equals(that.schemaName)
+                    && physSchema.equals(that.physSchema);
+            }
+            return false;
+        }
+
+        /**
+         * Returns the name of the database schema this table resides in.
+         *
+         * @return name of database schema, may be null
+         */
+        public String getSchemaName() {
+            return schemaName;
+        }
+
+        /**
+         * Returns the name of the table in the database.
+         *
+         * @return table name
+         */
+        public String getName() {
+            return name;
+        }
+
+        protected boolean populateColumns(
+            RolapSchema schema, NodeDef xmlNode, int[] rowCountAndSize)
+        {
+            final JdbcSchema.Table jdbcTable =
+                physSchema.jdbcSchema.getTable(name);
+            if (jdbcTable == null) {
+                schema.warning(
+                    "Table '" + name + "' does not exist in database.", xmlNode,
+                    null);
+                return false;
+            }
+            try {
+                jdbcTable.load();
+            } catch (SQLException e) {
+                throw Util.newError(
+                    "Error while loading columns of table '" + name + "'");
+            }
+            rowCount = jdbcTable.getNumberOfRows();
+            for (JdbcSchema.Table.Column jdbcColumn : jdbcTable.getColumns()) {
+                PhysColumn column =
+                    columnsByName.get(
+                        jdbcColumn.getName());
+                if (column == null) {
+                    column =
+                        new PhysRealColumn(
+                            this,
+                            jdbcColumn.getName(),
+                            jdbcColumn.getDatatype(),
+                            jdbcColumn.getColumnSize());
+                    columnsByName.put(
+                        jdbcColumn.getName(),
+                        column);
+                }
+            }
+            return true;
+        }
+
+        public int getNumberOfRows() {
+            return rowCount;
+        }
+
+        public Map<String, String> getHintMap() {
+            return hintMap;
+        }
+    }
+
+    /**
+     * A column (later, perhaps a collection of columns) that identifies a
+     * record in a table. The main purpose is as a target for a
+     * {@link mondrian.rolap.RolapSchema.PhysLink}.
+     *
+     * <p>Unlike a primary or unique key in a database, a PhysKey is
+     * not necessarily unique. For instance, the time dimension table may have
+     * one record per day, but a particular fact table may link at the month
+     * level. This is fine because Mondrian automatically eliminates duplicates
+     * when reading any level.
+     *
+     * <p>REVIEW: Should one of the keys be flagged as the 'main' key of a
+     * relation? Should keys be flagged as 'unique'?
+     */
+    public static class PhysKey {
+        final PhysRelation relation;
+        final List<PhysColumn> columnList;
+        private final String name;
+
+        /**
+         * Creates a PhysKey.
+         *
+         * @param relation Relation that the key belongs to
+         * @param name Name of key
+         * @param columnList List of columns
+         */
+        public PhysKey(
+            PhysRelation relation,
+            String name,
+            List<PhysColumn> columnList)
+        {
+            assert relation != null;
+            assert name != null;
+            assert columnList != null;
+            this.relation = relation;
+            this.name = name;
+            this.columnList = columnList;
+        }
+
+        @Override
+        public int hashCode() {
+            return Util.hashV(
+                0,
+                relation,
+                columnList);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PhysKey) {
+                final PhysKey that = (PhysKey) obj;
+                return this.relation.equals(that.relation)
+                    && this.columnList.equals(that.columnList);
+            }
+            return false;
+        }
+
+        public String toString() {
+            return "[Key " + relation + " (" + columnList + ")]";
+        }
+    }
+
+    /**
+     * Link between two tables, also known as a relationship.
+     *
+     * <p>A link has a direction: it is said to be from the target table (with
+     * the foreign key) to the source table (which contains the primary key).
+     * It is in the 'many to one' direction.
+     *
+     * <p>For example, in the FoodMart star schema, there are links from the
+     * fact table SALES_FACT to the dimension tables TIME_BY_DAY and PRODUCT,
+     * and a further link from PRODUCT to PRODUCT_CLASS, making Product a
+     * snowflake dimension.
+     */
+    public static class PhysLink implements DirectedGraph.Edge<PhysRelation> {
+        final PhysKey sourceKey;
+        final PhysRelation targetRelation;
+        final List<PhysColumn> columnList;
+        final String sql;
+
+        /**
+         * Creates a link from {@code targetTable} to {@code sourceTable} over
+         * a list of columns.
+         *
+         * @param sourceKey Key of source table (usually the primary key)
+         * @param targetRelation Target table (contains foreign key)
+         * @param columnList Foreign key columns in target table
+         */
+        public PhysLink(
+            PhysKey sourceKey,
+            PhysRelation targetRelation,
+            List<PhysColumn> columnList)
+        {
+            this.sourceKey = sourceKey;
+            this.targetRelation = targetRelation;
+            this.columnList = columnList;
+            assert columnList.size() == sourceKey.columnList.size()
+                : columnList + " vs. " + sourceKey.columnList;
+            for (PhysColumn column : columnList) {
+                assert column.relation == targetRelation
+                    : column.relation + "/" + targetRelation;
+            }
+            this.sql = deriveSql();
+        }
+
+        public int hashCode() {
+            return Util.hashV(0, sourceKey, targetRelation, columnList);
+        }
+
+        public boolean equals(Object obj) {
+            if (obj instanceof PhysLink) {
+                PhysLink that = (PhysLink) obj;
+                return this.sourceKey.equals(that.sourceKey)
+                    && this.targetRelation.equals(that.targetRelation)
+                    && this.columnList.equals(that.columnList);
+            }
+            return false;
+        }
+
+        public String toString() {
+            return "Link from " + targetRelation + " "
+                + columnList
+                + " to " + sourceKey;
+        }
+
+        public PhysRelation getFrom() {
+            return targetRelation;
+        }
+
+        public PhysRelation getTo() {
+            return sourceKey.relation;
+        }
+
+        public String toSql() {
+            return sql;
+        }
+
+        private String deriveSql() {
+            final StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < columnList.size(); i++) {
+                if (buf.length() > 0) {
+                    buf.append(" and ");
+                }
+                PhysColumn targetColumn = columnList.get(i);
+                final PhysExpr sourceColumn = sourceKey.columnList.get(i);
+                buf.append(targetColumn.toSql())
+                    .append(" = ").append(sourceColumn.toSql());
+            }
+            return buf.toString();
+        }
+    }
+
+    public static abstract class PhysExpr {
+        public abstract String toSql();
+
+        /**
+         * @see Util#deprecated(Object, boolean) Maybe move to {@link SqlQuery}
+         *   or elsewhere; PhysExpr shouldn't depend on objects at a higher
+         *   level of abstraction
+         *
+         * @param sqlQuery Query whose FROM clause to add to
+         * @param measureGroup If null, just add this expression's table; if
+         *    not null, add a join path to the measure group's fact table
+         * @param cubeDimension Dimension by which expression is joined to
+         *    fact table. Must be specified if and only if measure group is
+         *    specified.
+         */
+        public abstract void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension);
+
+        /**
+         * Returns the data type of this expression, or null if not known.
+         *
+         * @return Data type
+         */
+        public abstract Dialect.Datatype getDatatype();
+    }
+
+    public static class PhysTextExpr extends PhysExpr {
+        private final String text;
+
+        PhysTextExpr(String s) {
+            this.text = s;
+        }
+
+        public String toSql() {
+            return text;
+        }
+
+        public void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            // nothing to do
+        }
+
+        public Dialect.Datatype getDatatype() {
+            return null; // not known
+        }
+    }
+
+    public static abstract class PhysColumn extends PhysExpr {
+        public final PhysRelation relation;
+        public final String name;
+        Dialect.Datatype datatype;
+        protected final int columnSize;
+
+        public PhysColumn(
+            PhysRelation relation, String name, int columnSize)
+        {
+            assert relation != null;
+            assert name != null;
+            this.name = name;
+            this.relation = relation;
+            this.columnSize = columnSize;
+        }
+
+        public String toString() {
+            return toSql();
+        }
+
+        public void setDatatype(Dialect.Datatype datatype) {
+            this.datatype = datatype;
+        }
+
+        public Dialect.Datatype getDatatype() {
+            return datatype;
+        }
+
+        public void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            Util.deprecated(
+                "add a list of RolapStar.Table to query, so we can quickly figure out whether we've added a table already",
+                false);
+            assert (measureGroup == null) == (cubeDimension == null);
+            if (measureGroup != null) {
+                final RolapStar.Column column =
+                    measureGroup.getRolapStarColumn(cubeDimension, this, true);
+                column.getTable().addToFrom(sqlQuery, false, true);
+            } else {
+                sqlQuery.addFrom(relation, relation.getAlias(), false);
+            }
+        }
+
+        /**
+         * Returns the size in bytes of the column in the database.
+         */
+        public int getColumnSize() {
+            return columnSize;
+        }
+    }
+
+    public static final class PhysRealColumn extends PhysColumn {
+        private final String sql;
+
+        PhysRealColumn(
+            PhysRelation relation,
+            String name,
+            Dialect.Datatype datatype,
+            int columnSize)
+        {
+            super(relation, name, columnSize);
+            this.sql = deriveSql();
+            setDatatype(datatype);
+        }
+
+        protected String deriveSql() {
+            return relation.getSchema().dialect.quoteIdentifier(
+                relation.getAlias())
+                + '.'
+                + relation.getSchema().dialect.quoteIdentifier(name);
+        }
+
+        public int hashCode() {
+            return Util.hash(name.hashCode(), relation);
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof PhysRealColumn) {
+                PhysRealColumn that = (PhysRealColumn) obj;
+                return name.equals(that.name)
+                    && relation.equals(that.relation);
+            }
+            return false;
+        }
+
+        public String toSql() {
+            return sql;
+        }
+    }
+
+    public static final class PhysCalcColumn extends PhysColumn {
+        private List<RolapSchema.PhysExpr> list;
+        private String sql;
+
+        PhysCalcColumn(
+            PhysRelation table,
+            String name,
+            List<RolapSchema.PhysExpr> list)
+        {
+            super(table, name, 4);
+            this.list = list;
+            compute();
+        }
+
+        public void compute() {
+            int unresolvedCount = 0;
+            for (PhysExpr expr : list) {
+                if (expr instanceof UnresolvedColumn) {
+                    ++unresolvedCount;
+                }
+            }
+            if (unresolvedCount == 0) {
+                sql = deriveSql();
+            }
+        }
+
+        public String toSql() {
+            return sql;
+        }
+
+        protected String deriveSql() {
+            final StringBuilder buf = new StringBuilder();
+            for (PhysExpr expr : list) {
+                buf.append(expr.toSql());
+            }
+            return buf.toString();
+        }
+
+        public void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            for (PhysExpr physExpr : list) {
+                physExpr.addToFrom(sqlQuery, measureGroup, cubeDimension);
+            }
+        }
+
+        public List<PhysExpr> getList() {
+            return list;
+        }
+    }
+
+    /** experimental - alternative to {@link mondrian.rolap.RolapSchema.PhysCalcColumn} */
+    public static final class PhysCalcExpr extends PhysExpr {
+        final List<RolapSchema.PhysExpr> list;
+        private final String sql;
+
+        PhysCalcExpr(
+            List<RolapSchema.PhysExpr> list)
+        {
+            assert list != null;
+            this.list = list;
+            this.sql = deriveSql();
+        }
+
+        public Dialect.Datatype getDatatype() {
+            return null;
+        }
+
+        public String toSql() {
+            return sql;
+        }
+
+        protected String deriveSql() {
+            final StringBuilder buf = new StringBuilder();
+            for (PhysExpr o : list) {
+                buf.append(o.toSql());
+            }
+            return buf.toString();
+        }
+
+        public void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            for (Object o : list) {
+                if (o instanceof PhysExpr) {
+                    PhysExpr physExpr = (PhysExpr) o;
+                    physExpr.addToFrom(sqlQuery, measureGroup, cubeDimension);
+                }
+            }
+        }
+    }
+
+    public static abstract class UnresolvedColumn extends PhysColumn {
+        State state = State.UNRESOLVED;
+        private final String tableName;
+        private final String name;
+        private final ElementDef xml;
+
+        public UnresolvedColumn(
+            PhysRelation relation,
+            String tableName,
+            String name,
+            ElementDef xml)
+        {
+            super(relation, name, 0);
+            assert tableName != null;
+            assert name != null;
+            this.tableName = tableName;
+            this.name = name;
+            this.xml = xml;
+        }
+
+        public abstract void onResolve(PhysColumn column);
+
+        public abstract String getContext();
+
+        public String toString() {
+            return tableName + "." + name;
+        }
+
+        public String toSql() {
+            throw new UnsupportedOperationException(
+                "unresolved column " + this);
+        }
+
+        public void addToFrom(
+            SqlQuery sqlQuery,
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public enum State {
+            UNRESOLVED,
+            ACTIVE,
+            RESOLVED,
+            ERROR
+        }
+    }
+
+    public static class PhysHop {
+        public final PhysRelation relation;
+        public final PhysLink link;
+
+        /**
+         * Creates a hop.
+         *
+         * @param relation Target relation
+         * @param link Link from source to target relation
+         */
+        public PhysHop(
+            PhysRelation relation,
+            PhysLink link)
+        {
+            assert relation != null;
+            // link is null for the first hop in a path
+            this.relation = relation;
+            this.link = link;
+        }
+    }
+
+    /**
+     * A path is a sequence of {@link PhysHop hops}.
+     *
+     * <p>It connects a pair of {@link PhysRelation relations} with a sequence
+     * of link traversals. In general, a path between relations R1 and Rn
+     * consists of the hops
+     *
+     *    { Hop(R1, null),
+     *      Hop(R2, Link(R1, R2)),
+     *      Hop(R3, Link(R2, R3)),
+     *      ...
+     *      Hop(Rn, Link(Rn-1, Rn)) }
+     *
+     * <p>REVIEW: Is it worth making paths canonical? That is, if two paths
+     * within a schema are equal, then they will always be the same object.
+     */
+    public static class PhysPath {
+        final List<PhysHop> hopList;
+        public static final PhysPath EMPTY =
+            new PhysPath(Collections.<PhysHop>emptyList());
+
+        /**
+         * Creates a path.
+         *
+         * @param hopList List of hops
+         */
+        public PhysPath(List<PhysHop> hopList) {
+            this.hopList = hopList;
+            for (int i = 0; i < hopList.size(); i++) {
+                PhysHop hop = hopList.get(i);
+                if (i == 0) {
+                    assert hop.link == null;
+                } else {
+                    assert hop.relation == hop.link.sourceKey.relation;
+                    assert hopList.get(i - 1).relation
+                           == hop.link.targetRelation;
+                }
+            }
+        }
+
+        /**
+         * Returns list of links.
+         *
+         * @return list of links
+         */
+        public List<PhysLink> getLinks() {
+            return new AbstractList<PhysLink>() {
+                public PhysLink get(int index) {
+                    return hopList.get(index + 1).link;
+                }
+
+                public int size() {
+                    return hopList.size() - 1;
+                }
+            };
+        }
+        /**
+         * Adds the relations in this path to the FROM clause of a query.
+         *
+         * @param query Query to add to
+         * @param failIfExists Pass in false if you might have already added
+         *     the table before and if that happens you want to do nothing.
+         */
+        public final void addToFrom(
+            SqlQuery query,
+            boolean failIfExists)
+        {
+            for (PhysHop physHop : hopList) {
+                final PhysRelation relation = physHop.relation;
+                query.addFrom(relation, relation.getAlias(), failIfExists);
+            }
+            // Add join conditions in reverse order so tests don't break - no
+            // other reason - remove when everything works. Note that we stop
+            // at 1, because hop 0 has no link.
+            for (int i = hopList.size() - 1; i > 0; --i) {
+                PhysHop physHop = hopList.get(i);
+                final PhysRelation relation = physHop.relation;
+                query.addFrom(relation, relation.getAlias(), failIfExists);
+                query.addWhere(physHop.link.toSql());
+            }
+        }
+    }
+
+    public static class PhysPathBuilder {
+        private final List<PhysHop> hopList = new ArrayList<PhysHop>();
+
+        private PhysPathBuilder() {
+        }
+
+        PhysPathBuilder(PhysRelation relation) {
+            this();
+            hopList.add(new PhysHop(relation, null));
+        }
+
+        PhysPathBuilder(PhysPath path) {
+            this();
+            hopList.addAll(path.hopList);
+        }
+
+        public PhysPathBuilder add(
+            PhysKey sourceKey,
+            List<PhysColumn> columnList)
+        {
+            final PhysHop prevHop = hopList.get(hopList.size() - 1);
+            add(
+                new PhysLink(sourceKey, prevHop.relation, columnList),
+                sourceKey.relation);
+            return this;
+        }
+
+        public PhysPathBuilder add(
+            PhysLink link,
+            PhysRelation relation)
+        {
+            hopList.add(new PhysHop(relation, link));
+            return this;
+        }
+
+        public PhysPath done() {
+            return new PhysPath(UnmodifiableArrayList.of(hopList));
+        }
+
+        @SuppressWarnings({
+            "CloneDoesntCallSuperClone",
+            "CloneDoesntDeclareCloneNotSupportedException"
+        })
+        public PhysPathBuilder clone() {
+            final PhysPathBuilder pathBuilder = new PhysPathBuilder();
+            pathBuilder.hopList.addAll(hopList);
+            return pathBuilder;
+        }
+    }
+
+    public interface PhysHint {
+    }
+
+    public class PhysHintImpl implements PhysHint {
+    }
+
+    /**
+     * Checked exception for signaling errors in physical schemas.
+     * These are intended to be caught and converted into validation exceptions.
+     */
+    static class PhysSchemaException extends Exception {
+        /**
+         * Creates a PhysSchemaException.
+         *
+         * @param message Message
+         */
+        public PhysSchemaException(String message) {
+            super(message);
+        }
+    }
+
+    public static class MondrianSchemaException extends RuntimeException {
+        private final XmlLocation xmlLocation;
+
+        public MondrianSchemaException(
+            String message,
+            String nodeDesc,
+            XmlLocation xmlLocation,
+            Severity severity,
+            Throwable cause)
+        {
+            super(
+                message
+                + (nodeDesc == null
+                    ? ""
+                    : " in " + nodeDesc)
+                + (xmlLocation == null
+                    ? ""
+                    : " (at " + xmlLocation + ")"),
+                cause);
+            this.xmlLocation = xmlLocation;
+        }
+
+        /**
+         * Returns the location of the XML element or attribute that this
+         * exception relates to, or null if not knnown.
+         *
+         * @return location of element or attribute
+         */
+        public XmlLocation getXmlLocation() {
+            return xmlLocation;
+        }
+    }
+
+    private static enum Severity {
+        WARNING,
+        ERROR,
+        FATAL
+    }
+
+    static class UnresolvedCalcColumn extends UnresolvedColumn {
+        private final PhysCalcColumn physCalcColumn;
+        private final List<PhysExpr> list;
+        private final int index;
+
+        /**
+         * Creates an unresolved column reference.
+         *
+         * @param physTable Table that column belongs to
+         * @param tableName Name of table
+         * @param columnRef Column definition
+         * @param sql SQL
+         * @param list List of expressions
+         * @param index Index within parent table
+         */
+        public UnresolvedCalcColumn(
+            PhysTable physTable,
+            String tableName,
+            MondrianDef.Column columnRef,
+            MondrianDef.SQL sql,
+            PhysCalcColumn physCalcColumn,
+            List<PhysExpr> list,
+            int index)
+        {
+            super(physTable, tableName, columnRef.name, sql);
+            this.physCalcColumn = physCalcColumn;
+            this.list = list;
+            this.index = index;
+        }
+
+        /**
+         * Sets the calculated column that is the context for this unresolved
+         * reference to a column.
+         */
+        void setPhysCalcColumn(PhysCalcColumn physCalcColumn ) {
+
+        }
+        public String getContext() {
+            return ", in definition of calculated column '"
+                + physCalcColumn.relation.getAlias() + "'.'"
+                + physCalcColumn.name + "'";
+        }
+
+        public void onResolve(
+            PhysColumn column)
+        {
+            list.set(index, column);
+        }
     }
 }
 

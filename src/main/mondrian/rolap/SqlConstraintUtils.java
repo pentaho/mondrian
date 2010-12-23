@@ -14,7 +14,6 @@ import java.util.*;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
@@ -42,6 +41,7 @@ public class SqlConstraintUtils {
      * a WHERE condition and a join to the fact table.
      *
      * @param sqlQuery the query to modify
+     * @param starSet
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param restrictMemberTypes defines the behavior if the current context
      *   contains calculated members. If true, thows an exception.
@@ -49,6 +49,7 @@ public class SqlConstraintUtils {
      */
     public static void addContextConstraint(
         SqlQuery sqlQuery,
+        RolapStarSet starSet,
         AggStar aggStar,
         Evaluator evaluator,
         boolean restrictMemberTypes)
@@ -191,46 +192,54 @@ public class SqlConstraintUtils {
 
     /**
      * Ensures that the table of <code>level</code> is joined to the fact
-     * table
+     * table.
      *
      * @param sqlQuery sql query under construction
+     * @param starSet
      * @param aggStar
      * @param e evaluator corresponding to query
      * @param level level to be added to query
      */
     public static void joinLevelTableToFactTable(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         Evaluator e,
         RolapCubeLevel level)
     {
-        RolapStar.Column starColumn = level.getBaseStarKeyColumn(baseCube);
-        if (aggStar != null) {
-            int bitPos = starColumn.getBitPosition();
-            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-            AggStar.Table table = aggColumn.getTable();
-            table.addToFrom(sqlQuery, false, true);
-        } else {
-            RolapStar.Table table = starColumn.getTable();
-            assert table != null;
-            table.addToFrom(sqlQuery, false, true);
+        /*
+        TODO: fix this code later. In the attribute-oriented world, we would
+        go about joining to fact table differently.
+
+        for (RolapStar star : starSet.getStars()) {
+            if (aggStar != null) {
+                RolapStar.Column starColumn = level.getBaseStarKeyColumn(star);
+                int bitPos = starColumn.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table table = aggColumn.getTable();
+                table.addToFrom(sqlQuery, false, true);
+            } else {
+                level.getRolapLevel().getAttribute().keyList.addToFrom(sqlQuery, star);
+//                RolapStar.Table table = starColumn.getTable();
+//                assert table != null;
+//                table.addToFrom(sqlQuery, false, true);
+            }
         }
+         */
     }
 
     /**
      * Creates a "WHERE parent = value" constraint.
      *
      * @param sqlQuery the query to modify
-     * @param baseCube base cube if virtual
+     * @param starSet
      * @param aggStar Definition of the aggregate table, or null
      * @param parent the list of parent members
      * @param restrictMemberTypes defines the behavior if <code>parent</code>
-     * is a calculated member. If true, an exception is thrown
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapMember parent,
         boolean restrictMemberTypes)
@@ -238,7 +247,7 @@ public class SqlConstraintUtils {
         List<RolapMember> list = Collections.singletonList(parent);
         boolean exclude = false;
         addMemberConstraint(
-            sqlQuery, baseCube, aggStar, list, restrictMemberTypes, false,
+            sqlQuery, starSet, aggStar, list, restrictMemberTypes, false,
             exclude);
     }
 
@@ -255,26 +264,26 @@ public class SqlConstraintUtils {
      * instead.
      *
      * @param sqlQuery the query to modify
-     * @param baseCube base cube if virtual
+     * @param starSet Star set
      * @param aggStar (not used)
      * @param members the list of members for this constraint
      * @param restrictMemberTypes defines the behavior if <code>parents</code>
      *   contains calculated members.
      *   If true, and one of the members is calculated, an exception is thrown.
      * @param crossJoin true if constraint is being generated as part of
-     *   a native crossjoin
      * @param exclude whether to exclude the members in the SQL predicate.
      *  e.g. not in { member list}.
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         List<RolapMember> members,
         boolean restrictMemberTypes,
         boolean crossJoin,
         boolean exclude)
     {
+        assert starSet != null;
         if (members.size() == 0) {
             // Generate a predicate which is always false in order to produce
             // the empty set.  It would be smarter to avoid executing SQL at
@@ -294,9 +303,10 @@ public class SqlConstraintUtils {
         RolapLevel memberLevel = member.getLevel();
         RolapMember firstUniqueParent = member;
         RolapLevel firstUniqueParentLevel = null;
-        for (; firstUniqueParent != null
-                 && !firstUniqueParent.getLevel().isUnique();
-             firstUniqueParent = firstUniqueParent.getParentMember())
+        for (;
+            firstUniqueParent != null
+            && true /* TODO: !firstUniqueParent.getLevel().isUnique() */;
+            firstUniqueParent = firstUniqueParent.getParentMember())
         {
         }
 
@@ -305,41 +315,41 @@ public class SqlConstraintUtils {
             firstUniqueParentLevel = firstUniqueParent.getLevel();
         }
 
-        String condition = "(";
+        StringBuilder condition = new StringBuilder("(");
 
         // If this constraint is part of a native cross join and there
         // are multiple values for the parent members, then we can't
         // use single value IN clauses
         if (crossJoin
-            && !memberLevel.isUnique()
+            && true /* TODO: !memberLevel.isUnique() */
             && !membersAreCrossProduct(members))
         {
             assert (member.getParentMember() != null);
-            condition +=
+            condition.append(
                 constrainMultiLevelMembers(
                     sqlQuery,
-                    baseCube,
+                    starSet.getMeasureGroup(),
                     aggStar,
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes,
-                    exclude);
+                    exclude));
         } else {
-            condition +=
-                generateSingleValueInExpr(
-                    sqlQuery,
-                    baseCube,
-                    aggStar,
-                    members,
-                    firstUniqueParentLevel,
-                    restrictMemberTypes,
-                    exclude);
+            generateSingleValueInExpr(
+                condition,
+                sqlQuery,
+                starSet.getMeasureGroup(),
+                aggStar,
+                members,
+                firstUniqueParentLevel,
+                restrictMemberTypes,
+                exclude);
         }
 
         if (condition.length() > 1) {
             // condition is not empty
-            condition += ")";
-            sqlQuery.addWhere(condition);
+            condition.append(")");
+            sqlQuery.addWhere(condition.toString());
         }
     }
 
@@ -377,29 +387,30 @@ public class SqlConstraintUtils {
 
     /**
      * Adds to the where clause of a query expression matching a specified
-     * list of members
+     * list of members.
      *
      * @param sqlQuery query containing the where clause
-     * @param baseCube base cube if virtual
-     * @param aggStar aggregate star if available
+     * @param measureGroup
+     *@param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members
-     * are present
+* are present
      * @param exclude whether to exclude the members. Default is false.
-     *
-     * @return a non-empty String if SQL is generated for the multi-level
+*      @return a non-empty String if SQL is generated for the multi-level
      * member list.
      */
     private static String constrainMultiLevelMembers(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes,
         boolean exclude)
     {
+        // TODO: use fromLevel.
+
         // Use LinkedHashMap so that keySet() is deterministic.
         Map<RolapMember, List<RolapMember>> parentChildrenMap =
             new LinkedHashMap<RolapMember, List<RolapMember>>();
@@ -414,7 +425,7 @@ public class SqlConstraintUtils {
             condition1.append(
                 generateMultiValueInExpr(
                     sqlQuery,
-                    baseCube,
+                    measureGroup,
                     aggStar,
                     members,
                     fromLevel,
@@ -431,7 +442,7 @@ public class SqlConstraintUtils {
             //   [null].[CA].[Sacramento]
             //
             // Pick out such members to generate SQL later.
-            // These members are organized in a map that maps the parant levels
+            // These members are organized in a map that maps the parent levels
             // containing NULL to all its children members in the list. e.g.
             // the member list above becomes the following map, after SQL is
             // generated for [USA].[CA].[San Jose] in the call above.
@@ -447,12 +458,12 @@ public class SqlConstraintUtils {
                     // members containing nulls across all levels.
                     condition.append(")");
                     condition.append(" or ");
-                    condition.append(
-                        generateMultiValueIsNullExprs(
-                            sqlQuery,
-                            baseCube,
-                            members.get(0),
-                            fromLevel));
+                    generateMultiValueIsNullExprs(
+                        condition,
+                        sqlQuery,
+                        measureGroup,
+                        members.get(0),
+                        fromLevel);
                 }
                 return condition.toString();
             }
@@ -473,8 +484,8 @@ public class SqlConstraintUtils {
                 if (m.isCalculated()) {
                     if (restrictMemberTypes) {
                         throw Util.newInternal(
-                            "addMemberConstraint: cannot "
-                            + "restrict SQL to calculated member :" + m);
+                            "addMemberConstraint: cannot restrict SQL to "
+                            + "calculated member :" + m);
                     }
                     continue;
                 }
@@ -518,30 +529,20 @@ public class SqlConstraintUtils {
             // First generate ANDs for all members in the parent lineage of
             // this parent-children group
             int levelCount = 0;
-            for (RolapMember gp = p; gp != null; gp = gp.getParentMember()) {
-                if (gp.isAll()) {
-                    // Ignore All member
-                    // Get the next parent
-                    continue;
-                }
 
-                RolapLevel level = gp.getLevel();
-
-                // add the level to the FROM clause if this is the
-                // first parent-children group we're generating sql for
-                if (firstParent) {
-                    RolapHierarchy hierarchy = level.getHierarchy();
-
-                    // this method can be called within the context of shared
-                    // members, outside of the normal rolap star, therefore
-                    // we need to check the level to see if it is a shared or
-                    // cube level.
-
-                    RolapStar.Column column = null;
-                    if (level instanceof RolapCubeLevel) {
-                        column = ((RolapCubeLevel)level).getBaseStarKeyColumn(
-                            baseCube);
-                    }
+            // this method can be called within the context of shared
+            // members, outside of the normal rolap star, therefore
+            // we need to check the level to see if it is a shared or
+            // cube level.
+            if (p instanceof RolapCubeMember) {
+                RolapCubeMember cubeMember = (RolapCubeMember) p;
+                final RolapAttribute attribute = p.getLevel().getAttribute();
+                final List<Object> keyList = cubeMember.getKeyAsList();
+                int j = 0;
+                for (RolapSchema.PhysColumn physColumn : attribute.keyList) {
+                    final RolapStar.Column column =
+                        measureGroup.getRolapStarColumn(
+                            cubeMember.getDimension(), physColumn);
                     if (column != null) {
                         if (aggStar != null) {
                             int bitPos = column.getBitPosition();
@@ -550,34 +551,39 @@ public class SqlConstraintUtils {
                             AggStar.Table table = aggColumn.getTable();
                             table.addToFrom(sqlQuery, false, true);
                         } else {
-                            RolapStar.Table targetTable = column.getTable();
-                            hierarchy.addToFrom(sqlQuery, targetTable);
+                            column.getTable().addToFrom(sqlQuery, false, true);
                         }
                     } else {
-                        assert (aggStar == null);
-                        hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                        assert aggStar == null;
+                        Util.deprecated("todo", false);
+                        // level.getKeyExp().addToFrom(sqlQuery, star);
                     }
-                }
 
-                if (levelCount > 0) {
-                    condition2.append(" and ");
-                }
-                ++levelCount;
+                    if (levelCount > 0) {
+                        condition2.append(" and ");
+                    }
+                    ++levelCount;
 
-                condition2.append(
-                    constrainLevel(
-                        level,
-                        sqlQuery,
-                        baseCube,
-                        aggStar,
-                        getColumnValue(
-                            gp.getKey(),
-                            sqlQuery.getDialect(),
-                            level.getDatatype()),
-                        false));
-                if (gp.getLevel() == fromLevel) {
-                    // SQL is completely generated for this parent
-                    break;
+                    Util.deprecated("obsolete", false);
+                    condition2.append(
+                        constrainLevel(
+                            p.getLevel(),
+                            sqlQuery,
+                            measureGroup,
+                            aggStar,
+                            getColumnValue(
+                                keyList.get(j),
+                                sqlQuery.getDialect(),
+                                physColumn.getDatatype()),
+                            false));
+
+                    // TODO:
+//                    if (gp.getLevel() == fromLevel) {
+//                        SQL is completely generated for this parent
+//                        break;
+//                    }
+
+                    ++j;
                 }
             }
             firstParent = false;
@@ -593,8 +599,7 @@ public class SqlConstraintUtils {
                 if (levelCount > 0) {
                     condition2.append(" and ");
                 }
-                RolapLevel childrenLevel =
-                    (RolapLevel)(p.getLevel().getChildLevel());
+                RolapLevel childrenLevel = p.getLevel().getChildLevel();
 
                 if (sqlQuery.getDialect().supportsMultiValueInExpr()
                     && childrenLevel != memberLevel)
@@ -603,7 +608,7 @@ public class SqlConstraintUtils {
                     condition2.append(
                         generateMultiValueInExpr(
                             sqlQuery,
-                            baseCube,
+                            measureGroup,
                             aggStar,
                             children,
                             childrenLevel,
@@ -616,15 +621,14 @@ public class SqlConstraintUtils {
                     // the same level as members list. Only single value IN list
                     // needs to be generated for this case.
                     assert childrenLevel == memberLevel;
-                    condition2.append(
-                        generateSingleValueInExpr(
-                            sqlQuery,
-                            baseCube,
-                            aggStar,
-                            children,
-                            childrenLevel,
-                            restrictMemberTypes,
-                            false));
+                    generateSingleValueInExpr(
+                        condition2,
+                        sqlQuery, measureGroup,
+                        aggStar,
+                        children,
+                        childrenLevel,
+                        restrictMemberTypes,
+                        false);
                 }
             }
             // SQL is complete for this parent-children group.
@@ -646,12 +650,12 @@ public class SqlConstraintUtils {
         condition.append(condition2.toString());
         if (exclude) {
             condition.append(") or (");
-            condition.append(
-                generateMultiValueIsNullExprs(
-                    sqlQuery,
-                    baseCube,
-                    members.get(0),
-                    fromLevel));
+            generateMultiValueIsNullExprs(
+                condition,
+                sqlQuery,
+                measureGroup,
+                members.get(0),
+                fromLevel);
             condition.append(" and not(");
             condition.append(condition2.toString());
             condition.append("))");
@@ -711,22 +715,21 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Generates a sql expression constraining a level by some value
+     * Generates a SQL expression constraining a level by some value.
      *
      * @param level the level
      * @param query the query that the sql expression will be added to
-     * @param baseCube base cube for virtual levels
+     * @param measureGroup Measure group
      * @param aggStar aggregate star if available
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
      * member value
-     *
-     * @return generated string corresponding to the expression
+     *    @return generated string corresponding to the expression
      */
     public static String constrainLevel(
         RolapLevel level,
         SqlQuery query,
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         AggStar aggStar,
         String columnValue,
         boolean caseSensitive)
@@ -735,16 +738,22 @@ public class SqlConstraintUtils {
         // outside of the normal rolap star, therefore we need to
         // check the level to see if it is a shared or cube level.
 
-        RolapStar.Column column = null;
+        Util.deprecated(
+            "TODO unify inside-star and outside-star code paths",
+            false);
+        RolapStar.Column column;
         if (level instanceof RolapCubeLevel) {
-            column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
+            column = ((RolapCubeLevel)level).getBaseStarKeyColumn(measureGroup);
+        } else {
+            column = null;
         }
 
         String columnString;
         Dialect.Datatype datatype;
         if (column != null) {
             if (column.getNameColumn() == null) {
-                datatype = level.getDatatype();
+                Util.deprecated("obsolete", false);
+                datatype = level.attribute.getDatatype();
             } else {
                 column = column.getNameColumn();
                 // The schema doesn't specify the datatype of the name column,
@@ -761,17 +770,10 @@ public class SqlConstraintUtils {
                 columnString = column.generateExprString(query);
             }
         } else {
-            assert (aggStar == null);
-            MondrianDef.Expression exp = level.getNameExp();
-            if (exp == null) {
-                exp = level.getKeyExp();
-                datatype = level.getDatatype();
-            } else {
-                // The schema doesn't specify the datatype of the name column,
-                // but we presume that it is a string.
-                datatype = Dialect.Datatype.String;
-            }
-            columnString = exp.getExpression(query);
+            assert aggStar == null;
+            RolapSchema.PhysExpr exp = level.getAttribute().nameExp;
+                datatype = exp.getDatatype();
+            columnString = exp.toSql();
         }
 
         String constraint;
@@ -806,10 +808,10 @@ public class SqlConstraintUtils {
     /**
      * Generates a multi-value IN expression corresponding to a list of
      * member expressions, and adds the expression to the WHERE clause
-     * of a query, provided the member values are all non-null
+     * of a query, provided the member values are all non-null.
      *
      * @param sqlQuery query containing the where clause
-     * @param baseCube base cube if virtual
+     * @param measureGroup Measure group
      * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
@@ -817,12 +819,12 @@ public class SqlConstraintUtils {
      *        are present
      * @param parentWithNullToChildrenMap upon return this map contains members
      *        that have Null values in its (parent) levels
-     * @return a non-empty String if multi-value IN list was generated for some
+     *  @return a non-empty String if multi-value IN list was generated for some
      *        members
      */
     private static String generateMultiValueInExpr(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
@@ -843,15 +845,17 @@ public class SqlConstraintUtils {
                 continue;
             }
             RolapLevel level = m.getLevel();
-            RolapHierarchy hierarchy = level.getHierarchy();
 
             // this method can be called within the context of shared members,
             // outside of the normal rolap star, therefore we need to
             // check the level to see if it is a shared or cube level.
 
-            RolapStar.Column column = null;
+            final RolapStar.Column column;
             if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
+                column = ((RolapCubeLevel) level).getBaseStarKeyColumn(
+                    measureGroup);
+            } else {
+                column = null;
             }
 
             // REVIEW: The following code mostly uses the name column (or name
@@ -870,18 +874,13 @@ public class SqlConstraintUtils {
                     columnString = aggColumn.generateExprString(sqlQuery);
                 } else {
                     RolapStar.Table targetTable = column.getTable();
-                    hierarchy.addToFrom(sqlQuery, targetTable);
+                    targetTable.addToFrom(sqlQuery, false, true);
                     columnString = column.generateExprString(sqlQuery);
                 }
             } else {
-                assert (aggStar == null);
-                hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-
-                MondrianDef.Expression nameExp = level.getNameExp();
-                if (nameExp == null) {
-                    nameExp = level.getKeyExp();
-                }
-                columnString = nameExp.getExpression(sqlQuery);
+                assert aggStar == null;
+                RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
+                columnString = nameExp.toSql();
             }
 
             if (ordinalInMultiple++ > 0) {
@@ -905,8 +904,8 @@ public class SqlConstraintUtils {
             if (m.isCalculated()) {
                 if (restrictMemberTypes) {
                     throw Util.newInternal(
-                        "addMemberConstraint: cannot "
-                        + "restrict SQL to calculated member :" + m);
+                        "addMemberConstraint: cannot restrict SQL to "
+                        + "calculated member :" + m);
                 }
                 continue;
             }
@@ -924,10 +923,10 @@ public class SqlConstraintUtils {
                 }
                 RolapLevel level = p.getLevel();
 
+                Util.deprecated("obsolete", false);
                 String value = getColumnValue(
                     p.getKey(),
-                    sqlQuery.getDialect(),
-                    level.getDatatype());
+                    sqlQuery.getDialect(), level.attribute.getDatatype());
 
                 // If parent at a level is NULL, record this parent and all
                 // its children(if there's any)
@@ -954,8 +953,9 @@ public class SqlConstraintUtils {
                     memberBuf.append(", ");
                 }
 
+                Util.deprecated("obsolete", false);
                 sqlQuery.getDialect().quote(
-                    memberBuf, value, level.getDatatype());
+                    memberBuf, value, level.attribute.getDatatype());
 
                 // Only needs to compare up to the first(lowest) unique level.
                 if (p.getLevel() == fromLevel) {
@@ -991,22 +991,20 @@ public class SqlConstraintUtils {
      * Generates an expression that is an OR of IS NULL expressions, one
      * per level in a RolapMember.
      *
+     * @param buf Buffer to which to append condition
      * @param sqlQuery query corresponding to the expression
-     * @param baseCube base cube if virtual
+     * @param measureGroup Measure group
      * @param member the RolapMember
      * @param fromLevel lowest parent level that is unique
-     *
-     * @return the text of the expression
      */
-    private static String generateMultiValueIsNullExprs(
+    private static void generateMultiValueIsNullExprs(
+        StringBuilder buf,
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         RolapMember member,
         RolapLevel fromLevel)
     {
-        final StringBuilder conditionBuf = new StringBuilder();
-
-        conditionBuf.append("(");
+        buf.append("(");
 
         // generate the left-hand side of the IN expression
         boolean isFirstLevelInMultiple = true;
@@ -1020,9 +1018,12 @@ public class SqlConstraintUtils {
             // outside of the normal rolap star, therefore we need to
             // check the level to see if it is a shared or cube level.
 
-            RolapStar.Column column = null;
+            final RolapStar.Column column;
             if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
+                column =
+                    ((RolapCubeLevel) level).getBaseStarKeyColumn(measureGroup);
+            } else {
+                column = null;
             }
 
             String columnString;
@@ -1033,21 +1034,18 @@ public class SqlConstraintUtils {
                 }
                 columnString = nameColumn.generateExprString(sqlQuery);
             } else {
-                MondrianDef.Expression nameExp = level.getNameExp();
-                if (nameExp == null) {
-                    nameExp = level.getKeyExp();
-                }
-                columnString = nameExp.getExpression(sqlQuery);
+                RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
+                columnString = nameExp.toSql();
             }
 
             if (!isFirstLevelInMultiple) {
-                conditionBuf.append(" or ");
+                buf.append(" or ");
             } else {
                 isFirstLevelInMultiple = false;
             }
 
-            conditionBuf.append(columnString);
-            conditionBuf.append(" is null");
+            buf.append(columnString);
+            buf.append(" is null");
 
             // Only needs to compare up to the first(lowest) unique level.
             if (m.getLevel() == fromLevel) {
@@ -1055,155 +1053,166 @@ public class SqlConstraintUtils {
             }
         }
 
-        conditionBuf.append(")");
-        return conditionBuf.toString();
+        buf.append(")");
     }
 
     /**
      * Generates a multi-value IN expression corresponding to a list of
      * member expressions, and adds the expression to the WHERE clause
-     * of a query, provided the member values are all non-null
+     * of a query, provided that the member values are all non-null.
      *
+     * <p>{@link Util#deprecated(Object, boolean)} different versions of
+     * this method for RolapMember and RolapCubeMember? The latter with
+     * a RolapMeasureGroup, former without.
+     *
+     * @param buf Buffer into which to generate condition
      * @param sqlQuery query containing the where clause
-     * @param baseCube base cube if virtual
+     * @param measureGroup Measure group to semijoin to; or null
      * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members
      *        are present
      * @param exclude whether to exclude the members. Default is false.
-     * @return a non-empty String if IN list was generated for the members.
      */
-    private static String generateSingleValueInExpr(
+    private static void generateSingleValueInExpr(
+        StringBuilder buf,
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
         RolapLevel fromLevel,
         boolean restrictMemberTypes,
         boolean exclude)
     {
-        int maxConstraints =
+        final int maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
-        Dialect dialect = sqlQuery.getDialect();
+        final Dialect dialect = sqlQuery.getDialect();
 
-        String condition = "";
         boolean firstLevel = true;
-        for (Collection<RolapMember> c = members;
-            !c.isEmpty();
-            c = getUniqueParentMembers(c))
+        for (Collection<RolapMember> members2 = members;
+            !members2.isEmpty();
+            members2 = getUniqueParentMembers(members2))
         {
-            RolapMember m = c.iterator().next();
+            RolapMember m = members2.iterator().next();
             if (m.isAll()) {
                 continue;
             }
             if (m.isCalculated() && !m.isParentChildLeaf()) {
                 if (restrictMemberTypes) {
                     throw Util.newInternal(
-                        "addMemberConstraint: cannot "
-                        + "restrict SQL to calculated member :" + m);
+                        "addMemberConstraint: cannot restrict SQL to "
+                        + "calculated member :" + m);
                 }
                 continue;
             }
 
             boolean containsNullKey = false;
-            Iterator<RolapMember> it = c.iterator();
-            while (it.hasNext()) {
-                m = it.next();
+            for (RolapMember member : members2) {
+                m = member;
                 if (m.getKey() == RolapUtil.sqlNullValue) {
                     containsNullKey = true;
                 }
             }
 
-            RolapLevel level = m.getLevel();
-            RolapHierarchy hierarchy = level.getHierarchy();
+            final RolapLevel level = m.getLevel();
+            for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+                // this method can be called within the context of shared
+                // members, outside of the normal rolap star, therefore we need
+                // to check the level to see if it is a shared or cube level.
 
-            // this method can be called within the context of shared members,
-            // outside of the normal rolap star, therefore we need to
-            // check the level to see if it is a shared or cube level.
+                String q;
+                final RolapStar.Column column;
+                if (level instanceof RolapCubeLevel) {
+                    assert measureGroup != null;
+                    final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
+                    column = measureGroup.getRolapStarColumn(
+                        cubeLevel.cubeDimension,
+                        key,
+                        true);
 
-            RolapStar.Column column = null;
-            if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
-            }
-
-            String q;
-            if (column != null) {
-                if (aggStar != null) {
-                    int bitPos = column.getBitPosition();
-                    AggStar.Table.Column aggColumn =
-                        aggStar.lookupColumn(bitPos);
-                    if (aggColumn == null) {
-                        throw Util.newInternal(
-                            "AggStar " + aggStar + " has no column for "
-                            + column + " (bitPos " + bitPos + ")");
-                    }
-                    AggStar.Table table = aggColumn.getTable();
-                    table.addToFrom(sqlQuery, false, true);
-                    q = aggColumn.generateExprString(sqlQuery);
-                } else {
-                    RolapStar.Table targetTable = column.getTable();
-                    hierarchy.addToFrom(sqlQuery, targetTable);
-                    q = column.generateExprString(sqlQuery);
-                }
-            } else {
-                assert (aggStar == null);
-                hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-                q = level.getKeyExp().getExpression(sqlQuery);
-            }
-
-            StarColumnPredicate cc = getColumnPredicates(column, c);
-
-            if (!dialect.supportsUnlimitedValueList()
-                && cc instanceof ListColumnPredicate
-                && ((ListColumnPredicate) cc).getPredicates().size()
-                > maxConstraints)
-            {
-                // Simply get them all, do not create where-clause.
-                // Below are two alternative approaches (and code). They
-                // both have problems.
-            } else {
-                String where =
-                    RolapStar.Column.createInExpr(
-                        q, cc, level.getDatatype(), sqlQuery);
-                if (!where.equals("true")) {
-                    if (!firstLevel) {
-                        if (exclude) {
-                            condition += " or ";
-                        } else {
-                            condition += " and ";
+                    if (aggStar != null) {
+                        int bitPos = column.getBitPosition();
+                        AggStar.Table.Column aggColumn =
+                            aggStar.lookupColumn(bitPos);
+                        if (aggColumn == null) {
+                            throw Util.newInternal(
+                                "AggStar " + aggStar + " has no column for "
+                                + column + " (bitPos " + bitPos + ")");
                         }
+                        AggStar.Table table = aggColumn.getTable();
+                        table.addToFrom(sqlQuery, false, true);
+                        q = aggColumn.generateExprString(sqlQuery);
                     } else {
-                        firstLevel = false;
+                        RolapStar.Table targetTable = column.getTable();
+                        targetTable.addToFrom(sqlQuery, false, true);
+                        q = column.generateExprString(sqlQuery);
                     }
-                    if (exclude) {
-                        where = "not (" + where + ")";
-                        if (!containsNullKey) {
-                            // Null key fails all filters so should add it here
-                            // if not already excluded.  E.g., if the original
-                            // exclusion filter is :
-                            //
-                            // not(year = '1997' and quarter in ('Q1','Q3'))
-                            //
-                            // then with IS NULL checks added, the filter
-                            // becomes:
-                            //
-                            // (not(year = '1997') or year is null) or
-                            // (not(quarter in ('Q1','Q3')) or quarter is null)
-                            where = "(" + where + " or " + "(" + q
-                                + " is null))";
+                } else {
+                    assert aggStar == null;
+                    // REVIEW: was 'baseCube != null'
+                    column = null;
+                    if (measureGroup != null) {
+                        key.addToFrom(sqlQuery, measureGroup, null);
+                    } else {
+//                    level.getKeyPath().addToFrom(sqlQuery, false);
+                    }
+                    q = key.toSql();
+                }
+
+                StarColumnPredicate cc = getColumnPredicates(column, members2);
+
+                if (!dialect.supportsUnlimitedValueList()
+                    && cc instanceof ListColumnPredicate
+                    && ((ListColumnPredicate) cc).getPredicates().size()
+                       > maxConstraints)
+                {
+                    // Simply get them all, do not create where-clause.
+                    // Below are two alternative approaches (and code). They
+                    // both have problems.
+                } else {
+                    Util.deprecated("obsolete", false);
+                    String where =
+                        RolapStar.Column.createInExpr(
+                            q, cc, level.attribute.getDatatype(), sqlQuery);
+                    if (!where.equals("true")) {
+                        if (!firstLevel) {
+                            buf.append(exclude ? " or " : " and ");
+                        } else {
+                            firstLevel = false;
                         }
+                        if (exclude) {
+                            where = "not (" + where + ")";
+                            if (!containsNullKey) {
+                                // Null key fails all filters so should add it
+                                // here if not already excluded. For example, if
+                                // the original exclusion filter is
+                                //
+                                // not(year = '1997' and quarter in ('Q1','Q3'))
+                                //
+                                // then with IS NULL checks added, the filter
+                                // becomes:
+                                //
+                                // (not (year = '1997')
+                                //    or year is null)
+                                // or
+                                // (not (quarter in ('Q1','Q3'))
+                                //    or quarter is null)
+                                where = "(" + where + " or " + "(" + q
+                                        + " is null))";
+                            }
+                        }
+                        buf.append(where);
                     }
-                    condition += where;
                 }
             }
 
-            if (m.getLevel().isUnique() || m.getLevel() == fromLevel) {
+            if (false /* TODO: m.getLevel().isUnique() */
+                || m.getLevel() == fromLevel)
+            {
                 break; // no further qualification needed
             }
         }
-
-        return condition;
     }
 }
 

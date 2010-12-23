@@ -13,9 +13,7 @@ import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.UnresolvedFunCall;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapStoredMeasure;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -141,17 +139,16 @@ public class AbstractAggregateFunDef extends FunDefBase {
         }
 
         RolapCube virtualCube = (RolapCube) evaluator.getCube();
-        RolapCube baseCube = (RolapCube) evaluator.getMeasureCube();
-        if (virtualCube.isVirtual() && baseCube != null) {
-            if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
-            {
+        RolapMeasureGroup measureGroup = evaluator.getMeasureGroup();
+        if (virtualCube.isVirtual() && measureGroup != null) {
+            if (measureGroup.ignoreUnrelatedDimensions) {
                 return ignoreUnrelatedDimensions(
-                    tuplesForAggregation, baseCube);
+                    tuplesForAggregation, measureGroup);
             } else if (MondrianProperties.instance()
                 .IgnoreMeasureForNonJoiningDimension.get())
             {
                 return ignoreMeasureForNonJoiningDimension(
-                    tuplesForAggregation, baseCube);
+                    tuplesForAggregation, measureGroup);
             }
         }
         return tuplesForAggregation;
@@ -161,17 +158,17 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * If a non joining dimension exists in the aggregation list then return
      * an empty list else return the original list.
 
-     * @param tuplesForAggregation is a list of members or tuples used in
-     * computing the aggregate
-     * @param baseCube
+     * @param tuplesForAggregation List of members or tuples used in
+     *     computing the aggregate
+     * @param measureGroup Measure group
      * @return list of members or tuples
      */
     private static List ignoreMeasureForNonJoiningDimension(
         List tuplesForAggregation,
-        RolapCube baseCube)
+        RolapMeasureGroup measureGroup)
     {
         Set<Dimension> nonJoiningDimensions =
-            nonJoiningDimensions(baseCube, tuplesForAggregation);
+            nonJoiningDimensions(measureGroup, tuplesForAggregation);
         if (nonJoiningDimensions.size() > 0) {
             return new ArrayList();
         }
@@ -189,13 +186,13 @@ public class AbstractAggregateFunDef extends FunDefBase {
      */
     private static List ignoreUnrelatedDimensions(
         List tuplesForAggregation,
-        RolapCube baseCube)
+        RolapMeasureGroup measureGroup)
     {
         Set<Dimension> nonJoiningDimensions =
-            nonJoiningDimensions(baseCube, tuplesForAggregation);
+            nonJoiningDimensions(measureGroup, tuplesForAggregation);
         Set processedTuples = new LinkedHashSet(tuplesForAggregation.size());
         for (int i = 0; i < tuplesForAggregation.size(); i++) {
-            Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
+            Member[] tuples = tupleAsArray(tuplesForAggregation.get(i), true);
             for (int j = 0; j < tuples.length; j++) {
                 if (nonJoiningDimensions.contains(tuples[j].getDimension())) {
                     final Hierarchy hierarchy =
@@ -217,11 +214,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     private static Set<Dimension> nonJoiningDimensions(
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         List tuplesForAggregation)
     {
-        Member[] tuple = tupleAsArray(tuplesForAggregation.get(0));
-        return baseCube.nonJoiningDimensions(tuple);
+        Member[] tuple = tupleAsArray(tuplesForAggregation.get(0), false);
+        return measureGroup.nonJoiningDimensions(tuple);
     }
 
     private static List tuplesAsList(Set tuples) {
@@ -236,20 +233,16 @@ public class AbstractAggregateFunDef extends FunDefBase {
         return results;
     }
 
-    private static Member[] copy(Member[] members) {
-        Member[] result = new Member[members.length];
-        System.arraycopy(members, 0, result, 0, members.length);
-        return result;
-    }
-
-    private static Member[] tupleAsArray(Object tuple) {
-        Member[] result;
+    private static Member[] tupleAsArray(Object tuple, boolean copy) {
         if (tuple instanceof Member[]) {
-            result = ((Member[]) tuple);
+            Member[] result = ((Member[]) tuple);
+            if (copy) {
+                result = result.clone();
+            }
+            return result;
         } else {
-            result = new Member[]{((Member) tuple)};
+            return new Member[]{((Member) tuple)};
         }
-        return result;
     }
 
     private static class MemberArray {

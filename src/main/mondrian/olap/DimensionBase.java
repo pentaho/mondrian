@@ -15,6 +15,9 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract implementation for a {@link Dimension}.
  *
@@ -29,8 +32,7 @@ public abstract class DimensionBase
     protected final String name;
     protected final String uniqueName;
     protected final String description;
-    protected final boolean highCardinality;
-    protected Hierarchy[] hierarchies;
+    protected final List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
     protected DimensionType dimensionType;
 
     /**
@@ -38,21 +40,18 @@ public abstract class DimensionBase
      *
      * @param name Name
      * @param dimensionType Type
-     * @param highCardinality Whether high-cardinality
      */
     protected DimensionBase(
         String name,
         String caption,
         String description,
-        DimensionType dimensionType,
-        boolean highCardinality)
+        DimensionType dimensionType)
     {
         this.name = name;
         this.caption = caption;
         this.uniqueName = Util.makeFqName(name);
         this.description = description;
         this.dimensionType = dimensionType;
-        this.highCardinality = highCardinality;
     }
 
     public String getUniqueName() {
@@ -67,12 +66,14 @@ public abstract class DimensionBase
         return description;
     }
 
-    public Hierarchy[] getHierarchies() {
-        return hierarchies;
-    }
-
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In this case, the expression is a dimension, so the hierarchy is the
+     * dimension's default hierarchy (its first).
+     */
     public Hierarchy getHierarchy() {
-        return hierarchies[0];
+        return hierarchyList.get(0);
     }
 
     public Dimension getDimension() {
@@ -136,7 +137,7 @@ public abstract class DimensionBase
             if (oe == null) {
                 buf.append(" returning null");
             } else {
-                buf.append(" returning elementname=" + oe.getName());
+                buf.append(" returning elementname=").append(oe.getName());
             }
             getLogger().debug(buf.toString());
         }
@@ -145,11 +146,11 @@ public abstract class DimensionBase
     }
 
     public boolean isHighCardinality() {
-        return this.highCardinality;
+        return false;
     }
 
     private Hierarchy lookupHierarchy(Id.Segment s) {
-        for (Hierarchy hierarchy : hierarchies) {
+        for (Hierarchy hierarchy : hierarchyList) {
             if (Util.equalName(hierarchy.getName(), s.name)) {
                 return hierarchy;
             }

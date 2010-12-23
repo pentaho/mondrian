@@ -10,11 +10,9 @@
 
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.*;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -90,7 +88,7 @@ public class AggGen {
     }
 
     protected SqlQuery getSqlQuery() {
-        return star.getSqlQuery();
+        return new SqlQuery(star.getSqlQueryDialect());
     }
 
     protected String getFactCount() {
@@ -116,10 +114,10 @@ public class AggGen {
     }
 
     protected String getRolapStarColumnName(RolapStar.Column rColumn) {
-        MondrianDef.Expression expr = rColumn.getExpression();
-        if (expr instanceof MondrianDef.Column) {
-            MondrianDef.Column cx = (MondrianDef.Column) expr;
-            return cx.getColumnName();
+        RolapSchema.PhysExpr expr = rColumn.getExpression();
+        if (expr instanceof RolapSchema.PhysRealColumn) {
+            RolapSchema.PhysRealColumn cx = (RolapSchema.PhysRealColumn) expr;
+            return cx.name;
         }
         return null;
     }
@@ -218,10 +216,11 @@ public class AggGen {
                 }
 
 
-                MondrianDef.Expression expr = column.getExpression();
-                if (expr instanceof MondrianDef.Column) {
-                    MondrianDef.Column exprColumn = (MondrianDef.Column) expr;
-                    String name = exprColumn.getColumnName();
+                RolapSchema.PhysExpr expr = column.getExpression();
+                if (expr instanceof RolapSchema.PhysRealColumn) {
+                    RolapSchema.PhysRealColumn exprColumn =
+                        (RolapSchema.PhysRealColumn) expr;
+                    String name = exprColumn.name;
                     JdbcSchema.Table.Column c = getColumn(factTable, name);
                     if (c == null) {
                         getLogger().warn(
@@ -252,10 +251,11 @@ public class AggGen {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug("  RolapStar.Condition: cond=" + cond);
                 }
-                MondrianDef.Expression left = cond.getLeft();
-                if (left instanceof MondrianDef.Column) {
-                    MondrianDef.Column leftColumn = (MondrianDef.Column) left;
-                    String name = leftColumn.getColumnName();
+                RolapSchema.PhysExpr left = cond.getLeft();
+                if (left instanceof RolapSchema.PhysRealColumn) {
+                    RolapSchema.PhysRealColumn leftColumn =
+                        (RolapSchema.PhysRealColumn) left;
+                    String name = leftColumn.name;
                     JdbcSchema.Table.Column c = getColumn(factTable, name);
                     if (c == null) {
                         getLogger().warn(

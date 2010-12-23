@@ -15,7 +15,7 @@
 <Model
  name="mondrian"
  dtdName="mondrian.dtd"
- className="MondrianDef"
+ className="Mondrian3Def"
  packageName="mondrian.olap"
  importName="mondrian.rolap.sql.SqlQuery"
  root="Schema"
@@ -572,10 +572,10 @@ Revision is $Id$
         </Object>
         <Object name="relation" type="RelationOrJoin">
             <Doc>
-                The {@link MondrianDef.Table table},
-                {@link MondrianDef.Join set of tables},
-                {@link MondrianDef.View SQL statement}, or
-                {@link MondrianDef.InlineTable inline table}
+                The {@link Mondrian3Def.Table table},
+                {@link Mondrian3Def.Join set of tables},
+                {@link Mondrian3Def.View SQL statement}, or
+                {@link Mondrian3Def.InlineTable inline table}
                 which populates this hierarchy.
             </Doc>
         </Object>
@@ -1162,7 +1162,7 @@ Revision is $Id$
                 this.selects = view.selects.clone();
             }
             public String toString() {
-                return selects[0].cdata;
+                return selects[0].getCData();
             }
 
             public View find(String seekAlias) {
@@ -1191,7 +1191,7 @@ Revision is $Id$
                 }
                 SQL sql = new SQL();
                 sql.dialect = dialect;
-                sql.cdata = code;
+                <!--sql.children = new org.eigenbase.xom.NodeDef[] {new org.eigenbase.xom.CdataDef(code)};-->
                 selects[selects.length - 1] = sql;
             }
 
@@ -1206,7 +1206,7 @@ Revision is $Id$
                     }
                     for (int i = 0; i &lt; selects.length; i++) {
                         if (!Util.equals(this.selects[i].dialect, that.selects[i].dialect)
-                            || !Util.equals(this.selects[i].cdata, that.selects[i].cdata))
+                            || !Util.equals(this.selects[i].getCData(), that.selects[i].getCData()))
                         {
                             return false;
                         }
@@ -1219,7 +1219,7 @@ Revision is $Id$
             </Code>
     </Element>
 
-    <Element type="SQL">
+    <Element type="SQL" contentModel="mixed">
         <Attribute name="dialect" required="true" default="generic">
             <Doc>
                 Dialect of SQL the view is intended for. Valid values include,
@@ -1244,7 +1244,7 @@ Revision is $Id$
                 </ul>
             </Doc>
         </Attribute>
-        <CData/>
+        <Any/>
         <Code><![CDATA[
             public int hashCode() {
                 return dialect.hashCode();
@@ -1256,7 +1256,27 @@ Revision is $Id$
                 }
                 SQL that = (SQL) obj;
                 return this.dialect.equals(that.dialect) &&
-                        Util.equals(this.cdata, that.cdata);
+                        Util.equals(this.getCData(), that.getCData());
+            }
+
+            /**
+             * Sets the contents of this node to a single piece of text.
+             */
+            public void setCData(String cdata) {
+                this.children =
+                    new org.eigenbase.xom.NodeDef[] {
+                        new org.eigenbase.xom.TextDef(cdata)};
+            }
+
+            /**
+             * Returns the concatenation of all text elements under this node.
+             */
+            public String getCData() {
+                StringBuilder buf = new StringBuilder();
+                for (org.eigenbase.xom.NodeDef child : children) {
+                    buf.append("x");
+                }
+                return buf.toString();
             }
 
             /**
@@ -1266,9 +1286,30 @@ Revision is $Id$
             public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
                 SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();
                 for (SQL sql : sqls) {
-                    codeSet.put(sql.dialect, sql.cdata);
+                    codeSet.put(sql.dialect, sql.getCData());
                 }
                 return codeSet;
+            }
+
+            /**
+             * Chooses the SQL that most closes matches the given dialect,
+             * returning the generic SQL if there is no match.
+             */
+            public static SQL choose(SQL[] sqls, mondrian.spi.Dialect dialect) {
+                String best = SqlQuery.getBestName(dialect);
+                SQL genericSql = null;
+                for (SQL sql : sqls) {
+                    if (sql.dialect.equals(best)) {
+                        return sql;
+                    }
+                    if (sql.dialect.equals("generic")) {
+                        genericSql = sql;
+                    }
+                }
+                if (genericSql == null) {
+                    throw Util.newError("View has no 'generic' variant");
+                }
+                return genericSql;
             }
             ]]>
         </Code>
@@ -1297,7 +1338,7 @@ Revision is $Id$
                 String leftAlias,
                 String leftKey,
                 RelationOrJoin left,
-                String rightAlias, 
+                String rightAlias,
                 String rightKey,
                 RelationOrJoin right)
             {
@@ -1434,7 +1475,7 @@ Revision is $Id$
                 return toString().hashCode();
             }
             public String getFilter() {
-                return (filter == null) ? null : filter.cdata;
+                return (filter == null) ? null : filter.getCData();
             }
             public AggExclude[] getAggExcludes() {
                 return aggExcludes;
@@ -1510,23 +1551,25 @@ Revision is $Id$
     </Element>
 
     <Element type="ColumnDefs">
-        <Doc>Holder for an array of ColumnDef elements</Doc>
-        <Array name="array" type="ColumnDef"/>
+        <Doc>
+            Holder for an array of ColumnDef elements.
+        </Doc>
+        <Array name="array" type="RealOrCalcColumnDef"/>
     </Element>
 
-    <Element type="ColumnDef">
-        <Doc>
-            Column definition for an inline table.
-        </Doc>
+    <Element type="RealOrCalcColumnDef" abstract="true">
         <Attribute name="name" required="true">
             <Doc>
                 Name of the column.
             </Doc>
         </Attribute>
-        <Attribute name="type" required="true">
+        <Attribute name="type" required="false">
             <Doc>
-                Type of the column:
+                Type of the column. Valid values are
                 String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p>If not present, mondrian retrieves the type from the
+                    underlying database.</p>
             </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
@@ -1536,6 +1579,12 @@ Revision is $Id$
             <Value>Time</Value>
             <Value>Timestamp</Value>
         </Attribute>
+    </Element>
+
+    <Element type="ColumnDef" class="RealOrCalcColumnDef">
+        <Doc>
+            Column definition for a table or inline table.
+        </Doc>
     </Element>
 
     <Element type="Rows">
@@ -1821,7 +1870,7 @@ Revision is $Id$
         <Array name="expressions" type="SQL" min="1"/>
         <Code><![CDATA[
             public String toString() {
-                return expressions[0].cdata;
+                return expressions[0].getCData();
             }
 
             public String getExpression(SqlQuery query) {
@@ -1831,10 +1880,10 @@ Revision is $Id$
             public String getGenericExpression() {
                 for (int i = 0; i < expressions.length; i++) {
                     if (expressions[i].dialect.equals("generic")) {
-                        return expressions[i].cdata;
+                        return expressions[i].getCData();
                     }
                 }
-                return expressions[0].cdata;
+                return expressions[0].getCData();
             }
 
             public String getTableAlias() {

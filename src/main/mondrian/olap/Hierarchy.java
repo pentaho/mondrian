@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,8 +31,17 @@ public interface Hierarchy extends OlapElement, Annotated {
      * not be visible; use {@link SchemaReader#getHierarchyLevels} instead.
      *
      * @post return != null
+     * @deprecated Use {@link #getLevelList}
      */
     Level[] getLevels();
+
+    /**
+     * Returns the levels of this hierarchy.
+     *
+     * @return List of levels
+     */
+    List<Level> getLevelList();
+
     /**
      * Returns the default member of this hierarchy.
      *
@@ -65,6 +75,7 @@ public interface Hierarchy extends OlapElement, Annotated {
      */
     Member createMember(
         Member parent, Level level, String name, Formula formula);
+
 }
 
 // End Hierarchy.java

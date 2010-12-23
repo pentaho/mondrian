@@ -37,6 +37,18 @@ public class DelegatingRolapMember implements RolapMember {
         return member.getKey();
     }
 
+    public List<Object> getKeyAsList() {
+        return member.getKeyAsList();
+    }
+
+    public Object[] getKeyAsArray() {
+        return member.getKeyAsArray();
+    }
+
+    public Object getKeyCompact() {
+        return member.getKeyCompact();
+    }
+
     public RolapMember getParentMember() {
         return member.getParentMember();
     }

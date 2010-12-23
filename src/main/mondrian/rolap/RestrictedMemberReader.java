@@ -207,7 +207,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         int topLevelDepth = hierarchyAccess.getTopLevelDepth();
         if (topLevelDepth > 0) {
             RolapLevel topLevel =
-                (RolapLevel) getHierarchy().getLevels()[topLevelDepth];
+                getHierarchy().getRolapLevelList().get(topLevelDepth);
             final List<RolapMember> memberList =
                 getMembersInLevel(topLevel, 0, Integer.MAX_VALUE);
             if (memberList.isEmpty()) {

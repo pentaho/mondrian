@@ -10,14 +10,22 @@
 package mondrian.xmla;
 
 import mondrian.olap.*;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Property;
+import mondrian.olap.Schema;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.*;
 
 import static mondrian.xmla.XmlaConstants.*;
 
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.metadata.*;
 import org.olap4j.metadata.Member.TreeOp;
-import org.olap4j.metadata.XmlaConstant;
 import org.olap4j.metadata.XmlaConstants;
 
 import java.lang.reflect.Field;
@@ -2341,8 +2349,8 @@ enum RowsetDefinition {
                         continue;
                     }
                     for (Dimension dimension : cube.getDimensions()) {
-                        Hierarchy[] hierarchies = dimension.getHierarchies();
-                        for (Hierarchy hierarchy : hierarchies) {
+                        for (Hierarchy hierarchy : dimension.getHierarchyList())
+                        {
                             ordinalPosition = populateHierarchy(
                                 schemaReader, cube, (HierarchyBase) hierarchy,
                                 ordinalPosition, rows);
@@ -2527,8 +2535,9 @@ TODO: see above
             row.set(NumericScale.name, 255);
             addRow(row, rows);
 */
-            Property[] props = level.getProperties();
-            for (Property prop : props) {
+            for (Property prop
+                : ((RolapLevel) level).getAttribute().getProperties())
+            {
                 String propName = prop.getName();
 
                 row = new Row();
@@ -3092,14 +3101,12 @@ TODO: see above
                             if (dimension.isMeasures()) {
                                 continue;
                             }
-                            Hierarchy[] hierarchies =
-                                dimension.getHierarchies();
-                            for (Hierarchy hierarchy1 : hierarchies) {
-                                HierarchyBase hierarchy =
-                                    (HierarchyBase) hierarchy1;
+                            for (Hierarchy hierarchy
+                                : dimension.getHierarchyList())
+                            {
                                 populateHierarchy(
                                     schemaReader, cube,
-                                    hierarchy, rows);
+                                    (HierarchyBase) hierarchy, rows);
                             }
                         }
                     }
@@ -3146,8 +3153,7 @@ TODO: see above
                 addRow(row, rows);
             }
 */
-            Level[] levels = hierarchy.getLevels();
-            for (Level level : levels) {
+            for (Level level : hierarchy.getLevelList()) {
                 populateLevel(cube, hierarchy, level, rows);
             }
         }
@@ -4040,9 +4046,9 @@ TODO: see above
             // The '1' might have to do with whether or not the
             // hierarchy has a 'all' member or not - don't know yet.
             // large data set total for Orders cube 0m42.923s
-            Hierarchy firstHierarchy = dimension.getHierarchies()[0];
-            Level[] levels = firstHierarchy.getLevels();
-            Level lastLevel = levels[levels.length - 1];
+            Hierarchy firstHierarchy = dimension.getHierarchyList().get(0);
+            List<Level> levels = firstHierarchy.getLevelList();
+            Level lastLevel = levels.get(levels.size() - 1);
 
 
 
@@ -4663,8 +4669,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 if (genOutput) {
                     String unique = hierarchy.getUniqueName();
                     if (hierarchyNameRT.passes(hierarchy.getName())
@@ -4756,8 +4761,8 @@ TODO: see above
             row.set(DimensionIsShared.name, true);
 
             RolapLevel nonAllFirstLevel =
-                (RolapLevel) hierarchy.getLevels()[
-                    (hierarchy.hasAll() ? 1 : 0)];
+                (RolapLevel) hierarchy.getLevelList().get(
+                    (hierarchy.hasAll() ? 1 : 0));
             row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
             if (deep) {
                 row.set(
@@ -4830,6 +4835,11 @@ TODO: see above
         public static final int MDLEVEL_TYPE_TIME_MINUTES = 0x0404;
         public static final int MDLEVEL_TYPE_TIME_SECONDS = 0x0804;
         public static final int MDLEVEL_TYPE_TIME_UNDEFINED = 0x1004;
+
+        // TODO: move the following 2 fields to olap4j
+
+        public static final int MDDIMENSIONS_MEMBER_KEY_UNIQUE  = 1;
+        public static final int MDDIMENSIONS_MEMBER_NAME_UNIQUE = 2;
 
         private static final Column CatalogName =
             new Column(
@@ -5040,8 +5050,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String uniqueName = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(uniqueName)) {
                     populateHierarchy(
@@ -5138,19 +5147,13 @@ TODO: see above
             // TODO: most of the time this is correct
             row.set(CustomRollupSettings.name, 0);
 
-            if (level instanceof RolapLevel) {
-                RolapLevel rl = (RolapLevel) level;
-                row.set(
-                    LevelUniqueSettings.name,
-                    (rl.isUnique() ? 1 : 0)
-                    + (rl.isAll() ? 2 : 0));
-            } else {
-                // can not access unique member attribute
-                // this is the best we can do.
-                row.set(
-                    LevelUniqueSettings.name,
-                    (level.isAll() ? 2 : 0));
+            int levelUniqueBitmap = 0;
+            if (level.isAll()) {
+                levelUniqueBitmap |= MDDIMENSIONS_MEMBER_NAME_UNIQUE;
             }
+            levelUniqueBitmap |= MDDIMENSIONS_MEMBER_KEY_UNIQUE;
+            row.set(LevelUniqueSettings.name, levelUniqueBitmap);
+
             row.set(LevelIsVisible.name, true);
             row.set(Description.name, desc);
             addRow(row, rows);
@@ -5158,52 +5161,7 @@ TODO: see above
         }
 
         private int getLevelType(Level lev) {
-            int ret = 0;
-
-            if (lev.isAll()) {
-                ret |= MDLEVEL_TYPE_ALL;
-            }
-
-            mondrian.olap.LevelType type = lev.getLevelType();
-            switch (type) {
-            case Regular:
-                ret |= MDLEVEL_TYPE_REGULAR;
-                break;
-            case TimeYears:
-                ret |= MDLEVEL_TYPE_TIME_YEARS;
-                break;
-            case TimeHalfYear:
-                ret |= MDLEVEL_TYPE_TIME_HALF_YEAR;
-                break;
-            case TimeQuarters:
-                ret |= MDLEVEL_TYPE_TIME_QUARTERS;
-                break;
-            case TimeMonths:
-                ret |= MDLEVEL_TYPE_TIME_MONTHS;
-                break;
-            case TimeWeeks:
-                ret |= MDLEVEL_TYPE_TIME_WEEKS;
-                break;
-            case TimeDays:
-                ret |= MDLEVEL_TYPE_TIME_DAYS;
-                break;
-            case TimeHours:
-                ret |= MDLEVEL_TYPE_TIME_HOURS;
-                break;
-            case TimeMinutes:
-                ret |= MDLEVEL_TYPE_TIME_MINUTES;
-                break;
-            case TimeSeconds:
-                ret |= MDLEVEL_TYPE_TIME_SECONDS;
-                break;
-            case TimeUndefined:
-                ret |= MDLEVEL_TYPE_TIME_UNDEFINED;
-                break;
-            default:
-                ret |= MDLEVEL_TYPE_UNKNOWN;
-            }
-
-            return ret;
+            return lev.getLevelType().xmlaOrdinal();
         }
 
         protected void setProperty(
@@ -5400,9 +5358,9 @@ TODO: see above
                             connection.getRole());
                     Dimension measuresDimension = cube.getDimensions()[0];
                     Hierarchy measuresHierarchy =
-                        measuresDimension.getHierarchies()[0];
+                        measuresDimension.getHierarchyList().get(0);
                     Level measuresLevel =
-                        measuresHierarchy.getLevels()[0];
+                        measuresHierarchy.getLevelList().get(0);
 
                     buf.setLength(0);
 
@@ -5411,9 +5369,10 @@ TODO: see above
                         if (dimension.isMeasures()) {
                             continue;
                         }
-                        for (Hierarchy hierarchy : dimension.getHierarchies()) {
-                            Level[] levels = hierarchy.getLevels();
-                            Level lastLevel = levels[levels.length - 1];
+                        for (Hierarchy hierarchy : dimension.getHierarchyList())
+                        {
+                            List<Level> levels = hierarchy.getLevelList();
+                            Level lastLevel = levels.get(levels.size() - 1);
                             if (j++ > 0) {
                                 buf.append(',');
                             }
@@ -5819,8 +5778,7 @@ TODO: see above
                 if (hier == null) {
                     return;
                 }
-                Level[] levels = hier.getLevels();
-                for (Level level : levels) {
+                for (Level level : hier.getLevelList()) {
                     if (!level.getUniqueName().equals(levelUniqueName)) {
                         continue;
                     }
@@ -5851,8 +5809,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String uniqueName = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(uniqueName)) {
                     populateHierarchy(
@@ -5878,21 +5835,21 @@ TODO: see above
                         + "LevelNumber invalid");
                     return;
                 }
-                Level[] levels = hierarchy.getLevels();
-                if (levelNumber >= levels.length) {
+                List<Level> levels = hierarchy.getLevelList();
+                if (levelNumber >= levels.size()) {
                     LOGGER.warn(
                         "RowsetDefinition.populateHierarchy: "
                         + "LevelNumber ("
                         + levelNumber
                         + ") is greater than number of levels ("
-                        + levels.length
+                        + levels.size()
                         + ") for hierarchy \""
                         + hierarchy.getUniqueName()
                         + "\"");
                     return;
                 }
 
-                Level level = levels[levelNumber];
+                Level level = levels.get(levelNumber);
                 List<Member> members =
                     schemaReader.getLevelMembers(level, false);
                 outputMembers(schemaReader, members, catalogName, cube, rows);
@@ -6572,8 +6529,7 @@ TODO: see above
             Dimension dimension,
             List<Row> rows)
         {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String unique = hierarchy.getUniqueName();
                 if (hierarchyUniqueNameRT.passes(unique)) {
                     populateHierarchy(
@@ -6604,8 +6560,9 @@ TODO: see above
             Level level,
             List<Row> rows)
         {
-            Property[] properties = level.getProperties();
-            for (Property property : properties) {
+            for (Property property
+                : ((RolapLevel) level).getAttribute().getProperties())
+            {
                 if (property.isInternal()) {
                     continue;
                 }

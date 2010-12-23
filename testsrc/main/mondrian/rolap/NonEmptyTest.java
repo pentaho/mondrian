@@ -718,7 +718,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             99,
             3,
             "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
@@ -732,7 +732,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         // ok to use native sql optimization for members on a virtual cube
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             6,
             3,
             "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
@@ -1745,7 +1745,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
                 8, 5, "select {[Measures].[Unit Sales]} ON COLUMNS, "
                 + "NON EMPTY Crossjoin("
                 + "  {[Product].[All Products].[Food], [Product].[All Products].[Drink].[Dairy]}, "
@@ -2320,7 +2320,7 @@ public class NonEmptyTest extends BatchTestCase {
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
 
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             50,
             21,
             "select \n"
@@ -2329,8 +2329,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales]\n"
             + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Result r = c.run();
-        Level[] levels = smr.getHierarchy().getLevels();
-        Level nameLevel = levels[levels.length - 1];
+        List<Level> levels = smr.getHierarchy().getLevelList();
+        Level nameLevel = levels.get(levels.size() - 1);
 
         // evaluator for [All Customers], [Store 14], [1/1/1997]
         Evaluator context = getEvaluator(r, new int[]{0, 0});
@@ -2385,8 +2385,8 @@ public class NonEmptyTest extends BatchTestCase {
                 + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
                 + "from [Sales]\n"
                 + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
-        Level[] levels = smr.getHierarchy().getLevels();
-        Level nameLevel = levels[levels.length - 1];
+        List<Level> levels = smr.getHierarchy().getLevelList();
+        Level nameLevel = levels.get(levels.size() - 1);
 
         // evaluator for [All Customers], [Store 14], [1/1/1997]
         Evaluator context = getEvaluator(r, new int[] {0, 0});
@@ -2431,7 +2431,7 @@ public class NonEmptyTest extends BatchTestCase {
         // No query should return more than 20 rows. (1 row at 'all' level,
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             34,
             34,
             "select \n"
@@ -2446,7 +2446,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of rolap member
      */
     public void testMemberChildrenOfRolapMember() {
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             50,
             4,
             "select \n"
@@ -2461,7 +2461,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Tests non empty children of All member
      */
     public void testMemberChildrenOfAllMember() {
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
                 50, 14, "select {[Measures].[Unit Sales]} ON columns,\n"
                 + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n"
                 + "where ([Time].[1997].[Q1].[1])");
@@ -2490,8 +2490,8 @@ public class NonEmptyTest extends BatchTestCase {
         //      order by
         //        `promotion`.`promotion_name`
 
-        TestCase c =
-            new TestCase(
+        LimitedQuery c =
+            new LimitedQuery(
                 50,
                 48,
                 "select {[Measures].[Unit Sales]} ON columns,\n"
@@ -2510,7 +2510,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
-        TestCase c = new TestCase(
+        LimitedQuery c = new LimitedQuery(
             3,
             1,
             "select "
@@ -2536,8 +2536,8 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        TestCase c =
-            new TestCase(
+        LimitedQuery c =
+            new LimitedQuery(
                 45,
                 4,
                 "select \n"
@@ -2571,8 +2571,8 @@ public class NonEmptyTest extends BatchTestCase {
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(ssmrch);
 
-        TestCase c =
-            new TestCase(
+        LimitedQuery c =
+            new LimitedQuery(
                 con,
                 45,
                 21,

@@ -264,14 +264,14 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             int attempt = 0;
             while (true) {
                 // Choose a random level.
-                final Level[] levels = hierarchy.getLevels();
-                final int levelDepth = random.nextInt(levels.length) + 1;
+                final List<Level> levels = hierarchy.getLevelList();
+                final int levelDepth = random.nextInt(levels.size()) + 1;
                 Member member = null;
                 for (int i = 0; i < levelDepth; i++) {
                     List<Member> members;
                     if (i == 0) {
                         members =
-                            schemaReader.getLevelMembers(levels[i], false);
+                            schemaReader.getLevelMembers(levels.get(i), false);
                     } else {
                         members = schemaReader.getMemberChildren(member);
                     }

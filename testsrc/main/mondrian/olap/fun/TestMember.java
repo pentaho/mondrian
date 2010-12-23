@@ -183,6 +183,10 @@ public class TestMember implements Member {
             throw new UnsupportedOperationException();
         }
 
+        public List<Hierarchy> getHierarchyList() {
+            throw new UnsupportedOperationException();
+        }
+
         public boolean isMeasures() {
             throw new UnsupportedOperationException();
         }

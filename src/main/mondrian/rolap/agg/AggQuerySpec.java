@@ -54,7 +54,7 @@ class AggQuerySpec {
     }
 
     protected SqlQuery newSqlQuery() {
-        return getStar().getSqlQuery();
+        return new SqlQuery(getStar().getSqlQueryDialect());
     }
 
     public RolapStar getStar() {

@@ -67,10 +67,9 @@ public class ResultLoader {
         }
 */
         if (enumTargetCount == 0) {
-            int column = 0;
             for (TargetBase target : targets) {
                 target.removeCurrMember();
-                column = target.addRow(stmt, column);
+                target.addRow(stmt);
             }
         } else {
             int firstEnumTarget = 0;
@@ -189,12 +188,11 @@ public class ResultLoader {
                     currEnumTargetIdx + 1, nextTargetIdx, nEnumTargets,
                     srcMemberIdxes, message);
             } else {
-                int column = 0;
                 int enumTargetIdx = 0;
                 for (TargetBase target : targets) {
                     if (target.getSrcMembers() == null) {
                         try {
-                            column = target.addRow(stmt, column);
+                            target.addRow(stmt);
                         } catch (Throwable e) {
                             throw Util.newError(e, message);
                         }

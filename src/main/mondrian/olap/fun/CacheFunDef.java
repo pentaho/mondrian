@@ -36,7 +36,7 @@ public class CacheFunDef extends FunDefBase {
     private static final Syntax SYNTAX = Syntax.Function;
     static final CacheFunResolver Resolver = new CacheFunResolver();
 
-    CacheFunDef(
+    private CacheFunDef(
         String name,
         String signature,
         String description,
@@ -90,8 +90,8 @@ public class CacheFunDef extends FunDefBase {
         }
     }
 
-    public static class CacheFunResolver extends ResolverBase {
-        CacheFunResolver() {
+    private static class CacheFunResolver extends ResolverBase {
+        private CacheFunResolver() {
             super(NAME, SIGNATURE, DESCRIPTION, SYNTAX);
         }
 

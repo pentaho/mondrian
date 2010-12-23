@@ -189,7 +189,7 @@ public class Formula extends QueryPart {
                             throw MondrianResource.instance()
                                 .MdxCalculatedHierarchyError.ex(id.toString());
                         }
-                        level = hierarchy.getLevels()[0];
+                        level = hierarchy.getLevelList().get(0);
                     }
                     Member mdxMember =
                         level.getHierarchy().createMember(

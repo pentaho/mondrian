@@ -15,10 +15,8 @@ package mondrian.rolap;
 
 import org.apache.log4j.Logger;
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 
-import java.util.Map;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * <code>RolapDimension</code> implements {@link Dimension}for a ROLAP
@@ -49,6 +47,9 @@ import java.util.Collections;
  * ({@link RolapSchema#mapSharedHierarchyToReader} holds the mapping. I don't
  * know whether it's still necessary.)
  *
+ * <p>NOTE: This class must not contain any references to XML (MondrianDef)
+ * objects. Put those in {@link mondrian.rolap.RolapSchemaLoader}.
+ *
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
@@ -57,128 +58,40 @@ class RolapDimension extends DimensionBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
 
-    private final Schema schema;
+    final RolapSchema schema;
     private final Map<String, Annotation> annotationMap;
+    RolapAttribute keyAttribute;
+    protected final Map<String, RolapAttribute> attributeMap =
+        new HashMap<String, RolapAttribute>();
+
+    /**
+     * The key by which this dimension is to be linked to a fact table (or
+     * fact tables). The key must contain the same columns as the key of the
+     * key attribute. It must also be a key defined on its table.
+     *
+     * <p>NOTE: We currently assume that it is unique, but we do not enforce it.
+     */
+    RolapSchema.PhysKey key;
 
     RolapDimension(
-        Schema schema,
+        RolapSchema schema,
         String name,
         String caption,
         String description,
         DimensionType dimensionType,
-        final boolean highCardinality,
         Map<String, Annotation> annotationMap)
     {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
-        super(name, caption, description, dimensionType, highCardinality);
+        super(name, caption, description, dimensionType);
         assert annotationMap != null;
+        assert schema != null;
         this.schema = schema;
         this.annotationMap = annotationMap;
-        this.hierarchies = new RolapHierarchy[0];
-    }
-
-    /**
-     * Creates a dimension from an XML definition.
-     *
-     * @pre schema != null
-     */
-    RolapDimension(
-        RolapSchema schema,
-        RolapCube cube,
-        MondrianDef.Dimension xmlDimension,
-        MondrianDef.CubeDimension xmlCubeDimension)
-    {
-        this(
-            schema,
-            xmlDimension.name,
-            xmlDimension.caption,
-            xmlDimension.description,
-            xmlDimension.getDimensionType(),
-            xmlDimension.highCardinality,
-            RolapHierarchy.createAnnotationMap(xmlCubeDimension.annotations));
-
-        Util.assertPrecondition(schema != null);
-
-        if (cube != null) {
-            Util.assertTrue(cube.getSchema() == schema);
-        }
-
-        if (!Util.isEmpty(xmlDimension.caption)) {
-            setCaption(xmlDimension.caption);
-        }
-        this.hierarchies = new RolapHierarchy[xmlDimension.hierarchies.length];
-        for (int i = 0; i < xmlDimension.hierarchies.length; i++) {
-            // remaps the xml hierarchy relation to the fact table.
-            // moved out of RolapHierarchy constructor
-            // this should eventually be phased out completely
-            if (xmlDimension.hierarchies[i].relation == null
-                && xmlDimension.hierarchies[i].memberReaderClass == null
-                && cube != null)
-            {
-                xmlDimension.hierarchies[i].relation = cube.fact;
-            }
-
-            RolapHierarchy hierarchy = new RolapHierarchy(
-                this, xmlDimension.hierarchies[i], xmlCubeDimension);
-            hierarchies[i] = hierarchy;
-        }
-
-        // if there was no dimension type assigned, determine now.
-        if (dimensionType == null) {
-            for (int i = 0; i < hierarchies.length; i++) {
-                Level[] levels = hierarchies[i].getLevels();
-                LevLoop:
-                for (int j = 0; j < levels.length; j++) {
-                    Level lev = levels[j];
-                    if (lev.isAll()) {
-                        continue LevLoop;
-                    }
-                    if (dimensionType == null) {
-                        // not set yet - set it according to current level
-                        dimensionType = (lev.getLevelType().isTime())
-                            ? DimensionType.TimeDimension
-                            : isMeasures()
-                            ? DimensionType.MeasuresDimension
-                            : DimensionType.StandardDimension;
-
-                    } else {
-                        // Dimension type was set according to first level.
-                        // Make sure that other levels fit to definition.
-                        if (dimensionType == DimensionType.TimeDimension
-                            && !lev.getLevelType().isTime()
-                            && !lev.isAll())
-                        {
-                            throw MondrianResource.instance()
-                                .NonTimeLevelInTimeHierarchy.ex(
-                                    getUniqueName());
-                        }
-                        if (dimensionType != DimensionType.TimeDimension
-                            && lev.getLevelType().isTime())
-                        {
-                            throw MondrianResource.instance()
-                                .TimeLevelInNonTimeHierarchy.ex(
-                                    getUniqueName());
-                        }
-                    }
-                }
-            }
-        }
     }
 
     protected Logger getLogger() {
         return LOGGER;
-    }
-
-    /**
-     * Initializes a dimension within the context of a cube.
-     */
-    void init(MondrianDef.CubeDimension xmlDimension) {
-        for (int i = 0; i < hierarchies.length; i++) {
-            if (hierarchies[i] != null) {
-                ((RolapHierarchy) hierarchies[i]).init(xmlDimension);
-            }
-        }
     }
 
     /**
@@ -200,18 +113,21 @@ class RolapDimension extends DimensionBase {
                 this, subName,
                 caption, description, hasAll, closureFor,
                 Collections.<String, Annotation>emptyMap());
-        this.hierarchies = Util.append(this.hierarchies, hierarchy);
+        hierarchyList.add(hierarchy);
         return hierarchy;
     }
 
-    /**
-     * Returns the hierarchy of an expression.
-     *
-     * <p>In this case, the expression is a dimension, so the hierarchy is the
-     * dimension's default hierarchy (its first).
-     */
-    public Hierarchy getHierarchy() {
-        return hierarchies[0];
+    public RolapHierarchy[] getHierarchies() {
+        //noinspection SuspiciousToArrayCall
+        return hierarchyList.toArray(new RolapHierarchy[hierarchyList.size()]);
+    }
+
+    public List<Hierarchy> getHierarchyList() {
+        return hierarchyList;
+    }
+
+    public final List<RolapHierarchy> getRolapHierarchyList() {
+        return Util.cast(hierarchyList);
     }
 
     public Schema getSchema() {
@@ -220,6 +136,39 @@ class RolapDimension extends DimensionBase {
 
     public Map<String, Annotation> getAnnotationMap() {
         return annotationMap;
+    }
+
+    /**
+     * Returns the join path from a column to the key of this dimension.
+     *
+     * <p>Generally the column is a component of the key of an attribute.
+     *
+     * @param column Column
+     * @return Join path, never null
+     */
+    public RolapSchema.PhysPath getKeyPath(RolapSchema.PhysColumn column) {
+        final RolapSchema.PhysSchemaGraph graph =
+            column.relation.getSchema().getGraph();
+        try {
+            return graph.findPath(key.relation, column.relation);
+        } catch (RolapSchema.PhysSchemaException e) {
+            // TODO: pre-compute path for all attributes, so this error could
+            // never be the result of a user error in the schema definition
+            Util.deprecated("TODO", false);
+            throw Util.newInternal(
+                e, "while finding path from attribute to dimension key");
+        }
+    }
+
+    /**
+     * Adds a hierarchy.
+     *
+     * <p>Called during load.
+     *
+     * @param hierarchy Hierarchy
+     */
+    void addHierarchy(RolapHierarchy hierarchy) {
+        hierarchyList.add(hierarchy);
     }
 }
 

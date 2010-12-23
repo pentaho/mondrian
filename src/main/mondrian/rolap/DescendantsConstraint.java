@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import java.util.List;
+import java.util.Collections;
 
 import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
@@ -33,6 +34,7 @@ class DescendantsConstraint implements TupleConstraint {
      * Creates a DescendantsConstraint.
      *
      * @param parentMembers list of parents all from the same level
+     *
      * @param mcc the constraint that would return the children for each single
      * parent
      */
@@ -46,19 +48,19 @@ class DescendantsConstraint implements TupleConstraint {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar)
     {
-        mcc.addMemberConstraint(sqlQuery, baseCube, aggStar, parentMembers);
+        mcc.addMemberConstraint(sqlQuery, starSet, aggStar, parentMembers);
     }
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapLevel level)
     {
-        mcc.addLevelConstraint(sqlQuery, baseCube, aggStar, level);
+        mcc.addLevelConstraint(sqlQuery, starSet, aggStar, level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(
@@ -78,6 +80,17 @@ class DescendantsConstraint implements TupleConstraint {
 
     public Evaluator getEvaluator() {
         return null;
+    }
+
+    public List<RolapMeasureGroup> getMeasureGroupList() {
+        return mcc instanceof TupleConstraint
+            ? ((TupleConstraint) mcc).getMeasureGroupList()
+            : Collections.<RolapMeasureGroup>emptyList();
+    }
+
+    public boolean isJoinRequired() {
+        return mcc instanceof TupleConstraint
+            && ((TupleConstraint) mcc).isJoinRequired();
     }
 }
 

@@ -13,19 +13,30 @@
 
 package mondrian.olap;
 
-import java.util.Map;
+import org.olap4j.impl.Named;
+
+import java.util.List;
 
 /**
  * A <code>Dimension</code> represents a dimension of a cube.
+ *
+ * @version $Id$
  */
-public interface Dimension extends OlapElement, Annotated {
+public interface Dimension extends OlapElement, Annotated, Named {
     final String MEASURES_UNIQUE_NAME = "[Measures]";
     final String MEASURES_NAME = "Measures";
 
     /**
      * Returns an array of the hierarchies which belong to this dimension.
+     *
+     * @deprecated
      */
     Hierarchy[] getHierarchies();
+
+    /**
+     * Returns a list of hierarchies in this dimension.
+     */
+    List<Hierarchy> getHierarchyList();
 
     /**
      * Returns whether this is the <code>[Measures]</code> dimension.

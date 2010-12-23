@@ -269,9 +269,9 @@ public class FunUtil extends Util {
      * @return Default hierarchy, or null
      */
     public static Hierarchy getDimensionDefaultHierarchy(Dimension dimension) {
-        final Hierarchy[] hierarchies = dimension.getHierarchies();
-        if (hierarchies.length == 1) {
-            return hierarchies[0];
+        final List<Hierarchy> hierarchies = dimension.getHierarchyList();
+        if (hierarchies.size() == 1) {
+            return hierarchies.get(0);
         }
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
             // In SSAS 2005, dimensions with more than one hierarchy do not have
@@ -1863,16 +1863,15 @@ public class FunUtil extends Util {
         final Comparable k1 = m1.getOrderKey();
         final Comparable k2 = m2.getOrderKey();
         if ((k1 != null) && (k2 != null)) {
+            //noinspection unchecked
             return k1.compareTo(k2);
-        } else {
-            final int ordinal1 = m1.getOrdinal();
-            final int ordinal2 = m2.getOrdinal();
-            return (ordinal1 == ordinal2)
-                ? m1.compareTo(m2)
-                : (ordinal1 < ordinal2)
-                ? -1
-                : 1;
         }
+        int c = Util.compareIntegers(m1.getOrdinal(), m2.getOrdinal());
+        if (c != 0) {
+            return c;
+        }
+        //noinspection unchecked
+        return m1.compareTo(m2);
     }
 
     /**
@@ -2120,7 +2119,7 @@ public class FunUtil extends Util {
             // Allow the SQL generator to generate optimized SQL since we know
             // we're only interested in non-empty members of this level.
             memberList = new ArrayList<Member>();
-            for (Level level : hierarchy.getLevels()) {
+            for (Level level : hierarchy.getLevelList()) {
                 List<Member> members =
                     getNonEmptyLevelMembers(
                         evaluator, level, includeCalcMembers);

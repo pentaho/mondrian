@@ -22,6 +22,7 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.util.ArrayStack;
+import mondrian.util.Bug;
 
 import java.io.*;
 import java.util.*;
@@ -150,10 +151,9 @@ public class Query extends QueryPart {
     private boolean nativeCrossJoinVirtualCube;
 
     /**
-     * Used for virtual cubes.
-     * Comtains a list of base cubes related to a virtual cube
+     * Contains a list of stars
      */
-    private List<RolapCube> baseCubes;
+    private List<RolapMeasureGroup> measureGroupList;
 
     /**
      * If true, enforce validation even when ignoreInvalidMembers is set.
@@ -1345,23 +1345,13 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Saves away the base cubes related to the virtual cube
-     * referenced in this query
+     * Saves away the measure groups related to the cube
+     * referenced in this query.
      *
-     * @param baseCubes set of base cubes
+     * @param measureGroupList List of measure groups
      */
-    public void setBaseCubes(List<RolapCube> baseCubes) {
-        this.baseCubes = baseCubes;
-    }
-
-    /**
-     * return the set of base cubes associated with the virtual cube referenced
-     * in this query
-     *
-     * @return set of base cubes
-     */
-    public List<RolapCube> getBaseCubes() {
-        return baseCubes;
+    public void setMeasureGroups(List<RolapMeasureGroup> measureGroupList) {
+        this.measureGroupList = measureGroupList;
     }
 
     public Object accept(MdxVisitor visitor) {

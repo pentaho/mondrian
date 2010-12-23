@@ -63,9 +63,9 @@ public class DimensionType implements Type {
     public Hierarchy getHierarchy() {
         return dimension == null
             ? null
-            : dimension.getHierarchies().length > 1
+            : dimension.getHierarchyList().size() > 1
             ? null
-            : dimension.getHierarchies()[0];
+            : dimension.getHierarchyList().get(0);
     }
 
     public Level getLevel() {

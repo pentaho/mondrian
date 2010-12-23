@@ -112,7 +112,7 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
         final Hierarchy hierarchy = memberListExp.getType().getHierarchy();
         return (hierarchy == null)
             ? memberListExp.getType().getDimension()
-                .getHierarchies()[0].getNullMember()
+                .getHierarchyList().get(0).getNullMember()
             : hierarchy.getNullMember();
     }
 

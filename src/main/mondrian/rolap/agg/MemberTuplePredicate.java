@@ -10,14 +10,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapCubeLevel;
-import mondrian.rolap.RolapCubeMember;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.BitKey;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
@@ -34,7 +27,7 @@ import java.util.Arrays;
 public class MemberTuplePredicate implements StarPredicate {
     private final Bound[] bounds;
     private final List<RolapStar.Column> columnList;
-    private BitKey columnBitKey;
+    private final BitKey columnBitKey;
 
     /**
      * Creates a MemberTuplePredicate which evaluates to true for a given
@@ -43,24 +36,25 @@ public class MemberTuplePredicate implements StarPredicate {
      * <p>The range can be open above or below, but at least one bound is
      * required.
      *
-     * @param baseCube base cube for virtual members
+     * @param measureGroup Measure group
      * @param lower Member which forms the lower bound, or null if range is
      *   open below
      * @param lowerStrict Whether lower bound of range is strict
      * @param upper Member which forms the upper bound, or null if range is
-     *   open above
+*   open above
      * @param upperStrict Whether upper bound of range is strict
      */
     public MemberTuplePredicate(
-        RolapCube baseCube,
+        RolapMeasureGroup measureGroup,
         RolapMember lower,
         boolean lowerStrict,
         RolapMember upper,
         boolean upperStrict)
     {
-        columnBitKey = null;
+        this.columnBitKey =
+            BitKey.Factory.makeBitKey(measureGroup.getStar().getColumnCount());
         this.columnList =
-            computeColumnList(lower != null ? lower : upper, baseCube);
+            computeColumnList(lower != null ? lower : upper, measureGroup);
 
         if (lower == null) {
             assert upper != null;
@@ -80,22 +74,26 @@ public class MemberTuplePredicate implements StarPredicate {
     }
 
     /**
-     * Creates a MemberTuplePredicate which evaluates to true for a given
+     * Creates a MemberTuplePredicate that evaluates to true for a given
      * member.
      *
-     * @param baseCube base cube for virtual members
+     * @param measureGroup Measure group
      * @param member Member
      */
-    public MemberTuplePredicate(RolapCube baseCube, RolapCubeMember member) {
-        this.columnList = computeColumnList(member, baseCube);
-
+    public MemberTuplePredicate(
+        RolapMeasureGroup measureGroup,
+        RolapCubeMember member)
+    {
+        this.columnBitKey =
+            BitKey.Factory.makeBitKey(measureGroup.getStar().getColumnCount());
+        this.columnList = computeColumnList(member, measureGroup);
         this.bounds = new Bound[] {
             new Bound(member, RelOp.EQ)
         };
     }
 
     public int hashCode() {
-        return this.columnList.hashCode() * 31
+        return this.columnList.hashCode()
             + Arrays.hashCode(this.bounds) * 31;
     }
 
@@ -112,32 +110,22 @@ public class MemberTuplePredicate implements StarPredicate {
 
     private List<RolapStar.Column> computeColumnList(
         RolapMember member,
-        RolapCube baseCube)
+        RolapMeasureGroup measureGroup)
     {
         List<RolapStar.Column> columnList = new ArrayList<RolapStar.Column>();
-        while (true) {
-            RolapLevel level = member.getLevel();
-            RolapStar.Column column = null;
-            if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level)
-                                .getBaseStarKeyColumn(baseCube);
-            } else {
-                (new Exception()).printStackTrace();
-            }
-
-            if (columnBitKey == null) {
-                columnBitKey =
-                    BitKey.Factory.makeBitKey(
-                            column.getStar().getColumnCount());
-                columnBitKey.clear();
-            }
+        final RolapCubeLevel cubeLevel = (RolapCubeLevel) member.getLevel();
+        for (RolapSchema.PhysColumn key
+            : cubeLevel.getAttribute().keyList)
+        {
+            final RolapStar.Column column =
+                measureGroup.getRolapStarColumn(
+                    cubeLevel.getDimension(),
+                    key,
+                    true);
             columnBitKey.set(column.getBitPosition());
-            columnList.add(0, column);
-            if (level.isUnique()) {
-                return columnList;
-            }
-            member = member.getParentMember();
+            columnList.add(column);
         }
+        return columnList;
     }
 
     /**
@@ -255,7 +243,7 @@ public class MemberTuplePredicate implements StarPredicate {
          *
          * @return less strict version of this operator
          */
-        public RelOp desctrict() {
+        public RelOp destrict() {
             switch (this) {
             case GT:
                 return RelOp.GE;
@@ -274,21 +262,13 @@ public class MemberTuplePredicate implements StarPredicate {
 
         Bound(RolapMember member, RelOp relOp) {
             this.member = member;
-            List<Object> valueList = new ArrayList<Object>();
-            List<RelOp> relOpList = new ArrayList<RelOp>();
-            while (true) {
-                valueList.add(0, member.getKey());
-                relOpList.add(0, relOp);
-                if (member.getLevel().isUnique()) {
-                    break;
-                }
-                member = member.getParentMember();
-                relOp = relOp.desctrict();
+            this.values = member.getKeyAsArray();
+            this.relOps = new RelOp[this.values.length];
+            for (int i = 0; i < relOps.length; i++) {
+                this.relOps[i] =
+                    i < relOps.length - 1 ? relOp : relOp.destrict();
             }
-            this.values = valueList.toArray(new Object[valueList.size()]);
-            this.relOps = relOpList.toArray(new RelOp[relOpList.size()]);
         }
-
 
         public int hashCode() {
             int h = member.hashCode();

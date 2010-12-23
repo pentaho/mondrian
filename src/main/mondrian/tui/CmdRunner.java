@@ -13,8 +13,7 @@ package mondrian.tui;
 import mondrian.olap.*;
 import mondrian.olap.type.TypeUtil;
 import mondrian.olap.fun.FunInfo;
-import mondrian.rolap.RolapConnectionProperties;
-import mondrian.rolap.RolapCube;
+import mondrian.rolap.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.LogManager;
@@ -110,10 +109,11 @@ public class CmdRunner {
     }
 
     public void noCubeCaching() {
-        Cube[] cubes = getCubes();
-        for (Cube cube : cubes) {
+        for (Cube cube : getCubes()) {
             RolapCube rcube = (RolapCube) cube;
-            rcube.setCacheAggregations(false);
+            for (RolapStar star : rcube.getStars()) {
+                star.setCacheAggregations(false);
+            }
         }
     }
 
@@ -481,12 +481,14 @@ public class CmdRunner {
             buf.append("\"");
         } else {
             RolapCube rcube = (RolapCube) cube;
-            buf.append("facttable=");
-            buf.append(rcube.getStar().getFactTable().getAlias());
-            buf.append(nl);
-            buf.append("caching=");
-            buf.append(rcube.isCacheAggregations());
-            buf.append(nl);
+            for (RolapStar star : rcube.getStars()) {
+                buf.append("facttable=");
+                buf.append(star.getFactTable().getAlias());
+                buf.append(nl);
+                buf.append("caching=");
+                buf.append(star.isCacheAggregations());
+                buf.append(nl);
+            }
         }
     }
 
@@ -503,7 +505,9 @@ public class CmdRunner {
         } else {
             if (command.equals("clearCache")) {
                 RolapCube rcube = (RolapCube) cube;
-                rcube.clearCachedAggregations();
+                for (RolapStar star : rcube.getStars()) {
+                    star.clearCachedAggregations(false);
+                }
             } else {
                 buf.append("For cube \"");
                 buf.append(cubename);
@@ -529,7 +533,9 @@ public class CmdRunner {
             if (name.equals("caching")) {
                 RolapCube rcube = (RolapCube) cube;
                 boolean isCache = Boolean.valueOf(value);
-                rcube.setCacheAggregations(isCache);
+                for (RolapStar star : rcube.getStars()) {
+                    star.setCacheAggregations(isCache);
+                }
             } else {
                 buf.append("For cube \"");
                 buf.append(cubename);

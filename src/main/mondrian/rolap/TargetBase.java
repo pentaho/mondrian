@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.rolap.sql.TupleConstraint;
 
+import javax.swing.text.AbstractDocument;
 import java.util.List;
 import java.sql.SQLException;
 
@@ -83,13 +84,11 @@ public abstract class TargetBase {
      * Adds a row to the collection.
      *
      * @param stmt Statement
-     * @param column Column ordinal (0-based)
-     * @return Ordinal of next unconsumed column
      * @throws SQLException On error
      */
-    public final int addRow(SqlStatement stmt, int column) throws SQLException {
+    public final void addRow(SqlStatement stmt) throws SQLException {
         synchronized (cacheLock) {
-            return internalAddRow(stmt, column);
+            internalAddRow(stmt);
         }
     }
 
@@ -97,17 +96,13 @@ public abstract class TargetBase {
 
     public abstract List<RolapMember> close();
 
-    abstract int internalAddRow(SqlStatement stmt, int column)
-        throws SQLException;
+    abstract void internalAddRow(SqlStatement stmt) throws SQLException;
 
     public void add(final RolapMember member) {
         this.getList().add(member);
     }
 
-    RolapNativeCrossJoin.NonEmptyCrossJoinConstraint
-    castToNonEmptyCJConstraint(TupleConstraint constraint) {
-        return (RolapNativeCrossJoin.NonEmptyCrossJoinConstraint) constraint;
-    }
+    public abstract void setColumnLayout(SqlTupleReader.ColumnLayout layout);
 }
 
 // End TargetBase.java

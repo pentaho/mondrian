@@ -12,12 +12,9 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.DimensionType;
-import mondrian.olap.HierarchyBase;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Schema;
+import mondrian.olap.*;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
@@ -31,60 +28,66 @@ public class RolapCubeDimension extends RolapDimension {
 
     RolapDimension rolapDimension;
     int cubeOrdinal;
-    MondrianDef.CubeDimension xmlDimension;
+    MondrianDef.Dimension xmlDimension;
 
     /**
      * Creates a RolapCubeDimension.
      *
+     * @param schemaLoader Schema loader
      * @param cube Cube
      * @param rolapDim Dimension wrapped by this dimension
-     * @param cubeDim XML element definition
      * @param name Name of dimension
+     * @param dimSource Name of source dimension
+     * @param caption Caption
+     * @param description Description
      * @param cubeOrdinal Ordinal of dimension within cube
      * @param hierarchyList List of hierarchies in cube
-     * @param highCardinality Whether high cardinality dimension
+     * @param annotationMap Annotation map
      */
     public RolapCubeDimension(
+        RolapSchemaLoader schemaLoader,
         RolapCube cube,
         RolapDimension rolapDim,
-        MondrianDef.CubeDimension cubeDim,
         String name,
+        final String dimSource,
+        final String caption,
+        final String description,
         int cubeOrdinal,
-        List<RolapHierarchy> hierarchyList,
-        final boolean highCardinality)
+        List<RolapCubeHierarchy> hierarchyList,
+        Map<String, Annotation> annotationMap)
     {
         super(
-            null,
+            cube.getSchema(),
             name,
-            cubeDim.caption != null
-                ? cubeDim.caption
-                : rolapDim.getCaption(),
-            cubeDim.caption != null
-                ? cubeDim.description
-                : rolapDim.getDescription(),
-            null,
-            highCardinality,
-            RolapHierarchy.createAnnotationMap(cubeDim.annotations));
-        this.xmlDimension = cubeDim;
+            RolapSchemaLoader.first(caption, rolapDim.getCaption()),
+            RolapSchemaLoader.first(description, rolapDim.getDescription()),
+            rolapDim.getDimensionType(),
+            annotationMap);
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
         this.cube = cube;
-        this.caption = cubeDim.caption;
 
         // create new hierarchies
-        hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
 
-        for (int i = 0; i < rolapDim.getHierarchies().length; i++) {
-            final RolapCubeHierarchy cubeHierarchy =
+        final int originalSize = hierarchyList.size();
+        for (RolapHierarchy rolapHierarchy : rolapDim.getRolapHierarchyList()) {
+            final RolapCubeHierarchy hierarchy =
                 new RolapCubeHierarchy(
+                    schemaLoader,
                     this,
-                    cubeDim,
-                    (RolapHierarchy) rolapDim.getHierarchies()[i],
-                    ((HierarchyBase) rolapDim.getHierarchies()[i]).getSubName(),
-                    hierarchyList.size());
-            hierarchies[i] = cubeHierarchy;
-            hierarchyList.add(cubeHierarchy);
+                    rolapHierarchy,
+                    rolapHierarchy.getSubName(),
+                    hierarchyList.size(),
+                    applyPrefix(
+                        rolapHierarchy.getCaption(),
+                        dimSource, name, caption),
+                    applyPrefix(
+                        rolapHierarchy.getDescription(),
+                        dimSource, name, caption));
+            hierarchyList.add(hierarchy);
         }
+        this.hierarchyList.addAll(
+            hierarchyList.subList(originalSize, hierarchyList.size()));
     }
 
     public RolapCube getCube() {
@@ -93,6 +96,13 @@ public class RolapCubeDimension extends RolapDimension {
 
     public Schema getSchema() {
         return rolapDimension.getSchema();
+    }
+
+    @Override
+    public RolapCubeHierarchy[] getHierarchies() {
+        //noinspection SuspiciousToArrayCall
+        return hierarchyList.toArray(
+            new RolapCubeHierarchy[hierarchyList.size()]);
     }
 
     // this method should eventually replace the call below
@@ -139,6 +149,46 @@ public class RolapCubeDimension extends RolapDimension {
         return rolapDimension.getDimensionType();
     }
 
+    /**
+     * Applies a prefix to a caption or description of a hierarchy in a shared
+     * dimension. Ensures that if a dimension is used more than once in the same
+     * cube then the hierarchies are distinguishable.
+     *
+     * <p>For example, if the [Time] dimension is imported as [Order Time] and
+     * [Ship Time], then the [Time].[Weekly] hierarchy would have caption
+     * "Order Time.Weekly caption" and description "Order Time.Weekly
+     * description".
+     *
+     * <p>If the dimension usage has a caption, it overrides.
+     *
+     * <p>If the dimension usage has a null name, or the name is the same
+     * as the dimension, and no caption, then no prefix is applied.
+     *
+     * @param caption Caption or description
+     * @param source Name of source schema dimension
+     * @param name Name of dimension
+     * @param dimCaption Caption of dimension
+     * @return Caption or description, possibly prefixed by dimension role name
+     */
+    static String applyPrefix(
+        String caption,
+        final String source,
+        final String name,
+        final String dimCaption)
+    {
+        if (caption != null
+            && source != null
+            && name != null
+            && !source.equals(name))
+        {
+            return RolapSchemaLoader.first(dimCaption, name) + caption;
+        }
+        return caption;
+    }
+
+    public final List<RolapCubeHierarchy> getRolapCubeHierarchyList() {
+        return Util.cast(hierarchyList);
+    }
 }
 
 // End RolapCubeDimension.java

@@ -11,10 +11,10 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
+
+import java.util.List;
 
 /**
  * Restricts the SQL result of {@link mondrian.rolap.TupleReader}. This is also
@@ -28,17 +28,18 @@ import mondrian.rolap.aggmatcher.AggStar;
  * @version $Id$
  */
 public interface TupleConstraint extends SqlConstraint {
+
     /**
      * Modifies a Level.Members query.
      *
      * @param sqlQuery the query to modify
+     * @param starSet
      * @param aggStar aggregate star to use
-     * @param baseCube base cube for virtual cube constraints
      */
     public void addConstraint(
-            SqlQuery sqlQuery,
-            RolapCube baseCube,
-            AggStar aggStar);
+        SqlQuery sqlQuery,
+        RolapStarSet starSet,
+        AggStar aggStar);
 
     /**
      * Will be called multiple times for every "group by" level in
@@ -48,13 +49,13 @@ public interface TupleConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
-     * @param baseCube base cube for virtual cube constraints
+     * @param starSet
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level which is accessed in the Level.Members query
      */
     public void addLevelConstraint(
         SqlQuery query,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapLevel level);
 
@@ -80,6 +81,23 @@ public interface TupleConstraint extends SqlConstraint {
      * if there is no associated evaluator
      */
     public Evaluator getEvaluator();
+
+    /**
+     * Returns the list of measure groups that this constraint joins to.
+     *
+     * @return list of measure groups, never null
+     */
+    List<RolapMeasureGroup> getMeasureGroupList();
+
+    /**
+     * Returns whether a join with the fact table is required. A join is
+     * required if the context contains members from dimensions other than
+     * level. If we are interested in the members of a level or a members
+     * children then it does not make sense to join only one dimension (the one
+     * that contains the requested members) with the fact table for NON EMPTY
+     * optimization.
+     */
+    boolean isJoinRequired();
 }
 
 // End TupleConstraint.java

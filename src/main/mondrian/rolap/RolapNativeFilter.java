@@ -10,8 +10,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -30,6 +29,9 @@ import mondrian.rolap.sql.CrossJoinArg;
  */
 public class RolapNativeFilter extends RolapNativeSet {
 
+    /**
+     * Creates a RolapNativeFilter.
+     */
     public RolapNativeFilter() {
         super.setEnabled(
             MondrianProperties.instance().EnableNativeFilter.get());
@@ -38,12 +40,21 @@ public class RolapNativeFilter extends RolapNativeSet {
     static class FilterConstraint extends SetConstraint {
         Exp filterExpr;
 
+        /**
+         * Creates a FilterConstraint.
+         *
+         * @param args Cross-join arguments
+         * @param evaluator Evaluator
+         * @param measureGroupList List of measure groups to join to
+         * @param filterExpr Filter expression
+         */
         public FilterConstraint(
             CrossJoinArg[] args,
             RolapEvaluator evaluator,
+            List<RolapMeasureGroup> measureGroupList,
             Exp filterExpr)
         {
-            super(args, evaluator, true);
+            super(args, evaluator, measureGroupList, true);
             this.filterExpr = filterExpr;
         }
 
@@ -53,20 +64,20 @@ public class RolapNativeFilter extends RolapNativeSet {
          * <p>A FilterConstraint always needs to join the fact table because we
          * want to evaluate the filter expression against a fact.
          */
-        protected boolean isJoinRequired() {
+        public boolean isJoinRequired() {
             return true;
         }
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapCube baseCube,
+            RolapStarSet starSet,
             AggStar aggStar)
         {
             // Use aggregate table to generate filter condition
             RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
             String filterSql =  sql.generateFilterCondition(filterExpr);
             sqlQuery.addHaving(filterSql);
-            super.addConstraint(sqlQuery, baseCube, aggStar);
+            super.addConstraint(sqlQuery, starSet, aggStar);
         }
 
         public Object getCacheKey() {
@@ -92,8 +103,14 @@ public class RolapNativeFilter extends RolapNativeSet {
         if (!isEnabled()) {
             return null;
         }
-        if (!FilterConstraint.isValidContext(
-            evaluator, restrictMemberTypes()))
+        final List<RolapMeasureGroup> measureGroupList =
+            new ArrayList<RolapMeasureGroup>();
+        if (!SqlContextConstraint.checkValidContext(
+            evaluator,
+            true,
+            Collections.<RolapLevel>emptyList(),
+            restrictMemberTypes(),
+            measureGroupList))
         {
             return null;
         }
@@ -167,7 +184,8 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         TupleConstraint constraint =
-            new FilterConstraint(combinedArgs, evaluator, filterExpr);
+            new FilterConstraint(
+                combinedArgs, evaluator, measureGroupList, filterExpr);
         return new SetEvaluator(cjArgs, schemaReader, constraint);
     }
 }

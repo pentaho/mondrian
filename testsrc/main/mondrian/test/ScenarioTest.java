@@ -197,14 +197,14 @@ public class ScenarioTest extends FoodMartTestCase {
             TestContext.createSubstitutingCube(
                 "Sales",
                 "<Dimension name='Scenario' foreignKey='time_id'>\n"
-                + "  <Hierarchy primaryKey='time_id' hasAll='true'>\n"
+                + "  <Hierarchy primaryKey='bar' hasAll='true'>\n"
                 + "    <InlineTable alias='foo'>\n"
                 + "      <ColumnDefs>\n"
-                + "        <ColumnDef name='foo' type='Numeric'/>\n"
+                + "        <ColumnDef name='bar' type='Numeric'/>\n"
                 + "      </ColumnDefs>\n"
                 + "      <Rows/>\n"
                 + "    </InlineTable>\n"
-                + "    <Level name='Scenario' column='foo'/>\n"
+                + "    <Level name='Scenario' column='bar' uniqueMembers='true'/>\n"
                 + "  </Hierarchy>\n"
                 + "</Dimension>",
                 "<Measure name='Atomic Cell Count' aggregator='count'/>")

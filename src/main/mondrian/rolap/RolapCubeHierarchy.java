@@ -37,119 +37,59 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     private final RolapCubeDimension cubeDimension;
     private final RolapHierarchy rolapHierarchy;
-    private final RolapCubeLevel currentNullLevel;
+    private RolapCubeLevel currentNullLevel;
     private RolapCubeMember currentNullMember;
     private RolapCubeMember currentAllMember;
-    private final MondrianDef.RelationOrJoin currentRelation;
-    private final RolapCubeHierarchyMemberReader reader;
-    private HierarchyUsage usage;
-    private final Map<String, String> aliases = new HashMap<String, String>();
+    private RolapCubeHierarchyMemberReader reader;
     private RolapCubeMember currentDefaultMember;
     private final int ordinal;
-
-    /**
-     * True if the hierarchy is degenerate - has no dimension table of its own,
-     * just drives from the cube's fact table.
-     */
-    protected final boolean usingCubeFact;
 
     /**
      * Length of prefix to be removed when translating member unique names, or
      * 0 if no translation is necessary.
      */
-    private final int removePrefixLength;
-
-    // redundant copy of {@link #levels} with tigher type
-    private final RolapCubeLevel[] cubeLevels;
+    private int removePrefixLength;
 
     /**
      * Creates a RolapCubeHierarchy.
      *
      * @param cubeDimension Dimension
-     * @param cubeDim XML dimension element
      * @param rolapHierarchy Wrapped hierarchy
      * @param subName Name of hierarchy within dimension
      * @param ordinal Ordinal of hierarchy within cube
+     * @param caption Caption
+     * @param description Description
      */
     public RolapCubeHierarchy(
+        RolapSchemaLoader schemaLoader,
         RolapCubeDimension cubeDimension,
-        MondrianDef.CubeDimension cubeDim,
         RolapHierarchy rolapHierarchy,
         String subName,
-        int ordinal)
+        int ordinal,
+        final String caption,
+        final String description)
     {
         super(
             cubeDimension,
             subName,
-            applyPrefix(cubeDim, rolapHierarchy.getCaption()),
-            applyPrefix(cubeDim, rolapHierarchy.getDescription()),
+            caption,
+            description,
             rolapHierarchy.hasAll(),
             null,
             rolapHierarchy.getAnnotationMap());
         this.ordinal = ordinal;
-        if (!cubeDimension.getCube().isVirtual()) {
-            this.usage =
-                new HierarchyUsage(
-                    cubeDimension.getCube(), rolapHierarchy, cubeDim);
-        }
-
         this.rolapHierarchy = rolapHierarchy;
         this.cubeDimension = cubeDimension;
-        this.xmlHierarchy = rolapHierarchy.getXmlHierarchy();
-        // this relation should equal the name of the new dimension table
-        // The null member belongs to a level with very similar properties to
-        // the 'all' level.
-        this.currentNullLevel = new RolapCubeLevel(nullLevel, this);
+    }
 
-        usingCubeFact =
-            (cubeDimension.getCube().getFact() == null
-              || cubeDimension.getCube().getFact().equals(
-                    rolapHierarchy.getRelation()));
+    @Override
+    void init1(RolapSchemaLoader schemaLoader, String memberReaderClass) {
+        this.allMemberName = rolapHierarchy.getAllMemberName();
 
-        // re-alias names if necessary
-        if (!usingCubeFact) {
-            // join expressions are columns only
-            assert (usage.getJoinExp() instanceof MondrianDef.Column);
-            currentRelation =
-                this.cubeDimension.getCube().getStar().getUniqueRelation(
-                    rolapHierarchy.getRelation(),
-                    usage.getForeignKey(),
-                    ((MondrianDef.Column)usage.getJoinExp()).getColumnName(),
-                    usage.getJoinTable().getAlias());
-        } else {
-            currentRelation = rolapHierarchy.getRelation();
-        }
-        extractNewAliases(rolapHierarchy.getRelation(), currentRelation);
-        this.relation = currentRelation;
-        this.levels =
-            this.cubeLevels =
-                new RolapCubeLevel[rolapHierarchy.getLevels().length];
-        for (int i = 0; i < rolapHierarchy.getLevels().length; i++) {
-            this.cubeLevels[i] =
-                new RolapCubeLevel(
-                    (RolapLevel) rolapHierarchy.getLevels()[i], this);
-            if (i == 0) {
-                if (rolapHierarchy.getAllMember() != null) {
-                    RolapCubeLevel allLevel;
-                    if (hasAll()) {
-                        allLevel = this.cubeLevels[0];
-                    } else {
-                        // create an all level if one doesn't normally
-                        // exist in the hierarchy
-                        allLevel =
-                            new RolapCubeLevel(
-                                rolapHierarchy.getAllMember().getLevel(),
-                                this);
-                        allLevel.init(cubeDimension.xmlDimension);
-                    }
-
-                    this.currentAllMember =
-                        new RolapAllCubeMember(
-                            rolapHierarchy.getAllMember(),
-                            allLevel);
-                }
-            }
-        }
+        if (false)
+        this.nullLevel =
+            this.currentNullLevel =
+            new RolapCubeLevel(rolapHierarchy.nullLevel, this);
 
         // Compute whether the unique names of members of this hierarchy are
         // different from members of the underlying hierarchy. If so, compute
@@ -168,115 +108,51 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
         }
-    }
 
-    /**
-     * Applies a prefix to a caption or description of a hierarchy in a shared
-     * dimension. Ensures that if a dimension is used more than once in the same
-     * cube then the hierarchies are distinguishable.
-     *
-     * <p>For example, if the [Time] dimension is imported as [Order Time] and
-     * [Ship Time], then the [Time].[Weekly] hierarchy would have caption
-     * "Order Time.Weekly caption" and description "Order Time.Weekly
-     * description".
-     *
-     * <p>If the dimension usage has a caption, it overrides.
-     *
-     * <p>If the dimension usage has a null name, or the name is the same
-     * as the dimension, and no caption, then no prefix is applied.
-     *
-     * @param cubeDim Cube dimension (maybe a usage of a shared dimension)
-     * @param caption Caption or description
-     * @return Caption or description, possibly prefixed by dimension role name
-     */
-    private static String applyPrefix(
-        MondrianDef.CubeDimension cubeDim,
-        String caption)
-    {
-        if (caption == null) {
-            return null;
+        for (RolapLevel level : rolapHierarchy.getRolapLevelList()) {
+            levelList.add(new RolapCubeLevel(level, this));
         }
-        if (cubeDim instanceof MondrianDef.DimensionUsage) {
-            final MondrianDef.DimensionUsage dimensionUsage =
-                (MondrianDef.DimensionUsage) cubeDim;
-            if (dimensionUsage.name != null
-                && !dimensionUsage.name.equals(dimensionUsage.source))
-            {
-                if (dimensionUsage.caption != null) {
-                    return dimensionUsage.caption + "." + caption;
-                } else {
-                    return dimensionUsage.name + "." + caption;
-                }
+
+        if (rolapHierarchy.getAllMember() != null) {
+            RolapCubeLevel allLevel;
+            if (hasAll) {
+                allLevel = (RolapCubeLevel) levelList.get(0);
+            } else {
+                // create an all level if one doesn't normally
+                // exist in the hierarchy
+                allLevel =
+                    new RolapCubeLevel(
+                        rolapHierarchy.getAllMember().getLevel(),
+                        this);
+                allLevel.initLevel(
+                    schemaLoader, false);
             }
-        }
-        return caption;
-    }
 
-    @Override
-    public RolapCubeLevel[] getLevels() {
-        return cubeLevels;
+            this.currentAllMember =
+                new RolapAllCubeMember(
+                    rolapHierarchy.getAllMember(),
+                    allLevel);
+        }
+
+        super.init1(schemaLoader, memberReaderClass);
     }
 
     public String getAllMemberName() {
         return rolapHierarchy.getAllMemberName();
     }
 
-    public String getSharedHierarchyName() {
-        return rolapHierarchy.getSharedHierarchyName();
+    // override with stricter return type
+    @Override
+    public RolapCubeDimension getDimension() {
+        return (RolapCubeDimension) dimension;
     }
 
-    public String getAllLevelName() {
-        return rolapHierarchy.getAllLevelName();
-    }
-
-    public boolean isUsingCubeFact() {
-        return usingCubeFact;
-    }
-
-    public String lookupAlias(String origTable) {
-        return aliases.get(origTable);
-    }
-
-    public final RolapHierarchy getRolapHierarchy() {
+    public RolapHierarchy getRolapHierarchy() {
         return rolapHierarchy;
     }
 
     public final int getOrdinalInCube() {
         return ordinal;
-    }
-
-    /**
-     * Populates the alias map for the old and new relations.
-     *
-     * <p>This method may be simplified when we obsolete
-     * {@link mondrian.rolap.HierarchyUsage}.
-     *
-     * @param oldrel Original relation, as defined in the schema
-     * @param newrel New star relation, generated by RolapStar, canonical, and
-     * shared between all cubes with similar structure
-     */
-    protected void extractNewAliases(
-        MondrianDef.RelationOrJoin oldrel,
-        MondrianDef.RelationOrJoin newrel)
-    {
-        if (oldrel == null && newrel == null) {
-            return;
-        } else if (oldrel instanceof MondrianDef.Relation
-            && newrel instanceof MondrianDef.Relation)
-        {
-            aliases.put(
-                ((MondrianDef.Relation) oldrel).getAlias(),
-                ((MondrianDef.Relation) newrel).getAlias());
-        } else if (oldrel instanceof MondrianDef.Join
-            && newrel instanceof MondrianDef.Join)
-        {
-            MondrianDef.Join oldjoin = (MondrianDef.Join)oldrel;
-            MondrianDef.Join newjoin = (MondrianDef.Join)newrel;
-            extractNewAliases(oldjoin.left, newjoin.left);
-            extractNewAliases(oldjoin.right, newjoin.right);
-        } else {
-            throw new UnsupportedOperationException();
-        }
     }
 
     public boolean equals(Object o) {
@@ -302,48 +178,52 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         String name,
         Formula formula)
     {
-        RolapLevel rolapLevel = ((RolapCubeLevel)level).getRolapLevel();
+        final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
+        final RolapLevel rolapLevel = cubeLevel.getRolapLevel();
+        final RolapCubeMember cubeParent = (RolapCubeMember) parent;
         if (formula == null) {
             RolapMember rolapParent = null;
             if (parent != null) {
-                rolapParent = ((RolapCubeMember)parent).getRolapMember();
+                rolapParent = cubeParent.getRolapMember();
             }
             RolapMember member =
                 new RolapMemberBase(rolapParent, rolapLevel, name);
-            return new RolapCubeMember(
-                (RolapCubeMember) parent, member,
-                (RolapCubeLevel) level);
+            return wrapMember(cubeParent, member, cubeLevel);
         } else if (level.getDimension().isMeasures()) {
             RolapCalculatedMeasure member =
                 new RolapCalculatedMeasure(
-                    (RolapMember) parent, rolapLevel, name, formula);
-            return new RolapCubeMember(
-                (RolapCubeMember) parent, member,
-                (RolapCubeLevel) level);
+                    cubeParent, rolapLevel, name, formula);
+            return wrapMember(cubeParent, member, cubeLevel);
         } else {
             RolapCalculatedMember member =
                 new RolapCalculatedMember(
-                    (RolapMember) parent, rolapLevel, name, formula);
-            return new RolapCubeMember(
-                (RolapCubeMember) parent, member,
-                (RolapCubeLevel) level);
+                    cubeParent, rolapLevel, name, formula);
+            return new RolapCubeMember(cubeParent, member, cubeLevel);
         }
     }
 
-
-    boolean tableExists(String tableName) {
-        return rolapHierarchy.tableExists(tableName);
-    }
-
     /**
-     * The currentRelation object is derived from the shared relation object
-     * it is generated via the RolapStar object, and contains unique aliases
-     * for it's particular join path
+     * Factory method for non-calculated members.
      *
-     * @return rolap cube hierarchy relation
+     * @param parent Parent member
+     * @param member Member to be wrapped
+     * @param level Level
+     * @return Member
      */
-    public MondrianDef.RelationOrJoin getRelation() {
-        return currentRelation;
+    private RolapCubeMember wrapMember(
+        RolapCubeMember parent,
+        RolapMember member,
+        RolapCubeLevel level)
+    {
+        if (member instanceof RolapStoredMeasure) {
+            return new RolapCubeStoredMeasure(
+                parent, (RolapStoredMeasure) member, level);
+        }
+        if (member instanceof RolapCalculatedMeasure) {
+            return new RolapCubeCalculatedMeasure(
+                parent, (RolapCalculatedMeasure) member, level);
+        }
+        return new RolapCubeMember(parent, member, level);
     }
 
     // override with stricter return type; make final, important for performance
@@ -372,7 +252,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 : rolapMember.getParentMember().isAll()
                     ? currentAllMember
                     : bootstrapLookup(rolapMember.getParentMember());
-        RolapCubeLevel level = cubeLevels[rolapMember.getLevel().getDepth()];
+        RolapCubeLevel level =
+            (RolapCubeLevel) levelList.get(rolapMember.getLevel().getDepth());
         return reader.lookupCubeMember(parent, rolapMember, level);
     }
 
@@ -395,7 +276,17 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return currentAllMember;
     }
 
+//    @Override
+//    MemberReader createMemberReader(Role role) {
+//        MemberReader memberReader = rolapHierarchy.createMemberReader(role);
+//        if (memberReader == null) {
+//            memberReader = createMemberReader(this, role);
+//        }
+//        return memberReader;
+//    }
+
     void setMemberReader(MemberReader memberReader) {
+        Util.deprecated("not used?", true);
         rolapHierarchy.setMemberReader(memberReader);
     }
 
@@ -407,22 +298,20 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         // refactor this!
         rolapHierarchy.setDefaultMember(defaultMeasure);
 
-        RolapCubeLevel level =
-            new RolapCubeLevel(
-                (RolapLevel)rolapHierarchy.getDefaultMember().getLevel(),
-                this);
         currentDefaultMember =
-            new RolapCubeMember(
-                null,
-                (RolapMember) rolapHierarchy.getDefaultMember(),
-                level);
+            lookup(
+                (RolapMember) rolapHierarchy.getDefaultMember());
     }
 
-    void init(MondrianDef.CubeDimension xmlDimension) {
-        // first init shared hierarchy
-        rolapHierarchy.init(xmlDimension);
-        // second init cube hierarchy
-        super.init(xmlDimension);
+    private RolapCubeMember lookup(RolapMember member) {
+        final RolapCubeMember parent =
+            member.getParentMember() == null
+                ? null
+                : lookup(member.getParentMember());
+        return reader.lookupCubeMember(
+            parent,
+            member,
+            (RolapCubeLevel) levelList.get(member.getLevel().getDepth()));
     }
 
     /**
@@ -445,6 +334,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     public final RolapCube getCube() {
         return cubeDimension.cube;
+    }
+
+    public final List<RolapCubeLevel> getRolapCubeLevelList() {
+        return Util.cast(levelList);
     }
 
     /**
@@ -545,7 +438,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public List<RolapMember> getRootMembers() {
             if (rootMembers == null) {
                 rootMembers =
-                    getMembersInLevel(cubeLevels[0], 0, Integer.MAX_VALUE);
+                    getMembersInLevel(levelList.get(0), 0, Integer.MAX_VALUE);
             }
             return rootMembers;
         }
@@ -768,26 +661,27 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapCubeLevel level)
         {
             synchronized (cacheHelper) {
-                if (member.getKey() == null) {
+                if (member.getKey() == Collections.EMPTY_LIST) {
                     if (member.isAll()) {
                         return getAllMember();
                     }
 
-                    throw new NullPointerException();
+                    throw new RuntimeException(member.toString());
                 }
 
                 RolapCubeMember cubeMember;
                 if (enableCache) {
-                    Object key =
-                        rolapCubeCacheHelper.makeKey(parent, member.getKey());
+                    Object cacheKey =
+                        rolapCubeCacheHelper.makeKey(
+                            parent, member.getKeyAsList());
                     cubeMember = (RolapCubeMember)
-                        rolapCubeCacheHelper.getMember(key, false);
+                        rolapCubeCacheHelper.getMember(cacheKey, false);
                     if (cubeMember == null) {
-                        cubeMember = new RolapCubeMember(parent, member, level);
-                        rolapCubeCacheHelper.putMember(key, cubeMember);
+                        cubeMember = wrapMember(parent, member, level);
+                        rolapCubeCacheHelper.putMember(cacheKey, cubeMember);
                     }
                 } else {
-                    cubeMember = new RolapCubeMember(parent, member, level);
+                    cubeMember = wrapMember(parent, member, level);
                 }
                 return cubeMember;
             }
@@ -880,7 +774,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         public List<RolapMember> getRootMembers() {
-            return getMembersInLevel(cubeLevels[0], 0, Integer.MAX_VALUE);
+            return getMembersInLevel(levelList.get(0), 0, Integer.MAX_VALUE);
         }
 
         protected void readMemberChildren(
@@ -1071,26 +965,36 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
     }
 
+    // hack to make the code compile
+    private static class MemberNoCacheHelper extends MemberCacheHelper {
+        public MemberNoCacheHelper() {
+            super(null);
+            Util.deprecated("remove", false);
+        }
+    }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Implementation of {@link mondrian.rolap.SqlMemberSource} and
+     * {@link mondrian.rolap.MemberReader} that wraps members from an underlying
+     * member reader in a {@link mondrian.rolap.RolapCubeMember}.
+     */
     public static class RolapCubeSqlMemberSource extends SqlMemberSource {
 
         private final RolapCubeHierarchyMemberReader memberReader;
         private final MemberCacheHelper memberSourceCacheHelper;
         private final Object memberCacheLock;
 
+        /**
+         * Creates a RolapCubeSqlMemberSource.
+         *
+         * @param memberReader Underlying member reader that creates shared
+         *   members. These members implement {@link mondrian.rolap.RolapMember}
+         *   but not {@link mondrian.rolap.RolapCubeMember}.
+         * @param hierarchy Hierarchy
+         * @param memberSourceCacheHelper Helper to put members into cache
+         * @param memberCacheLock Lock for cache modifications
+         */
         public RolapCubeSqlMemberSource(
             RolapCubeHierarchyMemberReader memberReader,
             RolapCubeHierarchy hierarchy,
@@ -1106,12 +1010,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object value,
+            Object key,
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,
-            Object key,
-            int columnOffset)
+            SqlTupleReader.ColumnLayout columnLayout)
             throws SQLException
         {
             final RolapCubeMember parentCubeMember =
@@ -1127,8 +1030,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 super.makeMember(
                     parent,
                     childCubeLevel.getRolapLevel(),
-                    value, captionValue, parentChild, stmt, key,
-                    columnOffset);
+                    key,
+                    captionValue,
+                    parentChild,
+                    stmt,
+                    columnLayout);
             return
                 memberReader.lookupCubeMember(
                     parentCubeMember,
@@ -1150,6 +1056,74 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public RolapMember allMember() {
             return getHierarchy().getAllMember();
+        }
+    }
+
+    /**
+     * Implementation of {@link mondrian.rolap.RolapCubeMember} that wraps
+     * a {@link mondrian.rolap.RolapStoredMeasure} and also implements that
+     * interface.
+     *
+     * @see Util#deprecated(Object, boolean) TODO: Obsolete this class;
+     *   {@link mondrian.rolap.RolapBaseCubeMeasure} already implements
+     *   {@link mondrian.rolap.RolapMemberInCube} because a measure cannot be
+     *   shared between cubes. Probably current code requires it to extend
+     *   {@link mondrian.rolap.RolapCubeMember}.
+     */
+    public static class RolapCubeStoredMeasure
+        extends RolapCubeMember
+        implements RolapStoredMeasure
+    {
+        private final RolapStoredMeasure storedMeasure;
+
+        public RolapCubeStoredMeasure(
+            RolapCubeMember parent,
+            RolapStoredMeasure member,
+            RolapCubeLevel cubeLevel)
+        {
+            super(parent, (RolapMember) member, cubeLevel);
+            this.storedMeasure = member;
+            assert !(member instanceof RolapCubeMember) : member;
+        }
+
+        public RolapSchema.PhysExpr getExpr() {
+            return storedMeasure.getExpr();
+        }
+
+        public RolapAggregator getAggregator() {
+            return storedMeasure.getAggregator();
+        }
+
+        public RolapMeasureGroup getMeasureGroup() {
+            return storedMeasure.getMeasureGroup();
+        }
+
+        public CellFormatter getFormatter() {
+            return storedMeasure.getFormatter();
+        }
+
+        public RolapStar.Measure getStarMeasure() {
+            return storedMeasure.getStarMeasure();
+        }
+    }
+
+    public static class RolapCubeCalculatedMeasure
+        extends RolapCubeMember
+        implements RolapMeasure
+    {
+        private final RolapCalculatedMeasure calculatedMeasure;
+
+        public RolapCubeCalculatedMeasure(
+            RolapCubeMember parent,
+            RolapCalculatedMeasure member,
+            RolapCubeLevel cubeLevel)
+        {
+            super(parent, member, cubeLevel);
+            this.calculatedMeasure = member;
+        }
+
+        public CellFormatter getFormatter() {
+            return calculatedMeasure.getFormatter();
         }
     }
 }

@@ -779,7 +779,7 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null,
             "<VirtualCube name=\"Sales vs HR\">\n"
-            + "<VirtualCubeDimension name=\"Store\"/>\n"
+            + "<VirtualCubeDimension cubeName=\"HR\" name=\"Store\"/>\n"
             + "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n"
             + "</VirtualCube>",
@@ -814,6 +814,27 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #6: $4,069.80\n"
             + "Row #7: $3,417.72\n"
             + "Row #8: $5,145.96\n");
+    }
+
+    /**
+     * Tests that mondrian gives an error if a dimension in a virtual cube
+     * does not join to any cubes.
+     */
+    public void testUnjoinedDimension() {
+        TestContext testContext = TestContext.create(
+            null,
+            null,
+            "<VirtualCube name=\"Sales vs HR\">\n"
+            + "<VirtualCubeDimension name=\"Store\"/>\n"
+            + "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n"
+            + "</VirtualCube>",
+            null,
+            null,
+            null);
+        testContext.assertSchemaError(
+            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR' \\(at ${pos}\\)",
+            "<VirtualCubeDimension name=\"Store\"/>");
     }
 
     public void testDefaultMeasureProperty() {

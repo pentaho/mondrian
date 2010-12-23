@@ -11,15 +11,13 @@ package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Id;
-import mondrian.olap.Level;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.CrossJoinArg;
 import mondrian.rolap.sql.CrossJoinArgFactory;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Creates the right constraint for common tasks.
@@ -27,7 +25,7 @@ import java.util.Set;
  * @author av
  * @since Nov 21, 2005
  */
-public class SqlConstraintFactory {
+public final class SqlConstraintFactory {
 
     static boolean enabled;
 
@@ -59,16 +57,28 @@ public class SqlConstraintFactory {
     public MemberChildrenConstraint getMemberChildrenConstraint(
         Evaluator context)
     {
-        if (!enabled(context)
-            || !SqlContextConstraint.isValidContext(context, false))
+        if (!enabled) {
+            return DefaultMemberChildrenConstraint.instance();
+        }
+        final List<RolapMeasureGroup> measureGroupList =
+            new ArrayList<RolapMeasureGroup>();
+        if (!SqlContextConstraint.checkValidContext(
+            context,
+            true,
+            Collections.<RolapLevel>emptyList(),
+            false,
+            measureGroupList))
         {
             return DefaultMemberChildrenConstraint.instance();
         }
-        return new SqlContextConstraint((RolapEvaluator) context, false);
+        return new SqlContextConstraint(
+            (RolapEvaluator) context, measureGroupList, false);
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        return getLevelMembersConstraint(context, null);
+        return getLevelMembersConstraint(
+            context,
+            Collections.<RolapLevel>emptyList());
     }
 
     /**
@@ -82,16 +92,20 @@ public class SqlConstraintFactory {
      */
     public TupleConstraint getLevelMembersConstraint(
         Evaluator context,
-        Level[] levels)
+        List<RolapLevel> levels)
     {
-        if (context == null) {
+        assert levels != null;
+        if (context == null || !enabled) {
             return DefaultTupleConstraint.instance();
         }
-        if (!enabled(context)) {
-            return DefaultTupleConstraint.instance();
-        }
-        if (!SqlContextConstraint.isValidContext(
-            context, false, levels, false))
+        final List<RolapMeasureGroup> measureGroupList =
+            new ArrayList<RolapMeasureGroup>();
+        if (!SqlContextConstraint.checkValidContext(
+            context,
+            false,
+            levels,
+            false,
+            measureGroupList))
         {
             return DefaultTupleConstraint.instance();
         }
@@ -103,10 +117,12 @@ public class SqlConstraintFactory {
                 return new RolapNativeCrossJoin.NonEmptyCrossJoinConstraint(
                     joinArgs.toArray(
                         new CrossJoinArg[joinArgs.size()]),
-                    (RolapEvaluator) context);
+                    (RolapEvaluator) context,
+                    measureGroupList);
             }
         }
-        return new SqlContextConstraint((RolapEvaluator) context, false);
+        return new SqlContextConstraint(
+            (RolapEvaluator) context, measureGroupList, false);
     }
 
     public MemberChildrenConstraint getChildByNameConstraint(

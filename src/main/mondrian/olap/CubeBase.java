@@ -14,7 +14,12 @@
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
+import org.olap4j.impl.ArrayNamedListImpl;
+import org.olap4j.impl.NamedListImpl;
+import org.olap4j.metadata.*;
+import org.olap4j.type.LevelType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,7 +56,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     protected final String name;
     private final String uniqueName;
     private final String description;
-    protected Dimension[] dimensions;
 
     /**
      * Creates a CubeBase.
@@ -59,18 +63,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @param name Name
      * @param caption Caption
      * @param description Description
-     * @param dimensions List of dimensions
      */
     protected CubeBase(
-        String name,
-        String caption,
-        String description,
-        Dimension[] dimensions)
+        String name, String caption, String description)
     {
         this.name = name;
         this.caption = caption;
         this.description = description;
-        this.dimensions = dimensions;
         this.uniqueName = Util.quoteMdxIdentifier(name);
     }
 
@@ -100,14 +99,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return description;
     }
 
-    public Dimension[] getDimensions() {
-        return dimensions;
-    }
-
     public Hierarchy lookupHierarchy(Id.Segment s, boolean unique) {
-        for (Dimension dimension : dimensions) {
-            Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+        for (Dimension dimension : getDimensions()) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
                 if (name.equals(s.name)) {
@@ -181,7 +175,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @return Dimension, or null if not found
      */
     public Dimension lookupDimension(Id.Segment s) {
-        for (Dimension dimension : dimensions) {
+        for (Dimension dimension : getDimensions()) {
             if (Util.equalName(dimension.getName(), s.name)) {
                 return dimension;
             }
@@ -191,19 +185,11 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     // ------------------------------------------------------------------------
 
-    /**
-     * Returns the first level of a given type in this cube.
-     *
-     * @param levelType Level type
-     * @return First level of given type, or null
-     */
-    private Level getTimeLevel(LevelType levelType) {
-        for (Dimension dimension : dimensions) {
+    public Level getTimeLevel(org.olap4j.metadata.Level.Type levelType) {
+        for (Dimension dimension : getDimensions()) {
             if (dimension.getDimensionType() == DimensionType.TimeDimension) {
-                Hierarchy[] hierarchies = dimension.getHierarchies();
-                for (Hierarchy hierarchy : hierarchies) {
-                    Level[] levels = hierarchy.getLevels();
-                    for (Level level : levels) {
+                for (Hierarchy hierarchy : dimension.getHierarchyList()) {
+                    for (Level level : hierarchy.getLevelList()) {
                         if (level.getLevelType() == levelType) {
                             return level;
                         }
@@ -215,19 +201,19 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public Level getYearLevel() {
-        return getTimeLevel(LevelType.TimeYears);
+        return getTimeLevel(org.olap4j.metadata.Level.Type.TIME_YEARS);
     }
 
     public Level getQuarterLevel() {
-        return getTimeLevel(LevelType.TimeQuarters);
+        return getTimeLevel(org.olap4j.metadata.Level.Type.TIME_QUARTERS);
     }
 
     public Level getMonthLevel() {
-        return getTimeLevel(LevelType.TimeMonths);
+        return getTimeLevel(org.olap4j.metadata.Level.Type.TIME_MONTHS);
     }
 
     public Level getWeekLevel() {
-        return getTimeLevel(LevelType.TimeWeeks);
+        return getTimeLevel(org.olap4j.metadata.Level.Type.TIME_WEEKS);
     }
 }
 

@@ -14,7 +14,6 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
 import java.util.*;
@@ -50,7 +49,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
      * @return a new query object
      */
     protected SqlQuery newSqlQuery() {
-        return getStar().getSqlQuery();
+        return new SqlQuery(getStar().getSqlQueryDialect());
     }
 
     public RolapStar getStar() {
@@ -65,7 +64,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
      */
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
-        Util.assertTrue(measure.getTable() == getStar().getFactTable());
+        assert measure.getTable() == getStar().getFactTable();
         measure.getTable().addToFrom(sqlQuery, false, true);
 
         String exprInner =
@@ -280,7 +279,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             RolapStar.Measure measure = getMeasure(i);
 
-            Util.assertTrue(measure.getTable() == getStar().getFactTable());
+            assert measure.getTable() == getStar().getFactTable();
             measure.getTable().addToFrom(innerSqlQuery, false, true);
 
             String alias = getMeasureAlias(i);

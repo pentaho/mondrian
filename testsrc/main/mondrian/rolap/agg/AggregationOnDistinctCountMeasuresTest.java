@@ -1363,7 +1363,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     private List<Member[]> optimizeChildren(List<Member[]> memberList) {
         return AggregateFunDef.AggregateCalc.optimizeChildren(
-            memberList, schemaReader, salesCube);
+            memberList, schemaReader, salesCube.getMeasureGroups().get(0));
     }
 
     private List<Member[]> tupleList(List<Member> members) {

@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.Member;
-import mondrian.olap.Query;
 import mondrian.olap.Util;
 import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.TupleConstraint;
@@ -19,7 +18,6 @@ import mondrian.util.TraversalList;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -45,8 +43,9 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         final MemberBuilder memberBuilder,
         final List<RolapMember> srcMembers)
     {
-        targets.add(new Target(
-            level, memberBuilder, srcMembers, constraint, this));
+        targets.add(
+            new Target(
+                level, memberBuilder, srcMembers, constraint, this));
     }
 
     protected void prepareTuples(
@@ -183,9 +182,6 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     public int getMaxRows() {
         return maxRows;
     }
-
-    Collection<RolapCube> getBaseCubeCollection(final Query query) {
-        return query.getBaseCubes();
-    }
 }
+
 // End HighCardSqlTupleReader.java

@@ -517,6 +517,24 @@ public class JdbcDialectImpl implements Dialect {
             }
         }
 
+        if (valueList.isEmpty()) {
+            List<String> values = new ArrayList<String>();
+            for (String columnType : columnTypes) {
+                values.add(null);
+            }
+            if (fromClause == null) {
+                fromClause = "where 1 = 0";
+            } else {
+                fromClause += " and 1 = 0";
+            }
+            return generateInlineGeneric(
+                columnNames,
+                columnTypes,
+                Collections.singletonList(
+                    values.toArray(new String[values.size()])),
+                fromClause,
+                cast);
+        }
         for (int i = 0; i < valueList.size(); i++) {
             if (i > 0) {
                 buf.append(" union all ");
@@ -565,7 +583,7 @@ public class JdbcDialectImpl implements Dialect {
      * have the same type as other columns:
      *
      * <blockquote><code>SELECT * FROM
-     * (VALUES (1, 'a'), (2, CASE(NULL AS VARCHAR(1)))) AS t(x, y)
+     * (VALUES (1, 'a'), (2, CAST(NULL AS VARCHAR(1)))) AS t(x, y)
      * </code></blockquote>
      *
      * <p>This syntax is known to work on Derby, but not Oracle 10 or
@@ -916,6 +934,44 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.VERTICA;
         } else {
             return DatabaseProduct.UNKNOWN;
+        }
+    }
+
+    public Datatype sqlTypeToDatatype(
+        String typeName,
+        int type)
+    {
+        Util.discard(typeName); // not used, but reserved for future use
+        switch (type) {
+        case Types.BINARY:
+            // REVIEW: Access returns BINARY when it encounters a NULL; we can
+            // treat that as any type, so we arbitrarily choose INTEGER.
+            return Datatype.Integer;
+        case Types.BIT:
+            return Datatype.Integer;
+        case Types.BOOLEAN:
+            return Datatype.Boolean;
+        case Types.DATE:
+            return Datatype.Date;
+        case Types.TINYINT:
+        case Types.SMALLINT:
+        case Types.INTEGER:
+        case Types.BIGINT:
+            return Datatype.Integer;
+        case Types.NUMERIC:
+        case Types.DECIMAL:
+        case Types.FLOAT:
+        case Types.DOUBLE:
+            return Datatype.Numeric;
+        case Types.CHAR:
+        case Types.VARCHAR:
+            return Datatype.String;
+        case Types.TIME:
+            return Datatype.Time;
+        case Types.TIMESTAMP:
+            return Datatype.Timestamp;
+        default:
+            return null;
         }
     }
 }

@@ -38,6 +38,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(FunctionTest.class);
 
+    public static final boolean FILTER_SNOWFLAKE = Util.deprecated(true, false);
+
     private static final String months =
         "[Time].[1997].[Q1].[1]\n"
         + "[Time].[1997].[Q1].[2]\n"
@@ -367,57 +369,113 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Measures].[X]} on columns,\n"
             + "{[Product].[Product Department].members} on rows\n"
             + "from Sales",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[X]}\n"
-            + "Axis #2:\n"
-            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
-            + "{[Product].[Drink].[Beverages]}\n"
-            + "{[Product].[Drink].[Dairy]}\n"
-            + "{[Product].[Food].[Baked Goods]}\n"
-            + "{[Product].[Food].[Baking Goods]}\n"
-            + "{[Product].[Food].[Breakfast Foods]}\n"
-            + "{[Product].[Food].[Canned Foods]}\n"
-            + "{[Product].[Food].[Canned Products]}\n"
-            + "{[Product].[Food].[Dairy]}\n"
-            + "{[Product].[Food].[Deli]}\n"
-            + "{[Product].[Food].[Eggs]}\n"
-            + "{[Product].[Food].[Frozen Foods]}\n"
-            + "{[Product].[Food].[Meat]}\n"
-            + "{[Product].[Food].[Produce]}\n"
-            + "{[Product].[Food].[Seafood]}\n"
-            + "{[Product].[Food].[Snack Foods]}\n"
-            + "{[Product].[Food].[Snacks]}\n"
-            + "{[Product].[Food].[Starchy Foods]}\n"
-            + "{[Product].[Non-Consumable].[Carousel]}\n"
-            + "{[Product].[Non-Consumable].[Checkout]}\n"
-            + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
-            + "{[Product].[Non-Consumable].[Household]}\n"
-            + "{[Product].[Non-Consumable].[Periodicals]}\n"
-            + "Row #0: 14,029.08\n"
-            + "Row #1: 27,748.53\n"
-            + "Row #2: \n"
-            + "Row #3: 16,455.43\n"
-            + "Row #4: 38,670.41\n"
-            + "Row #5: \n"
-            + "Row #6: 39,774.34\n"
-            + "Row #7: \n"
-            + "Row #8: 30,508.85\n"
-            + "Row #9: 25,318.93\n"
-            + "Row #10: \n"
-            + "Row #11: 55,207.50\n"
-            + "Row #12: \n"
-            + "Row #13: 82,248.42\n"
-            + "Row #14: \n"
-            + "Row #15: 67,609.82\n"
-            + "Row #16: 14,550.05\n"
-            + "Row #17: 11,756.07\n"
-            + "Row #18: \n"
-            + "Row #19: \n"
-            + "Row #20: 32,571.86\n"
-            + "Row #21: 60,469.89\n"
-            + "Row #22: \n");
+            FILTER_SNOWFLAKE
+                ? "Axis #0:\n"
+                  + "{}\n"
+                  + "Axis #1:\n"
+                  + "{[Measures].[X]}\n"
+                  + "Axis #2:\n"
+                  + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                  + "{[Product].[Drink].[Beverages]}\n"
+                  + "{[Product].[Drink].[Dairy]}\n"
+                  + "{[Product].[Food].[Baked Goods]}\n"
+                  + "{[Product].[Food].[Baking Goods]}\n"
+                  + "{[Product].[Food].[Breakfast Foods]}\n"
+                  + "{[Product].[Food].[Canned Foods]}\n"
+                  + "{[Product].[Food].[Canned Products]}\n"
+                  + "{[Product].[Food].[Dairy]}\n"
+                  + "{[Product].[Food].[Deli]}\n"
+                  + "{[Product].[Food].[Eggs]}\n"
+                  + "{[Product].[Food].[Frozen Foods]}\n"
+                  + "{[Product].[Food].[Meat]}\n"
+                  + "{[Product].[Food].[Produce]}\n"
+                  + "{[Product].[Food].[Seafood]}\n"
+                  + "{[Product].[Food].[Snack Foods]}\n"
+                  + "{[Product].[Food].[Snacks]}\n"
+                  + "{[Product].[Food].[Starchy Foods]}\n"
+                  + "{[Product].[Non-Consumable].[Carousel]}\n"
+                  + "{[Product].[Non-Consumable].[Checkout]}\n"
+                  + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
+                  + "{[Product].[Non-Consumable].[Household]}\n"
+                  + "{[Product].[Non-Consumable].[Periodicals]}\n"
+                  + "Row #0: 14,029.08\n"
+                  + "Row #1: 27,748.53\n"
+                  + "Row #2: \n"
+                  + "Row #3: 16,455.43\n"
+                  + "Row #4: 38,670.41\n"
+                  + "Row #5: \n"
+                  + "Row #6: 39,774.34\n"
+                  + "Row #7: \n"
+                  + "Row #8: 30,508.85\n"
+                  + "Row #9: 25,318.93\n"
+                  + "Row #10: \n"
+                  + "Row #11: 55,207.50\n"
+                  + "Row #12: \n"
+                  + "Row #13: 82,248.42\n"
+                  + "Row #14: \n"
+                  + "Row #15: 67,609.82\n"
+                  + "Row #16: 14,550.05\n"
+                  + "Row #17: 11,756.07\n"
+                  + "Row #18: \n"
+                  + "Row #19: \n"
+                  + "Row #20: 32,571.86\n"
+                  + "Row #21: 60,469.89\n"
+                  + "Row #22: \n"
+                : "Axis #0:\n"
+                  + "{}\n"
+                  + "Axis #1:\n"
+                  + "{[Measures].[X]}\n"
+                  + "Axis #2:\n"
+                  + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                  + "{[Product].[Drink].[Baking Goods]}\n"
+                  + "{[Product].[Drink].[Beverages]}\n"
+                  + "{[Product].[Drink].[Dairy]}\n"
+                  + "{[Product].[Food].[Baked Goods]}\n"
+                  + "{[Product].[Food].[Baking Goods]}\n"
+                  + "{[Product].[Food].[Breakfast Foods]}\n"
+                  + "{[Product].[Food].[Canned Foods]}\n"
+                  + "{[Product].[Food].[Canned Products]}\n"
+                  + "{[Product].[Food].[Dairy]}\n"
+                  + "{[Product].[Food].[Deli]}\n"
+                  + "{[Product].[Food].[Eggs]}\n"
+                  + "{[Product].[Food].[Frozen Foods]}\n"
+                  + "{[Product].[Food].[Meat]}\n"
+                  + "{[Product].[Food].[Packaged Foods]}\n"
+                  + "{[Product].[Food].[Produce]}\n"
+                  + "{[Product].[Food].[Seafood]}\n"
+                  + "{[Product].[Food].[Snack Foods]}\n"
+                  + "{[Product].[Food].[Snacks]}\n"
+                  + "{[Product].[Food].[Starchy Foods]}\n"
+                  + "{[Product].[Non-Consumable].[Carousel]}\n"
+                  + "{[Product].[Non-Consumable].[Checkout]}\n"
+                  + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
+                  + "{[Product].[Non-Consumable].[Household]}\n"
+                  + "{[Product].[Non-Consumable].[Periodicals]}\n"
+                  + "Row #0: 14,029.08\n"
+                  + "Row #1: \n"
+                  + "Row #2: 27,748.53\n"
+                  + "Row #3: \n"
+                  + "Row #4: 16,455.43\n"
+                  + "Row #5: 38,670.41\n"
+                  + "Row #6: \n"
+                  + "Row #7: 39,774.34\n"
+                  + "Row #8: \n"
+                  + "Row #9: 30,508.85\n"
+                  + "Row #10: 25,318.93\n"
+                  + "Row #11: \n"
+                  + "Row #12: 55,207.50\n"
+                  + "Row #13: \n"
+                  + "Row #14: \n"
+                  + "Row #15: 82,248.42\n"
+                  + "Row #16: \n"
+                  + "Row #17: 67,609.82\n"
+                  + "Row #18: 14,550.05\n"
+                  + "Row #19: 11,756.07\n"
+                  + "Row #20: \n"
+                  + "Row #21: \n"
+                  + "Row #22: 32,571.86\n"
+                  + "Row #23: 60,469.89\n"
+                  + "Row #24: \n");
     }
 
     public void testNullInMultiplication() {
@@ -4220,6 +4278,20 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #14: 67\n");
     }
 
+    public void testChildren() {
+        // Yes, baking goods is correct. there are no products in that product
+        // class, but we should not generate a join to filter a snowflake
+        // table. It is a difference in behavior with FoodMart.
+        assertAxisReturns(
+            "[Product].[Drink].Children",
+            "[Product].[All Products].[Drink].[Alcoholic Beverages]\n"
+            + (FILTER_SNOWFLAKE
+                ? ""
+                : "[Product].[All Products].[Drink].[Baking Goods]\n")
+            + "[Product].[All Products].[Drink].[Beverages]\n"
+            + "[Product].[All Products].[Drink].[Dairy]");
+    }
+
     /**
      * Testcase for bug 1889745, "StackOverflowError while resolving
      * crossjoin". The problem occurs when a calculated member that references
@@ -6889,7 +6961,7 @@ public class FunctionTest extends FoodMartTestCase {
      * a level whose ordering is determined by an 'ordinal' property.
      * TODO: fix this test (bug 1220787)
      *
-     * WG: Note that this is disabled right now due to its impact on other
+     * <p>WG: Note that this is disabled right now due to its impact on other
      * tests later on within the test suite, specifically XMLA tests that
      * return a list of cubes.  We could run this test after XMLA, or clear
      * out the cache to solve this.
@@ -6916,7 +6988,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "  <Dimension name=\"Month_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
             + "      <Table name=\"time_by_day\"/>\n"
-            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" type=\"Numeric\"\n"
             + "          ordinalColumn=\"the_month\"\n"
             + "          levelType=\"TimeMonths\"/>\n"
             + "    </Hierarchy>\n"
@@ -9486,7 +9558,7 @@ public class FunctionTest extends FoodMartTestCase {
         final Axis[] axes = result.getAxes();
         final Axis rowsAxis = axes[1];
         final int rowCount = rowsAxis.getPositions().size();
-        assertEquals(2256, rowCount);
+        assertEquals(FILTER_SNOWFLAKE ? 2256 : 2266, rowCount);
         // [All Products], [All Gender], [Rank]
         Cell cell = result.getCell(new int[] {1, 0});
         assertEquals("1", cell.getFormattedValue());

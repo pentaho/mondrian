@@ -241,7 +241,7 @@ class Segment {
         RolapStar.Column[] columns = aggregation.getColumns();
         for (int i = 0; i < columns.length; i++) {
             buf.append(sep);
-            buf.append(columns[i].getExpression().getGenericExpression());
+            buf.append(columns[i].getExpression().toSql());
             final Aggregation.Axis axis = axes[i];
             axis.getPredicate().describe(buf);
             if (values && isReady()) {
@@ -281,7 +281,7 @@ class Segment {
         buf.append("measure=");
         buf.append(
             measure.getAggregator().getExpression(
-                measure.getExpression().getGenericExpression()));
+                measure.getExpression().toSql()));
         return buf.toString();
     }
 

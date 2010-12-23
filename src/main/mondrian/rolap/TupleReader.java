@@ -47,17 +47,17 @@ public interface TupleReader {
         /**
          * Creates a new member (together with its properties).
          *
-         * @param column Column ordinal (0-based)
+         * @param key Member key, per {@link mondrian.rolap.RolapMember.Key}
+         * @param columnLayout
          */
         RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object value,
+            Object key,
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,
-            Object key,
-            int column)
+            SqlTupleReader.ColumnLayout columnLayout)
             throws SQLException;
 
         /**

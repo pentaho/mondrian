@@ -13,7 +13,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 
@@ -51,7 +50,7 @@ public class HierarchyUsage {
      * identifies the usage, and determines which join conditions need to be
      * used.
      */
-    protected final MondrianDef.Relation fact;
+    protected final RolapSchema.PhysRelation fact;
 
     /**
      * This matches the hierarchy - may not be unique.
@@ -104,13 +103,13 @@ public class HierarchyUsage {
      * Dimension table which contains the primary key for the hierarchy.
      * (Usually the table of the lowest level of the hierarchy.)
      */
-    private MondrianDef.Relation joinTable;
+    private RolapSchema.PhysRelation joinTable;
 
     /**
      * The expression (usually a {@link mondrian.olap.MondrianDef.Column}) by
      * which the hierarchy which is joined to the fact table.
      */
-    private MondrianDef.Expression joinExp;
+    private RolapSchema.PhysExpr joinExp;
 
     private final Kind kind;
 
@@ -126,6 +125,7 @@ public class HierarchyUsage {
         RolapHierarchy hierarchy,
         MondrianDef.CubeDimension cubeDim)
     {
+        Util.deprecated("remove HierarchyUsage", true);
         assert cubeDim != null : "precondition: cubeDim != null";
 
         this.fact = cube.fact;
@@ -254,42 +254,51 @@ public class HierarchyUsage {
     public String getHierarchyName() {
         return this.hierarchyName;
     }
+
     public String getFullName() {
         return this.fullName;
     }
+
     public String getName() {
         return this.name;
     }
+
     public String getForeignKey() {
         return this.foreignKey;
     }
+
     public String getSource() {
         return this.source;
     }
+
     public String getLevelName() {
         return this.level;
     }
+
     public String getUsagePrefix() {
         return this.usagePrefix;
     }
 
-    public MondrianDef.Relation getJoinTable() {
+    public RolapSchema.PhysRelation getJoinTable() {
         return this.joinTable;
     }
 
-    public MondrianDef.Expression getJoinExp() {
+    public RolapSchema.PhysExpr getJoinExp() {
         return this.joinExp;
     }
 
     public Kind getKind() {
         return this.kind;
     }
+
     public boolean isShared() {
         return this.kind == Kind.SHARED;
     }
+
     public boolean isVirtual() {
         return this.kind == Kind.VIRTUAL;
     }
+
     public boolean isPrivate() {
         return this.kind == Kind.PRIVATE;
     }
@@ -343,6 +352,8 @@ public class HierarchyUsage {
         RolapHierarchy hierarchy,
         MondrianDef.DimensionUsage cubeDim)
     {
+        Util.deprecated("fix or remove", false);
+        /*
         // Three ways that a hierarchy can be joined to the fact table.
         if (cubeDim != null && cubeDim.level != null) {
             // 1. Specify an explicit 'level' attribute in a <DimensionUsage>.
@@ -353,33 +364,51 @@ public class HierarchyUsage {
                     .DimensionUsageHasUnknownLevel.ex(
                     hierarchy.getUniqueName(), cube.getName(), cubeDim.level);
             }
+            final MondrianDef.Relation joinRelation =
+                findJoinTable(
+                    hierarchy,
+                    joinLevel.getKeyExp().getTableAlias());
             this.joinTable =
-                findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
-            this.joinExp = joinLevel.getKeyExp();
+                cube.physSchemaBuilder.toPhysRelation(joinRelation);
+            this.joinExp =
+                cube.physSchemaBuilder.toPhysExpr(
+                    this.joinTable, joinLevel.getKeyExp());
         } else if (hierarchy.getXmlHierarchy() != null
             && hierarchy.getXmlHierarchy().primaryKey != null)
         {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
             //    also specify the "primaryKeyTable" attribute if the hierarchy
             //    is a join (hence has more than one table).
-            this.joinTable =
+            final MondrianDef.Relation joinRelation =
                 findJoinTable(
                     hierarchy,
                     hierarchy.getXmlHierarchy().primaryKeyTable);
             this.joinExp =
                 new MondrianDef.Column(
                     this.joinTable.getAlias(),
-                    hierarchy.getXmlHierarchy().primaryKey);
+            this.joinTable =
+                cube.physSchemaBuilder.toPhysRelation(joinRelation);
+            this.joinExp =
+                cube.physSchemaBuilder.toPhysExpr(
+                    joinTable,
+                    new MondrianDef.Column(
+                        joinTable.getAlias(),
+                        hierarchy.getXmlHierarchy().primaryKey));
         } else {
             // 3. If neither of the above, the join is assumed to be to key of
             //    the last level.
             final Level[] levels = hierarchy.getLevels();
             RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
-            this.joinTable =
+            final MondrianDef.Relation joinRelation =
                 findJoinTable(
                     hierarchy,
                     joinLevel.getKeyExp().getTableAlias());
-            this.joinExp = joinLevel.getKeyExp();
+            this.joinTable =
+                cube.physSchemaBuilder.toPhysRelation(joinRelation);
+            this.joinExp =
+                cube.physSchemaBuilder.toPhysExpr(
+                    joinTable,
+                    joinLevel.getKeyExp());
         }
 
         // Unless this hierarchy is drawing from the fact table, we need
@@ -399,40 +428,8 @@ public class HierarchyUsage {
                     cube.getName());
             }
         }
+        */
     }
-
-    /**
-     * Chooses the table with which to join a hierarchy to the fact table.
-     *
-     * @param hierarchy Hierarchy to be joined
-     * @param tableName Alias of the table; may be omitted if the hierarchy
-     *   has only one table
-     * @return A table, never null
-     */
-    private MondrianDef.Relation findJoinTable(
-        RolapHierarchy hierarchy,
-        String tableName)
-    {
-        final MondrianDef.Relation table;
-        if (tableName == null) {
-            table = hierarchy.getUniqueTable();
-            if (table == null) {
-                throw MondrianResource.instance()
-                    .MustSpecifyPrimaryKeyTableForHierarchy.ex(
-                        hierarchy.getUniqueName());
-            }
-        } else {
-            table = hierarchy.getRelation().find(tableName);
-            if (table == null) {
-                // todo: i18n msg
-                throw Util.newError(
-                    "no table '" + tableName
-                    + "' found in hierarchy " + hierarchy.getUniqueName());
-            }
-        }
-        return table;
-    }
-
 }
 
 // End HierarchyUsage.java

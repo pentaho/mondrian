@@ -10,26 +10,21 @@
 
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianDef;
-import mondrian.rolap.RolapAggregator;
-import mondrian.rolap.RolapStar;
+import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
+
 import org.olap4j.impl.Olap4jUtil;
 
-import java.lang.ref.SoftReference;
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.ResultSet;
+import java.lang.ref.SoftReference;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Types;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -357,8 +352,7 @@ public class JdbcSchema {
                 public RolapStar.Measure rMeasure;
 
                 // hierarchy stuff
-                public MondrianDef.Relation relation;
-                public MondrianDef.Expression joinExp;
+                public RolapSchema.PhysRelation relation;
                 public String levelColumnName;
 
                 // level
@@ -818,7 +812,7 @@ public class JdbcSchema {
         private final String tableType;
 
         // mondriandef stuff
-        public MondrianDef.Table table;
+        public RolapSchema.PhysTable table;
 
         private boolean allColumnsLoaded;
 
@@ -1084,6 +1078,7 @@ public class JdbcSchema {
         new TreeMap<String, Table>();
 
     JdbcSchema(final DataSource dataSource) {
+        assert dataSource != null;
         this.dataSource = dataSource;
     }
 

@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.calc.Calc;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 
@@ -45,6 +46,12 @@ public abstract class RolapAggregator
             public Object aggregate(Evaluator evaluator, List members, Calc exp)
             {
                 return FunUtil.count(evaluator, members, false);
+            }
+
+            public Dialect.Datatype deriveDatatype(
+                Dialect.Datatype[] datatype)
+            {
+                return Dialect.Datatype.Integer;
             }
         };
 
@@ -96,6 +103,12 @@ public abstract class RolapAggregator
             public String getExpression(String operand) {
                 return "count(distinct " + operand + ")";
             }
+
+            public Dialect.Datatype deriveDatatype(
+                Dialect.Datatype[] datatype)
+            {
+                return Dialect.Datatype.Integer;
+            }
         };
 
     /**
@@ -121,6 +134,7 @@ public abstract class RolapAggregator
             super(name, index++, false);
             this.factCountExpr = factCountExpr;
         }
+
         public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             throw new UnsupportedOperationException();
         }
@@ -260,6 +274,21 @@ public abstract class RolapAggregator
      */
     public Aggregator getRollup() {
         return this;
+    }
+
+    /**
+     * Derives the data type of a call to this aggregator.
+     *
+     * <p>The default implementation asserts that there is precisely one
+     * argument and returns the type of that argument.
+     *
+     * @param datatype Data types of arguments. Each argument's type may be
+     *     null, meaning not known
+     * @return Data type of call to this aggregator
+     */
+    public Dialect.Datatype deriveDatatype(Dialect.Datatype[] datatype) {
+        assert datatype.length == 1;
+        return datatype[0];
     }
 }
 

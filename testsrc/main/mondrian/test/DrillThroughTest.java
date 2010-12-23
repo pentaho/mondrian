@@ -13,9 +13,7 @@ package mondrian.test;
 
 
 import mondrian.olap.*;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapLevel;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
 import javax.sql.DataSource;
@@ -229,18 +227,18 @@ public class DrillThroughTest extends FoodMartTestCase {
         String levelName)
     {
         final Cube cube = result.getQuery().getCube();
-        RolapStar star = ((RolapCube) cube).getStar();
-
         Hierarchy h =
             cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         if (h == null) {
             return null;
         }
-        for (Level l : h.getLevels()) {
+        for (Level l : h.getLevelList()) {
             if (l.getName().equals(levelName)) {
-                MondrianDef.Expression exp = ((RolapLevel) l).getNameExp();
-                String nameExpStr = exp.getExpression(star.getSqlQuery());
+                RolapSchema.PhysExpr exp =
+                    RolapTrojan.INSTANCE.getAttributeNameExpr(
+                        ((RolapLevel) l).getAttribute());
+                String nameExpStr = exp.toSql();
                 nameExpStr = nameExpStr.replace('"', '`') ;
                 return nameExpStr;
             }
@@ -263,8 +261,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store`.`store_state` as `Store State`,"
             + " `store`.`store_city` as `Store City`,"
             + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
+            + " `store`.`store_type` as `Store Name (Store Type)`,"
+            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
@@ -280,14 +278,15 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `promotion`.`promotion_name` as `Promotion Name`,"
             + " `customer`.`country` as `Country`,"
             + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`, "
+            + " `customer`.`city` as `City`,"
+            + " `customer`.`customer_id` as `Name (Key)`,"
+            + " "
             + nameExpStr
             + " as `Name`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
-            + " `customer`.`marital_status` as `Marital Status`,"
-            + " `customer`.`yearly_income` as `Yearly Income`,"
+            + " `customer`.`gender` as `Name (Gender)`,"
+            + " `customer`.`marital_status` as `Name (Marital Status)`,"
+            + " `customer`.`education` as `Name (Education)`,"
+            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
             + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
             + "from `store` =as= `store`,"
             + " `sales_fact_1997` =as= `sales_fact_1997`,"
@@ -308,8 +307,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store`.`store_state` ASC,"
             + " `store`.`store_city` ASC,"
             + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
             + " `store`.`store_type` ASC,"
+            + " `store`.`store_sqft` ASC,"
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
@@ -325,13 +324,14 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `promotion`.`promotion_name` ASC,"
             + " `customer`.`country` ASC,"
             + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC, "
+            + " `customer`.`city` ASC,"
+            + " `customer`.`customer_id` ASC,"
+            + " "
             + nameExpStr
             + " ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
             + " `customer`.`gender` ASC,"
             + " `customer`.`marital_status` ASC,"
+            + " `customer`.`education` ASC,"
             + " `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 7978);
@@ -343,9 +343,16 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough3() {
         Result result = executeQuery(
-            "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON COLUMNS, \n"
-            + "Hierarchize(Union(Union(Crossjoin({[Promotion Media].[All Media]}, {[Product].[All Products]}), \n"
-            + "Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].Children)), Crossjoin({[Promotion Media].[All Media]}, [Product].[All Products].[Drink].Children))) ON ROWS \n"
+            "select {[Measures].[Unit Sales],"
+            + " [Measures].[Store Cost],"
+            + " [Measures].[Store Sales]} ON COLUMNS, \n"
+            + "Hierarchize(Union(Union(Crossjoin("
+            + "{[Promotion Media].[All Media]},"
+            + " {[Product].[All Products]}), \n"
+            + "Crossjoin({[Promotion Media].[All Media]},"
+            + " [Product].[All Products].Children)),"
+            + " Crossjoin({[Promotion Media].[All Media]},"
+            + " [Product].[All Products].[Drink].Children))) ON ROWS \n"
             + "from [Sales] where [Time].[1997].[Q4].[12]");
 
         // [Promotion Media].[All Media], [Product].[All
@@ -450,7 +457,10 @@ public class DrillThroughTest extends FoodMartTestCase {
             "with set [Date Range] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}'\n"
             + "member [Time].[Date Range] as 'Aggregate([Date Range])'\n"
             + "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
-            + "Hierarchize(Union(Union(Union({[Store].[All Stores]}, [Store].[All Stores].Children), [Store].[All Stores].[USA].Children), [Store].[All Stores].[USA].[CA].Children)) ON ROWS\n"
+            + "Hierarchize(Union(Union(Union({[Store].[All Stores]},"
+            + " [Store].[All Stores].Children),"
+            + " [Store].[All Stores].[USA].Children),"
+            + " [Store].[All Stores].[USA].[CA].Children)) ON ROWS\n"
             + "from [Sales]\n"
             + "where [Time].[Date Range]");
 
@@ -471,8 +481,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store`.`store_state` as `Store State`,"
             + " `store`.`store_city` as `Store City`,"
             + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
+            + " `store`.`store_type` as `Store Name (Store Type)`,"
+            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
@@ -488,14 +498,15 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `promotion`.`promotion_name` as `Promotion Name`,"
             + " `customer`.`country` as `Country`,"
             + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`, "
+            + " `customer`.`city` as `City`,"
+            + " `customer`.`customer_id` as `Name (Key)`,"
+            + " "
             + nameExpStr
             + " as `Name`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
-            + " `customer`.`marital_status` as `Marital Status`,"
-            + " `customer`.`yearly_income` as `Yearly Income`,"
+            + " `customer`.`gender` as `Name (Gender)`,"
+            + " `customer`.`marital_status` as `Name (Marital Status)`,"
+            + " `customer`.`education` as `Name (Education)`,"
+            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
             + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
             + "from `store` =as= `store`,"
             + " `sales_fact_1997` =as= `sales_fact_1997`,"
@@ -516,8 +527,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store`.`store_state` ASC,"
             + " `store`.`store_city` ASC,"
             + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
             + " `store`.`store_type` ASC,"
+            + " `store`.`store_sqft` ASC,"
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
@@ -533,13 +544,14 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `promotion`.`promotion_name` ASC,"
             + " `customer`.`country` ASC,"
             + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC, "
+            + " `customer`.`city` ASC,"
+            + " `customer`.`customer_id` ASC,"
+            + " "
             + nameExpStr
             + " ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
             + " `customer`.`gender` ASC,"
             + " `customer`.`marital_status` ASC,"
+            + " `customer`.`education` ASC,"
             + " `customer`.`yearly_income` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 6815);
@@ -572,10 +584,14 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
             + " and `product_class`.`product_family` = 'Drink' "
-            + "order by `time_by_day`.`the_year` ASC, `product_class`.`product_family` ASC";
+            + "order by `time_by_day`.`the_year` ASC,"
+            + " `product_class`.`product_family` ASC";
 
-        final Cube cube = result.getQuery().getCube();
-        RolapStar star = ((RolapCube) cube).getStar();
+        final RolapCube cube = (RolapCube) result.getQuery().getCube();
+        final RolapStar star =
+            ((RolapStoredMeasure) cube.getMeasuresMembers().get(0))
+                .getStarMeasure()
+                .getStar();
 
         // Adjust expected SQL for dialect differences in FoodMart.xml.
         Dialect dialect = star.getSqlQueryDialect();
@@ -652,7 +668,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `store_ragged`.`store_id` = 19"
             + " and `sales_fact_1997`.`store_id` = `store`.`store_id`"
             + " and `store`.`store_id` = 2 "
-            + "order by `time_by_day`.`the_year` ASC, `store_ragged`.`store_id` ASC, `store`.`store_id` ASC";
+            + "order by `time_by_day`.`the_year` ASC,"
+            + " `store_ragged`.`store_id` ASC,"
+            + " `store`.`store_id` ASC";
 
         getTestContext().assertSqlEquals(expectedSql, sql, 0);
     }
@@ -662,7 +680,8 @@ public class DrillThroughTest extends FoodMartTestCase {
      */
     public void testDrillThroughVirtualCube() {
         Result result = executeQuery(
-            "select Crossjoin([Customers].[All Customers].[USA].[OR].Children, {[Measures].[Unit Sales]}) ON COLUMNS, "
+            "select Crossjoin([Customers].[All Customers].[USA].[OR].Children, "
+            + "{[Measures].[Unit Sales]}) ON COLUMNS, "
             + " [Gender].[All Gender].Children ON ROWS"
             + " from [Warehouse and Sales]"
             + " where [Time].[1997].[Q4].[12]");
@@ -675,7 +694,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `time_by_day`.month_of_year` as `Month`,"
             + " `customer`.`state_province` as `State Province`,"
             + " `customer`.`city` as `City`,"
-            + " `customer`.`gender` as `Gender`,"
+            + " `customer`.`gender` as `Name (Gender)`,"
             + " `sales_fact_1997`.`unit_sales` as `Unit Sales`"
             + " from `time_by_day` =as= `time_by_day`,"
             + " `sales_fact_1997` =as= `sales_fact_1997`,"
@@ -716,7 +735,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             TestContext.createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
-                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Stores\" >\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All Stores\" >\n"
                 + "      <Table name=\"store_ragged\"/>\n"
                 + "      <Level name=\"Store Id\" column=\"store_id\" nameColumn=\"store_id\" ordinalColumn=\"region_id\" uniqueMembers=\"true\">\n"
                 + "     </Level>"
@@ -737,8 +756,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `store`.`store_state` as `Store State`,"
             + " `store`.`store_city` as `Store City`,"
             + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
+            + " `store`.`store_type` as `Store Name (Store Type)`,"
+            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
             + " `time_by_day`.`month_of_year` as `Month`,"
@@ -757,40 +776,40 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `customer`.`country` as `Country`,"
             + " `customer`.`state_province` as `State Province`,"
             + " `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`,"
             + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
-            + " `customer`.`marital_status` as `Marital Status`,"
-            + " `customer`.`yearly_income` as `Yearly Income`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales`"
-            + " from `store` =as= `store`,"
+            + " "
+            + nameExpStr
+            + " as `Name`,"
+            + " `customer`.`gender` as `Name (Gender)`,"
+            + " `customer`.`marital_status` as `Name (Marital Status)`,"
+            + " `customer`.`education` as `Name (Education)`,"
+            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
+            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
+            + "from `store` =as= `store`,"
             + " `sales_fact_1997` =as= `sales_fact_1997`,"
             + " `time_by_day` =as= `time_by_day`,"
             + " `product_class` =as= `product_class`,"
             + " `product` =as= `product`,"
             + " `store_ragged` =as= `store_ragged`,"
             + " `promotion` =as= `promotion`,"
-            + " `customer` =as= `customer`"
-            + " where `sales_fact_1997`.`store_id` = `store`.`store_id`"
+            + " `customer` =as= `customer` "
+            + "where `sales_fact_1997`.`store_id` = `store`.`store_id`"
             + " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
             + " and `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`"
             + " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`"
-            + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`"
-            + " order by `store`.`store_country` ASC,"
+            + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
+            + "order by `store`.`store_country` ASC,"
             + " `store`.`store_state` ASC,"
             + " `store`.`store_city` ASC,"
             + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
             + " `store`.`store_type` ASC,"
+            + " `store`.`store_sqft` ASC,"
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
             + " `product_class`.`product_family` ASC,"
             + " `product_class`.`product_department` ASC,"
             + " `product_class`.`product_category` ASC,"
@@ -803,12 +822,15 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `customer`.`country` ASC,"
             + " `customer`.`state_province` ASC,"
             + " `customer`.`city` ASC,"
-            + " " + nameExpStr + " ASC,"
             + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
+            + " "
+            + nameExpStr
+            + " ASC,"
             + " `customer`.`gender` ASC,"
             + " `customer`.`marital_status` ASC,"
+            + " `customer`.`education` ASC,"
             + " `customer`.`yearly_income` ASC";
+
 
         getTestContext().assertSqlEquals(expectedSql, sql, 86837);
     }

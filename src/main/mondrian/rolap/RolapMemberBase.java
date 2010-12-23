@@ -40,6 +40,7 @@ public class RolapMemberBase
     private Comparable orderKey;
     private Boolean isParentChildLeaf;
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     /**
      * Sets a member's parent.
@@ -83,7 +84,8 @@ public class RolapMemberBase
      *
      * @param parentMember Parent member
      * @param level Level this member belongs to
-     * @param key Key to this member in the underlying RDBMS
+     * @param key Key to this member in the underlying RDBMS, per
+     *   {@link RolapMember.Key}
      * @param name Name of this member
      * @param memberType Type of member
      */
@@ -98,6 +100,8 @@ public class RolapMemberBase
         assert !(parentMember instanceof RolapCubeMember)
             || this instanceof RolapCalculatedMember
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
+        assert RolapMember.Key.isValid(key, level)
+            : "invalid key " + key + " for level " + level;
         if (key instanceof byte[]) {
             // Some drivers (e.g. Derby) return byte arrays for binary columns
             // but byte arrays do not implement Comparable
@@ -176,21 +180,6 @@ public class RolapMemberBase
         // Do not use equalsIgnoreCase; unique names should be identical, and
         // hashCode assumes this.
         return this.getUniqueName().equals(that.getUniqueName());
-    }
-
-    void makeUniqueName(HierarchyUsage hierarchyUsage) {
-        if (parentMember == null && key != null) {
-            String n = hierarchyUsage.getName();
-            if (n != null) {
-                String name = keyToString(key);
-                n = Util.quoteMdxIdentifier(n);
-                this.uniqueName = Util.makeFqName(n, name);
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapMember.makeUniqueName: uniqueName=" + uniqueName);
-                }
-            }
-        }
     }
 
     protected void setUniqueName(Object key) {
@@ -463,6 +452,34 @@ public class RolapMemberBase
         return this.key;
     }
 
+    // implement RolapMember
+    public Object getKeyCompact() {
+        return this.key;
+    }
+
+    public List<Object> getKeyAsList() {
+        Object key = getKey();
+        if (key == null) {
+            return Collections.emptyList();
+        } else if (key instanceof Object[]) {
+            Object[] objects = (Object[]) key;
+            return Arrays.asList(objects);
+        } else {
+            return Collections.singletonList(key);
+        }
+    }
+
+    public Object[] getKeyAsArray() {
+        Object key = getKey();
+        if (key == null) {
+            return EMPTY_OBJECT_ARRAY;
+        } else if (key instanceof Object[]) {
+            return (Object[]) key;
+        } else {
+            return new Object[] {key};
+        }
+    }
+
     /**
      * Compares this member to another {@link RolapMemberBase}.
      *
@@ -478,14 +495,14 @@ public class RolapMemberBase
      */
     public int compareTo(Object o) {
         RolapMemberBase other = (RolapMemberBase)o;
-        if (this.key != null && other.key == null) {
-            return 1; // not null is greater than null
-        }
-        if (this.key == null && other.key != null) {
-            return -1; // null is less than not null
-        }
-        // compare by unique name, if both keys are null
-        if (this.key == null && other.key == null) {
+        if (this.key == null || other.key == null) {
+            if (this.key != null) {
+                return 1; // not null is greater than null
+            }
+            if (other.key != null) {
+                return -1; // null is less than not null
+            }
+            // compare by unique name, if both keys are null
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // compare by unique name, if one ore both members are null
@@ -553,9 +570,8 @@ public class RolapMemberBase
 
     public String getPropertyFormattedValue(String propertyName) {
         // do we have a formatter ? if yes, use it
-        Property[] props = getLevel().getProperties();
         Property prop = null;
-        for (Property prop1 : props) {
+        for (Property prop1 : getLevel().attribute.getProperties()) {
             if (prop1.getName().equals(propertyName)) {
                 prop = prop1;
                 break;
@@ -607,8 +623,7 @@ public class RolapMemberBase
             // Getting the members by Level is the fastest way that I could
             // find for getting all of a hierarchy's members.
             List<List<Member>> list = new ArrayList<List<Member>>();
-            Level[] levels = hierarchy.getLevels();
-            for (Level level : levels) {
+            for (Level level : hierarchy.getLevelList()) {
                 List<Member> members =
                     schemaReader.getLevelMembers(level, true);
                 if (members != null) {
@@ -630,9 +645,8 @@ public class RolapMemberBase
         Hierarchy hierarchy)
     {
         int cardinality = 0;
-        Level[] levels = hierarchy.getLevels();
-        for (Level level1 : levels) {
-            cardinality += schemaReader.getLevelCardinality(level1, true, true);
+        for (Level level : hierarchy.getLevelList()) {
+            cardinality += schemaReader.getLevelCardinality(level, true, true);
         }
         return cardinality;
     }

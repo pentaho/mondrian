@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.ScalarType;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.calc.Calc;
@@ -110,29 +111,29 @@ public final class ScenarioImpl implements Scenario {
         // forth.
         final RolapStoredMeasure measure = (RolapStoredMeasure) members.get(0);
         final RolapCube baseCube = measure.getCube();
-        final RolapStar.Measure starMeasure =
-            (RolapStar.Measure) measure.getStarMeasure();
+        final RolapStar.Measure starMeasure = measure.getStarMeasure();
         assert starMeasure != null;
         int starColumnCount = starMeasure.getStar().getColumnCount();
         final BitKey constrainedColumnsBitKey =
             BitKey.Factory.makeBitKey(starColumnCount);
         Object[] keyValues = new Object[starColumnCount];
         for (int i = 1; i < members.size(); i++) {
-            Member member = members.get(i);
-            for (RolapCubeMember m = (RolapCubeMember) member;
-                m != null && !m.isAll();
-                m = m.getParentMember())
+            final RolapCubeMember member = (RolapCubeMember) members.get(i);
+            final List<Object> keyList = member.getKeyAsList();
+            int j = 0;
+            for (RolapSchema.PhysColumn physColumn
+                : member.getLevel().getAttribute().keyList)
             {
-                final RolapCubeLevel level = m.getLevel();
-                RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
+                final RolapStar.Column column =
+                    measure.getMeasureGroup().getRolapStarColumn(
+                        member.getDimension(),
+                        physColumn);
                 if (column != null) {
                     final int bitPos = column.getBitPosition();
-                    keyValues[bitPos] = m.getKey();
+                    keyValues[bitPos] = keyList.get(j);
                     constrainedColumnsBitKey.set(bitPos);
                 }
-                if (level.areMembersUnique()) {
-                    break;
-                }
+                ++j;
             }
         }
 
@@ -222,15 +223,24 @@ public final class ScenarioImpl implements Scenario {
      * Returns the number of atomic cells that contribute to the current
      * cell.
      *
+     * <p>If the current cell is based on a calculated measure, returns null.
+     *
      * @param evaluator Evaluator
      * @return Number of atomic cells in the current cell
      */
     private static double evaluateAtomicCellCount(RolapEvaluator evaluator) {
-        final Object o =
-            evaluator.push(
-                evaluator.getCube().getAtomicCellCountMeasure())
-                .evaluateCurrent();
-        return ((Number) o).doubleValue();
+        final Member measure = evaluator.getMembers()[0];
+        if (measure instanceof RolapStoredMeasure) {
+            RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
+            RolapMeasureGroup measureGroup = storedMeasure.getMeasureGroup();
+            final Object o =
+                evaluator.push(
+                    measureGroup.getAtomicCellCountMeasure())
+                    .evaluateCurrent();
+            return ((Number) o).doubleValue();
+        } else {
+            return FunUtil.DoubleNull;
+        }
     }
 
     /**
@@ -262,7 +272,7 @@ public final class ScenarioImpl implements Scenario {
         int k = 0;
         for (Member member : memberList) {
             if (member.isMeasure()) {
-                member = cube.factCountMeasure;
+                member = ((RolapStoredMeasure) member).getMeasureGroup().factCountMeasure;
                 assert member != null
                     : "fact count measure is required for writeback cubes";
             }
@@ -303,7 +313,7 @@ public final class ScenarioImpl implements Scenario {
 
     /**
      * Created by a call to {@link
-     * org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
+     * org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object...)},
      * records that a cell's value has been changed.
      *
      * <p>From this, other cell values can be modified as they are read into
@@ -445,7 +455,7 @@ public final class ScenarioImpl implements Scenario {
      *
      * <p>When evaluated, replaces the value of a cell with the value overridden
      * by a writeback value, per
-     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
+     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object...)},
      * and modifies the values of ancestors or descendants of such cells
      * according to the allocation policy.
      */

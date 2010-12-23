@@ -536,8 +536,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return
-            (SmartMemberReader) hierarchy.createMemberReader(
-                schemaReader.getRole());
+            (SmartMemberReader) RolapHierarchy.createMemberReader(
+                hierarchy, schemaReader.getRole());
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
@@ -556,8 +556,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getRolapHierarchy()
-            .createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) RolapHierarchy
+            .createMemberReader(hierarchy.getRolapHierarchy(), schemaReader.getRole());
     }
 
     RolapStar getStar(String starName) {
@@ -567,7 +567,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
     RolapStar getStar(Connection con, String starName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
-        return cube.getStar();
+        return ((RolapStoredMeasure) cube.getMeasuresMembers().get(0))
+            .getStarMeasure().getStar();
     }
 }
 

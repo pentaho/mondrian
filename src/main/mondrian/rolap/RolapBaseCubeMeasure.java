@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
 import java.util.*;
@@ -27,15 +26,12 @@ import java.util.*;
  */
 public class RolapBaseCubeMeasure
     extends RolapMemberBase
-    implements RolapStoredMeasure
+    implements RolapStoredMeasure, RolapMemberInCube
 {
-    private static final List<String> datatypeList =
-        Arrays.asList("Integer", "Numeric", "String");
-
     /**
      * For SQL generator. Column which holds the value of the measure.
      */
-    private final MondrianDef.Expression expression;
+    private final RolapSchema.PhysExpr expression;
 
     /**
      * For SQL generator. Has values "SUM", "COUNT", etc.
@@ -47,39 +43,43 @@ public class RolapBaseCubeMeasure
 
     /**
      * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
-     * member is computed. Untyped, because another implementation might store
-     * it somewhere else.
+     * member is computed.
      */
-    private Object starMeasure;
+    private RolapStar.Measure starMeasure;
 
     private CellFormatter formatter;
+
+    private final RolapMeasureGroup measureGroup;
+    private final Dialect.Datatype datatype;
 
     /**
      * Creates a RolapBaseCubeMeasure.
      *
      * @param cube Cube
+     * @param measureGroup Measure group that this measure belongs to
      * @param parentMember Parent member
      * @param level Level this member belongs to
      * @param name Name of this member
      * @param caption Caption
      * @param description Description
      * @param formatString Format string
-     * @param expression Expression
-     * @param aggregatorName Aggregator
+     * @param expression Expression (or null if not calculated)
+     * @param aggregator Aggregator
      * @param datatype Data type
      * @param annotationMap Annotations
      */
     RolapBaseCubeMeasure(
         RolapCube cube,
+        RolapMeasureGroup measureGroup,
         RolapMember parentMember,
         RolapLevel level,
         String name,
         String caption,
         String description,
         String formatString,
-        MondrianDef.Expression expression,
-        String aggregatorName,
-        String datatype,
+        RolapSchema.PhysExpr expression,
+        final RolapAggregator aggregator,
+        Dialect.Datatype datatype,
         Map<String, Annotation> annotationMap)
     {
         super(parentMember, level, name, null, MemberType.MEASURE);
@@ -87,12 +87,20 @@ public class RolapBaseCubeMeasure
         this.cube = cube;
         this.annotationMap = annotationMap;
         this.caption = caption;
+        this.measureGroup = measureGroup;
+        assert measureGroup.getCube() == cube;
+        RolapSchema.PhysRelation factRelation = measureGroup.getFactRelation();
+        assert factRelation != null;
+        assert !(expression instanceof RolapSchema.PhysColumn)
+            || (((RolapSchema.PhysColumn) expression).relation == factRelation)
+            : "inconsistent fact: " + expression + " vs. " + factRelation;
         this.expression = expression;
         if (description != null) {
             setProperty(
                 Property.DESCRIPTION.name,
                 description);
         }
+        this.aggregator = aggregator;
         if (formatString == null) {
             formatString = "";
         }
@@ -100,42 +108,12 @@ public class RolapBaseCubeMeasure
             Property.FORMAT_EXP.name,
             Literal.createString(formatString));
 
-        // Validate aggregator.
-        this.aggregator =
-            RolapAggregator.enumeration.getValue(aggregatorName, false);
-        if (this.aggregator == null) {
-            StringBuilder buf = new StringBuilder();
-            for (String aggName : RolapAggregator.enumeration.getNames()) {
-                if (buf.length() > 0) {
-                    buf.append(", ");
-                }
-                buf.append('\'');
-                buf.append(aggName);
-                buf.append('\'');
-            }
-            throw MondrianResource.instance().UnknownAggregator.ex(
-                aggregatorName,
-                buf.toString());
-        }
-
-        setProperty(Property.AGGREGATION_TYPE.name, aggregator);
-        if (datatype == null) {
-            if (aggregator == RolapAggregator.Count
-                || aggregator == RolapAggregator.DistinctCount)
-            {
-                datatype = "Integer";
-            } else {
-                datatype = "Numeric";
-            }
-        }
-        // todo: End-user error.
-        Util.assertTrue(
-            RolapBaseCubeMeasure.datatypeList.contains(datatype),
-            "invalid datatype " + datatype);
-        setProperty(Property.DATATYPE.name, datatype);
+        setProperty(Property.AGGREGATION_TYPE.name, this.aggregator);
+        this.datatype = datatype;
+        setProperty(Property.DATATYPE.name, datatype.name());
     }
 
-    public MondrianDef.Expression getMondrianDefExpression() {
+    public RolapSchema.PhysExpr getExpr() {
         return expression;
     }
 
@@ -147,6 +125,10 @@ public class RolapBaseCubeMeasure
         return cube;
     }
 
+    public RolapMeasureGroup getMeasureGroup() {
+        return measureGroup;
+    }
+
     public CellFormatter getFormatter() {
         return formatter;
     }
@@ -155,11 +137,11 @@ public class RolapBaseCubeMeasure
         this.formatter = formatter;
     }
 
-    public Object getStarMeasure() {
+    public RolapStar.Measure getStarMeasure() {
         return starMeasure;
     }
 
-    void setStarMeasure(Object starMeasure) {
+    void setStarMeasure(RolapStar.Measure starMeasure) {
         this.starMeasure = starMeasure;
     }
 
@@ -169,14 +151,7 @@ public class RolapBaseCubeMeasure
     }
 
     public Dialect.Datatype getDatatype() {
-        Object datatype = getPropertyValue(Property.DATATYPE.name);
-        try {
-            return Dialect.Datatype.valueOf((String) datatype);
-        } catch (ClassCastException e) {
-            return Dialect.Datatype.String;
-        } catch (IllegalArgumentException e) {
-            return Dialect.Datatype.String;
-        }
+        return datatype;
     }
 }
 

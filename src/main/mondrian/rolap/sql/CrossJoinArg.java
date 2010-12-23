@@ -9,9 +9,7 @@
 */
 package mondrian.rolap.sql;
 
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.List;
@@ -20,6 +18,8 @@ import java.util.List;
  * "Light version" of a {@link mondrian.rolap.sql.TupleConstraint},
  * represents one of
  * member.children, level.members, member.descendants, {enumeration}.
+ *
+ * @version $Id$
  */
 public interface CrossJoinArg {
     CrossJoinArg[] EMPTY_ARRAY = new CrossJoinArg[0];
@@ -30,7 +30,7 @@ public interface CrossJoinArg {
 
     void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar);
 
     boolean isPreferInterpreter(boolean joinArg);

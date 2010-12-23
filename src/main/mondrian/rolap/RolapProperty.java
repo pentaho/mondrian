@@ -10,13 +10,8 @@
 */
 package mondrian.rolap;
 
-import java.lang.reflect.Constructor;
-
-import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
 import mondrian.olap.PropertyFormatter;
-import mondrian.olap.Util;
-import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 
@@ -30,64 +25,34 @@ class RolapProperty extends Property {
 
     private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
 
-    /** Array of RolapProperty of length 0. */
-    static final RolapProperty[] emptyArray = new RolapProperty[0];
-
     private final PropertyFormatter formatter;
     private final String caption;
-    private final boolean dependsOnLevelValue;
 
-    /** The column or expression which yields the property's value. */
-    private final MondrianDef.Expression exp;
-
+    final RolapAttribute attribute;
 
     /**
      * Creates a RolapProperty.
      *
      * @param name Name of property
+     * @param attribute Attribute this property is based on; or null if it is
+     *    an intrinsic property of a level, e.g. level name
      * @param type Datatype
-     * @param exp Expression for property's value; often a literal
-     * @param formatterDef Name of formatter class (must implement
-     *                     {@link PropertyFormatter}), or null
+     * @param formatter Formatter, or null
      * @param caption Caption
      * @param internal Whether property is internal
      */
     RolapProperty(
         String name,
+        RolapAttribute attribute,
         Datatype type,
-        MondrianDef.Expression exp,
-        String formatterDef,
+        PropertyFormatter formatter,
         String caption,
-        Boolean dependsOnLevelValue,
         boolean internal)
     {
         super(name, type, -1, internal, false, false, null);
-        this.exp = exp;
+        this.attribute = attribute;
         this.caption = caption;
-        this.formatter = makePropertyFormatter(formatterDef);
-        this.dependsOnLevelValue =
-            dependsOnLevelValue != null && dependsOnLevelValue;
-    }
-
-    private PropertyFormatter makePropertyFormatter(String formatterDef) {
-        if (!Util.isEmpty(formatterDef)) {
-            // there is a special property formatter class
-            try {
-                Class<PropertyFormatter> clazz =
-                    (Class<PropertyFormatter>) Class.forName(formatterDef);
-                Constructor<PropertyFormatter> ctor = clazz.getConstructor();
-                return ctor.newInstance();
-            } catch (Exception e) {
-                throw
-                    MondrianResource.instance().PropertyFormatterLoadFailed.ex(
-                        formatterDef, name, e);
-            }
-        }
-        return null;
-    }
-
-    MondrianDef.Expression getExp() {
-        return exp;
+        this.formatter = formatter;
     }
 
     public PropertyFormatter getFormatter() {
@@ -115,7 +80,7 @@ class RolapProperty extends Property {
      * as MySQL.</p>
      */
     public boolean dependsOnLevelValue() {
-        return dependsOnLevelValue;
+        return true;
     }
 }
 

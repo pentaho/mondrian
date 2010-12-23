@@ -11,9 +11,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.olap.MondrianDef;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,8 +68,11 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         String columnName = column.getName();
         if (columnName != null) {
             // nothing
-        } else if (column.getExpression() instanceof MondrianDef.Column) {
-            columnName = ((MondrianDef.Column) column.getExpression()).name;
+        } else if (column.getExpression()
+            instanceof RolapSchema.PhysRealColumn)
+        {
+            columnName =
+                ((RolapSchema.PhysRealColumn) column.getExpression()).name;
         } else {
             columnName = "c" + Integer.toString(columnNames.size());
         }

@@ -259,23 +259,21 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
         public RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object value,
+            Object key,
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,
-            Object key,
-            int column) throws SQLException
+            SqlTupleReader.ColumnLayout columnLayout)
+            throws SQLException
         {
             return substitute(
                 memberReader.getMemberBuilder().makeMember(
                     desubstitute(parentMember),
-                    childLevel,
-                    value,
+                    childLevel, key,
                     captionValue,
                     parentChild,
                     stmt,
-                    key,
-                    column));
+                    columnLayout));
         }
 
         public RolapMember allMember() {

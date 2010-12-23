@@ -550,7 +550,7 @@ public class NativizeSetFunDef extends FunDefBase {
             }
 
             for (Dimension dim : dimensions) {
-                Level level = dim.getHierarchy().getLevels()[0];
+                Level level = dim.getHierarchy().getLevelList().get(0);
                 formulas.add(createSentinelFormula(level));
             }
 
@@ -692,7 +692,8 @@ public class NativizeSetFunDef extends FunDefBase {
                         element = ((MemberExpr) curr).getMember();
                     }
                     if (element != null) {
-                        Level level = element.getHierarchy().getLevels()[0];
+                        Level level =
+                            element.getHierarchy().getLevelList().get(0);
                         Id memberId = createSentinelId(level);
                         Formula formula =
                             query.findFormula(memberId.toString());

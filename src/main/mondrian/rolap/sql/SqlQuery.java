@@ -13,11 +13,11 @@
 
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapSchema;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
@@ -235,7 +235,7 @@ public class SqlQuery {
      * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
      * @param filter Extra filter condition, or null
-     * @param hints table optimization hints, if any
+     * @param hintMap table optimization hints, if any
      * @param failIfExists Whether to throw a RuntimeException if from clause
      *   already contains this alias
      *
@@ -247,7 +247,7 @@ public class SqlQuery {
         final String name,
         final String alias,
         final String filter,
-        final Map hints,
+        final Map<String, String> hintMap,
         final boolean failIfExists)
     {
         if (fromAliases.contains(alias)) {
@@ -274,7 +274,7 @@ public class SqlQuery {
         }
 
         if (this.allowHints) {
-            dialect.appendHintsAfterFromClause(buf, hints);
+            dialect.appendHintsAfterFromClause(buf, hintMap);
         }
 
         from.add(buf.toString());
@@ -303,42 +303,41 @@ public class SqlQuery {
      * @param relation Relation to add
      * @param alias Alias of relation. If null, uses relation's alias.
      * @param failIfExists Whether to fail if relation is already present
-     * @return true, if relation *was* added to query
+     * @return Whether relation was added to query
      */
     public boolean addFrom(
-        final MondrianDef.RelationOrJoin relation,
+        final RolapSchema.PhysRelation relation,
         final String alias,
         final boolean failIfExists)
     {
-        if (relation instanceof MondrianDef.View) {
-            final MondrianDef.View view = (MondrianDef.View) relation;
+        Util.deprecated("alias param probably not necessary", false);
+        Util.deprecated(
+            "adopt visitor pattern and replace 'instanceof' below", false);
+        if (relation instanceof RolapSchema.PhysView) {
+            final RolapSchema.PhysView view = (RolapSchema.PhysView) relation;
             final String viewAlias =
                 (alias == null)
                 ? view.getAlias()
                 : alias;
-            final String sqlString = view.getCodeSet().chooseQuery(dialect);
+            final String sqlString = view.getSqlString();
             return addFromQuery(sqlString, viewAlias, false);
 
-        } else if (relation instanceof MondrianDef.InlineTable) {
-            final MondrianDef.Relation relation1 =
-                RolapUtil.convertInlineTableToRelation(
-                    (MondrianDef.InlineTable) relation, dialect);
-            return addFrom(relation1, alias, failIfExists);
-
-        } else if (relation instanceof MondrianDef.Table) {
-            final MondrianDef.Table table = (MondrianDef.Table) relation;
+        } else if (relation instanceof RolapSchema.PhysTable) {
+            final RolapSchema.PhysTable table =
+                (RolapSchema.PhysTable) relation;
             final String tableAlias =
                 (alias == null)
                 ? table.getAlias()
                 : alias;
             return addFromTable(
-                table.schema,
-                table.name,
+                table.getSchemaName(),
+                table.getName(),
                 tableAlias,
-                table.getFilter(),
+                /*table.getFilter()*/null,
                 table.getHintMap(),
                 failIfExists);
 
+            /*
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
             final String leftAlias = join.getLeftAlias();
@@ -358,8 +357,9 @@ public class SqlQuery {
                 addWhere(buf.toString());
             }
             return added;
-
+*/
         } else {
+            Util.deprecated("remove above commented section", false);
             throw Util.newInternal("bad relation type " + relation);
         }
     }
@@ -425,9 +425,9 @@ public class SqlQuery {
     }
 
     public void addWhere(
-            final String exprLeft,
-            final String exprMid,
-            final String exprRight)
+        final String exprLeft,
+        final String exprMid,
+        final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
         StringBuilder buf = new StringBuilder(len);
@@ -439,6 +439,7 @@ public class SqlQuery {
         addWhere(buf.toString());
     }
 
+    /*
     public void addWhere(RolapStar.Condition joinCondition) {
         String left = joinCondition.getLeft().getTableAlias();
         String right = joinCondition.getRight().getTableAlias();
@@ -449,6 +450,7 @@ public class SqlQuery {
                 joinCondition.getRight(this));
         }
     }
+    */
 
     public void addWhere(final String expression)
     {
@@ -614,6 +616,10 @@ public class SqlQuery {
         groupingFunction.add(columnExpr);
     }
 
+    public static String getBestName(Dialect dialect) {
+        return dialect.getDatabaseProduct().getFamily().name().toLowerCase();
+    }
+
     static class ClauseList extends ArrayList<String> {
         private final boolean allowDups;
 
@@ -726,11 +732,6 @@ public class SqlQuery {
                 throw Util.newError("View has no 'generic' variant");
             }
             return genericCode;
-        }
-
-        private static String getBestName(Dialect dialect) {
-            return dialect.getDatabaseProduct().getFamily().name()
-                .toLowerCase();
         }
     }
 }

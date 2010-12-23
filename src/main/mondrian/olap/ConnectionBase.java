@@ -68,8 +68,8 @@ public abstract class ConnectionBase implements Connection {
     }
 
     /**
-     * Parses a query, with specified function table and the mode for strict
-     * validation(if true then invalid members are not ignored).
+     * Parses a statement, with specified function table and the mode for strict
+     * validation (if true then invalid members are not ignored).
      *
      * <p>This method is only used in testing and by clients that need to
      * support customized parser behavior. That is why this method is not part

@@ -50,7 +50,8 @@ class ResultComparator {
 
         for (Dimension dim : dims) {
             String uniqueName =
-                dim.getHierarchies()[0].getDefaultMember().getUniqueName();
+                dim.getHierarchyList().get(0).getDefaultMember()
+                    .getUniqueName();
             defaultDimMembers.add(uniqueName);
         }
 

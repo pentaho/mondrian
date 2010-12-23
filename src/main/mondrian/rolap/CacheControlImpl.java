@@ -133,7 +133,7 @@ public class CacheControlImpl implements CacheControl {
         final Dimension measuresDimension = cube.getDimensions()[0];
         final List<Member> measures =
             cube.getSchemaReader(null).getLevelMembers(
-                measuresDimension.getHierarchy().getLevels()[0],
+                measuresDimension.getHierarchy().getLevelList().get(0),
                 false);
         return new MemberCellRegion(measures, false);
     }
@@ -185,7 +185,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void flushSchemaCache() {
-        RolapSchema.Pool.instance().clear();
+        RolapSchemaPool.instance().clear();
     }
 
     // todo: document
@@ -195,7 +195,7 @@ public class CacheControlImpl implements CacheControl {
         String jdbcUser,
         String dataSourceStr)
     {
-        RolapSchema.Pool.instance().remove(
+        RolapSchemaPool.instance().remove(
             catalogUrl,
             connectionKey,
             jdbcUser,
@@ -207,7 +207,7 @@ public class CacheControlImpl implements CacheControl {
         String catalogUrl,
         DataSource dataSource)
     {
-        RolapSchema.Pool.instance().remove(
+        RolapSchemaPool.instance().remove(
             catalogUrl,
             dataSource);
     }
@@ -219,7 +219,7 @@ public class CacheControlImpl implements CacheControl {
      */
     public void flushSchema(Schema schema) {
         if (RolapSchema.class.isInstance(schema)) {
-            RolapSchema.Pool.instance().remove((RolapSchema)schema);
+            RolapSchemaPool.instance().remove((RolapSchema)schema);
         } else {
             throw new UnsupportedOperationException(
                 schema.getClass().getName() + " cannot be flushed");
@@ -734,7 +734,7 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public List<Dimension> getDimensionality() {
-            return Collections.singletonList(level.getDimension());
+            return Collections.<Dimension>singletonList(level.getDimension());
         }
 
         public RolapLevel getLevel() {
@@ -1275,7 +1275,7 @@ public class CacheControlImpl implements CacheControl {
                 }
                 RolapMember upperChild = list.get(list.size() - 1);
                 return filter2(
-                    seekLevel, (RolapLevel) level.getChildLevel(),
+                    seekLevel, level.getChildLevel(),
                     lowerChild, upperChild);
             } else {
                 return EmptyMemberSet.INSTANCE;
@@ -1409,10 +1409,7 @@ public class CacheControlImpl implements CacheControl {
             // Change member's properties.
             member = stripMember(member);
             final MemberCache memberCache = getMemberCache(member);
-            final Object cacheKey =
-                memberCache.makeKey(
-                    member.getParentMember(),
-                    member.getKey());
+            final Object cacheKey = member.getKeyCompact();
             final RolapMember cacheMember = memberCache.getMember(cacheKey);
             if (cacheMember == null) {
                 return;
@@ -1447,8 +1444,7 @@ public class CacheControlImpl implements CacheControl {
         // Remove member from cache,
         // and that will remove the parent's children list.
         final MemberCache memberCache = getMemberCache(member);
-        final Object key =
-            memberCache.makeKey(previousParent, member.getKey());
+        final Object key = member.getKeyCompact();
         memberCache.removeMember(key);
 
         // Cells for member and its ancestors are now invalid. It's sufficient
@@ -1472,8 +1468,7 @@ public class CacheControlImpl implements CacheControl {
         // and that will remove the parent's children list. Children lists
         // of its existing children can remain in cache.
         final MemberCache memberCache = getMemberCache(member);
-        final Object parentKey =
-            memberCache.makeKey(parent.getParentMember(), parent.getKey());
+        final Object parentKey = parent.getKeyCompact();
         memberCache.removeMember(parentKey);
 
         // Cells for all of member's ancestors are now invalid. It's sufficient

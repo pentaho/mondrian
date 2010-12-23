@@ -183,10 +183,10 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append(aggStar.getBitKey());
                     buf.append(Util.nl);
                     buf.append("AggStar=");
-                    buf.append(aggStar.getFactTable().getName());
+                    buf.append(aggStar.getAggFactTable().getName());
                     buf.append(Util.nl);
                     for (AggStar.Table.Column column
-                        : aggStar.getFactTable().getColumns())
+                        : aggStar.getAggFactTable().getColumns())
                     {
                         buf.append("   ");
                         buf.append(column);
@@ -364,7 +364,7 @@ System.out.println(buf.toString());
                 // Are there any foreign keys left over. No, can use AggStar.
                 BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
                 for (AggStar.FactTable.Measure measure
-                    : aggStar.getFactTable().getMeasures())
+                    : aggStar.getAggFactTable().getMeasures())
                 {
                     if (measure.isDistinct()) {
                         if (measureBitKey.get(measure.getBitPosition())) {

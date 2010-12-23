@@ -50,7 +50,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "          <Table name=\"employee_closure\"/>\n"
             + "          <Table name=\"employee\" alias=\"employee2\" />\n"
             + "        </Join>\n"
-            + "        <Level name=\"Closure\"  type=\"Numeric\" uniqueMembers=\"false\"\n"
+            + "        <Level name=\"Closure\"  type=\"Numeric\" uniqueMembers=\"true\"\n"
             + "            table=\"employee_closure\" column=\"supervisor_id\"/>\n"
             + "        <Level name=\"Employee\" type=\"Numeric\" uniqueMembers=\"true\"\n"
             + "            table=\"employee_closure\" column=\"employee_id\"/>\n"
@@ -97,8 +97,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     /**
      * Returns a TestContext in which the "HR" cube contains an extra dimension,
      * "EmployeesSnowFlake", which is a joined hierarchy with a closure.
-     * this is almost identical to employee, except we do a join with store
-     * to validate joins with closures work
+     * This is almost identical to employee, except we do a join with store
+     * to validate that joins with closures work.
      */
     private TestContext getEmpSharedClosureTestContext() {
         String sharedClosureDimension =
@@ -137,7 +137,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "          column=\"department_id\"/>"
             + "    </Hierarchy>"
             + "  </Dimension>"
-            + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"warehouse_id\" />\n"
             + "  <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\""
             + "      formatString=\"Currency\"/>"
             + "   <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\""
@@ -837,19 +836,19 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select"
             + " `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`the_month` as `Month`,"
             + " `time_by_day`.`month_of_year` as `Month (Key)`,"
+            + " `time_by_day`.`the_month` as `Month`,"
             + " `store`.`store_country` as `Store Country`,"
             + " `store`.`store_state` as `Store State`,"
             + " `store`.`store_city` as `Store City`,"
             + " `store`.`store_name` as `Store Name`,"
+            + " `store`.`store_type` as `Store Name (Store Type)`,"
             + " `position`.`pay_type` as `Pay Type`,"
-            + " `store`.`store_type` as `Store Type`,"
             + " `employee`.`management_role` as `Management Role`,"
             + " `employee`.`position_title` as `Position Title`,"
             + " `department`.`department_id` as `Department Description`,"
-            + " `employee`.`full_name` as `Employee Id`,"
             + " `employee`.`employee_id` as `Employee Id (Key)`,"
+            + " `employee`.`full_name` as `Employee Id`,"
             + " `salary`.`salary_paid` as `Org Salary` "
             + "from"
             + " `time_by_day` =as= `time_by_day`,"
@@ -869,19 +868,19 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "order by"
             + " `time_by_day`.`the_year` ASC,"
             + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`the_month` ASC,"
             + " `time_by_day`.`month_of_year` ASC,"
+            + " `time_by_day`.`the_month` ASC,"
             + " `store`.`store_country` ASC,"
             + " `store`.`store_state` ASC,"
             + " `store`.`store_city` ASC,"
             + " `store`.`store_name` ASC,"
-            + " `position`.`pay_type` ASC,"
             + " `store`.`store_type` ASC,"
+            + " `position`.`pay_type` ASC,"
             + " `employee`.`management_role` ASC,"
             + " `employee`.`position_title` ASC,"
             + " `department`.`department_id` ASC,"
-            + " `employee`.`full_name` ASC,"
-            + " `employee`.`employee_id` ASC",
+            + " `employee`.`employee_id` ASC,"
+            + " `employee`.`full_name` ASC",
             12);
     }
 
@@ -1130,6 +1129,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * non-closure parent child hierarchies.
      */
     public void testClosureVsNoClosure() {
+        // If parts of this test fail, re-apply change 13552 to the main branch.
+        // I chose not to merge some of its changes. -- jhyde, 2010/6/28.
+
         String cubestart =
             "<Cube name=\"HR4C\">\n"
             + "  <Table name=\"salary\"/>\n"

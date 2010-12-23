@@ -12,7 +12,6 @@
 package mondrian.rolap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,12 +73,12 @@ public class RolapSchemaReader
     public List<Member> getHierarchyRootMembers(Hierarchy hierarchy) {
         final Role.HierarchyAccess hierarchyAccess =
             role.getAccessDetails(hierarchy);
-        final Level[] levels = hierarchy.getLevels();
+        final List<Level> levels = hierarchy.getLevelList();
         final Level firstLevel;
         if (hierarchyAccess == null) {
-            firstLevel = levels[0];
+            firstLevel = levels.get(0);
         } else {
-            firstLevel = levels[hierarchyAccess.getTopLevelDepth()];
+            firstLevel = levels.get(hierarchyAccess.getTopLevelDepth());
         }
         return getLevelMembers(firstLevel, true);
     }
@@ -89,6 +88,7 @@ public class RolapSchemaReader
         if (memberReader == null) {
             memberReader =
                 ((RolapHierarchy) hierarchy).createMemberReader(role);
+            assert memberReader != null : hierarchy;
             hierarchyReaders.put(hierarchy, memberReader);
         }
         return memberReader;
@@ -484,15 +484,16 @@ public class RolapSchemaReader
     }
 
     public List<Member> getLevelMembers(Level level, Evaluator context) {
+        final RolapLevel rolapLevel = (RolapLevel) level;
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(
                 context,
-                new Level[] {level});
+                Collections.singletonList(rolapLevel));
         final MemberReader memberReader =
             getMemberReader(level.getHierarchy());
         List<RolapMember> membersInLevel =
             memberReader.getMembersInLevel(
-                (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
+                rolapLevel, 0, Integer.MAX_VALUE, constraint);
         return Util.cast(membersInLevel);
     }
 
@@ -514,7 +515,7 @@ public class RolapSchemaReader
     public List<Hierarchy> getDimensionHierarchies(Dimension dimension) {
         assert dimension != null;
         final List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
-        for (Hierarchy hierarchy : dimension.getHierarchies()) {
+        for (Hierarchy hierarchy : dimension.getHierarchyList()) {
             switch (role.getAccess(hierarchy)) {
             case NONE:
                 continue;
@@ -530,14 +531,14 @@ public class RolapSchemaReader
         assert hierarchy != null;
         final Role.HierarchyAccess hierarchyAccess =
             role.getAccessDetails(hierarchy);
-        final Level[] levels = hierarchy.getLevels();
+        final List<Level> levels = hierarchy.getLevelList();
         if (hierarchyAccess == null) {
-            return Arrays.asList(levels);
+            return levels;
         }
-        Level topLevel = levels[hierarchyAccess.getTopLevelDepth()];
-        Level bottomLevel = levels[hierarchyAccess.getBottomLevelDepth()];
+        Level topLevel = levels.get(hierarchyAccess.getTopLevelDepth());
+        Level bottomLevel = levels.get(hierarchyAccess.getBottomLevelDepth());
         List<Level> restrictedLevels =
-            Arrays.asList(levels).subList(
+            levels.subList(
                 topLevel.getDepth(), bottomLevel.getDepth() + 1);
         assert restrictedLevels.size() >= 1 : "postcondition";
         return restrictedLevels;
@@ -555,7 +556,7 @@ public class RolapSchemaReader
 
     public boolean isDrillable(Member member) {
         final RolapLevel level = (RolapLevel) member.getLevel();
-        if (level.getParentExp() != null) {
+        if (level.isParentChild()) {
             // This is a parent-child level, so its children, if any, come from
             // the same level.
             //

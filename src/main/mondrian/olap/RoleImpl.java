@@ -365,10 +365,10 @@ public class RoleImpl implements Role {
      * @return element representing all access to a given hierarchy
      */
     public static HierarchyAccess createAllAccess(Hierarchy hierarchy) {
-        final Level[] levels = hierarchy.getLevels();
+        final List<Level> levels = hierarchy.getLevelList();
         return new HierarchyAccessImpl(
-            hierarchy, Access.ALL, levels[0],
-            levels[levels.length - 1], Role.RollupPolicy.FULL);
+            hierarchy, Access.ALL, levels.get(0),
+            levels.get(levels.size() - 1), Role.RollupPolicy.FULL);
     }
 
     /**
@@ -409,11 +409,15 @@ public class RoleImpl implements Role {
             assert access != null;
             this.hierarchy = hierarchy;
             this.access = access;
-            final Level[] levels = hierarchy.getLevels();
-            this.topLevel = (topLevel == null)
-                    ? levels[0] : topLevel;
-            this.bottomLevel = (bottomLevel == null)
-                    ? levels[levels.length - 1] : bottomLevel;
+            final List<Level> levels = hierarchy.getLevelList();
+            this.topLevel =
+                (topLevel == null)
+                    ? levels.get(0)
+                    : topLevel;
+            this.bottomLevel =
+                (bottomLevel == null)
+                    ? levels.get(levels.size() - 1)
+                    : bottomLevel;
             assert rollupPolicy != null;
             this.rollupPolicy = rollupPolicy;
         }

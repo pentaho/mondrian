@@ -307,7 +307,7 @@
 </exception>
 
 <exception id="400070" name="LevelMustHaveNameExpression">
-    <text>Level ''{0}'' must have a name expression (a ''column'' attribute or an &lt;Expression&gt; child</text>
+    <text>Level ''{0}'' must have a name expression (a ''column'' attribute or an &lt;Expression&gt; child)</text>
 </exception>
 
 <!-- The 'foreignKey' attribute of is only applicable to private dimensions
@@ -396,6 +396,10 @@
     <text>Cube ''{0}'': Measure ''{1}'' must contain either a source column or a source expression, but not both</text>
 </exception>
 
+<exception id="40265" name="MeasureWithColumnMustHaveTable">
+    <text>Cube ''{0}'': Measure ''{1}'' with source column must also have source table</text>
+</exception>
+
 <exception id="40270" name="DuplicateSchemaParameter">
     <text>Duplicate parameter ''{0}'' in schema</text>
 </exception>
@@ -416,7 +420,11 @@
     <text>Argument to Descendants function must be a member or set of members, not a set of tuples</text>
 </exception>
 
-<exception id="40330" name="CannotDeduceTypeOfSet">
+<exception id="40330" name="FirstLevelMustHaveUniqueMembers">
+    <text>First level of a hierarchy must have unique members</text>
+</exception>
+
+<exception id="40340" name="CannotDeduceTypeOfSet">
     <text>Cannot deduce type of set</text>
 </exception>
 

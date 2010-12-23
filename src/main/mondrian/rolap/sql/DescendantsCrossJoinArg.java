@@ -51,12 +51,12 @@ public class DescendantsCrossJoinArg implements CrossJoinArg {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar)
     {
         if (member != null) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, baseCube, aggStar, member, true);
+                sqlQuery, starSet, aggStar, member, true);
         }
     }
 

@@ -38,6 +38,10 @@ public interface OlapElement {
     String getQualifiedName();
 
     String getCaption();
+
+    /**
+     * Returns the hierarchy of an expression.
+     */
     Hierarchy getHierarchy();
 
     /**

@@ -68,7 +68,8 @@ class MondrianOlap4jCube implements Cube, Named {
         NamedList<MondrianOlap4jHierarchy> list =
             new NamedListImpl<MondrianOlap4jHierarchy>();
         for (mondrian.olap.Dimension dimension : cube.getDimensions()) {
-            for (mondrian.olap.Hierarchy hierarchy : dimension.getHierarchies())
+            for (mondrian.olap.Hierarchy hierarchy
+                : dimension.getHierarchyList())
             {
                 list.add(
                     new MondrianOlap4jHierarchy(

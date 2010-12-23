@@ -31,30 +31,34 @@ public class DefaultMemberChildrenConstraint
     protected DefaultMemberChildrenConstraint() {
     }
 
-    public void addMemberConstraint(
-        SqlQuery sqlQuery,
-        RolapCube baseCube,
-        AggStar aggStar,
-        RolapMember parent)
-    {
-        SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar, parent, true);
+    public RolapStarSet createStarSet() {
+        return new RolapStarSet();
     }
 
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
+        AggStar aggStar,
+        RolapMember parent)
+    {
+        SqlConstraintUtils.addMemberConstraint(
+            sqlQuery, starSet, aggStar, parent, true);
+    }
+
+    public void addMemberConstraint(
+        SqlQuery sqlQuery,
+        RolapStarSet starSet,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar, parents, true, false, exclude);
+            sqlQuery, starSet, aggStar, parents, true, false, exclude);
     }
 
     public void addLevelConstraint(
         SqlQuery query,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapLevel level)
     {

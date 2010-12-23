@@ -1,0 +1,2433 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == Copyright (C) 2001-2002 Kana Software, Inc.
+  == Copyright (C) 2001-2009 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == This file defines an MMM schema for an Olap schema.
+
+Measure group versus RolapStar.
+
+Cube [logical]
+==============
+ * consists of multiple measure groups
+
+Measure group [logical]
+=======================
+Contains:
+  * Measures (map to PhysColumn)
+  * Mapping to RolapDimension (yields a PhysPath)
+
+RolapStar [between logical and physical]
+========================================
+ * Set of columns
+ * Each column has a bit position (contiguous and unique within the star)
+ * Each column has a path to the fact table
+ * Tables and columns are not related to physTable and physColumn
+
+AggStar [same level as RolapStar]
+=================================
+ * Should probably be a subclass of RolapStar, with more information on
+   tables, columns, but currently is not
+
+Aggregate tables are very similar to fact tables of different granularities.
+The main difference is that an aggegate table does not DEFINE a measure; it
+just provides a usage of it. Questions:
+
+1. Do agg tables BELONG TO a measure group? Is it possible to have an agg
+   table (at a high level of aggregation) that contains measures of more than
+   one measure group? Answer: Yes, it seems to make sense. But it would be
+   difficult to define these in the schema, and probably wouldn't be used much
+   in practice.
+
+2. Should we continue to represent agg tables using something at the same
+   level as RolapStar?
+
+PhysColumn, PhysTable [physical]
+================================
+ * table may be real, inline, derived
+ * column may be derived
+ * relationships between tables are used only when a dimension has more than
+   one table (links between dimension and measure group are determined by
+   attribute linkages - a different mechanism)
+ * may be used by several dimensions and measure groups in same schema
+
+Cell request
+============
+
+Currently has a set of RolapStar.Column that constrain it, and a value for each.
+
+Could be a set of (RolapAttribute, {KEY|NAME|propName}, PhysPath}.
+Yuck - mixes levels, and {KEY|NAME|propName} does not scale.
+
+What if RolapStar.Column contains (PhysColumn, PhysPath)?
+
+When you constrain a particular level against a particular measureGroup,
+you iterate over the key columns (each a PhysColumn) of the level's attribute,
+find the full path from the fact table (first from the measureGroup's
+fact table to the dimension's key, then from the dimension's key to each key
+column. Then you lookup a RolapStar.Column with that path.
+
+Mappings:
+(measureGroup, dimension) -> (physPath)        # path to attach dim to mGroup
+level -> attribute                             # level based on attr
+attribute -> set of {physColumn}               # key cols of attribute
+(key: physColumn, root: physCol) -> physPath   # connect key to root of dim
+
+Redundant short-cut mapping:
+(physColumn, dimension, measureGroup)
+  -> (ordinal, physColumn, physPath)
+
+(Given a column, the key of a level's attribute, the dimension it belongs to,
+and the measureGroup it is joining to, the RolapStar.Column gives the path
+from that column to the RolapStar's fact table.
+
+A given RolapStar has a fact table (a physTable) and all paths end there.
+
+It is possible for a PhysColumn to occur more than once within the same
+RolapStar, provided that it has different paths. That means that it has
+come from different dimensions, because if a physColumn is used multiple
+times in the same dimension, it will always have the same path.
+
+In other words, (physColumn, physPath) uniquely identifies a RolapStar.Column.
+
+
+  -->
+<Model
+ name="mondrian"
+ dtdName="mondrian.dtd"
+ className="MondrianDef"
+ packageName="mondrian.olap"
+ importName="mondrian.rolap.sql.SqlQuery; import java.util.*; import org.olap4j.metadata.NamedList"
+ root="Schema"
+ defaultKeepDef="true"
+ version="1.0">
+    <Doc>
+This is the XML model for Mondrian schemas.
+<p/>
+Revision is $Id$
+    </Doc>
+
+    <Class class="CubeElement">
+        <Doc>
+            Child element of a Cube.
+        </Doc>
+    </Class>
+
+    <Class class="LevelElement">
+        <Doc>
+            Child element of a Level.
+        </Doc>
+    </Class>
+
+    <Class class="MeasureElement">
+        <Doc>
+            Child element of a Measure.
+        </Doc>
+    </Class>
+
+    <Class class="CalculatedMemberElement">
+        <Doc>
+            Child element of a CalculatedMember.
+        </Doc>
+    </Class>
+
+    <Class class="NamedSetElement">
+        <Doc>
+            Child element of a NamedSet.
+        </Doc>
+    </Class>
+
+    <Class class="DimensionElement">
+        <Doc>
+            Child element of a Dimension.
+        </Doc>
+    </Class>
+
+    <Class class="NamedElement">
+        <Code><![CDATA[public abstract String getNameAttribute();]]></Code>
+    </Class>
+
+    <Class class="SchemaElement">
+        <Doc>Child element of a Schema.</Doc>
+    </Class>
+
+    <Class class="MeasureGroupElement">
+        <Doc>Child element of a MeasureGroup.</Doc>
+    </Class>
+
+    <Class class="TableElement">
+        <Doc>Child element of a Table.</Doc>
+    </Class>
+
+    <!-- Schema ========================================================== -->
+    <Element type="Schema">
+        <Doc>
+            <p>A schema is a collection of cubes and virtual cubes.
+            It can also contain shared dimensions (for use by those
+            cubes), named sets, roles, and declarations of
+            user-defined functions.</p>
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name of this schema</Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this schema.
+            </Doc>
+        </Attribute>
+        <Attribute name="measuresCaption" required="false">
+            <Doc>
+                Label for the measures dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultRole" required="false">
+            <Doc>The name of the default role for connections to this schema</Doc>
+        </Attribute>
+        <Array name="children" type="SchemaElement">
+            <Doc>
+                Child elements of this Schema. PhysicalSchema (at most once),
+                Dimension, Cube, Role, NamedSet, UserDefinedFunction, Parameter,
+                Annotations (at most once), in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() { return name; }
+            private Children children() {
+                return new Children(
+                    SchemaElement.class,
+                    children,
+                    Cube.class,
+                    Dimension.class,
+                    Role.class,
+                    NamedSet.class,
+                    UserDefinedFunction.class,
+                    Parameter.class,
+                    PhysicalSchema.class,
+                    Annotations.class);
+            }
+            public NamedList<Cube> getCubes() {
+                return children().filterNamed(Cube.class);
+            }
+            public NamedList<Dimension> getDimensions() {
+                return children().only(Dimensions.EMPTY).toList();
+            }
+            public NamedList<Role> getRoles() {
+                return children().filterNamed(Role.class);
+            }
+            public NamedList<NamedSet> getNamedSets() {
+                return children().filterNamed(NamedSet.class);
+            }
+            public NamedList<UserDefinedFunction> getUserDefinedFunctions() {
+                return children().filterNamed(UserDefinedFunction.class);
+            }
+            public NamedList<Parameter> getParameters() {
+                return children().filterNamed(Parameter.class);
+            }
+            public PhysicalSchema getPhysicalSchema() {
+                return children().singleton(PhysicalSchema.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+        }
+
+        // Some static methods.
+        //
+        // To generate this block, we fool XOM's code generation using the
+        // 'injection' kludge of a close brace (above) and open brace (below).
+
+        private static String first(String s0, String s1) {
+            if (s0 != null) {
+                return s0;
+            }
+            return s1;
+        }
+
+        private static <T> T only(Object[] os, Class<T> clazz, T dflt) {
+            T t = null;
+            int count = 0;
+            for (Object o : os) {
+                if (clazz.isInstance(o)) {
+                    t = clazz.cast(o);
+                    ++count;
+                }
+            }
+            switch (count) {
+            case 0:
+                return dflt;
+            case 1:
+                return t;
+            default:
+                throw new RuntimeException(); // TODO: user error
+            }
+        }
+
+        private static <T> List<T> list(Object[] os, Class<T> clazz) {
+            if (os == null) {
+                return Collections.emptyList();
+            }
+            final List<T> list = new ArrayList<T>();
+            for (Object o : os) {
+                if (clazz.isInstance(o)) {
+                    list.add(clazz.cast(o));
+                }
+            }
+            return list;
+        }
+
+        private static <T extends NamedElement> NamedList<T> namedList(Object[] os, Class<T> clazz) {
+            if (os == null) {
+                return org.olap4j.impl.Olap4jUtil.emptyNamedList();
+            }
+            return new NamedListImpl<T>(list(os, clazz));
+        }
+
+        private static <T> List<T> list(T[] ts) {
+            return Arrays.asList(ts);
+        }
+
+        private static <T extends NamedElement> NamedList<T> namedList(T[] ts) {
+            if (ts.length == 0) {
+                return org.olap4j.impl.Olap4jUtil.emptyNamedList();
+            }
+            return new NamedListImpl<T>(list(ts));
+        }
+
+        private static class Children {
+            private final Object[] os;
+            private final Class[] classes;
+
+            private static final Object[] EMPTY = new Object[0];
+
+            <T> Children(Class<T> iface, T[] os, Class<? extends T>... classes) {
+                for (Class clazz : classes) {
+                    if (!iface.isAssignableFrom(clazz)) {
+                        System.out.println(clazz + " should be a " + iface);
+                    }
+                }
+                this.os = os == null ? EMPTY : os;
+                this.classes = classes;
+            }
+
+            <T> List<T> filter(Class<T> clazz) {
+                return list(os, clazz);
+            }
+
+            <T extends NamedElement> NamedList<T> filterNamed(Class<T> clazz) {
+                return namedList(os, clazz);
+            }
+
+            <T> T singleton(Class<T> clazz) {
+                return MondrianDef.only(os, clazz, null);
+            }
+
+            <T> T only(T empty) {
+                return MondrianDef.only(os, (Class<T>) empty.getClass(), empty);
+            }
+        }
+
+        public static class NamedListImpl<T extends NamedElement>
+            extends AbstractList<T>
+            implements NamedList<T>
+        {
+            private final List<T> list;
+
+            public NamedListImpl(List<T> list) {
+                this.list = list;
+            }
+
+            public T get(int index) {
+                return list.get(index);
+            }
+
+            public int size() {
+                return list.size();
+            }
+
+            public T get(String name) {
+                for (T t : this) {
+                    if (t.getNameAttribute().equals(name)) {
+                        return t;
+                    }
+                }
+                return null;
+            }
+
+            public int indexOfName(String name) {
+                for (int i = 0; i < list.size(); ++i) {
+                    T t = list.get(i);
+                    if (t.getNameAttribute().equals(name)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+        }
+
+        private static class _Dummy {
+
+            ]]>
+        </Code>
+    </Element>
+
+    <!-- Dimension ======================================================== -->
+    <Element type="Dimension" class="NamedElement,SchemaElement,CubeElement">
+        <Doc>
+            A <code>Dimension</code> is a collection of attributes, some them
+            organized into hierarchies.
+
+            <p>Dimensions are either defined at the Schema level, or as part of
+            a Cube.</p>
+        </Doc>
+        <Attribute name="name" required="false">
+            <Doc>
+                Name of this dimension.
+
+                <p>If this dimension is specified in a schema, name must be
+                    specified. If this dimension is specified in a cube,
+                    name is optional; by default, the name is inherited from
+                    the source dimension, but the name can be overridden. This
+                    is necessary when more than one cube dimension is created
+                    from the same schema dimension.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="source" required="false">
+            <Doc>
+                Name of the schema dimension that is the source of this cube
+                dimension. Not valid for a schema dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Dimension's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" required="false">
+            <Doc>
+                The dimension's type may be one of "Standard" or "Time". A
+                <dfn>time</dfn>
+                dimension will allow the use of the MDX time functions (WTD,
+                YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
+                if the dimension is not a time-related dimension. The default
+                value is <code>"Standard"</code>.
+            </Doc>
+            <Value>StandardDimension</Value>
+            <Value>TimeDimension</Value>
+        </Attribute>
+        <Attribute name="table" required="false">
+            <Doc>
+                Default table for Column objects in this Dimension. May be
+                overridden at the Attribute or Column level.
+            </Doc>
+        </Attribute>
+        <Attribute name="key" required="false">
+            <Doc>
+                Name of the attribute that is the key of this dimension.
+                Must be specified, unless this dimension is a use of a schema
+                dimension (that is, the 'source' attribute is set).
+            </Doc>
+        </Attribute>
+        <Array name="children" type="DimensionElement">
+            <Doc>
+                Child elements of this Dimension: Attributes, Hierarchies,
+                Annotations can each occur up to once, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name != null ? name : source;
+            }
+            private Children children() {
+                return new Children(
+                    DimensionElement.class,
+                    children,
+                    Attributes.class,
+                    Hierarchies.class,
+                    Annotations.class);
+            }
+            public NamedList<Attribute> getAttributes() {
+                return children().only(Attributes.EMPTY).toList();
+            }
+            public NamedList<Hierarchy> getHierarchies() {
+                return children().only(Hierarchies.EMPTY).toList();
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Dimensions" class="SchemaElement,CubeElement">
+        <Doc>
+            Array of Dimensions.
+        </Doc>
+        <Array name="array" type="Dimension"/>
+        <Code>
+            <![CDATA[
+            private static final Dimensions EMPTY;
+            static {
+               EMPTY = new Dimensions();
+               EMPTY.array = new Dimension[0];
+            }
+            private NamedList<Dimension> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <!-- Cube ============================================================ -->
+    <Element type="Cube" class="NamedElement,SchemaElement">
+        <Doc>
+            Definition of a cube.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>
+                The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="cache" type="Boolean" default="true">
+            <Doc>
+                Should the Fact table data for this Cube be cached
+                by Mondrian or not. The default action is to cache
+                the data.
+            </Doc>
+        </Attribute>
+        <Attribute name="enabled" type="Boolean"
+                    required="false" default="true">
+            <Doc>
+                Whether element is enabled - if true, then the Cube is
+                realized otherwise it is ignored.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="CubeElement">
+            <Doc>
+                Child elements of this Cube. Annotations, MeasureGroups,
+                Dimensions, CalculatedMembers, NamedSets can each occur at
+                most once, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    CubeElement.class,
+                    children,
+                    Annotations.class,
+                    MeasureGroups.class,
+                    Dimensions.class,
+                    CalculatedMembers.class,
+                    NamedSets.class);
+            }
+            public NamedList<Dimension> getDimensions() {
+                return children().only(Dimensions.EMPTY).toList();
+            }
+            public NamedList<MeasureGroup> getMeasureGroups() {
+                return children().only(MeasureGroups.EMPTY).toList();
+            }
+            public NamedList<CalculatedMember> getCalculatedMembers() {
+                return children().filterNamed(CalculatedMember.class);
+            }
+            public NamedList<NamedSet> getNamedSets() {
+                return children().filterNamed(NamedSet.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Hierarchies" class="DimensionElement">
+        <Doc>A list of Hierarchy elements.</Doc>
+        <Array name="array" type="Hierarchy"/>
+        <Code>
+            <![CDATA[
+            private static final Hierarchies EMPTY;
+            static {
+               EMPTY = new Hierarchies();
+               EMPTY.array = new Hierarchy[0];
+            }
+            private NamedList<Hierarchy> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Attributes" class="DimensionElement">
+        <Doc>A list of Attribute elements.</Doc>
+        <Array name="array" type="Attribute"/>
+        <Code>
+            <![CDATA[
+            private static final Attributes EMPTY;
+            static {
+               EMPTY = new Attributes();
+               EMPTY.array = new Attribute[0];
+            }
+            private NamedList<Attribute> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Attribute" class="DimensionElement,NamedElement">
+        <Doc>TODO:</Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this Attribute.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                Caption of this Attribute.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this Attribute.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="levelType" required="false" default="Regular">
+            <Doc>
+                Whether this is a regular or a time-related level.
+                The value makes a difference to time-related functions
+                such as YTD (year-to-date).
+            </Doc>
+            <Value>Regular</Value>
+            <Value>TimeYears</Value>
+            <Value>TimeHalfYear</Value>
+            <Value>TimeQuarters</Value>
+            <Value>TimeMonths</Value>
+            <Value>TimeWeeks</Value>
+            <Value>TimeDays</Value>
+            <Value>TimeHours</Value>
+            <Value>TimeMinutes</Value>
+            <Value>TimeSeconds</Value>
+            <Value>TimeUndefined</Value>
+        </Attribute>
+
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of values of this attribute.
+                Setting this property improves the performance of
+                MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
+                MDSCHEMA_DIMENSIONS XMLA requests
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="false">
+            <Doc>
+                Default table for Column objects nested within this Attribute.
+            </Doc>
+        </Attribute>
+        <Attribute name="parent" required="false">
+            <Doc>
+                The name of the Attribute that references the ID of the parent
+                member in a parent-child hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="nullValue" required="false">
+            <Doc>
+                Value which identifies null members of this Attribute.
+                Used when defining a parent-child attribute.
+                Typical values are 'NULL' and '0'.
+            </Doc>
+        </Attribute>
+        <Attribute name="keyColumn">
+            <Doc>
+                The name of the column that holds the unique identifier of
+                this Attribute. See also the Key sub-element.
+            </Doc>
+        </Attribute>
+        <Attribute name="nameColumn">
+            <Doc>
+                The name of the column that holds the user identifier of
+                this level. See also the Name sub-element. If neither nameColumn
+                nor Name are specified, defaults to the key.
+            </Doc>
+        </Attribute>
+        <Attribute name="orderByColumn" required="false">
+            <Doc>
+                The name of the column used to sort members. See also the
+                OrderBy sub-element. If neither orderByColumn nor OrderBy are
+                specified, defaults to the key.
+            </Doc>
+        </Attribute>
+        <Attribute name="captionColumn" required="false">
+            <Doc>
+                The name of the column that holds the caption for
+                members. See also the Caption sub-element. If neither
+                captionColumn nor Caption are specified, defaults to the name.
+            </Doc>
+        </Attribute>
+        <Attribute name="datatype" default="String">
+            <Doc>
+                Datatype of this property:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+
+        <Array name="children" type="AttributeElement">
+            <Doc>
+                Child elements. Key, Name, OrderBy, Caption, Closure,
+                Annotations can each occur at most once; Property can occur
+                multiple times.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    AttributeElement.class,
+                    children,
+                    Key.class,
+                    Name.class,
+                    OrderBy.class,
+                    Caption.class,
+                    Closure.class,
+                    Property.class,
+                    Annotations.class);
+            }
+            public NamedList<Property> getProperties() {
+                return children().filterNamed(Property.class);
+            }
+            public Key getKey() {
+                return children().singleton(Key.class);
+            }
+            public Name getName_() {
+                return children().singleton(Name.class);
+            }
+            public OrderBy getOrderBy() {
+                return children().singleton(OrderBy.class);
+            }
+            public Caption getCaption() {
+                return children().singleton(Caption.class);
+            }
+            public Closure getClosure() {
+                return children().singleton(Closure.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+        ]]>
+        </Code>
+    </Element>
+
+    <Class class="AttributeElement">
+        <Doc>
+            Child element of an Attribute.
+        </Doc>
+    </Class>
+
+    <Element type="Hierarchy" class="NamedElement">
+        <Doc>
+            Collection of attributes organized into levels.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="hasAll" type="Boolean" required="false">
+            <Doc>
+                Whether this hierarchy has an 'all' member. Default is true.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberName" required="false">
+            <Doc>
+                Name of the 'all' member. If this attribute is not specified,
+                the all member is named 'All <i>hierarchyName</i>', for
+                example, 'All Store'.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberCaption" required="false">
+            <Doc>
+                A string being displayed instead as the all member's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="allLevelName" required="false">
+            <Doc>
+                Name of the 'all' level. If this attribute is not specified,
+                the all member is named '(All)'.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultMember">
+            <Doc>
+                Unique name of the default member of this hierarchy.
+                If not specified, the default member is the 'all' member,
+                if the hierarchy has one, otherwise the first member of the
+                first level.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string to be displayed in the user interface.
+                If not specified, the hierarchy's name is used.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this hierarchy.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="HierarchyElement">
+            <Doc>
+                Child elements of this Hierarchy. Annotations can occur at most
+                once; Level can occur several times, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    HierarchyElement.class,
+                    children,
+                    Level.class,
+                    Annotations.class);
+            }
+            public NamedList<Level> getLevels() {
+                return children().filterNamed(Level.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Class class="HierarchyElement">
+        <Doc>
+            Child element of a Hierarchy.
+        </Doc>
+    </Class>
+
+    <Element type="Level" class="NamedElement,HierarchyElement">
+        <Attribute name="name" required="false">
+            <Doc>
+                Name of this Level. If not specified, defaults to the name of
+                the source attribute.
+            </Doc>
+        </Attribute>
+        <Attribute name="attribute" required="true">
+            <Doc>
+                Source attribute of this Level. Required. Must be an attribute
+                in this Dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="hideMemberIf" default="Never">
+            <Doc>
+                Condition which determines whether a member of this level
+                is hidden. If a hierarchy has one or more levels with hidden
+                members, then it is possible that not all leaf members are the
+                same distance from the root, and it is termed a <dfn>ragged
+                hierarchy</dfn>.
+
+                <p>Allowable values are:
+                <code>Never</code> (a member always appears; the default);
+                <code>IfBlankName</code> (a member doesn't appear if its name
+                is null, empty or all whitespace); and
+                <code>IfParentsName</code> (a member appears unless its name
+                matches the parent's.</p>
+            </Doc>
+            <Value>Never</Value>
+            <Value>IfBlankName</Value>
+            <Value>IfParentsName</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the member labels being displayed.
+                The class must implement the mondrian.olap.MemberFormatter interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the level's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this level.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="LevelElement">
+            <Doc>
+                Child elements of a Level. Annotations can
+                appear at most once.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return first(name, attribute);
+            }
+            private Children children() {
+                return new Children(
+                    LevelElement.class,
+                    children,
+                    Annotations.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Closure" class="AttributeElement">
+        <Doc>
+            Specifies the transitive closure of a parent-child hierarchy.
+            Optional, but recommended for better performance.
+            The closure is provided as a set of (parent, child) pairs:
+            since it is the transitive closure these are actually (ancestor,
+            descendant) pairs.
+        </Doc>
+        <Attribute name="parentColumn" required="true"/>
+        <Attribute name="childColumn" required="true"/>
+        <Attribute name="table" required="true"/>
+    </Element>
+
+    <Element type="Property" class="NamedElement,AttributeElement">
+        <Doc>
+            Member property.
+        </Doc>
+        <Attribute name="name">
+            <Doc>
+                Name of this property. Defaults to name of attribute.
+            </Doc>
+        </Attribute>
+        <Attribute name="attribute" required="true">
+            <Doc>
+                Source attribute of this Property.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Property's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this Property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the appropriate property value
+                being displayed.
+                The class must implement the mondrian.olap.PropertyFormatter
+                interface.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return first(name, attribute);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Measure" class="NamedElement">
+        <Attribute name="name" required="true">
+            <Doc>Name of this measure.</Doc>
+        </Attribute>
+        <Attribute name="column" required="false">
+            <Doc>
+                Column that is source of this measure's values.
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="false">
+            <Doc>
+                Table that contains column.
+            </Doc>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this measure. For
+                more details, see the <a href="api/mondrian/util/Format.html">mondrian.util.Format</a> class.
+            </Doc>
+        </Attribute>
+        <Attribute name="datatype">
+            <Doc>
+                Datatype of this measure. Valid values are 'String', 'Numeric',
+                'Integer', 'Boolean', 'Date', 'Time' and 'Timestamp'.
+
+                <p/>The default datatype of a measure is
+                'Integer' if the measure's aggregator is 'count' or
+                'distinct-count'; otherwise it is 'Numeric'.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="aggregator" required="true">
+            <Doc>
+                Aggregation function. Allowed values are "sum", "count", "min",
+                "max", "avg", and "distinct-count". ("distinct count" is allowed
+                for backwards compatibility, but is deprecated because XML
+                enumerated attributes in a DTD cannot legally contain spaces.)
+            </Doc>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the appropriate cell being displayed.
+                The class must implement the mondrian.olap.CellFormatter interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this measure.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="MeasureElement">
+            <Doc>
+                Child elements of a Measure. Arguments and Annotations can
+                appear at most once, CalculatedMemberProperty can occur zero or
+                more times, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    MeasureElement.class,
+                    children,
+                    Arguments.class,
+                    Annotations.class,
+                    CalculatedMemberProperty.class);
+            }
+            public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
+                return children().filterNamed(CalculatedMemberProperty.class);
+            }
+            public Arguments getArguments() {
+                return children().singleton(Arguments.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="CalculatedMembers" class="CubeElement">
+        <Doc>
+            Collection of CalculatedMember elements.
+        </Doc>
+        <Array name="array" type="CalculatedMember"/>
+        <Code>
+            <![CDATA[
+            private static final CalculatedMembers EMPTY;
+            static {
+               EMPTY = new CalculatedMembers();
+               EMPTY.array = new CalculatedMember[0];
+            }
+            private NamedList<CalculatedMember> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="CalculatedMember" class="NamedElement">
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this calculated member.
+            </Doc>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this member. For
+                more details, see {@link mondrian.util.Format}.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this member.
+                Equivalent to the Formula sub-element.
+            </Doc>
+        </Attribute>
+        <Attribute name="dimension" required="true">
+            <Doc>
+                Name of the dimension which this member belongs to.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="CalculatedMemberElement">
+            <Doc>
+                Child elements of a NamedSet. Formula and Annotations
+                can occur at most once; CalculatedMemberProperty can occur zero
+                or more times, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    CalculatedMemberElement.class,
+                    children,
+                    Annotations.class,
+                    CalculatedMemberProperty.class,
+                    Formula.class);
+            }
+            public Formula getFormula() {
+                return children().singleton(Formula.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
+                return children().filterNamed(CalculatedMemberProperty.class);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="CalculatedMemberProperty" class="NamedElement,MeasureElement,CalculatedMemberElement">
+        <Doc>
+            Property of a calculated member defined against a cube.
+            It must have either an expression or a value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this member property.
+            </Doc>
+        </Attribute>
+         <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name of this calculated
+                member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="expression">
+            <Doc>
+                MDX expression which defines the value of this property.
+                If the expression is a constant string, you could enclose it in
+                quotes, or just specify the 'value' attribute instead.
+            </Doc>
+        </Attribute>
+        <Attribute name="value">
+            <Doc>
+                Value of this property.
+                If the value is not constant, specify the 'expression' attribute
+                instead.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="NamedSets" class="CubeElement">
+        <Doc>
+            Collection of NamedSet elements.
+        </Doc>
+        <Array name="array" type="NamedSet"/>
+        <Code>
+            <![CDATA[
+            private static final NamedSets EMPTY;
+            static {
+               EMPTY = new NamedSets();
+               EMPTY.array = new NamedSet[0];
+            }
+            private NamedList<NamedSet> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="NamedSet" class="NamedElement,SchemaElement">
+        <Doc><![CDATA[
+            <p>Defines a named set which can be used in queries in the
+            same way as a set defined using a WITH SET clause.</p>
+
+            <p>A named set can be defined against a particular cube,
+            or can be global to a schema. If it is defined against a
+            cube, it is only available to queries which use that cube.</p>
+
+            <p>A named set defined against a cube is not inherited by
+            a virtual cubes defined against that cube. (But you can
+            define a named set against a virtual cube.)</p>
+
+            <p>A named set defined against a schema is available in
+            all cubes and virtual cubes in that schema. However, it is
+            only valid if the cube contains dimensions with the names
+            required to make the formula valid.</p>]]>
+
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this named set.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                Caption of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this set.
+                Equivalent to the Formula sub-element.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="CalculatedMemberElement">
+            <Doc>
+                Child elements of a CalculatedMember. Formula and Annotations
+                can occur at most once; CalculatedMemberProperty can occur zero
+                or more times, in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            private Children children() {
+                return new Children(
+                    CalculatedMemberElement.class,
+                    children,
+                    Annotations.class,
+                    CalculatedMemberProperty.class,
+                    Formula.class);
+            }
+            public Formula getFormula() {
+                return children().singleton(Formula.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children().only(Annotations.EMPTY).toList();
+            }
+            public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
+                return children().filterNamed(CalculatedMemberProperty.class);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Formula" class="CalculatedMemberElement">
+        <CData/>
+    </Element>
+
+    <Class class="PhysicalSchemaElement">
+        <Doc>
+            An element that can occur in a PhysicalSchema. A relation (such as
+            a Table or View) or a Link.
+        </Doc>
+    </Class>
+
+    <Class class="Relation" superclass="PhysicalSchemaElement">
+        <Doc>
+            A relation (table, inline table, or view) in a PhysicalSchema.
+        </Doc>
+        <Code>
+            public abstract String getAlias();
+        </Code>
+    </Class>
+
+    <Element type="Query" class="Relation">
+        <Doc>
+            Relation defined by a SQL statement.
+        </Doc>
+        <Attribute name="alias" required="true"/>
+        <Array name="selects" type="SQL" min="1"/>
+        <Code>
+        public String getAlias() {
+            return alias;
+        }
+        </Code>
+    </Element>
+
+    <Element type="SQL" contentModel="mixed">
+        <Attribute name="dialect" required="true" default="generic">
+            <Doc>
+                Dialect of SQL the view is intended for. Valid values include,
+                but are not limited to:
+                <ul>
+                <li>generic</li>
+                <li>access</li>
+                <li>db2</li>
+                <li>derby</li>
+                <li>firebird</li>
+                <li>hsqldb</li>
+                <li>mssql</li>
+                <li>mysql</li>
+                <li>oracle</li>
+                <li>postgres</li>
+                <li>sybase</li>
+                <li>teradata</li>
+                <li>ingres</li>
+                <li>infobright</li>
+                <li>luciddb</li>
+                <li>vertica</li>
+                </ul>
+            </Doc>
+        </Attribute>
+        <Any/>
+        <Code><![CDATA[
+            public int hashCode() {
+                return dialect.hashCode();
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof SQL)) {
+                    return false;
+                }
+                SQL that = (SQL) obj;
+                return this.dialect.equals(that.dialect) &&
+                        Util.equals(this.getCData(), that.getCData());
+            }
+
+            /**
+             * Sets the contents of this node to a single piece of text.
+             */
+            public void setCData(String cdata) {
+                this.children =
+                    new org.eigenbase.xom.NodeDef[] {
+                        new org.eigenbase.xom.TextDef(cdata)};
+            }
+
+            /**
+             * Returns the concatenation of all text elements under this node.
+             */
+            public String getCData() {
+                StringBuilder buf = new StringBuilder();
+                for (org.eigenbase.xom.NodeDef child : children) {
+                    buf.append("x");
+                }
+                return buf.toString();
+            }
+
+            /**
+             * Converts an array of SQL to a
+             * {@link mondrian.rolap.sql.SqlQuery.CodeSet} object.
+             */
+            public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
+                SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();
+                for (SQL sql : sqls) {
+                    codeSet.put(sql.dialect, sql.getCData());
+                }
+                return codeSet;
+            }
+
+            /**
+             * Chooses the SQL that most closes matches the given dialect,
+             * returning the generic SQL if there is no match.
+             */
+            public static SQL choose(SQL[] sqls, mondrian.spi.Dialect dialect) {
+                String best = SqlQuery.getBestName(dialect);
+                SQL genericSql = null;
+                for (SQL sql : sqls) {
+                    if (sql.dialect.equals(best)) {
+                        return sql;
+                    }
+                    if (sql.dialect.equals("generic")) {
+                        genericSql = sql;
+                    }
+                }
+                if (genericSql == null) {
+                    throw Util.newError("View has no 'generic' variant");
+                }
+                return genericSql;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Table" class="Relation">
+        <Attribute name="name" required="true"/>
+        <Attribute name="schema">
+            <Doc>
+                Optional qualifier for <code>table</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="alias">
+            <Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Array name="children" type="TableElement">
+            <Doc>
+                Child elements of this Table.
+
+                <p>ColumnDefs (optional):
+                    Array of columns of this table.
+                    Columns may be present only if the table is part of a
+                    PhysicalSchema. They may be regular or calculated.</p>
+
+                <p>Key (optional):
+                    Array of references to the columns that form the primary key
+                    of this table. </p>
+
+                <p>Hints (optional):
+                    Table optimization hints; may be ignored by dialect. </p>
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            public String getAlias() {
+                return (alias != null) ? alias : name;
+            }
+            private Children children() {
+                return new Children(
+                    TableElement.class,
+                    children,
+                    ColumnDefs.class,
+                    Key.class,
+                    Hints.class);
+            }
+            public List<RealOrCalcColumnDef> getColumnDefs() {
+                return children().only(ColumnDefs.EMPTY).toList();
+            }
+            public Key getKey() {
+                return children().singleton(Key.class);
+            }
+            public List<Hint> getHints() {
+                return children().only(Hints.EMPTY).toList();
+            }
+        ]]></Code>
+    </Element>
+
+    <Element type="Hints" class="TableElement">
+        <Doc>
+            Collection of hints.
+        </Doc>
+        <Array name="array" type="Hint"/>
+        <Code><![CDATA[
+        private static final Hints EMPTY;
+        static {
+           EMPTY = new Hints();
+           EMPTY.array = new Hint[0];
+        }
+        private List<Hint> toList() {
+            return list(array);
+        }
+        ]]></Code>
+    </Element>
+
+    <Element type="Hint">
+        <Doc>
+            Dialect-specific table optimization hints.
+        </Doc>
+        <Attribute name="type" required="true">
+            <Doc>
+                Type of hint, interpreted and applied on a per-dialect basis.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="InlineTable" class="Relation">
+        <attribute name="alias" required="true"/>
+        <Object name="columnDefs" type="ColumnDefs" required="true"/>
+        <Object name="rows" type="Rows" required="true"/>
+        <Code><![CDATA[
+            public String getAlias() {
+                return alias;
+            }
+        ]]></Code>
+    </Element>
+
+    <Element type="ColumnDefs" class="TableElement">
+        <Doc>
+            Holder for an array of RealOrCalcColumnDef elements.
+        </Doc>
+        <Array name="array" type="RealOrCalcColumnDef"/>
+        <Code>
+            <![CDATA[
+            private static final ColumnDefs EMPTY;
+            static {
+               EMPTY = new ColumnDefs();
+               EMPTY.array = new RealOrCalcColumnDef[0];
+            }
+            private List<RealOrCalcColumnDef> toList() {
+                return list(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="RealOrCalcColumnDef" abstract="true">
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" required="false">
+            <Doc>
+                Type of the column. Valid values are
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p>If not present, mondrian retrieves the type from the
+                    underlying database.</p>
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+    </Element>
+
+    <Element type="ColumnDef" class="RealOrCalcColumnDef">
+        <Doc>
+            Column definition for a table or inline table.
+        </Doc>
+    </Element>
+
+    <Element type="CalculatedColumnDef" class="RealOrCalcColumnDef">
+        <Doc>
+            Column definition that is computed using an expression.
+        </Doc>
+        <Object name="expression" type="Expression" required="true"/>
+    </Element>
+
+    <Element type="Rows">
+        <Doc>
+            Holder for an array of Row elements.
+        </Doc>
+        <Array name="array" type="Row"/>
+        <Code>
+            <![CDATA[
+            private static final Rows EMPTY;
+            static {
+               EMPTY = new Rows();
+               EMPTY.array = new Row[0];
+            }
+            private List<Row> toList() {
+                return list(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Row">
+        <Doc>
+            Row definition for an inline table.
+            Must have one Column for each ColumnDef in the InlineTable.
+        </Doc>
+        <Array name="values" type="Value"/>
+    </Element>
+
+    <Element type="Value">
+        <Doc>
+            Column value for an inline table.
+            The CDATA holds the value of the column.
+        </Doc>
+        <Attribute name="column" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <!-- AggTable ======================================================= -->
+    <Element type="AggTable" abstract="true">
+        <Doc>
+            A definition of an aggregate table for a base fact table.
+            This aggregate table must be in the same schema as the
+            base fact table.
+        </Doc>
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Object name="factcount" type="AggFactCount" required="true">
+            <Doc>
+                What does the fact_count column look like.
+            </Doc>
+        </Object>
+        <Array name="ignoreColumns" type="AggIgnoreColumn"/>
+        <Array name="foreignKeys" type="AggForeignKey"/>
+        <Array name="measures" type="AggMeasure"/>
+        <Array name="levels" type="AggLevel"/>
+        <Code>
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+            public AggFactCount getAggFactCount() {
+                return factcount;
+            }
+            public AggIgnoreColumn[] getAggIgnoreColumns() {
+                return ignoreColumns;
+            }
+            public AggForeignKey[] getAggForeignKeys() {
+                return foreignKeys;
+            }
+            public AggMeasure[] getAggMeasures() {
+                return measures;
+            }
+            public AggLevel[] getAggLevels() {
+                return levels;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggName" super="AggTable">
+        <Attribute name="name" required="true">
+            <Doc>
+                The Table name of a Specific aggregate table.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggPattern" super="AggTable">
+        <Attribute name="pattern" required="true">
+            <Doc>
+                A Table pattern used to define a set of aggregate tables.
+            </Doc>
+        </Attribute>
+        <Array name="excludes" type="AggExclude"/>
+        <Code>
+            public String getPattern() {
+                return pattern;
+            }
+            public AggExclude[] getAggExcludes() {
+                return excludes;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggExclude">
+        <Attribute name="pattern" required="false">
+            <Doc>
+                A Table pattern not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="false">
+            <Doc>
+                The Table name not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getPattern() {
+                return pattern;
+            }
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggColumnName" abstract="true">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the fact count column.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getColumnName() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggFactCount" class="AggColumnName"/>
+
+    <Element type="AggIgnoreColumn" super="AggColumnName"/>
+
+    <Element type="AggForeignKey">
+        <Doc>
+            The name of the column mapping from base fact table foreign key
+            to aggregate table foreign key.
+        </Doc>
+        <Attribute name="factColumn" required="true">
+            <Doc>
+                The name of the base fact table foreign key.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="true">
+            <Doc>
+                The name of the aggregate table foreign key.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getFactFKColumnName() {
+                return factColumn;
+            }
+            public String getAggregateFKColumnName() {
+                return aggColumn;
+            }
+        </Code>
+    </Element>
+    <Element type="AggLevel">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the level name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Dimension Hierarchy level.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumnName() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggMeasure">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the measure name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Cube measure.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumn() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+    <Element type="Aggregates" class="MeasureGroupElement">
+        <Doc>
+            Holder element for {@link MondrianDef.AggTable} elements.
+        </Doc>
+        <Array name="array" type="AggTable">
+            <Doc>
+                Aggregate tables.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final Aggregates EMPTY;
+            static {
+               EMPTY = new Aggregates();
+               EMPTY.array = new AggTable[0];
+            }
+            private List<AggTable> toList() {
+                return list(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <!-- Columns and keys ================================================== -->
+    <Element type="Columns">
+        <Doc>
+            Collection of columns.
+        </Doc>
+        <Array name="columns" type="Column"/>
+    </Element>
+
+    <Element type="Key" class="Columns,TableElement,AttributeElement">
+        <Doc>
+            Definition of the key of a dimension or table.
+        </Doc>
+        <Attribute name="name" required="false">
+            <Doc>
+                The name of this key.
+                If no name is supplied, the key is named 'primary'.
+                A table cannot have two keys of the same name.
+                Dimension keys must not have names.
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <Element type="Name" class="Columns,AttributeElement"/>
+    <Element type="OrderBy" class="Columns,AttributeElement"/>
+    <Element type="Caption" class="Columns,AttributeElement"/>
+
+    <Element type="ForeignKey" class="Columns">
+        <Doc>
+            Definition of a foreign key.
+        </Doc>
+    </Element>
+
+    <Element type="Arguments" class="Columns,MeasureElement">
+        <Doc>
+            Arguments to a measure. For most measures, the argument is a single
+            Column. See also the column attribute of the Measure element.
+        </Doc>
+    </Element>
+
+    <Class class="Expression"/>
+
+    <Element type="Column" class="Expression">
+        <Doc>
+            Reference to a column in an expression or key.
+
+            <p>Table name is optional if the column is being used within a
+                table definition. If the column reference is used within a key,
+                the table name, if present, must be the same as the containing
+                table.</p>
+        </Doc>
+        <Attribute name="table">
+            <Doc>
+                Alias of the table which contains this column. Not required if
+                the query only has one table.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            /** Convenience constructor. */
+            public Column(String table, String name) {
+                this();
+                Util.assertTrue(name != null);
+                this.table = table;
+                this.name = name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="ExpressionView" class="Expression">
+        <Doc>
+            A collection of SQL expressions, one per dialect.
+        </Doc>
+        <Array name="expressions" type="SQL" min="1"/>
+    </Element>
+
+    <!-- Access control =================================================== -->
+    <Element type="Role" class="SchemaElement,NamedElement">
+        <Doc>
+            A role defines an access-control profile. It has a series of grants
+            (or denials) for schema elements.
+        </Doc>
+        <Attribute name="name" required="true"/>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Array name="schemaGrants" type="SchemaGrant"/>
+        <Object name="union" type="Union" required="false" />
+        <Code>
+            <![CDATA[
+                public String getNameAttribute() { return name; }
+            ]]>
+        </Code>
+    </Element>
+
+    <Class class="Grant">
+        <Attribute name="access" required="true">
+            <Doc>Values correspond to <code>Access</code>.</Doc>
+            <Value>all</Value>
+            <Value>custom</Value>
+            <Value>none</Value>
+            <Value>all_dimensions</Value>
+        </Attribute>
+    </Class>
+
+    <Element class="Grant" type="SchemaGrant">
+        <Doc>
+            Grants (or denies) this role access to this schema.
+            <code>access</code> may be "all", "all_dimensions", or "none".
+            If <code>access</code> is "all_dimensions", the role has access
+            to all dimensions but still needs explicit access to cubes.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
+        </Doc>
+        <Array name="cubeGrants" type="CubeGrant"/>
+    </Element>
+
+    <Element class="Grant" type="CubeGrant">
+        <Doc>
+            Grants (or denies) this role access to a cube.
+            <code>access</code> may be "all" or "none".
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
+        </Doc>
+        <Attribute name="cube" required="true">
+            <Doc>The unique name of the cube</Doc>
+        </Attribute>
+        <Array name="dimensionGrants" type="DimensionGrant"/>
+        <Array name="hierarchyGrants" type="HierarchyGrant"/>
+    </Element>
+
+    <Element class="Grant" type="DimensionGrant">
+        <Doc>
+            Grants (or denies) this role access to a dimension.
+            <code>access</code> may be "all" or "none".
+            Note that a role is implicitly given access to a dimension when it
+            is given acess to a cube.
+            See also the "all_dimensions" option of the "SchemaGrant" element.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
+        </Doc>
+        <Attribute name="dimension" required="true">
+            <Doc>The unique name of the dimension</Doc>
+        </Attribute>
+    </Element>
+
+    <Element class="Grant" type="HierarchyGrant">
+        <Doc>
+            Grants (or denies) this role access to a hierarchy.
+            <code>access</code> may be "all", "custom" or "none".
+            If <code>access</code> is "custom", you may also specify the
+            attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+            the member grants.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
+        </Doc>
+        <Attribute name="hierarchy" required="true">
+            <Doc>The unique name of the hierarchy</Doc>
+        </Attribute>
+        <Attribute name="topLevel" required="false">
+            <Doc>Unique name of the highest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members up to the top level.</Doc>
+        </Attribute>
+        <Attribute name="bottomLevel" required="false">
+            <Doc>Unique name of the lowest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members down to the leaf level.</Doc>
+        </Attribute>
+        <Attribute name="rollupPolicy" required="false">
+            <Doc>Policy which determines how cell values are calculated if
+                not all of the children of the current cell are visible to
+                the current role. Allowable values are 'full' (the default),
+                'partial', and 'hidden'.</Doc>
+        </Attribute>
+        <Array name="memberGrants" type="MemberGrant"/>
+    </Element>
+
+    <Element type="MemberGrant">
+        <Doc>
+            Grants (or denies) this role access to a member.
+            The children of this member inherit that access.
+            You can implicitly see a member if you can see any of its children.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
+        </Doc>
+        <Attribute name="member" required="true">
+            <Doc>The unique name of the member</Doc>
+        </Attribute>
+        <Attribute name="access" required="true">
+            <Value>all</Value>
+            <Value>none</Value>
+        </Attribute>
+    </Element>
+
+    <!-- Union ============================================================ -->
+    <Element type="Union">
+        <Doc>
+            Body of a Role definition which defines a Role to be the union
+            of several Roles. The RoleUsage elements must refer to Roles that
+            have been declared earlier in this schema file.
+        </Doc>
+        <Array name="roleUsages" type="RoleUsage" required="true"/>
+    </Element>
+
+    <!-- RoleUsage ======================================================== -->
+    <Element type="RoleUsage">
+        <Doc>
+            Usage of a Role in a union Role.
+        </Doc>
+        <Attribute name="roleName" required="true"/>
+    </Element>
+
+    <!-- UserDefinedFunction ============================================== -->
+    <Element type="UserDefinedFunction" class="NamedElement,SchemaElement">
+        <Doc>
+            A <code>UserDefinedFunction</code> is a function which
+            extends the MDX language. It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
+        </Attribute>
+        <Attribute name="className" required="true">
+            <Doc>
+                Name of the class which implemenets this user-defined function.
+                Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+                interface.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+                public String getNameAttribute() { return name; }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Parameter" class="NamedElement,SchemaElement">
+        <Doc>
+            A <code>Parameter</code> defines a schema parameter.
+            It can be referenced from an MDX statement using the <code>ParamRef</code>
+            function and, if not final, its value can be overridden.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" default="String" required="true">
+            <Doc>
+                Indicates the type of this parameter:
+                String, Numeric, Integer, Boolean, Date, Time, Timestamp, or Member.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+            <Value>Member</Value>
+        </Attribute>
+        <Attribute name="modifiable" type="Boolean" required="false" default="true">
+            <Doc>
+                If false, statement cannot change the value of this parameter;
+                the parameter becomes effectively constant (provided that its default
+                value expression always returns the same value).
+                Default is true.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultValue" type="String" required="false">
+            <Doc>
+                Expression for the default value of this parameter.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+                public String getNameAttribute() { return name; }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Annotations" class="SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,CalculatedMemberElement">
+        <Doc>Holder for an array of Annotation elements</Doc>
+        <Array name="array" type="Annotation"/>
+        <Code>
+            <![CDATA[
+            private static final Annotations EMPTY;
+            static {
+               EMPTY = new Annotations();
+               EMPTY.array = new Annotation[0];
+            }
+            private NamedList<Annotation> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Annotation" class="NamedElement">
+        <Doc>
+            User-defined property value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the annotation.
+            </Doc>
+        </Attribute>
+        <CData/>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="PhysicalSchema" class="SchemaElement">
+        <Doc>
+            Definition of the set of tables, columns, and relationships
+            that the cubes and dimensions in this schema are mapped onto.
+        </Doc>
+        <Array name="elements" type="PhysicalSchemaElement" required="false">
+            <Doc>
+                List of tables, other relations, and links in this physical
+                schema. The elements do not need to be in any particular order.
+            </Doc>
+        </Array>
+    </Element>
+
+    <Element type="Link" class="PhysicalSchemaElement">
+        <Doc>
+            Definition of a link between two tables.
+        </Doc>
+        <Attribute name="source" required="true">
+            <Doc>
+                Name of the referenced table.
+                This table must have a primary key defined.
+            </Doc>
+        </Attribute>
+        <Attribute name="target" required="true">
+            <Doc>
+                Name of the referencing table.
+            </Doc>
+        </Attribute>
+        <Attribute name="key" required="false">
+            <Doc>
+                Name of the key in the referenced table.
+                If not specified, assumes 'primary', which is also the name
+                assigned to a key which is not explicitly named.
+            </Doc>
+        </Attribute>
+        <Object name="foreignKey" type="ForeignKey">
+            <Doc>
+                List of foreign key columns.
+
+                <p>These columns must correspond in number, order, and type
+                to the columns of the primary key of the referenced (source)
+                table.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="MeasureGroups" class="CubeElement">
+        <Doc>
+            Holder for one or more MeasureGroup elements.
+        </Doc>
+        <Array name="array" type="MeasureGroup">
+            <Doc>
+                Measure groups.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final MeasureGroups EMPTY;
+            static {
+               EMPTY = new MeasureGroups();
+               EMPTY.array = new MeasureGroup[0];
+            }
+            private NamedList<MeasureGroup> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="MeasureGroup" class="NamedElement">
+        <Doc>
+            Collection of measures that reside in the same fact table.
+        </Doc>
+        <Attribute name="name" required="true" type="String">
+            <Doc>
+                Name of this measure group.
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="true" type="String">
+            <Doc>
+                Name of the table that is the source of the measures in this
+                group.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignoreUnrelatedDimensions" type="Boolean" default="false">
+            <Doc>
+                If true, dimensions that are not related to measures in this
+                measure group will be pushed to top level member.
+            </Doc>
+        </Attribute>
+        <Array name="children" type="MeasureGroupElement">
+            <Doc>
+                Child elements of this MeasureGroup. These are Measures and
+                DimensionLinks (once), Aggregates (at most once), in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() { return name; }
+            private Children children() {
+                return new Children(
+                    MeasureGroupElement.class,
+                    children,
+                    Measures.class,
+                    DimensionLinks.class,
+                    Aggregates.class);
+            }
+            public List<DimensionLink> getDimensionLinks() {
+                return children().only(DimensionLinks.EMPTY).toList();
+            }
+            public NamedList<Measure> getMeasures() {
+                return children().only(Measures.EMPTY).toList();
+            }
+            public List<AggTable> getAggregates() {
+                return children().only(Aggregates.EMPTY).toList();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Measures" class="MeasureGroupElement">
+        <Doc>
+            Holder element for {@link MondrianDef.Measure} elements.
+        </Doc>
+        <Array name="array" type="Measure">
+            <Doc>
+                Measures.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final Measures EMPTY;
+            static {
+               EMPTY = new Measures();
+               EMPTY.array = new Measure[0];
+            }
+            private NamedList<Measure> toList() {
+                return namedList(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="DimensionLinks" class="MeasureGroupElement">
+        <Doc>
+            Holder element for {@link MondrianDef.DimensionLink} elements.
+        </Doc>
+        <Array name="array" type="DimensionLink">
+            <Doc>
+                Dimension links.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final DimensionLinks EMPTY;
+            static {
+               EMPTY = new DimensionLinks();
+               EMPTY.array = new DimensionLink[0];
+            }
+            private List<DimensionLink> toList() {
+                return list(array);
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="DimensionLink" abstract="true">
+        <Doc>
+            Usage of a {@link MondrianDef.Dimension} by a
+            {@link MondrianDef.MeasureGroup}. Describes how the fact table
+            of the measure group is linked to the dimension table.
+
+            <p>There are subclasses, describing particular ways of linking:
+            RegularDimensionLink and FactDimensionLink.</p>
+        </Doc>
+        <Attribute name="dimension" required="true">
+            <Doc>
+                Name of the dimension that is linked to this measure group.
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <Element type="RegularDimensionLink" class="DimensionLink">
+        <Doc>
+            Dimension that is linked to a measure group by a foreign key
+            from the fact table to the dimension table. This is the most
+            common form of dimension link.
+
+            <p>You may specify the foreign key using either the foreignKeyColumn
+            attribute, or a nested ForeignKey element, but not both. The foreign
+            key must contain the same number and type of columns as the key of
+            the linked dimension's key attribute.</p>
+        </Doc>
+        <Attribute name="foreignKeyColumn">
+            <Doc>
+                Name of the foreign key column in the fact table.
+
+                <p/>This attribute is a shorthand form if the primary key of the
+                dimension is simple (has only one column), and is the key of the
+                leaf level of the dimension. If you use this form, you must not
+                specify the 'ForeignKey' element.
+            </Doc>
+        </Attribute>
+        <!--
+        <Object name="key" type="Key" required="false">
+            <Doc>
+                Array of references to the columns that form the primary key
+                of this dimension.
+
+                <p/>This element should be omitted if you specify the
+                'factColumn' attribute.
+            </Doc>
+        </Object>
+        -->
+        <Object name="foreignKey" type="ForeignKey" required="false">
+            <Doc>
+                Column in the fact table that links to this attribute (or
+                columns, if the attribute has a compound key).
+
+                <p/>This element should be omitted if you specify the
+                'foreignKeyColumn' attribute.
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="FactDimensionLink" class="DimensionLink">
+        <Doc>
+            Dimension that is trivially linked to a measure group because
+            the dimension table is the fact table.
+        </Doc>
+    </Element>
+
+    <!--
+    // TODO: Define ManyToManyDimensionLink extends DimensionLink.
+    // "The dimension table is joined to
+    // an intermediate fact table. The intermediate fact table is joined, in
+    // turn, to an intermediate dimension table to which the fact table is
+    // joined".
+    -->
+
+    <!--
+    // TODO: Define ReferencedDimensionLink extends DimensionLink.
+     // "The dimension table is joined to
+    // an intermediate table, which in turn, is joined to the fact table."
+    -->
+
+
+</Model>
+
+<!-- End Mondrian.xml -->

@@ -15,6 +15,8 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
+import java.util.List;
+
 /**
  * Skeleton implementation of {@link Level}
  *
@@ -31,25 +33,25 @@ public abstract class LevelBase
     protected final String uniqueName;
     protected final String description;
     protected final int depth;
-    protected final LevelType levelType;
     protected MemberFormatter memberFormatter;
-    protected int  approxRowCount;
+    protected int approxRowCount;
 
     protected LevelBase(
         Hierarchy hierarchy,
         String name,
         String caption,
         String description,
-        int depth,
-        LevelType levelType)
+        int depth)
     {
+        assert hierarchy != null;
+        assert name != null;
+        assert depth >= 0;
         this.hierarchy = hierarchy;
         this.name = name;
         this.caption = caption;
         this.description = description;
         this.uniqueName = Util.makeFqName(hierarchy, name);
         this.depth = depth;
-        this.levelType = levelType;
     }
 
     /**
@@ -63,10 +65,6 @@ public abstract class LevelBase
     // from Element
     public String getQualifiedName() {
         return MondrianResource.instance().MdxLevelName.str(getUniqueName());
-    }
-
-    public LevelType getLevelType() {
-        return levelType;
     }
 
     public String getUniqueName() {
@@ -95,17 +93,17 @@ public abstract class LevelBase
 
     public Level getChildLevel() {
         int childDepth = depth + 1;
-        Level[] levels = hierarchy.getLevels();
-        return (childDepth < levels.length)
-            ? levels[childDepth]
+        List<Level> levels = hierarchy.getLevelList();
+        return (childDepth < levels.size())
+            ? levels.get(childDepth)
             : null;
     }
 
     public Level getParentLevel() {
         int parentDepth = depth - 1;
-        Level[] levels = hierarchy.getLevels();
+        List<Level> levels = hierarchy.getLevelList();
         return (parentDepth >= 0)
-            ? levels[parentDepth]
+            ? levels.get(parentDepth)
             : null;
     }
 

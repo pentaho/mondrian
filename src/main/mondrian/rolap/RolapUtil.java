@@ -335,9 +335,17 @@ public class RolapUtil {
         // create a member corresponding to the member we're trying
         // to locate so we can use it to hierarchically compare against
         // the members array
+        final RolapLevel level2;
+        if (level instanceof RolapCubeLevel
+            && !(parent instanceof RolapCubeMember))
+        {
+            level2 = ((RolapCubeLevel) level).getRolapLevel();
+        } else {
+            level2 = level;
+        }
         Member searchMember =
-            level.getHierarchy().createMember(
-                parent, level, searchName.name, null);
+            level2.getHierarchy().createMember(
+                parent, level2, searchName.name, null);
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
@@ -389,11 +397,12 @@ public class RolapUtil {
         return bestMatch;
     }
 
-    public static MondrianDef.Relation convertInlineTableToRelation(
-        MondrianDef.InlineTable inlineTable,
+    public static Mondrian3Def.Relation convertInlineTableToRelation(
+        Mondrian3Def.InlineTable inlineTable,
         final Dialect dialect)
     {
-        MondrianDef.View view = new MondrianDef.View();
+        Util.deprecated("obsolete", false);
+        Mondrian3Def.View view = new Mondrian3Def.View();
         view.alias = inlineTable.alias;
 
         final int columnCount = inlineTable.columnDefs.array.length;
@@ -404,9 +413,9 @@ public class RolapUtil {
             columnTypes.add(inlineTable.columnDefs.array[i].type);
         }
         List<String[]> valueList = new ArrayList<String[]>();
-        for (MondrianDef.Row row : inlineTable.rows.array) {
+        for (Mondrian3Def.Row row : inlineTable.rows.array) {
             String[] values = new String[columnCount];
-            for (MondrianDef.Value value : row.values) {
+            for (Mondrian3Def.Value value : row.values) {
                 final int columnOrdinal = columnNames.indexOf(value.column);
                 if (columnOrdinal < 0) {
                     throw Util.newError(
@@ -423,6 +432,27 @@ public class RolapUtil {
                 columnTypes,
                 valueList));
         return view;
+    }
+
+    public static RolapSchema.PhysView convertInlineTableToRelation(
+        RolapSchema.PhysInlineTable inlineTable,
+        final Dialect dialect)
+    {
+        List<String> columnNames = new ArrayList<String>();
+        List<String> columnTypes = new ArrayList<String>();
+        for (RolapSchema.PhysColumn col : inlineTable.columnsByName.values()) {
+            columnNames.add(col.name);
+            columnTypes.add(col.datatype.name());
+        }
+        final String sql =
+            dialect.generateInline(
+                columnNames,
+                columnTypes,
+                inlineTable.rowList);
+        return new RolapSchema.PhysView(
+            inlineTable.alias,
+            inlineTable.physSchema,
+            sql);
     }
 
     /**

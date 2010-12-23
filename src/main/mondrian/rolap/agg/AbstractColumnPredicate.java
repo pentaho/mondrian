@@ -53,7 +53,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
 
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append(constrainedColumn.getExpression().getGenericExpression());
+        buf.append(constrainedColumn.getExpression().toSql());
         describe(buf);
         return buf.toString();
     }

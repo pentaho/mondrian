@@ -74,7 +74,7 @@
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
 
   <property name="log4j.configuration" value="log4j.properties" />
-  
+
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
@@ -238,7 +238,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <available classname="${mondrian.jdbcDrivers}"
            classpathref="project.test.classpath" property="driver.present"/>
 
-  <target name="define-tasks" depends="prepare">
+  <target name="define-tasks"> <!-- depends="prepare" -->
     <taskdef name="javacup" classname="java_cup.JavaCUPTask">
       <classpath refid="project.classpath"/>
     </taskdef>
@@ -492,6 +492,10 @@ compile.java"/>
       <include name="mondrian/**/*.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
+      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
+      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
+      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
@@ -526,9 +530,14 @@ META-INF/**"/>
 
   <target name="def" depends="define-tasks">
     <xomgen
-        model="${java.dir}/mondrian/olap/Mondrian.xml"
+        model="${java.dir}/mondrian/olap/Mondrian4.xml"
         destdir="${java.dir}"
         classname="mondrian.olap.MondrianDef"
+        dtdname="mondrian.dtd"/>
+    <xomgen
+        model="${java.dir}/mondrian/olap/Mondrian.xml"
+        destdir="${java.dir}"
+        classname="mondrian.olap.Mondrian3Def"
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
@@ -616,12 +625,12 @@ META-INF/**"/>
 
   <target name="test-list">
     <property name="test.args" value="-l"/>
-    <antcall target="test-only"/>  
+    <antcall target="test-only"/>
   </target>
 
   <target name="test-nobuild">
     <property name="test.args" value=""/>
-    <antcall target="test-only"/>  
+    <antcall target="test-only"/>
   </target>
 
   <target name="test-only"
@@ -1002,7 +1011,7 @@ buildJdk16.sh" />
     <touch file="demo/derby/foodmart/service.properties"/>
   </target>
 
-    
+
   <target name="load-foodmart"
         depends="info"
         description="load the foodmart database from the data file using the Mondrian loader. Assumes empty database exists">
@@ -1013,14 +1022,14 @@ buildJdk16.sh" />
     <echo message="Driver present: ${driver.present.for.load-foodmart}"/>
     <!--
         Load from demo/FoodMartCreateData.zip directly - no need to unzip
-        
+
         Otherwise override, like
                 <arg value="-inputFile=demo/myData.sql"/>
                 <arg value="-inputFile=demo/myData.zip"/> - will access this without unzipping
 
         You can override the JDBC batch size by setting the same property in your mondrian.properties.
         Current using the default of 50 SQL statements per batch.
-        
+
     -->
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
@@ -1039,7 +1048,7 @@ buildJdk16.sh" />
         <arg value="-outputJdbcSchema=${mondrian.foodmart.jdbcSchema}"/>
         <arg value="-outputJdbcBatchSize=${mondrian.foodmart.loaderBatchSize}"/>
     </java>
-     
+
   </target>
 
   <target name="release" depends="clean-deep, binzip, binDerbyzip"/>
@@ -1570,7 +1579,7 @@ xalan.jar"/>
     </java>
   </target>
 
-  <target name="workbench-dist" 
+  <target name="workbench-dist"
       depends="version,workbench">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.dir}/${workbench.dist.file}"/>

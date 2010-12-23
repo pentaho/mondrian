@@ -12,7 +12,6 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.MondrianDef;
 
 /**
  * A measure which is implemented by a SQL column or SQL expression (as opposed
@@ -28,26 +27,34 @@ import mondrian.olap.MondrianDef;
 public interface RolapStoredMeasure extends RolapMeasure {
     /**
      * Returns the cube this measure belongs to.
+     *
+     * @return cube
      */
     RolapCube getCube();
 
     /**
-     * Returns the column which holds the value of the measure.
+     * Returns the expression that the measure is aggregating.
+     * @return expression
      */
-    MondrianDef.Expression getMondrianDefExpression();
+    RolapSchema.PhysExpr getExpr();
 
     /**
-     * Returns the aggregation function which rolls up this measure: "SUM",
+     * Returns the aggregate function which rolls up this measure: "SUM",
      * "COUNT", etc.
+     *
+     * @return aggregate function
      */
     RolapAggregator getAggregator();
 
     /**
      * Returns the {@link mondrian.rolap.RolapStar.Measure} from which this
-     * member is computed. Untyped, because another implementation might store
-     * it somewhere else.
+     * measure is computed.
+     *
+     * @return star measure
      */
-    Object getStarMeasure();
+    RolapStar.Measure getStarMeasure();
+
+    RolapMeasureGroup getMeasureGroup();
 }
 
 // End RolapStoredMeasure.java

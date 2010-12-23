@@ -227,11 +227,11 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar,
+            sqlQuery, starSet, aggStar,
             members, restrictMemberTypes, true, exclude);
     }
 

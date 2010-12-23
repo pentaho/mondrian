@@ -723,6 +723,88 @@ public class UtilTestCase extends TestCase {
             assertEquals(localeName, Util.parseLocale(localeName).toString());
         }
     }
+
+    public void testDirectedGraph() {
+        final DirectedGraph<String, EdgeImpl<String>> graph =
+            new DirectedGraph<String, EdgeImpl<String>>();
+
+        // empty graph has no paths
+        assertEquals(
+            "[]",
+            graph.findAllPaths("C", "Z").toString());
+        // there is one path of length 0 from C to C, even in the empty graph
+        assertEquals(
+            "[[]]",
+            graph.findAllPaths("C", "C").toString());
+
+        graph.addEdge(new EdgeImpl<String>("A", "B"));
+        graph.addEdge(new EdgeImpl<String>("B", "C"));
+
+        // there is one path of length 0 from A to A
+        assertEquals(
+            "[[]]",
+            graph.findAllPaths("A", "A").toString());
+        assertEquals(
+            "[[A-B]]",
+            graph.findAllPaths("A", "B").toString());
+        assertEquals(
+            "[[A-B, B-C]]",
+            graph.findAllPaths("A", "C").toString());
+        // there are no paths C to A
+        assertEquals(
+            "[]",
+            graph.findAllPaths("C", "A").toString());
+
+        // no paths to nodes outside graph
+        assertEquals(
+            "[]",
+            graph.findAllPaths("C", "Z").toString());
+        assertEquals(
+            "[]",
+            graph.findAllPaths("A", "Z").toString());
+
+        // add alternative path from A-C
+        graph.addEdge(new EdgeImpl<String>("A", "C"));
+        assertEquals(
+            "[[A-B, B-C], [A-C]]",
+            graph.findAllPaths("A", "C").toString());
+
+        graph.addEdge(new EdgeImpl<String>("C", "B"));
+        try {
+            final List<List<EdgeImpl<String>>> pathList =
+                graph.findAllPaths("A", "B");
+            fail("expected error, got " + pathList);
+        } catch (RuntimeException e) {
+            assertEquals(
+                "Graph contains cycle: [A-B, B-C, C-B]",
+                e.getMessage());
+        }
+    }
+
+    /**
+     * Simple implementation of {@link mondrian.util.DirectedGraph.Edge}.
+     */
+    static class EdgeImpl<E> implements DirectedGraph.Edge<E> {
+        final E from;
+        final E to;
+
+        public EdgeImpl(E from, E to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public E getFrom() {
+            return from;
+        }
+
+        public E getTo() {
+            return to;
+        }
+
+        public String toString() {
+            return from + "-" + to;
+        }
+    }
 }
 
 // End UtilTestCase.java

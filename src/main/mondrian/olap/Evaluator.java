@@ -14,6 +14,8 @@
 package mondrian.olap;
 
 import mondrian.calc.ParameterSlot;
+import mondrian.rolap.RolapMeasureGroup;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Date;
@@ -286,18 +288,21 @@ public interface Evaluator {
     Evaluator pushAggregation(List<Member[]> list);
 
     /**
-     * Checks if unrelated dimensions to the measure in the current context
-     * should be ignored
-     * @return boolean
+     * Returns whether dimensions unrelated to the measure in the current
+     * context should be forced to their default member (usually, but not
+     * always, their 'all' member) during aggregation.
+     *
+     * @return Whether to ignore unrelated dimensions
      */
     boolean shouldIgnoreUnrelatedDimensions();
 
     /**
-     * Returns the base (non-virtual) cube that the current measure in the
+     * Returns the measure group that the current measure in the
      * context belongs to.
-     * @return Cube
+     *
+     * @return Measure group
      */
-    Cube getMeasureCube();
+    RolapMeasureGroup getMeasureGroup();
 
     /**
      * If IgnoreMeasureForNonJoiningDimension is set to true and one or more

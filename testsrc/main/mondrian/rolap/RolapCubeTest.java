@@ -30,23 +30,23 @@ import java.util.ArrayList;
 public class RolapCubeTest extends FoodMartTestCase {
 
     public void testProcessFormatStringAttributeToIgnoreNullFormatString() {
-        RolapCube cube =
-            (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+        final RolapSchema schema = (RolapSchema) getConnection().getSchema();
         StringBuilder builder = new StringBuilder();
-        cube.processFormatStringAttribute(
-            new MondrianDef.CalculatedMember(), builder);
+        new RolapSchemaLoader(schema)
+            .processFormatStringAttribute(
+                new MondrianDef.CalculatedMember(), builder);
         assertEquals(0, builder.length());
     }
 
     public void testProcessFormatStringAttribute() {
-        RolapCube cube =
-            (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+        final RolapSchema schema = (RolapSchema) getConnection().getSchema();
         StringBuilder builder = new StringBuilder();
         MondrianDef.CalculatedMember xmlCalcMember =
             new MondrianDef.CalculatedMember();
         String format = "FORMAT";
         xmlCalcMember.formatString = format;
-        cube.processFormatStringAttribute(xmlCalcMember, builder);
+        new RolapSchemaLoader(schema)
+            .processFormatStringAttribute(xmlCalcMember, builder);
         assertEquals(
             "," + Util.nl + "FORMAT_STRING = \"" + format + "\"",
             builder.toString());
@@ -198,7 +198,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                     getDimensionWithName(
                         "Product",
                         salesCube.getDimensions())
-                    .getHierarchy().getLevels()[0]);
+                    .getHierarchy().getLevelList().get(0));
 
             assertEquals(
                 expectedCalculatedMembersFromProduct.length,
@@ -213,7 +213,7 @@ public class RolapCubeTest extends FoodMartTestCase {
                     getDimensionWithName(
                         "Gender",
                         salesCube.getDimensions())
-                    .getHierarchy().getLevels()[0]);
+                    .getHierarchy().getLevelList().get(0));
             assertEquals(0, calculatedMembers.size());
         } finally {
             connection.close();
@@ -245,7 +245,8 @@ public class RolapCubeTest extends FoodMartTestCase {
             members.addAll(storeMembers);
 
             Set<Dimension> nonJoiningDims =
-                salesCube.nonJoiningDimensions(members.toArray(new Member[0]));
+                salesCube.getMeasureGroups().get(0).nonJoiningDimensions(
+                    members.toArray(new Member[members.size()]));
             assertFalse(nonJoiningDims.contains(storeDim));
             assertTrue(nonJoiningDims.contains(warehouseDim));
         } finally {

@@ -561,6 +561,12 @@ public class DialectTest extends TestCase {
         assertInline(
             nameList, typeList2,
             new String[]{"a", "2008-04-29"}, new String[]{"b", "2007-01-02"});
+
+        // empty list
+        final List<String> typeList3 =
+            Arrays.asList("String", "Date", "Numeric");
+        final List<String> nameList3 = Arrays.asList("x", "y", "z");
+        assertInline(nameList3, typeList3);
     }
 
     /**

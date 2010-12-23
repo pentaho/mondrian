@@ -13,9 +13,7 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.Hierarchy;
 import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.HierarchyUsage;
+import mondrian.rolap.*;
 
 import java.util.Iterator;
 
@@ -186,7 +184,7 @@ class DefaultRecognizer extends Recognizer {
      */
     protected boolean matchLevel(
         final Hierarchy hierarchy,
-        final HierarchyUsage hierarchyUsage,
+        final Recognizer.HierarchyUsage hierarchyUsage,
         final RolapLevel level)
     {
         msgRecorder.pushContextName("DefaultRecognizer.matchLevel");
@@ -194,7 +192,11 @@ class DefaultRecognizer extends Recognizer {
             String usagePrefix = hierarchyUsage.getUsagePrefix();
             String hierName = hierarchy.getName();
             String levelName = level.getName();
-            String levelColumnName = getColumnName(level.getKeyExp());
+            assert level.getAttribute().keyList.size() == 1
+                : "TODO: handle composite keys";
+            final RolapSchema.PhysColumn column =
+                level.getAttribute().keyList.get(0);
+            String levelColumnName = getColumnName(column);
 
             Recognizer.Matcher matcher = getRules().getLevelMatcher(
                 usagePrefix, hierName, levelName, levelColumnName);
@@ -205,8 +207,8 @@ class DefaultRecognizer extends Recognizer {
                         aggColumn,
                         hierarchy,
                         hierarchyUsage,
-                        getColumnName(level.getKeyExp()),
-                        getColumnName(level.getKeyExp()),
+                        getColumnName(column),
+                        getColumnName(column),
                         level.getName());
                     return true;
                 }

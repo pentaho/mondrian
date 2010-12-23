@@ -401,9 +401,8 @@ public class StandAlone {
             + " type: " + dimensionType.name());
 
         System.out.println("\t    Description: " + dim.getDescription());
-        Hierarchy[] hierarchies = dim.getHierarchies();
 
-        for (Hierarchy hierarchy : hierarchies) {
+        for (Hierarchy hierarchy : dim.getHierarchyList()) {
             printHierarchy(1, hierarchy);
         }
     }
@@ -419,9 +418,7 @@ public class StandAlone {
             indentString + "    Default member: "
             + hierarchy.getDefaultMember().getUniqueName());
 
-        Level[] levels = hierarchy.getLevels();
-
-        for (Level level : levels) {
+        for (Level level : hierarchy.getLevelList()) {
             printLevel(indent + 1, level);
         }
     }

@@ -9,8 +9,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -31,6 +30,9 @@ import mondrian.mdx.MemberExpr;
  */
 public class RolapNativeTopCount extends RolapNativeSet {
 
+    /**
+     * Creates a RolapNativeTopCount.
+     */
     public RolapNativeTopCount() {
         super.setEnabled(
             MondrianProperties.instance().EnableNativeTopCount.get());
@@ -41,15 +43,28 @@ public class RolapNativeTopCount extends RolapNativeSet {
         boolean ascending;
         Integer topCount;
 
+        /**
+         * Creates TopCountConstraint.
+         *
+         * @param count Count
+         * @param args Cross-join args
+         * @param evaluator Evaluator
+         * @param measureGroupList List of measure groups to join to
+         * @param orderByExpr Expression to order by
+         * @param ascending Whether ascending
+         */
         public TopCountConstraint(
             int count,
-            CrossJoinArg[] args, RolapEvaluator evaluator,
-            Exp orderByExpr, boolean ascending)
+            CrossJoinArg[] args,
+            RolapEvaluator evaluator,
+            List<RolapMeasureGroup> measureGroupList,
+            Exp orderByExpr,
+            boolean ascending)
         {
-            super(args, evaluator, true);
+            super(args, evaluator, measureGroupList, true);
             this.orderByExpr = orderByExpr;
             this.ascending = ascending;
-            this.topCount = new Integer(count);
+            this.topCount = count;
         }
 
         /**
@@ -58,13 +73,13 @@ public class RolapNativeTopCount extends RolapNativeSet {
          * <p>TopCount always needs to join the fact table because we want to
          * evaluate the top count expression which involves a fact.
          */
-        protected boolean isJoinRequired() {
+        public boolean isJoinRequired() {
             return true;
         }
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapCube baseCube,
+            RolapStarSet starSet,
             AggStar aggStar)
         {
             if (orderByExpr != null) {
@@ -81,7 +96,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
                 }
             }
-            super.addConstraint(sqlQuery, baseCube, aggStar);
+            super.addConstraint(sqlQuery, starSet, aggStar);
         }
 
         private boolean deduceNullability(Exp expr) {
@@ -119,19 +134,24 @@ public class RolapNativeTopCount extends RolapNativeSet {
         FunDef fun,
         Exp[] args)
     {
-        boolean ascending;
-
         if (!isEnabled()) {
             return null;
         }
-        if (!TopCountConstraint.isValidContext(
-            evaluator, restrictMemberTypes()))
+        final List<RolapMeasureGroup> measureGroupList =
+            new ArrayList<RolapMeasureGroup>();
+        if (!SqlContextConstraint.checkValidContext(
+            evaluator,
+            true,
+            Collections.<RolapLevel>emptyList(),
+            restrictMemberTypes(),
+            measureGroupList))
         {
             return null;
         }
 
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
         String funName = fun.getName();
+        boolean ascending;
         if ("TopCount".equalsIgnoreCase(funName)) {
             ascending = false;
         } else if ("BottomCount".equalsIgnoreCase(funName)) {
@@ -179,8 +199,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         Exp orderByExpr = null;
         if (args.length == 3) {
             orderByExpr = args[2];
-            String orderBySQL = sql.generateTopCountOrderBy(args[2]);
-            if (orderBySQL == null) {
+            String orderBySql = sql.generateTopCountOrderBy(args[2]);
+            if (orderBySql == null) {
                 return null;
             }
         }
@@ -203,7 +223,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
         TupleConstraint constraint =
             new TopCountConstraint(
-                count, combinedArgs, evaluator, orderByExpr, ascending);
+                count, combinedArgs, evaluator,
+                measureGroupList, orderByExpr, ascending);
         SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;

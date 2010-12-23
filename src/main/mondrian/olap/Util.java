@@ -332,8 +332,51 @@ public class Util extends XOMUtil {
             // Luckily, "F" comes before "T" in the alphabet.
             k1 = k1.toString();
             k2 = k2.toString();
+        } else if (k1 instanceof List) {
+            return compareLists((List) k1, (List) k2);
         }
         return ((Comparable) k1).compareTo(k2);
+    }
+
+    private static int compareLists(List list0, List list1) {
+        final int size0 = list0.size();
+        final int size1 = list1.size();
+        int c = compareIntegers(size0, size1);
+        if (c != 0) {
+            return c;
+        }
+        for (int i = 0; i < size0; i++) {
+            Object o0 = list0.get(i);
+            Object o1 = list1.get(i);
+            c = compareKey(o0, o1);
+            if (c != 0) {
+                return c;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Compares two comparables, handling null values.
+     *
+     * @param t0 First value
+     * @param t1 Second value
+     * @param <T> Value type
+     * @return Comparison, per {@link Comparable#compareTo(Object)}
+     */
+    public static <T extends Comparable<T>> int compare(T t0, T t1) {
+        if (t0 == null) {
+            if (t1 == null) {
+                return 0;
+            } else {
+                // null is less than anything else
+                return -1;
+            }
+        } else if (t1 == null) {
+            return 1;
+        } else {
+            return t0.compareTo(t1);
+        }
     }
 
     /**
@@ -943,16 +986,13 @@ public class Util extends XOMUtil {
      * such level.
      */
     public static Level lookupHierarchyLevel(Hierarchy hierarchy, String s) {
-        final Level[] levels = hierarchy.getLevels();
-        for (Level level : levels) {
+        for (Level level : hierarchy.getLevelList()) {
             if (level.getName().equalsIgnoreCase(s)) {
                 return level;
             }
         }
         return null;
     }
-
-
 
     /**
      * Finds the zero based ordinal of a Member among its siblings.
@@ -1101,8 +1141,12 @@ public class Util extends XOMUtil {
      *
      * @deprecated
      */
-    public static void deprecated(String reason) {
-        throw new UnsupportedOperationException(reason);
+    public static <T> T deprecated(T reason, boolean fail) {
+        if (fail) {
+            throw new UnsupportedOperationException(String.valueOf(reason));
+        } else {
+            return reason;
+        }
     }
 
     public static List<Member> addLevelCalculatedMembers(
@@ -1405,13 +1449,29 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns whether all of the elements in a collection are different.
+     *
+     * <p>Trivially true if the collection is a {@link Set}; if another kind
+     * of collection, such as a {@link List}, internally forms a set to
+     * detect duplicates.
+     *
+     * @param collection Collection
+     * @return true if contents are distinct; false if same element occurs
+     *    more than once
+     */
+    public static <T> boolean isDistinct(Collection<T> collection) {
+        return collection instanceof Set
+            || new HashSet<T>(collection).size() == collection.size();
+    }
+
+    /**
      * Creates a memory-, CPU- and cache-efficient immutable list.
      *
      * @param t Array of members of list
      * @param <T> Element type
      * @return List containing the given members
      */
-    public static <T> List<T> flatList(T[] t) {
+    public static <T> List<T> flatList(T... t) {
         switch (t.length) {
         case 0:
             return Collections.emptyList();
@@ -1496,6 +1556,18 @@ public class Util extends XOMUtil {
                 keySegment.getKeyParts().get(0).getName(),
                 Id.Quoting.KEY);
         }
+    }
+
+    /**
+     * Compares two integers using the same algorithm as
+     * {@link Integer#compareTo(Integer)}.
+     *
+     * @param i0 First integer
+     * @param i1 Second integer
+     * @return Comparison
+     */
+    public static int compareIntegers(int i0, int i1) {
+        return (i0 < i1 ? -1 : (i0 == i1 ? 0 : 1));
     }
 
     public static class ErrorCellValue {
@@ -1751,7 +1823,7 @@ public class Util extends XOMUtil {
                     return old;
                 }
             }
-            list.add(new Pair<String, String>(key, value));
+            list.add(Pair.of(key, value));
             return null;
         }
 
@@ -2006,10 +2078,26 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Computes a hash code from an existing hash code and one or more objects
+     * (any of which may be null).
+     *
+     * @param h Existing hash code
+     * @param a Array of zero or more arguments
+     * @return Hash code of h and each object in array
+     */
+    public static int hashV(int h, Object... a) {
+        return hashArray(h, a);
+    }
+
+    /**
      * Computes a hash code from an existing hash code and an array of objects
      * (which may be null).
+     *
+     * @param h Existing hash code
+     * @param a Array of arguments
+     * @return Hash code of h and each object in array
      */
-    public static int hashArray(int h, Object [] a) {
+    public static int hashArray(int h, Object[] a) {
         // The hashcode for a null array and an empty array should be different
         // than h, so use magic numbers.
         if (a == null) {
@@ -2253,19 +2341,26 @@ public class Util extends XOMUtil {
         return (s.length() == 0) ? null : s;
     }
 
-
     /**
-     * Read URL and return String containing content.
+     * Reads an InputStream into an OutputStream until it returns EOF.
      *
-     * @param urlStr actually a catalog URL
-     * @return String containing content of catalog.
-     * @throws MalformedURLException
-     * @throws IOException
+     * @param is Input stream
+     * @param bufferSize size of buffer to allocate for reading.
+     * @param os Output stream
+     * @throws IOException on IO error
      */
-    public static String readURL(final String urlStr)
+    public static void readFully(
+        final InputStream is,
+        final int bufferSize,
+        ByteArrayOutputStream os)
         throws IOException
     {
-        return readURL(urlStr, null);
+        final byte[] buffer = new byte[bufferSize];
+        int len = is.read(buffer);
+        while (len != -1) {
+            os.write(buffer, 0, len);
+            len = is.read(buffer);
+        }
     }
 
     /**
@@ -2564,6 +2659,45 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Makes a collection of untyped elements appear as a list of strictly typed
+     * elements, by filtering out those which are not of the correct type.
+     *
+     * <p>The returned object is an {@link Iterable},
+     * which makes it ideal for use with the 'foreach' construct. For example,
+     *
+     * <blockquote><code>List&lt;Number&gt; numbers = Arrays.asList(1, 2, 3.14,
+     * 4, null, 6E23);<br/>
+     * for (int myInt : filter(numbers, Integer.class)) {<br/>
+     * &nbsp;&nbsp;&nbsp;&nbsp;print(i);<br/>
+     * }</code></blockquote>
+     *
+     * will print 1, 2, 4.
+     *
+     * @param iterable Source iterable
+     * @param includeFilter Class whose instances to return
+     * @return Iterable that only returns those elements that are instances
+     * of {@code includeFilter}.
+     */
+    public static <E> Iterable<E> filter(
+        final Iterable<?> iterable,
+        final Class<E> includeFilter)
+    {
+        return new Iterable<E>() {
+            public Iterator<E> iterator()
+            {
+                return new Filterator<E>(iterable.iterator(), includeFilter);
+            }
+        };
+    }
+
+    public static <E> Iterable<E> filter(
+        final Object[] array,
+        final Class<E> includeFilter)
+    {
+        return filter(Arrays.asList(array), includeFilter);
+    }
+
+    /**
      * Looks up an enumeration by name, returning null if null or not valid.
      *
      * @param clazz Enumerated type
@@ -2815,7 +2949,10 @@ public class Util extends XOMUtil {
      * @see mondrian.olap.Util.Flat3List
      * @param <T>
      */
-    protected static class Flat2List<T> extends UnsupportedList<T> {
+    protected static class Flat2List<T>
+        extends UnsupportedList<T>
+        implements Comparable<T>
+    {
         private final T t0;
         private final T t1;
 
@@ -2841,6 +2978,14 @@ public class Util extends XOMUtil {
             return 2;
         }
 
+        public String toString() {
+            return "{" + t0 + ", " + t1 + "}";
+        }
+
+        public Iterator<T> iterator() {
+            return Arrays.asList(t0, t1).iterator();
+        }
+
         public boolean equals(Object o) {
             if (o instanceof Flat2List) {
                 Flat2List that = (Flat2List) o;
@@ -2853,6 +2998,16 @@ public class Util extends XOMUtil {
         public int hashCode() {
             int h = t0.hashCode();
             return Util.hash(h, t1.hashCode());
+        }
+
+        public int compareTo(T o) {
+            //noinspection unchecked
+            Flat2List<T> that = (Flat2List<T>) o;
+            int c = Util.compare((Comparable) t0, (Comparable) that.t0);
+            if (c != 0) {
+                return c;
+            }
+            return Util.compare((Comparable) t1, (Comparable) that.t1);
         }
     }
 
@@ -2871,7 +3026,10 @@ public class Util extends XOMUtil {
      * @see mondrian.olap.Util.Flat2List
      * @param <T>
      */
-    protected static class Flat3List<T> extends UnsupportedList<T> {
+    protected static class Flat3List<T>
+        extends UnsupportedList<T>
+        implements Comparable<T>
+    {
         private final T t0;
         private final T t1;
         private final T t2;
@@ -2902,6 +3060,14 @@ public class Util extends XOMUtil {
             return 3;
         }
 
+        public String toString() {
+            return "{" + t0 + ", " + t1 + ", " + t2 + "}";
+        }
+
+        public Iterator<T> iterator() {
+            return Arrays.asList(t0, t1, t2).iterator();
+        }
+
         public boolean equals(Object o) {
             if (o instanceof Flat3List) {
                 Flat3List that = (Flat3List) o;
@@ -2916,6 +3082,20 @@ public class Util extends XOMUtil {
             int h = t0.hashCode();
             h = Util.hash(h, t1.hashCode());
             return Util.hash(h, t2.hashCode());
+        }
+
+        public int compareTo(T o) {
+            //noinspection unchecked
+            Flat3List<T> that = (Flat3List<T>) o;
+            int c = Util.compare((Comparable) t0, (Comparable) that.t0);
+            if (c != 0) {
+                return c;
+            }
+            c = Util.compare((Comparable) t1, (Comparable) that.t1);
+            if (c != 0) {
+                return c;
+            }
+            return Util.compare((Comparable) t2, (Comparable) that.t2);
         }
     }
 }

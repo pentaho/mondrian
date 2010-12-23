@@ -478,7 +478,9 @@ public class BatchTestCase extends FoodMartTestCase {
         cacheHelper.mapMemberToChildren.cache.clear();
 
         // Flush the cache, to ensure that the query gets executed.
-        cube.clearCachedAggregations(true);
+        for (RolapStar star : cube.getStars()) {
+            star.clearCachedAggregations(true);
+        }
 
         CacheControl cacheControl = getConnection().getCacheControl(null);
         final CacheControl.CellRegion measuresRegion =
@@ -663,7 +665,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 }
             });
 
-        TestCase c = new TestCase(con, 0, rowCount, mdx);
+        LimitedQuery c = new LimitedQuery(con, 0, rowCount, mdx);
         Result result = c.run();
 
         if (expectedResult != null) {
@@ -750,7 +752,7 @@ public class BatchTestCase extends FoodMartTestCase {
             TestListener listener = new TestListener();
             reg.setListener(listener);
             reg.setEnabled(true);
-            TestCase c = new TestCase(con, resultLimit, rowCount, mdx);
+            LimitedQuery c = new LimitedQuery(con, resultLimit, rowCount, mdx);
             Result result = c.run();
             String nativeResult = TestContext.toString(result);
             if (!listener.isFoundEvaluator()) {
@@ -865,7 +867,7 @@ public class BatchTestCase extends FoodMartTestCase {
      * positions of the row axis. The reduced resultLimit ensures that the
      * optimization is present.
      */
-    protected class TestCase {
+    protected class LimitedQuery {
         /**
          * Maximum number of rows to be read from SQL. If more than this number
          * of rows are read, the test will fail.
@@ -887,14 +889,14 @@ public class BatchTestCase extends FoodMartTestCase {
          */
         final Connection con;
 
-        public TestCase(int resultLimit, int rowCount, String query) {
+        public LimitedQuery(int resultLimit, int rowCount, String query) {
             this.con = getConnection();
             this.resultLimit = resultLimit;
             this.rowCount = rowCount;
             this.query = query;
         }
 
-        public TestCase(
+        public LimitedQuery(
             Connection con, int resultLimit, int rowCount, String query)
         {
             this.con = con;
@@ -914,8 +916,8 @@ public class BatchTestCase extends FoodMartTestCase {
 
                 // Check the number of positions on the last axis, which is
                 // the ROWS axis in a 2 axis query.
-                int numAxes = result.getAxes().length;
-                Axis a = result.getAxes()[numAxes - 1];
+                int axisCount = result.getAxes().length;
+                Axis a = result.getAxes()[axisCount - 1];
                 final int positionCount = a.getPositions().size();
                 assertEquals(rowCount, positionCount);
                 return result;

@@ -30,14 +30,20 @@ public class RolapVirtualCubeMeasure
      */
     private final RolapStoredMeasure cubeMeasure;
     private final Map<String, Annotation> annotationMap;
+    private final RolapMeasureGroup measureGroup;
 
     public RolapVirtualCubeMeasure(
+        RolapMeasureGroup measureGroup,
         RolapMember parentMember,
         RolapLevel level,
         RolapStoredMeasure cubeMeasure,
         Map<String, Annotation> annotationMap)
     {
         super(parentMember, level, cubeMeasure.getName());
+        this.measureGroup = measureGroup;
+        Util.deprecated(
+            "since all cubes are now virtual, is this class obsolete? we just need a way to clone RolapStoredMeasure in a different measure group",
+            false);
         this.cubeMeasure = cubeMeasure;
         this.annotationMap = annotationMap;
     }
@@ -58,12 +64,16 @@ public class RolapVirtualCubeMeasure
         return cubeMeasure.getCube();
     }
 
-    public Object getStarMeasure() {
+    public RolapStar.Measure getStarMeasure() {
         return cubeMeasure.getStarMeasure();
     }
 
-    public MondrianDef.Expression getMondrianDefExpression() {
-        return cubeMeasure.getMondrianDefExpression();
+    public RolapMeasureGroup getMeasureGroup() {
+        return measureGroup;
+    }
+
+    public RolapSchema.PhysExpr getExpr() {
+        return cubeMeasure.getExpr();
     }
 
     public RolapAggregator getAggregator() {

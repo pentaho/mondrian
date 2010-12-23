@@ -10,6 +10,8 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
@@ -31,38 +33,42 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class XtdFunDef extends FunDefBase {
-    private final LevelType levelType;
+    private final org.olap4j.metadata.Level.Type levelType;
 
     static final ResolverImpl MtdResolver = new ResolverImpl(
             "Mtd",
             "Mtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
             new String[]{"fx", "fxm"},
-            LevelType.TimeMonths);
+            org.olap4j.metadata.Level.Type.TIME_MONTHS);
 
     static final ResolverImpl QtdResolver = new ResolverImpl(
             "Qtd",
             "Qtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
             new String[]{"fx", "fxm"},
-            LevelType.TimeQuarters);
+            org.olap4j.metadata.Level.Type.TIME_QUARTERS);
 
     static final ResolverImpl WtdResolver = new ResolverImpl(
             "Wtd",
             "Wtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
             new String[]{"fx", "fxm"},
-            LevelType.TimeWeeks);
+            org.olap4j.metadata.Level.Type.TIME_WEEKS);
 
     static final ResolverImpl YtdResolver = new ResolverImpl(
             "Ytd",
             "Ytd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
             new String[]{"fx", "fxm"},
-            LevelType.TimeYears);
+            org.olap4j.metadata.Level.Type.TIME_YEARS);
 
-    public XtdFunDef(FunDef dummyFunDef, LevelType levelType) {
+    public XtdFunDef(
+        FunDef dummyFunDef,
+        org.olap4j.metadata.Level.Type levelType)
+    {
         super(dummyFunDef);
+        assert levelType.isTime();
         this.levelType = levelType;
     }
 
@@ -85,20 +91,7 @@ class XtdFunDef extends FunDefBase {
     }
 
     private Level getLevel(Evaluator evaluator) {
-        switch (levelType) {
-        case TimeYears:
-            return evaluator.getCube().getYearLevel();
-        case TimeQuarters:
-            return evaluator.getCube().getQuarterLevel();
-        case TimeMonths:
-            return evaluator.getCube().getMonthLevel();
-        case TimeWeeks:
-            return evaluator.getCube().getWeekLevel();
-        case TimeDays:
-            return evaluator.getCube().getWeekLevel();
-        default:
-            throw Util.badValue(levelType);
-        }
+        return evaluator.getCube().getTimeLevel(levelType);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -129,14 +122,14 @@ class XtdFunDef extends FunDefBase {
     }
 
     private static class ResolverImpl extends MultiResolver {
-        private final LevelType levelType;
+        private final org.olap4j.metadata.Level.Type levelType;
 
         public ResolverImpl(
             String name,
             String signature,
             String description,
             String[] signatures,
-            LevelType levelType)
+            org.olap4j.metadata.Level.Type levelType)
         {
             super(name, signature, description, signatures);
             this.levelType = levelType;

@@ -137,12 +137,12 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                 Level level;
                 if (levelCalc == null) {
                     int targetDepth = member.getLevel().getDepth() + 1;
-                    Level[] levels = member.getHierarchy().getLevels();
+                    List<Level> levels = member.getHierarchy().getLevelList();
 
-                    if (levels.length <= targetDepth) {
+                    if (levels.size() <= targetDepth) {
                         return member.getHierarchy().getNullMember();
                     }
-                    level = levels[targetDepth];
+                    level = levels.get(targetDepth);
                 } else {
                     level = levelCalc.evaluateLevel(evaluator);
                 }

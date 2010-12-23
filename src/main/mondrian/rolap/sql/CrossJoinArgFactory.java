@@ -470,7 +470,7 @@ public class CrossJoinArgFactory {
             return null;
         }
         RolapLevel level = member.getLevel();
-        level = (RolapLevel) level.getChildLevel();
+        level = level.getChildLevel();
         if (level == null || !level.isSimple()) {
             // no child level
             return null;
@@ -582,13 +582,13 @@ public class CrossJoinArgFactory {
         if ((args[1] instanceof LevelExpr)) {
             level = (RolapLevel) ((LevelExpr) args[1]).getLevel();
         } else if (args[1] instanceof Literal) {
-            RolapLevel[] levels = (RolapLevel[])
-                member.getHierarchy().getLevels();
+            List<RolapLevel> levels =
+                Util.cast(member.getHierarchy().getLevelList());
             int currentDepth = member.getDepth();
             Literal descendantsDepth = (Literal) args[1];
             int newDepth = currentDepth + descendantsDepth.getIntValue();
-            if (newDepth < levels.length) {
-                level = levels[newDepth];
+            if (newDepth < levels.size()) {
+                level = levels.get(newDepth);
             }
         } else {
             return null;

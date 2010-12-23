@@ -87,7 +87,12 @@ public class MemberCacheHelper implements MemberCache {
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, Object key) {
+    public Object makeKey(RolapMember parent, Object[] key) {
+        return new MemberKey(parent, key);
+    }
+
+    // implement MemberCache
+    public Object makeKey(RolapMember parent, List<Object> key) {
         return new MemberKey(parent, key);
     }
 

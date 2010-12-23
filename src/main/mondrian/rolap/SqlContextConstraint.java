@@ -20,6 +20,7 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.aggmatcher.AggStar;
 
 /**
+ * Constraint that
  * limits the result of a Member SQL query to the current evaluation context.
  * All Members of the current context are joined against the fact table and only
  * those rows are returned, that have an entry in the fact table.
@@ -41,52 +42,67 @@ public class SqlContextConstraint
     implements MemberChildrenConstraint, TupleConstraint
 {
     private final List<Object> cacheKey;
-    private Evaluator evaluator;
-    private boolean strict;
+    private final Evaluator evaluator;
+    private final boolean strict;
+    private final List<RolapMeasureGroup> measureGroupList;
 
     /**
-     * @param context evaluation context
-     * @param strict false if more rows than requested may be returned
-     * (i.e. the constraint is incomplete)
+     * Tests whether this is a valid context, and populates a list of stars.
      *
-     * @return false if this contstraint will not work for the current context
-     */
-    public static boolean isValidContext(Evaluator context, boolean strict) {
-        return isValidContext(context, true, null, strict);
-    }
-
-    /**
      * @param context evaluation context
      * @param disallowVirtualCube if true, check for virtual cubes
      * @param levels levels being referenced in the current context
      * @param strict false if more rows than requested may be returned
      * (i.e. the constraint is incomplete)
      *
+     * @param measureGroupList List of measure groups
+     *
      * @return false if constraint will not work for current context
      */
-    public static boolean isValidContext(
+    public static boolean checkValidContext(
         Evaluator context,
         boolean disallowVirtualCube,
-        Level [] levels, boolean strict)
+        List<RolapLevel> levels,
+        boolean strict,
+        List<RolapMeasureGroup> measureGroupList)
     {
         if (context == null) {
             return false;
         }
         RolapCube cube = (RolapCube) context.getCube();
-        if (disallowVirtualCube) {
-            if (cube.isVirtual()) {
+        if (cube.isVirtual()) {
+            if (disallowVirtualCube) {
                 return false;
             }
-        }
-        if (cube.isVirtual()) {
+
             Query query = context.getQuery();
-            Set<RolapCube> baseCubes = new HashSet<RolapCube>();
-            List<RolapCube> baseCubeList = new ArrayList<RolapCube>();
-            if (!findVirtualCubeBaseCubes(query, baseCubes, baseCubeList)) {
+            Set<RolapCube> baseCubes = new LinkedHashSet<RolapCube>();
+            assert measureGroupList.isEmpty();
+            Set<RolapMeasureGroup> measureGroupSet =
+                new LinkedHashSet<RolapMeasureGroup>();
+            if (!findVirtualCubeStars(query, baseCubes, measureGroupSet)) {
                 return false;
             }
             assert levels != null;
-            query.setBaseCubes(baseCubeList);
+            measureGroupList.addAll(measureGroupSet);
+            // REVIEW: Remove the following line. The setMeasureGroups method
+            // may be called several times while processing a query. Probably
+            // with the same argument, but it's a sign that the information
+            // should be stored somewhere else. Or at least derived at a
+            // different time in the query life cycle.
+            query.setMeasureGroups(measureGroupList);
+        } else {
+            Util.deprecated("review following code, pasted from above", false);
+            Query query = context.getQuery();
+            Set<RolapCube> baseCubes = new LinkedHashSet<RolapCube>();
+            assert measureGroupList.isEmpty();
+            Set<RolapMeasureGroup> measureGroupSet =
+                new LinkedHashSet<RolapMeasureGroup>();
+            if (!findVirtualCubeStars(query, baseCubes, measureGroupSet)) {
+                return false;
+            }
+            assert levels != null;
+            measureGroupList.addAll(measureGroupSet);
         }
 
         // may return more rows than requested?
@@ -112,10 +128,10 @@ public class SqlContextConstraint
      *
      * @return true if valid measures exist
      */
-    private static boolean findVirtualCubeBaseCubes(
+    private static boolean findVirtualCubeStars(
         Query query,
-        Set<RolapCube> baseCubes,
-        List<RolapCube> baseCubeList)
+        Collection<RolapCube> baseCubes,
+        Set<RolapMeasureGroup> measureGroupSet)
     {
         // Gather the unique set of level-to-column maps corresponding
         // to the underlying star/cube where the measure column
@@ -132,9 +148,10 @@ public class SqlContextConstraint
         for (Member member : query.getMeasuresMembers()) {
             if (member instanceof RolapStoredMeasure) {
                 addMeasure(
-                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
+                    (RolapStoredMeasure) member, baseCubes, measureGroupSet);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(member.getExpression(), baseCubes, baseCubeList);
+                findMeasures(
+                    member.getExpression(), baseCubes, measureGroupSet);
             }
         }
         if (baseCubes.isEmpty()) {
@@ -145,20 +162,20 @@ public class SqlContextConstraint
     }
 
     /**
-     * Adds information regarding a stored measure to maps
+     * Adds information regarding a stored measure to maps.
      *
-     * @param measure the stored measure
-     * @param baseCubes set of base cubes
+     * @param measure The stored measure
+     * @param baseCubes Collection of base cubes
+     * @param stars Collection of stars
      */
     private static void addMeasure(
         RolapStoredMeasure measure,
-        Set<RolapCube> baseCubes,
-        List<RolapCube> baseCubeList)
+        Collection<RolapCube> baseCubes,
+        Set<RolapMeasureGroup> stars)
     {
         RolapCube baseCube = measure.getCube();
-        if (baseCubes.add(baseCube)) {
-            baseCubeList.add(baseCube);
-        }
+        baseCubes.add(baseCube);
+        stars.add(measure.getMeasureGroup());
     }
 
     /**
@@ -166,42 +183,51 @@ public class SqlContextConstraint
      *
      * @param exp expression
      * @param baseCubes set of base cubes
+     * @param measureGroupSet
      */
     private static void findMeasures(
         Exp exp,
-        Set<RolapCube> baseCubes,
-        List<RolapCube> baseCubeList)
+        Collection<RolapCube> baseCubes,
+        Set<RolapMeasureGroup> measureGroupSet)
     {
         if (exp instanceof MemberExpr) {
             MemberExpr memberExpr = (MemberExpr) exp;
             Member member = memberExpr.getMember();
             if (member instanceof RolapStoredMeasure) {
                 addMeasure(
-                    (RolapStoredMeasure) member, baseCubes, baseCubeList);
+                    (RolapStoredMeasure) member, baseCubes, measureGroupSet);
             } else if (member instanceof RolapCalculatedMember) {
-                findMeasures(member.getExpression(), baseCubes, baseCubeList);
+                findMeasures(
+                    member.getExpression(), baseCubes, measureGroupSet);
             }
         } else if (exp instanceof ResolvedFunCall) {
             ResolvedFunCall funCall = (ResolvedFunCall) exp;
             Exp [] args = funCall.getArgs();
             for (Exp arg : args) {
-                findMeasures(arg, baseCubes, baseCubeList);
+                findMeasures(arg, baseCubes, measureGroupSet);
             }
         }
     }
 
     /**
-    * Creates a SqlContextConstraint.
-    *
-    * @param evaluator Evaluator
-    * @param strict defines the behaviour if the evaluator context
-    * contains calculated members. If true, an exception is thrown,
-    * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
-    * never accept a calculated member as parent.
-    */
-    SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
+     * Creates a SqlContextConstraint.
+     *
+     * @param evaluator Evaluator
+     *
+     * @param measureGroupList List of stars to join to
+     *
+     * @param strict defines the behaviour if the evaluator context
+     * contains calculated members. If true, an exception is thrown,
+     * otherwise calculated members are silently ignored. The
+     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapStarSet,mondrian.rolap.aggmatcher.AggStar, mondrian.rolap.RolapMember)} and
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapStarSet,mondrian.rolap.aggmatcher.AggStar,java.util.List)} will
+     * {@link Util#deprecated ... what text was removed here?}
+     */
+    SqlContextConstraint(
+        RolapEvaluator evaluator,
+        List<RolapMeasureGroup> measureGroupList,
+        boolean strict)
+    {
         this.evaluator = evaluator;
         this.strict = strict;
         cacheKey = new ArrayList<Object>();
@@ -218,9 +244,10 @@ public class SqlContextConstraint
         // just the default measure for the entire virtual cube. The commented
         // code in RolapResult() that replaces the default measure seems to
         // do that.
-        if (evaluator.getCube().isVirtual()) {
-            cacheKey.addAll(evaluator.getQuery().getBaseCubes());
-        }
+        cacheKey.addAll(measureGroupList);
+        assert measureGroupList != null;
+        assert Util.isDistinct(measureGroupList) : measureGroupList;
+        this.measureGroupList = measureGroupList;
     }
 
     /**
@@ -229,7 +256,7 @@ public class SqlContextConstraint
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapMember parent)
     {
@@ -237,12 +264,8 @@ public class SqlContextConstraint
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
         Evaluator e = evaluator.push(parent);
-        SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
-
-        // comment out addMemberConstraint here since constraint
-        // is already added by addContextConstraint
-        // SqlConstraintUtils.addMemberConstraint(
-        //        sqlQuery, baseCube, aggStar, parent, true);
+        SqlConstraintUtils.addContextConstraint(
+            sqlQuery, starSet, aggStar, e, strict);
     }
 
     /**
@@ -251,15 +274,15 @@ public class SqlContextConstraint
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, aggStar, evaluator, strict);
+            sqlQuery, starSet, aggStar, evaluator, strict);
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, baseCube, aggStar, parents, true, false, exclude);
+            sqlQuery, starSet, aggStar, parents, true, false, exclude);
     }
 
     /**
@@ -268,22 +291,14 @@ public class SqlContextConstraint
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, aggStar, evaluator, strict);
+            sqlQuery, starSet, aggStar, evaluator, strict);
     }
 
-    /**
-     * Returns whether a join with the fact table is required. A join is
-     * required if the context contains members from dimensions other than
-     * level. If we are interested in the members of a level or a members
-     * children then it does not make sense to join only one dimension (the one
-     * that contains the requested members) with the fact table for NON EMPTY
-     * optimization.
-     */
-    protected boolean isJoinRequired() {
+    public boolean isJoinRequired() {
         Member[] members = evaluator.getMembers();
         // members[0] is the Measure, so loop starts at 1
         for (int i = 1; i < members.length; i++) {
@@ -294,9 +309,24 @@ public class SqlContextConstraint
         return false;
     }
 
+    public RolapStarSet createStarSet() {
+        final Member measure = this.evaluator.getMembers()[0];
+        final RolapStar star;
+        final RolapMeasureGroup measureGroup;
+        if (measure instanceof RolapStoredMeasure) {
+            RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
+            star = storedMeasure.getStarMeasure().getStar();
+            measureGroup = storedMeasure.getMeasureGroup();
+        } else {
+            star = null;
+            measureGroup = null;
+        }
+        return new RolapStarSet(star, measureGroup);
+    }
+
     public void addLevelConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapLevel level)
     {
@@ -304,7 +334,7 @@ public class SqlContextConstraint
             return;
         }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, baseCube, aggStar, evaluator, (RolapCubeLevel)level);
+            sqlQuery, starSet, aggStar, evaluator, (RolapCubeLevel) level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(
@@ -319,6 +349,10 @@ public class SqlContextConstraint
 
     public Evaluator getEvaluator() {
         return evaluator;
+    }
+
+    public List<RolapMeasureGroup> getMeasureGroupList() {
+        return measureGroupList;
     }
 }
 

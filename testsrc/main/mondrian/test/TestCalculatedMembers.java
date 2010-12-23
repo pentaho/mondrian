@@ -166,12 +166,9 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "</CalculatedMember>");
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
-            final String msg = e.getMessage();
-            if (!msg.equals(
-                "Mondrian Error:Named set in cube 'Sales' has bad formula"))
-            {
-                throw e;
-            }
+            TestContext.checkThrowable(
+                e,
+                "Mondrian Error:Named set in cube 'Sales' has bad formula");
         }
 
         // should succeed if we switch the property to ignore invalid

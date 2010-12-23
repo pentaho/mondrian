@@ -701,6 +701,22 @@ public interface Dialect {
     boolean allowsSelectNotInGroupBy();
 
     /**
+     * Converts a SQL type code and type name to a dialect data type.
+     *
+     * <p>The type code is as returned from
+     * {@link java.sql.ResultSetMetaData#getColumnType(int)} and described in
+     * {@link java.sql.Types}, and the type name is as returned from
+     * {@link java.sql.ResultSetMetaData#getColumnTypeName(int)}.
+     *
+     * @param typeName Type name
+     * @param type Type code
+     * @return Dialect datatype
+     */
+    Datatype sqlTypeToDatatype(
+        String typeName,
+        int type);
+
+    /**
      * Enumeration of common database types.
      *
      * <p>Branching on this enumeration allows you to write code which behaves

@@ -15,6 +15,9 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
 
+import java.util.List;
+import java.util.Collections;
+
 /**
  * TupleConstraint which does not restrict the result.
  *
@@ -25,19 +28,30 @@ public class DefaultTupleConstraint implements TupleConstraint {
     private static final TupleConstraint instance =
         new DefaultTupleConstraint();
 
-    protected DefaultTupleConstraint() {
+    /**
+     * Creates the singleton instance.
+     */
+    private DefaultTupleConstraint() {
+    }
+
+    public List<RolapMeasureGroup> getMeasureGroupList() {
+        return Collections.emptyList();
+    }
+
+    public boolean isJoinRequired() {
+        return false;
     }
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar)
     {
     }
 
     public void addLevelConstraint(
         SqlQuery query,
-        RolapCube baseCube,
+        RolapStarSet starSet,
         AggStar aggStar,
         RolapLevel level)
     {
@@ -58,6 +72,11 @@ public class DefaultTupleConstraint implements TupleConstraint {
         return this;
     }
 
+    /**
+     * Returns the singleton instance.
+     *
+     * @return the instance
+     */
     public static TupleConstraint instance() {
         return instance;
     }

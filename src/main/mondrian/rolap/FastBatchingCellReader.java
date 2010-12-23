@@ -288,7 +288,9 @@ public class FastBatchingCellReader implements CellReader {
      * @return Dialect
      */
     Dialect getDialect() {
-        final RolapStar star = cube.getStar();
+        final Member measure0 = cube.getMeasures().get(0);
+        RolapStoredMeasure measure = (RolapStoredMeasure) measure0;
+        final RolapStar star = measure.getStarMeasure().getStar();
         if (star != null) {
             return star.getSqlQueryDialect();
         } else {
@@ -519,15 +521,13 @@ public class FastBatchingCellReader implements CellReader {
                 if (distinctMeasure == null) {
                     break;
                 }
-                final String expr =
-                    distinctMeasure.getExpression().getGenericExpression();
+                final String expr = distinctMeasure.getExpression().toSql();
                 final List<RolapStar.Measure> distinctMeasuresList =
                     new ArrayList<RolapStar.Measure>();
                 for (int i = 0; i < measuresList.size();) {
                     final RolapStar.Measure measure = measuresList.get(i);
                     if (measure.getAggregator().isDistinct()
-                        && measure.getExpression().getGenericExpression()
-                        .equals(expr))
+                        && measure.getExpression().toSql().equals(expr))
                     {
                         measuresList.remove(i);
                         distinctMeasuresList.add(distinctMeasure);
@@ -586,7 +586,7 @@ public class FastBatchingCellReader implements CellReader {
                 final StringBuilder buf = new StringBuilder(64);
                 buf.append(
                     "AggGen: Sorry, can not create SQL for virtual Cube \"")
-                    .append(cube.getName())
+                    .append(cube == null ? "null" : cube.getName())
                     .append("\", operation not currently supported");
                 BATCH_LOGGER.error(buf.toString());
 
@@ -659,17 +659,17 @@ public class FastBatchingCellReader implements CellReader {
             for (RolapStar.Measure measure : measuresList) {
                 if (measure.getAggregator().isDistinct()
                     && measure.getExpression() instanceof
-                        MondrianDef.MeasureExpression)
+                        RolapSchema.PhysCalcColumn)
                 {
-                    MondrianDef.MeasureExpression measureExpr =
-                        (MondrianDef.MeasureExpression) measure.getExpression();
-                    MondrianDef.SQL measureSql = measureExpr.expressions[0];
+                    RolapSchema.PhysCalcColumn measureExpr =
+                        (RolapSchema.PhysCalcColumn) measure.getExpression();
+                    String measureSql = measureExpr.toSql();
                     // Checks if the SQL contains "SELECT" to detect the case a
                     // subquery is used to define the measure. This is not a
                     // perfect check, because a SQL expression on column names
-                    // containing "SELECT" will also be detected. e,g,
+                    // containing "SELECT" will also be detected. For example,
                     // count("select beef" + "regular beef").
-                    if (measureSql.cdata.toUpperCase().contains("SELECT")) {
+                    if (measureSql.toUpperCase().contains("SELECT")) {
                         distinctSqlMeasureList.add(measure);
                     }
                 }
@@ -694,8 +694,7 @@ public class FastBatchingCellReader implements CellReader {
                 && hasSameMeasureList(other)
                 && !hasDistinctCountMeasure()
                 && !other.hasDistinctCountMeasure()
-                && haveSameStarAndAggregation(other)
-                && haveSameClosureColumns(other);
+                && haveSameStarAndAggregation(other);
         }
 
         /**
@@ -822,34 +821,6 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
-         * Returns whether this batch has the same closure columns as another.
-         *
-         * <p>Ensures that we do not group together a batch that includes a
-         * level of a parent-child closure dimension with a batch that does not.
-         * It is not safe to roll up from a parent-child closure level; due to
-         * multiple accounting, the 'all' level is less than the sum of the
-         * members of the closure level.
-         *
-         * @param other Other batch
-         * @return Whether batches have the same closure columns
-         */
-        boolean haveSameClosureColumns(Batch other) {
-            final BitKey cubeClosureColumnBitKey = cube.closureColumnBitKey;
-            if (cubeClosureColumnBitKey == null) {
-                // Virtual cubes have a null bitkey. For now, punt; should do
-                // better.
-                return true;
-            }
-            final BitKey closureColumns =
-                this.batchKey.getConstrainedColumnsBitKey()
-                    .and(cubeClosureColumnBitKey);
-            final BitKey otherClosureColumns =
-                other.batchKey.getConstrainedColumnsBitKey()
-                    .and(cubeClosureColumnBitKey);
-            return closureColumns.equals(otherClosureColumns);
-        }
-
-        /**
          * @param rollup Out parameter
          * @return AggStar
          */
@@ -948,6 +919,9 @@ public class FastBatchingCellReader implements CellReader {
             if (o1.columns.length != o2.columns.length) {
                 return o1.columns.length - o2.columns.length;
             }
+            Util.deprecated(
+                "review: this assumes that RolapStar.Column names are unique - not sure this is true",
+                false);
             for (int i = 0; i < o1.columns.length; i++) {
                 int c = o1.columns[i].getName().compareTo(
                     o2.columns[i].getName());

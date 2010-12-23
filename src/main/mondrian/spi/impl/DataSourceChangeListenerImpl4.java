@@ -12,7 +12,6 @@ package mondrian.spi.impl;
 import java.util.Random;
 
 import mondrian.spi.DataSourceChangeListener;
-import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.rolap.agg.Aggregation;
 
@@ -85,16 +84,6 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
             }
         } else {
             return true;
-        }
-    }
-
-    public String getTableName(RolapHierarchy hierarchy) {
-        MondrianDef.RelationOrJoin relation = hierarchy.getRelation();
-        if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table tableRelation = (MondrianDef.Table)relation;
-            return tableRelation.name;
-        } else {
-            return null;
         }
     }
 }

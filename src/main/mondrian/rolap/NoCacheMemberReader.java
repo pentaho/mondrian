@@ -77,7 +77,13 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implement MemberCache
-    public Object makeKey(final RolapMember parent, final Object key) {
+    public Object makeKey(final RolapMember parent, final Object[] key) {
+        LOGGER.debug("Entering makeKey");
+        return new MemberKey(parent, key);
+    }
+
+    // implement MemberCache
+    public Object makeKey(final RolapMember parent, final List<Object> key) {
         LOGGER.debug("Entering makeKey");
         return new MemberKey(parent, key);
     }
@@ -105,9 +111,8 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     public List<RolapMember> getMembers() {
         System.out.println("NoCache getMembers");
         List<RolapMember> v = new ArrayList<RolapMember>();
-        RolapLevel[] levels = (RolapLevel[]) getHierarchy().getLevels();
         // todo: optimize by walking to children for members we know about
-        for (RolapLevel level : levels) {
+        for (RolapLevel level : getHierarchy().getRolapLevelList()) {
             List<RolapMember> membersInLevel =
                 getMembersInLevel(level, 0, Integer.MAX_VALUE);
             v.addAll(membersInLevel);

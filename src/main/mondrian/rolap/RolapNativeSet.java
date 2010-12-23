@@ -68,12 +68,21 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static abstract class SetConstraint extends SqlContextConstraint {
         CrossJoinArg[] args;
 
+        /**
+         * Creates a SetConstraint.
+         *
+         * @param args Cross-join arguments
+         * @param evaluator Evaluator
+         * @param measureGroupList List of stars to join to
+         * @param strict Whether to fail if context contains calculated members
+         */
         SetConstraint(
             CrossJoinArg[] args,
             RolapEvaluator evaluator,
+            List<RolapMeasureGroup> measureGroupList,
             boolean strict)
         {
-            super(evaluator, strict);
+            super(evaluator, measureGroupList, strict);
             this.args = args;
         }
 
@@ -83,16 +92,16 @@ public abstract class RolapNativeSet extends RolapNative {
          * <p>If there is a crossjoin, we need to join the fact table - even if
          * the evaluator context is empty.
          */
-        protected boolean isJoinRequired() {
+        public boolean isJoinRequired() {
             return args.length > 1 || super.isJoinRequired();
         }
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapCube baseCube,
+            RolapStarSet starSet,
             AggStar aggStar)
         {
-            super.addConstraint(sqlQuery, baseCube, aggStar);
+            super.addConstraint(sqlQuery, starSet, aggStar);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -102,17 +111,19 @@ public abstract class RolapNativeSet extends RolapNative {
                     || !((MemberListCrossJoinArg) arg).hasCalcMembers())
                 {
                     RolapLevel level = arg.getLevel();
-                    if (level == null || levelIsOnBaseCube(baseCube, level)) {
-                        arg.addConstraint(sqlQuery, baseCube, aggStar);
+                    RolapCube baseCube = null; // TODO:
+                    if (level == null || levelIsOnBaseCube(starSet.getMeasureGroup(), level)) {
+                        arg.addConstraint(sqlQuery, starSet, aggStar);
                     }
                 }
             }
         }
 
         private boolean levelIsOnBaseCube(
-            final RolapCube baseCube, final RolapLevel level)
+            final RolapMeasureGroup measureGroup, final RolapLevel level)
         {
-            return baseCube.findBaseCubeHierarchy(level.getHierarchy()) != null;
+            return measureGroup.getPath(
+                level.getHierarchy().getDimension()) != null;
         }
 
         /**

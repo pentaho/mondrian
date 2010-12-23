@@ -181,127 +181,118 @@ public class AggTableManager {
      * to ignore for right now). So, All stars have their columns
      * and their BitKeys can be generated.
      *
-     * @throws SQLException
+     * @throws SQLException on error
      */
     private void loadRolapStarAggregates() throws SQLException {
         ListRecorder msgRecorder = new ListRecorder();
         try {
             DefaultRules rules = DefaultRules.getInstance();
             JdbcSchema db = getJdbcSchema();
-            // if we don't synchronize this on the db object,
-            // we may end up getting a Concurrency exception due to
-            // calls to other instances of AggTableManager.finalCleanUp()
-            synchronized (db) {
-                // fix for MONDRIAN-496
-                // flush any existing usages of the jdbc schema, so we
-                // don't accidentally use another star's metadata
-                db.flushUsages();
+            // loads tables, not their columns
+            db.load();
 
-                // loads tables, not their columns
-                db.load();
+            for (RolapStar star : getStars()) {
+                // This removes any AggStars from any previous invocation of
+                // this method (if any)
+                star.prepareToLoadAggregates();
 
-                loop:
-                for (RolapStar star : getStars()) {
-                    // This removes any AggStars from any previous invocation of
-                    // this method (if any)
-                    star.prepareToLoadAggregates();
+                List<ExplicitRules.Group> aggGroups = getAggGroups(star);
+                for (ExplicitRules.Group group : aggGroups) {
+                    group.validate(msgRecorder);
+                }
 
-                    List<ExplicitRules.Group> aggGroups = getAggGroups(star);
-                    for (ExplicitRules.Group group : aggGroups) {
-                        group.validate(msgRecorder);
+                String factTableName = star.getFactTable().getAlias();
+
+                JdbcSchema.Table dbFactTable = db.getTable(factTableName);
+                if (dbFactTable == null) {
+                    msgRecorder.reportWarning(
+                        "No Table found for fact name=" + factTableName);
+                    continue;
+                }
+
+                // For each column in the dbFactTable, figure out it they are
+                // measure or foreign key columns
+                bindToStar(dbFactTable, star, msgRecorder);
+                String schemaName = dbFactTable.table.getSchemaName();
+
+                // Now look at all tables in the database and per table, first
+                // see if it is a match for an aggregate table for this fact
+                // table and second see if its columns match foreign key and
+                // level columns.
+                for (JdbcSchema.Table dbTable : db.getTables()) {
+                    String name = dbTable.getName();
+
+                    // Do the catalog schema aggregate excludes, exclude this
+                    // table name.
+                    if (ExplicitRules.excludeTable(name, aggGroups)) {
+                        continue;
                     }
 
-                    String factTableName = star.getFactTable().getAlias();
+                    // First see if there is an ExplicitRules match. If so, then
+                    // if all of the columns match up, then make an AggStar.
+                    // On the other hand, if there is no ExplicitRules match,
+                    // see if there is a Default match. If so and if all the
+                    // columns match up, then also make an AggStar.
+                    ExplicitRules.TableDef tableDef =
+                        ExplicitRules.getIncludeByTableDef(name, aggGroups);
 
-                    JdbcSchema.Table dbFactTable = db.getTable(factTableName);
-                    if (dbFactTable == null) {
-                        msgRecorder.reportWarning(
-                            "No Table found for fact name="
-                                + factTableName);
-                        continue loop;
-                    }
-
-                    // For each column in the dbFactTable, figure out it they
-                    // are measure or foreign key columns
-
-                    bindToStar(dbFactTable, star, msgRecorder);
-                    String schema = dbFactTable.table.schema;
-
-                    // Now look at all tables in the database and per table,
-                    // first see if it is a match for an aggregate table for
-                    // this fact table and second see if its columns match
-                    // foreign key and level columns.
-
-                    for (JdbcSchema.Table dbTable : db.getTables()) {
-                        String name = dbTable.getName();
-
-                        // Do the catalog schema aggregate excludes, exclude
-                        // this table name.
-                        if (ExplicitRules.excludeTable(name, aggGroups)) {
-                            continue;
-                        }
-
-                        // First see if there is an ExplicitRules match. If so,
-                        // then if all of the columns match up, then make an
-                        // AggStar. On the other hand, if there is no
-                        // ExplicitRules match, see if there is a Default
-                        // match. If so and if all the columns match up, then
-                        // also make an AggStar.
-                        ExplicitRules.TableDef tableDef =
-                            ExplicitRules.getIncludeByTableDef(name, aggGroups);
-
-                        boolean makeAggStar = false;
-                        // Is it handled by the ExplicitRules
-                        if (tableDef != null) {
-                            // load columns
-                            dbTable.load();
-                            makeAggStar = tableDef.columnsOK(
+                    boolean makeAggStar = false;
+                    // Is it handled by the ExplicitRules
+                    if (tableDef != null) {
+                        // load columns
+                        dbTable.load();
+                        makeAggStar =
+                            tableDef.columnsOK(
                                 star,
                                 dbFactTable,
                                 dbTable,
                                 msgRecorder);
-                        }
-                        if (! makeAggStar) {
-                            // Is it handled by the DefaultRules
-                            if (rules.matchesTableName(factTableName, name)) {
-                                // load columns
-                                dbTable.load();
-                                makeAggStar = rules.columnsOK(
+                    }
+                    if (! makeAggStar) {
+                        // Is it handled by the DefaultRules
+                        if (rules.matchesTableName(factTableName, name)) {
+                            // load columns
+                            dbTable.load();
+                            makeAggStar =
+                                rules.columnsOK(
                                     star,
                                     dbFactTable,
                                     dbTable,
                                     msgRecorder);
-                            }
                         }
+                    }
 
-                        if (makeAggStar) {
-                            dbTable.setTableUsageType(
-                                JdbcSchema.TableUsageType.AGG);
-                            String alias = null;
-                            dbTable.table = new MondrianDef.Table(
-                                schema,
+
+                    if (makeAggStar) {
+                        dbTable.setTableUsageType(
+                            JdbcSchema.TableUsageType.AGG);
+                        String alias = null;
+                        dbTable.table =
+                            new RolapSchema.PhysTable(
+                                schema.getPhysicalSchema(),
+                                schemaName,
                                 name,
                                 alias,
                                 null); // don't know about table hints
-                            AggStar aggStar = AggStar.makeAggStar(
+                        AggStar aggStar =
+                            AggStar.makeAggStar(
                                 star,
                                 dbTable,
                                 msgRecorder);
-                            if (aggStar.getSize() > 0) {
-                                star.addAggStar(aggStar);
-                            } else {
-                                getLogger().warn(
-                                    mres.AggTableZeroSize.str(
-                                    aggStar.getFactTable().getName(),
-                                    factTableName));
-                            }
+                        if (aggStar.getSize() > 0) {
+                            star.addAggStar(aggStar);
+                        } else {
+                            getLogger().warn(
+                                mres.AggTableZeroSize.str(
+                                aggStar.getAggFactTable().getName(),
+                                factTableName));
                         }
-                        // Note: if the dbTable name matches but the columnsOK
-                        // does not, then this is an error and the aggregate
-                        // tables can not be loaded.
-                        // We do not "reset" the column usages in the dbTable
-                        // allowing it maybe to match another rule.
                     }
+                    // Note: if the dbTable name matches but the columnsOK does
+                    // not, then this is an error and the aggregate tables
+                    // can not be loaded.
+                    // We do not "reset" the column usages in the dbTable
+                    // allowing it maybe to match another rule.
                 }
             }
         } catch (RecorderException ex) {
@@ -409,6 +400,9 @@ public class AggTableManager {
 
     private void deregisterTriggers(final MondrianProperties properties) {
         // Remove this AggTableManager's instance's triggers.
+        if (triggers == null) {
+            return;
+        }
         properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
         properties.AggregateRules.removeTrigger(triggers[1]);
         properties.AggregateRuleTag.removeTrigger(triggers[1]);
@@ -465,27 +459,33 @@ public class AggTableManager {
 
             dbFactTable.setTableUsageType(JdbcSchema.TableUsageType.FACT);
 
-            MondrianDef.RelationOrJoin relation =
+            // Aggregate tables are in same schema as fact table.
+            // TODO: Create a default schema name for a physical schema, and
+            // remove this logic.
+            Util.deprecated("add PhysicalSchema@schemaName", false);
+            RolapSchema.PhysRelation relation =
                 star.getFactTable().getRelation();
-            String schema = null;
-            MondrianDef.Hint[] tableHints = null;
-            if (relation instanceof MondrianDef.Table) {
-                schema = ((MondrianDef.Table) relation).schema;
-                tableHints = ((MondrianDef.Table) relation).tableHints;
+            String schemaName = null;
+            Map<String, String> tableHints = Collections.emptyMap();
+            if (relation instanceof RolapSchema.PhysTable) {
+                schemaName = ((RolapSchema.PhysTable) relation).getSchemaName();
+                tableHints = ((RolapSchema.PhysTable) relation).getHintMap();
             }
             String tableName = dbFactTable.getName();
-            String alias = null;
-            dbFactTable.table = new MondrianDef.Table(
-                schema,
-                tableName,
-                alias,
-                tableHints);
+            String alias = relation.getSchema().newAlias();
+            dbFactTable.table =
+                new RolapSchema.PhysTable(
+                    relation.getSchema(),
+                    schemaName,
+                    tableName,
+                    alias,
+                    tableHints);
 
             for (JdbcSchema.Table.Column factColumn
                 : dbFactTable.getColumns())
             {
                 String cname = factColumn.getName();
-                RolapStar.Column[] rcs =
+                List<RolapStar.Column> rcs =
                     star.getFactTable().lookupColumns(cname);
 
                 for (RolapStar.Column rc : rcs) {

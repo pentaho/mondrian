@@ -99,9 +99,13 @@ public class RolapResult extends ResultBase {
             // effect if caching has been disabled, otherwise
             // nothing happens.
             // Clear the local cache before a query has run
-            cube.clearCachedAggregations();
-            // Check if there are modifications to the global aggregate cache
-            cube.checkAggregateModifications();
+            for (RolapStar star : cube.getStars()) {
+                star.clearCachedAggregations(false);
+
+                // Check if there are modifications to the global aggregate
+                // cache.
+                star.checkAggregateModifications();
+            }
 
 
             /////////////////////////////////////////////////////////////////
@@ -447,7 +451,9 @@ public class RolapResult extends ResultBase {
             if (normalExecution) {
                 // Push all modifications to the aggregate cache to the global
                 // cache so each thread can start using it
-                cube.pushAggregateModificationsToGlobalCache();
+                for (RolapStar star : cube.getStars()) {
+                    star.pushAggregateModificationsToGlobalCache();
+                }
 
                 // Expression cache duration is for each query. It is time to
                 // clear out the whole expression cache at the end of a query.

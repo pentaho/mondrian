@@ -12,10 +12,7 @@
 */
 
 package mondrian.rolap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
@@ -36,7 +33,11 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 class CacheMemberReader implements MemberReader, MemberCache {
     private final MemberSource source;
     private final List<RolapMember> members;
-    /** Maps a {@link MemberKey} to a {@link RolapMember}. */
+
+    /**
+     * Looks up a member by its key. The key is an object if non-composite, a
+     * list if composite.
+     */
     private final Map<Object, RolapMember> mapKeyToMember;
 
     CacheMemberReader(MemberSource source) {
@@ -81,7 +82,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, Object key) {
+    public Object makeKey(RolapMember parent, Object[] key) {
+        return key.length == 1 ? key[0] : Arrays.asList(key);
+    }
+
+    // implement MemberCache
+    public Object makeKey(RolapMember parent, List<Object> key) {
         return new MemberKey(parent, key);
     }
 

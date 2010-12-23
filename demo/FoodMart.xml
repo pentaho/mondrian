@@ -175,76 +175,55 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
       <Level name="City" column="city" uniqueMembers="false"/>
       <Level name="Name" column="customer_id" type="Numeric" uniqueMembers="true">
         <NameExpression>
-          <SQL dialect="oracle">
-"fname" || ' ' || "lname"
-          </SQL>
           <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>
           <SQL dialect="access">
-fname + ' ' + lname
-          </SQL>
-          <SQL dialect="postgres">
-"fname" || ' ' || "lname"
+              <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
           </SQL>
           <SQL dialect="mysql">
-CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
+CONCAT(<Column table="customer" name="fname"/>, ' ', <Column table="customer" name="lname"/>)
           </SQL>
           <SQL dialect="mssql">
-fname + ' ' + lname
+              <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
           </SQL>
           <SQL dialect="derby">
-"customer"."fullname"
+              <Column table="customer" name="fullname"/>
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
-          </SQL>
-          <SQL dialect="luciddb">
-"fname" || ' ' || "lname"
+CONCAT(CONCAT(<Column table="customer" name="fname"/>, ' '), <Column table="customer" name="lname"/>)
           </SQL>
           <SQL dialect="neoview">
 "customer"."fullname"
           </SQL>
-          <SQL dialect="teradata">
-"fname" || ' ' || "lname"
-          </SQL>
           <SQL dialect="generic">
-fullname
+              <Column table="customer" name="fname"/> || ' ' || <Column table="customer" name="lname"/>
           </SQL>
         </NameExpression>
         <OrdinalExpression>
-          <SQL dialect="oracle">
-"fname" || ' ' || "lname"
-          </SQL>
           <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>
           <SQL dialect="access">
-fname + ' ' + lname
-          </SQL>
-          <SQL dialect="postgres">
-"fname" || ' ' || "lname"
+              <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
           </SQL>
           <SQL dialect="mysql">
-CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
+              CONCAT(<Column table="customer" name="fname"/>, ' ', <Column table="customer" name="lname"/>)
           </SQL>
           <SQL dialect="mssql">
-fname + ' ' + lname
+              <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
           </SQL>
           <SQL dialect="neoview">
 "customer"."fullname"
           </SQL>
           <SQL dialect="derby">
-"customer"."fullname"
+              <Column table="customer" name="fullname"/>
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
-          </SQL>
-          <SQL dialect="luciddb">
-"fname" || ' ' || "lname"
+              CONCAT(CONCAT(<Column table="customer" name="fname"/>, ' '), <Column table="customer" name="lname"/>)
           </SQL>
           <SQL dialect="generic">
-fullname
+              <Column table="customer" name="fname"/> || ' ' || <Column table="customer" name="lname"/>
           </SQL>
         </OrdinalExpression>
         <Property name="Gender" column="gender"/>
@@ -289,44 +268,17 @@ fullname
       formatString="#,###"/>
   <Measure name="Customer Count" column="customer_id"
       aggregator="distinct-count" formatString="#,###"/>
-  <Measure name="Promotion Sales" aggregator="sum" formatString="#,###.00">
+  <Measure name="Promotion Sales" aggregator="sum" formatString="#,###.00" datatype="Numeric">
     <MeasureExpression>
-      <SQL dialect="access">
-Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
-      </SQL>
-      <SQL dialect="oracle">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="hsqldb">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="postgres">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="mysql">
-(case when `sales_fact_1997`.`promotion_id` = 0 then 0 else `sales_fact_1997`.`store_sales` end)
-      </SQL>
+      <SQL dialect="access">Iif(<Column table="sales_fact_1997" name="promotion_id"/> = 0, 0, <Column table="sales_fact_1997" name="store_sales"/>)</SQL>
       <!-- Workaround the fact that Infobright does not have a CASE operator.
            The simpler expression gives wrong results, so some tests are
            disabled. -->
-      <SQL dialect="neoview">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="infobright">
-`sales_fact_1997`.`store_sales`
-      </SQL>
-      <SQL dialect="derby">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="luciddb">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="db2">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
-      </SQL>
-      <SQL dialect="generic">
-(case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)
-      </SQL>
+      <SQL dialect="infobright"><Column table="sales_fact_1997" name="store_sales"/></SQL>
+      <SQL dialect="derby">(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)</SQL>
+      <SQL dialect="luciddb">(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)</SQL>
+      <SQL dialect="db2">(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)</SQL>
+      <SQL dialect="generic">(case when <Column table="sales_fact_1997" name="promotion_id"/> = 0 then 0 else <Column table="sales_fact_1997" name="store_sales"/> end)</SQL>
     </MeasureExpression>
   </Measure>
   <CalculatedMember
@@ -370,16 +322,15 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
   <Measure name="Units Shipped" column="units_shipped" aggregator="sum" formatString="#.0"/>
   <Measure name="Units Ordered" column="units_ordered" aggregator="sum" formatString="#.0"/>
-  <Measure name="Warehouse Profit" aggregator="sum">
+  <Measure name="Warehouse Profit" aggregator="sum" datatype="Numeric">
     <MeasureExpression>
-      <SQL dialect="mysql">
-`warehouse_sales` - `inventory_fact_1997`.`warehouse_cost`
-      </SQL>
       <SQL dialect="infobright">
 `warehouse_sales` - `inventory_fact_1997`.`warehouse_cost`
       </SQL>
       <SQL dialect="generic">
-&quot;warehouse_sales&quot; - &quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;
+          <Column table="inventory_fact_1997" name="warehouse_sales"/>
+          -
+          <Column table="inventory_fact_1997" name="warehouse_cost"/>
       </SQL>
     </MeasureExpression>
   </Measure>
@@ -611,39 +562,24 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       <Level name="City" column="city" uniqueMembers="false"/>
       <Level name="Name" uniqueMembers="true">
         <KeyExpression>
-          <SQL dialect="oracle">
-"fname" || ' ' || "lname"
-          </SQL>
-          <SQL dialect="hsqldb">
-"fname" || ' ' || "lname"
-          </SQL>
-          <SQL dialect="access">
-fname + ' ' + lname
-          </SQL>
-          <SQL dialect="postgres">
-"fname" || ' ' || "lname"
-          </SQL>
-          <SQL dialect="mysql">
-CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
-          </SQL>
-          <SQL dialect="mssql">
-fname + ' ' + lname
-          </SQL>
-          <SQL dialect="derby">
-"customer"."fullname"
-          </SQL>
-          <SQL dialect="db2">
-CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
-          </SQL>
-          <SQL dialect="luciddb">
-"fname" || ' ' || "lname"
-          </SQL>
-          <SQL dialect="neoview">
-"customer"."fullname"
-          </SQL>
-          <SQL dialect="generic">
-fullname
-          </SQL>
+            <SQL dialect="access">
+                <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
+            </SQL>
+            <SQL dialect="mysql">
+  CONCAT(<Column table="customer" name="fname"/>, ' ', <Column table="customer" name="lname"/>)
+            </SQL>
+            <SQL dialect="mssql">
+                <Column table="customer" name="fname"/> + ' ' + <Column table="customer" name="lname"/>
+            </SQL>
+            <SQL dialect="derby">
+                <Column table="customer" name="fullname"/>
+            </SQL>
+            <SQL dialect="db2">
+  CONCAT(CONCAT(<Column table="customer" name="fname"/>, ' '), <Column table="customer" name="lname"/>)
+            </SQL>
+            <SQL dialect="generic">
+                <Column table="customer" name="fname"/> || ' ' || <Column table="customer" name="lname"/>
+            </SQL>
         </KeyExpression>
         <Property name="Gender" column="gender"/>
         <Property name="Marital Status" column="marital_status"/>

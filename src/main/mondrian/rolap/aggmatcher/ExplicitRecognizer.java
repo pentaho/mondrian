@@ -253,12 +253,19 @@ class ExplicitRecognizer extends Recognizer {
                     for (JdbcSchema.Table.Column aggColumn
                         : aggTable.getColumns())
                     {
+                        final List<RolapSchema.PhysColumn> keyList =
+                            rlevel.getAttribute().keyList;
+                        if (keyList.size() > 0) {
+                            // TODO: support composite keys
+                            continue;
+                        }
+                        final RolapSchema.PhysColumn key = keyList.get(0);
                         if (aggColumn.getName().equals(columnName)) {
                             makeLevel(
                                 aggColumn,
                                 hierarchy,
                                 hierarchyUsage,
-                                getColumnName(rlevel.getKeyExp()),
+                                getColumnName(key),
                                 columnName,
                                 rlevel.getName());
                             return true;

@@ -144,13 +144,13 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             Level nthLevel(Hierarchy hierarchy, int n) {
-                Level[] levels = hierarchy.getLevels();
+                List<Level> levels = hierarchy.getLevelList();
 
-                if (n >= levels.length || n < 0) {
+                if (n >= levels.size() || n < 0) {
                     throw newEvalException(
                             this, "Index '" + n + "' out of bounds");
                 }
-                return levels[n];
+                return levels.get(0);
             }
         });
 
@@ -179,7 +179,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         Hierarchy hierarchy =
                             hierarchyCalc.evaluateHierarchy(evaluator);
                         String name = nameCalc.evaluateString(evaluator);
-                        for (Level level : hierarchy.getLevels()) {
+                        for (Level level : hierarchy.getLevelList()) {
                             if (level.getName().equals(name)) {
                                 return level;
                             }

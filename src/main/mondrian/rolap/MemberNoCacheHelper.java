@@ -48,11 +48,6 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, Object key) {
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
     // synchronization: Must synchronize, because modifies mapKeyToMember
     public synchronized RolapMember getMember(Object key) {
         return getMember(key, true);

@@ -42,12 +42,18 @@ public class RolapCubeMember
      * @param cubeLevel Level
      */
     public RolapCubeMember(
-        RolapCubeMember parent, RolapMember member, RolapCubeLevel cubeLevel)
+        RolapCubeMember parent,
+        RolapMember member,
+        RolapCubeLevel cubeLevel)
     {
         super(member);
         this.parentCubeMember = parent;
         this.cubeLevel = cubeLevel;
-        assert !member.isAll() || getClass() != RolapCubeMember.class;
+        assert !member.isAll() || getClass() != RolapCubeMember.class
+            : "all member should be its own subclass:" + member;
+        assert !(member instanceof RolapStoredMeasure)
+            || getClass() != RolapCubeMember.class
+            : "stored member should be its own subclass:" + member;
     }
 
     @Override

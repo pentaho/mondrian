@@ -15,6 +15,9 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Skeleton implementation for {@link Hierarchy}.
  *
@@ -45,10 +48,9 @@ public abstract class HierarchyBase
     protected final String name;
     protected final String uniqueName;
     protected String description;
-    protected Level[] levels;
+    protected final List<Level> levelList = new ArrayList<Level>();
     protected final boolean hasAll;
     protected String allMemberName;
-    protected String allLevelName;
 
     protected HierarchyBase(
         Dimension dimension,
@@ -59,7 +61,7 @@ public abstract class HierarchyBase
     {
         this.dimension = dimension;
         this.hasAll = hasAll;
-        if (caption != null) {
+        if (caption != null && !caption.equals("")) {
             this.caption = caption;
         } else if (subName == null) {
             this.caption = dimension.getCaption();
@@ -135,15 +137,16 @@ public abstract class HierarchyBase
         return dimension;
     }
 
+    @Deprecated
     public Level[] getLevels() {
-        return levels;
+        return levelList.toArray(new Level[levelList.size()]);
     }
 
     public Hierarchy getHierarchy() {
         return this;
     }
 
-    public boolean hasAll() {
+    public final boolean hasAll() {
         return hasAll;
     }
 
@@ -184,14 +187,6 @@ public abstract class HierarchyBase
         return allMemberName;
     }
 
-    /**
-     * Returns the name of the 'all' level in this hierarchy.
-     *
-     * @return name of the 'all' level
-     */
-    public String getAllLevelName() {
-        return allLevelName;
-    }
 }
 
 // End HierarchyBase.java

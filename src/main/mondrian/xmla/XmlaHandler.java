@@ -1322,11 +1322,11 @@ public class XmlaHandler {
 
             final CellRequest cellRequest =
                 RolapAggregationManager.makeRequest(members);
-            List<MondrianDef.Relation> relationList =
-                new ArrayList<MondrianDef.Relation>();
+            List<RolapSchema.PhysRelation> relationList =
+                new ArrayList<RolapSchema.PhysRelation>();
             final RolapStar.Table factTable =
                 cellRequest.getMeasure().getStar().getFactTable();
-            MondrianDef.Relation relation = factTable.getRelation();
+            RolapSchema.PhysRelation relation = factTable.getRelation();
             relationList.add(relation);
 
             for (RolapStar.Table table : factTable.getChildren()) {
@@ -1339,7 +1339,7 @@ public class XmlaHandler {
 
             Map<String, List<String>> tableFieldMap =
                 new HashMap<String, List<String>>();
-            for (MondrianDef.Relation relation1 : relationList) {
+            for (RolapSchema.PhysRelation relation1 : relationList) {
                 final String tableName = relation1.toString();
                 List<String> fieldNameList = new ArrayList<String>();
                 Dialect dialect =
@@ -2524,7 +2524,7 @@ public class XmlaHandler {
                         Level level = levels[j];
                         for (int k = 0; k <= level.getDepth(); k++) {
                             final Level level2 =
-                                    level.getHierarchy().getLevels()[k];
+                                    level.getHierarchy().getLevelList().get(k);
                             if (level2.isAll()) {
                                 continue;
                             }

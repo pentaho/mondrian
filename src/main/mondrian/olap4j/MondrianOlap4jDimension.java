@@ -51,7 +51,7 @@ class MondrianOlap4jDimension implements Dimension, Named {
             new NamedListImpl<MondrianOlap4jHierarchy>();
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        for (mondrian.olap.Hierarchy hierarchy : dimension.getHierarchies()) {
+        for (mondrian.olap.Hierarchy hierarchy : dimension.getHierarchyList()) {
             list.add(olap4jConnection.toOlap4j(hierarchy));
         }
         return Olap4jUtil.cast(list);
