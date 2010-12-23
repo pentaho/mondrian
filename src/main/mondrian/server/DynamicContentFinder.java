@@ -64,9 +64,7 @@ public class DynamicContentFinder
 
     /**
      * Creates a DynamicContentFinder.
-     *
      * @param dataSourcesConfigUrl URL of repository
-     * @param refreshIntervalMillis Interval to check for changes
      */
     public DynamicContentFinder(
         String dataSourcesConfigUrl)

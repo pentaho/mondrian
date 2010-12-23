@@ -49,8 +49,8 @@ public interface Repository {
      * @param connection A connection object from which to obtain
      * the metadata. May be null or the Repository implementation
      * itself might ignore it.
-     * @param The parent database name of which we want to list the
-     * catalogs.
+     * @param databaseName The parent database name of which we
+     * want to list the catalogs.
      * @return A list of catalog names found in this repository.
      */
     List<String> getCatalogNames(
