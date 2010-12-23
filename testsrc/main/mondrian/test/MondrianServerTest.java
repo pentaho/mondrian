@@ -38,6 +38,7 @@ public class MondrianServerTest extends TestCase {
             MondrianServer.forConnection(testContext.getConnection());
         final String id = server.getId();
         assertNotNull(id);
+        server.shutdown();
     }
 
     /**
@@ -50,6 +51,7 @@ public class MondrianServerTest extends TestCase {
                 null);
         final String id = server.getId();
         assertNotNull(id);
+        server.shutdown();
     }
 
     /**
@@ -66,9 +68,11 @@ public class MondrianServerTest extends TestCase {
         assertNotNull(id);
         OlapConnection connection =
             server.getConnection("FoodMart", "FoodMart", null);
-        final NamedList<Catalog> catalogs = connection.getCatalogs();
+        final NamedList<Catalog> catalogs =
+            connection.getMetaData().getOlapCatalogs();
         assertEquals(1, catalogs.size());
         assertEquals("FoodMart", catalogs.get(0).getName());
+        server.shutdown();
     }
 }
 

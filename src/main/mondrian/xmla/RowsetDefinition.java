@@ -2308,7 +2308,9 @@ public enum RowsetDefinition {
             throws XmlaException, OlapException
         {
             for (Catalog catalog : catIter(connection, tableCatalogCond)) {
-                final Schema schema = connection.getSchema();
+                // By definition, mondrian catalogs have only one
+                // schema. It is safe to use get(0)
+                final Schema schema = catalog.getSchemas().get(0);
                 final boolean emitInvisibleMembers =
                     XmlaUtil.shouldEmitInvisibleMembers(request);
                 int ordinalPosition = 1;
@@ -3003,7 +3005,9 @@ TODO: see above
             for (Catalog catalog
                 : catIter(connection, catNameCond(), tableCatalogCond))
             {
-                final Schema schema = connection.getSchema();
+                // By definition, mondrian catalogs have only one
+                // schema. It is safe to use get(0)
+                final Schema schema = catalog.getSchemas().get(0);
                 Row row;
                 for (Cube cube : filter(sortedCubes(schema), tableNameCond)) {
                     String desc = cube.getDescription();
@@ -3265,8 +3269,9 @@ TODO: see above
             throws XmlaException, OlapException
         {
             for (Catalog catalog : catIter(connection, catNameCond())) {
-                final Schema schema = connection.getSchema();
-
+                // By definition, mondrian catalogs have only one
+                // schema. It is safe to use get(0)
+                final Schema schema = catalog.getSchemas().get(0);
                 //TODO: Is this cubes or tables? SQL Server returns what
                 // in foodmart are cube names for TABLE_NAME
                 for (Cube cube : sortedCubes(schema)) {
@@ -4120,7 +4125,9 @@ TODO: see above
         {
             final XmlaHandler.XmlaExtra extra = getExtra(connection);
             for (Catalog catalog : catIter(connection, catNameCond())) {
-                final Schema schema = connection.getSchema();
+                // By definition, mondrian catalogs have only one
+                // schema. It is safe to use get(0)
+                final Schema schema = catalog.getSchemas().get(0);
                 List<XmlaHandler.XmlaExtra.FunctionDefinition> funDefs =
                     new ArrayList<XmlaHandler.XmlaExtra.FunctionDefinition>();
 
@@ -6337,30 +6344,36 @@ TODO: see above
     {
         return new Iterable<Catalog>() {
             public Iterator<Catalog> iterator() {
-                return new Iterator<Catalog>() {
-                    final Iterator<Catalog> catalogIter =
-                        Util.filter(
-                            connection.getCatalogs(),
-                            conds).iterator();
+                try {
+                    return new Iterator<Catalog>() {
+                        final Iterator<Catalog> catalogIter =
+                            Util.filter(
+                                connection.getMetaData().getOlapCatalogs(),
+                                conds).iterator();
 
-                    public boolean hasNext() {
-                        return catalogIter.hasNext();
-                    }
-
-                    public Catalog next() {
-                        Catalog catalog = catalogIter.next();
-                        try {
-                            connection.setCatalog(catalog.getName());
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
+                        public boolean hasNext() {
+                            return catalogIter.hasNext();
                         }
-                        return catalog;
-                    }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+                        public Catalog next() {
+                            Catalog catalog = catalogIter.next();
+                            try {
+                                connection.setCatalog(catalog.getName());
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                            return catalog;
+                        }
+
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                    };
+                } catch (OlapException e) {
+                    throw new RuntimeException(
+                        "Failed to obtain a list of catalogs form the connection object.",
+                        e);
+                }
             }
         };
     }

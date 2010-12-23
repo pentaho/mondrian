@@ -34,14 +34,56 @@ import java.util.Properties;
  * @version $Id$
  */
 public interface Repository {
-    List<String> getCatalogNames(
-        RolapConnection connection);
+    /**
+     * Returns a list of database names found in this repository.
+     * @param connection A connection object from which to obtain
+     * the metadata. May be null or the Repository implementation
+     * itself might ignore it.
+     * @return A list of database names found in this repository.
+     */
+    List<String> getDatabaseNames(
+            RolapConnection connection);
 
-    Map<String, RolapSchema> getCatalogSchemas(
+    /**
+     * Returns a list of catalog names found in the repository.
+     * @param connection A connection object from which to obtain
+     * the metadata. May be null or the Repository implementation
+     * itself might ignore it.
+     * @param The parent database name of which we want to list the
+     * catalogs.
+     * @return A list of catalog names found in this repository.
+     */
+    List<String> getCatalogNames(
         RolapConnection connection,
+        String databaseName);
+
+    /**
+     * Must return a map of schema names and schema objects
+     * who are children of the specified datasource and catalog.
+     * @param connection The connection from which to obtain
+     * the metadata. May be null or the Repository implementation
+     * itself might ignore it.
+     * @param databaseName The database name predicate for the list
+     * of returned schemas.
+     * @param catalogName The catalog name predicate for the list
+     * of returned schemas.
+     * @return A map of schema names associated to schema objects,
+     * as found in the repository..
+     */
+    Map<String, RolapSchema> getRolapSchemas(
+        RolapConnection connection,
+        String databaseName,
         String catalogName);
 
-    List<Map<String, Object>> getDataSources(
+    /**
+     * Returns a list of databases properties collections,
+     * one per database configured on this server.
+     * @param connection The connection from which to obtain
+     * the metadata. May be null or the Repository implementation
+     * itself might ignore it.
+     * @return A list of databases properties collections
+     */
+    List<Map<String, Object>> getDatabases(
         RolapConnection connection);
 
     OlapConnection getConnection(
@@ -51,6 +93,11 @@ public interface Repository {
         String roleName,
         Properties props)
         throws SQLException;
+
+    /**
+     * Shuts down and terminates a repository.
+     */
+    void shutdown();
 }
 
 // End Repository.java

@@ -202,6 +202,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return olap4jDatabaseMetaData;
     }
 
+    @Deprecated
     public NamedList<Catalog> getCatalogs() {
         return olap4jDatabaseMetaData.getCatalogObjects();
     }
@@ -214,12 +215,28 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return readOnly;
     }
 
-    public void setCatalog(String catalogName) throws SQLException {
+    public void setCatalog(String catalogName) throws OlapException {
         // ignore
     }
 
-    public String getCatalog() throws SQLException {
+    public String getCatalog() throws OlapException {
         return olap4jSchema.olap4jCatalog.name;
+    }
+
+    public void setDatabase(String databaseName) throws OlapException {
+        // ignore.
+    }
+
+    public String getDatabase() throws OlapException {
+        try {
+            ResultSet rs = getMetaData().getDatabases();
+            rs.first();
+            return rs.getString("DATA_SOURCE_NAME");
+        } catch (SQLException e) {
+            throw helper.createException(
+                "Error while querying for the current database name.",
+                e);
+        }
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
@@ -375,6 +392,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         };
     }
 
+    @Deprecated
     public Schema getSchema() throws OlapException {
         return olap4jSchema;
     }
@@ -833,11 +851,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                     mondrian.util.Bug.olap4jUpgrade(
                         "Switch to LiteralNode.create(ParseRegion, BigDecimal)"
                         + "when we next upgrade olap4j.");
-                    try {
-                        return LiteralNode.create(null, bd.intValueExact());
-                    } catch (ArithmeticException e) {
-                        return LiteralNode.create(null, bd.doubleValue());
-                    }
+                    return LiteralNode.createNumeric(null, bd, false);
                 } else if (value instanceof String) {
                     return LiteralNode.createString(null, (String) value);
                 } else if (value == null) {

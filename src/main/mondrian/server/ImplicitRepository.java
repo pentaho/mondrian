@@ -32,16 +32,30 @@ public class ImplicitRepository implements Repository {
         super();
     }
 
-    public List<String> getCatalogNames(RolapConnection connection)
+    public List<String> getCatalogNames(
+        RolapConnection connection,
+        String databaseName)
     {
-        // A mondrian instance contains one schema, so implicitly it
-        // contains one catalog
-        return Collections.singletonList(
-            connection.getSchema().getName());
+        // In an implicit repository, we assume that there is a single
+        // database, a single catalog and a single schema.
+        return
+            Collections.singletonList(
+                connection.getSchema().getName());
     }
 
-    public Map<String, RolapSchema> getCatalogSchemas(
-        RolapConnection connection, String catalogName)
+    public List<String> getDatabaseNames(RolapConnection connection)
+    {
+        // In an implicit repository, we assume that there is a single
+        // database, a single catalog and a single schema.
+        return
+            Collections.singletonList(
+                connection.getSchema().getName());
+    }
+
+    public Map<String, RolapSchema> getRolapSchemas(
+        RolapConnection connection,
+        String databaseName,
+        String catalogName)
     {
         final RolapSchema schema = (RolapSchema) connection.getSchema();
         assert schema.getName().equals(catalogName);
@@ -61,7 +75,7 @@ public class ImplicitRepository implements Repository {
         throw new UnsupportedOperationException();
     }
 
-    public List<Map<String, Object>> getDataSources(
+    public List<Map<String, Object>> getDatabases(
         RolapConnection connection)
     {
         return Collections.singletonList(
@@ -73,6 +87,10 @@ public class ImplicitRepository implements Repository {
                 "ProviderName", "Mondrian",
                 "ProviderType", "MDP",
                 "AuthenticationMode", "Unauthenticated"));
+    }
+
+    public void shutdown() {
+        // ignore.
     }
 }
 

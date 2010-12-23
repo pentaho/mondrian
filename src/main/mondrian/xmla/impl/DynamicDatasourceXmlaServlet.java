@@ -9,50 +9,21 @@
 
 package mondrian.xmla.impl;
 
-import mondrian.olap.*;
 import mondrian.server.DynamicContentFinder;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import mondrian.server.RepositoryContentFinder;
 
 /**
  * Extends DefaultXmlaServlet to add dynamic datasource loading capability.
- * Limitations : Catalog name should be unique across the datasources
- *
- * <p>The schema is updated every X milliseconds for each request to
- * {@link DynamicDatasourceXmlaServlet#doPost(HttpServletRequest,
- * HttpServletResponse)}, where X is
- * {@link MondrianProperties#XmlaSchemaRefreshInterval}
- *
  * @author Thiyagu Ajit, Luc Boudreau
  */
 public class DynamicDatasourceXmlaServlet extends DefaultXmlaServlet {
-
+    protected RepositoryContentFinder makeContentFinder(String dataSources) {
+        return new DynamicContentFinder(dataSources);
+    }
     @Override
-    protected DynamicContentFinder makeContentFinder(String dataSources) {
-        final int refreshIntervalMillis =
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get();
-        return new DynamicContentFinder(dataSources, refreshIntervalMillis);
-    }
-
-    protected void doPost(
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws ServletException, IOException
-    {
-        ((DynamicContentFinder) contentFinder).check();
-        super.doPost(request, response);
-    }
-
-    /**
-     * Checks for updates to datasources content, flushes obsolete catalogs.
-     *
-     * @deprecated Use {@link DynamicContentFinder#reloadDataSources()}
-     */
-    void reloadDataSources() {
-        ((DynamicContentFinder) contentFinder).reloadDataSources();
+    public void destroy() {
+        super.destroy();
+        ((DynamicContentFinder)contentFinder).shutdown();
     }
 }
 

@@ -333,41 +333,40 @@ public class XmlaSupport {
             buf.append(nl);
             buf.append("<DataSources>");
             buf.append(nl);
+            buf.append("   <DataSource>");
+            buf.append(nl);
+            buf.append("       <DataSourceName>");
+            buf.append(DATASOURCE_NAME);
+            buf.append("</DataSourceName>");
+            buf.append(nl);
+            buf.append("       <DataSourceDescription>");
+            buf.append(DATASOURCE_DESCRIPTION);
+            buf.append("</DataSourceDescription>");
+            buf.append(nl);
+            buf.append("       <URL>http://localhost:8080/mondrian/xmla</URL>");
+            buf.append(nl);
+            buf.append("       <DataSourceInfo><![CDATA[");
+            buf.append(connectString);
+            buf.append("]]></DataSourceInfo>");
+            buf.append(nl);
 
+            buf.append("       <ProviderName>Mondrian</ProviderName>");
+            buf.append(nl);
+            buf.append("       <ProviderType>MDP</ProviderType>");
+            buf.append(nl);
+            buf.append(
+                "       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
+            buf.append(nl);
+            buf.append("       <Catalogs>");
             for (Map.Entry<String, String> catalogNameUrl
                 : catalogNameUrls.entrySet())
             {
                 String name = catalogNameUrl.getKey();
                 String url = catalogNameUrl.getValue();
 
-                buf.append("   <DataSource>");
-                buf.append(nl);
-                buf.append("       <DataSourceName>");
-                buf.append(name);
-                buf.append("</DataSourceName>");
-                buf.append(nl);
-                buf.append("       <DataSourceDescription>");
-                buf.append(DATASOURCE_DESCRIPTION);
-                buf.append("</DataSourceDescription>");
-                buf.append(nl);
-                buf.append("       <URL>http://localhost:8080/mondrian/xmla</URL>");
-                buf.append(nl);
-                buf.append("       <DataSourceInfo><![CDATA[");
-                buf.append(connectString);
-                buf.append("]]></DataSourceInfo>");
-                buf.append(nl);
-
-                buf.append("       <ProviderName>Mondrian</ProviderName>");
-                buf.append(nl);
-                buf.append("       <ProviderType>MDP</ProviderType>");
-                buf.append(nl);
-                buf.append(
-                    "       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
-                buf.append(nl);
-                buf.append("       <Catalogs>");
                 buf.append(nl);
                 buf.append("           <Catalog name='");
-                buf.append(CATALOG_NAME);
+                buf.append(name);
                 buf.append("'>");
                 if (url != null) {
                     buf.append("<Definition>");
@@ -375,12 +374,13 @@ public class XmlaSupport {
                     buf.append("</Definition>");
                 }
                 buf.append("</Catalog>");
-                buf.append("       </Catalogs>");
-                buf.append(nl);
-                buf.append("   </DataSource>");
-                buf.append(nl);
             }
 
+            buf.append(nl);
+            buf.append("       </Catalogs>");
+            buf.append(nl);
+            buf.append("   </DataSource>");
+            buf.append(nl);
             buf.append("</DataSources>");
             buf.append(nl);
         }

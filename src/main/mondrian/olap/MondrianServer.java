@@ -45,6 +45,9 @@ public abstract class MondrianServer {
     /**
      * Creates a server.
      *
+     * <p>When creating a server, the calling code must call the
+     * {@link MondrianServer#shutdown()} method to dispose of it.
+     *
      * @param contentFinder Repository content finder
      * @param catalogLocator Catalog locator
      * @return Server that reads from the given repository
@@ -71,6 +74,19 @@ public abstract class MondrianServer {
      */
     public static MondrianServer forId(String instanceId) {
         return MondrianServerRegistry.INSTANCE.serverForId(instanceId);
+    }
+
+    /**
+     * Disposes of a server and cleans up everything.
+     * @param instanceId The instance ID of the server
+     * to shutdown gracefully.
+     */
+    public static void dispose(String instanceId) {
+        final MondrianServer server =
+            forId(instanceId);
+        if (server != null) {
+            server.shutdown();
+        }
     }
 
     /**
@@ -154,18 +170,24 @@ public abstract class MondrianServer {
         throws SQLException, SecurityException;
 
     /**
-     * Returns a list of the data sources in this server. One element
-     * per data source, each element a map whose keys are the XMLA fields
+     * Returns a list of the databases in this server. One element
+     * per database, each element a map whose keys are the XMLA fields
      * describing a data source: "DataSourceName", "DataSourceDescription",
      * "URL", etc. Unrecognized fields are ignored.
      *
      * @return List of data source definitions
      * @param connection Connection
      */
-    public abstract List<Map<String, Object>> getDataSources(
+    public abstract List<Map<String, Object>> getDatabases(
         RolapConnection connection);
 
     public abstract CatalogLocator getCatalogLocator();
+
+    /**
+     * Called when the server must terminate all background tasks
+     * and cleanup all potential memory leaks.
+     */
+    public abstract void shutdown();
 
     /**
      * Description of the version of the server.
