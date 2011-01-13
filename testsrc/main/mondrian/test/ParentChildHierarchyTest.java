@@ -1167,7 +1167,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "from [HR4C]";
         expected =
             TestContext.toString(testClosureContext.executeQuery(mdx));
-        assertTrue(expected, expected.contains("Row #0: 21,252\n"));
+        assertTrue(
+            expected,
+            expected
+                .contains(
+                    "Row #0: 21,252"
+                    + System.getProperty("line.separator")));
         // Need to unfold because 'expect' has platform-specific line-endings,
         // yet assertQueryReturns assumes that it contains linefeeds.
         testNoClosureContext.assertQueryReturns(
