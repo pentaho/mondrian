@@ -121,6 +121,7 @@ public class RolapMemberBase
 
     RolapMemberBase(RolapMember parentMember, RolapLevel level, Object value) {
         this(parentMember, level, value, null, MemberType.REGULAR);
+        assert !(level instanceof RolapCubeLevel);
     }
 
     protected Logger getLogger() {
@@ -675,9 +676,7 @@ public class RolapMemberBase
         SchemaReader schemaReader,
         Member seedMember)
     {
-        if (seedMember instanceof RolapCubeMember) {
-            seedMember = ((RolapCubeMember) seedMember).getRolapMember();
-        }
+        seedMember = RolapUtil.strip((RolapMember) seedMember);
         /*
          * The following are times for executing different set ordinals
          * algorithms for both the FoodMart Sales cube/Store dimension

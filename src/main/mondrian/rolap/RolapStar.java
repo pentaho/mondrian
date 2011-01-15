@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -68,11 +68,9 @@ public class RolapStar {
                     if (disableCaching) {
                         // REVIEW: could replace following code with call to
                         // CacheControl.flush(CellRegion)
-                        for (Iterator<RolapSchema> itSchemas =
-                            RolapSchema.getRolapSchemas();
-                             itSchemas.hasNext();)
+                        for (RolapSchema schema1
+                            : RolapSchema.getRolapSchemas())
                         {
-                            RolapSchema schema1 = itSchemas.next();
                             for (RolapStar star : schema1.getStars()) {
                                 star.clearCachedAggregations(true);
                             }

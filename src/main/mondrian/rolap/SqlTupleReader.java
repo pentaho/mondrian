@@ -1212,12 +1212,6 @@ public class SqlTupleReader implements TupleReader {
         this.maxRows = maxRows;
     }
 
-    private static RolapMember strip(RolapMember member) {
-        return member instanceof RolapCubeMember
-            ? ((RolapCubeMember) member).getRolapMember()
-            : member;
-    }
-
     /**
      * Description of the position of a SELECT statement in a UNION. Queries
      * on virtual cubes tend to generate unions.

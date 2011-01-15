@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -56,22 +56,65 @@ public abstract class GenericCalc
         return (Member[]) evaluate(evaluator);
     }
 
+    private String msg(TypeEnum expectedType, Object o) {
+        final TypeEnum actualType = actualType(o);
+        return "Expected value of type " + expectedType + "; got value '" + o
+           + "' (" + (actualType == null ? o.getClass() : actualType) + ")";
+    }
+
+    private static TypeEnum actualType(Object o) {
+        if (o == null) {
+            return TypeEnum.NULL;
+        } else if (o instanceof String) {
+            return TypeEnum.STRING;
+        } else if (o instanceof Boolean) {
+            return TypeEnum.BOOLEAN;
+        } else if (o instanceof Number) {
+            return TypeEnum.NUMERIC;
+        } else if (o instanceof Date) {
+            return TypeEnum.DATETIME;
+        } else if (o instanceof Member) {
+            return TypeEnum.MEMBER;
+        } else if (o instanceof Level) {
+            return TypeEnum.LEVEL;
+        } else if (o instanceof Hierarchy) {
+            return TypeEnum.HIERARCHY;
+        } else if (o instanceof Dimension) {
+            return TypeEnum.DIMENSION;
+        } else {
+            return null;
+        }
+    }
+
     public String evaluateString(Evaluator evaluator) {
-        return (String) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (String) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.STRING, o));
+        }
     }
 
     public int evaluateInteger(Evaluator evaluator) {
         Object o = evaluate(evaluator);
-        final Number number = (Number) o;
-        return number == null
-            ? FunUtil.IntegerNull
-            : number.intValue();
+        try {
+            final Number number = (Number) o;
+            return number == null
+                ? FunUtil.IntegerNull
+                : number.intValue();
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.NUMERIC, o));
+        }
     }
 
     public double evaluateDouble(Evaluator evaluator) {
         final Object o = evaluate(evaluator);
-        final Number number = (Number) o;
-        return numberToDouble(number);
+        try {
+            final Number number = (Number) o;
+            return numberToDouble(number);
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.NUMERIC, o));
+        }
     }
 
     public static double numberToDouble(Number number) {
@@ -81,11 +124,21 @@ public abstract class GenericCalc
     }
 
     public boolean evaluateBoolean(Evaluator evaluator) {
-        return (Boolean) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Boolean) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.BOOLEAN, o));
+        }
     }
 
     public Date evaluateDateTime(Evaluator evaluator) {
-        return (Date) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Date) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.DATETIME, o));
+        }
     }
 
     public void evaluateVoid(Evaluator evaluator) {
@@ -94,19 +147,45 @@ public abstract class GenericCalc
     }
 
     public Member evaluateMember(Evaluator evaluator) {
-        return (Member) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Member) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.MEMBER, o));
+        }
     }
 
     public Level evaluateLevel(Evaluator evaluator) {
-        return (Level) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Level) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.LEVEL, o));
+        }
     }
 
     public Hierarchy evaluateHierarchy(Evaluator evaluator) {
-        return (Hierarchy) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Hierarchy) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.HIERARCHY, o));
+        }
     }
 
     public Dimension evaluateDimension(Evaluator evaluator) {
-        return (Dimension) evaluate(evaluator);
+        final Object o = evaluate(evaluator);
+        try {
+            return (Dimension) o;
+        } catch (ClassCastException e) {
+            throw evaluator.newEvalException(null, msg(TypeEnum.DIMENSION, o));
+        }
+    }
+
+    private enum TypeEnum {
+        NULL,
+        BOOLEAN, STRING, NUMERIC, DATETIME,
+        MEMBER, LEVEL, HIERARCHY, DIMENSION
     }
 }
 

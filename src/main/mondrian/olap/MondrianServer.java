@@ -3,13 +3,22 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap;
 
+import mondrian.rolap.RolapConnection;
+import mondrian.server.*;
+import mondrian.spi.CatalogLocator;
+import mondrian.util.LockBox;
+import org.olap4j.OlapConnection;
+
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Interface by which to control an instance of Mondrian.
@@ -23,29 +32,140 @@ import java.util.List;
  * @since Jun 25, 2006
  */
 public abstract class MondrianServer {
-    private static MondrianServer instance = new MondrianServerImpl();
-
     /**
-     * Returns the MondrianServer which hosts a given connection.
-     * @param connection Connection
+     * Returns the MondrianServer that hosts a given connection.
+     *
+     * @param connection Connection (not null)
+     * @return server this connection belongs to (not null)
      */
     public static MondrianServer forConnection(Connection connection) {
-        // Mondrian server is currently a singleton, so the connection is
-        // irrelevant.
-        Util.discard(connection);
-        return instance;
+        return ((RolapConnection) connection).getServer();
     }
 
     /**
-     * Returns the version of this MondrianServer.
+     * Creates a server.
+     *
+     * @param contentFinder Repository content finder
+     * @param catalogLocator Catalog locator
+     * @return Server that reads from the given repository
      */
-    public abstract MondrianVersion getVersion();
+    public static MondrianServer createWithRepository(
+        RepositoryContentFinder contentFinder,
+        CatalogLocator catalogLocator)
+    {
+        return MondrianServerRegistry.INSTANCE.createWithRepository(
+            contentFinder,
+            catalogLocator);
+    }
+
+    /**
+     * Returns the server with the given id.
+     *
+     * <p>If id is null, returns the catalog-less server. (The catalog-less
+     * server can also be acquired using its id.)
+     *
+     * If server is not found, returns null.
+     *
+     * @param instanceId Server instance id
+     * @return Server, or null if no server with this id
+     */
+    public static MondrianServer forId(String instanceId) {
+        return MondrianServerRegistry.INSTANCE.serverForId(instanceId);
+    }
+
+    /**
+     * Returns a string uniquely identifying this server within its JVM.
+     *
+     * @return Server's unique identifier
+     */
+    public abstract String getId();
+
+    /**
+     * Returns the version of this MondrianServer.
+     *
+     * @return Server's version
+     */
+    public MondrianVersion getVersion() {
+        return MondrianServerRegistry.INSTANCE.getOrLoadVersion();
+    }
 
     /**
      * Returns a list of MDX keywords.
      * @return list of MDX keywords
      */
     public abstract List<String> getKeywords();
+
+    /**
+     * Returns the lock box that can be used to pass objects via their string
+     * key.
+     *
+     * @return Lock box for this server
+     */
+    public abstract LockBox getLockBox();
+
+    /**
+     * Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and the name of a user role.
+     *
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalogName Catalog name
+     * @param schemaName Schema name
+     * @param roleName User role name
+     * @return Connection
+     * @throws SQLException If error occurs
+     */
+    public abstract OlapConnection getConnection(
+        String catalogName,
+        String schemaName,
+        String roleName)
+        throws SQLException, SecurityException;
+
+    /**
+     * Extended version of
+     * {@link MondrianServer#getConnection(String, String, String)}
+     * taking a list of properties to pass down to the native connection.
+     *
+     * <p>Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and the name of a user role.
+     *
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalogName Catalog name
+     * @param schemaName Schema name
+     * @param roleName User role name
+     * @param props Properties to pass down to the native driver.
+     * @return Connection
+     * @throws SQLException If error occurs
+     */
+    public abstract OlapConnection getConnection(
+        String catalogName,
+        String schemaName,
+        String roleName,
+        Properties props)
+        throws SQLException, SecurityException;
+
+    /**
+     * Returns a list of the data sources in this server. One element
+     * per data source, each element a map whose keys are the XMLA fields
+     * describing a data source: "DataSourceName", "DataSourceDescription",
+     * "URL", etc. Unrecognized fields are ignored.
+     *
+     * @return List of data source definitions
+     * @param connection Connection
+     */
+    public abstract List<Map<String, Object>> getDataSources(
+        RolapConnection connection);
+
+    public abstract CatalogLocator getCatalogLocator();
 
     /**
      * Description of the version of the server.
@@ -55,6 +175,7 @@ public abstract class MondrianServer {
          * Returns the version string, for example "2.3.0".
          *
          * @see java.sql.DatabaseMetaData#getDatabaseProductVersion()
+         * @return Version of this server
          */
         String getVersionString();
 
@@ -89,6 +210,7 @@ public abstract class MondrianServer {
          */
         String getProductName();
     }
+
 }
 
 // End MondrianServer.java

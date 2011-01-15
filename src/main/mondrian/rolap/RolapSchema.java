@@ -154,7 +154,7 @@ public class RolapSchema implements Schema {
     private Map<String, Annotation> annotationMap;
 
     /**
-     * This is a unique schema instance id which will be used
+     * Unique schema instance id that will be used
      * to inform clients when the schema has changed.
      *
      * <p>Expect a different ID for each Mondrian instance node.
@@ -181,8 +181,9 @@ public class RolapSchema implements Schema {
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
         this.defaultRole = createDefaultRole();
+        final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
-            new RolapConnection(connectInfo, this, dataSource);
+            new RolapConnection(internalServer, connectInfo, this, dataSource);
 
         this.mapSharedHierarchyNameToHierarchy =
             new HashMap<String, RolapHierarchy>();
@@ -208,22 +209,22 @@ public class RolapSchema implements Schema {
      * @param connectInfo Connection properties
      */
     private RolapSchema(
-            final String key,
-            final String md5Bytes,
-            final String catalogUrl,
-            final String catalogStr,
-            final Util.PropertyList connectInfo,
-            final DataSource dataSource)
+        String key,
+        String md5Bytes,
+        String catalogUrl,
+        String catalogStr,
+        Util.PropertyList connectInfo,
+        DataSource dataSource)
     {
         this(key, connectInfo, dataSource, md5Bytes);
         load(catalogUrl, catalogStr);
     }
 
     private RolapSchema(
-            final String key,
-            final String catalogUrl,
-            final Util.PropertyList connectInfo,
-            final DataSource dataSource)
+        String key,
+        String catalogUrl,
+        Util.PropertyList connectInfo,
+        DataSource dataSource)
     {
         this(key, connectInfo, dataSource, null);
         load(catalogUrl, null);
@@ -1095,7 +1096,7 @@ public class RolapSchema implements Schema {
          *
          * @return Iterator over RolapSchemas
          */
-        synchronized Iterator<RolapSchema> getRolapSchemas() {
+        synchronized List<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
             for (Iterator<SoftReference<RolapSchema>> it =
                 mapUrlToSchema.values().iterator(); it.hasNext();)
@@ -1116,7 +1117,7 @@ public class RolapSchema implements Schema {
                     }
                 }
             }
-            return list.iterator();
+            return list;
         }
 
         synchronized boolean contains(RolapSchema rolapSchema) {
@@ -1170,7 +1171,7 @@ public class RolapSchema implements Schema {
         }
     }
 
-    public static Iterator<RolapSchema> getRolapSchemas() {
+    public static List<RolapSchema> getRolapSchemas() {
         return Pool.instance().getRolapSchemas();
     }
 

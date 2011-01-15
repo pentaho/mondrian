@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -153,7 +153,14 @@ public enum RolapConnectionProperties {
      * errors can be obtained by calling
      * {@link mondrian.olap.Schema#getWarnings}.
      */
-    Ignore;
+    Ignore,
+
+    /**
+     * The "Instance" property is the unique identifier of a mondrian server
+     * running in the current JVM. If there are multiple mondrian servers, it
+     * ensures that the connection belongs to the correct one.
+     */
+    Instance;
 
     /**
      * Any property beginning with this value will be added to the

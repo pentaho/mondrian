@@ -945,18 +945,8 @@ public class RolapResult extends ResultBase {
         } else {
             Axis axis = axes[axisOrdinal];
             List<Position> positions = axis.getPositions();
-            if (positionsHighCardinality.get(axisOrdinal) == null
-                && !positions.isEmpty()
-                && !positions.get(0).isEmpty())
-            {
-                positionsHighCardinality.put(
-                    axisOrdinal,
-                    positions.get(0).get(0).getDimension()
-                        .isHighCardinality());
-            }
-            if (positionsHighCardinality.get(axisOrdinal) != null
-                && positionsHighCardinality.get(axisOrdinal))
-            {
+            Util.discard(positions.size()); // force materialize
+            if (isAxisHighCardinality(axisOrdinal, positions)) {
                 final int limit =
                     MondrianProperties.instance().HighCardChunkSize.get();
                 if (positionsIterators.get(axisOrdinal) == null) {
@@ -1029,6 +1019,27 @@ public class RolapResult extends ResultBase {
                 }
             }
         }
+    }
+
+    private boolean isAxisHighCardinality(
+        int axisOrdinal,
+        List<Position> positions)
+    {
+        Boolean highCardinality =
+            positionsHighCardinality.get(axisOrdinal);
+        if (highCardinality == null) {
+            highCardinality = false;
+            //noinspection LoopStatementThatDoesntLoop
+            for (Position position : positions) {
+                if (!position.isEmpty()) {
+                    highCardinality =
+                        position.get(0).getDimension().isHighCardinality();
+                }
+                break;
+            }
+            positionsHighCardinality.put(axisOrdinal, highCardinality);
+        }
+        return highCardinality;
     }
 
     List<Member> exprMembers = null;

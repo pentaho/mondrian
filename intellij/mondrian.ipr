@@ -367,6 +367,13 @@
         <root url="jar://$PROJECT_DIR$/../lib/olap4j-source.jar!/" />
       </SOURCES>
     </library>
+    <library name="olap4j-tck">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-tck.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
 </project>
 

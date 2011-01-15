@@ -2,26 +2,26 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla.impl;
 
 import junit.framework.TestCase;
+import mondrian.olap.MondrianProperties;
+import mondrian.server.DynamicContentFinder;
 import mondrian.xmla.DataSourcesConfig;
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMException;
 import org.eigenbase.xom.XOMUtil;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Unit test for DynamicDatasourceXmlaServlet
@@ -63,57 +63,64 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
     private static final String DATASOURCE_2_NAME = "DATASOURCENAME2";
 
     public void testFlushObsoleteCatalogsForNewCatalog() throws Exception {
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources newDataSources =
             getDataSources(CATALOG_0_DEFINITION, CATALOG_1_DEFINITION);
-        xmlaServlet.flushObsoleteCatalogs(newDataSources);
-        assertTrue(xmlaServlet.flushCatalogList().isEmpty());
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                "inline:" + getDataSourceContent(CATALOG_0_DEFINITION), 0);
+        finder.flushObsoleteCatalogs(newDataSources);
+        assertTrue(finder.flushCatalogList().isEmpty());
     }
 
     public void testFlushObsoleteCatalogsForUpdateCatalog() throws Exception {
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources newDataSources =
             getDataSources(CATALOG_0_UPDATED_DEFINITION);
-        xmlaServlet.flushObsoleteCatalogs(newDataSources);
-        assertTrue(xmlaServlet.flushCatalogList().contains(CATALOG_0_NAME));
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                "inline:" + getDataSourceContent(CATALOG_0_DEFINITION), 0);
+        finder.flushObsoleteCatalogs(newDataSources);
+        assertTrue(finder.flushCatalogList().contains(CATALOG_0_NAME));
     }
 
     public void testFlushObsoleteCatalogsForUnchangedCatalog() throws Exception
     {
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources newDataSources =
             getDataSources(CATALOG_0_DEFINITION, CATALOG_1_DEFINITION);
-        xmlaServlet.flushObsoleteCatalogs(newDataSources);
-        assertFalse(xmlaServlet.flushCatalogList().contains(CATALOG_0_NAME));
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                "inline:" + getDataSourceContent(CATALOG_0_DEFINITION), 0);
+        finder.flushObsoleteCatalogs(newDataSources);
+        assertFalse(finder.flushCatalogList().contains(CATALOG_0_NAME));
     }
 
     public void testFlushObsoleteCatalogsForDeletedCatalog() throws Exception {
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources newDataSources =
             getDataSources(CATALOG_1_DEFINITION);
-        xmlaServlet.flushObsoleteCatalogs(newDataSources);
-        assertTrue(xmlaServlet.flushCatalogList().contains(CATALOG_0_NAME));
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                "inline:" + getDataSourceContent(CATALOG_0_DEFINITION), 0);
+        finder.flushObsoleteCatalogs(newDataSources);
+        assertTrue(finder.flushCatalogList().contains(CATALOG_0_NAME));
     }
 
     public void testMergeDataSourcesForAlteringCatalogAcrossDataSources()
         throws Exception
     {
-        Map<String, String[]> dsCatalog = new HashMap<String, String[]>();
-        dsCatalog.put(
-            DATASOURCE_1_NAME,
-            new String[]{CATALOG_0_UPDATED_DEFINITION, CATALOG_1_DEFINITION});
-        dsCatalog.put(
-            DATASOURCE_2_NAME, new String[]{CATALOG_2_DEFINITION});
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources newDataSources =
-            getDataSources(dsCatalog);
-        xmlaServlet.flushObsoleteCatalogs(newDataSources);
-        assertTrue(xmlaServlet.flushCatalogList().contains(CATALOG_0_NAME));
+            getDataSources(
+                Olap4jUtil.mapOf(
+                    DATASOURCE_1_NAME,
+                    new String[] {
+                        CATALOG_0_UPDATED_DEFINITION,
+                        CATALOG_1_DEFINITION},
+                    DATASOURCE_2_NAME,
+                    new String[] {
+                        CATALOG_2_DEFINITION}));
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                "inline:" + getDataSourceContent(CATALOG_0_DEFINITION), 0);
+        finder.flushObsoleteCatalogs(newDataSources);
+        assertTrue(finder.flushCatalogList().contains(CATALOG_0_NAME));
     }
 
     public void testAreCatalogsEqual() throws Exception {
@@ -129,25 +136,40 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             datasource.catalogs.catalogs[1];
         DataSourcesConfig.Catalog catalog1 = datasource.catalogs.catalogs[2];
         DataSourcesConfig.Catalog catalog2 = datasource.catalogs.catalogs[3];
-        DynamicDatasourceXmlaServlet xmlaServlet =
-            new DynamicDatasourceXmlaServlet();
-        assertFalse(xmlaServlet.areCatalogsEqual(catalog0, catalog0Updated));
-        assertTrue(xmlaServlet.areCatalogsEqual(catalog0, catalog0));
-        assertFalse(xmlaServlet.areCatalogsEqual(catalog1, catalog2));
+        assertFalse(
+            DynamicContentFinder.areCatalogsEqual(
+                datasource, catalog0, datasource, catalog0Updated));
+        assertTrue(
+            DynamicContentFinder.areCatalogsEqual(
+                datasource, catalog0, datasource, catalog0));
+        assertFalse(
+            DynamicContentFinder.areCatalogsEqual(
+                datasource, catalog1, datasource, catalog2));
     }
 
-    private DataSourcesConfig.DataSources getDataSources(String... catalogs)
+    private static DataSourcesConfig.DataSources getDataSources(
+        String... catalogs)
         throws XOMException
     {
-        HashMap<String, String[]> hashMap = new HashMap<String, String[]>();
-        hashMap.put(DATASOURCE_1_NAME, catalogs);
-        return getDataSources(hashMap);
+        return getDataSources(Olap4jUtil.mapOf(DATASOURCE_1_NAME, catalogs));
     }
 
-    private DataSourcesConfig.DataSources getDataSources(
+    private static String getDataSourceContent(String... catalogs) {
+        return getDataSourceString(
+            Olap4jUtil.mapOf(DATASOURCE_1_NAME, catalogs));
+    }
+
+    private static DataSourcesConfig.DataSources getDataSources(
         Map<String, String[]> dsCatalog)
         throws XOMException
     {
+        final String str = getDataSourceString(dsCatalog);
+        final Parser xmlParser = XOMUtil.createDefaultParser();
+        final DOMWrapper def = xmlParser.parse(str);
+        return new DataSourcesConfig.DataSources(def);
+    }
+
+    private static String getDataSourceString(Map<String, String[]> dsCatalog) {
         StringBuilder ds = new StringBuilder();
         ds.append("<?xml version=\"1.0\"?>");
         ds.append("<DataSources>");
@@ -183,14 +205,10 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             ds.append("</DataSource>");
         }
         ds.append("</DataSources>");
-        final Parser xmlParser = XOMUtil.createDefaultParser();
-        final DOMWrapper def = xmlParser.parse(ds.toString());
-        return new DataSourcesConfig.DataSources(def);
+        return ds.toString();
     }
 
     public void testReloadDataSources() throws Exception {
-        MockDynamicDatasourceXmlaServlet xmlaServlet =
-            new MockDynamicDatasourceXmlaServlet();
         DataSourcesConfig.DataSources ds1 =
             getDataSources(CATALOG_0_DEFINITION, CATALOG_1_DEFINITION);
         DataSourcesConfig.DataSources ds2 =
@@ -206,33 +224,34 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             out.write(ds1.toXML().getBytes());
             out.flush();
 
-            // Simulate servlet init
-            xmlaServlet.parseDataSourcesUrl(dsFile.toURL());
+            final MockDynamicContentFinder finder =
+                new MockDynamicContentFinder(
+                    dsFile.toURL().toString(), 0);
 
             out = new FileOutputStream(dsFile);
             out.write(ds2.toXML().getBytes());
             out.flush();
 
-            xmlaServlet.reloadDataSources();
+            finder.reloadDataSources();
 
             assertTrue(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
             assertTrue(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
             assertFalse(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
 
             out = new FileOutputStream(dsFile);
             out.write(ds1.toXML().getBytes());
             out.flush();
 
-            xmlaServlet.reloadDataSources();
+            finder.reloadDataSources();
             assertTrue(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
             assertTrue(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
             assertFalse(
-                xmlaServlet.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
         } finally {
             if (dsFile != null) {
                 dsFile.delete();
@@ -241,13 +260,38 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
     }
 
 
-    class MockDynamicDatasourceXmlaServlet
+    private static class MockDynamicDatasourceXmlaServlet
         extends DynamicDatasourceXmlaServlet
     {
-        private List<String> flushCatalogList = new Vector<String>();
-
         public MockDynamicDatasourceXmlaServlet() throws XOMException {
             dataSources = getDataSources(CATALOG_0_DEFINITION);
+        }
+
+        @Override
+        protected DynamicContentFinder makeContentFinder(String dataSources) {
+            final int refreshIntervalMillis =
+                MondrianProperties.instance().XmlaSchemaRefreshInterval.get();
+            return new MockDynamicContentFinder(
+                dataSources, refreshIntervalMillis);
+        }
+    }
+
+    private static class MockDynamicContentFinder extends DynamicContentFinder
+    {
+        private List<String> flushCatalogList = new ArrayList<String>();
+
+        public MockDynamicContentFinder(
+            String dataSources, int refreshIntervalMillis)
+        {
+            super(dataSources, refreshIntervalMillis);
+        }
+
+        protected void flushCatalog(String catalogName) {
+            flushCatalogList.add(catalogName);
+        }
+
+        public List flushCatalogList() {
+            return flushCatalogList;
         }
 
         public boolean containsCatalog(
@@ -273,14 +317,6 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
                 }
             }
             return null;
-        }
-
-        void flushCatalog(String catalogName) {
-            flushCatalogList.add(catalogName);
-        }
-
-        public List flushCatalogList() {
-            return flushCatalogList;
         }
     }
 }

@@ -24,10 +24,7 @@ import javax.sql.DataSource;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.util.FilteredIterableList;
-import mondrian.util.MemoryMonitor;
-import mondrian.util.MemoryMonitorFactory;
-import mondrian.util.Pair;
+import mondrian.util.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 
@@ -53,6 +50,8 @@ public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER =
         Logger.getLogger(RolapConnection.class);
 
+    private final MondrianServer server;
+
     private final Util.PropertyList connectInfo;
 
     // used for MDX logging, allows for a MDX Statement UID
@@ -75,42 +74,17 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a connection.
      *
+     * @param server Server instance this connection belongs to
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
-     */
-    public RolapConnection(Util.PropertyList connectInfo) {
-        this(connectInfo, null, null);
-    }
-
-    /**
-     * Creates a connection.
-     *
-     * @param connectInfo Connection properties; keywords are described in
-     *   {@link RolapConnectionProperties}.
+     * @param dataSource JDBC data source
      */
     public RolapConnection(
+        MondrianServer server,
         Util.PropertyList connectInfo,
         DataSource dataSource)
     {
-        this(connectInfo, null, dataSource);
-    }
-
-    /**
-     * Creates a RolapConnection.
-     *
-     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
-     * schema != null (to
-     * create a schema's internal connection). Other uses retrieve a schema
-     * from the cache based upon the <code>Catalog</code> property.
-     *
-     * @param connectInfo Connection properties; keywords are described in
-     *   {@link RolapConnectionProperties}.
-     * @param schema Schema for the connection. Must be null unless this is to
-     *   be an internal connection.
-     * @pre connectInfo != null
-     */
-    RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
-        this(connectInfo, schema, null);
+        this(server, connectInfo, null, dataSource);
     }
 
     /**
@@ -121,21 +95,25 @@ public class RolapConnection extends ConnectionBase {
      * Other uses retrieve a schema from the cache based upon
      * the <code>Catalog</code> property.
      *
+     * @param server Server instance this connection belongs to
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
      * @param schema Schema for the connection. Must be null unless this is to
      *   be an internal connection.
      * @param dataSource If not null an external DataSource to be used
      *        by Mondrian
-     * @pre connectInfo != null
      */
     RolapConnection(
+        MondrianServer server,
         Util.PropertyList connectInfo,
         RolapSchema schema,
         DataSource dataSource)
     {
         super();
+        assert server != null;
+        this.server = server;
 
+        assert connectInfo != null;
         String provider = connectInfo.get(
             RolapConnectionProperties.Provider.name(), "mondrian");
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
@@ -181,7 +159,18 @@ public class RolapConnection extends ConnectionBase {
                 List<String> roleNames = Util.parseCommaList(roleNameList);
                 List<Role> roleList = new ArrayList<Role>();
                 for (String roleName : roleNames) {
-                    Role role1 = schema.lookupRole(roleName);
+                    final LockBox.Entry entry =
+                        server.getLockBox().get(roleName);
+                    Role role1;
+                    if (entry != null) {
+                        try {
+                            role1 = (Role) entry.getValue();
+                        } catch (ClassCastException e) {
+                            role1 = null;
+                        }
+                    } else {
+                        role1 = schema.lookupRole(roleName);
+                    }
                     if (role1 == null) {
                         throw Util.newError(
                             "Role '" + roleName + "' not found");
@@ -652,6 +641,16 @@ public class RolapConnection extends ConnectionBase {
 
     public Scenario getScenario() {
         return scenario;
+    }
+
+    /**
+     * Returns the server (mondrian instance) that this connection belongs to.
+     * Usually there is only one server instance in a given JVM.
+     *
+     * @return Server instance; never null
+     */
+    public MondrianServer getServer() {
+        return server;
     }
 
     /**

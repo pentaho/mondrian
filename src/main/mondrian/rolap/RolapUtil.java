@@ -425,6 +425,13 @@ public class RolapUtil {
         return view;
     }
 
+    public static RolapMember strip(RolapMember member) {
+        if (member instanceof RolapCubeMember) {
+            return ((RolapCubeMember) member).getRolapMember();
+        }
+        return member;
+    }
+
     /**
      * Writes to a string and also to an underlying writer.
      */
