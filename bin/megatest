@@ -1,6 +1,6 @@
 #!/bin/bash
 # $Id$
-# Copyright (C) 2006-2010 Julian Hyde
+# Copyright (C) 2006-2011 Julian Hyde
 #
 # Script to run the Mondrian test suite under various JDKs, with parameter
 # settings, against various RDBMSes. Customize it with your environment -
@@ -57,7 +57,7 @@ mackerel-winxp)
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 marmalade)
-  databaseList="hsqldb mysql oracle luciddb"
+  databaseList="derby hsqldb mysql oracle luciddb postgresql"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 *)
@@ -112,20 +112,15 @@ doTest() {
 }
 
 doTest2() {
-  olap4j=
-  mondrian=true
-  if [ "$1" = --mondrian ]; then
-    mondrian=true
+  skipMondrian=
+  if [ "$1" = --skip-mondrian ]; then
+    skipMondrian=true
     shift
   fi
 
-  if [ "$1" = --nomondrian ]; then
-    mondrian=
-    shift
-  fi
-
+  skipOlap4j=true
   if [ "$1" = --olap4j ]; then
-    olap4j=true
+    skipOlap4j=
     shift
   fi
 
@@ -234,6 +229,16 @@ doTest2() {
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
+  postgresql)
+    (
+      jdbcDrivers=org.postgresql.Driver
+      export jdbcURL='jdbc:postgresql://localhost/foodmart?user=foodmart&password=foodmart'
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo driver.classpath=/usr/share/java/postgresql.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${OPEN_DIR}/mondrian/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
   teradata)
     (
       jdbcDrivers=com.ncr.teradata.TeraDriver
@@ -278,7 +283,8 @@ doTest2() {
   echo
   echo "========================================"
   date
-  echo "Running test with JDK=$jdk retroweave=$retroweave database=$database props={$props}"
+  echo "Running test with JDK=$jdk retroweave=$retroweave database=$database skipMondrian=$skipMondrian skipOlap4j=$skipOlap4j props={$props}"
+  export CLEAN=clean
   if [ "$build" ]; then
     echo build=${build}
     if [ "$retroweave" ]; then
@@ -289,7 +295,8 @@ doTest2() {
           export JAVA_HOME=$(chooseJavaHome jdk1.5)
           export PATH="$JAVA_HOME/bin:$PATH"
           export ANT_HOME=$(chooseAntHome jdk1.5)
-          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
+          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all
+          $ANT_HOME/bin/ant $ANT_FLAGS retroweave
         )
         export JAVA_HOME=$(chooseJavaHome jdk1.4)
         export PATH=$JAVA_HOME/bin:$PATH
@@ -298,7 +305,7 @@ doTest2() {
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         ;;
       esac
-      if [ "$mondrian" ]; then
+      if [ ! "$skipMondrian" ]; then
         $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
       fi
     else
@@ -316,10 +323,13 @@ doTest2() {
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests ${TEST_TARGET}
         ;;
       esac
+      if [ ! "$skipMondrian" ]; then
+        $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
+      fi
     fi
   fi
 
-  if [ "$olap4j" ]; then
+  if [ ! "$skipOlap4j" ]; then
     (olap4j $jdk mondrian NONE)
     (olap4j $jdk xmla NONE)
     (olap4j $jdk mondrian DBCP)
@@ -406,7 +416,9 @@ olap4j() {
   (*) FILE_PREFIX=file: ;;
   esac
   export ANT_HOME=$(chooseAntHome $jdk)
-  $ANT_HOME/bin/ant clean
+  if [ "${CLEAN}" ]; then
+    $ANT_HOME/bin/ant ${CLEAN}
+  fi
 
   case $driver in
   (mondrian)
@@ -733,14 +745,6 @@ doRandom() {
 
 doQuick() {
   doTest jdk1.6 oracle
-# doTest --olap4j jdk1.6 oracle
-  if false; then
-  for db in mysql derby oracle; do
-    for tf in true false; do
-      doTest jdk1.6 $db mondrian.olap.SsasCompatibleNaming=$tf
-    done
-  done
-  fi
 }
 
 # Runs the tests that are believed to be working.
@@ -765,6 +769,8 @@ doAllTests() {
   doTest jdk1.5 teradata mondrian.test.VUsers=1 mondrian.rolap.groupingsets.enable=true
   doTest jdk1.4 teradata mondrian.test.VUsers=1
 
+  doTest --olap4j jdk1.6 postgresql
+
   # Basic
   doTest jdk1.5 derby mondrian.test.VUsers=1
 
@@ -783,6 +789,13 @@ doAllTests() {
   doTest jdk1.5 derby mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
   doTest jdk1.5 mysql mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
 
+  # Pre-3.0 solve-order behavior.
+  doTest jdk1.6 oracle mondrian.rolap.SolveOrderMode=absolute
+
+  # Disable following 2. They hang.
+  #doTest jdk1.6 oracle mondrian.test.highCardDimensions=Store
+  #doTest jdk1.6 oracle mondrian.test.highCardDimensions=Store,Customers,Gender
+
 #    mondrian.test.Class=mondrian.test.BasicQueryTest
 #    mondrian.test.Name=testQueryTimeout
 
@@ -794,8 +807,8 @@ doAllTests() {
   doTest jdk1.5 oracle mondrian.olap.case.sensitive=false
 
   # Do some tests with random configurations
-  echo ::: do 10 random tests :::
-  for ((k=0; k < 10; k++)) do
+  echo ::: do 3 random tests :::
+  for ((k=0; k < 3; k++)) do
     doRandom
   done
 
@@ -887,6 +900,13 @@ if [ "$nightly" ]; then
   p4 get ...
   p4 resolve -am
 
+  # Check formatting
+  if [ -d ../util ]; then
+    p4 get ../util/...
+    find . -type f ! -name \*.cup |
+      xargs ../util/bin/checkFile
+  fi
+
   # If olap4j exists, sync it
   if [ -d ../olap4j ]; then
     (
@@ -901,7 +921,11 @@ main()
   cd "${MONDRIAN_DIR}"
   if [ "$nightly" ]; then
     # If a cron job, run the whole suite before emitting any output.
+    buildId="$(uname -n)-$(date +%Y%m%d)-change$(p4 counter change)"
     doTests >megatest.log 2>&1
+    echo
+    echo "Build $buildId"
+    echo http://www.hydromatic.net/buildlogs/mondrian-${buildId}.log.bz2
     echo
     echo ::: Summary :::::::::::::::::::::::::::::::::::::
     echo Tests completed at $(date).
@@ -909,7 +933,7 @@ main()
     if egrep 'FAILURE|BUILD FAILED|Failures: [^0]|Errors: [^0]' megatest.log; then
       echo There were failures.
     else
-      echo Test succeeded.
+      doTests | tee megatest.log
     fi
 
     echo
@@ -918,8 +942,10 @@ main()
 
     echo
     echo ::: megatest.log :::::::::::::::::::::::::::::::::
-    # Limit to 10MB, because that is gmail's limit.
-    head --bytes=10000000 megatest.log
+    # Limit to 1MB what we show in email. 10MB is gmail's limit.
+    head --bytes=1000000 megatest.log
+    cp megatest.log /home/jhyde/web/buildlogs/mondrian-${buildId}.log
+    bzip2 --best /home/jhyde/web/buildlogs/mondrian-${buildId}.log
 
   else
     doTests | tee megatest.log
