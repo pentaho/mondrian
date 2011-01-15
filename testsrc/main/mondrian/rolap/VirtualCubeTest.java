@@ -24,9 +24,16 @@ import java.util.List;
  * @version $Id$
  */
 public class VirtualCubeTest extends BatchTestCase {
+    /**
+     * Creates an anonymous VirtualCubeTest.
+     */
     public VirtualCubeTest() {
     }
 
+    /**
+     * Creates a VirtualCubeTest.
+     * @param name Test case name
+     */
     public VirtualCubeTest(String name) {
         super(name);
     }
@@ -1133,6 +1140,11 @@ public class VirtualCubeTest extends BatchTestCase {
      * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyCJConstraintOnVirtualCube() {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            // Generated SQL is different if NonEmptyCrossJoin is evaluated in
+            // memory.
+            return;
+        }
         String query =
             "with "
             + "set [foo] as [Time].[Month].members "
@@ -1254,6 +1266,10 @@ public class VirtualCubeTest extends BatchTestCase {
      * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
+        if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+            // Generated SQL is different if NON EMPTY is evaluated in memory.
+            return;
+        }
         String query =
             "with "
             + "set [bar] as {[Store].[USA]} "

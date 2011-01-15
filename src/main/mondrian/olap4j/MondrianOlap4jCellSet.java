@@ -716,8 +716,8 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         throw new UnsupportedOperationException();
     }
 
-    public Statement getStatement() throws SQLException {
-        throw new UnsupportedOperationException();
+    public OlapStatement getStatement() {
+        return olap4jStatement;
     }
 
     public Object getObject(

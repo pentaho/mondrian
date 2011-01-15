@@ -34,7 +34,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
 
-import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -74,8 +74,8 @@ public class Util extends XOMUtil {
     /**
      * Whether we are running a version of Java before 1.5.
      *
-     * <p>If this variable is true, we will be running retroweaver. Retroweaver
-     * has some problems involving {@link java.util.EnumSet}.
+     * <p>If (but not only if) this variable is true, {@link #Retrowoven} will
+     * also be true.
      */
     public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
@@ -90,7 +90,9 @@ public class Util extends XOMUtil {
 
     /**
      * Whether the code base has re-engineered using retroweaver.
-     * If this is the case, some functionality is not available.
+     * If this is the case, some functionality is not available, but a lot of
+     * things are available via {@link mondrian.util.UtilCompatible}.
+     * Retroweaver has some problems involving {@link java.util.EnumSet}.
      */
     public static final boolean Retrowoven =
         Access.class.getSuperclass().getName().equals(
@@ -1487,10 +1489,10 @@ public class Util extends XOMUtil {
      * @return List of mondrian segments
      */
     public static List<Id.Segment> convert(
-        List<IdentifierNode.Segment> olap4jSegmentList)
+        List<IdentifierSegment> olap4jSegmentList)
     {
         final List<Id.Segment> list = new ArrayList<Id.Segment>();
-        for (IdentifierNode.Segment olap4jSegment : olap4jSegmentList) {
+        for (IdentifierSegment olap4jSegment : olap4jSegmentList) {
             list.add(convert(olap4jSegment));
         }
         return list;
@@ -1502,13 +1504,13 @@ public class Util extends XOMUtil {
      * @param olap4jSegment olap4j segment
      * @return mondrian segment
      */
-    public static Id.Segment convert(IdentifierNode.Segment olap4jSegment) {
-        if (olap4jSegment instanceof IdentifierNode.NameSegment) {
-            IdentifierNode.NameSegment nameSegment =
-                (IdentifierNode.NameSegment) olap4jSegment;
+    public static Id.Segment convert(IdentifierSegment olap4jSegment) {
+        if (olap4jSegment instanceof NameSegment) {
+            NameSegment nameSegment =
+                (NameSegment) olap4jSegment;
             return new Id.Segment(
                 nameSegment.getName(),
-                nameSegment.getQuoting() == IdentifierNode.Quoting.QUOTED
+                nameSegment.getQuoting() == Quoting.QUOTED
                     ? Id.Quoting.QUOTED
                     : Id.Quoting.UNQUOTED);
         } else {
@@ -1516,8 +1518,8 @@ public class Util extends XOMUtil {
             // 1. Mondrian assumes that the key has only one part
             // 2. Mondrian does not specify whether key is quoted (e.g. &[foo]
             //    vs. &foo)
-            final IdentifierNode.KeySegment keySegment =
-                (IdentifierNode.KeySegment) olap4jSegment;
+            final KeySegment keySegment =
+                (KeySegment) olap4jSegment;
             assert keySegment.getKeyParts().size() == 1 : keySegment;
             return new Id.Segment(
                 keySegment.getKeyParts().get(0).getName(),
@@ -2658,6 +2660,17 @@ public class Util extends XOMUtil {
      */
     public static String quotePattern(String s) {
         return compatible.quotePattern(s);
+    }
+
+    /**
+     * Generates a unique id.
+     *
+     * <p>From JDK 1.5 onwards, uses a {@code UUID}.
+     *
+     * @return A unique id
+     */
+    public static String generateUuidString() {
+        return compatible.generateUuidString();
     }
 
     /**

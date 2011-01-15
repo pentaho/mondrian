@@ -51,26 +51,24 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
     }
 
     private static boolean isArgSizeSupported(
-            RolapEvaluator evaluator,
-            int argSize)
-        {
-            boolean argSizeNotSupported = false;
+        RolapEvaluator evaluator,
+        int argSize)
+    {
+        boolean argSizeNotSupported = false;
 
-            // Note: arg size 0 is accepted as valid CJ argument
-            // This is used to push down the "1 = 0" predicate
-            // into the emerging CJ so that the entire CJ can
-            // be natively evaluated.
+        // Note: arg size 0 is accepted as valid CJ argument
+        // This is used to push down the "1 = 0" predicate
+        // into the emerging CJ so that the entire CJ can
+        // be natively evaluated.
 
-            // First check that the member list will not result in a predicate
-            // longer than the underlying DB could support.
-            if (!evaluator.getDialect().supportsUnlimitedValueList()
-                && argSize > MondrianProperties.instance().MaxConstraints.get())
-            {
-                argSizeNotSupported = true;
-            }
-
-            return !argSizeNotSupported;
+        // First check that the member list will not result in a predicate
+        // longer than the underlying DB could support.
+        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
+            argSizeNotSupported = true;
         }
+
+        return !argSizeNotSupported;
+    }
 
 
     /**
@@ -260,6 +258,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         if (restrictMemberTypes) {
             c += 1;
         }
+        if (exclude) {
+            c += 7;
+        }
         return c;
     }
 
@@ -269,6 +270,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         }
         MemberListCrossJoinArg that = (MemberListCrossJoinArg) obj;
         if (this.restrictMemberTypes != that.restrictMemberTypes) {
+            return false;
+        }
+        if (this.exclude != that.exclude) {
             return false;
         }
         for (int i = 0; i < members.size(); i++) {

@@ -284,7 +284,9 @@ public final class ScenarioImpl implements Scenario {
         final Query query = connection.parseQuery(mdx);
         final Result result = connection.execute(query);
         final Object o = result.getCell(new int[0]).getValue();
-        return ((Number) o).doubleValue();
+        return o instanceof Number
+            ? ((Number) o).doubleValue()
+            : 0d;
     }
 
     /**
@@ -302,8 +304,8 @@ public final class ScenarioImpl implements Scenario {
     }
 
     /**
-     * Created by a call to {@link
-     * org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
+     * Created by a call to
+     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object...)},
      * records that a cell's value has been changed.
      *
      * <p>From this, other cell values can be modified as they are read into
@@ -445,7 +447,7 @@ public final class ScenarioImpl implements Scenario {
      *
      * <p>When evaluated, replaces the value of a cell with the value overridden
      * by a writeback value, per
-     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object[])},
+     * {@link org.olap4j.Cell#setValue(Object, org.olap4j.AllocationPolicy, Object...)},
      * and modifies the values of ancestors or descendants of such cells
      * according to the allocation policy.
      */
@@ -481,7 +483,10 @@ public final class ScenarioImpl implements Scenario {
                 scenario.member.getHierarchy().getDefaultMember();
             final Evaluator evaluator1 = evaluator.push(defaultMember);
             final Object o = evaluator1.evaluateCurrent();
-            double d = ((Number) o).doubleValue();
+            double d =
+                o instanceof Number
+                    ? ((Number) o).doubleValue()
+                    : 0d;
 
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator1;
 

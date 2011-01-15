@@ -14,6 +14,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.AggregationKey;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -305,8 +306,12 @@ public class RolapStar {
         } else if (relOrJoin instanceof MondrianDef.Join) {
             // determine if the join starts from the left or right side
             MondrianDef.Join join = (MondrianDef.Join)relOrJoin;
-            MondrianDef.RelationOrJoin left = null;
-            MondrianDef.RelationOrJoin right = null;
+
+            if (join.left instanceof MondrianDef.Join) {
+                throw MondrianResource.instance().IllegalLeftDeepJoin.ex();
+            }
+            MondrianDef.RelationOrJoin left;
+            MondrianDef.RelationOrJoin right;
             if (join.getLeftAlias().equals(joinKeyTable)) {
                 // first manage left then right
                 left =
@@ -332,7 +337,7 @@ public class RolapStar {
                         parent, join.left, join.rightKey,
                         join.leftKey, join.getLeftAlias());
             } else {
-                new MondrianException(
+                throw new MondrianException(
                     "failed to match primary key table to join tables");
             }
 
@@ -1051,7 +1056,11 @@ public class RolapStar {
         /** this has a unique value per star */
         private final int bitPosition;
 
-        private int cardinality = -1;
+        /**
+         * The estimated cardinality of the column.
+         * {@link Integer#MIN_VALUE} means unknown.
+         */
+        private int approxCardinality = Integer.MIN_VALUE;
 
         private Column(
             String name,
@@ -1059,7 +1068,9 @@ public class RolapStar {
             MondrianDef.Expression expression,
             Dialect.Datatype datatype)
         {
-            this(name, table, expression, datatype, null, null, null);
+            this(
+                name, table, expression, datatype, null,
+                null, null, Integer.MIN_VALUE);
         }
 
         private Column(
@@ -1069,7 +1080,8 @@ public class RolapStar {
             Dialect.Datatype datatype,
             Column nameColumn,
             Column parentColumn,
-            String usagePrefix)
+            String usagePrefix,
+            int approxCardinality)
         {
             this.name = name;
             this.table = table;
@@ -1079,6 +1091,7 @@ public class RolapStar {
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
+            this.approxCardinality = approxCardinality;
             if (nameColumn != null) {
                 nameColumn.isNameColumn = true;
             }
@@ -1099,6 +1112,7 @@ public class RolapStar {
             this.nameColumn = null;
             this.usagePrefix = null;
             this.bitPosition = 0;
+            this.approxCardinality = Integer.MIN_VALUE;
         }
 
         public boolean equals(Object obj) {
@@ -1176,7 +1190,7 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (cardinality == -1) {
+            if (approxCardinality == Integer.MIN_VALUE) {
                 RolapStar star = getStar();
                 RolapSchema schema = star.getSchema();
                 Integer card =
@@ -1185,18 +1199,18 @@ public class RolapStar {
                         expression);
 
                 if (card != null) {
-                    cardinality = card.intValue();
+                    approxCardinality = card.intValue();
                 } else {
                     // If not cached, issue SQL to get the cardinality for
                     // this column.
-                    cardinality = getCardinality(star.getDataSource());
+                    approxCardinality = getCardinality(star.getDataSource());
                     schema.putCachedRelationExprCardinality(
                         table.getRelation(),
                         expression,
-                        cardinality);
+                        approxCardinality);
                 }
             }
-            return cardinality;
+            return approxCardinality;
         }
 
         private int getCardinality(DataSource dataSource) {
@@ -1542,6 +1556,14 @@ public class RolapStar {
                     if (columnExpr.name.equals(columnName)) {
                         l.add(column);
                     }
+                } else if (column.getExpression()
+                        instanceof MondrianDef.KeyExpression)
+                {
+                    MondrianDef.KeyExpression columnExpr =
+                        (MondrianDef.KeyExpression) column.getExpression();
+                    if (columnExpr.toString().equals(columnName)) {
+                        l.add(column);
+                    }
                 }
             }
             return l.toArray(new Column[l.size()]);
@@ -1553,6 +1575,14 @@ public class RolapStar {
                     MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
                     if (columnExpr.name.equals(columnName)) {
+                        return column;
+                    }
+                } else if (column.getExpression()
+                        instanceof MondrianDef.KeyExpression)
+                {
+                    MondrianDef.KeyExpression columnExpr =
+                        (MondrianDef.KeyExpression) column.getExpression();
+                    if (columnExpr.toString().equals(columnName)) {
                         return column;
                     }
                 } else if (column.getName().equals(columnName)) {
@@ -1773,7 +1803,8 @@ public class RolapStar {
                     datatype,
                     nameColumn,
                     parentColumn,
-                    usagePrefix);
+                    usagePrefix,
+                    level.getApproxRowCount());
                 addColumn(column);
             }
             return column;

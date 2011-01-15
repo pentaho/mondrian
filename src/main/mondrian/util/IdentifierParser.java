@@ -18,8 +18,6 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
-import org.olap4j.mdx.IdentifierNode;
-import org.olap4j.mdx.ParseRegion;
 
 import java.util.*;
 
@@ -31,75 +29,6 @@ import java.util.*;
  * @author jhyde
  */
 public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
-
-    /**
-     * Implementation of {@link org.olap4j.impl.IdentifierParser.Builder}
-     * that collects the segments that make up the name of a member in a list.
-     * It cannot handle tuples or lists of members.
-     *
-     * <p>Copied from olap4j. TODO: make olap4j class protected, and obsolete.
-     */
-    private static class MemberBuilder implements Builder {
-        final List<IdentifierNode.NameSegment> subSegments =
-            new ArrayList<IdentifierNode.NameSegment>();
-        protected final List<IdentifierNode.Segment> segmentList =
-            new ArrayList<IdentifierNode.Segment>();
-
-        public MemberBuilder() {
-        }
-
-        public void tupleComplete() {
-            throw new UnsupportedOperationException();
-        }
-
-        public void memberComplete() {
-            flushSubSegments();
-        }
-
-        private void flushSubSegments() {
-            if (!subSegments.isEmpty()) {
-                segmentList.add(new IdentifierNode.KeySegment(subSegments));
-                subSegments.clear();
-            }
-        }
-
-        public void segmentComplete(
-            ParseRegion region,
-            String name,
-            IdentifierNode.Quoting quoting,
-            Syntax syntax)
-        {
-            final IdentifierNode.NameSegment segment =
-                new IdentifierNode.NameSegment(
-                    region, name, quoting);
-            if (syntax != Syntax.NEXT_KEY) {
-                // If we were building a previous key, write it out.
-                // E.g. [Foo].&1&2.&3&4&5.
-                flushSubSegments();
-            }
-            if (syntax == Syntax.NAME) {
-                segmentList.add(segment);
-            } else {
-                subSegments.add(segment);
-            }
-        }
-    }
-
-    /**
-     * Extension to {@link mondrian.util.IdentifierParser.MemberBuilder} that
-     *
-     */
-    private static class _MemberListBuilder extends MemberBuilder {
-        final List<List<IdentifierNode.Segment>> list =
-            new ArrayList<List<IdentifierNode.Segment>>();
-
-        public void memberComplete() {
-            super.memberComplete();
-            list.add(
-                new ArrayList<IdentifierNode.Segment>(segmentList));
-            segmentList.clear();
-        }
-    }
 
     /**
      * Implementation of Builder that resolves segment lists to members.

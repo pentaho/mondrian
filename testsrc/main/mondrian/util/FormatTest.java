@@ -53,7 +53,7 @@ public class FormatTest extends TestCase {
 
     /** Locale gleaned from Java's German locale. */
     private final Format.FormatLocale localeDe = Format.createLocale(
-            Locale.GERMAN);
+            Locale.GERMANY);
 
     final Number d = new BigDecimal("3141592.653589793");
 
@@ -503,6 +503,27 @@ public class FormatTest extends TestCase {
     }
 
     public void testTrickyDates() {
+        // All examples have been checked with Excel2003 and AS2005.
+
+        checkFormat(null, date2, "y", "250");
+        checkFormat(null, date2, "yy", "10");
+        checkFormat(null, date2, "yyy", "10250");
+
+        checkFormat(null, date2, "#", "40428"); // days since 1900
+        checkFormat(null, date2, "x#", "x40428");
+        checkFormat(null, date2, "x#y", "x40428y");
+        checkFormat(null, date2, "x/y", "x/250");
+
+        // Using a date format (such as 'y') or separator ('/' or ':') forces
+        // into date mode. '#' is no longer recognized as a numeric format
+        // string.
+        checkFormat(null, date2, "x/y/#", "x/250/#");
+        checkFormat(null, date2, "xy#", "x250#");
+        checkFormat(null, date2, "x/#", "x/#");
+        checkFormat(null, date2, "x:#", "x:#");
+        checkFormat(null, date2, "x-#", "x-40428"); // '-' is not special
+        checkFormat(null, date2, "x #", "x 40428"); // ' ' is not special
+
         // must not throw exception
         checkFormat(null, date2, "mm/##/yy", "09/##/10");
 
@@ -532,11 +553,6 @@ public class FormatTest extends TestCase {
 
         // must recognize "Long Date" etc.
         checkFormat(null, date2, "Long Date", "Tuesday, September 07, 2010");
-
-        // international currency symbol
-        checkFormat(
-            null, new BigDecimal("1.2"), "" + Format.intlCurrencySymbol + "#",
-            "$1");
     }
 
     public void testFrenchLocale() {
@@ -616,9 +632,16 @@ public class FormatTest extends TestCase {
     }
 
     public void testString() {
+        // Excel2003
         checkFormat(null, "This Is A Test", ">", "THIS IS A TEST");
+
+        // Excel2003
         checkFormat(null, "This Is A Test", "<", "this is a test");
-        checkFormat(null, "hello", "\\f\\i\\x\\e\\d", "fixed");
+
+        // SSAS2005
+        checkFormat(null, "hello", "\\f\\i\\x\\e\\d", "hello");
+
+        // SSAS2005
         checkFormat(null, "hello", ">\\f\\i\\x\\e\\d<", "HELLOfixedhello");
 
         final BigDecimal decimal = new BigDecimal("123.45");
@@ -626,34 +649,188 @@ public class FormatTest extends TestCase {
         final String string = "Foo Bar";
 
         // ">"
-        checkFormat(null, decimal, ">", ">");
-        checkFormat(null, integer, ">", ">");
+        checkFormat(null, decimal, ">", "123.45");
+        checkFormat(null, integer, ">", "123");
         checkFormat(null, string, ">", "FOO BAR"); // SSAS 2005 returns ">"
 
         // "<"
-        checkFormat(null, decimal, "<", "<");
-        checkFormat(null, integer, "<", "<");
+        checkFormat(null, decimal, "<", "123.45");
+        checkFormat(null, integer, "<", "123");
         checkFormat(null, string, "<", "foo bar"); // SSAS 2005 returns "<"
 
         // "@" (can't figure out how to use this -- SSAS 2005 always ignores)
         checkFormat(null, decimal, "@", "@"); // checked on SSAS 2005
         checkFormat(null, integer, "@", "@"); // checked on SSAS 2005
-        checkFormat(null, string, "@", "@"); // checked on SSAS 2005
+        checkFormat(null, string, "@", string); // checked on Excel 2003
 
         // combinations
         checkFormat(null, string, "<@", "foo bar@"); // SSAS 2005 returns "<@"
-        checkFormat(
-            null, string, "<>", "foo barFOO BAR"); // SSAS 2005 returns "<>"
-        checkFormat(null, string, "E", "E"); // checked on SSAS 2005
 
-        checkFormat(
-            null, decimal, "E",
-            "E"); // FIXME: SSAS 2005 returns "1.234500E+002"
+        // SSAS 2005 returns "<>"; Excel returns "Foo Bar", i.e. unchanged
+        checkFormat(null, string, "<>", "foo barFOO BAR");
 
-        checkFormat(null, decimal, "<E", "<E"); // checked on SSAS 2005
+        checkFormat(null, string, "E", string); // checked on Excel 2003
+
+        // FIXME: SSAS 2005 returns "1.234500E+002"
+        checkFormat(null, decimal, "E", "E");
+
+        // SSAS 2005 returns "<E"
+        // Excel returns "<123.45"
+        checkFormat(null, decimal, "<E", "123.45E");
 
         // spec and SSAS 2005 disagree
-        checkFormat(null, string, "\"fixed\"", "fixed");
+        checkFormat(null, string, "\"fixed\"", string);
+
+//        checkFormat(null, string, "Currency", "Foo Bar");
+        checkFormat(null, string, "$#", string);
+        checkFormat(null, string, "$#,#.#", string);
+    }
+
+    public void testNonNumericValuesUsingNumericFormat() {
+        // All of the following have been checked in Excel 2003.
+
+        // string value printed using a numeric format
+        checkFormat(null, "foo Bar", "#,#", "foo Bar");
+        checkFormat(null, "foo Bar", "#,#;[#]", "foo Bar");
+        checkFormat(null, "foo Bar", "#,#;[#];NULL", "foo Bar");
+        checkFormat(null, "foo Bar", "#,#;[#];NULL;NIL", "foo Bar");
+
+        // date value printed using a numeric format
+        checkFormat(null, date, "#,#;[#];NULL;NIL", "25,324");
+        checkFormat(null, date2, "#,#;[#];NULL;NIL", "40,428");
+
+        // date with numeric converted to julian date (days since 1900)
+        checkFormat(null, date2, "#", "40428");
+        checkFormat(null, date2, "#.##", "40428.25");
+        checkFormat(null, date2, "#;[#];NULL", "40428");
+
+        // date value with string format gives long date string
+        checkFormat(null, date2, "<", "9/7/10 6:05:04 am");
+        checkFormat(null, date2, ">", "9/7/10 6:05:04 AM");
+
+        // numeric value and string format
+        checkFormat(null, 123.45E6, "<", "123,450,000"); // Excel gives 12345600
+        checkFormat(null, -123.45E6, ">", "-123,450,000");
+    }
+
+    public void testFormatThousands() {
+        checkFormat(
+            null,
+            123456.7,
+            "######.00",
+            "123456.70");
+        checkFormat(
+            null,
+            123456,
+            "######",
+            "123456");
+        checkFormat(
+            null,
+            123456.7,
+            "#,##,###.00",
+            "1,23,456.70");
+        checkFormat(
+            null,
+            123456.7,
+            "#,##,###",
+            "1,23,457");
+        checkFormat(
+            null,
+            9123456.7,
+            "#,#.00",
+            "9,123,456.70");
+        checkFormat(
+            null,
+            123456.7,
+            "#,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456789.1,
+            "#,#",
+            "123,456,789");
+        checkFormat(
+            null,
+            123456.7,
+            "##################,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456.7,
+            "#################,#",
+            "123,457");
+        checkFormat(
+            null,
+            123456.7,
+            "###,################",
+            "123,457");
+        checkFormat(
+            null,
+            0.02,
+            "#,###.000",
+            ".020");
+        checkFormat(
+            null,
+            0.02,
+            "#,##0.000",
+            "0.020");
+        checkFormat(
+            null,
+            123456789123l,
+            "#,##,#,##,#,##,#,##",
+            "1,23,4,56,7,89,1,23");
+        checkFormat(
+            null,
+            123456,
+            "#,###;(#,###)",
+            "123,456");
+        checkFormat(
+            null,
+            123456,
+            "\\$ #,###;(\\$ #,###) ",
+            "$ 123,456");
+    }
+
+    /**
+     * Tests the international currency symbol parsing
+     * in format strings according to different locales.
+     */
+    public void testCurrency() {
+        checkFormat(
+            localeDe,
+            123456,
+            "Currency",
+            "123.456,00 \u20AC");
+        checkFormat(
+            localeDe,
+            123456,
+            "###,###.00" + Format.intlCurrencySymbol,
+            "123.456,00\u20AC");
+        checkFormat(
+            localeFra,
+            123456,
+            "###,###.00" + Format.intlCurrencySymbol,
+            "123.456,00FF");
+        checkFormat(
+            localeFra,
+            123456,
+            "Currency",
+            "123.456,00FF");
+        // Tests whether the format conversion can fallback to
+        // the system default locale to resolve the currency
+        // symbol it must use.
+        checkFormat(
+             Format.createLocale(Locale.JAPANESE),
+             123456,
+             "Currency",
+             "$ 123,456.00");
+
+        // international currency symbol
+        checkFormat(
+            null,
+            new BigDecimal("1.2"),
+            "" + Format.intlCurrencySymbol + "#",
+            "$1");
     }
 }
 

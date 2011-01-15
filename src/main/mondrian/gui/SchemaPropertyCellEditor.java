@@ -1321,6 +1321,7 @@ public class SchemaPropertyCellEditor
                 if (s != null) {
                     for (int i = 0; i < s.cubes.length; i++) {
                         if (s.cubes[i].name.equals(parent.cube)) {
+                            dims.add("Measures"); //$NON-NLS-1$
                             for (int j = 0; j < s.cubes[i].dimensions.length;
                                 j++)
                             {

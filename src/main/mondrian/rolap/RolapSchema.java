@@ -154,6 +154,14 @@ public class RolapSchema implements Schema {
     private Map<String, Annotation> annotationMap;
 
     /**
+     * This is a unique schema instance id which will be used
+     * to inform clients when the schema has changed.
+     *
+     * <p>Expect a different ID for each Mondrian instance node.
+     */
+    private final String id;
+
+    /**
      * This is ONLY called by other constructors (and MUST be called
      * by them) and NEVER by the Pool.
      *
@@ -168,6 +176,7 @@ public class RolapSchema implements Schema {
         final DataSource dataSource,
         final String md5Bytes)
     {
+        this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
@@ -343,6 +352,14 @@ public class RolapSchema implements Schema {
         Util.assertPostcondition(name != null, "return != null");
         Util.assertPostcondition(name.length() > 0, "return.length() > 0");
         return name;
+    }
+
+    /**
+     * Returns this schema instance unique ID.
+     * @return A string representing the schema ID.
+     */
+    public String getId() {
+        return this.id;
     }
 
     public Map<String, Annotation> getAnnotationMap() {

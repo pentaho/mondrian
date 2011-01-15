@@ -140,12 +140,12 @@ class MondrianOlap4jLevel implements Level, Named {
         return level.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: localized captions
         return level.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: localize
         return level.getDescription();
     }

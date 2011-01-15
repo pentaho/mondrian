@@ -186,11 +186,11 @@ class MondrianOlap4jMember implements Member, Named {
         return member.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         return member.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         return member.getDescription();
     }
 }

@@ -12,6 +12,8 @@
 */
 package mondrian.olap;
 
+import mondrian.xmla.impl.DynamicDatasourceXmlaServlet;
+
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
 
@@ -238,7 +240,7 @@ public class MondrianProperties extends TriggerableProperties {
 
         // copy in all system properties which start with "mondrian."
         int count = 0;
-        for (Enumeration keys = System.getProperties().keys();
+        for (Enumeration<?> keys = System.getProperties().keys();
              keys.hasMoreElements();)
         {
             String key = (String) keys.nextElement();
@@ -1228,6 +1230,16 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final BooleanProperty SsasCompatibleNaming =
         new BooleanProperty(
             this, "mondrian.olap.SsasCompatibleNaming", false);
+
+    /**
+     * Interval, in milliseconds, at which to refresh the
+     * list of XML/A catalogs. This is usually known as the
+     * datasources.xml file. See also
+     * {@link DynamicDatasourceXmlaServlet}.
+     */
+    public transient final IntegerProperty XmlaSchemaRefreshInterval =
+        new IntegerProperty(
+            this, "mondrian.xmla.SchemaRefreshInterval", 3000);
 }
 
 // End MondrianProperties.java

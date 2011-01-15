@@ -12,6 +12,7 @@ import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
+import mondrian.olap.type.TypeUtil;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
@@ -1403,14 +1404,14 @@ public class XmlaHandler {
         private final String encodedName;
         private final String xsdType;
 
-        Column(String name, int type) {
+        Column(String name, int type, int scale) {
             this.name = name;
 
             // replace invalid XML element name, like " ", with "_x0020_" in
             // column headers, otherwise will generate a badly-formatted xml
             // doc.
             this.encodedName = XmlaUtil.encodeElementName(name);
-            this.xsdType = sqlToXsdType(type);
+            this.xsdType = sqlToXsdType(type, scale);
         }
     }
 
@@ -1443,7 +1444,8 @@ public class XmlaHandler {
                     columns.add(
                         new Column(
                             md.getColumnLabel(i + 1),
-                            md.getColumnType(i + 1)));
+                            md.getColumnType(i + 1),
+                            md.getScale(i + 1)));
                 }
 
                 // Populate data; assume that SqlStatement is already positioned
@@ -1484,7 +1486,8 @@ public class XmlaHandler {
                     columns.add(
                         new Column(
                             tableName + "." + fieldName,
-                            Types.VARCHAR)); // don't know the real type
+                            Types.VARCHAR, // don't know the real type
+                            0));
                 }
             }
 
@@ -1512,7 +1515,11 @@ public class XmlaHandler {
             for (Object[] row : rows) {
                 writer.startElement("row");
                 for (int i = 0; i < row.length; i++) {
-                    writer.startElement(columns.get(i).encodedName);
+                    writer.startElement(
+                        columns.get(i).encodedName,
+                        new Object[] {
+                            "xsi:type",
+                            columns.get(i).xsdType});
                     Object value = row[i];
                     if (value == null) {
                         writer.characters("null");
@@ -1603,17 +1610,27 @@ public class XmlaHandler {
      * @param sqlType SQL type
      * @return XSD type
      */
-    private static String sqlToXsdType(int sqlType) {
+    private static String sqlToXsdType(final int sqlType, final int scale) {
         switch (sqlType) {
         // Integer
         case Types.INTEGER:
-        case Types.BIGINT:
         case Types.SMALLINT:
         case Types.TINYINT:
-            return XSD_INTEGER;
+            return XSD_INT;
         case Types.NUMERIC:
-            return XSD_DECIMAL;
-            // Real
+        case Types.DECIMAL:
+            /*
+             * Oracle reports all numbers as NUMERIC. We check
+             * the scale of the column and pick the right XSD type.
+             */
+            if (scale == 0) {
+                return XSD_INT;
+            } else {
+                return XSD_DECIMAL;
+            }
+        case Types.BIGINT:
+            return XSD_INTEGER;
+        // Real
         case Types.DOUBLE:
         case Types.FLOAT:
             return XSD_DOUBLE;
@@ -1815,15 +1832,9 @@ public class XmlaHandler {
             final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
             if (omitDefaultSlicerInfo) {
                 Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    hierarchies =
-                        axisInfo(
-                            writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
-                } else {
-                    hierarchies = new ArrayList<Hierarchy>();
-                }
+                hierarchies =
+                    axisInfo(
+                        writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
             } else {
                 // The slicer axes contains the default hierarchy
                 // of each dimension not seen on another axis.
@@ -1895,9 +1906,9 @@ public class XmlaHandler {
                     hierarchies.add(member.getHierarchy());
                 }
             } else {
-                hierarchies = Collections.emptyList();
-                //final QueryAxis queryAxis = this.result.getQuery().axes[i];
-                // TODO:
+                hierarchies =
+                    TypeUtil.getHierarchies(
+                        queryAxis.getSet().getType());
             }
             String[] props = getProps(queryAxis);
             writeHierarchyInfo(writer, hierarchies, props);
@@ -1981,15 +1992,16 @@ public class XmlaHandler {
                 final QueryAxis slicerQueryAxis =
                     result.getQuery().getSlicerAxis();
                 Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    axis(
-                        writer,
-                        result.getSlicerAxis(),
-                        getProps(slicerQueryAxis),
-                        "SlicerAxis");
-                }
+                // We always write a slicer axis. There are two 'empty' cases:
+                // zero positions (which happens when the WHERE clause evalutes
+                // to an empty set) or one position containing a tuple of zero
+                // members (which happens when there is no WHERE clause) and we
+                // need to be able to distinguish between the two.
+                axis(
+                    writer,
+                    slicerAxis,
+                    getProps(slicerQueryAxis),
+                    "SlicerAxis");
             } else {
                 List<Hierarchy> hierarchies = slicerAxisHierarchies;
                 writer.startElement(
@@ -2014,7 +2026,9 @@ public class XmlaHandler {
                 final QueryAxis slicerQueryAxis =
                     result.getQuery().getSlicerAxis();
                 final List<Member> slicerMembers =
-                    result.getSlicerAxis().getPositions().get(0);
+                    result.getSlicerAxis().getPositions().isEmpty()
+                        ? Collections.<Member>emptyList()
+                        : result.getSlicerAxis().getPositions().get(0);
                 for (Hierarchy hierarchy : hierarchies) {
                     // Find which member is on the slicer.
                     // If it's not explicitly there, use the default member.

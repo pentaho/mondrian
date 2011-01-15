@@ -545,9 +545,7 @@ public class CrossJoinArgFactory {
 
         // First check that the member list will not result in a predicate
         // longer than the underlying DB could support.
-        if (!evaluator.getDialect().supportsUnlimitedValueList()
-            && argSize > MondrianProperties.instance().MaxConstraints.get())
-        {
+        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
             argSizeNotSupported = true;
         }
 

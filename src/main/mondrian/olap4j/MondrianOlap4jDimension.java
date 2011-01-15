@@ -15,8 +15,6 @@ import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
 
-import java.util.Locale;
-
 /**
  * Implementation of {@link org.olap4j.metadata.Dimension}
  * for the Mondrian OLAP engine.
@@ -83,13 +81,13 @@ class MondrianOlap4jDimension implements Dimension, Named {
         return dimension.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
-        // TODO: locale caption
+    public String getCaption() {
+        // TODO: localize caption
         return dimension.getCaption();
     }
 
-    public String getDescription(Locale locale) {
-        // TODO: locale description
+    public String getDescription() {
+        // TODO: localize description
         return dimension.getDescription();
     }
 }

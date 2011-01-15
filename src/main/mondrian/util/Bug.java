@@ -11,12 +11,30 @@ package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.spi.Dialect;
+import org.apache.log4j.Logger;
 
 /**
  * Holder for constants which indicate whether particular issues have been
  * fixed. Reference one of those constants in your code, and it is clear which
  * code can be enabled when the bug is fixed. Generally a constant is removed
  * when its bug is fixed.
+ *
+ * <h3>Cleanup items</h3>
+ *
+ * The following is a list of cleanup items. They are not bugs per se:
+ * functionality is not wrong, just the organization of the code. If they were
+ * bugs, they would be in jira. It makes sense to have the list here, so that
+ * referenced class, method and variable names show up as uses in code searches.
+ *
+ * <dl>
+ *
+ * <dt>Obsolete {@link mondrian.olap.Id.Segment}</dt>
+ * <dd>Replace it by {@link org.olap4j.mdx.IdentifierSegment}. Likewise
+ * {@link mondrian.olap.Id.Quoting} with {@link org.olap4j.mdx.Quoting}.
+ * Should wait until after the mondrian 4 'big bang', because there are ~300
+ * uses of Segment in the code.</dd>
+ *
+ * </dl>
  *
  * @author jhyde
  * @version $Id$
@@ -182,6 +200,21 @@ public class Bug {
     public static final boolean BugMondrian687Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-759"> MONDRIAN-759, "use
+     * dynamic parameters and PreparedStatement for frequently executed SQL
+     * patterns"</a> is fixed.
+     */
+    public static final boolean BugMondrian759Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-785"> MONDRIAN-785,
+     * "Native evaluation does not respect ordering"</a> is fixed.
+     */
+    public static final boolean BugMondrian785Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
@@ -200,6 +233,32 @@ public class Bug {
     public static boolean avoidMemoryOverflow(Dialect dialect) {
         return dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
             && MondrianProperties.instance().MemoryMonitor.get();
+    }
+
+    /**
+     * Returns true if we are running against
+     * {@link mondrian.spi.Dialect.DatabaseProduct#LUCIDDB} and we wish to
+     * avoid slow tests.
+     *
+     * <p>This is because some tests involving parent-child hierarchies are
+     * very slow. If we are running performance tests (indicated by the
+     * {@code mondrian.test.PerforceTest} logger set at
+     * {@link org.apache.log4j.Level#DEBUG} or higher), we expect the suite to
+     * take a long time, so we enable the tests.
+     *
+     * <p>Fixing either {@link #BugMondrian759Fixed MONDRIAN-759} or
+     * <a href="http://issues.eigenbase.org/browse/FRG-400">FRG-400, "rewrite
+     * statements containing literals to use internally-managed dynamic
+     * parameters instead"</a> would solve the problem.
+     *
+     * @return Whether we are running LucidDB and we wish to avoid slow tests.
+     */
+    public static boolean avoidSlowTestOnLucidDB(Dialect dialect) {
+        return
+            !BugMondrian759Fixed
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB
+            && !Logger.getLogger("mondrian.test.PerformanceTest")
+                .isDebugEnabled();
     }
 }
 

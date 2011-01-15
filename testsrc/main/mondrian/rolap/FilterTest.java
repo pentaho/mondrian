@@ -10,6 +10,7 @@ package mondrian.rolap;
 
 import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -28,6 +29,13 @@ public class FilterTest extends BatchTestCase {
 
     public FilterTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
     }
 
     public void testInFilterSimple() throws Exception {
@@ -910,7 +918,9 @@ public class FilterTest extends BatchTestCase {
             0,
             20,
             "select Filter(CrossJoin([Store].[Store Name].members, "
-            + "                        [Store Type].[Store Type].members), "
+            + "                        "
+            + TestContext.hierarchyName("Store Type", "Store Type")
+            + ".[Store Type].members), "
             + "                        Not IsEmpty([Measures].[Store Sqft])) on rows, "
             + "{[Measures].[Store Sqft]} on columns "
             + "from [Store]",
@@ -925,8 +935,30 @@ public class FilterTest extends BatchTestCase {
      * filter"</a>.
      */
     public void testBugMondrian706() {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().DisableCaching,
+            false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().CompareSiblingsByOrderKey,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().NullDenominatorProducesNull,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeFilter,
+            true);
         // With bug MONDRIAN-706, would generate
         //
         // ((`store`.`store_name`, `store`.`store_city`, `store`.`store_state`)
@@ -934,6 +966,38 @@ public class FilterTest extends BatchTestCase {
         //
         // Notice that the '11' and '14' store ID is applied on the store_name
         // instead of the store_id. So it would return no rows.
+        final String badMysqlSQL =
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4`, `store`.`store_type` as `c5`, `store`.`store_manager` as `c6`, `store`.`store_sqft` as `c7`, `store`.`grocery_sqft` as `c8`, `store`.`frozen_sqft` as `c9`, `store`.`meat_sqft` as `c10`, `store`.`coffee_bar` as `c11`, `store`.`store_street_address` as `c12` from `FOODMART`.`store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_name`,`store`.`store_city`,`store`.`store_state`) in (('11','Portland','OR'),('14','San Francisco','CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name`, `store`.`store_type`, `store`.`store_manager`, `store`.`store_sqft`, `store`.`grocery_sqft`, `store`.`frozen_sqft`, `store`.`meat_sqft`, `store`.`coffee_bar`, `store`.`store_street_address` having NOT((sum(`store`.`store_sqft`) is null)) order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`store`.`store_id`), `store`.`store_id` ASC";
+        final String goodMysqlSQL =
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null))  order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`store`.`store_id`), `store`.`store_id` ASC";
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Store].CurrentMember, [Store].[Store Country]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store State]).OrderKey,BASC,Ancestor([Store].CurrentMember,\n"
+            + "[Store].[Store City]).OrderKey,BASC,[Store].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Store] as 'Filter([Store].[Store Name].Members,(Ancestor([Store].CurrentMember, [Store].[Store State]) In {[Store].[All Stores].[USA].[CA],[Store].[All Stores].[USA].[OR]}) AND ([Store].CurrentMember In\n"
+            + "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11],[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}))'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "[*SORTED_ROW_AXIS] on rows\n"
+            + "From [Store] \n";
+        final SqlPattern[] badPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                badMysqlSQL,
+                null)
+        };
+        final SqlPattern[] goodPatterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                goodMysqlSQL,
+                null)
+        };
         final TestContext testContext =
             TestContext.createSubstitutingCube(
                 "Store",
@@ -951,20 +1015,10 @@ public class FilterTest extends BatchTestCase {
                 + "      <Level name='Store Name' column='store_id' type='Numeric' nameColumn='store_name' uniqueMembers='false'/>\n"
                 + "    </Hierarchy>\n"
                 + "  </Dimension>\n");
+        assertQuerySqlOrNot(testContext, mdx, badPatterns, true, true, true);
+        assertQuerySqlOrNot(testContext, mdx, goodPatterns, false, true, true);
         testContext.assertQueryReturns(
-            "With \n"
-            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))' \n"
-            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Store].CurrentMember, [Store].[Store Country]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store State]).OrderKey,BASC,Ancestor([Store].CurrentMember, [Store].[Store City]).OrderKey,BASC,[Store].CurrentMember.OrderKey,BASC)' \n"
-            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' \n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})' \n"
-            + "Set [*BASE_MEMBERS_Store] as 'Filter([Store].[Store Name].Members,(Ancestor([Store].CurrentMember, [Store].[Store State]) In {[Store].[All Stores].[USA].[CA],[Store].[All Stores].[USA].[OR]}) AND ([Store].CurrentMember In {[Store].[All Stores].[USA].[OR].[Portland].[Store 11],[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}))' \n"
-            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400 \n"
-            + "Select \n"
-            + "[*BASE_MEMBERS_Measures] on columns, \n"
-            + "[*SORTED_ROW_AXIS] on rows \n"
-            + "From [Store] ",
+            mdx,
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -974,6 +1028,73 @@ public class FilterTest extends BatchTestCase {
             + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
             + "Row #0: 22,478\n"
             + "Row #1: 20,319\n");
+    }
+
+    /**
+     * Tests the bug MONDRIAN-779. The {@link MemberListCrossJoinArg}
+     * was not considering the 'exclude' attribute in its hash code.
+     * This resulted in two filters being chained within two different
+     * named sets to register a cache element with the same key, even
+     * though they were the different because of the added "NOT" keyword.
+     */
+    public void testBug779() {
+        final String query1 =
+            "With Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))' Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,(Ancestor([Product].CurrentMember, [Product].[Product Family]) In {[Product].[Drink],[Product].[Food]}) AND ([Product].CurrentMember In {[Product].[Drink].[Dairy]}))' Select [Measures].[Unit Sales] on columns, [*NATIVE_CJ_SET] on rows From [Sales]";
+        final String query2 =
+            "With Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))' Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,(Ancestor([Product].CurrentMember, [Product].[Product Family]) In {[Product].[Drink],[Product].[Food]}) AND ([Product].CurrentMember Not In {[Product].[Drink].[Dairy]}))' Select [Measures].[Unit Sales] on columns, [*NATIVE_CJ_SET] on rows From [Sales]";
+
+        final String expectedResult1 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Dairy]}\n"
+            + "Row #0: 4,186\n";
+
+        final String expectedResult2 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Food].[Baked Goods]}\n"
+            + "{[Product].[Food].[Baking Goods]}\n"
+            + "{[Product].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[Food].[Canned Foods]}\n"
+            + "{[Product].[Food].[Canned Products]}\n"
+            + "{[Product].[Food].[Dairy]}\n"
+            + "{[Product].[Food].[Deli]}\n"
+            + "{[Product].[Food].[Eggs]}\n"
+            + "{[Product].[Food].[Frozen Foods]}\n"
+            + "{[Product].[Food].[Meat]}\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Seafood]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "{[Product].[Food].[Snacks]}\n"
+            + "{[Product].[Food].[Starchy Foods]}\n"
+            + "Row #0: 6,838\n"
+            + "Row #1: 13,573\n"
+            + "Row #2: 7,870\n"
+            + "Row #3: 20,245\n"
+            + "Row #4: 3,317\n"
+            + "Row #5: 19,026\n"
+            + "Row #6: 1,812\n"
+            + "Row #7: 12,885\n"
+            + "Row #8: 12,037\n"
+            + "Row #9: 4,132\n"
+            + "Row #10: 26,655\n"
+            + "Row #11: 1,714\n"
+            + "Row #12: 37,792\n"
+            + "Row #13: 1,764\n"
+            + "Row #14: 30,545\n"
+            + "Row #15: 6,884\n"
+            + "Row #16: 5,262\n";
+
+        assertQueryReturns(query1, expectedResult1);
+        assertQueryReturns(query2, expectedResult2);
     }
 }
 

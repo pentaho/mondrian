@@ -211,7 +211,6 @@ System.out.println("Got CONTINUE");
     }
 
     protected void helperTestExpect(boolean doSessionId)
-        throws Exception
     {
         if (doSessionId) {
             Util.discard(getSessionId(Action.CREATE));
@@ -224,17 +223,24 @@ System.out.println("Got CONTINUE");
             XmlaRequestCallback.EXPECT_100_CONTINUE);
 
         Properties props = new Properties();
-        doTest(req, props);
+        try {
+            doTest(req, props);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected void helperTest(boolean doSessionId)
-        throws Exception
     {
         if (doSessionId) {
             getSessionId(Action.CREATE);
         }
         Properties props = new Properties();
-        doTest(props);
+        try {
+            doTest(props);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static class CallBack implements XmlaRequestCallback {

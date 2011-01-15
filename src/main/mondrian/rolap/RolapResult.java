@@ -17,6 +17,7 @@ import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.DimensionType;
 import mondrian.olap.fun.*;
+import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
@@ -514,7 +515,7 @@ public class RolapResult extends ResultBase {
             }
             if (! mList.isEmpty()) {
                 changed = true;
-                it.set(mList);
+                it.set(new ArrayList<Member>(mList));
             }
         }
         return changed;
@@ -1002,6 +1003,23 @@ public class RolapResult extends ResultBase {
                 }
             } else {
                 int positionIndex = 0;
+                for (Position position : positions) {
+                    List<Member> measures =
+                        new ArrayList<Member>(query.getMeasuresMembers());
+                    for (Member measure : measures) {
+                        if (measure instanceof RolapBaseCubeMeasure) {
+                            RolapBaseCubeMeasure baseCubeMeasure =
+                                (RolapBaseCubeMeasure) measure;
+                            if (baseCubeMeasure.getAggregator()
+                                == RolapAggregator.DistinctCount)
+                            {
+                                processDistinctMeasureExpr(
+                                    position, baseCubeMeasure);
+                            }
+                        }
+                    }
+                }
+
                 for (final Position position : positions) {
                     point.setAxis(axisOrdinal, positionIndex);
                     revaluator.setContext(position);
@@ -1010,6 +1028,92 @@ public class RolapResult extends ResultBase {
                     positionIndex++;
                 }
             }
+        }
+    }
+
+    List<Member> exprMembers = null;
+
+    /*
+     * Distinct counts are aggregated separately from other measures.
+     * We need to apply filters to each level in the query.
+     *
+     * Replace VisualTotalMember expressions with new expressions
+     * where all leaf level members are included.
+     *
+     * Example:
+     * For MDX query:
+     * WITH SET [XL_Row_Dim_0] AS
+     *         VisualTotals(
+     *           Distinct(
+     *             Hierarchize(
+     *               {Ascendants([Store].[All Stores].[USA].[CA]),
+     *                Descendants([Store].[All Stores].[USA].[CA])})))
+     *        select NON EMPTY
+     *          Hierarchize(
+     *            Intersect(
+     *              {DrilldownLevel({[Store].[All Stores]})},
+     *              [XL_Row_Dim_0])) ON COLUMNS
+     *        from [HR]
+     *        where [Measures].[Number of Employees]
+     *
+     * For member [Store].[All Stores]:
+     * we replace aggregate expression
+     *  - Aggregate({[Store].[All Stores].[USA]})
+     * with
+     *  - Aggregate({[Store].[All Stores].[USA].[CA].[Alameda].[HQ],
+     *               [Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6],
+     *               [Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7],
+     *               [Store].[All Stores].[USA].[CA].[San Diego].[Store 24],
+     *               [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]
+     *              })
+     * TODO:
+     * Can be optimized. For that particular query
+     * we don't need to go to the lowest level.
+     * We can simply replace it with:
+     * - Aggregate({[Store].[All Stores].[USA].[CA]})
+     * Because all children of [Store].[All Stores].[USA].[CA] are included.
+     */
+    private Position processDistinctMeasureExpr(
+        Position position,
+        RolapBaseCubeMeasure measure)
+    {
+        for (int i = 0; i < position.size(); i++) {
+            if (!(position.get(i) instanceof VisualTotalMember)) {
+                continue;
+            }
+            evaluator.setContext(measure);
+            VisualTotalMember member = (VisualTotalMember)position.get(i);
+            exprMembers = new ArrayList<Member>();
+            processMemberExpr(member);
+            ((VisualTotalMember)member).setExpression(evaluator, exprMembers);
+        }
+        return position;
+    }
+
+    private void processMemberExpr(Object o) {
+        if (o instanceof Member && o instanceof RolapCubeMember) {
+            exprMembers.add((Member) o);
+            return;
+        } else if (o instanceof VisualTotalMember) {
+            VisualTotalMember member = (VisualTotalMember) o;
+            Exp exp = member.getExpression();
+            processMemberExpr(exp);
+        } else if (o instanceof Exp && !(o instanceof MemberExpr)) {
+            Exp exp = (Exp)o;
+            ResolvedFunCall funCall = (ResolvedFunCall)exp;
+            Exp[] exps = funCall.getArgs();
+            processMemberExpr(exps);
+        } else if (o instanceof Exp[]) {
+            Exp[] exps = (Exp[]) o;
+            for (Exp exp : exps) {
+                processMemberExpr(exp);
+            }
+        } else if (o instanceof MemberExpr) {
+            MemberExpr memberExp = (MemberExpr) o;
+            Member member = memberExp.getMember();
+            processMemberExpr(member);
+        } else {
+            return;
         }
     }
 
@@ -1420,19 +1524,18 @@ public class RolapResult extends ResultBase {
         FormatValueFormatter(Locale locale) {
             this.locale = locale;
         }
+
         public String format(Object value, String formatString) {
             if (value == Util.nullValue) {
-                Format format = getFormat(formatString);
-                return format.format(null);
-            } else if (value instanceof Throwable) {
-                return "#ERR: " + value.toString();
-            } else if (value instanceof String) {
-                return (String) value;
-            } else {
-                Format format = getFormat(formatString);
-                return format.format(value);
+                value = null;
             }
+            if (value instanceof Throwable) {
+                return "#ERR: " + value.toString();
+            }
+            Format format = getFormat(formatString);
+            return format.format(value);
         }
+
         private Format getFormat(String formatString) {
             return Format.get(formatString, locale);
         }

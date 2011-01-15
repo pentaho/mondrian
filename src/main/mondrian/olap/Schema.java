@@ -28,6 +28,11 @@ public interface Schema extends Annotated {
     String getName();
 
     /**
+     * Returns the uniquely generated id of this schema.
+     */
+    String getId();
+
+    /**
      * Finds a cube called <code>cube</code> in this schema; if no cube
      * exists, <code>failIfNotFound</code> controls whether to raise an error
      * or return <code>null</code>.

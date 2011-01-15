@@ -46,104 +46,104 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         }
     }
 
-    public void test01() throws Exception {
+    public void test01() {
         helperTest(false);
     }
 
     // BeginSession
-    public void test02() throws Exception {
+    public void test02() {
         helperTest(false);
     }
 
-    public void test03() throws Exception {
+    public void test03() {
         helperTest(true);
     }
 
-    public void test04() throws Exception {
+    public void test04() {
         helperTest(true);
     }
 
-    public void test05() throws Exception {
+    public void test05() {
         helperTest(true);
     }
 
-    public void test06() throws Exception {
+    public void test06() {
         helperTest(true);
     }
 
     // BeginSession
-    public void test07() throws Exception {
+    public void test07() {
         helperTest(false);
     }
 
-    public void test08() throws Exception {
+    public void test08() {
         helperTest(true);
     }
 
-    public void test09() throws Exception {
+    public void test09() {
         helperTest(true);
     }
 
-    public void test10() throws Exception {
+    public void test10() {
         helperTest(true);
     }
 
-    public void test11() throws Exception {
+    public void test11() {
         helperTest(true);
     }
 
-    public void test12() throws Exception {
+    public void test12() {
         helperTest(true);
     }
 
-    public void testMdschemaMeasures() throws Exception {
+    public void testMdschemaMeasures() {
         helperTest(true);
     }
 
-    public void testMdschemaMeasuresEmitInvisible() throws Exception {
+    public void testMdschemaMeasuresEmitInvisible() {
         helperTest(true);
     }
 
-    public void test14() throws Exception {
+    public void test14() {
         helperTest(true);
     }
 
-    public void test15() throws Exception {
+    public void test15() {
         helperTest(true);
     }
 
-    public void test16() throws Exception {
+    public void test16() {
         helperTest(true);
     }
-    public void test17() throws Exception {
-        helperTest(true);
-    }
-
-    public void test18() throws Exception {
+    public void test17() {
         helperTest(true);
     }
 
-    public void testExpect01() throws Exception {
+    public void test18() {
+        helperTest(true);
+    }
+
+    public void testExpect01() {
         helperTestExpect(false);
     }
 
-    public void testExpect02() throws Exception {
+    public void testExpect02() {
         helperTestExpect(false);
     }
 
-    public void testExpect03() throws Exception {
+    public void testExpect03() {
         helperTestExpect(true);
     }
 
-    public void testExpect04() throws Exception {
+    public void testExpect04() {
         helperTestExpect(true);
     }
 
-    public void testExpect05() throws Exception {
+    public void testExpect05() {
         helperTestExpect(true);
     }
 
-    public void testExpect06() throws Exception {
+    public void testExpect06() {
         helperTestExpect(true);
     }
 

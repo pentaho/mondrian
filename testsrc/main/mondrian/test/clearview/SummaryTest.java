@@ -14,6 +14,7 @@ import junit.framework.*;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.test.*;
+import mondrian.util.Bug;
 
 /**
  * <code>SummaryTest</code> is a test suite which tests scenarios of
@@ -49,15 +50,16 @@ public class SummaryTest extends ClearViewBase {
         return constructSuite(getDiffReposStatic(), SummaryTest.class);
     }
 
+    @Override
     protected void runTest() throws Exception {
-        if ((getName().equals("testRankExpandNonNative")
-            || getName().equals("testCountExpandNonNative")
-            || getName().equals("testCountOverTimeExpandNonNative"))
-            && !MondrianProperties.instance().EnableNativeCrossJoin.get())
+        if (!Bug.BugMondrian785Fixed
+            && (getName().equals("testRankExpandNonNative")
+                || getName().equals("testCountExpandNonNative")
+                || getName().equals("testCountOverTimeExpandNonNative"))
+            && MondrianProperties.instance().EnableNativeCrossJoin.get())
         {
             // Tests give wrong results if native crossjoin is disabled.
-        } else {
-            super.assertQuerySql(true);
+            return;
         }
         super.runTest();
     }

@@ -627,28 +627,40 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testExecuteSlicerContentDataOmitDefaultSlicer()
+    public void testExecuteSlicer_ContentDataOmitDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
-    public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
+    public void testExecuteNoSlicer_ContentDataOmitDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
-    public void testExecuteSlicerContentDataIncludeDefaultSlicer()
+    public void testExecuteSlicer_ContentDataIncludeDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
-    public void testExecuteNoSlicerContentDataIncludeDefaultSlicer()
+    public void testExecuteNoSlicer_ContentDataIncludeDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
+    }
+
+    public void testExecuteEmptySlicer_ContentDataIncludeDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
+    }
+
+    public void testExecuteEmptySlicer_ContentDataOmitDefaultSlicer()
+        throws Exception
+    {
+        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteWithoutCellProperties() throws Exception

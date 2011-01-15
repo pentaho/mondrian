@@ -209,8 +209,11 @@ public class RolapMemberBase
         {
             final RolapHierarchy hierarchy = getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
-            if (/* dimension.getHierarchies().length == 1
-                && */ hierarchy.getName().equals(dimension.getName()))
+            final RolapLevel level = getLevel();
+            if (dimension.getDimensionType() != null
+                && (dimension.getDimensionType().equals(
+                    DimensionType.MeasuresDimension)
+                && hierarchy.getName().equals(dimension.getName())))
             {
                 // Kludge to ensure that calc members are called
                 // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
@@ -218,7 +221,16 @@ public class RolapMemberBase
                 // member unique names.
                 this.uniqueName = Util.makeFqName(dimension, name);
             } else {
-                this.uniqueName = Util.makeFqName(hierarchy, name);
+                if (name.equals(level.getName())) {
+                    this.uniqueName =
+                        Util.makeFqName(
+                            Util.makeFqName(
+                                hierarchy.getUniqueName(),
+                                level.getName()),
+                            name);
+                } else {
+                    this.uniqueName = Util.makeFqName(hierarchy, name);
+                }
             }
         } else {
             this.uniqueName = Util.makeFqName(parentMember, name);

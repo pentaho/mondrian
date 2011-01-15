@@ -3,19 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.type;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.Resolver;
-import mondrian.resource.MondrianResource;
 import mondrian.mdx.UnresolvedFunCall;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Utility methods relating to types.
@@ -25,18 +23,6 @@ import java.util.List;
  * @version $Id$
  */
 public class TypeUtil {
-    public static Hierarchy typeToHierarchy(Type type) {
-        if (type instanceof MemberType
-            || type instanceof LevelType
-            || type instanceof HierarchyType
-            || type instanceof DimensionType)
-        {
-            return type.getHierarchy();
-        } else {
-            throw Util.newInternal("not an mdx object");
-        }
-    }
-
     /**
      * Given a set type, returns the element type. Or its element type, if it
      * is a set type. And so on.
@@ -502,6 +488,28 @@ public class TypeUtil {
             : t2 == null ? t1
                 : t1.equals(t2) ? t1
                     : null;
+    }
+
+    /**
+     * Returns the hierarchies in a set, member, or tuple type.
+     *
+     * @param type Type
+     * @return List of hierarchies
+     */
+    public static List<Hierarchy> getHierarchies(Type type) {
+        if (type instanceof SetType) {
+            type = ((SetType) type).getElementType();
+        }
+        if (type instanceof TupleType) {
+            final TupleType tupleType = (TupleType) type;
+            List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+            for (Type elementType : tupleType.elementTypes) {
+                hierarchyList.add(elementType.getHierarchy());
+            }
+            return hierarchyList;
+        } else {
+            return Collections.singletonList(type.getHierarchy());
+        }
     }
 
     /**

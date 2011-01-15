@@ -1006,6 +1006,43 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: 266,773\n");
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-814">MONDRIAN-814,
+     * "MDX with specific where clause doesn't work" </a>. This test case
+     * was as close as I could get to the original test case on the foodmart
+     * data set, but it did not reproduce the bug.
+     */
+    public void testCompoundSlicerNonEmpty() {
+        // With MONDRIAN-814, cell totals would be about a factor of 4 smaller,
+        // and the number of rows returned would be the same (1220) if 21, 22
+        // and 23 were removed from the slicer.
+        final String mdx =
+            "select non empty [Measures].[Sales Count] on 0,\n"
+            + " non empty hierarchize(\n"
+            + "  Crossjoin(\n"
+            + "    Union(\n"
+            + "     [Gender].CurrentMember,\n"
+            + "     [Gender].Children),\n"
+            + "    Union(\n"
+            + "     [Product].CurrentMember,\n"
+            + "     [Product].[Brand Name].Members))) on 1\n"
+            + "from [Sales]\n"
+            + "where { " + timeWeekly + ".[1997].[20]"
+            + "      , " + timeWeekly + ".[1997].[21]"
+            + "      , " + timeWeekly + ".[1997].[22]"
+            + "      , " + timeWeekly + ".[1997].[23]"
+            + " }";
+        if (false) {
+            // Output too large to check in.
+            assertQueryReturns(mdx, "xxxx");
+        }
+        Result result = getTestContext().executeQuery(mdx);
+        assertEquals(1477, result.getAxes()[1].getPositions().size());
+        assertEquals(
+            "5,896", result.getCell(new int[] {0, 0}).getFormattedValue());
+    }
+
     public void testEmptyTupleSlicerFails() {
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
@@ -2480,16 +2517,16 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testFormatOfNulls() {
         assertQueryReturns(
-            "with member [Measures].[Foo] as '([Measures].[Store Sales])',\n"
+            "with member [Measures]._Foo as '([Measures].[Store Sales])',\n"
             + " format_string = '$#,##0.00;($#,##0.00);ZERO;NULL;Nil'\n"
             + "select\n"
-            + " {[Measures].[Foo]} on columns,\n"
+            + " {[Measures].[_Foo]} on columns,\n"
             + " {[Customers].[Country].members} on rows\n"
             + "from Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Foo]}\n"
+            + "{[Measures].[_Foo]}\n"
             + "Axis #2:\n"
             + "{[Customers].[Canada]}\n"
             + "{[Customers].[Mexico]}\n"
@@ -6018,6 +6055,43 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: $35,257.00\n"
             + "Row #0: $96.00\n"
             + "Row #0: $11,491.00\n");
+    }
+
+    /**
+     * Test format string values. Previously, a bug meant that string values
+     * were printed as is, never passed through the format string.
+     */
+    public void testFormatStringAppliedToStringValue() {
+        // "23" as an integer value
+        assertQueryReturns(
+            "with member [Measures].[Test] as '23', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |23|arrow=up\n");
+        // "23" as a string value: converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"23\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |23|arrow=up\n");
+        // string value "Foo Bar" -- converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"Foo \" || \"Bar\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |foo bar|arrow=up\n");
     }
 
     /**

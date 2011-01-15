@@ -214,7 +214,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public int getTransactionIsolation() throws SQLException {
-        throw new UnsupportedOperationException();
+        return TRANSACTION_NONE;
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -533,7 +533,9 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public void setRoleName(String roleName) throws OlapException {
         final Role role;
         if (roleName == null) {
-            role = null;
+            role = ((RolapSchema) this.connection.getSchema())
+                .getInternalConnection().getRole();
+            assert role != null;
         } else {
             role = this.connection.getSchema().lookupRole(roleName);
             if (role == null) {
@@ -816,22 +818,22 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         }
 
         private IdentifierNode toOlap4j(Id id) {
-            List<IdentifierNode.Segment> list =
-                new ArrayList<IdentifierNode.Segment>();
+            List<IdentifierSegment> list =
+                new ArrayList<IdentifierSegment>();
             for (Id.Segment segment : id.getSegments()) {
                 list.add(
-                    new IdentifierNode.NameSegment(
+                    new NameSegment(
                         null,
                         segment.name,
                         toOlap4j(segment.quoting)));
             }
             return new IdentifierNode(
                 list.toArray(
-                    new IdentifierNode.Segment[list.size()]));
+                    new IdentifierSegment[list.size()]));
         }
 
-        private IdentifierNode.Quoting toOlap4j(Id.Quoting quoting) {
-            return IdentifierNode.Quoting.valueOf(quoting.name());
+        private Quoting toOlap4j(Id.Quoting quoting) {
+            return Quoting.valueOf(quoting.name());
         }
     }
 }

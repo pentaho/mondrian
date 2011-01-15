@@ -13,8 +13,6 @@ import org.olap4j.metadata.Cube;
 import org.olap4j.mdx.ParseTreeNode;
 import org.olap4j.impl.Named;
 
-import java.util.Locale;
-
 /**
  * Implementation of {@link org.olap4j.metadata.NamedSet}
  * for the Mondrian OLAP engine.
@@ -54,12 +52,12 @@ public class MondrianOlap4jNamedSet implements NamedSet, Named {
         return namedSet.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: i18n
         return namedSet.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: i18n
         return namedSet.getDescription();
     }

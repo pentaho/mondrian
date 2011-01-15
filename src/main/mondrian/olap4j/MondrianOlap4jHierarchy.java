@@ -106,12 +106,12 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
         return hierarchy.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: localize caption
         return hierarchy.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: localize description
         return hierarchy.getDescription();
     }

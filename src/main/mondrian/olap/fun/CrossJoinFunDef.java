@@ -815,6 +815,20 @@ public class CrossJoinFunDef extends FunDefBase {
                 RolapEvaluator rev = (RolapEvaluator) evaluator;
                 slicerMembers = rev.getSlicerMembers();
             }
+            // Iterate the list of slicer members, grouping them by hierarchy
+            Map<Hierarchy, Set<Member>> mapOfSlicerMembers =
+                new HashMap<Hierarchy, Set<Member>>();
+            if (slicerMembers != null) {
+                for (Member slicerMember : slicerMembers) {
+                    Hierarchy hierarchy = slicerMember.getHierarchy();
+                    if (!mapOfSlicerMembers.containsKey(hierarchy)) {
+                        mapOfSlicerMembers.put(
+                            hierarchy,
+                            new HashSet<Member>());
+                    }
+                    mapOfSlicerMembers.get(hierarchy).add(slicerMember);
+                }
+            }
 
             // Now we have the non-List-Members, but some of them may not be
             // All Members (default Member need not be the All Member) and
@@ -861,6 +875,16 @@ public class CrossJoinFunDef extends FunDefBase {
                 if ((isSlicerMember && !em.isCalculated())
                     || (!isSlicerMember && em.isCalculated()))
                 {
+                    // If the slicer contains multiple members from this one's
+                    // hierarchy, add them to nonAllMemberList
+                    if (isSlicerMember
+                        && mapOfSlicerMembers.get(
+                            em.getHierarchy()).size() > 1)
+                    {
+                        nonAllMemberList.add(
+                            mapOfSlicerMembers.get(
+                                em.getHierarchy()).toArray(new Member[0]));
+                    }
                     continue;
                 }
 
