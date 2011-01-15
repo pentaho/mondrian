@@ -1074,8 +1074,9 @@ public class UdfTest extends FoodMartTestCase {
             // Note: must call Argument.evaluateList. If we call
             // Argument.evaluate we may get an Iterable.
             List<?> list = args[0].evaluateList(eval);
-            // We do not need to copy before we reverse. The list is guaranteed
+            // We do need to copy before we reverse. The list is not guaranteed
             // to be mutable.
+            list = new ArrayList(list);
             Collections.reverse(list);
             return list;
         }

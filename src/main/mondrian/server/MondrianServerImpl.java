@@ -169,10 +169,21 @@ class MondrianServerImpl
             this, catalogName, schemaName, roleName, props);
     }
 
-    public List<Map<String, Object>> getDataSources(
+    public List<String> getCatalogNames(
+            RolapConnection connection)
+    {
+        return
+            repository.getCatalogNames(
+                connection,
+                // We assume that Mondrian supports a single database
+                // per server.
+                repository.getDatabaseNames(connection).get(0));
+    }
+
+    public List<Map<String, Object>> getDatabases(
         RolapConnection connection)
     {
-        return repository.getDataSources(connection);
+        return repository.getDatabases(connection);
     }
 
     @Override
@@ -180,17 +191,22 @@ class MondrianServerImpl
         return catalogLocator;
     }
 
-    public List<String> getCatalogNames(
-        RolapConnection connection)
-    {
-        return repository.getCatalogNames(connection);
+    @Override
+    public void shutdown() {
+        repository.shutdown();
     }
 
-    public Map<String, RolapSchema> getCatalogSchemas(
+    public Map<String, RolapSchema> getRolapSchemas(
         RolapConnection connection,
         String catalogName)
     {
-        return repository.getCatalogSchemas(connection, catalogName);
+        return
+            repository.getRolapSchemas(
+                connection,
+                // We assume that Mondrian supports a single database
+                // per server.
+                repository.getDatabaseNames(connection).get(0),
+                catalogName);
     }
 }
 

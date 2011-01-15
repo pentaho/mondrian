@@ -2272,7 +2272,7 @@ public class Util extends XOMUtil {
      * @return a copy of the original array, truncated or padded with nulls
      *     to obtain the specified length
      */
-    public static <T,U> T[] copyOf(
+    public static <T, U> T[] copyOf(
         U[] original, int newLength, Class<? extends T[]> newType)
     {
         @SuppressWarnings({"unchecked", "RedundantCast"})

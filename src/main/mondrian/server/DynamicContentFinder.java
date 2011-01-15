@@ -10,19 +10,24 @@
 package mondrian.server;
 
 import mondrian.olap.*;
-import mondrian.rolap.CacheControlImpl;
-import mondrian.rolap.RolapSchema;
-import mondrian.util.Pair;
+import mondrian.rolap.*;
+import mondrian.util.*;
 import mondrian.xmla.*;
-import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.log4j.*;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of
  * {@link RepositoryContentFinder} that
  * periodically reloads the content of the repository.
+ *
+ * <p>The updates are performed by a background thread.
+ * It is important to call {@link DynamicContentFinder#shutdown()}
+ * once this object can be disposed of.
  *
  * @version $Id$
  * @author Thiyagu Ajit
@@ -34,31 +39,54 @@ public class DynamicContentFinder
 {
     protected String lastDataSourcesConfigString;
 
-    /**
-     * Contains the timestamp in millis when the
-     * schema next needs to be checked for updates.
-     */
-    private long nextUpdate;
-
-    private final int refreshIntervalMillis;
     protected DataSourcesConfig.DataSources dataSources;
 
-    private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
+    private static final Logger LOGGER =
+        Logger.getLogger(MondrianServer.class);
+
+    private static AtomicInteger threadNumber = new AtomicInteger(0);
+
+    private final static ScheduledExecutorService executorService =
+        Executors.newScheduledThreadPool(
+            0,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    Thread t = Executors.defaultThreadFactory().newThread(r);
+                    t.setDaemon(true);
+                    t.setName(
+                        "mondrian.DynamicContentFinderUpdaterThread"
+                        + threadNumber.addAndGet(1));
+                    return t;
+               }
+            });
+
+    private final ScheduledFuture<?> scheduledTask;
 
     /**
      * Creates a DynamicContentFinder.
-     *
      * @param dataSourcesConfigUrl URL of repository
-     * @param refreshIntervalMillis Interval to check for changes
      */
     public DynamicContentFinder(
-        String dataSourcesConfigUrl,
-        int refreshIntervalMillis)
+        String dataSourcesConfigUrl)
     {
         super(dataSourcesConfigUrl);
-        this.refreshIntervalMillis = refreshIntervalMillis;
-        this.nextUpdate = Long.MIN_VALUE;
         reloadDataSources();
+        scheduledTask = executorService.scheduleWithFixedDelay(
+            new Runnable() {
+                public void run() {
+                    reloadDataSources();
+                }
+            },
+            0,
+            MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+            TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Cleans up all background updating jobs.
+     */
+    public void shutdown() {
+        scheduledTask.cancel(true);
     }
 
     /**
@@ -148,15 +176,6 @@ public class DynamicContentFinder
                     flushCatalog(oldCatalog.name);
                 }
             }
-        }
-    }
-
-    public void check() {
-        // Check if an update is necessary
-        final long now = System.currentTimeMillis();
-        if (now > nextUpdate) {
-            reloadDataSources();
-            nextUpdate = now + refreshIntervalMillis;
         }
     }
 

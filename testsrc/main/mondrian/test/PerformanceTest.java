@@ -43,7 +43,6 @@ public class PerformanceTest extends FoodMartTestCase {
     public void testBugMondrian550() {
         final TestContext testContext = getBugMondrian550Schema();
         long start = System.currentTimeMillis();
-
         // On my Latitude D630:
         // Takes 137 seconds before bug fixed.
         // Takes 13 seconds after bug fixed.
@@ -66,7 +65,6 @@ public class PerformanceTest extends FoodMartTestCase {
     public void testBugMondrian550Tuple() {
         final TestContext testContext = getBugMondrian550Schema();
         long start = System.currentTimeMillis();
-
         // On my Latitude D630:
         // Takes 252 seconds before bug fixed.
         // Takes 45 seconds after bug fixed.

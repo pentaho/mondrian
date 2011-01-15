@@ -3701,7 +3701,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 'foo',\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token 'foo'");
+            "Syntax error at line 3, column 46, token ''foo''");
 
         // 'set AS numeric' is invalid
         assertQueryThrows(
@@ -3710,7 +3710,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 1234,\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token '1234.0'");
+            "Syntax error at line 3, column 46, token '1234'");
 
         // 'numeric AS identifier' is invalid
         assertQueryThrows(
@@ -4514,7 +4514,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMEmptyLeavesFail() {
         assertAxisThrows(
             "Descendants([Time].[1997],)",
-            "Syntax error at line 1, column 36, token ')'");
+            "No function matches signature 'Descendants(<Member>, <Empty>)");
     }
 
     public void testDescendantsMEmptyLeavesFail2() {
@@ -5650,6 +5650,46 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisThrows(
             "CASE WHEN 1 = 2 THEN 3 WHEN 4 THEN 5 ELSE 6 END",
             "No function matches signature");
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-853">
+     * bug MONDRIAN-853, "When using CASE WHEN in a CalculatedMember values are
+     * not returned the way expected"</a>.
+     */
+    public void testCaseTuple() {
+        // The case in the bug, simplified. With the bug, returns a member array
+        // "[Lmondrian.olap.Member;@151b0a5". Type deduction should realize
+        // that the result is a scalar, therefore a tuple (represented by a
+        // member array) needs to be evaluated to a scalar. I think that if we
+        // get the type deduction right, the MDX exp compiler will handle the
+        // rest.
+        if (false) assertExprReturns(
+            "case 1 when 0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // "case when" variant always worked
+        assertExprReturns(
+            "case when 1=0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // case 2: cannot deduce type (tuple x) vs. (tuple y). Should be able
+        // to deduce that the result type is tuple-type<member-type<Gender>,
+        // member-type<Measures>>.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Gender].[M], [Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
+
+        // case 3: mixture of member & tuple. Should be able to deduce that
+        // result type is an expression.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
     }
 
     public void testPropertiesExpr() {
@@ -10827,7 +10867,7 @@ Intel platforms):
         // An integer constant is not allowed as a type
         assertExprThrows(
             "Cast(1 AS 5)",
-            "Syntax error at line 1, column 11, token '5.0'");
+            "Syntax error at line 1, column 11, token '5'");
 
         assertExprReturns("Cast('tr' || 'ue' AS boolean)", "true");
     }

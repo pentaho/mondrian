@@ -107,7 +107,7 @@ public class AndPredicate extends ListPredicate {
         // implementing "longest common prefix" algorithm which is an overkill.
         BitKey inListRHSBitKey = inListLHSBitKey.copy();
 
-        if (!columnBitKey.equals(inListLHSBitKey)
+        if (!getConstrainedColumnBitKey().equals(inListLHSBitKey)
             || (children.size() > 1
              && !sqlQuery.getDialect().supportsMultiValueInExpr()))
         {

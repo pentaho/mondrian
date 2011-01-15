@@ -70,12 +70,14 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             (CatalogFinder) mondrianServer;
         final NamedList<MondrianOlap4jCatalog> olap4jCatalogList =
             new NamedListImpl<MondrianOlap4jCatalog>();
+
         for (String catalogName
             : catalogFinder.getCatalogNames(mondrianConnection))
         {
             final Map<String, RolapSchema> schemaMap =
-                catalogFinder.getCatalogSchemas(
-                    mondrianConnection, catalogName);
+                catalogFinder.getRolapSchemas(
+                    mondrianConnection,
+                    catalogName);
             olap4jCatalogList.add(
                 new MondrianOlap4jCatalog(
                     this,
@@ -154,9 +156,16 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
      * <p>Intentionally package-protected; not part of the JDBC or olap4j API.
      *
      * @return List of catalogs in this database
+     * @deprecated deprecated in favor of
+     * OlapDatabaseMetaData.getOlapCatalogs()
      */
     // package-protected
+    @Deprecated
     NamedList<Catalog> getCatalogObjects() {
+        return Olap4jUtil.cast(olap4jCatalogList);
+    }
+
+    public NamedList<Catalog> getOlapCatalogs() throws OlapException {
         return Olap4jUtil.cast(olap4jCatalogList);
     }
 
@@ -674,7 +683,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         throw new UnsupportedOperationException();
     }
 
-    public ResultSet getSchemas() throws SQLException {
+    public ResultSet getSchemas() throws OlapException {
         if (false) {
             // Do not use DBSCHEMA_SCHEMATA: it has different columns than the
             // JDBC spec requires
@@ -683,7 +692,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         List<String> headerList =
             Arrays.asList("TABLE_SCHEM", "TABLE_CAT");
         List<List<Object>> rowList = new ArrayList<List<Object>>();
-        for (Catalog catalog : Util.sort(getCatalogObjects(), CATALOG_COMP)) {
+        for (Catalog catalog : Util.sort(getOlapCatalogs(), CATALOG_COMP)) {
             for (Schema schema : Util.sort(catalog.getSchemas(), SCHEMA_COMP)) {
                 rowList.add(
                     Arrays.<Object>asList(
@@ -695,7 +704,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             olap4jConnection, headerList, rowList);
     }
 
-    public ResultSet getCatalogs() throws SQLException {
+    public ResultSet getCatalogs() throws OlapException {
         if (false) {
             // Do not use DBSCHEMA_CATALOGS: it has different columns than the
             // JDBC spec requires
@@ -705,7 +714,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         List<String> headerList =
             Arrays.asList("TABLE_CAT");
         List<List<Object>> rowList = new ArrayList<List<Object>>();
-        for (Catalog catalog : Util.sort(getCatalogObjects(), CATALOG_COMP)) {
+        for (Catalog catalog : Util.sort(getOlapCatalogs(), CATALOG_COMP)) {
             rowList.add(
                 Collections.<Object>singletonList(catalog.getName()));
         }
@@ -987,7 +996,12 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             "ACTION_NAME", wildcard(actionNamePattern));
     }
 
+    @Deprecated
     public ResultSet getDatasources() throws OlapException {
+        return getDatabases();
+    }
+
+    public ResultSet getDatabases() throws OlapException {
         return getMetadata("DISCOVER_DATASOURCES");
     }
 

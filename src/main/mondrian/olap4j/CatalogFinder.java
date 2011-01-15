@@ -27,12 +27,10 @@ public interface CatalogFinder {
     /**
      * Returns a list of catalogs.
      *
-     * <p>Note that what JDBC calls a catalog, XMLA calls a data source. We
-     * use JDBC's terminology here.
-     *
      * <p>The catalog names occur in the natural order of the repository.
      *
      * @param connection Connection to mondrian
+     * we want the catalog children.
      * @return List of catalogs
      */
     List<String> getCatalogNames(
@@ -41,9 +39,6 @@ public interface CatalogFinder {
     /**
      * Returns a list of (schema name, schema) pairs in a catalog of a
      * particular name.
-     *
-     * <p>Note that what JDBC calls a schema, XMLA calls a catalog. We
-     * use JDBC's terminology here.
      *
      * <p>The name of the schema may not be the same as the value returned by
      * {@link mondrian.rolap.RolapSchema#getName()}. In fact, a given schema
@@ -55,7 +50,7 @@ public interface CatalogFinder {
      * @param catalogName Name of catalog
      * @return List of catalogs
      */
-    Map<String, RolapSchema> getCatalogSchemas(
+    Map<String, RolapSchema> getRolapSchemas(
         RolapConnection connection,
         String catalogName);
 }

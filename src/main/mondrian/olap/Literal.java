@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,8 +16,11 @@ import mondrian.olap.type.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.mdx.MdxVisitor;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Represents a constant value, such as a string or number, in a parse tree.
@@ -41,19 +44,28 @@ public class Literal extends ExpBase {
 
     public static final Literal nullValue = new Literal(Category.Null, null);
 
-    public static final Literal emptyString = new Literal("", false);
+    public static final Literal emptyString = new Literal(Category.String, "");
 
-    public static final Literal zero = new Literal(0);
+    public static final Literal zero =
+        new Literal(Category.Numeric, BigDecimal.ZERO);
 
-    public static final Literal one = new Literal(1);
+    public static final Literal one =
+        new Literal(Category.Numeric, BigDecimal.ONE);
 
-    public static final Literal negativeOne = new Literal(-1);
+    public static final Literal negativeOne =
+        new Literal(Category.Numeric, BigDecimal.ONE.negate());
 
-    public static final Literal doubleZero = new Literal(0.0);
+    public static final Literal doubleZero = zero;
 
-    public static final Literal doubleOne = new Literal(1.0);
+    public static final Literal doubleOne = one;
 
-    public static final Literal doubleNegativeOne = new Literal(-1.0);
+    public static final Literal doubleNegativeOne = negativeOne;
+
+    private static final Map<BigDecimal, Literal> MAP =
+        Olap4jUtil.mapOf(
+            BigDecimal.ZERO, zero,
+            BigDecimal.ONE, one,
+            BigDecimal.ONE.negate(), negativeOne);
 
     /**
      * Private constructor.
@@ -72,61 +84,50 @@ public class Literal extends ExpBase {
     public static Literal createString(String s) {
         return (s.equals(""))
             ? emptyString
-            : new Literal(s, false);
+            : new Literal(Category.String, s);
     }
 
     /**
      * Creates a symbol.
+     *
      * @see #createString
      */
     public static Literal createSymbol(String s) {
-        return new Literal(s, true);
+        return new Literal(Category.Symbol, s);
     }
 
     /**
      * Creates a numeric literal.
+     *
+     * @deprecated Use {@link #create(java.math.BigDecimal)}
      */
     public static Literal create(Double d) {
-        double dv = d.doubleValue();
-        if (dv == 0.0) {
-            return doubleZero;
-        } else if (dv == 1.0) {
-            return doubleOne;
-        } else if (dv == -1.0) {
-            return doubleNegativeOne;
-        } else {
-            return new Literal(d);
-        }
+        return new Literal(Category.Numeric, new BigDecimal(d));
     }
 
     /**
      * Creates an integer literal.
+     *
+     * @deprecated Use {@link #create(java.math.BigDecimal)}
      */
     public static Literal create(Integer i) {
-        switch (i) {
-        case -1:
-            return negativeOne;
-        case 0:
-            return zero;
-        case 1:
-            return one;
-        default:
-            return new Literal(i);
+        return new Literal(Category.Numeric, new BigDecimal(i));
+    }
+
+    /**
+     * Creates a numeric literal.
+     *
+     * <p>Using a {@link BigDecimal} allows us to store the precise value that
+     * the user typed. We will have to fit the value into a native
+     * {@code double} or {@code int} later on, but parse time is not the time to
+     * be throwing away information.
+     */
+    public static Literal create(BigDecimal d) {
+        final Literal literal = MAP.get(d);
+        if (literal != null) {
+            return literal;
         }
-    }
-
-    private Literal(String s, boolean isSymbol) {
-        this.o = s;
-        this.category = isSymbol ? Category.Symbol : Category.String;
-    }
-
-    private Literal(Double d) {
-        this.o = d;
-        this.category = Category.Numeric;
-    }
-    private Literal(Integer i) {
-        this.o = i;
-        this.category = Category.Numeric;
+        return new Literal(Category.Numeric, d);
     }
 
     public Literal clone() {

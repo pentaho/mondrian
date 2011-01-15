@@ -486,8 +486,8 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testGoodComments() {
         assertQueryReturns(
-                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
-                EmptyResult);
+            "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
+            EmptyResult);
 
         String[] comments = {
             "-- a basic comment\n",
@@ -514,26 +514,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " * also, -- another style comment is happy\n"
             + " */\n",
 
-            "/* a simple /* nested */ comment */",
 
-            "/*\n" + " * a multiline /* nested */ comment\n" + "*/",
+            "/* a simple /* nested comment, only needs to be closed once */",
 
-            "/*\n"
+            "/*\n" + " * a multiline /* nested comment\n" + "*/",
+
+            "/**\n"
             + " * a multiline\n"
             + " * /* multiline\n"
             + " *  * nested comment\n"
-            + " *  */\n"
-            + "*/",
-
-            "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " * /* deeply\n"
-            + " * /* really /* deeply */\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + " *  */\n"
-            + " *  */\n"
             + "*/",
 
             "-- single-line comment containing /* multiline */ comment\n",
@@ -630,30 +619,6 @@ public class BasicQueryTest extends FoodMartTestCase {
             EmptyResult);
 
         assertQueryReturns(
-            "/* a simple /* nested */ comment */\n"
-            + "/*\n"
-            + " * a multiline /* nested */ comment\n"
-            + "*/\n"
-            + "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + "*/\n"
-            + "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " * /* deeply\n"
-            + " * /* really /* deeply */\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + " *  */\n"
-            + " *  */\n"
-            + "*/\n"
-            + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
-            EmptyResult);
-
-        assertQueryReturns(
             "-- an entire select statement commented out\n"
             + "-- SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];\n"
             + "/*SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];*/\n"
@@ -733,16 +698,16 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "WHERE {[/***an illegal comment****/Marital Status].[S]}",
             "Failed to parse query");
 
-        // Nested comments must be closed.
+        // Nested comments only need to be closed once.
         assertQueryThrows(
-            "/* a simple /* nested * comment */\n"
+            "/* a simple /* nested */ comment */\n"
             + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
             "Failed to parse query");
 
-        // We do NOT support \r as a line-end delimiter. (Too bad, Mac users.)
-        assertQueryThrows(
+        // We support \r as a line-end delimiter.
+        assertQueryReturns(
             "SELECT {} ON COLUMNS -- comment terminated by CR only\r, {} ON ROWS FROM [Sales]",
-            "Failed to parse query");
+            EmptyResult);
     }
 
     /**
@@ -1049,7 +1014,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "[Product].Children on 1\n"
             + "from [Warehouse and Sales]\n"
             + "where ()",
-            "Syntax error at line 4, column 10, token ')'");
+            "Syntax error at line 4, column 8, token ')'");
     }
 
     /**
@@ -3479,9 +3444,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         // reduced to a single level.
         TestContext.assertEqualsVerbose(
             "with member [Measures].[Rendite] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', "
-            + "format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), "
+            + "format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100) > Parameter(\"UpperLimit\", NUMERIC, 151, \"Obere Grenze\")), "
             + "\"|#.00%|arrow='up'\", "
-            + "IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), "
+            + "IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100) < Parameter(\"LowerLimit\", NUMERIC, 150, \"Untere Grenze\")), "
             + "\"|#.00%|arrow='down'\", \"|#.00%|arrow='right'\"))\n"
             + "select {[Measures].Members} ON COLUMNS\n"
             + "from [Sales]\n",
@@ -3501,9 +3466,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         // consistent with the fact that property values are expressions,
         // not enclosed in single-quotes.
         TestContext.assertEqualsVerbose(
-            "with member [Measures].[Foo] as '1.0', "
+            "with member [Measures].[Foo] as '1', "
             + "format_string = \"##0.00\", "
-            + "funny = IIf((1.0 = 1.0), \"x\"\"y\", \"foo\")\n"
+            + "funny = IIf((1 = 1), \"x\"\"y\", \"foo\")\n"
             + "select {[Measures].[Foo]} ON COLUMNS\n"
             + "from [Sales]\n",
             s);

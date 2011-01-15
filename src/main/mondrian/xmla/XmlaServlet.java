@@ -121,6 +121,12 @@ public abstract class XmlaServlet
             MondrianServer.createWithRepository(contentFinder, catalogLocator);
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        server.shutdown();
+    }
+
     /**
      * Creates a callback for reading the repository. Derived classes may
      * override.

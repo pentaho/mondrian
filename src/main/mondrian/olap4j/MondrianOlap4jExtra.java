@@ -276,7 +276,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         MondrianServer server =
             MondrianServer.forConnection(
                 olap4jConnection.getMondrianConnection());
-        return server.getDataSources(olap4jConnection.getMondrianConnection());
+        return server.getDatabases(olap4jConnection.getMondrianConnection());
     }
 }
 

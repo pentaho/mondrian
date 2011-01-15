@@ -156,7 +156,7 @@ public class RolapEvaluator implements Evaluator {
         aggregationLists = null;
         for (RolapMember member : currentMembers) {
             if (member.isEvaluated()) {
-                addCalcMember(new RolapMemberCalculation(member));
+                addCalcMember(member);
             }
         }
 
@@ -312,7 +312,7 @@ public class RolapEvaluator implements Evaluator {
         return _push();
     }
 
-    public RolapEvaluator push(RolapCalculation calc) {
+    public RolapEvaluator push(RolapTupleCalculation calc) {
         RolapEvaluator evaluator = push();
         evaluator.addCalcMember(calc);
         return evaluator;
@@ -392,7 +392,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final Member setContext(Member member) {
-        final RolapMember m = (RolapMember) member;
+        final RolapMember m = (RolapMemberBase) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
 
@@ -404,7 +404,7 @@ public class RolapEvaluator implements Evaluator {
             return m;
         }
         if (previous.isEvaluated()) {
-            removeCalcMember(new RolapMemberCalculation(previous));
+            removeCalcMember(previous);
         }
         currentMembers[ordinal] = m;
         if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
@@ -412,7 +412,7 @@ public class RolapEvaluator implements Evaluator {
             root.nonAllPositionCount++;
         }
         if (m.isEvaluated()) {
-            addCalcMember(new RolapMemberCalculation(m));
+            addCalcMember(m);
         }
         nonAllMembers = null;
         return previous;
@@ -961,7 +961,7 @@ public class RolapEvaluator implements Evaluator {
     void removeCalcMember(RolapCalculation previous) {
         for (int i = 0; i < calcMemberCount; i++) {
             final RolapCalculation calcMember = calcMembers[i];
-            if (calcMember.equals(previous)) {
+            if (calcMember == previous) {
                 // overwrite this member with the end member
                 --calcMemberCount;
                 calcMembers[i] = calcMembers[calcMemberCount];

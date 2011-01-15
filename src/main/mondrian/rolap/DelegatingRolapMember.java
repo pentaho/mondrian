@@ -22,10 +22,11 @@ import java.util.Map;
  * @since Mar 16, 2010
  * @version $Id$
  */
-public class DelegatingRolapMember implements RolapMember {
+public class DelegatingRolapMember extends RolapMemberBase {
     protected final RolapMember member;
 
     protected DelegatingRolapMember(RolapMember member) {
+        super();
         this.member = member;
     }
 
