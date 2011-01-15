@@ -163,7 +163,7 @@ public class ArrayTupleList extends AbstractEndToEndTupleList
         return size1 > 0;
     }
 
-    public void addTuple(Member[] members) {
+    public void addTuple(Member... members) {
         assert mutable;
         if (members.length != arity) {
             throw new IllegalArgumentException(
@@ -248,7 +248,7 @@ public class ArrayTupleList extends AbstractEndToEndTupleList
             // Up to next multiple of arity.
             final int rem = newCapacity % arity;
             newCapacity += (arity - rem);
-            objectData = Arrays.copyOf(objectData, newCapacity);
+            objectData = Util.copyOf(objectData, newCapacity);
         }
     }
 }

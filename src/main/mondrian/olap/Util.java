@@ -2069,11 +2069,7 @@ public class Util extends XOMUtil {
         for (T[] a : as) {
             n += a.length;
         }
-        // Would use Arrays.copyOf but only exists in JDK 1.6 and higher.
-        //noinspection unchecked
-        T[] copy =
-            (T[]) Array.newInstance(a0.getClass().getComponentType(), n);
-        System.arraycopy(a0, 0, copy, 0, a0.length);
+        T[] copy = Util.copyOf(a0, n);
         n = a0.length;
         for (T[] a : as) {
             System.arraycopy(a, 0, copy, n, a.length);
@@ -2093,11 +2089,7 @@ public class Util extends XOMUtil {
      * @see #appendArrays
      */
     public static <T> T[] append(T[] a, T o) {
-        Class clazz = a.getClass().getComponentType();
-        // Would use Arrays.copyOf but only exists in JDK 1.6 and higher.
-        //noinspection unchecked
-        T[] a2 = (T[]) Array.newInstance(clazz, a.length + 1);
-        System.arraycopy(a, 0, a2, 0, a.length);
+        T[] a2 = Util.copyOf(a, a.length + 1);
         a2[a.length] = o;
         return a2;
     }
@@ -2143,10 +2135,31 @@ public class Util extends XOMUtil {
      * @return a copy of the original array, truncated or padded with zeros
      *     to obtain the specified length
      */
-    public static Object[] copyOf(Object[] original, int newLength) {
-        Object[] copy = new Object[newLength];
+    public static <T> T[] copyOf(T[] original, int newLength) {
+        //noinspection unchecked
+        return (T[]) copyOf(original, newLength, original.getClass());
+    }
+
+    /**
+     * Copies the specified array.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @param newType the class of the copy to be returned
+     * @return a copy of the original array, truncated or padded with nulls
+     *     to obtain the specified length
+     */
+    public static <T,U> T[] copyOf(
+        U[] original, int newLength, Class<? extends T[]> newType)
+    {
+        @SuppressWarnings({"unchecked", "RedundantCast"})
+        T[] copy = ((Object)newType == (Object)Object[].class)
+            ? (T[]) new Object[newLength]
+            : (T[]) Array.newInstance(newType.getComponentType(), newLength);
+        //noinspection SuspiciousSystemArraycopy
         System.arraycopy(
-            original, 0, copy, 0, Math.min(original.length, newLength));
+            original, 0, copy, 0,
+            Math.min(original.length, newLength));
         return copy;
     }
 
