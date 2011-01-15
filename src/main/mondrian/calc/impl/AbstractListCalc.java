@@ -3,19 +3,15 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.calc.impl;
 
-import java.util.List;
-
-import mondrian.calc.*;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.olap.type.SetType;
+import mondrian.calc.*;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
@@ -30,14 +26,13 @@ import mondrian.olap.type.SetType;
  */
 public abstract class AbstractListCalc
     extends AbstractCalc
-    implements ListCalc, MemberListCalc, TupleListCalc
+    implements ListCalc
 {
     private final boolean mutable;
-    protected final boolean tuple;
 
     /**
-     * Creates an abstract implementation of a compiled expression which returns
-     * a mutable list.
+     * Creates an abstract implementation of a compiled expression which
+     * returns a mutable list of tuples.
      *
      * @param exp Expression which was compiled
      * @param calcs List of child compiled expressions (for dependency
@@ -48,8 +43,8 @@ public abstract class AbstractListCalc
     }
 
     /**
-     * Creates an abstract implementation of a compiled expression which returns
-     * a list.
+     * Creates an abstract implementation of a compiled expression which
+     * returns a list.
      *
      * @param exp Expression which was compiled
      * @param calcs List of child compiled expressions (for dependency
@@ -60,17 +55,20 @@ public abstract class AbstractListCalc
         super(exp, calcs);
         this.mutable = mutable;
         assert type instanceof SetType : "expecting a set: " + getType();
-        this.tuple = getType().getArity() != 1;
     }
 
     public SetType getType() {
         return (SetType) super.getType();
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        final List list = evaluateList(evaluator);
-        assert list != null : "null as empty list is deprecated";
-        return list;
+    public final Object evaluate(Evaluator evaluator) {
+        final TupleList tupleList = evaluateList(evaluator);
+        assert tupleList != null : "null as empty tuple list is deprecated";
+        return tupleList;
+    }
+
+    public TupleIterable evaluateIterable(Evaluator evaluator) {
+        return evaluateList(evaluator);
     }
 
     public ResultStyle getResultStyle() {
@@ -79,28 +77,8 @@ public abstract class AbstractListCalc
             : ResultStyle.LIST;
     }
 
-    @SuppressWarnings({"unchecked"})
-    public List<Member> evaluateMemberList(Evaluator evaluator) {
-        return (List<Member>) evaluateList(evaluator);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-        return (List<Member[]>) evaluateList(evaluator);
-    }
-
-    /**
-     * Helper method with which to implement {@link #evaluateList}
-     * if you have implemented {@link #evaluateMemberList} and
-     * {@link #evaluateTupleList}.
-     *
-     * @param evaluator Evaluator
-     * @return List
-     */
-    protected List evaluateEitherList(Evaluator evaluator) {
-        return tuple
-            ? evaluateTupleList(evaluator)
-            : evaluateMemberList(evaluator);
+    public String toString() {
+        return "AbstractListCalc object";
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -61,13 +61,7 @@ class SetItemFunDef extends FunDefBase {
                 return null;
             }
             final SetType setType = (SetType) setExp.getType();
-            int arity;
-            if (setType.getElementType() instanceof TupleType) {
-                arity =
-                    ((TupleType) setType.getElementType()).elementTypes.length;
-            } else {
-                arity = 1;
-            }
+            final int arity = setType.getArity();
             // All args must be strings.
             for (int i = 1; i < args.length; i++) {
                 if (!validator.canConvert(
@@ -126,25 +120,25 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list =
+                        final TupleList list =
                             listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
                             results[i] =
-                                    stringCalcs[i].evaluateString(evaluator);
+                                stringCalcs[i].evaluateString(evaluator);
                         }
                         listLoop:
-                        for (Member[] members : list) {
+                        for (List<Member> members : list) {
                             for (int j = 0; j < results.length; j++) {
                                 String result = results[j];
-                                final Member member = members[j];
+                                final Member member = members.get(j);
                                 if (!matchMember(member, result)) {
                                     continue listLoop;
                                 }
                             }
                             // All members match. Return the current one.
-                            return members;
+                            return members.toArray(new Member[members.size()]);
                         }
                         // We use 'null' to represent the null tuple. Don't
                         // know why.
@@ -154,7 +148,7 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List<Member[]> list =
+                        final TupleList list =
                             listCalc.evaluateList(evaluator.push(false));
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
@@ -162,7 +156,8 @@ class SetItemFunDef extends FunDefBase {
                         if (index >= listSize || index < 0) {
                             return nullTuple;
                         } else {
-                            return (Member[]) list.get(index);
+                            final List<Member> members = list.get(index);
+                            return members.toArray(new Member[members.size()]);
                         }
                     }
                 };
@@ -174,7 +169,9 @@ class SetItemFunDef extends FunDefBase {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
                         final List<Member> list =
-                            listCalc.evaluateList(evaluator.push(false));
+                            listCalc
+                                .evaluateList(evaluator.push(false))
+                                .slice(0);
                         assert list != null;
                         final String result =
                                 stringCalcs[0].evaluateString(evaluator);
@@ -189,15 +186,17 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List list =
-                            listCalc.evaluateList(evaluator.push(false));
+                        final List<Member> list =
+                            listCalc
+                                .evaluateList(evaluator.push(false))
+                                .slice(0);
                         assert list != null;
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
                         if (index >= listSize || index < 0) {
                             return nullMember;
                         } else {
-                            return (Member) list.get(index);
+                            return list.get(index);
                         }
                     }
                 };
@@ -207,22 +206,6 @@ class SetItemFunDef extends FunDefBase {
 
     private static boolean matchMember(final Member member, String name) {
         return member.getName().equals(name);
-    }
-
-    Object makeNullMember(Evaluator evaluator, Exp[] args) {
-        final Type elementType = ((SetType) args[0].getType()).getElementType();
-        return makeNullMemberOrTuple(elementType);
-    }
-
-    Object makeNullMemberOrTuple(final Type elementType) {
-        if (elementType instanceof MemberType) {
-            MemberType memberType = (MemberType) elementType;
-            return makeNullMember(memberType);
-        } else if (elementType instanceof TupleType) {
-            return makeNullTuple((TupleType) elementType);
-        } else {
-            throw Util.newInternal("bad type " + elementType);
-        }
     }
 }
 

@@ -4,18 +4,16 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 3 March, 2002
 */
 package mondrian.olap.fun;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.MemberCalc;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.ConstantCalc;
+
+import mondrian.calc.*;
+import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
@@ -23,9 +21,6 @@ import mondrian.olap.Member;
 import mondrian.olap.type.NullType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapMember;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Definition of the MDX <code>&lt;Member&gt : &lt;Member&gt;</code> operator,
@@ -98,19 +93,20 @@ class RangeFunDef extends FunDefBase {
             compileMembers(call.getArg(0), call.getArg(1), compiler);
         return new AbstractListCalc(
             call, new Calc[] {memberCalcs[0], memberCalcs[1]})
-            {
-            public List evaluateList(Evaluator evaluator) {
+        {
+            public TupleList evaluateList(Evaluator evaluator) {
                 final Member member0 = memberCalcs[0].evaluateMember(evaluator);
                 final Member member1 = memberCalcs[1].evaluateMember(evaluator);
                 if (member0.isNull() || member1.isNull()) {
-                    return Collections.EMPTY_LIST;
+                    return TupleCollections.emptyList(1);
                 }
                 if (member0.getLevel() != member1.getLevel()) {
                     throw evaluator.newEvalException(
                         call.getFunDef(),
                         "Members must belong to the same level");
                 }
-                return FunUtil.memberRange(evaluator, member0, member1);
+                return new UnaryTupleList(
+                    FunUtil.memberRange(evaluator, member0, member1));
             }
         };
     }

@@ -4,18 +4,16 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.ValueCalc;
-import mondrian.calc.impl.GenericCalc;
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.DimensionType;
 import mondrian.olap.fun.*;
@@ -333,15 +331,10 @@ public class RolapResult extends ResultBase {
             RolapEvaluator evaluator = this.evaluator;
             if (positionList.size() > 1) {
                 int arity = positionList.get(0).size();
-                List<Member[]> tupleList =
-                    new ArrayList<Member[]>(positionList.size());
-                for (Position position : positionList) {
-                    final Member[] members = new Member[arity];
-                    for (int i = 0; i < position.size(); i++) {
-                        members[i] = position.get(i);
-                    }
-                    tupleList.add(members);
-                }
+                TupleList tupleList =
+                    new DelegatingTupleList(
+                        arity,
+                        Util.<List<Member>>cast(positionList));
                 tupleList =
                     AggregateFunDef.AggregateCalc.optimizeTupleList(
                         evaluator,
@@ -350,7 +343,7 @@ public class RolapResult extends ResultBase {
                 final Calc valueCalc =
                     new ValueCalc(
                         new DummyExp(new ScalarType()));
-                final List<Member[]> tupleList1 = tupleList;
+                final TupleList tupleList1 = tupleList;
                 final Calc calc =
                     new GenericCalc(
                         new DummyExp(query.slicerCalc.getType()))
@@ -721,63 +714,38 @@ public class RolapResult extends ResultBase {
                 axisResult = new RolapAxis.SingleEmptyPosition();
             }
         } else {
-            final int arity =
-                axis.getSet().getType() instanceof SetType
-                    ? ((SetType) axis.getSet().getType()).getArity()
-                    : axis.getSet().getType() instanceof TupleType
-                    ? ((TupleType) axis.getSet().getType()).elementTypes.length
-                    : 1;
             evaluator.setNonEmpty(axis.isNonEmpty());
             evaluator.setEvalAxes(true);
-            Object value = axisCalc.evaluate(evaluator);
+            TupleIterable iterable =
+                ((IterCalc) axisCalc).evaluateIterable(evaluator);
             if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
                 axis.setOrdered(true);
             }
             evaluator.setNonEmpty(false);
-            if (value != null) {
-                // List or Iterable of Member or Member[]
-                if (value instanceof List) {
-                    List<Object> list = (List) value;
-                    if (construct) {
-                        if (list.isEmpty()) {
-                            // should be???
-                            axisResult = new RolapAxis.NoPosition();
-                        } else if (arity == 1) {
-                            axisResult =
-                                new RolapAxis.MemberList((List<Member>)value);
-                        } else {
-                            axisResult =
-                                new RolapAxis.MemberArrayList(
-                                    (List<Member[]>)value);
-                        }
-                    } else if (axisMembers != null) {
-                        if (arity == 1) {
-                            axisMembers.mergeMemberList((List<Member>) value);
-                        } else {
-                            axisMembers.mergeTupleList((List<Member[]>) value);
-                        }
+            if (iterable instanceof TupleList) {
+                TupleList list = (TupleList) iterable;
+                if (construct) {
+                    if (list.isEmpty()) {
+                        // should be???
+                        axisResult = new RolapAxis.NoPosition();
+                    } else {
+                        axisResult = new RolapAxis.MemberArrayList(list);
                     }
-                } else {
-                    // Iterable
-                    Iterable<Object> iter = (Iterable) value;
-                    Iterator it = iter.iterator();
-                    if (construct) {
-                        if (! it.hasNext()) {
-                            axisResult = new RolapAxis.NoPosition();
-                        } else if (arity != 1) {
-                            axisResult = new RolapAxis.MemberArrayIterable(
-                                (Iterable<Member[]>)value);
-                        } else {
-                            axisResult = new RolapAxis.MemberIterable(
-                                (Iterable<Member>)value);
-                        }
-                    } else if (axisMembers != null) {
-                        if (arity == 1) {
-                            axisMembers.mergeMemberIter(it);
-                        } else {
-                            axisMembers.mergeTupleIter(it);
-                        }
+                } else if (axisMembers != null) {
+                    axisMembers.mergeTupleList(list);
+                }
+            } else {
+                // Iterable
+                TupleCursor cursor = iterable.tupleCursor();
+                if (construct) {
+                    if (cursor.forward()) {
+                        axisResult =
+                            new RolapAxis.MemberArrayIterable(iterable);
+                    } else {
+                        axisResult = new RolapAxis.NoPosition();
                     }
+                } else if (axisMembers != null) {
+                    axisMembers.mergeTupleIter(cursor);
                 }
             }
             evaluator.setEvalAxes(false);
@@ -850,12 +818,13 @@ public class RolapResult extends ResultBase {
 
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
-            if (preliminaryValue instanceof Iterable
-                && !(preliminaryValue instanceof List))
+            if (preliminaryValue instanceof TupleIterable
+                && !(preliminaryValue instanceof TupleList))
             {
-                Iterable iterable = (Iterable) preliminaryValue;
-                for (Object anIterable : iterable) {
-                    Util.discard(anIterable);
+                TupleIterable iterable = (TupleIterable) preliminaryValue;
+                final TupleCursor cursor = iterable.tupleCursor();
+                while (cursor.forward()) {
+                    // ignore
                 }
             }
 
@@ -1201,44 +1170,37 @@ public class RolapResult extends ResultBase {
             return this.members;
         }
 
-        void mergeMemberList(List<Member> list) {
-            for (Member o : list) {
-                if (o == null) {
-                    continue;
+        void mergeTupleList(TupleList list) {
+            mergeTupleIter(list.tupleCursor());
+        }
+
+        private void mergeTupleIter(TupleCursor cursor) {
+            while (cursor.forward()) {
+                mergeTuple(cursor);
+            }
+        }
+
+        private Member getTopParent(Member m) {
+            while (true) {
+                Member parent = m.getParentMember();
+                if (parent == null) {
+                    return m;
                 }
-                if (o.getDimension().isHighCardinality()) {
-                    break;
-                }
-                mergeMember(o);
+                m = parent;
             }
         }
 
-        void mergeTupleList(List<Member[]> list) {
-            for (Member[] o : list) {
-                mergeTuple(o);
+        private void mergeTuple(final TupleCursor cursor) {
+            final int arity = cursor.getArity();
+            /*
+            final Member[] members1 = new Member[arity];
+            cursor.currentToArray(members1, 0);
+            if (FunUtil.tupleContainsNullMember(members1)) {
+                return;
             }
-        }
-
-        private void mergeMemberIter(Iterator<Member> it) {
-            while (it.hasNext()) {
-                mergeMember(it.next());
-            }
-        }
-
-        private void mergeTupleIter(Iterator<Member[]> it) {
-            while (it.hasNext()) {
-                mergeTuple(it.next());
-            }
-        }
-
-        private Member getTopParent(final Member m) {
-            Member parent = m.getParentMember();
-            return (parent == null) ? m : getTopParent(parent);
-        }
-
-        private void mergeTuple(final Member[] members) {
-            for (Member member : members) {
-                mergeMember(member);
+            */
+            for (int i = 0; i < arity; i++) {
+                mergeMember(cursor.member(i));
             }
         }
 
@@ -1852,6 +1814,10 @@ public class RolapResult extends ResultBase {
             }
             arrayLen = posList1.get(0).size();
         }
+
+        // REVIEW: Is all this 'instanceof' stuff really necessary? Can't we
+        // just ask each axis whether it is empty?
+
         if (axis1 instanceof RolapAxis.SingleEmptyPosition) {
             return axis2;
         }
@@ -1880,73 +1846,40 @@ public class RolapResult extends ResultBase {
             // reset to start of List
             posList1 = axis1.getPositions();
         }
-        if (arrayLen == 1) {
-            // single Member per position
-
-            // LinkedHashSet gives O(n log n) additions (versus O(n ^ 2) for
-            // ArrayList, and preserves order (versus regular HashSet).
-            LinkedHashSet<Member> orderedSet = new LinkedHashSet<Member>();
-            for (Position p1 : posList1) {
-                for (Member m1 : p1) {
-                    orderedSet.add(m1);
-                }
+        Set<List<Member>> set = new HashSet<List<Member>>();
+        TupleList list = TupleCollections.createList(arrayLen);
+        for (Position p1 : posList1) {
+            if (set.add(p1)) {
+                list.add(p1);
             }
-            for (Position p2 : posList2) {
-                for (Member m2 : p2) {
-                    orderedSet.add(m2);
-                }
-            }
-            return new RolapAxis.MemberList(
-                Arrays.asList(
-                    orderedSet.toArray(new Member[orderedSet.size()])));
-        } else {
-            // array of Members per position
-
-            Set<List<Member>> set = new HashSet<List<Member>>();
-            List<Member[]> list = new ArrayList<Member[]>();
-            for (Position p1 : posList1) {
-                if (set.add(p1)) {
-                    Member[] members = new Member[arrayLen];
-                    for (int i = 0; i < p1.size(); i++) {
-                        members[i] = p1.get(i);
-                    }
-                    list.add(members);
-                }
-            }
-            int halfWay = list.size();
-            for (Position p2 : posList2) {
-                if (set.add(p2)) {
-                    Member[] members = new Member[arrayLen];
-                    for (int i = 0; i < p2.size(); i++) {
-                        Member m2 = p2.get(i);
-                        members[i] = m2;
-                    }
-                    list.add(members);
-                }
-            }
-
-            // if there are unique members on both axes and no order function,
-            //  sort the list to ensure default order
-            if (halfWay > 0 && halfWay < list.size() && !ordered) {
-                Member[] membs = list.get(0);
-                int membsSize = membs.length;
-                ValueCalc valCalc =
-                    new ValueCalc(
-                        new DummyExp(new ScalarType()));
-                FunUtil.sortTuples(
-                    evaluator,
-                    list,
-                    list,
-                    valCalc,
-                    false,
-                    false,
-                    membsSize);
-            }
-
-            return new RolapAxis.MemberArrayList(list);
         }
-    }
+        int halfWay = list.size();
+        for (Position p2 : posList2) {
+            if (set.add(p2)) {
+                list.add(p2);
+            }
+        }
 
+        // if there are unique members on both axes and no order function,
+        //  sort the list to ensure default order
+        if (halfWay > 0 && halfWay < list.size() && !ordered) {
+            List<Member> membs = list.get(0);
+            int membsSize = membs.size();
+            ValueCalc valCalc =
+                new ValueCalc(
+                    new DummyExp(new ScalarType()));
+            list = FunUtil.sortTuples(
+                evaluator,
+                list,
+                list,
+                valCalc,
+                false,
+                false,
+                membsSize);
+        }
+
+        return new RolapAxis.MemberArrayList(list);
+    }
 }
 
 // End RolapResult.java

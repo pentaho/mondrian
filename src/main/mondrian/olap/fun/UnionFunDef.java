@@ -3,24 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
+import mondrian.olap.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.ArrayList;
 
 /**
  * Definition of the <code>Union</code> MDX function.
@@ -50,19 +46,19 @@ class UnionFunDef extends FunDefBase {
         // todo: do at validate time
         checkCompatible(call.getArg(0), call.getArg(1), null);
         final ListCalc listCalc0 =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         final ListCalc listCalc1 =
-                compiler.compileList(call.getArg(1));
+            compiler.compileList(call.getArg(1));
         return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
-            public List evaluateList(Evaluator evaluator) {
-                List list0 = listCalc0.evaluateList(evaluator);
-                List list1 = listCalc1.evaluateList(evaluator);
+            public TupleList evaluateList(Evaluator evaluator) {
+                TupleList list0 = listCalc0.evaluateList(evaluator);
+                TupleList list1 = listCalc1.evaluateList(evaluator);
                 return union(list0, list1, all);
             }
         };
     }
 
-    <T> List<T> union(List<T> list0, List<T> list1, final boolean all) {
+    TupleList union(TupleList list0, TupleList list1, final boolean all) {
         assert list0 != null;
         assert list1 != null;
         if (all) {
@@ -72,13 +68,13 @@ class UnionFunDef extends FunDefBase {
             if (list1.isEmpty()) {
                 return list0;
             }
-            List<T> result = new ArrayList<T>();
+            TupleList result = TupleCollections.createList(list0.getArity());
             result.addAll(list0);
             result.addAll(list1);
             return result;
         } else {
-            Set<Object> added = new HashSet<Object>();
-            List<T> result = new ArrayList<T>();
+            Set<List<Member>> added = new HashSet<List<Member>>();
+            TupleList result = TupleCollections.createList(list0.getArity());
             FunUtil.addUnique(result, list0, added);
             FunUtil.addUnique(result, list1, added);
             return result;

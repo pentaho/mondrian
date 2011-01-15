@@ -3,12 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
+import mondrian.olap.Member;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.TupleConstraint;
 
 import java.util.List;
@@ -95,7 +97,7 @@ public abstract class TargetBase {
 
     public abstract void open();
 
-    public abstract List<RolapMember> close();
+    public abstract List<Member> close();
 
     abstract int internalAddRow(SqlStatement stmt, int column)
         throws SQLException;

@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -833,15 +832,17 @@ public class RolapHierarchy extends HierarchyBase {
                         null);
                 SetType setType = new SetType(memberType1);
                 ListCalc listCalc =
-                    new AbstractMemberListCalc(
+                    new AbstractListCalc(
                         new DummyExp(setType), new Calc[0])
                     {
-                        public List<Member> evaluateMemberList(
+                        public TupleList evaluateList(
                             Evaluator evaluator)
                         {
-                            return FunUtil.getNonEmptyMemberChildren(
-                                evaluator,
-                                ((RolapEvaluator) evaluator).getExpanding());
+                            return new UnaryTupleList(
+                                FunUtil.getNonEmptyMemberChildren(
+                                    evaluator,
+                                    ((RolapEvaluator) evaluator)
+                                        .getExpanding()));
                         }
 
                         public boolean dependsOn(Hierarchy hierarchy) {
@@ -1301,7 +1302,10 @@ public class RolapHierarchy extends HierarchyBase {
     private static class LimitedRollupAggregateCalc
         extends AggregateFunDef.AggregateCalc
     {
-        public LimitedRollupAggregateCalc(Type returnType, ListCalc listCalc) {
+        public LimitedRollupAggregateCalc(
+            Type returnType,
+            ListCalc listCalc)
+        {
             super(
                 new DummyExp(returnType),
                 listCalc,

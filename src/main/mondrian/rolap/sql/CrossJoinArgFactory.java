@@ -1,16 +1,16 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.sql;
 
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
+import mondrian.calc.*;
 import mondrian.mdx.LevelExpr;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.NamedSetExpr;
@@ -899,17 +899,20 @@ public class CrossJoinArgFactory {
             && evaluator.getActiveNativeExpansions().add(exp))
         {
             ListCalc listCalc0 = compiler.compileList(exp);
-            List<RolapMember> list0 =
-                Util.cast(listCalc0.evaluateList(evaluator));
+            final TupleList tupleList = listCalc0.evaluateList(evaluator);
+
             // Prevent the case when the second argument size is too large
-            if (list0 != null) {
-                Util.checkCJResultLimit(list0.size());
-            }
-            CrossJoinArg arg =
-                MemberListCrossJoinArg.create(
-                    evaluator, list0, restrictMemberTypes(), false);
-            if (arg != null) {
-                arg0 = new CrossJoinArg[]{arg};
+            Util.checkCJResultLimit(tupleList.size());
+
+            if (tupleList.getArity() == 1) {
+                List<RolapMember> list0 =
+                    Util.cast(tupleList.slice(0));
+                CrossJoinArg arg =
+                    MemberListCrossJoinArg.create(
+                        evaluator, list0, restrictMemberTypes(), false);
+                if (arg != null) {
+                    arg0 = new CrossJoinArg[]{arg};
+                }
             }
             evaluator.getActiveNativeExpansions().remove(exp);
         }

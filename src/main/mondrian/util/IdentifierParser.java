@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,8 @@
 */
 package mondrian.util;
 
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.ArrayTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
@@ -199,20 +201,19 @@ public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
      * Implementation of Builder that builds a tuple list.
      */
     public static class TupleListBuilder extends TupleBuilder {
-        public final List<Member[]> tupleList = new ArrayList<Member[]>();
+        public final TupleList tupleList;
 
         public TupleListBuilder(
             SchemaReader schemaReader, Cube cube, List<Hierarchy> hierarchyList)
         {
             super(schemaReader, cube, hierarchyList);
+            tupleList = new ArrayTupleList(hierarchyList.size());
         }
 
         public void tupleComplete() {
             super.tupleComplete();
-            final Member[] members =
-                memberList.toArray(new Member[memberList.size()]);
-            if (!FunUtil.tupleContainsNullMember(members)) {
-                tupleList.add(members);
+            if (!FunUtil.tupleContainsNullMember(memberList)) {
+                tupleList.add(memberList);
             }
             this.memberList.clear();
         }

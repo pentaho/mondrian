@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,6 +11,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.TupleList;
 import mondrian.olap.Util;
 
 import java.sql.SQLException;
@@ -28,7 +29,8 @@ public class ResultLoader {
     private final int enumTargetCount;
     private final boolean execQuery;
     private final String message;
-    private final List<List<RolapMember>> partialResult, newPartialResult;
+    private final TupleList partialResult;
+    private final List<List<RolapMember>> newPartialResult;
     private final SqlStatement stmt;
 
     private final int[] srcMemberIdxes;
@@ -40,7 +42,7 @@ public class ResultLoader {
         final List<TargetBase> targets,
         final SqlStatement stmt,
         final boolean execQuery,
-        final List<List<RolapMember>> partialResult,
+        final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
         throws SQLException
     {
@@ -83,7 +85,7 @@ public class ResultLoader {
             if (execQuery) {
                 partialRow = null;
             } else {
-                partialRow = partialResult.get(currPartialResultIdx);
+                partialRow = Util.cast(partialResult.get(currPartialResultIdx));
             }
             resetCurrMembers(partialRow);
             addTargets(

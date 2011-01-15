@@ -650,7 +650,7 @@ public abstract class XmlaServlet
                         count++;
 
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info(
+                            LOGGER.debug(
                                 "Register callback '" + className + "'");
                         }
                     } else {

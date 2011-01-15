@@ -3,23 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.AbstractMemberIterCalc;
-import mondrian.calc.impl.AbstractTupleIterCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.type.SetType;
 import mondrian.olap.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Definition of the <code>Filter</code> MDX function.
@@ -91,34 +86,21 @@ class FilterFunDef extends FunDefBase {
         // check returned calc ResultStyles
         checkIterListResultStyles(imlcalc);
 
-        if (((SetType) imlcalc.getType()).getArity() == 1) {
-            if (imlcalc.getResultStyle() == ResultStyle.ITERABLE) {
-                return new IterMemberIterCalc(call, calcs);
-            } else if (imlcalc.getResultStyle() == ResultStyle.LIST) {
-                return new ImMutableMemberIterCalc(call, calcs);
-            } else {
-                return new MutableMemberIterCalc(call, calcs);
-            }
-
+        if (imlcalc.getResultStyle() == ResultStyle.ITERABLE) {
+            return new IterIterCalc(call, calcs);
+        } else if (imlcalc.getResultStyle() == ResultStyle.LIST) {
+            return new ImmutableIterCalc(call, calcs);
         } else {
-            if (imlcalc.getResultStyle() == ResultStyle.ITERABLE) {
-                return new IterMemberArrayIterCalc(call, calcs);
-            } else if (imlcalc.getResultStyle() == ResultStyle.LIST) {
-                return new ImMutableMemberArrayIterCalc(call, calcs);
-            } else {
-                return new MutableMemberArrayIterCalc(call, calcs);
-            }
+            return new MutableIterCalc(call, calcs);
         }
     }
 
-    private static abstract class BaseMemberIterCalc
-        extends AbstractMemberIterCalc
-    {
-        protected BaseMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static abstract class BaseIterCalc extends AbstractIterCalc {
+        protected BaseIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
-        public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
+        public TupleIterable evaluateIterable(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -127,282 +109,114 @@ class FilterFunDef extends FunDefBase {
                     schemaReader.getNativeSetEvaluator(
                             call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return Util.castToIterable(
-                    nativeEvaluator.execute(
-                        ResultStyle.ITERABLE));
+                return (TupleIterable)
+                    nativeEvaluator.execute(ResultStyle.ITERABLE);
             } else {
                 return makeIterable(evaluator);
             }
         }
 
-        protected abstract Iterable<Member> makeIterable(Evaluator evaluator);
+        protected abstract TupleIterable makeIterable(Evaluator evaluator);
 
         public boolean dependsOn(Hierarchy hierarchy) {
             return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 
-    private static abstract class BaseTupleIterCalc
-        extends AbstractTupleIterCalc
-    {
-        protected BaseTupleIterCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class MutableIterCalc extends BaseIterCalc {
+        MutableIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-        }
-
-        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
-            ResolvedFunCall call = (ResolvedFunCall) exp;
-            // Use a native evaluator, if more efficient.
-            // TODO: Figure this out at compile time.
-            SchemaReader schemaReader = evaluator.getSchemaReader();
-            NativeEvaluator nativeEvaluator =
-                    schemaReader.getNativeSetEvaluator(
-                            call.getFunDef(), call.getArgs(), evaluator, this);
-            if (nativeEvaluator != null) {
-                //noinspection unchecked
-                return (Iterable<Member[]>) nativeEvaluator.execute(
-                    ResultStyle.ITERABLE);
-            } else {
-                return makeIterable(evaluator);
-            }
-        }
-
-        protected abstract Iterable<Member[]> makeIterable(Evaluator evaluator);
-
-        public boolean dependsOn(Hierarchy hierarchy) {
-            return anyDependsButFirst(getCalcs(), hierarchy);
-        }
-    }
-
-    //
-    // Member Iter Calcs
-    //
-    private static class MutableMemberIterCalc extends BaseMemberIterCalc {
-        MutableMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[0] instanceof ListCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
-        protected Iterable<Member> makeIterable(Evaluator evaluator) {
+        protected TupleIterable makeIterable(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            MemberListCalc lcalc = (MemberListCalc) calcs[0];
+            ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
-            // make list mutable
-            members = new ArrayList<Member>(members);
-            Iterator<Member> it = members.iterator();
-            while (it.hasNext()) {
-                Member member = it.next();
-                evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+            TupleList list = lcalc.evaluateList(evaluator);
+
+            // make list mutable; guess selectivity .5
+            TupleList members =
+                TupleCollections.createList(list.getArity(), list.size() / 2);
+            TupleCursor cursor = list.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator2);
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.addCurrent(cursor);
                 }
             }
             return members;
         }
     }
 
-    private static class ImMutableMemberIterCalc extends BaseMemberIterCalc {
-        ImMutableMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class ImmutableIterCalc extends BaseIterCalc {
+        ImmutableIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[0] instanceof ListCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
-        protected Iterable<Member> makeIterable(Evaluator evaluator) {
+        protected TupleIterable makeIterable(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            MemberListCalc lcalc = (MemberListCalc) calcs[0];
+            ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
+            TupleList members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
-            List<Member> result = new ArrayList<Member>();
-            for (int i = 0, count = members.size(); i < count; i++) {
-                Member member = members.get(i);
-                evaluator2.setContext(member);
+            TupleList result = members.cloneList(members.size() / 2);
+            TupleCursor cursor = members.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator2);
                 if (bcalc.evaluateBoolean(evaluator2)) {
-                    result.add(member);
+                    result.addCurrent(cursor);
                 }
             }
             return result;
         }
     }
 
-    private static class IterMemberIterCalc extends BaseMemberIterCalc {
-        IterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof MemberIterCalc;
-            assert calcs[1] instanceof BooleanCalc;
-        }
-
-        protected Iterable<Member> makeIterable(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            MemberIterCalc icalc = (MemberIterCalc) calcs[0];
-            final BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
-            // This does dynamics, just in time,
-            // as needed filtering
-            final Iterable<Member> iter =
-                icalc.evaluateMemberIterable(evaluator);
-
-            return new Iterable<Member>() {
-                public Iterator<Member> iterator() {
-                    return new Iterator<Member>() {
-                        Iterator<Member> it = iter.iterator();
-                        Member m = null;
-                        public boolean hasNext() {
-                            if (m != null) {
-                                return true;
-                            }
-                            if (! it.hasNext()) {
-                                return false;
-                            }
-                            this.m = it.next();
-                            evaluator2.setContext(this.m);
-                            while (! bcalc.evaluateBoolean(evaluator2)) {
-                                if (! it.hasNext()) {
-                                    return false;
-                                }
-                                this.m = it.next();
-                                evaluator2.setContext(this.m);
-                            }
-                            return true;
-                        }
-                        public Member next() {
-                            try {
-                                return this.m;
-                            } finally {
-                                this.m = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
-                        }
-                    };
-                }
-            };
-        }
-    }
-
-    //
-    // Member[] Iter Calcs
-    //
-    private static class MutableMemberArrayIterCalc extends BaseTupleIterCalc {
-        MutableMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof TupleListCalc;
-            assert calcs[1] instanceof BooleanCalc;
-        }
-
-        protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            TupleListCalc lcalc = (TupleListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
-
-            // make list mutable
-            members = new ArrayList<Member[]>(members);
-            Iterator<Member[]> it = members.iterator();
-            while (it.hasNext()) {
-                Member[] member = it.next();
-                evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
-                }
-            }
-            return members;
-        }
-    }
-
-    private static class ImMutableMemberArrayIterCalc
-        extends BaseTupleIterCalc
+    private static class IterIterCalc
+        extends BaseIterCalc
     {
-        ImMutableMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+        IterIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-            assert calcs[0] instanceof TupleListCalc;
+            assert calcs[0] instanceof IterCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
-        protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
+        protected TupleIterable makeIterable(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            TupleListCalc lcalc = (TupleListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
-
-            // Not mutable, must create new list
-            List<Member[]> result = new ArrayList<Member[]>();
-            for (int i = 0, count = members.size(); i < count; i++) {
-                Member[] member = members.get(i);
-                evaluator2.setContext(member);
-                if (bcalc.evaluateBoolean(evaluator2)) {
-                    result.add(member);
-                }
-            }
-            return result;
-        }
-    }
-
-    private static class IterMemberArrayIterCalc
-        extends BaseTupleIterCalc
-    {
-        IterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof TupleIterCalc;
-            assert calcs[1] instanceof BooleanCalc;
-        }
-
-        protected Iterable<Member[]> makeIterable(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            TupleIterCalc icalc = (TupleIterCalc) calcs[0];
+            IterCalc icalc = (IterCalc) calcs[0];
             final BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
 
             // This does dynamics, just in time,
             // as needed filtering
-            final Iterable<Member[]> iter =
-                icalc.evaluateTupleIterable(evaluator);
-            return new Iterable<Member[]>() {
-                public Iterator<Member[]> iterator() {
-                    return new Iterator<Member[]>() {
-                        Iterator<Member[]> it = iter.iterator();
-                        Member[] m = null;
-                        public boolean hasNext() {
-                            if (m != null) {
-                                return true;
-                            }
-                            if (! it.hasNext()) {
-                                return false;
-                            }
-                            this.m = it.next();
-                            evaluator2.setContext(this.m);
-                            while (! bcalc.evaluateBoolean(evaluator2)) {
-                                if (! it.hasNext()) {
-                                    return false;
+            final TupleIterable iterable =
+                icalc.evaluateIterable(evaluator);
+            return new AbstractTupleIterable(iterable.getArity()) {
+                public TupleCursor tupleCursor() {
+                    return new AbstractTupleCursor(iterable.getArity()) {
+                        final TupleCursor cursor = iterable.tupleCursor();
+
+                        public boolean forward() {
+                            while (cursor.forward()) {
+                                cursor.setContext(evaluator2);
+                                if (bcalc.evaluateBoolean(evaluator2)) {
+                                    return true;
                                 }
-                                this.m = it.next();
-                                evaluator2.setContext(this.m);
                             }
-                            return true;
+                            return false;
                         }
-                        public Member[] next() {
-                            try {
-                                return this.m;
-                            } finally {
-                                this.m = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
+
+                        public List<Member> current() {
+                            return cursor.current();
                         }
                     };
                 }
@@ -427,35 +241,23 @@ class FilterFunDef extends FunDefBase {
         Calc[] calcs = new Calc[] {ilcalc, bcalc};
 
         // Note that all of the ListCalc's return will be mutable
-        if (((SetType) ilcalc.getType()).getArity() == 1) {
-            switch (ilcalc.getResultStyle()) {
-            case LIST:
-                return new ImmutableMemberListCalc(call, calcs);
-            case MUTABLE_LIST:
-                return new MutableMemberListCalc(call, calcs);
-            }
-            throw ResultStyleException.generateBadType(
-                ResultStyle.MUTABLELIST_LIST,
-                ilcalc.getResultStyle());
-
-        } else {
-            switch (ilcalc.getResultStyle()) {
-            case LIST:
-                return new ImmutableTupleListCalc(call, calcs);
-            case MUTABLE_LIST:
-                return new MutableTupleListCalc(call, calcs);
-            }
-            throw ResultStyleException.generateBadType(
-                ResultStyle.MUTABLELIST_LIST,
-                ilcalc.getResultStyle());
+        switch (ilcalc.getResultStyle()) {
+        case LIST:
+            return new ImmutableListCalc(call, calcs);
+        case MUTABLE_LIST:
+            return new MutableListCalc(call, calcs);
         }
+        throw ResultStyleException.generateBadType(
+            ResultStyle.MUTABLELIST_LIST,
+            ilcalc.getResultStyle());
     }
 
     private static abstract class BaseListCalc extends AbstractListCalc {
         protected BaseListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
-        public List evaluateList(Evaluator evaluator) {
+
+        public TupleList evaluateList(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -464,135 +266,74 @@ class FilterFunDef extends FunDefBase {
                 schemaReader.getNativeSetEvaluator(
                     call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (List) nativeEvaluator.execute(ResultStyle.ITERABLE);
+                return (TupleList) nativeEvaluator.execute(
+                    ResultStyle.ITERABLE);
             } else {
                 return makeList(evaluator);
             }
         }
-        protected abstract List makeList(Evaluator evaluator);
+        protected abstract TupleList makeList(Evaluator evaluator);
 
         public boolean dependsOn(Hierarchy hierarchy) {
             return anyDependsButFirst(getCalcs(), hierarchy);
         }
     }
 
-    //
-    // Member List Calcs
-    //
-    private static class MutableMemberListCalc extends BaseListCalc {
-        MutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class MutableListCalc extends BaseListCalc {
+        MutableListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[0] instanceof ListCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
-        protected List makeList(Evaluator evaluator) {
+        protected TupleList makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            MemberListCalc lcalc = (MemberListCalc) calcs[0];
+            ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
+            TupleList members0 = lcalc.evaluateList(evaluator);
 
-            // make list mutable
-            members = new ArrayList<Member>(members);
-            Iterator<Member> it = members.iterator();
-            while (it.hasNext()) {
-                Member member = it.next();
-                evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+            // make list mutable;
+            // for capacity planning, guess selectivity = .5
+            TupleList members = members0.cloneList(members0.size() / 2);
+            final TupleCursor cursor = members0.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator2);
+                if (bcalc.evaluateBoolean(evaluator2)) {
+                    members.addCurrent(cursor);
                 }
             }
             return members;
         }
     }
 
-    private static class ImmutableMemberListCalc extends BaseListCalc {
-        ImmutableMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+    private static class ImmutableListCalc extends BaseListCalc {
+        ImmutableListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
-            assert calcs[0] instanceof MemberListCalc;
+            assert calcs[0] instanceof ListCalc;
             assert calcs[1] instanceof BooleanCalc;
         }
 
-        protected List makeList(Evaluator evaluator) {
+        protected TupleList makeList(Evaluator evaluator) {
             Calc[] calcs = getCalcs();
-            MemberListCalc lcalc = (MemberListCalc) calcs[0];
+            ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push(false);
-            List<Member> members = lcalc.evaluateMemberList(evaluator);
+            TupleList members0 = lcalc.evaluateList(evaluator);
 
-            // Not mutable, must create new list
-            List<Member> result = new ArrayList<Member>();
-            for (int i = 0, count = members.size(); i < count; i++) {
-                Member member = members.get(i);
-                evaluator2.setContext(member);
+            // Not mutable, must create new list;
+            // for capacity planning, guess selectivity = .5
+            TupleList members = members0.cloneList(members0.size() / 2);
+            final TupleCursor cursor = members0.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator2);
                 if (bcalc.evaluateBoolean(evaluator2)) {
-                    result.add(member);
-                }
-            }
-            return result;
-        }
-    }
-
-    //
-    // Member[] List Calcs
-    //
-    private static class MutableTupleListCalc extends BaseListCalc {
-        MutableTupleListCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof TupleListCalc;
-            assert calcs[1] instanceof BooleanCalc;
-        }
-
-        protected List makeList(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            TupleListCalc lcalc = (TupleListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
-
-            // make list mutable
-            members = new ArrayList<Member[]>(members);
-            Iterator<Member[]> it = members.iterator();
-            while (it.hasNext()) {
-                Member[] member = it.next();
-                evaluator2.setContext(member);
-                if (! bcalc.evaluateBoolean(evaluator2)) {
-                    it.remove();
+                    members.addCurrent(cursor);
                 }
             }
             return members;
-        }
-    }
-
-    private static class ImmutableTupleListCalc extends BaseListCalc {
-        ImmutableTupleListCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-            assert calcs[0] instanceof TupleListCalc;
-            assert calcs[1] instanceof BooleanCalc;
-        }
-
-        protected List makeList(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            TupleListCalc lcalc = (TupleListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
-            List<Member[]> members = lcalc.evaluateTupleList(evaluator);
-
-            // Not mutable, must create new list
-            List<Member[]> result = new ArrayList<Member[]>();
-            for (int i = 0, count = members.size(); i < count; i++) {
-                Member[] member = members.get(i);
-                evaluator2.setContext(member);
-                if (bcalc.evaluateBoolean(evaluator2)) {
-                    result.add(member);
-                }
-            }
-            return result;
         }
     }
 }

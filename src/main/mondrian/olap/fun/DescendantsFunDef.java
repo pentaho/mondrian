@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,10 +12,10 @@ package mondrian.olap.fun;
 
 import java.util.*;
 
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractMemberListCalc;
 import mondrian.mdx.*;
 import mondrian.resource.MondrianResource;
 
@@ -116,10 +116,10 @@ class DescendantsFunDef extends FunDefBase {
                 depthSpecified
                 ? compiler.compileInteger(call.getArg(1))
                 : null;
-            return new AbstractMemberListCalc(
+            return new AbstractListCalc(
                 call, new Calc[] {memberCalc, depthCalc})
             {
-                public List<Member> evaluateMemberList(Evaluator evaluator) {
+                public TupleList evaluateList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
                     int depth = -1;
@@ -134,17 +134,17 @@ class DescendantsFunDef extends FunDefBase {
                     descendantsLeavesByDepth(
                         member, result, schemaReader, depth);
                     hierarchizeMemberList(result, false);
-                    return result;
+                    return new UnaryTupleList(result);
                 }
             };
         } else if (depthSpecified) {
             final IntegerCalc depthCalc =
                 compiler.compileInteger(call.getArg(1));
             final Flag flag1 = flag;
-            return new AbstractMemberListCalc(
+            return new AbstractListCalc(
                 call, new Calc[] {memberCalc, depthCalc})
             {
-                public List<Member> evaluateMemberList(Evaluator evaluator) {
+                public TupleList evaluateList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List<Member> result = new ArrayList<Member>();
                     final int depth = depthCalc.evaluateInteger(evaluator);
@@ -155,7 +155,7 @@ class DescendantsFunDef extends FunDefBase {
                         depth, flag1.before, flag1.self, flag1.after,
                         evaluator);
                     hierarchizeMemberList(result, false);
-                    return result;
+                    return new UnaryTupleList(result);
                 }
             };
         } else {
@@ -164,10 +164,10 @@ class DescendantsFunDef extends FunDefBase {
                 ? compiler.compileLevel(call.getArg(1))
                 : null;
             final Flag flag2 = flag;
-            return new AbstractMemberListCalc(
+            return new AbstractListCalc(
                 call, new Calc[] {memberCalc, levelCalc})
             {
-                public List<Member> evaluateMemberList(Evaluator evaluator) {
+                public TupleList evaluateList(Evaluator evaluator) {
                     final Evaluator context =
                             evaluator.isNonEmpty() ? evaluator : null;
                     final Member member = memberCalc.evaluateMember(evaluator);
@@ -183,7 +183,7 @@ class DescendantsFunDef extends FunDefBase {
                         flag2.before, flag2.self,
                         flag2.after, flag2.leaves, context);
                     hierarchizeMemberList(result, false);
-                    return result;
+                    return new UnaryTupleList(result);
                 }
             };
         }

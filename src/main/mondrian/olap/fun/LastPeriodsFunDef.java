@@ -3,22 +3,19 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.TypeUtil;
-import mondrian.resource.MondrianResource;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.MemberCalc;
-import mondrian.calc.IntegerCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapCube;
@@ -85,11 +82,12 @@ class LastPeriodsFunDef extends FunDefBase {
         return new AbstractListCalc(
             call, new Calc[] {memberCalc, indexValueCalc})
         {
-            public List evaluateList(Evaluator evaluator) {
+            public TupleList evaluateList(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 int indexValue = indexValueCalc.evaluateInteger(evaluator);
 
-                return lastPeriods(member, evaluator, indexValue);
+                return new UnaryTupleList(
+                    lastPeriods(member, evaluator, indexValue));
             }
         };
     }

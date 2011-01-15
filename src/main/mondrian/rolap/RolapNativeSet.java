@@ -1,15 +1,17 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -39,8 +41,8 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER =
         Logger.getLogger(RolapNativeSet.class);
 
-    private SmartCache<Object, List<List<RolapMember>>> cache =
-        new SoftSmartCache<Object, List<List<RolapMember>>>();
+    private SmartCache<Object, TupleList> cache =
+        new SoftSmartCache<Object, TupleList>();
 
     /**
      * Returns whether certain member types(e.g. calculated members) should
@@ -182,7 +184,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 Collections.singletonList(desiredResultStyle));
         }
 
-        protected List executeList(final SqlTupleReader tr) {
+        protected TupleList executeList(final SqlTupleReader tr) {
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);
@@ -194,14 +196,15 @@ public abstract class RolapNativeSet extends RolapNative {
             // members; so we still need to cross join the cached result
             // with those enumerated members
             Object key = tr.getCacheKey();
-            List<List<RolapMember>> result = cache.get(key);
+            TupleList result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
             if (result != null && !hasEnumTargets) {
                 if (listener != null) {
                     TupleEvent e = new TupleEvent(this, tr);
                     listener.foundInCache(e);
                 }
-                return copy(result);
+                return new DelegatingTupleList(
+                    args.length, Util.<List<Member>>cast(result));
             }
 
             // execute sql and store the result
@@ -212,37 +215,34 @@ public abstract class RolapNativeSet extends RolapNative {
 
             // if we don't have a cached result in the case where we have
             // enumerated targets, then retrieve and cache that partial result
-            List<List<RolapMember>> partialResult = result;
-            result = null;
+            TupleList partialResult = result;
             List<List<RolapMember>> newPartialResult = null;
             if (hasEnumTargets && partialResult == null) {
                 newPartialResult = new ArrayList<List<RolapMember>>();
             }
             DataSource dataSource = schemaReader.getDataSource();
             if (args.length == 1) {
-                result = (List) tr.readMembers(
-                    dataSource, partialResult, newPartialResult);
+                result =
+                    tr.readMembers(
+                        dataSource, partialResult, newPartialResult);
             } else {
-                result = (List) tr.readTuples(
-                    dataSource, partialResult, newPartialResult);
+                result =
+                    tr.readTuples(
+                        dataSource, partialResult, newPartialResult);
             }
 
             if (hasEnumTargets) {
                 if (newPartialResult != null) {
-                    cache.put(key, newPartialResult);
+                    cache.put(
+                        key,
+                        new DelegatingTupleList(
+                            args.length,
+                            Util.<List<Member>>cast(newPartialResult)));
                 }
             } else {
                 cache.put(key, result);
             }
-            return copy(result);
-        }
-
-        /**
-         * returns a copy of the result because its modified
-         */
-        private <T> List<T> copy(List<T> list) {
-//            return new ArrayList<T>(list);
-            return list;
+            return result;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {

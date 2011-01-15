@@ -3,17 +3,16 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.StringCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.DimensionExpr;
@@ -47,30 +46,27 @@ class StrToSetFunDef extends FunDefBase {
         if (elementType instanceof MemberType) {
             final Hierarchy hierarchy = elementType.getHierarchy();
             return new AbstractListCalc(call, new Calc[] {stringCalc}) {
-                public List evaluateList(Evaluator evaluator) {
+                public TupleList evaluateList(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
                     if (string == null) {
                         throw newEvalException(
                             MondrianResource.instance().NullValue.ex());
                     }
-                    return parseMemberList(evaluator, string, hierarchy);
+                    return new UnaryTupleList(
+                        parseMemberList(evaluator, string, hierarchy));
                 }
             };
         } else {
             TupleType tupleType = (TupleType) elementType;
-            final Hierarchy[] hierarchies =
-                new Hierarchy[tupleType.elementTypes.length];
-            for (int i = 0; i < tupleType.elementTypes.length; i++) {
-                hierarchies[i] = tupleType.elementTypes[i].getHierarchy();
-            }
+            final List<Hierarchy> hierarchyList = tupleType.getHierarchies();
             return new AbstractListCalc(call, new Calc[] {stringCalc}) {
-                public List evaluateList(Evaluator evaluator) {
+                public TupleList evaluateList(Evaluator evaluator) {
                     String string = stringCalc.evaluateString(evaluator);
                     if (string == null) {
                         throw newEvalException(
                             MondrianResource.instance().NullValue.ex());
                     }
-                    return parseTupleList(evaluator, string, hierarchies);
+                    return parseTupleList(evaluator, string, hierarchyList);
                 }
             };
         }

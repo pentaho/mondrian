@@ -3,25 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.SetType;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.resource.MondrianResource;
 
 import java.util.List;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -54,100 +49,36 @@ class ToggleDrillStateFunDef extends FunDefBase {
             compiler.compileList(call.getArg(0));
         final ListCalc listCalc1 =
             compiler.compileList(call.getArg(1));
-        if (((SetType) call.getType()).getArity() == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
-            {
-                public List evaluateList(Evaluator evaluator) {
-                    final List<Member> list0 =
-                        listCalc0.evaluateList(evaluator);
-                    final List<Member> list1 =
-                        listCalc1.evaluateList(evaluator);
-                    return toggleDrillStateMembers(evaluator, list0, list1);
-                }
-            };
-        } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1})
-            {
-                public List evaluateList(Evaluator evaluator) {
-                    final List<Member[]> list0 =
-                        listCalc0.evaluateList(evaluator);
-                    final List<Member> list1 =
-                        listCalc1.evaluateList(evaluator);
-                    return toggleDrillStateTuples(evaluator, list0, list1);
-                }
-            };
-        }
+        return new AbstractListCalc(call, new Calc[]{listCalc0, listCalc1}) {
+            public TupleList evaluateList(Evaluator evaluator) {
+                final TupleList list0 = listCalc0.evaluateList(evaluator);
+                final TupleList list1 = listCalc1.evaluateList(evaluator);
+                return toggleDrillStateTuples(evaluator, list0, list1);
+            }
+        };
     }
 
-    List<Member> toggleDrillStateMembers(
-        Evaluator evaluator, List<Member> v0, List<Member> list1)
+    TupleList toggleDrillStateTuples(
+        Evaluator evaluator, TupleList v0, TupleList list1)
     {
+        assert list1.getArity() == 1;
         if (list1.isEmpty()) {
             return v0;
         }
         if (v0.isEmpty()) {
             return v0;
         }
-        Set<Member> set = new HashSet<Member>();
-        set.addAll(list1);
-        List<Member> result = new ArrayList<Member>();
+        final Member[] members = new Member[v0.getArity()]; // tuple workspace
+        final Set<Member> set = new HashSet<Member>(list1.slice(0));
+        TupleList result = v0.cloneList((v0.size() * 3) / 2 + 1); // allow 50%
         int i = 0, n = v0.size();
         while (i < n) {
-            Member m = v0.get(i++);
-            result.add(m);
-            if (!set.contains(m)) {
-                continue;
-            }
-            boolean isDrilledDown = false;
-            if (i < n) {
-                Member nextMember = v0.get(i);
-                boolean strict = true;
-                if (FunUtil.isAncestorOf(m, nextMember, strict)) {
-                    isDrilledDown = true;
-                }
-            }
-            if (isDrilledDown) {
-                // skip descendants of this member
-                do {
-                    Member nextMember = v0.get(i);
-                    boolean strict = true;
-                    if (FunUtil.isAncestorOf(m, nextMember, strict)) {
-                        i++;
-                    } else {
-                        break;
-                    }
-                } while (i < n);
-            } else {
-                List<Member> children =
-                    evaluator.getSchemaReader().getMemberChildren(m);
-                for (Member child : children) {
-                    result.add(child);
-                }
-            }
-        }
-        return result;
-    }
-
-    List<Member[]> toggleDrillStateTuples(
-        Evaluator evaluator, List<Member[]> v0, List<Member> list1)
-    {
-        if (list1.isEmpty()) {
-            return v0;
-        }
-        if (v0.isEmpty()) {
-            return v0;
-        }
-        Set<Member> set = new HashSet<Member>();
-        set.addAll(list1);
-        List<Member[]> result = new ArrayList<Member[]>();
-        int i = 0, n = v0.size();
-        while (i < n) {
-            Member[] o = v0.get(i++);
+            List<Member> o = v0.get(i++);
             result.add(o);
             Member m = null;
             int k = -1;
-            for (int j = 0; j < o.length; j++) {
-                Member member = o[j];
+            for (int j = 0; j < o.size(); j++) {
+                Member member = o.get(j);
                 if (set.contains(member)) {
                     k = j;
                     m = member;
@@ -159,8 +90,8 @@ class ToggleDrillStateFunDef extends FunDefBase {
             }
             boolean isDrilledDown = false;
             if (i < n) {
-                Member[] next = v0.get(i);
-                Member nextMember = next[k];
+                List<Member> next = v0.get(i);
+                Member nextMember = next.get(k);
                 boolean strict = true;
                 if (FunUtil.isAncestorOf(m, nextMember, strict)) {
                     isDrilledDown = true;
@@ -169,8 +100,8 @@ class ToggleDrillStateFunDef extends FunDefBase {
             if (isDrilledDown) {
                 // skip descendants of this member
                 do {
-                    Member[] next = v0.get(i);
-                    Member nextMember = next[k];
+                    List<Member> next = v0.get(i);
+                    Member nextMember = next.get(k);
                     boolean strict = true;
                     if (FunUtil.isAncestorOf(m, nextMember, strict)) {
                         i++;
@@ -182,9 +113,9 @@ class ToggleDrillStateFunDef extends FunDefBase {
                 List<Member> children =
                     evaluator.getSchemaReader().getMemberChildren(m);
                 for (Member child : children) {
-                    Member[] members = o.clone();
+                    o.toArray(members);
                     members[k] = child;
-                    result.add(members);
+                    result.addTuple(members);
                 }
             }
         }

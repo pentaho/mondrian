@@ -1,14 +1,18 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.ListTupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
@@ -255,7 +259,7 @@ public class SqlTupleReader implements TupleReader {
             return column;
         }
 
-        public List<RolapMember> close() {
+        public List<Member> close() {
             synchronized (cacheLock) {
                 return internalClose();
             }
@@ -267,7 +271,7 @@ public class SqlTupleReader implements TupleReader {
          *
          * @return list of members
          */
-        public List<RolapMember> internalClose() {
+        public List<Member> internalClose() {
             for (int i = 0; i < members.size(); i++) {
                 RolapMember member = members.get(i);
                 final List<RolapMember> children = siblings.get(i + 1);
@@ -286,7 +290,7 @@ public class SqlTupleReader implements TupleReader {
                     }
                 }
             }
-            return getList();
+            return Util.cast(getList());
         }
 
         /**
@@ -351,7 +355,7 @@ public class SqlTupleReader implements TupleReader {
 
     protected void prepareTuples(
         DataSource dataSource,
-        List<List<RolapMember>> partialResult,
+        TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
     {
         String message = "Populating member cache with members for " + targets;
@@ -434,7 +438,8 @@ public class SqlTupleReader implements TupleReader {
                     if (execQuery) {
                         partialRow = null;
                     } else {
-                        partialRow = partialResult.get(currPartialResultIdx);
+                        partialRow =
+                            Util.cast(partialResult.get(currPartialResultIdx));
                     }
                     resetCurrMembers(partialRow);
                     addTargets(
@@ -468,9 +473,9 @@ public class SqlTupleReader implements TupleReader {
         }
     }
 
-    public List<RolapMember> readMembers(
+    public TupleList readMembers(
         DataSource dataSource,
-        List<List<RolapMember>> partialResult,
+        TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
     {
         int memberCount = countMembers();
@@ -493,7 +498,7 @@ public class SqlTupleReader implements TupleReader {
             }
         }
         assert targets.size() == 1;
-        return targets.get(0).close();
+        return new UnaryTupleList(targets.get(0).close());
     }
 
     /**
@@ -511,37 +516,40 @@ public class SqlTupleReader implements TupleReader {
         return n;
     }
 
-    public List<RolapMember[]> readTuples(
+    public TupleList readTuples(
         DataSource jdbcConnection,
-        List<List<RolapMember>> partialResult,
+        TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(jdbcConnection, partialResult, newPartialResult);
 
         // List of tuples
         final int n = targets.size();
-        List<RolapMember[]> tupleList = new ArrayList<RolapMember[]>();
         @SuppressWarnings({"unchecked"})
-        final Iterator<RolapMember>[] iter = new Iterator[n];
+        final Iterator<Member>[] iter = new Iterator[n];
         for (int i = 0; i < n; i++) {
             TargetBase t = targets.get(i);
             iter[i] = t.close().iterator();
         }
+        List<Member> members = new ArrayList<Member>();
         while (iter[0].hasNext()) {
             RolapMember[] tuples = new RolapMember[n];
             for (int i = 0; i < n; i++) {
-                tuples[i] = iter[i].next();
+                members.add(iter[i].next());
             }
-            tupleList.add(tuples);
         }
+
+        TupleList tupleList =
+            n == 1
+                ? new UnaryTupleList(members)
+                : new ListTupleList(n, members);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which
         // they originally appeared in the cross product
         int enumTargetCount = getEnumTargetCount();
         if (enumTargetCount > 0) {
-            FunUtil.hierarchizeTupleList(
-                Util.<Member[]>cast(tupleList), false, n);
+            tupleList = FunUtil.hierarchizeTupleList(tupleList, false);
         }
         return tupleList;
     }

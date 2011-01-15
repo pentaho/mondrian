@@ -1,14 +1,18 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.DelegatingTupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.Member;
 import mondrian.olap.Query;
 import mondrian.olap.Util;
@@ -51,7 +55,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
 
     protected void prepareTuples(
         final DataSource dataSource,
-        final List<List<RolapMember>> partialResult,
+        final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
         String message = "Populating member cache with members for " + targets;
@@ -116,19 +120,20 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         }
     }
 
-    public List<RolapMember> readMembers(
+    public TupleList readMembers(
         final DataSource dataSource,
-        final List<List<RolapMember>> partialResult,
+        final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(dataSource, partialResult, newPartialResult);
         assert targets.size() == 1;
-        return targets.get(0).close();
+        return new UnaryTupleList(
+            Util.<Member>cast(targets.get(0).close()));
     }
 
-    public List<RolapMember[]> readTuples(
+    public TupleList readTuples(
         final DataSource jdbcConnection,
-        final List<List<RolapMember>> partialResult,
+        final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(jdbcConnection, partialResult, newPartialResult);
@@ -136,21 +141,21 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         // List of tuples
         final int n = targets.size();
         @SuppressWarnings({"unchecked"})
-        final List<RolapMember>[] lists = new List[n];
+        final List<Member>[] lists = new List[n];
         for (int i = 0; i < n; i++) {
             lists[i] = targets.get(i).close();
         }
 
-        final List<RolapMember[]> tupleList =
-            new TraversalList<RolapMember>(lists, RolapMember.class);
+        final List<List<Member>> list =
+            new TraversalList<Member>(lists, Member.class);
+        TupleList tupleList = new DelegatingTupleList(n, list);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which
         // they originally appeared in the cross product
         int enumTargetCount = getEnumTargetCount();
         if (enumTargetCount > 0) {
-            FunUtil.hierarchizeTupleList(
-                Util.<Member[]>cast(tupleList), false, n);
+            tupleList = FunUtil.hierarchizeTupleList(tupleList, false);
         }
         return tupleList;
     }

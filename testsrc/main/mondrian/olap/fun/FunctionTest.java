@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde and others
+// Copyright (C) 2003-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,6 +14,7 @@ import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
 import mondrian.test.*;
 import mondrian.resource.MondrianResource;
+import mondrian.test.TestContext;
 import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
@@ -3817,7 +3818,12 @@ public class FunctionTest extends FoodMartTestCase {
         // Extract applied to non-constant dimension should fail
         assertAxisThrows(
             "Extract(Crossjoin([Gender].Members, [Store].Children), [Store].Hierarchy.Dimension)",
-            "not a constant dimension: [Store].Hierarchy.Dimension");
+            "not a constant hierarchy: [Store].Hierarchy.Dimension");
+
+        // Extract applied to non-constant hierarchy should fail
+        assertAxisThrows(
+            "Extract(Crossjoin([Gender].Members, [Store].Children), [Store].Hierarchy)",
+            "not a constant hierarchy: [Store].Hierarchy");
 
         // Extract applied to set of members is OK (if silly). Duplicates are
         // removed, as always.
@@ -3827,10 +3833,10 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Gender].[All Gender]\n"
             + "[Gender].[F]");
 
-        // Extract of dimension not in set fails
+        // Extract of hierarchy not in set fails
         assertAxisThrows(
             "Extract(Crossjoin([Gender].Members, [Store].Children), [Marital Status])",
-            "dimension [Marital Status] is not a dimension of the expression Crossjoin([Gender].Members, [Store].Children)");
+            "hierarchy [Marital Status] is not a hierarchy of the expression Crossjoin([Gender].Members, [Store].Children)");
 
         // Extract applied to empty set returns empty set
         assertAxisReturns(
@@ -3856,7 +3862,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Marital Status].[M]\n"
             + "[Marital Status].[S]");
 
-        // Extract more than one dimension
+        // Extract more than one hierarchy
         assertAxisReturns(
             "Extract(\n"
             + "[Gender].Children * [Marital Status].Children * [Time].[1997].Children * [Store].[USA].Children,\n"
@@ -3870,14 +3876,14 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q3], [Marital Status].[S]}\n"
             + "{[Time].[1997].[Q4], [Marital Status].[S]}");
 
-        // Extract duplicate dimensions fails
+        // Extract duplicate hierarchies fails
         assertAxisThrows(
             "Extract(\n"
             + "{([Gender].[M], [Marital Status].[M]),\n"
             + " ([Gender].[F], [Marital Status].[M]),\n"
             + " ([Gender].[M], [Marital Status].[S])},\n"
             + "[Gender], [Gender])",
-            "dimension [Gender] is extracted more than once");
+            "hierarchy [Gender] is extracted more than once");
     }
 
     /**
@@ -7092,11 +7098,9 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderCalc() {
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
-        // Note that a MemberListIterCalc is required because Children returns
-        // an immutable list, and Order wants an iterable.
         assertAxisCompilesTo(
             "order([Product].children, [Measures].[Unit Sales])",
-            "ContextCalc([Measures].[Unit Sales], Order(MemberListIterCalc(Children(CurrentMemberFixed([Product]))), ValueCalc, ASC))");
+            "ContextCalc([Measures].[Unit Sales], Order(Children(CurrentMemberFixed([Product])), ValueCalc, ASC))");
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
@@ -7105,14 +7109,14 @@ public class FunctionTest extends FoodMartTestCase {
             + " ([Time].[1997], [Product].CurrentMember.Parent))",
             "ContextCalc([Time].[1997], "
             + "Order("
-            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "Children(CurrentMemberFixed([Product])), "
             + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC))");
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
             "order([Product].children, [Product].CurrentMember.Parent)",
             "Order("
-            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "Children(CurrentMemberFixed([Product])), "
             + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC)");
 
         // List expression is dependent on one of the constant calcs. It cannot
@@ -7126,9 +7130,9 @@ public class FunctionTest extends FoodMartTestCase {
             + "([Gender].[M], [Measures].[Store Sales]))",
             Util.Retrowoven
                 ? "ContextCalc([Measures].[Store Sales], "
-                  + "Order(MemberListIterCalc(Filter(Children("
+                  + "Order(Filter(Children("
                   + "CurrentMemberFixed([Product])), "
-                  + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0))), "
+                  + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), "
                   + "MemberValueCalc([Gender].[M]), ASC))"
                 : "ContextCalc([Measures].[Store Sales], "
                   + "Order(Filter(Children(CurrentMemberFixed([Product])), "
@@ -7578,6 +7582,32 @@ public class FunctionTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
             + "Row #0: 75\n");
+    }
+
+    public void testOrderDesc() {
+        // based on olap4j's OlapTest.testSortDimension
+        assertQueryReturns(
+            "SELECT\n"
+            + "{[Measures].[Store Sales]} ON COLUMNS,\n"
+            + "{Order(\n"
+            + "  {{[Product].[Drink], [Product].[Drink].Children}},\n"
+            + "  [Product].CurrentMember.Name,\n"
+            + "  DESC)} ON ROWS\n"
+            + "FROM [Sales]\n"
+            + "WHERE {[Time].[1997].[Q3].[7]}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Drink].[Dairy]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "Row #0: 4,409.58\n"
+            + "Row #1: 629.69\n"
+            + "Row #2: 2,477.02\n"
+            + "Row #3: 1,302.87\n");
     }
 
     public void testOrderMemberMemberValueExpNew() {
@@ -9256,6 +9286,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testRankWithExpr() {
+        // Note that [Good] and [Top Measure] have the same [Unit Sales]
+        // value (5), but [Good] ranks 1 and [Top Measure] ranks 2. Even though
+        // they are sorted descending on unit sales, they remain in their
+        // natural order (member name) because MDX sorts are stable.
         assertQueryReturns(
             "with member [Measures].[Sibling Rank] as ' Rank([Product].CurrentMember, [Product].CurrentMember.Siblings) '\n"
             + "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, Order([Product].Parent.Children, [Measures].[Unit Sales], DESC)) '\n"
@@ -9379,9 +9413,23 @@ public class FunctionTest extends FoodMartTestCase {
             "Rank([Gender].[All Gender].Parent,"
             + " {[Gender].Members},"
             + " [Measures].[Unit Sales])", "");
-        // Empty set. Value never appears in the set, therefore rank is null.
+        // Empty set. Value would appear after all elements in the empty set,
+        // therefore rank is 1.
+        // Note that SSAS gives error 'The first argument to the Rank function,
+        // a tuple expression, should reference the same hierachies as the
+        // second argument, a set expression'. I think that's because it can't
+        // deduce a type for '{}'. SSAS's problem, not Mondrian's. :)
         assertExprReturns(
-            "Rank([Gender].[M]," + " {}," + " [Measures].[Unit Sales])", "");
+            "Rank([Gender].[M],"
+            + " {},"
+            + " [Measures].[Unit Sales])",
+            "1");
+        // As above, but SSAS can type-check this.
+        assertExprReturns(
+            "Rank([Gender].[M],"
+            + " Filter(Gender.Members, 1 = 0),"
+            + " [Measures].[Unit Sales])",
+            "1");
         // Member is not in set
         assertExprReturns(
             "Rank([Gender].[M]," + " {[Gender].[All Gender], [Gender].[F]})",

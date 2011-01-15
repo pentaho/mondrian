@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -11,9 +11,6 @@
 // sasebb, 16 December, 2004
 */
 package mondrian.olap.fun;
-
-import java.util.List;
-import java.util.Collections;
 
 import mondrian.olap.*;
 import mondrian.calc.*;
@@ -46,7 +43,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         return new AbstractListCalc(
             call, new Calc[] {listCalc1, listCalc2}, false)
         {
-            public List evaluateList(Evaluator evaluator) {
+            public TupleList evaluateList(Evaluator evaluator) {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
                 // evaluate the arguments in non empty mode
                 evaluator = evaluator.push(true);
@@ -54,15 +51,16 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute(ResultStyle.LIST);
+                    return
+                        (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
-                final List list1 = listCalc1.evaluateList(evaluator);
+                final TupleList list1 = listCalc1.evaluateList(evaluator);
                 if (list1.isEmpty()) {
-                    return Collections.EMPTY_LIST;
+                    return list1;
                 }
-                final List list2 = listCalc2.evaluateList(evaluator);
-                List<Member[]> result = crossJoin(list1, list2);
+                final TupleList list2 = listCalc2.evaluateList(evaluator);
+                TupleList result = mutableCrossJoin(list1, list2);
 
                 // remove any remaining empty crossings from the result
                 result = nonEmptyList(evaluator, result, call);

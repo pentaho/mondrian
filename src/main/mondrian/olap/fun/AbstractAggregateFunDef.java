@@ -3,19 +3,19 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapStoredMeasure;
 
 import java.util.*;
 
@@ -69,11 +69,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @param evaluator current evalutor
      * @return list of evaluated members or tuples
      */
-    protected static List evaluateCurrentList(
+    protected static TupleList evaluateCurrentList(
         ListCalc listCalc,
         Evaluator evaluator)
     {
-        List tuples = listCalc.evaluateList(evaluator.push(false));
+        TupleList tuples = listCalc.evaluateList(evaluator.push(false));
 
         int currLen = tuples.size();
         crossProd(evaluator, currLen);
@@ -81,16 +81,17 @@ public class AbstractAggregateFunDef extends FunDefBase {
         return processUnrelatedDimensions(tuples, evaluator);
     }
 
-    protected Iterable evaluateCurrentIterable(
+    protected TupleIterable evaluateCurrentIterable(
         IterCalc iterCalc,
         Evaluator evaluator)
     {
-        Iterable iter = iterCalc.evaluateIterable(evaluator.push(false));
+        TupleIterable iterable =
+            iterCalc.evaluateIterable(evaluator.push(false));
 
         int currLen = 0;
         crossProd(evaluator, currLen);
 
-        return iter;
+        return iterable;
     }
 
     private static void crossProd(Evaluator evaluator, int currLen) {
@@ -123,11 +124,11 @@ public class AbstractAggregateFunDef extends FunDefBase {
      *
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
-     * @param evaluator
+     * @param evaluator Evaluator
      * @return list of members or tuples
      */
-    private static List processUnrelatedDimensions(
-        List tuplesForAggregation,
+    private static TupleList processUnrelatedDimensions(
+        TupleList tuplesForAggregation,
         Evaluator evaluator)
     {
         if (tuplesForAggregation.size() == 0) {
@@ -160,20 +161,20 @@ public class AbstractAggregateFunDef extends FunDefBase {
     /**
      * If a non joining dimension exists in the aggregation list then return
      * an empty list else return the original list.
-
+     *
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
      * @param baseCube
      * @return list of members or tuples
      */
-    private static List ignoreMeasureForNonJoiningDimension(
-        List tuplesForAggregation,
+    private static TupleList ignoreMeasureForNonJoiningDimension(
+        TupleList tuplesForAggregation,
         RolapCube baseCube)
     {
         Set<Dimension> nonJoiningDimensions =
             nonJoiningDimensions(baseCube, tuplesForAggregation);
         if (nonJoiningDimensions.size() > 0) {
-            return new ArrayList();
+            return TupleCollections.emptyList(tuplesForAggregation.getArity());
         }
         return tuplesForAggregation;
     }
@@ -187,87 +188,47 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * computing the aggregate
      * @return list of members or tuples
      */
-    private static List ignoreUnrelatedDimensions(
-        List tuplesForAggregation,
+    private static TupleList ignoreUnrelatedDimensions(
+        TupleList tuplesForAggregation,
         RolapCube baseCube)
     {
         Set<Dimension> nonJoiningDimensions =
             nonJoiningDimensions(baseCube, tuplesForAggregation);
-        Set processedTuples = new LinkedHashSet(tuplesForAggregation.size());
-        for (int i = 0; i < tuplesForAggregation.size(); i++) {
-            Member[] tuples = copy(tupleAsArray(tuplesForAggregation.get(i)));
-            for (int j = 0; j < tuples.length; j++) {
-                if (nonJoiningDimensions.contains(tuples[j].getDimension())) {
+        final Set<List<Member>> processedTuples =
+            new LinkedHashSet<List<Member>>(tuplesForAggregation.size());
+        for (List<Member> tuple : tuplesForAggregation) {
+            List<Member> tupleCopy = tuple;
+            for (int j = 0; j < tuple.size(); j++) {
+                final Member member = tuple.get(j);
+                if (nonJoiningDimensions.contains(member.getDimension())) {
+                    if (tupleCopy == tuple) {
+                        // Avoid making a copy until we have to change a tuple.
+                        tupleCopy = new ArrayList<Member>(tuple);
+                    }
                     final Hierarchy hierarchy =
-                        tuples[j].getDimension().getHierarchy();
+                        member.getDimension().getHierarchy();
                     if (hierarchy.hasAll()) {
-                        tuples[j] = hierarchy.getAllMember();
+                        tupleCopy.set(j, hierarchy.getAllMember());
                     } else {
-                        tuples[j] = hierarchy.getDefaultMember();
+                        tupleCopy.set(j, hierarchy.getDefaultMember());
                     }
                 }
             }
-            if (tuplesForAggregation.get(i) instanceof Member[]) {
-                processedTuples.add(new MemberArray(tuples));
-            } else {
-                processedTuples.add(tuples[0]);
-            }
+            processedTuples.add(tupleCopy);
         }
-        return tuplesAsList(processedTuples);
+        return new DelegatingTupleList(
+            tuplesForAggregation.getArity(),
+            new ArrayList<List<Member>>(
+                processedTuples));
     }
 
     private static Set<Dimension> nonJoiningDimensions(
         RolapCube baseCube,
-        List tuplesForAggregation)
+        TupleList tuplesForAggregation)
     {
-        Member[] tuple = tupleAsArray(tuplesForAggregation.get(0));
-        return baseCube.nonJoiningDimensions(tuple);
-    }
-
-    private static List tuplesAsList(Set tuples) {
-        List results = new ArrayList(tuples.size());
-        for (Object tuple : tuples) {
-            if (tuple instanceof MemberArray) {
-                results.add(((MemberArray) tuple).memberArray);
-            } else {
-                results.add(tuple);
-            }
-        }
-        return results;
-    }
-
-    private static Member[] copy(Member[] members) {
-        Member[] result = new Member[members.length];
-        System.arraycopy(members, 0, result, 0, members.length);
-        return result;
-    }
-
-    private static Member[] tupleAsArray(Object tuple) {
-        Member[] result;
-        if (tuple instanceof Member[]) {
-            result = ((Member[]) tuple);
-        } else {
-            result = new Member[]{((Member) tuple)};
-        }
-        return result;
-    }
-
-    private static class MemberArray {
-        private Object[] memberArray;
-
-        public MemberArray(Object[] memberArray) {
-            this.memberArray = memberArray;
-        }
-
-        public int hashCode() {
-            return Arrays.hashCode(memberArray);
-        }
-
-        public boolean equals(Object obj) {
-            return Arrays.deepEquals(
-                memberArray,
-                ((MemberArray) obj).memberArray);
-        }
+        List<Member> tuple = tuplesForAggregation.get(0);
+        return baseCube.nonJoiningDimensions(
+            tuple.toArray(new Member[tuple.size()]));
     }
 }
 

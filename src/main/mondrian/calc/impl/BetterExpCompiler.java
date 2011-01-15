@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,6 @@ import mondrian.olap.type.*;
 import mondrian.calc.*;
 
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Enhanced expression compiler. It can generate code to convert between
@@ -91,9 +90,9 @@ public class BetterExpCompiler extends AbstractExpCompiler {
             this.listCalc = listCalc;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            List list = listCalc.evaluateList(evaluator);
-            return new ArrayList(list);
+        public TupleList evaluateList(Evaluator evaluator) {
+            TupleList list = listCalc.evaluateList(evaluator);
+            return list.cloneList(-1);
         }
     }
 }

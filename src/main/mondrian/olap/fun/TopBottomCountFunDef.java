@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,9 +13,9 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.ResultStyle;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
 
 import java.util.*;
 
@@ -70,12 +70,12 @@ class TopBottomCountFunDef extends FunDefBase {
             call.getArgCount() > 2
             ? compiler.compileScalar(call.getArg(2), true)
             : null;
-        final int arity = ((SetType) call.getType()).getArity();
+        final int arity = call.getType().getArity();
         return new AbstractListCalc(
             call,
             new Calc[]{listCalc, integerCalc, orderCalc})
         {
-            public List evaluateList(Evaluator evaluator) {
+            public TupleList evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
                 // TODO: Figure this out at compile time.
                 SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -83,19 +83,18 @@ class TopBottomCountFunDef extends FunDefBase {
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute(ResultStyle.LIST);
-                }
-
-                // REVIEW mberkowitz Is it necessary to eval the list when n is
-                // null or zero?
-                List list = listCalc.evaluateList(evaluator);
-                if (list.isEmpty()) {
-                    return list;
+                    return
+                        (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (n == 0 || n == mondrian.olap.fun.FunUtil.IntegerNull) {
-                    return new java.util.ArrayList();
+                    return TupleCollections.emptyList(arity);
+                }
+
+                TupleList list = listCalc.evaluateList(evaluator);
+                if (list.isEmpty()) {
+                    return list;
                 }
 
                 if (orderCalc == null) {
@@ -110,25 +109,22 @@ class TopBottomCountFunDef extends FunDefBase {
                     evaluator, list, hasHighCardDimension(list), n, arity);
             }
 
-            private List partiallySortList(
+            private TupleList partiallySortList(
                 Evaluator evaluator,
-                List list, boolean highCard, int n, int arity)
+                TupleList list,
+                boolean highCard,
+                int n,
+                int arity)
             {
                 if (highCard) {
                     // sort list in chunks, collect the results
                     final int chunkSize = 6400; // what is this really?
-                    List allChunkResults = new ArrayList();
-                    Iterator listIter = list.iterator();
-                    while (listIter.hasNext()) {
-                        List chunk = new ArrayList();
-                        for (int count = 0;
-                             count < chunkSize
-                                 && listIter.hasNext();
-                             count++)
-                        {
-                            chunk.add(listIter.next());
-                        }
-                        List chunkResult =
+                    TupleList allChunkResults = TupleCollections.createList(
+                        arity);
+                    for (int i = 0, next; i < list.size(); i = next) {
+                        next = Math.min(i + chunkSize, list.size());
+                        final TupleList chunk = list.subList(i, next);
+                        TupleList chunkResult =
                             partiallySortList(
                                 evaluator, chunk, false, n, arity);
                         allChunkResults.addAll(chunkResult);
@@ -139,17 +135,12 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 // normal case: no need for chunks
-                if (arity == 1) {
-                    return partiallySortMembers(
+                return new DelegatingTupleList(
+                    list.getArity(),
+                    partiallySortTuples(
                         evaluator.push(),
-                        (List<Member>) list,
-                        orderCalc, n, top);
-                } else {
-                    return partiallySortTuples(
-                        evaluator.push(),
-                        (List<Member[]>) list,
-                        orderCalc, n, top, arity);
-                }
+                        list,
+                        orderCalc, n, top, arity));
             }
 
 
@@ -157,20 +148,14 @@ class TopBottomCountFunDef extends FunDefBase {
                 return anyDependsButFirst(getCalcs(), hierarchy);
             }
 
-            private boolean hasHighCardDimension(List l) {
-                final Object trial = l.get(0);
-                if (trial instanceof Member) {
-                    Member m = (Member) trial;
-                    return m.getHierarchy().getDimension().isHighCardinality();
-                } else {
-                    for (Member m : (Member[]) trial) {
-                        if (m.getHierarchy().getDimension().isHighCardinality())
-                        {
-                            return true;
-                        }
+            private boolean hasHighCardDimension(TupleList l) {
+                final List<Member> trial = l.get(0);
+                for (Member m : trial) {
+                    if (m.getHierarchy().getDimension().isHighCardinality()) {
+                        return true;
                     }
-                    return false;
                 }
+                return false;
             }
         };
     }

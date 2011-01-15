@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,6 +14,8 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 
 import java.util.ArrayList;
@@ -228,10 +230,10 @@ public class FoodMartTestCase extends TestCase {
         return salesCubeSchemaReader.getMemberByUniqueName(segmentList, true);
     }
 
-    protected List<Member> storeMembersCAAndOR(
+    protected TupleList storeMembersCAAndOR(
         SchemaReader salesCubeSchemaReader)
     {
-        return Arrays.asList(
+        return new UnaryTupleList(Arrays.asList(
             member(
                 Id.Segment.toList(
                     "Store", "All Stores", "USA", "CA", "Alameda"),
@@ -268,13 +270,13 @@ public class FoodMartTestCase extends TestCase {
             member(
                 Id.Segment.toList(
                     "Store", "All Stores", "USA", "OR", "Salem", "Store 13"),
-                salesCubeSchemaReader));
+                salesCubeSchemaReader)));
     }
 
-    protected List<Member> productMembersPotScrubbersPotsAndPans(
+    protected TupleList productMembersPotScrubbersPotsAndPans(
         SchemaReader salesCubeSchemaReader)
     {
-        return Arrays.asList(
+        return new UnaryTupleList(Arrays.asList(
             member(
                 Id.Segment.toList(
                     "Product", "All Products", "Non-Consumable", "Household",
@@ -314,10 +316,10 @@ public class FoodMartTestCase extends TestCase {
                 Id.Segment.toList(
                     "Product", "All Products", "Non-Consumable", "Household",
                     "Kitchen Products", "Pots and Pans", "Sunset"),
-                salesCubeSchemaReader));
+                salesCubeSchemaReader)));
     }
 
-    protected List<Member> genderMembersIncludingAll(
+    protected TupleList genderMembersIncludingAll(
         boolean includeAllMember,
         SchemaReader salesCubeSchemaReader,
         Cube salesCube)
@@ -339,7 +341,7 @@ public class FoodMartTestCase extends TestCase {
         } else {
             members = new Member[] {maleMember, femaleMember};
         }
-        return Arrays.asList(members);
+        return new UnaryTupleList(Arrays.asList(members));
     }
 
     protected Member allMember(String dimensionName, Cube salesCube) {
@@ -394,7 +396,7 @@ public class FoodMartTestCase extends TestCase {
         return resultCube;
     }
 
-    protected List<Member> storeMembersUsaAndCanada(
+    protected TupleList storeMembersUsaAndCanada(
         boolean includeAllMember,
         SchemaReader salesCubeSchemaReader,
         Cube salesCube)
@@ -414,7 +416,7 @@ public class FoodMartTestCase extends TestCase {
         } else {
             members = new Member[] {usaMember, canadaMember};
         }
-        return Arrays.asList(members);
+        return new UnaryTupleList(Arrays.asList(members));
     }
 
     static class QueryAndResult {

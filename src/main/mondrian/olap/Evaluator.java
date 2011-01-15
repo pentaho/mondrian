@@ -4,16 +4,17 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 27 July, 2001
 */
-
 package mondrian.olap;
 
 import mondrian.calc.ParameterSlot;
+import mondrian.calc.TupleIterable;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Date;
@@ -283,7 +284,7 @@ public interface Evaluator {
      * @return Aggregator with <code>list</code> added to its aggregation
      *   context
      */
-    Evaluator pushAggregation(List<Member[]> list);
+    Evaluator pushAggregation(List<List<Member>> list);
 
     /**
      * Checks if unrelated dimensions to the measure in the current context
@@ -333,18 +334,6 @@ public interface Evaluator {
      */
     interface NamedSetEvaluator {
         /**
-         * Returns an iterable over the members of the named set. Applicable if
-         * the named set is a set of members.
-         *
-         * <p>The iterator from this iterable maintains the current ordinal
-         * property required for the methods {@link #currentOrdinal()} and
-         * {@link #currentMember()}.
-         *
-         * @return Iterable over the members of the set
-         */
-        Iterable<Member> evaluateMemberIterable();
-
-        /**
          * Returns an iterator over the tuples of the named set. Applicable if
          * the named set is a set of tuples.
          *
@@ -354,7 +343,7 @@ public interface Evaluator {
          *
          * @return Iterable over the tuples of the set
          */
-        Iterable<Member[]> evaluateTupleIterable();
+        TupleIterable evaluateTupleIterable();
 
         /**
          * Returns the ordinal of the current member or tuple in the named set.

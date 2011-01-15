@@ -4,14 +4,14 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
@@ -72,7 +72,7 @@ public class RolapEvaluator implements Evaluator {
      * ordinary dimensional context if set when a cell value comes to be
      * evaluated.
      */
-    protected List<List<Member[]>> aggregationLists;
+    protected List<List<List<Member>>> aggregationLists;
 
     private final List<Member> slicerMembers;
     private Boolean nativeEnabled;
@@ -126,7 +126,7 @@ public class RolapEvaluator implements Evaluator {
         slicerMembers = new ArrayList<Member>(parent.slicerMembers);
         if (parent.aggregationLists != null) {
             aggregationLists =
-                new ArrayList<List<Member[]>>(parent.aggregationLists);
+                new ArrayList<List<List<Member>>>(parent.aggregationLists);
         } else {
             aggregationLists = null;
         }
@@ -247,7 +247,7 @@ public class RolapEvaluator implements Evaluator {
         return nonAllMembers;
     }
 
-    public final List<List<Member[]>> getAggregationLists() {
+    public final List<List<List<Member>>> getAggregationLists() {
         return aggregationLists;
     }
 
@@ -330,25 +330,25 @@ public class RolapEvaluator implements Evaluator {
         return parent;
     }
 
-    public final Evaluator pushAggregation(List<Member[]> list) {
+    public final Evaluator pushAggregation(List<List<Member>> list) {
         RolapEvaluator newEvaluator = _push();
         newEvaluator.addToAggregationList(list);
         clearHierarchyFromRegularContext(list, newEvaluator);
         return newEvaluator;
     }
 
-    private void addToAggregationList(List<Member[]> list) {
+    private void addToAggregationList(List<List<Member>> list) {
         if (aggregationLists == null) {
-            aggregationLists = new ArrayList<List<Member[]>>();
+            aggregationLists = new ArrayList<List<List<Member>>>();
         }
         aggregationLists.add(list);
     }
 
     private void clearHierarchyFromRegularContext(
-        List<Member[]> list,
+        List<List<Member>> list,
         RolapEvaluator newEvaluator)
     {
-        Member[] tuple = list.get(0);
+        List<Member> tuple = list.get(0);
         for (Member member : tuple) {
             newEvaluator.setContext(member.getHierarchy().getAllMember());
         }

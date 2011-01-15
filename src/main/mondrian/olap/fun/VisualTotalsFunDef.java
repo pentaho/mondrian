@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
@@ -82,8 +82,9 @@ public class VisualTotalsFunDef extends FunDefBase {
             this.stringCalc = stringCalc;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            final List<Member> list = listCalc.evaluateList(evaluator);
+        public TupleList evaluateList(Evaluator evaluator) {
+            final List<Member> list =
+                listCalc.evaluateList(evaluator).slice(0);
             final List<Member> resultList = new ArrayList<Member>(list);
             final int memberCount = list.size();
             for (int i = memberCount - 1; i >= 0; --i) {
@@ -99,7 +100,7 @@ public class VisualTotalsFunDef extends FunDefBase {
                     }
                 }
             }
-            return resultList;
+            return new UnaryTupleList(resultList);
         }
 
         private VisualTotalMember createMember(
@@ -253,16 +254,6 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public Member getDataMember() {
             return member;
-        }
-
-        public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-            throw new UnsupportedOperationException();
-        }
-
-        public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, MatchType matchType)
-        {
-            throw new UnsupportedOperationException();
         }
 
         public String getQualifiedName() {

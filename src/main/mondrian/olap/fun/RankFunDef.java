@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,13 +55,10 @@ public class RankFunDef extends FunDefBase {
         final Type type0 = call.getArg(0).getType();
         final ListCalc listCalc =
             compiler.compileList(call.getArg(1));
-        SetType setType = (SetType) call.getArg(1).getType();
-        final boolean isTupleList =
-            setType.getElementType() instanceof TupleType;
         final Calc keyCalc =
             compiler.compileScalar(call.getArg(2), true);
         Calc sortedListCalc =
-            new SortedListCalc(call, listCalc, keyCalc, isTupleList);
+            new SortedListCalc(call, listCalc, keyCalc);
         final ExpCacheDescriptor cacheDescriptor =
             new ExpCacheDescriptor(
                 call, sortedListCalc, compiler.getEvaluator());
@@ -81,7 +78,7 @@ public class RankFunDef extends FunDefBase {
     public Calc compileCall2(ResolvedFunCall call, ExpCompiler compiler) {
         final boolean tuple = call.getArg(0).getType() instanceof TupleType;
         final Exp listExp = call.getArg(1);
-        ListCalc listCalc0 = compiler.compileList(listExp);
+        final ListCalc listCalc0 = compiler.compileList(listExp);
         Calc listCalc1 = new RankedListCalc(listCalc0, tuple);
         final Calc listCalc;
         if (MondrianProperties.instance().EnableExpCache.get()) {
@@ -136,7 +133,8 @@ public class RankFunDef extends FunDefBase {
             }
 
             // Find position of member in list. -1 signifies not found.
-            final int i = rankedTupleList.indexOf(members);
+            final List<Member> memberList = Arrays.asList(members);
+            final int i = rankedTupleList.indexOf(memberList);
             // Return 1-based rank. 0 signifies not found.
             return i + 1;
         }
@@ -209,8 +207,8 @@ public class RankFunDef extends FunDefBase {
             // Evaluate the list (or retrieve from cache).
             // If there is an exception while calculating the
             // list, propagate it up.
-            final SortResult sortResult = (SortResult)
-                    evaluator.getCachedResult(cacheDescriptor);
+            final TupleSortResult sortResult =
+                (TupleSortResult) evaluator.getCachedResult(cacheDescriptor);
             if (debug) {
                 sortResult.print(new PrintWriter(System.out));
             }
@@ -236,12 +234,13 @@ public class RankFunDef extends FunDefBase {
             }
 
             // If value is null, it won't be in the values array.
-            if (value == Util.nullValue) {
+            if (value == Util.nullValue || value == null) {
                 return sortResult.values.length + 1;
             }
 
             // Look for the ranked value in the array.
-            int j = FunUtil.searchValuesDesc(sortResult.values, value);
+            int j = Arrays.binarySearch(
+                sortResult.values, value, Collections.<Object>reverseOrder());
             if (j < 0) {
                 // Value not found. Flip the result to find the
                 // insertion point.
@@ -277,8 +276,8 @@ public class RankFunDef extends FunDefBase {
             // Evaluate the list (or retrieve from cache).
             // If there was an exception while calculating the
             // list, propagate it up.
-            final SortResult sortResult = (SortResult)
-                    evaluator.getCachedResult(cacheDescriptor);
+            final MemberSortResult sortResult =
+                (MemberSortResult) evaluator.getCachedResult(cacheDescriptor);
             if (debug) {
                 sortResult.print(new PrintWriter(System.out));
             }
@@ -303,12 +302,13 @@ public class RankFunDef extends FunDefBase {
             }
 
             // If value is null, it won't be in the values array.
-            if (value == Util.nullValue) {
+            if (value == Util.nullValue || value == null) {
                 return sortResult.values.length + 1;
             }
 
             // Look for the ranked value in the array.
-            int j = FunUtil.searchValuesDesc(sortResult.values, value);
+            int j = Arrays.binarySearch(
+                sortResult.values, value, Collections.<Object>reverseOrder());
             if (j < 0) {
                 // Value not found. Flip the result to find the
                 // insertion point.
@@ -327,7 +327,6 @@ public class RankFunDef extends FunDefBase {
     private static class SortedListCalc extends AbstractCalc {
         private final ListCalc listCalc;
         private final Calc keyCalc;
-        private final boolean tupleList;
 
         private static final Integer ONE = 1;
 
@@ -337,18 +336,15 @@ public class RankFunDef extends FunDefBase {
          * @param exp Source expression
          * @param listCalc Compiled expression to compute the list
          * @param keyCalc Compiled expression to compute the sort key
-         * @param tupleList Whether is tuple list
          */
         public SortedListCalc(
             Exp exp,
             ListCalc listCalc,
-            Calc keyCalc,
-            boolean tupleList)
+            Calc keyCalc)
         {
             super(exp, new Calc[] {listCalc, keyCalc});
             this.listCalc = listCalc;
             this.keyCalc = keyCalc;
-            this.tupleList = tupleList;
         }
 
         public boolean dependsOn(Hierarchy hierarchy) {
@@ -362,24 +358,31 @@ public class RankFunDef extends FunDefBase {
             // Construct an array containing the value of the expression
             // for each member.
 
-            List members = (List) listCalc.evaluate(evaluator2);
-            assert members != null;
-            if (members.isEmpty()) {
-                return new SortResult(null, null);
+            TupleList list = listCalc.evaluateList(evaluator2);
+            assert list != null;
+            if (list.isEmpty()) {
+                return list.getArity() == 1
+                    ? new MemberSortResult(
+                        new Object[0],
+                        Collections.<Member, Integer>emptyMap())
+                    : new TupleSortResult(
+                        new Object[0],
+                        Collections.<List<Member>, Integer>emptyMap());
             }
             RuntimeException exception = null;
             //noinspection unchecked
             final Map<Object, Integer> uniqueValueCounterMap =
                 new TreeMap<Object, Integer>(
-                    (Comparator<Object>)
-                        FunUtil.DescendingValueComparator.instance);
-            final Map<Member[], Object> valueMap =
-                new HashMap<Member[], Object>();
+                    FunUtil.DescendingValueComparator.instance);
 
-            if (!tupleList) {
-                for (Object o : members) {
-                    Member[] tmpMember = {(Member) o};
-                    evaluator2.setContext(tmpMember);
+            final Map<Member, Object> memberValueMap;
+            final Map<List<Member>, Object> tupleValueMap;
+            final int numValues;
+            if (list.getArity() == 1) {
+                memberValueMap = new HashMap<Member, Object>();
+                tupleValueMap = null;
+                for (Member member : list.slice(0)) {
+                    evaluator2.setContext(member);
                     final Object keyValue = keyCalc.evaluate(evaluator2);
                     if (keyValue instanceof RuntimeException) {
                         if (exception == null) {
@@ -389,20 +392,23 @@ public class RankFunDef extends FunDefBase {
                         // nothing to do
                     } else {
                         // Assume it's the first time seeing this keyValue.
-                        Integer valueCounter =
-                            uniqueValueCounterMap.put(keyValue, ONE);
+                        Integer valueCounter = uniqueValueCounterMap.put(
+                            keyValue, ONE);
                         if (valueCounter != null) {
                             // Update the counter on how many times this
                             // keyValue has been seen.
                             uniqueValueCounterMap.put(
                                 keyValue, valueCounter + 1);
                         }
-                        valueMap.put(tmpMember, keyValue);
+                        memberValueMap.put(member, keyValue);
                     }
                 }
+                numValues = memberValueMap.keySet().size();
             } else {
-                for (Object o : members) {
-                    evaluator2.setContext((Member[]) o);
+                tupleValueMap = new HashMap<List<Member>, Object>();
+                memberValueMap = null;
+                for (List<Member> tuple : list) {
+                    evaluator2.setContext(tuple);
                     final Object keyValue = keyCalc.evaluate(evaluator2);
                     if (keyValue instanceof RuntimeException) {
                         if (exception == null) {
@@ -412,18 +418,18 @@ public class RankFunDef extends FunDefBase {
                         // nothing to do
                     } else {
                         // Assume it's the first time seeing this keyValue.
-                        Integer valueCounter =
-                            uniqueValueCounterMap.put(keyValue, ONE);
+                        Integer valueCounter = uniqueValueCounterMap.put(
+                            keyValue, ONE);
                         if (valueCounter != null) {
                             // Update the counter on how many times this
                             // keyValue has been seen.
                             uniqueValueCounterMap.put(
                                 keyValue, valueCounter + 1);
                         }
-                        // REVIEW: arrays don't hash correctly; use a list
-                        valueMap.put((Member[]) o, keyValue);
+                        tupleValueMap.put(tuple, keyValue);
                     }
                 }
+                numValues = tupleValueMap.keySet().size();
             }
 
             // If there were exceptions, quit now... we'll be back.
@@ -431,21 +437,21 @@ public class RankFunDef extends FunDefBase {
                 return exception;
             }
 
-            final int numValues = valueMap.keySet().size();
             final Object[] allValuesSorted = new Object[numValues];
 
             // Now build the sorted array containing all keyValues
             // And update the counter to the rank
-            Integer currentOrdinal = 0;
-            Integer valueCount = 0;
+            int currentOrdinal = 0;
             //noinspection unchecked
             final Map<Object, Integer> uniqueValueRankMap =
                 new TreeMap<Object, Integer>(
-                    (Comparator<Object>)
-                    FunUtil.DescendingValueComparator.instance);
+                    Collections.<Object>reverseOrder());
 
-            for (Object keyValue : uniqueValueCounterMap.keySet()) {
-                valueCount = uniqueValueCounterMap.get(keyValue);
+            for (Map.Entry<Object, Integer> entry
+                : uniqueValueCounterMap.entrySet())
+            {
+                Object keyValue = entry.getKey();
+                Integer valueCount = entry.getValue();
                 // Because uniqueValueCounterMap is already sorted, so the
                 // reconstructed allValuesSorted is guaranteed to be sorted.
                 for (int i = 0; i < valueCount; i ++) {
@@ -456,14 +462,29 @@ public class RankFunDef extends FunDefBase {
             }
 
             // Build a member/tuple to rank map
-            final Map<List<Member>, Integer> rankMap =
-                new HashMap<List<Member>, Integer>();
-            for (Member[] memberKey : valueMap.keySet()) {
-                int oneBasedRank =
-                    uniqueValueRankMap.get(valueMap.get(memberKey));
-                rankMap.put(Arrays.asList(memberKey), oneBasedRank);
+            if (list.getArity() == 1) {
+                final Map<Member, Integer> rankMap =
+                    new HashMap<Member, Integer>();
+                for (Map.Entry<Member, Object> entry
+                    : memberValueMap.entrySet())
+                {
+                    int oneBasedRank =
+                        uniqueValueRankMap.get(entry.getValue());
+                    rankMap.put(entry.getKey(), oneBasedRank);
+                }
+                return new MemberSortResult(allValuesSorted, rankMap);
+            } else {
+                final Map<List<Member>, Integer> rankMap =
+                    new HashMap<List<Member>, Integer>();
+                for (Map.Entry<List<Member>, Object> entry
+                    : tupleValueMap.entrySet())
+                {
+                    int oneBasedRank =
+                        uniqueValueRankMap.get(entry.getValue());
+                    rankMap.put(entry.getKey(), oneBasedRank);
+                }
+                return new TupleSortResult(allValuesSorted, rankMap);
             }
-            return new SortResult(allValuesSorted, rankMap);
         }
     }
 
@@ -471,7 +492,7 @@ public class RankFunDef extends FunDefBase {
      * Holder for the result of sorting a set of values.
      * It provides simple interface to look up the rank for a member or a tuple.
      */
-    private static class SortResult {
+    private static abstract class SortResult {
         /**
          * All values in sorted order; Duplicates are not removed.
          * E.g. Set (15,15,5,0)
@@ -481,57 +502,13 @@ public class RankFunDef extends FunDefBase {
          */
         final Object[] values;
 
-        /**
-         * The precomputed rank associated with all members(or tuples)
-         */
-        final Map<List<Member>, Integer> rankMap;
 
-        /**
-         * Type of elements sorted, whether they are members or tuples.
-         */
-        final boolean isMemberResultSet;
-
-        /**
-         * Temporary structure to create lookup key for members.
-         */
-        List<Member> tmpList = new ArrayList<Member>(1);
-
-        public SortResult(Object[] values, Map<List<Member>, Integer> rankMap) {
+        public SortResult(Object[] values) {
             this.values = values;
-            this.rankMap = rankMap;
-            if (rankMap != null && !rankMap.isEmpty()) {
-                List<Member> anyKey =
-                    (List<Member>) rankMap.keySet().toArray()[0];
-                if (anyKey.size() == 1) {
-                    isMemberResultSet = true;
-                } else {
-                    isMemberResultSet = false;
-                }
-            } else {
-                isMemberResultSet = false;
-            }
         }
 
         public boolean isEmpty() {
             return values == null;
-        }
-
-        public Integer rankOf(Member member) {
-            if (rankMap == null || !isMemberResultSet) {
-                return null;
-            } else {
-                tmpList.clear();
-                tmpList.add(member);
-                return rankMap.get(tmpList);
-            }
-        }
-
-        public Integer rankOf(Member[] tuple) {
-            if (rankMap == null || isMemberResultSet) {
-                return null;
-            } else {
-                return rankMap.get(Arrays.asList(tuple));
-            }
         }
 
         public void print(PrintWriter pw) {
@@ -549,6 +526,42 @@ public class RankFunDef extends FunDefBase {
                 pw.println("}");
             }
             pw.flush();
+        }
+    }
+
+    private static class MemberSortResult extends SortResult {
+        /**
+         * The precomputed rank associated with all members
+         */
+        final Map<Member, Integer> rankMap;
+
+        public MemberSortResult(
+            Object[] values, Map<Member, Integer> rankMap)
+        {
+            super(values);
+            this.rankMap = rankMap;
+        }
+
+        public Integer rankOf(Member member) {
+            return rankMap.get(member);
+        }
+    }
+
+    private static class TupleSortResult extends SortResult {
+        /**
+         * The precomputed rank associated with all tuples
+         */
+        final Map<List<Member>, Integer> rankMap;
+
+        public TupleSortResult(
+            Object[] values, Map<List<Member>, Integer> rankMap)
+        {
+            super(values);
+            this.rankMap = rankMap;
+        }
+
+        public Integer rankOf(Member[] tuple) {
+            return rankMap.get(Arrays.asList(tuple));
         }
     }
 
@@ -580,16 +593,12 @@ public class RankFunDef extends FunDefBase {
         public Object evaluate(Evaluator evaluator) {
             // Construct an array containing the value of the expression
             // for each member.
+            TupleList tupleList = listCalc.evaluateList(evaluator);
+            assert tupleList != null;
             if (tuple) {
-                List<Member[]> tupleList =
-                    ((TupleListCalc) listCalc).evaluateTupleList(evaluator);
-                assert tupleList != null;
                 return new RankedTupleList(tupleList);
             } else {
-                List<Member> memberList =
-                    ((MemberListCalc) listCalc).evaluateMemberList(evaluator);
-                assert memberList != null;
-                return new RankedMemberList(memberList);
+                return new RankedMemberList(tupleList.slice(0));
             }
         }
     }
@@ -631,23 +640,21 @@ public class RankFunDef extends FunDefBase {
         final Map<List<Member>, Integer> map =
             new HashMap<List<Member>, Integer>();
 
-        RankedTupleList(List<Member[]> tupleList) {
+        RankedTupleList(TupleList tupleList) {
             int i = -1;
-            for (final Member[] tupleMembers : tupleList) {
+            for (final List<Member> tupleMembers : tupleList.fix()) {
                 ++i;
-                final List<Member> key = Arrays.asList(tupleMembers);
-                final Integer value = map.put(key, i);
+                final Integer value = map.put(tupleMembers, i);
                 if (value != null) {
                     // The list already contained a value for this key -- put
                     // it back.
-                    map.put(key, value);
+                    map.put(tupleMembers, value);
                 }
             }
         }
 
-        int indexOf(Member[] tupleMembers) {
-            final List<Member> key = Arrays.asList(tupleMembers);
-            Integer integer = map.get(key);
+        int indexOf(List<Member> tupleMembers) {
+            Integer integer = map.get(tupleMembers);
             if (integer == null) {
                 return -1;
             } else {

@@ -4,15 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
 
+import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -478,45 +478,11 @@ RME is this right
                 ? new HighCardSqlTupleReader(constraint)
                 : new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
-        final List<RolapMember[]> tupleList =
+        final TupleList tupleList =
             tupleReader.readTuples(dataSource, null, null);
 
-        return new AbstractList<RolapMember>() {
-            public RolapMember get(final int index) {
-                return tupleList.get(index)[0];
-            }
-
-            public int size() {
-                return tupleList.size();
-            }
-
-            public mondrian.rolap.RolapMember[] toArray() {
-                final List<Member> l = new ArrayList<Member>();
-                for (final RolapMember[] tuple : tupleList) {
-                    l.add(tuple[0]);
-                }
-                return l.toArray(new RolapMember[l.size()]);
-            }
-
-            public <T> T[] toArray(T[] pattern) {
-                return (T[]) toArray();
-            }
-
-            public Iterator<RolapMember> iterator() {
-                final Iterator<RolapMember[]> it = tupleList.iterator();
-                return new Iterator<RolapMember>() {
-                    public boolean hasNext() {
-                        return it.hasNext();
-                    }
-                    public RolapMember next() {
-                        return it.next()[0];
-                    }
-                    public void remove() {
-                        it.remove();
-                    }
-                };
-            }
-        };
+        assert tupleList.getArity() == 1;
+        return Util.cast(tupleList.slice(0));
     }
 
     public MemberCache getMemberCache() {
@@ -735,10 +701,9 @@ RME is this right
         measureBitKey.set(bitPosition);
 
         // find the aggstar using the masks
-        AggStar aggStar = AggregationManager.instance().findAgg(
-                star, levelBitKey, measureBitKey, new boolean[]{ false });
 
-        return aggStar;
+        return AggregationManager.instance().findAgg(
+            star, levelBitKey, measureBitKey, new boolean[]{ false });
     }
 
     /**
@@ -1401,9 +1366,8 @@ RME is this right
          * This passes the <code>ValuePoolFactory</code> class to the
          * <code>ObjectFactory</code> base class.
          */
-        @SuppressWarnings({"unchecked"})
         private ValuePoolFactoryFactory() {
-            super((Class) ValuePoolFactory.class);
+            super(ValuePoolFactory.class);
         }
 
         protected StringProperty getStringProperty() {

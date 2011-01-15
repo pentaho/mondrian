@@ -1,13 +1,16 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
+
+import mondrian.calc.TupleList;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -34,12 +37,16 @@ public interface TupleReader {
         /**
          * Returns the <code>MemberCache</code> to look up members before
          * creating them.
+         *
+         * @return member cache
          */
         MemberCache getMemberCache();
 
         /**
          * Returns the object which acts as the member cache
          * synchronization lock.
+         *
+         * @return Object to lock
          */
         Object getMemberCacheLock();
 
@@ -47,7 +54,16 @@ public interface TupleReader {
         /**
          * Creates a new member (together with its properties).
          *
+         * @param parentMember Parent member
+         * @param childLevel Child level
+         * @param value Member value
+         * @param captionValue Caption
+         * @param parentChild Whether a parent-child hierarchy
+         * @param stmt SQL statement
+         * @param key Member key
          * @param column Column ordinal (0-based)
+         * @return new member
+         * @throws java.sql.SQLException on error
          */
         RolapMember makeMember(
             RolapMember parentMember,
@@ -84,11 +100,15 @@ public interface TupleReader {
     /**
      * Performs the read.
      *
-     * @return a list of RolapMember[]
+     * @param dataSource Data source
+     * @param partialResult List of rows from previous pass
+     * @param newPartialResult Populated with a new list of rows
+     *
+     * @return a list of tuples
      */
-    List<RolapMember[]> readTuples(
+    TupleList readTuples(
         DataSource dataSource,
-        List<List<RolapMember>> partialResult,
+        TupleList partialResult,
         List<List<RolapMember>> newPartialResult);
 
     /**
@@ -102,15 +122,17 @@ public interface TupleReader {
 
      * @return a list of RolapMember
      */
-    List<RolapMember> readMembers(
+    TupleList readMembers(
         DataSource dataSource,
-        List<List<RolapMember>> partialResult,
+        TupleList partialResult,
         List<List<RolapMember>> newPartialResult);
 
     /**
      * Returns an object that uniquely identifies the Result that this
      * {@link TupleReader} would return. Clients may use this as a key for
      * caching the result.
+     *
+     * @return Cache key
      */
     Object getCacheKey();
 

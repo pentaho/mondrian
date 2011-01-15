@@ -3,24 +3,23 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
-
-import java.util.List;
 
 /**
  * Definition of <code>Ytd</code>, <code>Qtd</code>, <code>Mtd</code>,
@@ -106,8 +105,9 @@ class XtdFunDef extends FunDefBase {
         switch (call.getArgCount()) {
         case 0:
             return new AbstractListCalc(call, new Calc[0]) {
-                public List evaluateList(Evaluator evaluator) {
-                    return periodsToDate(evaluator, level, null);
+                public TupleList evaluateList(Evaluator evaluator) {
+                    return new UnaryTupleList(
+                        periodsToDate(evaluator, level, null));
                 }
 
                 public boolean dependsOn(Hierarchy hierarchy) {
@@ -119,10 +119,12 @@ class XtdFunDef extends FunDefBase {
             final MemberCalc memberCalc =
                 compiler.compileMember(call.getArg(0));
             return new AbstractListCalc(call, new Calc[] {memberCalc}) {
-                public List evaluateList(Evaluator evaluator) {
-                    return periodsToDate(
-                        evaluator, level,
-                        memberCalc.evaluateMember(evaluator));
+                public TupleList evaluateList(Evaluator evaluator) {
+                    return new UnaryTupleList(
+                        periodsToDate(
+                            evaluator,
+                            level,
+                            memberCalc.evaluateMember(evaluator)));
                 }
             };
         }

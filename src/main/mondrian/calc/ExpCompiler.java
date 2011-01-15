@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -113,7 +113,7 @@ public interface ExpCompiler {
     DateTimeCalc compileDateTime(Exp exp);
 
     /**
-     * Compiles an expression which yields an immutable {@link java.util.List}
+     * Compiles an expression which yields an immutable {@link TupleList}
      * result.
      *
      * <p>Always equivalent to <code>{@link #compileList}(exp, false)</code>.
@@ -121,7 +121,7 @@ public interface ExpCompiler {
     ListCalc compileList(Exp exp);
 
     /**
-     * Compiles an expression which yields {@link java.util.List} result.
+     * Compiles an expression which yields {@link TupleList} result.
      *
      * <p>Such an expression is generally a list of {@link Member} objects or a
      * list of tuples (each represented by a {@link Member} array).

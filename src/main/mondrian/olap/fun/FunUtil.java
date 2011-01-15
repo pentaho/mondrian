@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,8 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.DelegatingTupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -83,12 +85,6 @@ public class FunUtil extends Util {
     public static RuntimeException newEvalException(Throwable throwable) {
         return new MondrianEvaluationException(
             throwable.getClass().getName() + ": " + throwable.getMessage());
-    }
-
-    public static boolean isMemberType(Calc calc) {
-        Type type = calc.getType();
-        return (type instanceof SetType)
-            && (((SetType) type).getArity() == 1);
     }
 
     public static void checkIterListResultStyles(Calc calc) {
@@ -222,38 +218,22 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Returns {@code true} if the mask in {@code flag} is set.
-     *
-     * @param value The value to check.
-     * @param mask The mask within value to look for.
-     * @param strict If {@code true} all the bits in mask must be set. If
-     * {@code false} the method will return {@code true} if any of the
-     * bits in {@code mask} are set.
-     * @return whether if the correct bits in {@code mask} are set.
-     */
-    static boolean checkFlag(int value, int mask, boolean strict) {
-        return (strict)
-            ? ((value & mask) == mask)
-            : ((value & mask) != 0);
-    }
-
-    /**
      * Adds every element of {@code right} which is not in {@code set}
      * to both {@code set} and {@code left}.
      */
-    static <T> void addUnique(List<T> left, List<T> right, Set<Object> set) {
+    static void addUnique(
+        TupleList left,
+        TupleList right,
+        Set<List<Member>> set)
+    {
         assert left != null;
         assert right != null;
         if (right.isEmpty()) {
             return;
         }
         for (int i = 0, n = right.size(); i < n; i++) {
-            T o = right.get(i);
-            Object p = o;
-            if (o instanceof Object[]) {
-                p = Util.flatList((Object[]) o);
-            }
-            if (set.add(p)) {
+            List<Member> o = right.get(i);
+            if (set.add(o)) {
                 left.add(o);
             }
         }
@@ -319,14 +299,42 @@ public class FunUtil extends Util {
      */
     static List<Member> removeCalculatedMembers(List<Member> memberList)
     {
-        return new FilteredIterableList<Member>(
-            memberList,
-            new FilteredIterableList.Filter<Member>() {
-                public boolean accept(final Member m) {
-                    return ! m.isCalculated();
-                }
+        List<Member> clone = new ArrayList<Member>();
+        for (Member member : memberList) {
+            if (member.isCalculated()) {
+                continue;
             }
-        );
+            clone.add(member);
+        }
+        return clone;
+    }
+
+    /**
+     * Removes every tuple from a list which is calculated.
+     * The list must not be null, and must consist only of members.
+     *
+     * @param memberList Member list
+     * @return List of non-calculated members
+     */
+    static TupleList removeCalculatedMembers(TupleList memberList)
+    {
+        if (memberList.getArity() == 1) {
+            return new UnaryTupleList(
+                removeCalculatedMembers(
+                    memberList.slice(0)));
+        } else {
+            final TupleList clone = memberList.cloneList(memberList.size());
+            outer:
+            for (List<Member> members : memberList) {
+                for (Member member : members) {
+                    if (member.isCalculated()) {
+                        continue outer;
+                    }
+                }
+                clone.add(members);
+            }
+            return clone;
+        }
     }
 
     /**
@@ -355,7 +363,7 @@ public class FunUtil extends Util {
      * from members to values.
      *
      * <p>If the list contains tuples, use
-     * {@link #evaluateTuples(mondrian.olap.Evaluator, mondrian.calc.Calc, java.util.List)}.
+     * {@link #evaluateTuples(mondrian.olap.Evaluator, mondrian.calc.Calc, mondrian.calc.TupleList)}.
      *
      * @param evaluator Evaluation context
      * @param exp Expression to evaluate
@@ -411,7 +419,7 @@ public class FunUtil extends Util {
      *
      * @param evaluator Evaluation context
      * @param exp Expression to evaluate
-     * @param tuples List of members (or List of Member[] tuples)
+     * @param tuples List of tuples
      *
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
@@ -419,7 +427,7 @@ public class FunUtil extends Util {
     static Map<List<Member>, Object> evaluateTuples(
         Evaluator evaluator,
         Calc exp,
-        List<Member[]> tuples)
+        TupleList tuples)
     {
         evaluator = evaluator.push();
 
@@ -427,13 +435,13 @@ public class FunUtil extends Util {
         final Map<List<Member>, Object> mapMemberToValue =
             new HashMap<List<Member>, Object>();
         for (int i = 0, count = tuples.size(); i < count; i++) {
-            Member[] tuple = tuples.get(i);
+            List<Member> tuple = tuples.get(i);
             evaluator.setContext(tuple);
             Object result = exp.evaluate(evaluator);
             if (result == null) {
                 result = Util.nullValue;
             }
-            mapMemberToValue.put(Util.flatList(tuple), result);
+            mapMemberToValue.put(tuple, result);
         }
         return mapMemberToValue;
     }
@@ -552,7 +560,7 @@ public class FunUtil extends Util {
      * tupleList is returned.
      *
      * @param evaluator Evaluator
-     * @param tupleIter Iterator over tuples
+     * @param tupleIterable Iterator over tuples
      * @param tupleList List of tuples, if known, otherwise null
      * @param exp Expression to sort on
      * @param desc Whether to sort descending
@@ -560,10 +568,10 @@ public class FunUtil extends Util {
      * @param arity Number of members in each tuple
      * @return sorted list (never null)
      */
-    public static List<Member[]> sortTuples(
+    public static TupleList sortTuples(
         Evaluator evaluator,
-        Iterable<Member[]> tupleIter,
-        List<Member[]> tupleList,
+        TupleIterable tupleIterable,
+        TupleList tupleList,
         Calc exp,
         boolean desc,
         boolean brk,
@@ -573,33 +581,50 @@ public class FunUtil extends Util {
         // as fully as sortMembers. This is because sortMembers evaluates all
         // sort expressions up front. There, it is efficient to unravel the
         // iterator and evaluate the sort expressions at the same time.
+        List<List<Member>> tupleArrayList;
         if (tupleList == null) {
-            tupleList = new ArrayList<Member[]>();
-            for (Member[] tuple : tupleIter) {
-                tupleList.add(tuple);
+            tupleArrayList = new ArrayList<List<Member>>();
+            final TupleCursor cursor = tupleIterable.tupleCursor();
+            while (cursor.forward()) {
+                tupleArrayList.add(cursor.current());
             }
-        }
-        if (tupleList.size() <= 1) {
-            return tupleList;
+            if (tupleArrayList.size() <= 1) {
+                return new DelegatingTupleList(
+                    tupleIterable.getArity(),
+                    tupleArrayList);
+            }
+        } else {
+            if (tupleList.size() <= 1) {
+                return tupleList;
+            }
+            tupleArrayList = tupleList;
         }
 
-        Comparator<Member[]> comparator;
+        @SuppressWarnings({"unchecked"})
+        List<Member>[] tuples =
+            tupleArrayList.toArray(new List[tupleArrayList.size()]);
+        final DelegatingTupleList result =
+            new DelegatingTupleList(
+                tupleIterable.getArity(),
+                Arrays.asList(tuples));
+
+        Comparator<List<Member>> comparator;
         if (brk) {
-            BreakArrayComparator c =
-                new BreakArrayComparator(evaluator, exp, arity);
-            c.preloadValues(tupleList);
+            BreakTupleComparator c =
+                new BreakTupleComparator(evaluator, exp, arity);
+            c.preloadValues(result);
             comparator = c.wrap();
             if (desc) {
                 comparator = Collections.reverseOrder(comparator);
             }
         } else {
             comparator =
-                new HierarchicalArrayComparator(evaluator, exp, arity, desc)
+                new HierarchicalTupleComparator(evaluator, exp, arity, desc)
                 .wrap();
         }
 
-        Collections.sort(tupleList, comparator);
-        return tupleList;
+        Arrays.sort(tuples, comparator);
+        return result;
     }
 
     /**
@@ -638,16 +663,16 @@ public class FunUtil extends Util {
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
      */
-    static List<Member[]> sortTuples(
+    static TupleList sortTuples(
         Evaluator evaluator,
-        Iterable<Member[]> tupleIter,
-        List<Member[]> tupleList,
+        TupleIterable tupleIter,
+        TupleList tupleList,
         List<SortKeySpec> keySpecList,
         int arity)
     {
         if (tupleList == null) {
-            tupleList = new ArrayList<Member[]>();
-            for (Member[] tuple : tupleIter) {
+            tupleList = TupleCollections.createList(arity);
+            for (List<Member> tuple : tupleIter) {
                 tupleList.add(tuple);
             }
         }
@@ -661,19 +686,19 @@ public class FunUtil extends Util {
             boolean orderByKey =
                 key.key instanceof MemberOrderKeyFunDef.CalcImpl;
             if (brk) {
-                ArrayExpMemoComparator comp =
-                    new BreakArrayComparator(evaluator, key.key, arity);
+                TupleExpMemoComparator comp =
+                    new BreakTupleComparator(evaluator, key.key, arity);
                 comp.preloadValues(tupleList);
                 chain.addComparator(comp.wrap(), key.direction.descending);
             } else if (orderByKey) {
-                ArrayExpMemoComparator comp =
-                    new HierarchicalArrayKeyComparator(
+                TupleExpMemoComparator comp =
+                    new HierarchicalTupleKeyComparator(
                         evaluator, key.key, arity);
                 comp.preloadValues(tupleList);
                 chain.addComparator(comp.wrap(), key.direction.descending);
             } else {
-                ArrayExpComparator comp =
-                    new HierarchicalArrayComparator(
+                TupleExpComparator comp =
+                    new HierarchicalTupleComparator(
                         evaluator, key.key, arity, key.direction.descending);
                 chain.addComparator(comp.wrap(), false);
             }
@@ -693,24 +718,24 @@ public class FunUtil extends Util {
      * <p>NOTE: Does not preserve the contents of the validator. The returned
      * list is immutable.
      *
+     * @param evaluator Evaluator
      * @param list a list of tuples
      * @param exp a Calc applied to each tple to find its sort-key
-     * @param evaluator Evaluator
      * @param limit maximum count of tuples to return.
      * @param desc true to sort descending (and find TopCount),
      *  false to sort ascending (and find BottomCount).
      * @return the top or bottom tuples, as a new list.
      */
-    public static List<Member[]> partiallySortTuples(
+    public static List<List<Member>> partiallySortTuples(
         Evaluator evaluator,
-        List<Member[]> list,
+        TupleList list,
         Calc exp,
         int limit,
         boolean desc,
         int arity)
     {
-        Comparator<Member[]> comp =
-            new BreakArrayComparator(evaluator, exp, arity).wrap();
+        Comparator<List<Member>> comp =
+            new BreakTupleComparator(evaluator, exp, arity).wrap();
         if (desc) {
             comp = Collections.reverseOrder(comp);
         }
@@ -724,7 +749,7 @@ public class FunUtil extends Util {
      * @param memberList List of members
      * @param post Whether to sort in post order; if false, sorts in pre order
      *
-     * @see #hierarchizeTupleList(java.util.List, boolean, int)
+     * @see #hierarchizeTupleList(mondrian.calc.TupleList, boolean)
      */
     public static void hierarchizeMemberList(
         List<Member> memberList,
@@ -745,29 +770,25 @@ public class FunUtil extends Util {
      *
      * @param tupleList List of tuples
      * @param post Whether to sort in post order; if false, sorts in pre order
-     * @param arity Number of members in each tuple
      *
      * @see #hierarchizeMemberList(java.util.List, boolean)
      */
-    public static void hierarchizeTupleList(
-        List<Member[]> tupleList,
-        boolean post,
-        int arity)
+    public static TupleList hierarchizeTupleList(
+        TupleList tupleList,
+        boolean post)
     {
         if (tupleList.isEmpty()) {
-            return;
+            TupleCollections.emptyList(tupleList.getArity());
         }
-        Comparator<Member[]> comparator =
-            new HierarchizeArrayComparator(arity, post).wrap();
-        Collections.sort(tupleList, comparator);
-    }
-
-    static int sign(double d) {
-        return (d == 0)
-            ? 0
-            : (d < 0)
-                ? -1
-                : 1;
+        final TupleList fixedList = tupleList.fix();
+        if (tupleList.getArity() == 1) {
+            hierarchizeMemberList(fixedList.slice(0), post);
+            return fixedList;
+        }
+        Comparator<List<Member>> comparator =
+            new HierarchizeTupleComparator(fixedList.getArity(), post).wrap();
+        Collections.sort(fixedList, comparator);
+        return fixedList;
     }
 
     /**
@@ -815,14 +836,6 @@ public class FunUtil extends Util {
         } else {
             return 1;
         }
-    }
-
-    public static int compareValues(int i, int j) {
-        return (i == j)
-            ? 0
-            : (i < j)
-                ? -1
-                : 1;
     }
 
     /**
@@ -876,47 +889,26 @@ public class FunUtil extends Util {
      * function in itself.
      */
     static void toPercent(
-        List members,
-        Map mapMemberToValue,
-        boolean isMember)
+        TupleList members,
+        Map<List<Member>, Object> mapMemberToValue)
     {
         double total = 0;
         int memberCount = members.size();
-        if (isMember) {
-            for (int i = 0; i < memberCount; i++) {
-                final Object key = members.get(i);
-                final Object o = mapMemberToValue.get(key);
-                if (o instanceof Number) {
-                    total += ((Number) o).doubleValue();
-                }
+        for (int i = 0; i < memberCount; i++) {
+            final List<Member> key = members.get(i);
+            final Object o = mapMemberToValue.get(key);
+            if (o instanceof Number) {
+                total += ((Number) o).doubleValue();
             }
-            for (int i = 0; i < memberCount; i++) {
-                final Object key = members.get(i);
-                final Object o = mapMemberToValue.get(key);
-                if (o instanceof Number) {
-                    double d = ((Number) o).doubleValue();
-                    mapMemberToValue.put(
-                        key,
-                        d / total * (double) 100);
-                }
-            }
-        } else {
-            for (int i = 0; i < memberCount; i++) {
-                final Object key = Util.flatList((Member []) members.get(i));
-                final Object o = mapMemberToValue.get(key);
-                if (o instanceof Number) {
-                    total += ((Number) o).doubleValue();
-                }
-            }
-            for (int i = 0; i < memberCount; i++) {
-                final Object key = Util.flatList((Member []) members.get(i));
-                final Object o = mapMemberToValue.get(key);
-                if (o instanceof Number) {
-                    double d = ((Number) o).doubleValue();
-                    mapMemberToValue.put(
-                        key,
-                        d / total * (double) 100);
-                }
+        }
+        for (int i = 0; i < memberCount; i++) {
+            final List<Member> key = members.get(i);
+            final Object o = mapMemberToValue.get(key);
+            if (o instanceof Number) {
+                double d = ((Number) o).doubleValue();
+                mapMemberToValue.put(
+                    key,
+                    d / total * (double) 100);
             }
         }
     }
@@ -1105,24 +1097,9 @@ public class FunUtil extends Util {
             : n;
     }
 
-    /**
-     * Sorts an array of values.
-     */
-    public static void sortValuesDesc(Object[] values) {
-        Arrays.sort(values, DescendingValueComparator.instance);
-    }
-
-    /**
-     * Binary searches an array of values.
-     */
-    public static int searchValuesDesc(Object[] values, Object value) {
-        return Arrays.binarySearch(
-                values, value, DescendingValueComparator.instance);
-    }
-
     static double percentile(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp,
         double p)
     {
@@ -1187,7 +1164,7 @@ public class FunUtil extends Util {
      */
     protected static double quartile(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp,
         int range)
     {
@@ -1214,7 +1191,11 @@ public class FunUtil extends Util {
             : asArray[median];
     }
 
-    public static Object min(Evaluator evaluator, List members, Calc calc) {
+    public static Object min(
+        Evaluator evaluator,
+        TupleList members,
+        Calc calc)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, calc);
         if (sw.errorCount > 0) {
             return Double.NaN;
@@ -1235,7 +1216,11 @@ public class FunUtil extends Util {
         }
     }
 
-    public static Object max(Evaluator evaluator, List members, Calc exp) {
+    public static Object max(
+        Evaluator evaluator,
+        TupleList members,
+        Calc exp)
+    {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
             return Double.NaN;
@@ -1258,7 +1243,7 @@ public class FunUtil extends Util {
 
     static Object var(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp,
         boolean biased)
     {
@@ -1288,7 +1273,7 @@ public class FunUtil extends Util {
 
     static double correlation(
         Evaluator evaluator,
-        List memberList,
+        TupleList memberList,
         Calc exp1,
         Calc exp2)
     {
@@ -1312,7 +1297,7 @@ public class FunUtil extends Util {
 
     static Object covariance(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp1,
         Calc exp2,
         boolean biased)
@@ -1352,7 +1337,7 @@ public class FunUtil extends Util {
 
     static Object stdev(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp,
         boolean biased)
     {
@@ -1364,7 +1349,7 @@ public class FunUtil extends Util {
 
     public static Object avg(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc calc)
     {
         SetWrapper sw = evaluateSet(evaluator, members, calc);
@@ -1386,14 +1371,18 @@ public class FunUtil extends Util {
         return sum / (double) sw.v.size();
     }
 
-    public static Object sum(Evaluator evaluator, List members, Calc exp) {
+    public static Object sum(
+        Evaluator evaluator,
+        TupleList members,
+        Calc exp)
+    {
         double d = sumDouble(evaluator, members, exp);
         return d == DoubleNull ? Util.nullValue : new Double(d);
     }
 
     public static double sumDouble(
         Evaluator evaluator,
-        List members,
+        TupleList members,
         Calc exp)
     {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
@@ -1412,7 +1401,7 @@ public class FunUtil extends Util {
 
     public static double sumDouble(
         Evaluator evaluator,
-        Iterable iterable,
+        TupleIterable iterable,
         Calc exp)
     {
         SetWrapper sw = evaluateSet(evaluator, iterable, exp);
@@ -1431,33 +1420,28 @@ public class FunUtil extends Util {
 
     public static int count(
         Evaluator evaluator,
-        Iterable iterable,
+        TupleIterable iterable,
         boolean includeEmpty)
     {
         if (iterable == null) {
             return 0;
         }
         if (includeEmpty) {
-            if (iterable instanceof Collection) {
-                return ((Collection) iterable).size();
+            if (iterable instanceof TupleList) {
+                return ((TupleList) iterable).size();
             } else {
                 int retval = 0;
-                Iterator it = iterable.iterator();
-                while (it.hasNext()) {
-                    // must get the next one
-                    it.next();
+                TupleCursor cursor = iterable.tupleCursor();
+                while (cursor.forward()) {
                     retval++;
                 }
                 return retval;
             }
         } else {
             int retval = 0;
-            for (Object object : iterable) {
-                if (object instanceof Member) {
-                    evaluator.setContext((Member) object);
-                } else {
-                    evaluator.setContext((Member[]) object);
-                }
+            TupleCursor cursor = iterable.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator);
                 if (!evaluator.currentIsEmpty()) {
                     retval++;
                 }
@@ -1476,7 +1460,7 @@ public class FunUtil extends Util {
      */
     static SetWrapper evaluateSet(
         Evaluator evaluator,
-        Iterable members,
+        TupleIterable members,
         Calc calc)
     {
         assert members != null;
@@ -1485,12 +1469,9 @@ public class FunUtil extends Util {
 
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();
-        for (Object obj : members) {
-            if (obj instanceof Member[]) {
-                evaluator.setContext((Member[])obj);
-            } else {
-                evaluator.setContext((Member)obj);
-            }
+        final TupleCursor cursor = members.tupleCursor();
+        while (cursor.forward()) {
+            cursor.setContext(evaluator);
             Object o = calc.evaluate(evaluator);
             if (o == null || o == Util.nullValue) {
                 retval.nullCount++;
@@ -1524,9 +1505,8 @@ public class FunUtil extends Util {
      */
     static SetWrapper[] evaluateSet(
         Evaluator evaluator,
-        List members,
-        DoubleCalc[] calcs,
-        boolean isTuples)
+        TupleList list,
+        DoubleCalc[] calcs)
     {
         Util.assertPrecondition(calcs != null, "calcs != null");
 
@@ -1535,12 +1515,9 @@ public class FunUtil extends Util {
         for (int i = 0; i < calcs.length; i++) {
             retvals[i] = new SetWrapper();
         }
-        for (final Object member : members) {
-            if (isTuples) {
-                evaluator.setContext((List<Member>) member);
-            } else {
-                evaluator.setContext((Member) member);
-            }
+        final TupleCursor cursor = list.tupleCursor();
+        while (cursor.forward()) {
+            cursor.setContext(evaluator);
             for (int i = 0; i < calcs.length; i++) {
                 DoubleCalc calc = calcs[i];
                 SetWrapper retval = retvals[i];
@@ -1887,10 +1864,23 @@ public class FunUtil extends Util {
         return false;
     }
 
+    /**
+     * Returns whether one of the members in a tuple is null.
+     */
+    public static boolean tupleContainsNullMember(List<Member> tuple) {
+        for (Member member : tuple) {
+            if (member.isNull()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static Member[] makeNullTuple(final TupleType tupleType) {
-        Member[] members = new Member[tupleType.elementTypes.length];
-        for (int i = 0; i < tupleType.elementTypes.length; i++) {
-            MemberType type = (MemberType) tupleType.elementTypes[i];
+        final Type[] elementTypes = tupleType.elementTypes;
+        Member[] members = new Member[elementTypes.length];
+        for (int i = 0; i < elementTypes.length; i++) {
+            MemberType type = (MemberType) elementTypes[i];
             members[i] = makeNullMember(type);
         }
         return members;
@@ -2096,30 +2086,32 @@ public class FunUtil extends Util {
         return sr.getLevelMembers(level, includeCalcMembers);
     }
 
-    static List<Member> levelMembers(
+    static TupleList levelMembers(
         final Level level,
         final Evaluator evaluator,
         final boolean includeCalcMembers)
     {
         List<Member> memberList =
             getNonEmptyLevelMembers(evaluator, level, includeCalcMembers);
+        TupleList tupleList;
         if (!includeCalcMembers) {
             memberList = removeCalculatedMembers(memberList);
         }
-        hierarchizeMemberList(memberList, false);
-        return memberList;
+        final List<Member> memberListClone = new ArrayList<Member>(memberList);
+        tupleList = new UnaryTupleList(memberListClone);
+        return hierarchizeTupleList(tupleList, false);
     }
 
-    static List<Member> hierarchyMembers(
+    static TupleList hierarchyMembers(
         Hierarchy hierarchy,
         Evaluator evaluator,
         final boolean includeCalcMembers)
     {
-        List<Member> memberList;
+        TupleList tupleList = new UnaryTupleList();
+        final List<Member> memberList = tupleList.slice(0);
         if (evaluator.isNonEmpty()) {
             // Allow the SQL generator to generate optimized SQL since we know
             // we're only interested in non-empty members of this level.
-            memberList = new ArrayList<Member>();
             for (Level level : hierarchy.getLevels()) {
                 List<Member> members =
                     getNonEmptyLevelMembers(
@@ -2127,24 +2119,23 @@ public class FunUtil extends Util {
                 memberList.addAll(members);
             }
         } else {
-            memberList = addMembers(
+            final List<Member> memberList1 = addMembers(
                 evaluator.getSchemaReader(),
-                new ConcatenableList<Member>(), hierarchy);
-            if (!includeCalcMembers && memberList != null) {
-                memberList = removeCalculatedMembers(memberList);
+                new ConcatenableList<Member>(),
+                hierarchy);
+            if (includeCalcMembers) {
+                memberList.addAll(memberList1);
+            } else {
+                // Same effect as calling removeCalculatedMembers(tupleList)
+                // but one fewer copy of the list.
+                for (Member member1 : memberList1) {
+                    if (!member1.isCalculated()) {
+                        memberList.add(member1);
+                    }
+                }
             }
         }
-        hierarchizeMemberList(memberList, false);
-        return memberList;
-    }
-
-    static List<Member> dimensionMembers(
-        Dimension dimension,
-        Evaluator evaluator,
-        final boolean includeCalcMembers)
-    {
-        Hierarchy hierarchy = dimension.getHierarchy();
-        return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
+        return hierarchizeTupleList(tupleList, false);
     }
 
    /**
@@ -2217,16 +2208,16 @@ public class FunUtil extends Util {
         };
     }
 
-    static List<Member[]> parseTupleList(
+    static TupleList parseTupleList(
         Evaluator evaluator,
         String string,
-        Hierarchy[] hierarchies)
+        List<Hierarchy> hierarchies)
     {
         final IdentifierParser.TupleListBuilder builder =
             new IdentifierParser.TupleListBuilder(
                 evaluator.getSchemaReader(),
                 evaluator.getCube(),
-                Arrays.asList(hierarchies));
+                hierarchies);
         IdentifierParser.parseTupleList(builder, string);
         return builder.tupleList;
     }
@@ -2234,6 +2225,7 @@ public class FunUtil extends Util {
     /**
      * Parses a tuple, of the form '(member, member, ...)'.
      * There must be precisely one member for each hierarchy.
+     *
      *
      * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
      *   and {@link mondrian.olap.Cube}
@@ -2248,13 +2240,13 @@ public class FunUtil extends Util {
         String string,
         int i,
         final Member[] members,
-        Hierarchy[] hierarchies)
+        List<Hierarchy> hierarchies)
     {
         final IdentifierParser.Builder builder =
             new IdentifierParser.TupleBuilder(
                 evaluator.getSchemaReader(),
                 evaluator.getCube(),
-                Arrays.asList(hierarchies))
+                hierarchies)
             {
                 public void tupleComplete() {
                     super.tupleComplete();
@@ -2268,15 +2260,17 @@ public class FunUtil extends Util {
      * Parses a tuple, such as "([Gender].[M], [Marital Status].[S])".
      *
      * @param evaluator Evaluator, provides a {@link mondrian.olap.SchemaReader}
-     *   and {@link Cube}
+     *   and {@link mondrian.olap.Cube}
      * @param string String to parse
      * @param hierarchies Hierarchies of the members
      * @return Tuple represented as array of members
      */
     static Member[] parseTuple(
-        Evaluator evaluator, String string, Hierarchy[] hierarchies)
+        Evaluator evaluator,
+        String string,
+        List<Hierarchy> hierarchies)
     {
-        final Member[] members = new Member[hierarchies.length];
+        final Member[] members = new Member[hierarchies.size()];
         int i = parseTuple(evaluator, string, 0, members, hierarchies);
         // todo: check for garbage at end of string
         if (FunUtil.tupleContainsNullMember(members)) {
@@ -2387,7 +2381,7 @@ public class FunUtil extends Util {
      * Q); R. Sedgewick, Algorithms in C, ch 5.  Good summary in
      * http://en.wikipedia.org/wiki/Selection_algorithm
      *
-     * TODO: What is the time-cost of this functor and of the nested
+     * <P>TODO: What is the time-cost of this functor and of the nested
      * Comparators?
      */
     static class Quicksorter<T> {
@@ -2620,15 +2614,20 @@ public class FunUtil extends Util {
             Logger.getLogger(MemberComparator.class);
         final Evaluator evaluator;
         final Calc exp;
-        final private boolean desc;
+
+        final private int descMask;
         final private Map<Member, Object> valueMap;
 
         MemberComparator(Evaluator evaluator, Calc exp, boolean desc)
         {
             this.evaluator = evaluator;
             this.exp = exp;
-            this.desc = desc;
+            this.descMask = desc ? -1 : 1;
             this.valueMap = new HashMap<Member, Object>();
+        }
+
+        private int maybeNegate(int c) {
+            return descMask * c;
         }
 
         // applies the Calc to a member, memorizing results
@@ -2682,7 +2681,7 @@ public class FunUtil extends Util {
 
         protected final int compareByValue(Member m1, Member m2) {
             final int c = FunUtil.compareValues(eval(m1), eval(m2));
-            return desc ? -c : c;
+            return maybeNegate(c);
         }
 
         protected final int compareHierarchicallyButSiblingsByValue(
@@ -2719,6 +2718,9 @@ public class FunUtil extends Util {
                         // have a consistent sortMembers if members with equal
                         // (null!)  values are compared.
                         c = FunUtil.compareSiblingMembers(prev1, prev2);
+
+                        // Do not negate c, even if we are sorting descending.
+                        // This comparison is to achieve the 'natural order'.
                         return c;
                     }
                 }
@@ -2752,41 +2754,29 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Compares tuples, which are represented as arrays of {@link Member}s.
+     * Compares tuples, which are represented as lists of {@link Member}s.
      */
-    private static abstract class ArrayComparator
-        implements Comparator<Member[]>
+    private static abstract class TupleComparator
+        implements Comparator<List<Member>>
     {
         private static final Logger LOGGER =
-            Logger.getLogger(ArrayComparator.class);
+            Logger.getLogger(TupleComparator.class);
         final int arity;
 
-        ArrayComparator(int arity) {
+        TupleComparator(int arity) {
             this.arity = arity;
         }
 
-        Comparator<Member[]> wrap() {
-            final ArrayComparator base = this;
+        Comparator<List<Member>> wrap() {
+            final TupleComparator base = this;
             if (LOGGER.isDebugEnabled()) {
-                return new Comparator<Member[]>() {
-                    public int compare(Member[] a1, Member[] a2) {
+                return new Comparator<List<Member>>() {
+                    public int compare(List<Member> a1, List<Member> a2) {
                         int c = base.compare(a1, a2);
                         LOGGER.debug(
-                            "compare {" + toString(a1) + "}, {"
-                            + toString(a2) + "} yields " + c);
+                            "compare {" + a1 + "}, {"
+                            + a2 + "} yields " + c);
                         return c;
-                    }
-
-                    private String toString(Member[] a) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < a.length; i++) {
-                            Member member = a[i];
-                            if (i > 0) {
-                                sb.append(",");
-                            }
-                            sb.append(member.getUniqueName());
-                        }
-                        return sb.toString();
                     }
                 };
             } else {
@@ -2796,43 +2786,43 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Extension to {@link ArrayComparator} which compares tuples by evaluating
+     * Extension to {@link TupleComparator} which compares tuples by evaluating
      * an expression.
      */
-    private static abstract class ArrayExpComparator extends ArrayComparator {
+    private static abstract class TupleExpComparator extends TupleComparator {
         Evaluator evaluator;
         final Calc calc;
 
-        ArrayExpComparator(Evaluator evaluator, Calc calc, int arity) {
+        TupleExpComparator(Evaluator evaluator, Calc calc, int arity) {
             super(arity);
             this.evaluator = evaluator;
             this.calc = calc;
         }
     }
 
-    private static class HierarchicalArrayComparator
-        extends ArrayExpComparator
+    private static class HierarchicalTupleComparator
+        extends TupleExpComparator
     {
         private final boolean desc;
 
-        HierarchicalArrayComparator(
+        HierarchicalTupleComparator(
             Evaluator evaluator, Calc calc, int arity, boolean desc)
         {
             super(evaluator, calc, arity);
             this.desc = desc;
         }
 
-        public int compare(Member[] a1, Member[] a2) {
+        public int compare(List<Member> a1, List<Member> a2) {
             int c = 0;
             evaluator = evaluator.push();
             for (int i = 0; i < arity; i++) {
-                Member m1 = a1[i], m2 = a2[i];
+                Member m1 = a1.get(i), m2 = a2.get(i);
                 c = compareHierarchicallyButSiblingsByValue(m1, m2);
                 if (c != 0) {
                     break;
                 }
                 // compareHierarchicallyButSiblingsByValue imposes a total order
-                Util.assertTrue(m1.equals(m2));
+                assert m1.equals(m2);
                 evaluator.setContext(m1);
             }
             evaluator = evaluator.pop();
@@ -2890,33 +2880,27 @@ public class FunUtil extends Util {
     }
 
     // almost the same as MemberComparator
-    static abstract class ArrayExpMemoComparator extends ArrayExpComparator {
+    static abstract class TupleExpMemoComparator extends TupleExpComparator {
         private final Map<List<Member>, Object> valueMap =
             new HashMap<List<Member>, Object>();
 
-        ArrayExpMemoComparator(Evaluator e, Calc calc, int arity)
+        TupleExpMemoComparator(Evaluator e, Calc calc, int arity)
         {
             super(e, calc, arity);
         }
 
         // applies the Calc to a tuple, memorizing results
-        protected Object eval(Member[] t)
+        protected Object eval(List<Member> t)
         {
-            List<Member> key = flatList(t);
-            Object val = valueMap.get(key);
+            Object val = valueMap.get(t);
             if (val != null) {
                 return val;
             }
-            return compute2(t, key);
+            return compute(t);
         }
 
-        private Object compute(Member[] t) {
-            List<Member> key = flatList(t);
-            return compute2(t, key);
-        }
-
-        private Object compute2(Member[] t, List<Member> key) {
-            evaluator.setContext(t);
+        private Object compute(List<Member> key) {
+            evaluator.setContext(key);
             Object val = calc.evaluate(evaluator);
             if (val == null) {
                 val = Util.nullValue;
@@ -2927,32 +2911,32 @@ public class FunUtil extends Util {
 
         // Preloads the value map by applying the expression to a Collection of
         // members.
-        void preloadValues(Collection<Member[]> tuples) {
-            for (Member[] t : tuples) {
+        void preloadValues(TupleList tuples) {
+            for (List<Member> t : tuples) {
                 compute(t);
             }
         }
     }
 
-    private static class BreakArrayComparator extends ArrayExpMemoComparator {
-        BreakArrayComparator(Evaluator e, Calc calc, int arity) {
+    private static class BreakTupleComparator extends TupleExpMemoComparator {
+        BreakTupleComparator(Evaluator e, Calc calc, int arity) {
             super(e, calc, arity);
         }
 
-        public int compare(Member[] a1, Member[] a2) {
+        public int compare(List<Member> a1, List<Member> a2) {
             return FunUtil.compareValues(eval(a1), eval(a2));
         }
     }
 
-    private static class HierarchicalArrayKeyComparator
-        extends ArrayExpMemoComparator
+    private static class HierarchicalTupleKeyComparator
+        extends TupleExpMemoComparator
     {
 
-        HierarchicalArrayKeyComparator(Evaluator e, Calc calc, int arity) {
+        HierarchicalTupleKeyComparator(Evaluator e, Calc calc, int arity) {
             super(e, calc, arity);
         }
 
-        public int compare(Member[] a1, Member[] a2) {
+        public int compare(List<Member> a1, List<Member> a2) {
             OrderKey k1 = (OrderKey) eval(a1);
             OrderKey k2 = (OrderKey) eval(a2);
             return compareMemberOrderKeysHierarchically(k1, k2);
@@ -3001,20 +2985,20 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Compares arrays of {@link Member}s so as to convert them into hierarchical
+     * Compares lists of {@link Member}s so as to convert them into hierarchical
      * order. Applies lexicographic order to the array.
      */
-    private static class HierarchizeArrayComparator extends ArrayComparator {
+    private static class HierarchizeTupleComparator extends TupleComparator {
         private final boolean post;
 
-        HierarchizeArrayComparator(int arity, boolean post) {
+        HierarchizeTupleComparator(int arity, boolean post) {
             super(arity);
             this.post = post;
         }
 
-        public int compare(Member[] a1, Member[] a2) {
+        public int compare(List<Member> a1, List<Member> a2) {
             for (int i = 0; i < arity; i++) {
-                Member m1 = a1[i], m2 = a2[i];
+                Member m1 = a1.get(i), m2 = a2.get(i);
                 int c = FunUtil.compareHierarchically(m1, m2, post);
                 if (c != 0) {
                     return c;
@@ -3036,21 +3020,6 @@ public class FunUtil extends Util {
         }
         public int compare(Member m1, Member m2) {
             return FunUtil.compareHierarchically(m1, m2, post);
-        }
-    }
-
-    /**
-     * Reverses the order of a {@link Comparator}.
-     */
-    private static class ReverseComparator<T> implements Comparator<T> {
-         Comparator<T> comparator;
-        ReverseComparator(Comparator<T> comparator) {
-            this.comparator = comparator;
-        }
-
-        public int compare(T o1, T o2) {
-            int c = comparator.compare(o1, o2);
-            return - c;
         }
     }
 

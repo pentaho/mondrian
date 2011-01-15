@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -53,7 +53,7 @@ public class NamedSetCurrentFunDef extends FunDefBase {
         final Exp arg0 = call.getArg(0);
         assert arg0 instanceof NamedSetExpr : "checked this in createCall";
         final NamedSetExpr namedSetExpr = (NamedSetExpr) arg0;
-        if (((SetType) arg0.getType()).getArity() == 1) {
+        if (arg0.getType().getArity() == 1) {
             return new AbstractMemberCalc(call, new Calc[0]) {
                 public Member evaluateMember(Evaluator evaluator) {
                     return namedSetExpr.getEval(evaluator).currentMember();
