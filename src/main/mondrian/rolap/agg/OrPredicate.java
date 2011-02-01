@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -88,24 +88,24 @@ public class OrPredicate extends ListPredicate {
         SqlQuery sqlQuery,
         Map<BitKey, List<StarPredicate>> predicateMap)
     {
-        BitKey inListRhsBitKey;
-        BitKey columnBitKey = getConstrainedColumnBitKey();
+        BitKey inListRHSBitKey;
+
         if (predicate instanceof ValueColumnPredicate) {
             // OR of column values from the same column
-            inListRhsBitKey =
+            inListRHSBitKey =
                 ((ValueColumnPredicate) predicate).checkInList(columnBitKey);
         } else if (predicate instanceof AndPredicate) {
             // OR of ANDs over a set of values over the same column set
-            inListRhsBitKey =
+            inListRHSBitKey =
                 ((AndPredicate) predicate).checkInList(sqlQuery, columnBitKey);
         } else {
-            inListRhsBitKey = columnBitKey.emptyCopy();
+            inListRHSBitKey = columnBitKey.emptyCopy();
         }
         List<StarPredicate> predicateGroup =
-            predicateMap.get(inListRhsBitKey);
+            predicateMap.get(inListRHSBitKey);
         if (predicateGroup == null) {
             predicateGroup = new ArrayList<StarPredicate> ();
-            predicateMap.put(inListRhsBitKey, predicateGroup);
+            predicateMap.put(inListRHSBitKey, predicateGroup);
         }
         predicateGroup.add(predicate);
     }
@@ -125,7 +125,7 @@ public class OrPredicate extends ListPredicate {
      *
      * @param sqlQuery Query
      * @param buf buffer to build sql
-     * @param inListRhsBitKey which column positions are included in
+     * @param inListRHSBitKey which column positions are included in
      *     the IN predicate; the non included positions corresponde to
      *     columns that are nulls
      * @param predicateList the list of predicates to translate.
@@ -133,7 +133,7 @@ public class OrPredicate extends ListPredicate {
     private void toInListSql(
         SqlQuery sqlQuery,
         StringBuilder buf,
-        BitKey inListRhsBitKey,
+        BitKey inListRHSBitKey,
         List<StarPredicate> predicateList)
     {
         // Make a col position to column map to aid search.
@@ -149,9 +149,7 @@ public class OrPredicate extends ListPredicate {
         // in the IN list
 
         boolean firstNullColumnPredicate = true;
-        for (Integer colPos
-            : getConstrainedColumnBitKey().andNot(inListRhsBitKey))
-        {
+        for (Integer colPos : columnBitKey.andNot(inListRHSBitKey)) {
             if (firstNullColumnPredicate) {
                 firstNullColumnPredicate = false;
             } else {
@@ -163,7 +161,7 @@ public class OrPredicate extends ListPredicate {
         }
 
         // Now the IN list part
-        if (inListRhsBitKey.isEmpty()) {
+        if (inListRHSBitKey.isEmpty()) {
             return;
         }
 
@@ -174,14 +172,14 @@ public class OrPredicate extends ListPredicate {
         }
 
         // First add the column names;
-        boolean multiInList = inListRhsBitKey.toBitSet().cardinality() > 1;
+        boolean multiInList = inListRHSBitKey.toBitSet().cardinality() > 1;
         if (multiInList) {
             // Multi-IN list
             buf.append("(");
         }
 
         boolean firstColumn = true;
-        for (Integer colPos : inListRhsBitKey) {
+        for (Integer colPos : inListRHSBitKey) {
             if (firstColumn) {
                 firstColumn = false;
             } else {
@@ -206,7 +204,7 @@ public class OrPredicate extends ListPredicate {
 
             if (predicate instanceof AndPredicate) {
                 ((AndPredicate) predicate).toInListSql(
-                    sqlQuery, buf, inListRhsBitKey);
+                    sqlQuery, buf, inListRHSBitKey);
             } else {
                 assert predicate instanceof ValueColumnPredicate;
                 ((ValueColumnPredicate) predicate).toInListSql(sqlQuery, buf);

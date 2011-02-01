@@ -32,7 +32,7 @@ where [Measures].[Unit Sales]
   <Properties>
     <PropertyList>
       <Catalog>FoodMart</Catalog>
-      <DataSourceInfo>FoodMart</DataSourceInfo>
+      <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
       <Format>Multidimensional</Format>
       <AxisFormat>TupleFormat</AxisFormat>
       <Content>Data</Content>
@@ -45,12 +45,16 @@ where [Measures].[Unit Sales]
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
         <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <OlapInfo>
                         <CubeInfo>
                             <Cube>
@@ -65,7 +69,8 @@ where [Measures].[Unit Sales]
                                     <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Customers].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Customers].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Customers].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -89,41 +94,41 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[All Customers]</UName>
-                                        <Caption>All Customers</Caption>
-                                        <LName>[Customers].[(All)]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
+                                    <UName>[Customers].[All Customers]</UName>
+                                    <Caption>All Customers</Caption>
+                                    <LName>[Customers].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA]</UName>
-                                        <Caption>USA</Caption>
-                                        <LName>[Customers].[Country]</LName>
-                                        <LNum>1</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[All Customers]</PARENT_UNIQUE_NAME>
+                                    <UName>[Customers].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Customers].[Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Customers].[All Customers]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA].[CA]</UName>
-                                        <Caption>CA</Caption>
-                                        <LName>[Customers].[State Province]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>65581</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Customers].[USA].[CA]</UName>
+                                    <Caption>CA</Caption>
+                                    <LName>[Customers].[State Province]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>65581</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA].[CA].[Beverly Hills]</UName>
-                                        <Caption>Beverly Hills</Caption>
-                                        <LName>[Customers].[City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>94</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Customers].[USA].[CA].[Beverly Hills]</UName>
+                                    <Caption>Beverly Hills</Caption>
+                                    <LName>[Customers].[City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>94</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Customers].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -132,11 +137,11 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
+                                    <UName>[Measures].[Unit Sales]</UName>
+                                    <Caption>Unit Sales</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -191,7 +196,7 @@ where [Measures].[Unit Sales]
                 <PropertyList>
                     <Format>Multidimensional</Format>
                     <AxisFormat>TupleFormat</AxisFormat>
-                    <DataSourceInfo>FoodMart</DataSourceInfo>
+                    <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
                     <LocaleIdentifier>2057</LocaleIdentifier>
                     <Catalog>FoodMart</Catalog>
                     <VisualMode>1</VisualMode>
@@ -204,15 +209,23 @@ where [Measures].[Unit Sales]
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
         <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:complexType name="MemberType">
                             <xsd:sequence>
                                 <xsd:element name="UName" type="xsd:string"/>
@@ -258,71 +271,112 @@ where [Measures].[Unit Sales]
                             <xsd:sequence>
                                 <xsd:element name="CubeInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:element maxOccurs="unbounded" name="Cube">
-                                                <xsd:complexType>
-                                                    <xsd:sequence>
-                                                        <xsd:element name="CubeName" type="xsd:string"/>
-                                                    </xsd:sequence>
-                                                </xsd:complexType>
-                                            </xsd:element>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="Cube">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    name="CubeName" type="xsd:string"/>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                                 <xsd:element name="AxesInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:element maxOccurs="unbounded" name="AxisInfo">
-                                                <xsd:complexType>
-                                                    <xsd:sequence>
-                                                        <xsd:element maxOccurs="unbounded" minOccurs="0" name="HierarchyInfo">
-                                                            <xsd:complexType>
-                                                                <xsd:sequence>
-                                                                    <xsd:sequence maxOccurs="unbounded">
-                                                                        <xsd:element name="UName" type="PropType"/>
-                                                                        <xsd:element name="Caption" type="PropType"/>
-                                                                        <xsd:element name="LName" type="PropType"/>
-                                                                        <xsd:element name="LNum" type="PropType"/>
-                                                                        <xsd:element maxOccurs="unbounded" minOccurs="0" name="DisplayInfo" type="PropType"/>
-                                                                    </xsd:sequence>
-                                                                    <xsd:sequence>
-                                                                        <xsd:any maxOccurs="unbounded" minOccurs="0" processContents="lax"/>
-                                                                    </xsd:sequence>
-                                                                </xsd:sequence>
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                            </xsd:complexType>
-                                                        </xsd:element>
-                                                    </xsd:sequence>
-                                                    <xsd:attribute name="name" type="xsd:string"/>
-                                                </xsd:complexType>
-                                            </xsd:element>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="AxisInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" name="HierarchyInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+
+                                    <xsd:sequence maxOccurs="unbounded">
+
+                                    <xsd:element
+                                    name="UName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="Caption" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LNum" type="PropType"/>
+
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0"
+                                    name="DisplayInfo" type="PropType"/>
+                                    </xsd:sequence>
+                                    <xsd:sequence>
+
+                                    <xsd:any
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
+
+                                    <xsd:attribute
+                                    name="name"
+                                    type="xsd:string" use="required"/>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="name" type="xsd:string"/>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                                 <xsd:element name="CellInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
-                                                <xsd:choice>
-                                                    <xsd:element name="Value" type="PropType"/>
-                                                    <xsd:element name="FmtValue" type="PropType"/>
-                                                    <xsd:element name="BackColor" type="PropType"/>
-                                                    <xsd:element name="ForeColor" type="PropType"/>
-                                                    <xsd:element name="FontName" type="PropType"/>
-                                                    <xsd:element name="FontSize" type="PropType"/>
-                                                    <xsd:element name="FontFlags" type="PropType"/>
-                                                    <xsd:element name="FormatString" type="PropType"/>
-                                                    <xsd:element name="NonEmptyBehavior" type="PropType"/>
-                                                    <xsd:element name="SolveOrder" type="PropType"/>
-                                                    <xsd:element name="Updateable" type="PropType"/>
-                                                    <xsd:element name="Visible" type="PropType"/>
-                                                    <xsd:element name="Expression" type="PropType"/>
-                                                </xsd:choice>
-                                            </xsd:sequence>
-                                            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
-                                                <xsd:any maxOccurs="unbounded" processContents="lax"/>
-                                            </xsd:sequence>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:choice>
+                                    <xsd:element
+                                    name="Value" type="PropType"/>
+                                    <xsd:element
+                                    name="FmtValue" type="PropType"/>
+                                    <xsd:element
+                                    name="BackColor" type="PropType"/>
+                                    <xsd:element
+                                    name="ForeColor" type="PropType"/>
+                                    <xsd:element
+                                    name="FontName" type="PropType"/>
+                                    <xsd:element
+                                    name="FontSize" type="PropType"/>
+                                    <xsd:element
+                                    name="FontFlags" type="PropType"/>
+                                    <xsd:element
+                                    name="FormatString" type="PropType"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="PropType"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="PropType"/>
+                                    <xsd:element
+                                    name="Updateable" type="PropType"/>
+                                    <xsd:element
+                                    name="Visible" type="PropType"/>
+                                    <xsd:element
+                                    name="Expression" type="PropType"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:any
+                                    maxOccurs="unbounded" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
@@ -331,38 +385,55 @@ where [Measures].[Unit Sales]
                             <xsd:sequence maxOccurs="unbounded">
                                 <xsd:element name="Axis">
                                     <xsd:complexType>
-                                        <xsd:choice maxOccurs="unbounded" minOccurs="0">
-                                            <xsd:element name="CrossProduct" type="CrossProductType"/>
-                                            <xsd:element name="Tuples" type="TuplesType"/>
-                                            <xsd:element name="Members" type="MembersType"/>
-                                        </xsd:choice>
-                                        <xsd:attribute name="name" type="xsd:string"/>
+                                    <xsd:choice
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:element
+                                    name="CrossProduct" type="CrossProductType"/>
+                                    <xsd:element name="Tuples" type="TuplesType"/>
+                                    <xsd:element name="Members" type="MembersType"/>
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="xsd:string"/>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
                         </xsd:complexType>
                         <xsd:complexType name="CellData">
                             <xsd:sequence>
-                                <xsd:element maxOccurs="unbounded" minOccurs="0" name="Cell">
+                                <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="Cell">
                                     <xsd:complexType>
-                                        <xsd:sequence maxOccurs="unbounded">
-                                            <xsd:choice>
-                                                <xsd:element name="Value"/>
-                                                <xsd:element name="FmtValue" type="xsd:string"/>
-                                                <xsd:element name="BackColor" type="xsd:unsignedInt"/>
-                                                <xsd:element name="ForeColor" type="xsd:unsignedInt"/>
-                                                <xsd:element name="FontName" type="xsd:string"/>
-                                                <xsd:element name="FontSize" type="xsd:unsignedShort"/>
-                                                <xsd:element name="FontFlags" type="xsd:unsignedInt"/>
-                                                <xsd:element name="FormatString" type="xsd:string"/>
-                                                <xsd:element name="NonEmptyBehavior" type="xsd:unsignedShort"/>
-                                                <xsd:element name="SolveOrder" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Updateable" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Visible" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Expression" type="xsd:string"/>
-                                            </xsd:choice>
-                                        </xsd:sequence>
-                                        <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/>
+                                    <xsd:sequence maxOccurs="unbounded">
+                                    <xsd:choice>
+                                    <xsd:element name="Value"/>
+                                    <xsd:element
+                                    name="FmtValue" type="xsd:string"/>
+                                    <xsd:element
+                                    name="BackColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="ForeColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FontName" type="xsd:string"/>
+                                    <xsd:element
+                                    name="FontSize" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="FontFlags" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FormatString" type="xsd:string"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Updateable" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Visible" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Expression" type="xsd:string"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="CellOrdinal"
+                                    type="xsd:unsignedInt" use="required"/>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
@@ -391,15 +462,16 @@ where [Measures].[Unit Sales]
                                     <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                    <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
-                                    <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
-                                    <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
-                                    <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <Store_x0020_Type name="[Store].[Store_x0020_Type]" type="xsd:string"/>
+                                    <Store_x0020_Manager name="[Store].[Store_x0020_Manager]" type="xsd:string"/>
+                                    <Store_x0020_Sqft name="[Store].[Store_x0020_Sqft]" type="xsd:string"/>
+                                    <Grocery_x0020_Sqft name="[Store].[Grocery_x0020_Sqft]" type="xsd:string"/>
+                                    <Frozen_x0020_Sqft name="[Store].[Frozen_x0020_Sqft]" type="xsd:string"/>
+                                    <Meat_x0020_Sqft name="[Store].[Meat_x0020_Sqft]" type="xsd:string"/>
+                                    <Has_x0020_coffee_x0020_bar name="[Store].[Has_x0020_coffee_x0020_bar]" type="xsd:string"/>
+                                    <Street_x0020_address name="[Store].[Street_x0020_address]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -428,127 +500,127 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[All Stores]</UName>
-                                        <Caption>All Stores</Caption>
-                                        <LName>[Store].[(All)]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
+                                    <UName>[Store].[All Stores]</UName>
+                                    <Caption>All Stores</Caption>
+                                    <LName>[Store].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA]</UName>
-                                        <Caption>USA</Caption>
-                                        <LName>[Store].[Store Country]</LName>
-                                        <LNum>1</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Store].[Store Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA]</UName>
-                                        <Caption>CA</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>65541</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[CA]</UName>
+                                    <Caption>CA</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>65541</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Beverly Hills]</UName>
-                                        <Caption>Beverly Hills</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[CA].[Beverly Hills]</UName>
+                                    <Caption>Beverly Hills</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>65537</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Beverly Hills].[Store 6]</UName>
-                                        <Caption>Store 6</Caption>
-                                        <LName>[Store].[Store Name]</LName>
-                                        <LNum>4</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Beverly Hills]</PARENT_UNIQUE_NAME>
-                                        <Store_x0020_Type>Gourmet Supermarket</Store_x0020_Type>
-                                        <Store_x0020_Manager>Maris</Store_x0020_Manager>
-                                        <Store_x0020_Sqft>23688</Store_x0020_Sqft>
-                                        <Grocery_x0020_Sqft>15337</Grocery_x0020_Sqft>
-                                        <Frozen_x0020_Sqft>5011</Frozen_x0020_Sqft>
-                                        <Meat_x0020_Sqft>3340</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>1</Has_x0020_coffee_x0020_bar>
-                                        <Street_x0020_address>5495 Mitchell Canyon Road</Street_x0020_address>
+                                    <UName>[Store].[USA].[CA].[Beverly Hills].[Store 6]</UName>
+                                    <Caption>Store 6</Caption>
+                                    <LName>[Store].[Store Name]</LName>
+                                    <LNum>4</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Beverly Hills]</PARENT_UNIQUE_NAME>
+                                    <Store_x0020_Type>Gourmet Supermarket</Store_x0020_Type>
+                                    <Store_x0020_Manager>Maris</Store_x0020_Manager>
+                                    <Store_x0020_Sqft>23688</Store_x0020_Sqft>
+                                    <Grocery_x0020_Sqft>15337</Grocery_x0020_Sqft>
+                                    <Frozen_x0020_Sqft>5011</Frozen_x0020_Sqft>
+                                    <Meat_x0020_Sqft>3340</Meat_x0020_Sqft>
+                                    <Has_x0020_coffee_x0020_bar>1</Has_x0020_coffee_x0020_bar>
+                                    <Street_x0020_address>5495 Mitchell Canyon Road</Street_x0020_address>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Los Angeles]</UName>
-                                        <Caption>Los Angeles</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[CA].[Los Angeles]</UName>
+                                    <Caption>Los Angeles</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>65537</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Los Angeles].[Store 7]</UName>
-                                        <Caption>Store 7</Caption>
-                                        <LName>[Store].[Store Name]</LName>
-                                        <LNum>4</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Los Angeles]</PARENT_UNIQUE_NAME>
-                                        <Store_x0020_Type>Supermarket</Store_x0020_Type>
-                                        <Store_x0020_Manager>White</Store_x0020_Manager>
-                                        <Store_x0020_Sqft>23598</Store_x0020_Sqft>
-                                        <Grocery_x0020_Sqft>14210</Grocery_x0020_Sqft>
-                                        <Frozen_x0020_Sqft>5633</Frozen_x0020_Sqft>
-                                        <Meat_x0020_Sqft>3755</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
-                                        <Street_x0020_address>1077 Wharf Drive</Street_x0020_address>
+                                    <UName>[Store].[USA].[CA].[Los Angeles].[Store 7]</UName>
+                                    <Caption>Store 7</Caption>
+                                    <LName>[Store].[Store Name]</LName>
+                                    <LNum>4</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Los Angeles]</PARENT_UNIQUE_NAME>
+                                    <Store_x0020_Type>Supermarket</Store_x0020_Type>
+                                    <Store_x0020_Manager>White</Store_x0020_Manager>
+                                    <Store_x0020_Sqft>23598</Store_x0020_Sqft>
+                                    <Grocery_x0020_Sqft>14210</Grocery_x0020_Sqft>
+                                    <Frozen_x0020_Sqft>5633</Frozen_x0020_Sqft>
+                                    <Meat_x0020_Sqft>3755</Meat_x0020_Sqft>
+                                    <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
+                                    <Street_x0020_address>1077 Wharf Drive</Street_x0020_address>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[San Diego]</UName>
-                                        <Caption>San Diego</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>1</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[CA].[San Diego]</UName>
+                                    <Caption>San Diego</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>1</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[San Francisco]</UName>
-                                        <Caption>San Francisco</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[CA].[San Francisco]</UName>
+                                    <Caption>San Francisco</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR]</UName>
-                                        <Caption>OR</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>2</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[OR]</UName>
+                                    <Caption>OR</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA]</UName>
-                                        <Caption>WA</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>131079</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA]</UName>
+                                    <Caption>WA</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>131079</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -557,18 +629,18 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Customer Count]</UName>
-                                        <Caption>Customer Count</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
+                                    <UName>[Measures].[Customer Count]</UName>
+                                    <Caption>Customer Count</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Gender">
-                                        <UName>[Gender].[M]</UName>
-                                        <Caption>M</Caption>
-                                        <LName>[Gender].[Gender]</LName>
-                                        <LNum>1</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
+                                    <UName>[Gender].[M]</UName>
+                                    <Caption>M</Caption>
+                                    <LName>[Gender].[Gender]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -576,37 +648,37 @@ where [Measures].[Unit Sales]
                     </Axes>
                     <CellData>
                         <Cell CellOrdinal="0">
-                            <Value xsi:type="xsd:int">2826</Value>
+                            <Value xsi:type="xsd:double">2826</Value>
                         </Cell>
                         <Cell CellOrdinal="1">
-                            <Value xsi:type="xsd:int">2826</Value>
+                            <Value xsi:type="xsd:double">2826</Value>
                         </Cell>
                         <Cell CellOrdinal="2">
-                            <Value xsi:type="xsd:int">1389</Value>
+                            <Value xsi:type="xsd:double">1389</Value>
                         </Cell>
                         <Cell CellOrdinal="3">
-                            <Value xsi:type="xsd:int">540</Value>
+                            <Value xsi:type="xsd:double">540</Value>
                         </Cell>
                         <Cell CellOrdinal="4">
-                            <Value xsi:type="xsd:int">540</Value>
+                            <Value xsi:type="xsd:double">540</Value>
                         </Cell>
                         <Cell CellOrdinal="5">
-                            <Value xsi:type="xsd:int">596</Value>
+                            <Value xsi:type="xsd:double">596</Value>
                         </Cell>
                         <Cell CellOrdinal="6">
-                            <Value xsi:type="xsd:int">596</Value>
+                            <Value xsi:type="xsd:double">596</Value>
                         </Cell>
                         <Cell CellOrdinal="7">
-                            <Value xsi:type="xsd:int">488</Value>
+                            <Value xsi:type="xsd:double">488</Value>
                         </Cell>
                         <Cell CellOrdinal="8">
-                            <Value xsi:type="xsd:int">150</Value>
+                            <Value xsi:type="xsd:double">150</Value>
                         </Cell>
                         <Cell CellOrdinal="9">
-                            <Value xsi:type="xsd:int">536</Value>
+                            <Value xsi:type="xsd:double">536</Value>
                         </Cell>
                         <Cell CellOrdinal="10">
-                            <Value xsi:type="xsd:int">901</Value>
+                            <Value xsi:type="xsd:double">901</Value>
                         </Cell>
                     </CellData>
                 </root>
@@ -638,7 +710,7 @@ where [Measures].[Unit Sales]
       <Properties>
         <PropertyList>
           <LocaleIdentifier>1033</LocaleIdentifier>
-          <DataSourceInfo>FoodMart</DataSourceInfo>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
           <Catalog>FoodMart</Catalog>
           <Format>Tabular</Format>
         </PropertyList>
@@ -650,19 +722,28 @@ where [Measures].[Unit Sales]
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
         <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
                             <xsd:complexType>
                                 <xsd:sequence>
-                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
                                 </xsd:sequence>
                             </xsd:complexType>
                         </xsd:element>
@@ -673,19 +754,41 @@ where [Measures].[Unit Sales]
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_NAME" sql:field="PROPERTY_NAME" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_CAPTION" sql:field="PROPERTY_CAPTION" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_TYPE" sql:field="PROPERTY_TYPE" type="xsd:short"/>
-                                <xsd:element name="DATA_TYPE" sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
-                                <xsd:element minOccurs="0" name="PROPERTY_CONTENT_TYPE" sql:field="PROPERTY_CONTENT_TYPE" type="xsd:short"/>
-                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="LEVEL_UNIQUE_NAME"
+                                    sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEMBER_UNIQUE_NAME"
+                                    sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_NAME"
+                                    sql:field="PROPERTY_NAME" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_CAPTION"
+                                    sql:field="PROPERTY_CAPTION" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_TYPE"
+                                    sql:field="PROPERTY_TYPE" type="xsd:short"/>
+                                <xsd:element name="DATA_TYPE"
+                                    sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0"
+                                    name="PROPERTY_CONTENT_TYPE"
+                                    sql:field="PROPERTY_CONTENT_TYPE" type="xsd:short"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -701,7 +804,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -715,7 +819,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -729,7 +834,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -743,7 +849,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -757,7 +864,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -771,7 +879,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -785,7 +894,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -799,7 +909,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store Hierarchy - Store
+                            Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -813,7 +924,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Marital Status Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Marital Status Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -827,7 +939,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Position Title Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Position Title Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -841,7 +954,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Gender Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Gender Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -855,7 +969,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Salary Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Salary Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -869,7 +984,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Education Level Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Education Level Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -883,7 +999,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Management Role Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Employees Hierarchy -
+                            Employee Id Level - Management Role Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -897,7 +1014,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -911,7 +1029,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -925,7 +1044,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -939,7 +1059,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -953,7 +1074,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -967,7 +1089,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -981,7 +1104,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -995,7 +1119,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1009,7 +1134,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Gender Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1023,7 +1149,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Marital Status Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1037,7 +1164,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Education Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1051,7 +1179,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Yearly Income Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1065,7 +1194,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1079,7 +1209,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1093,7 +1224,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1107,7 +1239,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1121,7 +1254,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1135,7 +1269,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1149,7 +1284,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1163,7 +1299,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1177,7 +1314,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Gender Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1191,7 +1329,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1205,7 +1344,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Education Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1219,7 +1359,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1233,7 +1374,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1247,7 +1389,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1261,7 +1404,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1275,7 +1419,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1289,7 +1434,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1303,7 +1449,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1317,7 +1464,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1331,7 +1479,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store Hierarchy -
+                            Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1345,7 +1494,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1359,7 +1509,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1373,7 +1524,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1387,7 +1539,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1401,7 +1554,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1415,7 +1569,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1429,7 +1584,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1443,7 +1599,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1457,7 +1614,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1471,7 +1629,9 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Marital
+                            Status Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1485,7 +1645,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1499,7 +1660,9 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Yearly
+                            Income Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1513,7 +1676,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1527,7 +1691,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1541,7 +1706,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1555,7 +1721,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1569,7 +1736,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1583,7 +1751,8 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1597,7 +1766,9 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>11</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Has coffee
+                            bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1611,7 +1782,9 @@ where [Measures].[Unit Sales]
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Street
+                            address Property</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>
@@ -1648,19 +1821,28 @@ where [Measures].[Unit Sales]
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
         <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
                             <xsd:complexType>
                                 <xsd:sequence>
-                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
                                 </xsd:sequence>
                             </xsd:complexType>
                         </xsd:element>
@@ -1671,19 +1853,41 @@ where [Measures].[Unit Sales]
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_NAME" sql:field="PROPERTY_NAME" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_CAPTION" sql:field="PROPERTY_CAPTION" type="xsd:string"/>
-                                <xsd:element name="PROPERTY_TYPE" sql:field="PROPERTY_TYPE" type="xsd:short"/>
-                                <xsd:element name="DATA_TYPE" sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
-                                <xsd:element minOccurs="0" name="PROPERTY_CONTENT_TYPE" sql:field="PROPERTY_CONTENT_TYPE" type="xsd:short"/>
-                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="LEVEL_UNIQUE_NAME"
+                                    sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="MEMBER_UNIQUE_NAME"
+                                    sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_NAME"
+                                    sql:field="PROPERTY_NAME" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_CAPTION"
+                                    sql:field="PROPERTY_CAPTION" type="xsd:string"/>
+                                <xsd:element name="PROPERTY_TYPE"
+                                    sql:field="PROPERTY_TYPE" type="xsd:short"/>
+                                <xsd:element name="DATA_TYPE"
+                                    sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0"
+                                    name="PROPERTY_CONTENT_TYPE"
+                                    sql:field="PROPERTY_CONTENT_TYPE" type="xsd:short"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -1810,7 +2014,7 @@ where [Measures].[Unit Sales]
                 <PropertyList>
                     <Format>Multidimensional</Format>
                     <AxisFormat>TupleFormat</AxisFormat>
-                    <DataSourceInfo>FoodMart</DataSourceInfo>
+                    <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
                     <LocaleIdentifier>2057</LocaleIdentifier>
                     <Catalog>FoodMart</Catalog>
                     <VisualMode>1</VisualMode>
@@ -1823,15 +2027,23 @@ where [Measures].[Unit Sales]
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header>
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
         <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:complexType name="MemberType">
                             <xsd:sequence>
                                 <xsd:element name="UName" type="xsd:string"/>
@@ -1877,71 +2089,112 @@ where [Measures].[Unit Sales]
                             <xsd:sequence>
                                 <xsd:element name="CubeInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:element maxOccurs="unbounded" name="Cube">
-                                                <xsd:complexType>
-                                                    <xsd:sequence>
-                                                        <xsd:element name="CubeName" type="xsd:string"/>
-                                                    </xsd:sequence>
-                                                </xsd:complexType>
-                                            </xsd:element>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="Cube">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    name="CubeName" type="xsd:string"/>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                                 <xsd:element name="AxesInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:element maxOccurs="unbounded" name="AxisInfo">
-                                                <xsd:complexType>
-                                                    <xsd:sequence>
-                                                        <xsd:element maxOccurs="unbounded" minOccurs="0" name="HierarchyInfo">
-                                                            <xsd:complexType>
-                                                                <xsd:sequence>
-                                                                    <xsd:sequence maxOccurs="unbounded">
-                                                                        <xsd:element name="UName" type="PropType"/>
-                                                                        <xsd:element name="Caption" type="PropType"/>
-                                                                        <xsd:element name="LName" type="PropType"/>
-                                                                        <xsd:element name="LNum" type="PropType"/>
-                                                                        <xsd:element maxOccurs="unbounded" minOccurs="0" name="DisplayInfo" type="PropType"/>
-                                                                    </xsd:sequence>
-                                                                    <xsd:sequence>
-                                                                        <xsd:any maxOccurs="unbounded" minOccurs="0" processContents="lax"/>
-                                                                    </xsd:sequence>
-                                                                </xsd:sequence>
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                            </xsd:complexType>
-                                                        </xsd:element>
-                                                    </xsd:sequence>
-                                                    <xsd:attribute name="name" type="xsd:string"/>
-                                                </xsd:complexType>
-                                            </xsd:element>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="AxisInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" name="HierarchyInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+
+                                    <xsd:sequence maxOccurs="unbounded">
+
+                                    <xsd:element
+                                    name="UName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="Caption" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LNum" type="PropType"/>
+
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0"
+                                    name="DisplayInfo" type="PropType"/>
+                                    </xsd:sequence>
+                                    <xsd:sequence>
+
+                                    <xsd:any
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
+
+                                    <xsd:attribute
+                                    name="name"
+                                    type="xsd:string" use="required"/>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="name" type="xsd:string"/>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                                 <xsd:element name="CellInfo">
                                     <xsd:complexType>
-                                        <xsd:sequence>
-                                            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
-                                                <xsd:choice>
-                                                    <xsd:element name="Value" type="PropType"/>
-                                                    <xsd:element name="FmtValue" type="PropType"/>
-                                                    <xsd:element name="BackColor" type="PropType"/>
-                                                    <xsd:element name="ForeColor" type="PropType"/>
-                                                    <xsd:element name="FontName" type="PropType"/>
-                                                    <xsd:element name="FontSize" type="PropType"/>
-                                                    <xsd:element name="FontFlags" type="PropType"/>
-                                                    <xsd:element name="FormatString" type="PropType"/>
-                                                    <xsd:element name="NonEmptyBehavior" type="PropType"/>
-                                                    <xsd:element name="SolveOrder" type="PropType"/>
-                                                    <xsd:element name="Updateable" type="PropType"/>
-                                                    <xsd:element name="Visible" type="PropType"/>
-                                                    <xsd:element name="Expression" type="PropType"/>
-                                                </xsd:choice>
-                                            </xsd:sequence>
-                                            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
-                                                <xsd:any maxOccurs="unbounded" processContents="lax"/>
-                                            </xsd:sequence>
-                                        </xsd:sequence>
+                                    <xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:choice>
+                                    <xsd:element
+                                    name="Value" type="PropType"/>
+                                    <xsd:element
+                                    name="FmtValue" type="PropType"/>
+                                    <xsd:element
+                                    name="BackColor" type="PropType"/>
+                                    <xsd:element
+                                    name="ForeColor" type="PropType"/>
+                                    <xsd:element
+                                    name="FontName" type="PropType"/>
+                                    <xsd:element
+                                    name="FontSize" type="PropType"/>
+                                    <xsd:element
+                                    name="FontFlags" type="PropType"/>
+                                    <xsd:element
+                                    name="FormatString" type="PropType"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="PropType"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="PropType"/>
+                                    <xsd:element
+                                    name="Updateable" type="PropType"/>
+                                    <xsd:element
+                                    name="Visible" type="PropType"/>
+                                    <xsd:element
+                                    name="Expression" type="PropType"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:any
+                                    maxOccurs="unbounded" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
@@ -1950,38 +2203,55 @@ where [Measures].[Unit Sales]
                             <xsd:sequence maxOccurs="unbounded">
                                 <xsd:element name="Axis">
                                     <xsd:complexType>
-                                        <xsd:choice maxOccurs="unbounded" minOccurs="0">
-                                            <xsd:element name="CrossProduct" type="CrossProductType"/>
-                                            <xsd:element name="Tuples" type="TuplesType"/>
-                                            <xsd:element name="Members" type="MembersType"/>
-                                        </xsd:choice>
-                                        <xsd:attribute name="name" type="xsd:string"/>
+                                    <xsd:choice
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:element
+                                    name="CrossProduct" type="CrossProductType"/>
+                                    <xsd:element name="Tuples" type="TuplesType"/>
+                                    <xsd:element name="Members" type="MembersType"/>
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="xsd:string"/>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
                         </xsd:complexType>
                         <xsd:complexType name="CellData">
                             <xsd:sequence>
-                                <xsd:element maxOccurs="unbounded" minOccurs="0" name="Cell">
+                                <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="Cell">
                                     <xsd:complexType>
-                                        <xsd:sequence maxOccurs="unbounded">
-                                            <xsd:choice>
-                                                <xsd:element name="Value"/>
-                                                <xsd:element name="FmtValue" type="xsd:string"/>
-                                                <xsd:element name="BackColor" type="xsd:unsignedInt"/>
-                                                <xsd:element name="ForeColor" type="xsd:unsignedInt"/>
-                                                <xsd:element name="FontName" type="xsd:string"/>
-                                                <xsd:element name="FontSize" type="xsd:unsignedShort"/>
-                                                <xsd:element name="FontFlags" type="xsd:unsignedInt"/>
-                                                <xsd:element name="FormatString" type="xsd:string"/>
-                                                <xsd:element name="NonEmptyBehavior" type="xsd:unsignedShort"/>
-                                                <xsd:element name="SolveOrder" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Updateable" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Visible" type="xsd:unsignedInt"/>
-                                                <xsd:element name="Expression" type="xsd:string"/>
-                                            </xsd:choice>
-                                        </xsd:sequence>
-                                        <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/>
+                                    <xsd:sequence maxOccurs="unbounded">
+                                    <xsd:choice>
+                                    <xsd:element name="Value"/>
+                                    <xsd:element
+                                    name="FmtValue" type="xsd:string"/>
+                                    <xsd:element
+                                    name="BackColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="ForeColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FontName" type="xsd:string"/>
+                                    <xsd:element
+                                    name="FontSize" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="FontFlags" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FormatString" type="xsd:string"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Updateable" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Visible" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Expression" type="xsd:string"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="CellOrdinal"
+                                    type="xsd:unsignedInt" use="required"/>
                                     </xsd:complexType>
                                 </xsd:element>
                             </xsd:sequence>
@@ -2027,11 +2297,11 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Unit Sales]</UName>
-                                        <Caption>Unit Sales</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
+                                    <UName>[Measures].[Unit Sales]</UName>
+                                    <Caption>Unit Sales</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -2068,7 +2338,7 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
   <Properties>
     <PropertyList>
       <Catalog>FoodMart</Catalog>
-      <DataSourceInfo>FoodMart</DataSourceInfo>
+      <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
       <Format>Multidimensional</Format>
       <AxisFormat>TupleFormat</AxisFormat>
       <Content>Data</Content>
@@ -2081,12 +2351,16 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
         </Resource>
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
-<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
         <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
-                <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <OlapInfo>
                         <CubeInfo>
                             <Cube>
@@ -2101,15 +2375,24 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                                     <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                    <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
-                                    <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
-                                    <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
-                                    <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
+                                    <PARENT_UNIQUE_NAME
+                                    name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <Store_x0020_Type
+                                    name="[Store].[Store_x0020_Type]" type="xsd:string"/>
+                                    <Store_x0020_Manager
+                                    name="[Store].[Store_x0020_Manager]" type="xsd:string"/>
+                                    <Store_x0020_Sqft
+                                    name="[Store].[Store_x0020_Sqft]" type="xsd:string"/>
+                                    <Grocery_x0020_Sqft
+                                    name="[Store].[Grocery_x0020_Sqft]" type="xsd:string"/>
+                                    <Frozen_x0020_Sqft
+                                    name="[Store].[Frozen_x0020_Sqft]" type="xsd:string"/>
+                                    <Meat_x0020_Sqft
+                                    name="[Store].[Meat_x0020_Sqft]" type="xsd:string"/>
+                                    <Has_x0020_coffee_x0020_bar
+                                    name="[Store].[Has_x0020_coffee_x0020_bar]" type="xsd:string"/>
+                                    <Street_x0020_address
+                                    name="[Store].[Street_x0020_address]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -2136,119 +2419,121 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[All Stores]</UName>
-                                        <Caption>All Stores</Caption>
-                                        <LName>[Store].[(All)]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
+                                    <UName>[Store].[All Stores]</UName>
+                                    <Caption>All Stores</Caption>
+                                    <LName>[Store].[(All)]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA]</UName>
-                                        <Caption>USA</Caption>
-                                        <LName>[Store].[Store Country]</LName>
-                                        <LNum>1</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA]</UName>
+                                    <Caption>USA</Caption>
+                                    <LName>[Store].[Store Country]</LName>
+                                    <LNum>1</LNum>
+                                    <DisplayInfo>65539</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR]</UName>
-                                        <Caption>OR</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>2</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[OR]</UName>
+                                    <Caption>OR</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>2</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA]</UName>
-                                        <Caption>WA</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>196615</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA]</UName>
+                                    <Caption>WA</Caption>
+                                    <LName>[Store].[Store State]</LName>
+                                    <LNum>2</LNum>
+                                    <DisplayInfo>196615</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Bremerton]</UName>
-                                        <Caption>Bremerton</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Bremerton]</UName>
+                                    <Caption>Bremerton</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>65537</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Bremerton].[Store 3]</UName>
-                                        <Caption>Store 3</Caption>
-                                        <LName>[Store].[Store Name]</LName>
-                                        <LNum>4</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA].[Bremerton]</PARENT_UNIQUE_NAME>
-                                        <Store_x0020_Type>Supermarket</Store_x0020_Type>
-                                        <Store_x0020_Manager>Davis</Store_x0020_Manager>
-                                        <Store_x0020_Sqft>39696</Store_x0020_Sqft>
-                                        <Grocery_x0020_Sqft>24390</Grocery_x0020_Sqft>
-                                        <Frozen_x0020_Sqft>9184</Frozen_x0020_Sqft>
-                                        <Meat_x0020_Sqft>6122</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
-                                        <Street_x0020_address>1501 Ramsey Circle</Street_x0020_address>
+
+                                    <UName>[Store].[USA].[WA].[Bremerton].[Store 3]</UName>
+                                    <Caption>Store 3</Caption>
+                                    <LName>[Store].[Store Name]</LName>
+                                    <LNum>4</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA].[Bremerton]</PARENT_UNIQUE_NAME>
+                                    <Store_x0020_Type>Supermarket</Store_x0020_Type>
+                                    <Store_x0020_Manager>Davis</Store_x0020_Manager>
+                                    <Store_x0020_Sqft>39696</Store_x0020_Sqft>
+                                    <Grocery_x0020_Sqft>24390</Grocery_x0020_Sqft>
+                                    <Frozen_x0020_Sqft>9184</Frozen_x0020_Sqft>
+                                    <Meat_x0020_Sqft>6122</Meat_x0020_Sqft>
+                                    <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
+                                    <Street_x0020_address>1501
+                                    Ramsey Circle</Street_x0020_address>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Seattle]</UName>
-                                        <Caption>Seattle</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>1</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Seattle]</UName>
+                                    <Caption>Seattle</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>1</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Spokane]</UName>
-                                        <Caption>Spokane</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Spokane]</UName>
+                                    <Caption>Spokane</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Tacoma]</UName>
-                                        <Caption>Tacoma</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Tacoma]</UName>
+                                    <Caption>Tacoma</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Walla Walla]</UName>
-                                        <Caption>Walla Walla</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Walla Walla]</UName>
+                                    <Caption>Walla Walla</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Yakima]</UName>
-                                        <Caption>Yakima</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
+                                    <UName>[Store].[USA].[WA].[Yakima]</UName>
+                                    <Caption>Yakima</Caption>
+                                    <LName>[Store].[Store City]</LName>
+                                    <LNum>3</LNum>
+                                    <DisplayInfo>131073</DisplayInfo>
+                                    <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -2257,11 +2542,11 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Measures">
-                                        <UName>[Measures].[Number of Employees]</UName>
-                                        <Caption>Number of Employees</Caption>
-                                        <LName>[Measures].[MeasuresLevel]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
+                                    <UName>[Measures].[Number of Employees]</UName>
+                                    <Caption>Number of Employees</Caption>
+                                    <LName>[Measures].[MeasuresLevel]</LName>
+                                    <LNum>0</LNum>
+                                    <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -2269,47 +2554,47 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                     </Axes>
                     <CellData>
                         <Cell CellOrdinal="0">
-                            <Value xsi:type="xsd:int">419</Value>
+                            <Value xsi:type="xsd:double">419</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="1">
-                            <Value xsi:type="xsd:int">419</Value>
+                            <Value xsi:type="xsd:double">419</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="2">
-                            <Value xsi:type="xsd:int">136</Value>
+                            <Value xsi:type="xsd:double">136</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="3">
-                            <Value xsi:type="xsd:int">283</Value>
+                            <Value xsi:type="xsd:double">283</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="4">
-                            <Value xsi:type="xsd:int">62</Value>
+                            <Value xsi:type="xsd:double">62</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="5">
-                            <Value xsi:type="xsd:int">62</Value>
+                            <Value xsi:type="xsd:double">62</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="6">
-                            <Value xsi:type="xsd:int">62</Value>
+                            <Value xsi:type="xsd:double">62</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="7">
-                            <Value xsi:type="xsd:int">62</Value>
+                            <Value xsi:type="xsd:double">62</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="8">
-                            <Value xsi:type="xsd:int">74</Value>
+                            <Value xsi:type="xsd:double">74</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="9">
-                            <Value xsi:type="xsd:int">4</Value>
+                            <Value xsi:type="xsd:double">4</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                         <Cell CellOrdinal="10">
-                            <Value xsi:type="xsd:int">19</Value>
+                            <Value xsi:type="xsd:double">19</Value>
                             <FormatString>#,#</FormatString>
                         </Cell>
                     </CellData>

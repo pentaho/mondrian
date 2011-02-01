@@ -12,9 +12,9 @@
 */
 package mondrian.test;
 
-import junit.framework.*;
+import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
 
-import junit.framework.Test;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
@@ -1330,38 +1330,6 @@ public class TestContext {
             i++;
         }
         return buf.toString();
-    }
-
-    /**
-     * Makes a copy of a suite, filtering certain tests.
-     *
-     * @param suite Test suite
-     * @param testPattern Regular expression of name of tests to include
-     * @return copy of test suite
-     */
-    public static TestSuite copySuite(
-        TestSuite suite,
-        Util.Functor1<Boolean, Test> testPattern)
-    {
-        TestSuite newSuite = new TestSuite(suite.getName());
-        //noinspection unchecked
-        for (Test test : Collections.list((Enumeration<Test>) suite.tests())) {
-            if (!testPattern.apply(test)) {
-                continue;
-            }
-            if (test instanceof TestCase) {
-                newSuite.addTest(test);
-            } else if (test instanceof TestSuite) {
-                TestSuite subSuite = copySuite((TestSuite) test, testPattern);
-                if (subSuite.countTestCases() > 0) {
-                    newSuite.addTest(subSuite);
-                }
-            } else {
-                // some other kind of test
-                newSuite.addTest(test);
-            }
-        }
-        return newSuite;
     }
 
     /**

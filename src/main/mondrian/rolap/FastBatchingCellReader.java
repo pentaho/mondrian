@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -393,9 +393,9 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public final void add(CellRequest request) {
-            final int limit = request.getNumValues();
-            for (int j = 0; j < limit; j++) {
-                valueSets[j].add(request.getValueAt(j));
+            final List<StarColumnPredicate> values = request.getValueList();
+            for (int j = 0; j < columns.length; j++) {
+                valueSets[j].add(values.get(j));
             }
             final RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {

@@ -12,10 +12,8 @@ package mondrian.olap4j;
 import org.olap4j.*;
 import org.olap4j.Cell;
 import org.olap4j.Position;
-
 import mondrian.olap.*;
 import mondrian.olap.Axis;
-import mondrian.rolap.RolapCell;
 
 import java.util.*;
 import java.sql.*;
@@ -79,11 +77,9 @@ abstract class MondrianOlap4jCellSet implements CellSet {
      * <p>This method may take some time. While it is executing, a client may
      * execute {@link MondrianOlap4jStatement#cancel()}.
      */
-    void execute() throws OlapException {
+    void execute() {
         query.setQueryTimeoutMillis(olap4jStatement.timeoutSeconds * 1000);
-        result =
-            olap4jStatement.olap4jConnection.getMondrianConnection().execute(
-                query);
+        result = olap4jStatement.olap4jConnection.connection.execute(query);
 
         // initialize axes
         mondrian.olap.Axis[] axes = result.getAxes();
@@ -160,9 +156,9 @@ abstract class MondrianOlap4jCellSet implements CellSet {
     }
 
     private Cell getCellInternal(int[] pos) {
-        RolapCell cell;
+        mondrian.olap.Cell cell;
         try {
-            cell = (RolapCell) result.getCell(pos);
+            cell = result.getCell(pos);
         } catch (MondrianException e) {
             if (e.getMessage().indexOf("coordinates out of range") >= 0) {
                 int[] dimensions = new int[getAxes().size()];
@@ -720,8 +716,8 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         throw new UnsupportedOperationException();
     }
 
-    public OlapStatement getStatement() {
-        return olap4jStatement;
+    public Statement getStatement() throws SQLException {
+        throw new UnsupportedOperationException();
     }
 
     public Object getObject(

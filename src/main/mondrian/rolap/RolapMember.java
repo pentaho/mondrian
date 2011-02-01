@@ -15,6 +15,10 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import org.apache.log4j.Logger;
+
+import java.util.*;
+
 /**
  * A <code>RolapMember</code> is a member of a {@link RolapHierarchy}. There are
  * sub-classes for {@link RolapStoredMeasure}, {@link RolapCalculatedMember}.
@@ -23,7 +27,7 @@ import mondrian.olap.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-public interface RolapMember extends Member, RolapCalculation {
+public interface RolapMember extends Member {
     Object getKey();
     RolapMember getParentMember();
     RolapHierarchy getHierarchy();

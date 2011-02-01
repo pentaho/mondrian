@@ -156,7 +156,7 @@ public class RolapEvaluator implements Evaluator {
         aggregationLists = null;
         for (RolapMember member : currentMembers) {
             if (member.isEvaluated()) {
-                addCalcMember(member);
+                addCalcMember(new RolapMemberCalculation(member));
             }
         }
 
@@ -312,7 +312,7 @@ public class RolapEvaluator implements Evaluator {
         return _push();
     }
 
-    public RolapEvaluator push(RolapTupleCalculation calc) {
+    public RolapEvaluator push(RolapCalculation calc) {
         RolapEvaluator evaluator = push();
         evaluator.addCalcMember(calc);
         return evaluator;
@@ -392,7 +392,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final Member setContext(Member member) {
-        final RolapMember m = (RolapMemberBase) member;
+        final RolapMember m = (RolapMember) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
 
@@ -404,7 +404,7 @@ public class RolapEvaluator implements Evaluator {
             return m;
         }
         if (previous.isEvaluated()) {
-            removeCalcMember(previous);
+            removeCalcMember(new RolapMemberCalculation(previous));
         }
         currentMembers[ordinal] = m;
         if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
@@ -412,7 +412,7 @@ public class RolapEvaluator implements Evaluator {
             root.nonAllPositionCount++;
         }
         if (m.isEvaluated()) {
-            addCalcMember(m);
+            addCalcMember(new RolapMemberCalculation(m));
         }
         nonAllMembers = null;
         return previous;
@@ -704,24 +704,30 @@ public class RolapEvaluator implements Evaluator {
 
     public final String format(Object o) {
         if (o == Util.nullValue) {
-            o = null;
-        }
-        if (o instanceof Throwable) {
+            Format format = getFormat();
+            return format.format(null);
+        } else if (o instanceof Throwable) {
             return "#ERR: " + o.toString();
+        } else if (o instanceof String) {
+            return (String) o;
+        } else {
+            Format format = getFormat();
+            return format.format(o);
         }
-        Format format = getFormat();
-        return format.format(o);
     }
 
     public final String format(Object o, String formatString) {
         if (o == Util.nullValue) {
-            o = null;
-        }
-        if (o instanceof Throwable) {
+            Format format = getFormat(formatString);
+            return format.format(null);
+        } else if (o instanceof Throwable) {
             return "#ERR: " + o.toString();
+        } else if (o instanceof String) {
+            return (String) o;
+        } else {
+            Format format = getFormat(formatString);
+            return format.format(o);
         }
-        Format format = getFormat(formatString);
-        return format.format(o);
     }
 
     /**
@@ -961,7 +967,7 @@ public class RolapEvaluator implements Evaluator {
     void removeCalcMember(RolapCalculation previous) {
         for (int i = 0; i < calcMemberCount; i++) {
             final RolapCalculation calcMember = calcMembers[i];
-            if (calcMember == previous) {
+            if (calcMember.equals(previous)) {
                 // overwrite this member with the end member
                 --calcMemberCount;
                 calcMembers[i] = calcMembers[calcMemberCount];

@@ -12,7 +12,6 @@ package mondrian.olap4j;
 import mondrian.rolap.RolapCell;
 
 import mondrian.rolap.SqlStatement;
-import org.apache.log4j.Logger;
 import org.olap4j.*;
 import org.olap4j.metadata.Property;
 
@@ -30,7 +29,7 @@ import java.util.*;
 class MondrianOlap4jCell implements Cell {
     private final int[] coordinates;
     private final MondrianOlap4jCellSet olap4jCellSet;
-    private final RolapCell cell;
+    private final mondrian.olap.Cell cell;
 
     /**
      * Creates a MondrianOlap4jCell.
@@ -42,7 +41,7 @@ class MondrianOlap4jCell implements Cell {
     MondrianOlap4jCell(
         int[] coordinates,
         MondrianOlap4jCellSet olap4jCellSet,
-        RolapCell cell)
+        mondrian.olap.Cell cell)
     {
         assert coordinates != null;
         assert olap4jCellSet != null;
@@ -116,7 +115,7 @@ class MondrianOlap4jCell implements Cell {
     }
 
     public ResultSet drillThrough() throws OlapException {
-        return drillThroughInternal(-1, -1, null, false, null, null);
+        return drillThroughInternal(-1, -1);
     }
 
     /**
@@ -128,32 +127,16 @@ class MondrianOlap4jCell implements Cell {
      * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
      * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
      *   start from beginning
-     * @param tabFields Comma-separated list of fields to return (deprecated)
-     * @param extendedContext   If true, add non-constraining columns to the
-     *                          query for levels below each current member.
-     *                          This additional context makes the drill-through
-     *                          queries easier for humans to understand.
-     * @param logger Logger. If not null and debug is enabled, log SQL here
-     * @param rowCountSlot Slot into which the number of fact rows is written
      * @return Result set
      * @throws OlapException on error
      */
     ResultSet drillThroughInternal(
         int maxRowCount,
-        int firstRowOrdinal,
-        String tabFields,
-        boolean extendedContext,
-        Logger logger,
-        int[] rowCountSlot)
-        throws OlapException
+        int firstRowOrdinal) throws OlapException
     {
-        if (rowCountSlot != null) {
-            rowCountSlot[0] = cell.getDrillThroughCount();
-        }
         final SqlStatement sqlStmt =
-            cell.drillThroughInternal(
-                maxRowCount, firstRowOrdinal, tabFields, extendedContext,
-                logger);
+            ((RolapCell) cell).drillThroughInternal(
+                maxRowCount, firstRowOrdinal, null, false, null);
         return sqlStmt.getWrappedResultSet();
     }
 
@@ -161,7 +144,6 @@ class MondrianOlap4jCell implements Cell {
         Object newValue,
         AllocationPolicy allocationPolicy,
         Object... allocationArgs)
-        throws OlapException
     {
         Scenario scenario =
             olap4jCellSet.olap4jStatement.olap4jConnection.getScenario();

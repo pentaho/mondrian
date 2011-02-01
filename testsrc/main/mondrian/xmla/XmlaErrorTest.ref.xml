@@ -739,11 +739,4 @@ FROM Sales
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="testJunk">
-        <Resource name="request">
-            <![CDATA[
-
-]]>
-        </Resource>
-    </TestCase>
 </Root>

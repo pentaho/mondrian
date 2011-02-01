@@ -284,24 +284,6 @@ public class SqlStatement {
         return runtimeException;
     }
 
-    private static Type getDecimalType(int precision, int scale)
-    {
-        if ((scale == 0 || scale == -127)
-            && (precision <= 9 || precision == 38))
-        {
-            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
-            // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
-            // Oracle for integers of unspecified precision, so let's be
-            // bold and assume that they can fit into an int.
-            //
-            // Oracle also seems to sometimes represent integers as
-            // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
-            return Type.INT;
-        } else {
-            return Type.DOUBLE;
-        }
-    }
-
     /**
      * Chooses the most appropriate type for accessing the values of a
      * column in a result set.
@@ -318,26 +300,37 @@ public class SqlStatement {
         throws SQLException
     {
         final int columnType = metaData.getColumnType(i + 1);
-        int precision;
-        int scale;
+        final int precision = metaData.getPrecision(i + 1);
+        final int scale = metaData.getScale(i + 1);
+        final String columnName = metaData.getColumnName(i + 1);
+        final String columnLabel = metaData.getColumnLabel(i + 1);
         switch (columnType) {
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BOOLEAN:
             return Type.INT;
         case Types.NUMERIC:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
             if (precision == 0 && scale == 0) {
                 // In Oracle, the NUMBER datatype with no precision or scale
                 // (not NUMBER(p) or NUMBER(p, s)) means floating point.
                 return Type.DOUBLE;
             }
-            return getDecimalType(precision, scale);
+            // else fall through
         case Types.DECIMAL:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
-            return getDecimalType(precision, scale);
+            if ((scale == 0 || scale == -127)
+                && (precision <= 9 || precision == 38))
+            {
+                // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
+                // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
+                // Oracle for integers of unspecified precision, so let's be
+                // bold and assume that they can fit into an int.
+                //
+                // Oracle also seems to sometimes represent integers as
+                // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
+                return Type.INT;
+            } else {
+                return Type.DOUBLE;
+            }
         case Types.DOUBLE:
         case Types.FLOAT:
             return Type.DOUBLE;

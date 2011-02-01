@@ -11,14 +11,13 @@ package mondrian.olap4j;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.olap.Member;
 import mondrian.rolap.*;
 
-import mondrian.xmla.XmlaHandler;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
-import org.olap4j.impl.*;
+import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.UnmodifiableArrayList;
 import org.olap4j.mdx.*;
 import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
@@ -29,8 +28,6 @@ import org.olap4j.type.DimensionType;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 
@@ -53,11 +50,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     /**
      * Underlying mondrian connection. Set on creation, cleared on close.
-     * Developers, please keep this member private. Access it via
-     * {@link #getMondrianConnection()} or {@link #getMondrianConnection2()},
-     * and these will throw if the connection has been closed.
      */
-    private RolapConnection mondrianConnection;
+    mondrian.olap.Connection connection;
 
     /**
      * Current schema.
@@ -66,20 +60,17 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     /**
      * Map from mondrian schema objects to olap4j schemas.
-     *
-     * <p>REVIEW: This assumes that a RolapSchema occurs at most once in a
-     * catalog. It is possible for a schema to be mapped more than once, with
-     * different names; the same RolapSchema object will be used.
      */
     final Map<mondrian.olap.Schema, MondrianOlap4jSchema> schemaMap =
         new HashMap<mondrian.olap.Schema, MondrianOlap4jSchema>();
 
     private final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
 
+    /**
+     * The name of the sole catalog.
+     */
+    static final String LOCALDB_CATALOG_NAME = "LOCALDB";
     private static final String CONNECT_STRING_PREFIX = "jdbc:mondrian:";
-
-    private static final String ENGINE_CONNECT_STRING_PREFIX =
-        "jdbc:mondrian:engine:";
 
     final Factory factory;
     final MondrianOlap4jDriver driver;
@@ -87,7 +78,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private String roleName;
     private boolean autoCommit;
     private boolean readOnly;
-    boolean preferList;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -95,6 +85,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
      * <p>This method is intentionally package-protected. The public API
      * uses the traditional JDBC {@link java.sql.DriverManager}.
      * See {@link mondrian.olap4j.MondrianOlap4jDriver} for more details.
+     *
+     * @pre acceptsURL(url)
      *
      * @param factory Factory
      * @param driver Driver
@@ -109,33 +101,24 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         Properties info)
         throws SQLException
     {
-        // Required for the logic below to work.
-        assert ENGINE_CONNECT_STRING_PREFIX.startsWith(CONNECT_STRING_PREFIX);
-
         this.factory = factory;
         this.driver = driver;
-        String x;
-        if (url.startsWith(ENGINE_CONNECT_STRING_PREFIX)) {
-            x = url.substring(ENGINE_CONNECT_STRING_PREFIX.length());
-        } else if (url.startsWith(CONNECT_STRING_PREFIX)) {
-            x = url.substring(CONNECT_STRING_PREFIX.length());
-        } else {
+        if (!acceptsURL(url)) {
             // This is not a URL we can handle.
             // DriverManager should not have invoked us.
             throw new AssertionError(
                 "does not start with '" + CONNECT_STRING_PREFIX + "'");
         }
+        String x = url.substring(CONNECT_STRING_PREFIX.length());
         Util.PropertyList list = Util.parseConnectString(x);
-        final Map<String, String> map = toMap(info);
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, String> entry : toMap(info).entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
-        this.mondrianConnection =
-            (RolapConnection) mondrian.olap.DriverManager
-                .getConnection(list, null);
+        this.connection =
+            mondrian.olap.DriverManager.getConnection(list, null);
         this.olap4jDatabaseMetaData =
-            factory.newDatabaseMetaData(this, mondrianConnection);
-        this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
+            factory.newDatabaseMetaData(this);
+        this.olap4jSchema = toOlap4j(connection.getSchema());
     }
 
     static boolean acceptsURL(String url) {
@@ -146,16 +129,16 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return new MondrianOlap4jStatement(this);
     }
 
-    public ScenarioImpl createScenario() throws OlapException {
-        return getMondrianConnection().createScenario();
+    public ScenarioImpl createScenario() {
+        return ((RolapConnection) connection).createScenario();
     }
 
-    public void setScenario(Scenario scenario) throws OlapException {
-        getMondrianConnection().setScenario(scenario);
+    public void setScenario(Scenario scenario) {
+        ((RolapConnection) connection).setScenario(scenario);
     }
 
-    public Scenario getScenario() throws OlapException {
-        return getMondrianConnection().getScenario();
+    public Scenario getScenario() {
+        return ((RolapConnection) connection).getScenario();
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -187,22 +170,21 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void close() throws SQLException {
-        if (mondrianConnection != null) {
-            RolapConnection c = mondrianConnection;
-            mondrianConnection = null;
+        if (connection != null) {
+            mondrian.olap.Connection c = connection;
+            connection = null;
             c.close();
         }
     }
 
     public boolean isClosed() throws SQLException {
-        return mondrianConnection == null;
+        return connection == null;
     }
 
     public OlapDatabaseMetaData getMetaData() {
         return olap4jDatabaseMetaData;
     }
 
-    @Deprecated
     public NamedList<Catalog> getCatalogs() {
         return olap4jDatabaseMetaData.getCatalogObjects();
     }
@@ -215,28 +197,16 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return readOnly;
     }
 
-    public void setCatalog(String catalogName) throws OlapException {
-        // ignore
-    }
-
-    public String getCatalog() throws OlapException {
-        return olap4jSchema.olap4jCatalog.name;
-    }
-
-    public void setDatabase(String databaseName) throws OlapException {
-        // ignore.
-    }
-
-    public String getDatabase() throws OlapException {
-        try {
-            ResultSet rs = getMetaData().getDatabases();
-            rs.first();
-            return rs.getString("DATA_SOURCE_NAME");
-        } catch (SQLException e) {
-            throw helper.createException(
-                "Error while querying for the current database name.",
-                e);
+    public void setCatalog(String catalog) throws SQLException {
+        if (catalog != null
+            && !catalog.equals(LOCALDB_CATALOG_NAME))
+        {
+            throw new UnsupportedOperationException();
         }
+    }
+
+    public String getCatalog() throws SQLException {
+        return LOCALDB_CATALOG_NAME;
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
@@ -357,18 +327,15 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public <T> T unwrap(Class<T> iface) throws SQLException {
         if (iface.isInstance(this)) {
             return iface.cast(this);
-        } else if (iface.isInstance(mondrianConnection)) {
-            return iface.cast(mondrianConnection);
-        }
-        if (iface == XmlaHandler.XmlaExtra.class) {
-            return iface.cast(MondrianOlap4jExtra.INSTANCE);
+        } else if (iface.isInstance(connection)) {
+            return iface.cast(connection);
         }
         throw helper.createException("does not implement '" + iface + "'");
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return iface.isInstance(this)
-            || iface.isInstance(mondrianConnection);
+            || iface.isInstance(connection);
     }
 
     // implement OlapConnection
@@ -392,7 +359,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         };
     }
 
-    @Deprecated
     public Schema getSchema() throws OlapException {
         return olap4jSchema;
     }
@@ -408,12 +374,17 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             dimension);
     }
 
-    synchronized MondrianOlap4jSchema toOlap4j(
-        mondrian.olap.Schema schema)
-    {
+    synchronized MondrianOlap4jSchema toOlap4j(mondrian.olap.Schema schema) {
         MondrianOlap4jSchema olap4jSchema = schemaMap.get(schema);
         if (olap4jSchema == null) {
-            throw new RuntimeException("schema not registered: " + schema);
+            final MondrianOlap4jCatalog olap4jCatalog =
+                (MondrianOlap4jCatalog) getCatalogs().get(LOCALDB_CATALOG_NAME);
+            olap4jSchema =
+                new MondrianOlap4jSchema(
+                    olap4jCatalog,
+                    schema.getSchemaReader(),
+                    schema);
+            schemaMap.put(schema, olap4jSchema);
         }
         return olap4jSchema;
     }
@@ -511,23 +482,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return types;
     }
 
-    NamedList<MondrianOlap4jMember> toOlap4j(
-        final List<Member> memberList)
-    {
-        return new AbstractNamedList<MondrianOlap4jMember>() {
-            protected String getName(MondrianOlap4jMember olap4jMember) {
-                return olap4jMember.getName();
-            }
-
-            public MondrianOlap4jMember get(int index) {
-                return toOlap4j(memberList.get(index));
-            }
-
-            public int size() {
-                return memberList.size();
-            }
-        };
-    }
     /**
      * Converts a Properties object to a Map with String keys and values.
      *
@@ -578,13 +532,12 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public void setRoleName(String roleName) throws OlapException {
         final Role role;
-        final RolapConnection connection1 = getMondrianConnection();
         if (roleName == null) {
-            role = ((RolapSchema) connection1.getSchema())
+            role = ((RolapSchema) this.connection.getSchema())
                 .getInternalConnection().getRole();
             assert role != null;
         } else {
-            role = connection1.getSchema().lookupRole(roleName);
+            role = this.connection.getSchema().lookupRole(roleName);
             if (role == null) {
                 throw helper.createException("Unknown role '" + roleName + "'");
             }
@@ -592,72 +545,16 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         // Remember the name of the role, because mondrian roles don't know
         // their own name.
         this.roleName = roleName;
-        connection1.setRole(role);
+        this.connection.setRole(role);
     }
 
     public String getRoleName() {
         return roleName;
     }
 
-    public List<String> getAvailableRoleNames() throws OlapException {
+    public List<String> getAvailableRoleNames() {
         return UnmodifiableArrayList.of(
-            ((RolapSchema) getMondrianConnection().getSchema()).roleNames());
-    }
-
-    public void setPreferList(boolean preferList) {
-        this.preferList = preferList;
-    }
-
-    /**
-     * Cop-out version of {@link #getMondrianConnection()} that doesn't throw
-     * a checked exception. For those situations where the olap4j API doesn't
-     * declare 'throws OlapException', but we need an open connection anyway.
-     * Use {@link #getMondrianConnection()} where possible.
-     *
-     * @return Mondrian connection
-     * @throws RuntimeException if connection is closed
-     */
-    RolapConnection getMondrianConnection2() throws RuntimeException {
-        try {
-            return getMondrianConnection();
-        } catch (OlapException e) {
-            // Demote from checked to unchecked exception.
-            throw new RuntimeException(e);
-        }
-    }
-
-    RolapConnection getMondrianConnection() throws OlapException {
-        final RolapConnection connection1 = mondrianConnection;
-        if (connection1 == null) {
-            throw helper.createException("Connection is closed.");
-        }
-        return connection1;
-    }
-
-    /**
-     * Returns an unmodifiable view of the specified list.  This method allows
-     * modules to provide users with "read-only" access to internal
-     * lists.  Query operations on the returned list "read through" to the
-     * specified list, and attempts to modify the returned list, whether
-     * direct or via its iterator, result in an
-     * <tt>UnsupportedOperationException</tt>.<p>
-     *
-     * The returned list will be serializable if the specified list
-     * is serializable. Similarly, the returned list will implement
-     * {@link RandomAccess} if the specified list does.
-     *
-     * <p>The equivalent of
-     * {@link java.util.Collections#unmodifiableList(java.util.List)}.
-     *
-     * @param  list the list for which an unmodifiable view is to be returned.
-     * @return an unmodifiable view of the specified list.
-     */
-    static <T> NamedList<T> unmodifiableNamedList(
-        final NamedList<? extends T> list)
-    {
-        return list instanceof RandomAccess
-        ? new UnmodifiableNamedRandomAccessList<T>(list)
-        : new UnmodifiableNamedList<T>(list);
+            ((RolapSchema) connection.getSchema()).roleNames());
     }
 
     // inner classes
@@ -754,7 +651,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 selectNode.unparse(new ParseTreeWriter(new PrintWriter(sw)));
                 String mdx = sw.toString();
                 Query query =
-                    connection.mondrianConnection
+                    connection.connection
                         .parseQuery(mdx);
                 query.resolve();
                 return connection.toOlap4j(query);
@@ -845,13 +742,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 if (literal.getCategory() == Category.Symbol) {
                     return LiteralNode.createSymbol(
                         null, (String) literal.getValue());
-                } else if (value instanceof Number) {
-                    Number number = (Number) value;
-                    BigDecimal bd = bigDecimalFor(number);
-                    mondrian.util.Bug.olap4jUpgrade(
-                        "Switch to LiteralNode.create(ParseRegion, BigDecimal)"
-                        + "when we next upgrade olap4j.");
-                    return LiteralNode.createNumeric(null, bd, false);
+                } else if (value instanceof Double) {
+                    return LiteralNode.create(null, (Double) value);
+                } else if (value instanceof Integer) {
+                    return LiteralNode.create(null, (Integer) value);
                 } else if (value instanceof String) {
                     return LiteralNode.createString(null, (String) value);
                 } else if (value == null) {
@@ -861,34 +755,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 }
             }
             throw Util.needToImplement(exp.getClass());
-        }
-
-        /**
-         * Converts a number to big decimal, non-lossy if possible.
-         *
-         * @param number Number
-         * @return BigDecimal
-         */
-        private static BigDecimal bigDecimalFor(Number number) {
-            if (number instanceof BigDecimal) {
-                return (BigDecimal) number;
-            } else if (number instanceof BigInteger) {
-                return new BigDecimal((BigInteger) number);
-            } else if (number instanceof Integer) {
-                return new BigDecimal((Integer) number);
-            } else if (number instanceof Double) {
-                return new BigDecimal((Double) number);
-            } else if (number instanceof Float) {
-                return new BigDecimal((Float) number);
-            } else if (number instanceof Long) {
-                return new BigDecimal((Long) number);
-            } else if (number instanceof Short) {
-                return new BigDecimal((Short) number);
-            } else if (number instanceof Byte) {
-                return new BigDecimal((Byte) number);
-            } else {
-                return new BigDecimal(number.doubleValue());
-            }
         }
 
         private ParseTreeNode toOlap4j(ResolvedFunCall call) {
@@ -952,142 +818,22 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         }
 
         private IdentifierNode toOlap4j(Id id) {
-            List<IdentifierSegment> list =
-                new ArrayList<IdentifierSegment>();
+            List<IdentifierNode.Segment> list =
+                new ArrayList<IdentifierNode.Segment>();
             for (Id.Segment segment : id.getSegments()) {
                 list.add(
-                    new NameSegment(
+                    new IdentifierNode.NameSegment(
                         null,
                         segment.name,
                         toOlap4j(segment.quoting)));
             }
             return new IdentifierNode(
                 list.toArray(
-                    new IdentifierSegment[list.size()]));
+                    new IdentifierNode.Segment[list.size()]));
         }
 
-        private Quoting toOlap4j(Id.Quoting quoting) {
-            return Quoting.valueOf(quoting.name());
-        }
-    }
-
-    private static class UnmodifiableNamedList<T> implements NamedList<T> {
-        private final NamedList<? extends T> list;
-
-        UnmodifiableNamedList(NamedList<? extends T> list) {
-            this.list = list;
-        }
-
-        public T get(String s) {
-            return list.get(s);
-        }
-
-        public int indexOfName(String s) {
-            return list.indexOfName(s);
-        }
-
-        public int size() {
-            return list.size();
-        }
-
-        public boolean isEmpty() {
-            return list.isEmpty();
-        }
-
-        public boolean contains(Object o) {
-            return list.contains(o);
-        }
-
-        public Iterator<T> iterator() {
-            return Collections.unmodifiableList(list).iterator();
-        }
-
-        public Object[] toArray() {
-            return list.toArray();
-        }
-
-        public <T2> T2[] toArray(T2[] a) {
-            //noinspection SuspiciousToArrayCall
-            return list.toArray(a);
-        }
-
-        public boolean add(T t) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean addAll(Collection<? extends T> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean addAll(int index, Collection<? extends T> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void clear() {
-            throw new UnsupportedOperationException();
-        }
-
-        public T get(int index) {
-            return list.get(index);
-        }
-
-        public T set(int index, T element) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void add(int index, T element) {
-            throw new UnsupportedOperationException();
-        }
-
-        public T remove(int index) {
-            throw new UnsupportedOperationException();
-        }
-
-        public int indexOf(Object o) {
-            return list.indexOf(0);
-        }
-
-        public int lastIndexOf(Object o) {
-            return list.lastIndexOf(o);
-        }
-
-        public ListIterator<T> listIterator() {
-            return Collections.unmodifiableList(list).listIterator();
-        }
-
-        public ListIterator<T> listIterator(int index) {
-            return Collections.unmodifiableList(list).listIterator(index);
-        }
-
-        public List<T> subList(int fromIndex, int toIndex) {
-            // TODO: NamedList.subList should return NamedList.
-            return Collections.unmodifiableList(
-                list.subList(fromIndex, toIndex));
-        }
-    }
-
-    private static class UnmodifiableNamedRandomAccessList<T>
-        extends UnmodifiableNamedList<T>
-        implements RandomAccess
-    {
-        UnmodifiableNamedRandomAccessList(NamedList<? extends T> list) {
-            super(list);
+        private IdentifierNode.Quoting toOlap4j(Id.Quoting quoting) {
+            return IdentifierNode.Quoting.valueOf(quoting.name());
         }
     }
 }

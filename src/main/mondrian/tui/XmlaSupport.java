@@ -10,15 +10,11 @@
 
 package mondrian.tui;
 
-import mondrian.server.StringRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
-import mondrian.util.LockBox;
 import mondrian.xmla.*;
-import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
-import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaServlet;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
@@ -33,9 +29,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import java.io.*;
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.StringReader;
+import java.io.BufferedReader;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,11 +59,11 @@ public class XmlaSupport {
     public static final String SOAP_PREFIX = XmlaConstants.SOAP_PREFIX;
 
     public static final String CATALOG_NAME = "FoodMart";
-    public static final String DATASOURCE_NAME = "FoodMart";
+    public static final String DATASOURCE_NAME = "MondrianFoodMart";
     public static final String DATASOURCE_DESCRIPTION =
             "Mondrian FoodMart data source";
     public static final String DATASOURCE_INFO =
-            "Provider=Mondrian;DataSource=" + CATALOG_NAME + ";";
+            "Provider=Mondrian;DataSource=MondrianFoodMart;";
 
     public static final Map<String, String> ENV;
 
@@ -276,7 +279,6 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
     {
         StringBuilder buf = new StringBuilder(500);
-        if (false) {
         buf.append("<?xml version=\"1.0\"?>");
         buf.append(nl);
         buf.append("<DataSources>");
@@ -328,62 +330,6 @@ public class XmlaSupport {
         buf.append(nl);
         buf.append("</DataSources>");
         buf.append(nl);
-        } else {
-            buf.append("<?xml version=\"1.0\"?>");
-            buf.append(nl);
-            buf.append("<DataSources>");
-            buf.append(nl);
-            buf.append("   <DataSource>");
-            buf.append(nl);
-            buf.append("       <DataSourceName>");
-            buf.append(DATASOURCE_NAME);
-            buf.append("</DataSourceName>");
-            buf.append(nl);
-            buf.append("       <DataSourceDescription>");
-            buf.append(DATASOURCE_DESCRIPTION);
-            buf.append("</DataSourceDescription>");
-            buf.append(nl);
-            buf.append("       <URL>http://localhost:8080/mondrian/xmla</URL>");
-            buf.append(nl);
-            buf.append("       <DataSourceInfo><![CDATA[");
-            buf.append(connectString);
-            buf.append("]]></DataSourceInfo>");
-            buf.append(nl);
-
-            buf.append("       <ProviderName>Mondrian</ProviderName>");
-            buf.append(nl);
-            buf.append("       <ProviderType>MDP</ProviderType>");
-            buf.append(nl);
-            buf.append(
-                "       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
-            buf.append(nl);
-            buf.append("       <Catalogs>");
-            for (Map.Entry<String, String> catalogNameUrl
-                : catalogNameUrls.entrySet())
-            {
-                String name = catalogNameUrl.getKey();
-                String url = catalogNameUrl.getValue();
-
-                buf.append(nl);
-                buf.append("           <Catalog name='");
-                buf.append(name);
-                buf.append("'>");
-                if (url != null) {
-                    buf.append("<Definition>");
-                    buf.append(url);
-                    buf.append("</Definition>");
-                }
-                buf.append("</Catalog>");
-            }
-
-            buf.append(nl);
-            buf.append("       </Catalogs>");
-            buf.append(nl);
-            buf.append("   </DataSource>");
-            buf.append(nl);
-            buf.append("</DataSources>");
-            buf.append(nl);
-        }
         String datasources = buf.toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
@@ -546,16 +492,16 @@ public class XmlaSupport {
         Document doc = XmlUtil.parse(bytes);
         return extractFaultNodesFromSoap(doc);
     }
-
     public static Node[] extractFaultNodesFromSoap(Document doc)
             throws SAXException, IOException {
         String xpath = getSoapFaultXPath();
 
-        String[][] nsArray = {
+        String[][] nsArray = new String[][] {
              { SOAP_PREFIX, XmlaConstants.NS_SOAP_ENV_1_1 },
         };
 
-        return extractNodes(doc, xpath, nsArray);
+        Node[] nodes = extractNodes(doc, xpath, nsArray);
+        return nodes;
     }
 
     public static Node[] extractHeaderAndBodyFromSoap(byte[] bytes)
@@ -563,18 +509,17 @@ public class XmlaSupport {
         Document doc = XmlUtil.parse(bytes);
         return extractHeaderAndBodyFromSoap(doc);
     }
-
     public static Node[] extractHeaderAndBodyFromSoap(Document doc)
             throws SAXException, IOException {
         String xpath = getSoapHeaderAndBodyXPath();
 
-        String[][] nsArray = {
+        String[][] nsArray = new String[][] {
              { SOAP_PREFIX, XmlaConstants.NS_SOAP_ENV_1_1 },
         };
 
-        return extractNodes(doc, xpath, nsArray);
+        Node[] nodes = extractNodes(doc, xpath, nsArray);
+        return nodes;
     }
-
     public static Document extractBodyFromSoap(Document doc)
             throws SAXException, IOException {
         String xpath = getSoapBodyXPath();
@@ -592,8 +537,8 @@ public class XmlaSupport {
      * Given a Document and an xpath/namespace-array pair, extract and return
      * the Nodes resulting from applying the xpath.
      *
-     * @throws SAXException on error
-     * @throws IOException on error
+     * @throws SAXException
+     * @throws IOException
      */
     public static Node[] extractNodes(
         Node node,
@@ -636,70 +581,87 @@ public class XmlaSupport {
     {
         String requestText = XmlaSupport.readFile(file);
         return processSoapXmla(
-            requestText, connectString, catalogNameUrls, cbClassName, null,
-            null);
+            requestText, connectString, catalogNameUrls, cbClassName);
     }
 
     public static byte[] processSoapXmla(
         Document doc,
         String connectString,
         Map<String, String> catalogNameUrls,
-        String cbClassName,
-        Role role,
-        Map<List<String>, WeakReference<Servlet>> servletCache)
+        String cbClassName)
         throws IOException, ServletException, SAXException
     {
         String requestText = XmlUtil.toString(doc, false);
         return processSoapXmla(
-            requestText, connectString, catalogNameUrls, cbClassName, role,
-            servletCache);
+            requestText, connectString, catalogNameUrls, cbClassName);
     }
 
     public static byte[] processSoapXmla(
         String requestText,
         String connectString,
         Map<String, String> catalogNameUrls,
-        String cbClassName,
-        Role role,
-        Map<List<String>, WeakReference<Servlet>> servletCache)
+        String cbClassName)
         throws IOException, ServletException, SAXException
     {
         // read soap file
-        String dataSourceText =
-            XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
-        Util.PropertyList propertyList = Util.parseConnectString(connectString);
-        String roleName =
-            propertyList.get(RolapConnectionProperties.Role.name());
+        File dsFile = null;
+        try {
+            // Create datasource file and put datasource xml into it.
+            // Mark it as delete on exit.
+            String dataSourceText =
+                XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
-        LockBox.Entry entry = null;
-        if (role != null) {
-            // We happen to know that the lock box is shared between servers.
-            // So we can create any old server; it doesn't need to pertain to
-            // this particular catalog.
-            final MondrianServer server = MondrianServer.forId(null);
+            dsFile = File.createTempFile("datasources", ".xml");
+            dsFile.deleteOnExit();
 
-            entry = server.getLockBox().register(role);
-            roleName = entry.getMoniker();
+            OutputStream out = new FileOutputStream(dsFile);
+            out.write(dataSourceText.getBytes());
+            out.flush();
+
+            // Glean the role for the request from the connect string. (Ideally,
+            // we would do the reverse: read the role from an HTTP param in the
+            // request, and modify the connect string accordingly.)
+            Util.PropertyList propertyList =
+                Util.parseConnectString(connectString);
+            String roleName =
+                propertyList.get(RolapConnectionProperties.Role.name());
+
+            byte[] reqBytes = requestText.getBytes();
+            // make request
+            MockHttpServletRequest req = new MockHttpServletRequest(reqBytes);
+            req.setMethod("POST");
+            req.setContentType("text/xml");
+            if (roleName != null) {
+                req.setUserInRole(roleName, true);
+            }
+
+            // make response
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            res.setCharacterEncoding("UTF-8");
+
+            // process
+            MockServletContext servletContext = new MockServletContext();
+            MockServletConfig servletConfig =
+                new MockServletConfig(servletContext);
+
+            servletConfig.addInitParameter(
+                XmlaServlet.PARAM_CALLBACKS, cbClassName);
+            servletConfig.addInitParameter(
+                XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
+            servletConfig.addInitParameter(
+                XmlaServlet.PARAM_DATASOURCES_CONFIG,
+                dsFile.toURL().toString());
+
+            Servlet servlet = new DefaultXmlaServlet();
+            servlet.init(servletConfig);
+            servlet.service(req, res);
+
+            return res.toByteArray();
+        } finally {
+            if (dsFile != null) {
+                dsFile.delete();
+            }
         }
-
-        byte[] reqBytes = requestText.getBytes();
-        MockHttpServletRequest req = new MockHttpServletRequest(reqBytes);
-        req.setMethod("POST");
-        req.setContentType("text/xml");
-        if (roleName != null) {
-            req.setUserInRole(roleName, true);
-        }
-        MockHttpServletResponse res = new MockHttpServletResponse();
-        res.setCharacterEncoding("UTF-8");
-        Servlet servlet = getServlet(cbClassName, dataSourceText, servletCache);
-        servlet.service(req, res);
-
-        // Even though it is not used, it is important that entry is in scope
-        // until after request has returned. Prevents role's lock box entry from
-        // being garbage collected.
-        Util.discard(entry);
-
-        return res.toByteArray();
     }
 
     public static Servlet makeServlet(
@@ -713,31 +675,19 @@ public class XmlaSupport {
         String dataSourceText =
             XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
-        return getServlet(cbClassName, dataSourceText, null);
-    }
+        File dsFile = File.createTempFile("datasources", ".xml");
 
-    private static Servlet getServlet(
-        String cbClassName,
-        String dataSourceText,
-        Map<List<String>, WeakReference<Servlet>> cache)
-        throws ServletException
-    {
-        if (cache != null) {
-            List<String> key =
-                Arrays.asList(
-                    cbClassName,
-                    dataSourceText);
-            final WeakReference<Servlet> servletRef = cache.get(key);
-            Servlet servlet;
-            if (servletRef != null) {
-                servlet = servletRef.get();
-                if (servlet != null) {
-                    return servlet;
-                }
-            }
-            servlet = getServlet(cbClassName, dataSourceText, null);
-            cache.put(key, new WeakReference<Servlet>(servlet));
-        }
+        //////////////////////////////////////////////////////////
+        // NOTE: this is ok for CmdRunner or JUnit testing but
+        // deleteOnExit is NOT good for production
+        //////////////////////////////////////////////////////////
+        dsFile.deleteOnExit();
+
+        OutputStream out = new FileOutputStream(dsFile);
+        out.write(dataSourceText.getBytes());
+        out.flush();
+
+        // process
         MockServletContext servletContext = new MockServletContext();
         MockServletConfig servletConfig = new MockServletConfig(servletContext);
         servletConfig.addInitParameter(
@@ -745,10 +695,11 @@ public class XmlaSupport {
         servletConfig.addInitParameter(
             XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
         servletConfig.addInitParameter(
-            XmlaServlet.PARAM_DATASOURCES_CONFIG,
-            "inline:" + dataSourceText);
+            XmlaServlet.PARAM_DATASOURCES_CONFIG, dsFile.toURL().toString());
+
         Servlet servlet = new DefaultXmlaServlet();
         servlet.init(servletConfig);
+
         return servlet;
     }
 
@@ -834,7 +785,7 @@ public class XmlaSupport {
         throws IOException, SAXException, XOMException
     {
         String requestText = XmlaSupport.readFile(file);
-        return processXmla(requestText, connectString, catalogNameUrls);
+        return processXmla(requestText, connectString, catalogNameUrls, role);
     }
 
     public static byte[] processXmla(
@@ -843,8 +794,27 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
         throws IOException, SAXException, XOMException
     {
+        return processXmla(requestText, connectString, catalogNameUrls, null);
+    }
+    public static byte[] processXmla(
+        String requestText,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role)
+        throws IOException, SAXException, XOMException
+    {
         Document requestDoc = XmlUtil.parseString(requestText);
-        return processXmla(requestDoc, connectString, catalogNameUrls, null);
+        return processXmla(requestDoc, connectString, catalogNameUrls, role);
+    }
+
+    public static byte[] processXmla(
+        Document requestDoc,
+        String connectString,
+        Map<String, String> catalogNameUrls)
+        throws IOException, XOMException
+    {
+        Element requestElem = requestDoc.getDocumentElement();
+        return processXmla(requestElem, connectString, catalogNameUrls, null);
     }
 
     public static byte[] processXmla(
@@ -857,6 +827,14 @@ public class XmlaSupport {
         Element requestElem = requestDoc.getDocumentElement();
         return processXmla(requestElem, connectString, catalogNameUrls, role);
     }
+    public static byte[] processXmla(
+        Element requestElem,
+        String connectString,
+        Map<String, String> catalogNameUrls)
+        throws IOException, XOMException
+    {
+        return processXmla(requestElem, connectString, catalogNameUrls, null);
+    }
 
     public static byte[] processXmla(
         Element requestElem,
@@ -866,28 +844,22 @@ public class XmlaSupport {
         throws IOException, XOMException
     {
         // make request
-        final MondrianServer server =
-            MondrianServer.createWithRepository(
-                new StringRepositoryContentFinder(
-                    getDataSourcesText(
-                        connectString, catalogNameUrls)),
-                getCatalogLocator());
-        final XmlaHandler handler =
-            new XmlaHandler(
-                (XmlaHandler.ConnectionFactory) server,
-                "xmla");
-
+        CatalogLocator cl = getCatalogLocator();
+        DataSourcesConfig.DataSources dataSources =
+            getDataSources(connectString, catalogNameUrls);
+        XmlaHandler handler = new XmlaHandler(dataSources, cl, "xmla");
         Util.PropertyList propertyList = Util.parseConnectString(connectString);
         String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
 
-        LockBox.Entry entry = null;
+        XmlaRequest request;
         if (role != null) {
-            entry = server.getLockBox().register(role);
-            roleName = entry.getMoniker();
+            request = new DefaultXmlaRequest(requestElem, role);
+        } else if (roleName != null) {
+            request = new DefaultXmlaRequest(requestElem, roleName);
+        } else {
+            request = new DefaultXmlaRequest(requestElem);
         }
-
-        XmlaRequest request = new DefaultXmlaRequest(requestElem, roleName);
 
         Enumeration.ResponseMimeType responseMimeType =
             Enumeration.ResponseMimeType.MAP.get(
@@ -903,11 +875,6 @@ public class XmlaSupport {
             new DefaultXmlaResponse(resBuf, "UTF-8", responseMimeType);
 
         handler.process(request, response);
-
-        // Even though it is not used, it is important that entry is in scope
-        // until after request has returned. Prevents role's lock box entry from
-        // being garbage collected.
-        Util.discard(entry);
 
         return resBuf.toByteArray();
     }

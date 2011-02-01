@@ -28,13 +28,12 @@ import java.util.*;
  */
 class RolapEvaluatorRoot {
     final Map<Object, Object> expResultCache = new HashMap<Object, Object>();
-    final Map<Object, Object> tmpExpResultCache =
-        new HashMap<Object, Object>();
+    final Map<Object, Object> tmpExpResultCache = new HashMap<Object, Object>();
     final RolapCube cube;
     final RolapConnection connection;
     final SchemaReader schemaReader;
-    final Map<CompiledExpKey, Calc> compiledExps =
-        new HashMap<CompiledExpKey, Calc>();
+    final Map<List<Object>, Calc> compiledExps =
+        new HashMap<List<Object>, Calc>();
     final Query query;
     private final Date queryStartTime;
     final Dialect currentDialect;
@@ -121,59 +120,13 @@ class RolapEvaluatorRoot {
         boolean scalar,
         ResultStyle resultStyle)
     {
-        CompiledExpKey key = new CompiledExpKey(exp, scalar, resultStyle);
+        List<Object> key = Arrays.asList(exp, scalar, resultStyle);
         Calc calc = compiledExps.get(key);
         if (calc == null) {
             calc = query.compileExpression(exp, scalar, resultStyle);
             compiledExps.put(key, calc);
         }
         return calc;
-    }
-
-    /**
-     * Just a simple key of Exp/scalar/resultStyle, used for keeping
-     * compiled expressions.  Previous to the introduction of this
-     * class, the key was a list constructed as Arrays.asList(exp, scalar,
-     * resultStyle) and having poorer performance on equals, hashCode,
-     * and construction.
-     */
-    private static class CompiledExpKey {
-        private final Exp exp;
-        private final boolean scalar;
-        private final ResultStyle resultStyle;
-        private int hashCode = Integer.MIN_VALUE;
-        private CompiledExpKey(
-                Exp exp,
-                boolean scalar,
-                ResultStyle resultStyle)
-        {
-            this.exp = exp;
-            this.scalar = scalar;
-            this.resultStyle = resultStyle;
-        }
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (!(other instanceof CompiledExpKey)) {
-                return false;
-            }
-            CompiledExpKey otherKey = (CompiledExpKey)other;
-            return (this.scalar == otherKey.scalar
-                    && this.resultStyle == otherKey.resultStyle
-                    && this.exp.equals(otherKey.exp));
-        }
-        public int hashCode() {
-            if (hashCode != Integer.MIN_VALUE) {
-                return hashCode;
-            } else {
-                int hash = 0;
-                hash = Util.hash(hash, scalar);
-                hash = Util.hash(hash, resultStyle);
-                this.hashCode = Util.hash(hash, exp);
-            }
-            return this.hashCode;
-        }
     }
 
     /**

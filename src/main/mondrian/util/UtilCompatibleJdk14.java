@@ -9,9 +9,11 @@
 */
 package mondrian.util;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 import java.math.BigDecimal;
 import java.lang.reflect.Method;
-import java.util.Random;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in
@@ -27,10 +29,6 @@ import java.util.Random;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk14 implements UtilCompatible {
-    private static String previousUuid = "";
-    private static final String UUID_BASE =
-        Long.toHexString(new Random().nextLong());
-
     /**
      * This generates a BigDecimal that can have a precision that does
      * not reflect the precision of the input double.
@@ -64,27 +62,6 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
         Method method, String annotationClassName, T defaultValue)
     {
         return defaultValue;
-    }
-
-    public String generateUuidString() {
-        return generateUuidStringStatic();
-    }
-
-    public static synchronized String generateUuidStringStatic() {
-        while (true) {
-            String uuid =
-                UUID_BASE
-                + Long.toHexString(System.currentTimeMillis());
-            if (!uuid.equals(previousUuid)) {
-                previousUuid = uuid;
-                return uuid;
-            }
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 }
 

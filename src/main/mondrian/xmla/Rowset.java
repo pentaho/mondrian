@@ -11,21 +11,17 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Util;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
-import org.olap4j.OlapConnection;
-import org.olap4j.metadata.Catalog;
+import mondrian.olap.Util;
 
 import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Base class for an XML for Analysis schema rowset. A concrete derived class
- * should implement {@link #populateImpl}, calling {@link #addRow} for each row.
+ * should implement {@link #populate}, calling {@link #addRow} for each row.
  *
  * @author jhyde
  * @see mondrian.xmla.RowsetDefinition
@@ -165,11 +161,10 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Writes the contents of this rowset as a series of SAX events.
      */
-    public final void unparse(XmlaResponse response)
-        throws XmlaException, SQLException
+    public final void unparse(XmlaResponse response) throws XmlaException
     {
         final List<Row> rows = new ArrayList<Row>();
-        populate(response, null, rows);
+        populate(response, rows);
         final Comparator<Row> comparator = rowsetDefinition.getComparator();
         if (comparator != null) {
             Collections.sort(rows, comparator);
@@ -185,45 +180,10 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Gathers the set of rows which match a given set of the criteria.
      */
-    public final void populate(
+    public abstract void populate(
         XmlaResponse response,
-        OlapConnection connection,
         List<Row> rows)
-        throws XmlaException
-    {
-        boolean ourConnection = false;
-        try {
-            if (needConnection() && connection == null) {
-                connection = handler.getConnection(request);
-                ourConnection = true;
-            }
-            populateImpl(response, connection, rows);
-        } catch (SQLException e) {
-            // TODO:
-            e.printStackTrace();
-        } finally {
-            if (connection != null && ourConnection) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-    protected boolean needConnection() {
-        return true;
-    }
-
-    /**
-     * Gathers the set of rows which match a given set of the criteria.
-     */
-    protected abstract void populateImpl(
-        XmlaResponse response,
-        OlapConnection connection,
-        List<Row> rows)
-        throws XmlaException, SQLException;
+        throws XmlaException;
 
     /**
      * Adds a {@link Row} to a result, provided that it meets the necessary
@@ -247,9 +207,7 @@ abstract class Rowset implements XmlaConstants {
      * @param row Row
      * @param response XMLA response writer
      */
-    protected void emit(Row row, XmlaResponse response)
-        throws XmlaException, SQLException
-    {
+    protected void emit(Row row, XmlaResponse response) throws XmlaException {
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
@@ -296,7 +254,7 @@ abstract class Rowset implements XmlaConstants {
             } else if (value instanceof Rowset) {
                 Rowset rowset = (Rowset) value;
                 final List<Row> rows = new ArrayList<Row>();
-                rowset.populate(response, null, rows);
+                rowset.populate(response, rows);
                 writer.startSequence(column.name, "row");
                 for (Row row1 : rows) {
                     rowset.emit(row1, response);
@@ -350,74 +308,43 @@ abstract class Rowset implements XmlaConstants {
     }
 
     /**
-     * Creates a condition functor based on the restrictions on a given metadata
-     * column specified in an XMLA request.
-     *
-     * <p>A condition is a {@link mondrian.olap.Util.Functor1} whose return
-     * type is boolean.
-     *
-     * Restrictions are used in each Rowset's discovery request. If there is no
-     * restriction then the passes method always returns true.
-     *
-     * <p>It is known at the beginning of a
-     * {@link Rowset#populate(XmlaResponse, org.olap4j.OlapConnection, java.util.List)}
-     * method whether the restriction is not specified (null), a single value
-     * (String) or an array of values (String[]). So, creating the conditions
-     * just once at the beginning is faster than having to determine the
-     * restriction status each time it is needed.
-     *
-     * @param column Metadata column
-     * @param <E> Element type, e.g. {@link org.olap4j.metadata.Catalog} or
-     *     {@link org.olap4j.metadata.Level}
-     * @return Condition functor
+     * Extensions to this abstract class implement a restriction test
+     * for each Rowset's discovery request. If there is no restriction
+     * then the passes method always returns true.
+     * Since whether the restriction is not specified (null), a single
+     * value (String) or an array of values (String[]) is known at
+     * the beginning of a Rowset's populate() method, creating these
+     * just once at the beginning is faster than having to determine
+     * the restriction status each time it is needed.
      */
-    <E> Util.Functor1<Boolean, E> makeCondition(
-        RowsetDefinition.Column column)
-    {
-        return makeCondition(
-            Util.<E>identityFunctor(),
-            column);
+    static abstract class RestrictionTest {
+        public abstract boolean passes(Object value);
     }
 
-    /**
-     * Creates a condition functor using an accessor.
-     *
-     * <p>The accessor gets a particular property of the element in question
-     * for the column restrictions to act upon.
-     *
-     * @param getter Attribute accessor
-     * @param column Metadata column
-     * @param <E> Element type, e.g. {@link org.olap4j.metadata.Catalog} or
-     *     {@link org.olap4j.metadata.Level}
-     * @param <V> Value type; often {@link String}, since many restrictions
-     *     work on the name or unique name of elements
-     * @return Condition functor
-     */
-    <E, V> Util.Functor1<Boolean, E> makeCondition(
-        final Util.Functor1<V, ? super E> getter,
-        RowsetDefinition.Column column)
-    {
+    RestrictionTest getRestrictionTest(RowsetDefinition.Column column) {
         final Object restriction = restrictions.get(column.name);
 
         if (restriction == null) {
-            return Util.trueFunctor();
+            return new RestrictionTest() {
+                public boolean passes(Object value) {
+                    return true;
+                }
+            };
         } else if (restriction instanceof XmlaUtil.Wildcard) {
             XmlaUtil.Wildcard wildcard = (XmlaUtil.Wildcard) restriction;
             String regexp =
                 Util.wildcardToRegexp(
                     Collections.singletonList(wildcard.pattern));
             final Matcher matcher = Pattern.compile(regexp).matcher("");
-            return new Util.Functor1<Boolean, E>() {
-                public Boolean apply(E element) {
-                    V value = getter.apply(element);
+            return new RestrictionTest() {
+                public boolean passes(Object value) {
                     return matcher.reset(String.valueOf(value)).matches();
                 }
             };
         } else if (restriction instanceof List) {
-            final List<V> requiredValues = (List) restriction;
-            return new Util.Functor1<Boolean, E>() {
-                public Boolean apply(E element) {
-                    V value = getter.apply(element);
+            final List<String> requiredValues = (List<String>) restriction;
+            return new RestrictionTest() {
+                public boolean passes(Object value) {
                     return requiredValues.contains(value);
                 }
             };
@@ -475,21 +402,6 @@ abstract class Rowset implements XmlaConstants {
         return (restrictions.get(column.name) != null);
     }
 
-    protected Util.Functor1<Boolean, Catalog> catNameCond() {
-        Map<String, String> properties = request.getProperties();
-        final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name());
-        if (catalogName != null) {
-            return new Util.Functor1<Boolean, Catalog>() {
-                public Boolean apply(Catalog catalog) {
-                    return catalog.getName().equals(catalogName);
-                }
-            };
-        } else {
-            return Util.trueFunctor();
-        }
-    }
-
     /**
      * A set of name/value pairs, which can be output using
      * {@link Rowset#addRow}. This uses less memory than simply
@@ -528,6 +440,10 @@ abstract class Rowset implements XmlaConstants {
         private final Object[] attributes;
         private final String text;
         private final XmlElement[] children;
+
+        XmlElement(String tag, Object[] attributes) {
+            this(tag, attributes, null, null);
+        }
 
         XmlElement(String tag, Object[] attributes, String text) {
             this(tag, attributes, text, null);

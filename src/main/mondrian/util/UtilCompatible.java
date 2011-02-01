@@ -37,8 +37,6 @@ public interface UtilCompatible {
 
     <T> T getAnnotation(
         Method method, String annotationClassName, T defaultValue);
-
-    String generateUuidString();
 }
 
 // End UtilCompatible.java

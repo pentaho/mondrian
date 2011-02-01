@@ -9,14 +9,15 @@
 */
 package mondrian.olap4j;
 
-import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import org.olap4j.*;
+import org.olap4j.Cell;
 import org.olap4j.mdx.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,24 +52,9 @@ class MondrianOlap4jStatement implements OlapStatement {
     // implement Statement
 
     public ResultSet executeQuery(String mdx) throws SQLException {
-        return executeQuery2(mdx, false, null, null);
-    }
-
-    ResultSet executeQuery2(
-        String mdx,
-        boolean advanced,
-        String tabFields,
-        int[] rowCountSlot) throws SQLException
-    {
-        if (advanced) {
-            // REVIEW: I removed 'executeDrillThroughAdvanced' in the cleanup.
-            // Do we still need it?
-            throw new UnsupportedOperationException();
-        }
         QueryPart parseTree;
         try {
-            parseTree =
-                olap4jConnection.getMondrianConnection().parseStatement(mdx);
+            parseTree = olap4jConnection.connection.parseStatement(mdx);
         } catch (MondrianException e) {
             throw olap4jConnection.helper.createException(
                 "mondrian gave exception while parsing query", e);
@@ -79,20 +65,14 @@ class MondrianOlap4jStatement implements OlapStatement {
                 + "query, or execute using the executeOlapQuery method.");
         }
         DrillThrough drillThrough = (DrillThrough) parseTree;
-        final Query query = drillThrough.getQuery();
-        query.setResultStyle(ResultStyle.LIST);
-        CellSet cellSet = executeOlapQueryInternal(query);
+        CellSet cellSet = executeOlapQueryInternal(drillThrough.getQuery());
         final List<Integer> coords = Collections.nCopies(
             cellSet.getAxes().size(), 0);
         final MondrianOlap4jCell cell =
             (MondrianOlap4jCell) cellSet.getCell(coords);
         return cell.drillThroughInternal(
             drillThrough.getMaxRowCount(),
-            drillThrough.getFirstRowOrdinal(),
-            null,
-            true,
-            null,
-            rowCountSlot);
+            drillThrough.getFirstRowOrdinal());
     }
 
     private void checkOpen() throws SQLException {
@@ -171,13 +151,7 @@ class MondrianOlap4jStatement implements OlapStatement {
     }
 
     public ResultSet getResultSet() throws SQLException {
-        // NOTE: cell set becomes visible in this member while
-        // executeOlapQueryInternal is still in progress, and before it has
-        // finished executing. Its internal state may not be ready for API
-        // calls. JDBC never claims to be thread-safe! (Except for calls to the
-        // cancel method.) It is not possible to synchronize, because it would
-        // block 'cancel'.
-        return openCellSet;
+        throw new UnsupportedOperationException();
     }
 
     public int getUpdateCount() throws SQLException {
@@ -224,8 +198,8 @@ class MondrianOlap4jStatement implements OlapStatement {
         throw new UnsupportedOperationException();
     }
 
-    public OlapConnection getConnection() {
-        return olap4jConnection;
+    public Connection getConnection() throws SQLException {
+        throw new UnsupportedOperationException();
     }
 
     public boolean getMoreResults(int current) throws SQLException {
@@ -307,7 +281,7 @@ class MondrianOlap4jStatement implements OlapStatement {
     public CellSet executeOlapQuery(String mdx) throws OlapException {
         Query query;
         try {
-            query = olap4jConnection.getMondrianConnection().parseQuery(mdx);
+            query = olap4jConnection.connection.parseQuery(mdx);
         } catch (MondrianException e) {
             throw olap4jConnection.helper.createException(
                 "mondrian gave exception while parsing query", e);
@@ -338,9 +312,6 @@ class MondrianOlap4jStatement implements OlapStatement {
                 }
             }
 
-            if (olap4jConnection.preferList) {
-                query.setResultStyle(ResultStyle.LIST);
-            }
             openCellSet = olap4jConnection.factory.newCellSet(this, query);
         }
         // Release the monitor before executing, to give another thread the

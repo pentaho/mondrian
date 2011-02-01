@@ -935,7 +935,10 @@ RME is this right
 
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
-            RolapMember parentMember2 = RolapUtil.strip(parentMember);
+            RolapMember parentMember2 =
+                parentMember instanceof RolapCubeMember
+                    ? ((RolapCubeMember) parentMember).getRolapMember()
+                    : parentMember;
             while (resultSet.next()) {
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
@@ -991,14 +994,8 @@ RME is this right
         int columnOffset)
         throws SQLException
     {
-        final RolapLevel rolapChildLevel;
-        if (childLevel instanceof RolapCubeLevel) {
-            rolapChildLevel = ((RolapCubeLevel) childLevel).getRolapLevel();
-        } else {
-            rolapChildLevel = childLevel;
-        }
         RolapMemberBase member =
-            new RolapMemberBase(parentMember, rolapChildLevel, value);
+            new RolapMemberBase(parentMember, childLevel, value);
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             member.setOrdinal(lastOrdinal++);
         }
@@ -1011,12 +1008,14 @@ RME is this right
             // and all of the children. The children and the data member belong
             // to the parent member; the data member does not have any
             // children.
-            member =
+            final RolapParentChildMember parentChildMember =
                 childLevel.hasClosedPeer()
                 ? new RolapParentChildMember(
-                    parentMember, rolapChildLevel, value, member)
+                    parentMember, childLevel, value, member)
                 : new RolapParentChildMemberNoClosure(
-                    parentMember, rolapChildLevel, value, member);
+                    parentMember, childLevel, value, member);
+
+            member = parentChildMember;
         }
         Property[] properties = childLevel.getProperties();
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();

@@ -637,7 +637,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         assertQueryThrows(
             "select [Time].Members\n"
             + "from [Warehouse and Sales]",
-            "Syntax error at line 2, column 1, token 'from'");
+            "Syntax error at line 2, column 2, token 'FROM'");
     }
 
     public void testNamingDimensionAttr() {
@@ -1456,13 +1456,20 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "[SameName].[SameName].[SameName]",
             member.getUniqueName());
 
-        testContext.assertQueryThrows(
-            "select {"
-            + (MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "[SameName].[SameName].[SameName]"
-                : "[SameName].[SameName]")
-            + "} on 0 from Sales",
-            "Mondrian Error:No function matches signature '{<Level>}'");
+        try {
+            if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+                testContext.executeQuery(
+                    "select {[SameName].[SameName].[SameName]} on 0 from Sales");
+            } else {
+                testContext.executeQuery(
+                    "select {[SameName].[SameName]} on 0 from Sales");
+            }
+            fail();
+        } catch (Exception e) {
+            assertEquals(
+                "Mondrian Error:No function matches signature '{<Level>}'",
+                e.getCause().getCause().getMessage());
+        }
 
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
             testContext.assertQueryReturns(

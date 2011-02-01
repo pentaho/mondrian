@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1074,9 +1074,8 @@ public class UdfTest extends FoodMartTestCase {
             // Note: must call Argument.evaluateList. If we call
             // Argument.evaluate we may get an Iterable.
             List<?> list = args[0].evaluateList(eval);
-            // We do need to copy before we reverse. The list is not guaranteed
+            // We do not need to copy before we reverse. The list is guaranteed
             // to be mutable.
-            list = new ArrayList(list);
             Collections.reverse(list);
             return list;
         }

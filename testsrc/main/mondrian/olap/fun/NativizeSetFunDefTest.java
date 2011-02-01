@@ -1076,8 +1076,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             "with member [Marital Status].[_Nativized_Member_Marital Status_Marital Status_] as '[Marital Status].DefaultMember'\n"
             + "  set [_Nativized_Set_Marital Status_Marital Status_] as "
             + "'{[Marital Status].[_Nativized_Member_Marital Status_Marital Status_]}'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010'\n"
+            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
+            + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010.0'\n"
             + "select NativizeSet(Crossjoin({[Gender].[M], [Gender].[F]}, "
             + "{[_Nativized_Set_Marital Status_Marital Status_]})) ON COLUMNS\n"
             + "from [Sales]\n");
@@ -1104,11 +1104,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  set [_Nativized_Set_Customers_Name_] as '{[Customers].[_Nativized_Member_Customers_Name_]}'\n"
             + "  member [Product].[_Nativized_Member_Product_Product Name_] as '[Product].DefaultMember'\n"
             + "  set [_Nativized_Set_Product_Product Name_] as '{[Product].[_Nativized_Member_Product_Product Name_]}'\n"
-            + "  member [Education Level].[_Nativized_Sentinel_Education Level_(All)_] as '101010'\n"
-            + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "  member [Product].[_Nativized_Sentinel_Product_(All)_] as '101010'\n"
-            + "  member [Customers].[_Nativized_Sentinel_Customers_(All)_] as '101010'\n"
+            + "  member [Education Level].[_Nativized_Sentinel_Education Level_(All)_] as '101010.0'\n"
+            + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010.0'\n"
+            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
+            + "  member [Product].[_Nativized_Sentinel_Product_(All)_] as '101010.0'\n"
+            + "  member [Customers].[_Nativized_Sentinel_Customers_(All)_] as '101010.0'\n"
             + "select {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON COLUMNS,\n"
             + "  NativizeSet([COG_OQP_INT_s4]) DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON ROWS\n"
             + "from [Sales]\n");
@@ -1138,9 +1138,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + " FROM [Sales]  CELL PROPERTIES VALUE, FORMAT_STRING",
             "with member [Product].[COG_OQP_INT_umg1] as "
             + "'IIf(([Measures].CurrentMember IS [Measures].[Unit Sales]), ([Product].[COG_OQP_INT_m2], [Measures].[Unit Sales]), "
-            + "Aggregate({[Product].[Product Name].Members}))', SOLVE_ORDER = 4\n"
+            + "Aggregate({[Product].[Product Name].Members}))', SOLVE_ORDER = 4.0\n"
             + "  member [Product].[COG_OQP_INT_m2] as "
-            + "'Aggregate({[Product].[Product Name].Members}, [Measures].[Unit Sales])', SOLVE_ORDER = 4\n"
+            + "'Aggregate({[Product].[Product Name].Members}, [Measures].[Unit Sales])', SOLVE_ORDER = 4.0\n"
             + "  set [COG_OQP_INT_s5] as 'Crossjoin({[Marital Status].[S]}, [COG_OQP_INT_s4])'\n"
             + "  set [COG_OQP_INT_s4] as 'Crossjoin({[Gender].[F]}, [COG_OQP_INT_s2])'\n"
             + "  set [COG_OQP_INT_s3] as 'Crossjoin({[Gender].[F]}, {[COG_OQP_INT_s2], [COG_OQP_INT_s1]})'\n"
@@ -1148,10 +1148,10 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  set [COG_OQP_INT_s1] as 'Crossjoin({[Product].[COG_OQP_INT_umg1]}, {[Customers].DefaultMember})'\n"
             + "select {[Measures].[Unit Sales]} DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON COLUMNS,\n"
             + "  NativizeSet(Generate({[Education Level].[Graduate Degree]}, "
-            + "Crossjoin(Head({[Education Level].CurrentMember}, IIf((Count([COG_OQP_INT_s5], INCLUDEEMPTY) > 0), 1, 0)), "
+            + "Crossjoin(Head({[Education Level].CurrentMember}, IIf((Count([COG_OQP_INT_s5], INCLUDEEMPTY) > 0.0), 1.0, 0.0)), "
             + "Generate({[Marital Status].[S]}, "
             + "Crossjoin(Head({[Marital Status].CurrentMember}, "
-            + "IIf((Count([COG_OQP_INT_s4], INCLUDEEMPTY) > 0), 1, 0)), [COG_OQP_INT_s3]), ALL)), ALL)) "
+            + "IIf((Count([COG_OQP_INT_s4], INCLUDEEMPTY) > 0.0), 1.0, 0.0)), [COG_OQP_INT_s3]), ALL)), ALL)) "
             + "DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON ROWS\n"
             + "from [Sales]\n");
     }
@@ -1196,8 +1196,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "from sales",
             "with member [Time].[_Nativized_Member_Time_Weekly_Week_] as '[Time].DefaultMember'\n"
             + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[_Nativized_Member_Time_Weekly_Week_]}'\n"
-            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
+            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010.0'\n"
+            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
             + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
@@ -1260,9 +1260,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "{[Measures].[Unit Sales]} on 1 FROM [Sales]",
             "with member [Gender].[_Nativized_Member_Gender_Gender_] as '[Gender].DefaultMember'\n"
             + "  set [_Nativized_Set_Gender_Gender_] as '{[Gender].[_Nativized_Member_Gender_Gender_]}'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
+            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010.0'\n"
             + "select NON EMPTY NativizeSet(Crossjoin([_Nativized_Set_Gender_Gender_], "
-            + "TopCount({[Marital Status].[Marital Status].Members}, 1, [Measures].[Unit Sales]))) ON COLUMNS,\n"
+            + "TopCount({[Marital Status].[Marital Status].Members}, 1.0, [Measures].[Unit Sales]))) ON COLUMNS,\n"
             + "  NON EMPTY {[Measures].[Unit Sales]} ON ROWS\n"
             + "from [Sales]\n");
     }

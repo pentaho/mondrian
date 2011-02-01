@@ -15,13 +15,9 @@
 */
 
 import java_cup.runtime.*;
-
 import java.util.*;
-import java.math.BigDecimal;
-
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
-import mondrian.parser.MdxParserValidator;
 
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
@@ -29,10 +25,9 @@ parser code {:
     // Generated from $Id$
     private Scanner scanner;
     private String queryString;
-    Connection mdxConnection;
+    private Connection mdxConnection;
     private FunTable funTable;
-    boolean strictValidation;
-    MdxParserValidator.QueryPartFactory factory;
+    private boolean strictValidation;
 
     /**
       * Recursively parses an expression.
@@ -40,15 +35,14 @@ parser code {:
     Exp recursivelyParseExp(String s)
     {
         return new Parser().parseExpression(
-            factory, mdxConnection, s, false, funTable);
+            mdxConnection, s, false, funTable);
     }
 
     /**
       * Parses a string to create a {@link Query}.
       * Called only by {@link ConnectionBase#parseQuery}.
       */
-    public QueryPart parseInternal(
-        MdxParserValidator.QueryPartFactory factory,
+    QueryPart parseInternal(
         Connection mdxConnection,
         String queryString,
         boolean debug,
@@ -56,7 +50,6 @@ parser code {:
         boolean strictValidation)
     {
         Symbol parse_tree;
-        this.factory = factory;
         this.scanner = new StringScanner(queryString, debug);
         this.mdxConnection = mdxConnection;
         this.queryString = queryString;
@@ -85,14 +78,12 @@ parser code {:
       * Parses a string to create an {@link Exp}.
       * Called only by {@link ConnectionBase#parseExpression}.
       */
-    public Exp parseExpression(
-        MdxParserValidator.QueryPartFactory factory,
+    Exp parseExpression(
         Connection mdxConnection,
         String queryString,
         boolean debug,
         FunTable funTable)
     {
-        this.factory = factory;
         Symbol parse_tree = null;
         this.scanner = new PrefixScanner(
             debug,
@@ -152,38 +143,36 @@ parser code {:
         }
     }
 
-    public static class FactoryImpl
-        implements MdxParserValidator.QueryPartFactory
+    /**
+     * Creates a {@link Query} object.
+     * Override this function to make your kind of query.
+     */
+    protected Query makeQuery(
+        Formula[] formulae, QueryAxis[] axes,
+        String cube, Exp slicer, QueryPart[] cellProps)
     {
-        public Query makeQuery(
-            Connection connection,
-            Formula[] formulae,
-            QueryAxis[] axes,
-            String cube,
-            Exp slicer,
-            QueryPart[] cellProps,
-            boolean strictValidation)
-        {
-            final QueryAxis slicerAxis =
-                slicer == null
-                    ? null
-                    : new QueryAxis(
-                        false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
-                        QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
-            return new Query(
-                connection, formulae, axes, cube, slicerAxis, cellProps,
-                strictValidation);
-        }
+        final QueryAxis slicerAxis =
+            slicer == null
+                ? null
+                : new QueryAxis(
+                    false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
+                    QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
+        return new Query(
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps,
+            strictValidation);
+    }
 
-        public DrillThrough makeDrillThrough(
-            Query query,
-            int maxRowCount,
-            int firstRowOrdinal,
-            List<Exp> returnList)
-        {
-            return new DrillThrough(
-                query, maxRowCount, firstRowOrdinal, returnList);
-        }
+    /**
+     * Creates a {@link DrillThrough} object.
+     */
+    protected DrillThrough makeDrillThrough(
+        Query query,
+        int maxRowCount,
+        int firstRowOrdinal,
+        List<Exp> returnList)
+    {
+        return new DrillThrough(
+            query, maxRowCount, firstRowOrdinal, returnList);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,
@@ -373,7 +362,7 @@ terminal
     SOLIDUS;                    // /
 
 // c. Typed terminals
-terminal BigDecimal NUMBER;
+terminal Double NUMBER;
 terminal String ID;
 terminal String QUOTED_ID;
 terminal String AMP_QUOTED_ID;
@@ -462,7 +451,7 @@ non terminal List
 non terminal Exp[]
     when_clause;
 
-non terminal BigDecimal
+non terminal Double
     axis_number;
 
 non terminal Number
@@ -1375,14 +1364,12 @@ select_statement ::=
             // We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
             // yet.
             String cubeName = c.getElement(0).name;
-            RESULT = parser.factory.makeQuery(
-                parser.mdxConnection,
+            RESULT = parser.makeQuery(
                 Parser.toFormulaArray(f),
                 Parser.toQueryAxisArray(a),
                 cubeName,
                 w,
-                Parser.toQueryPartArray(cp),
-                parser.strictValidation);
+                Parser.toQueryPartArray(cp));
         :};
 
 with_formula_specification_opt ::=
@@ -1542,7 +1529,7 @@ axis_specification ::=
         :}
     |   non_empty_opt:b expression:s dim_props_opt:dp ON axis_number:n {:
             double d = n.doubleValue();
-            int index = n.intValue();
+            int index = (int)d;
 
             // AxisOrdinal values go from -2 to 4 for standard axis, but higher
             // ordinals are allowed. The negative values represent
@@ -1675,7 +1662,7 @@ cell_property ::= compound_id;
 drillthrough_statement ::=
         DRILLTHROUGH maxrows_opt:m firstrowset_opt:f select_statement:s
         return_opt:r {:
-            RESULT = parser.factory.makeDrillThrough(
+            RESULT = parser.makeDrillThrough(
                 s,
                 m == null ? 0 : m.intValue(),
                 f == null ? 0 : f.intValue(),

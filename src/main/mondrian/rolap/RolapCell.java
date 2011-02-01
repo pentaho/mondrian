@@ -221,7 +221,10 @@ public class RolapCell implements Cell {
         if (!member.isCalculated()) {
             return;
         }
-        member = RolapUtil.strip((RolapMember) member);
+        if (member instanceof RolapCubeMember) {
+            RolapCubeMember rolapCubeMember = (RolapCubeMember) member;
+            member = rolapCubeMember.getRolapMember();
+        }
         // if "cm" is a calc member defined by
         // "with member cm as m" then
         // "cm" is equivalent to "m"

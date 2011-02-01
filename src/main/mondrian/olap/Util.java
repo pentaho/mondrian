@@ -34,7 +34,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
 
-import org.olap4j.mdx.*;
+import org.olap4j.mdx.IdentifierNode;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -74,8 +74,8 @@ public class Util extends XOMUtil {
     /**
      * Whether we are running a version of Java before 1.5.
      *
-     * <p>If (but not only if) this variable is true, {@link #Retrowoven} will
-     * also be true.
+     * <p>If this variable is true, we will be running retroweaver. Retroweaver
+     * has some problems involving {@link java.util.EnumSet}.
      */
     public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
@@ -90,9 +90,7 @@ public class Util extends XOMUtil {
 
     /**
      * Whether the code base has re-engineered using retroweaver.
-     * If this is the case, some functionality is not available, but a lot of
-     * things are available via {@link mondrian.util.UtilCompatible}.
-     * Retroweaver has some problems involving {@link java.util.EnumSet}.
+     * If this is the case, some functionality is not available.
      */
     public static final boolean Retrowoven =
         Access.class.getSuperclass().getName().equals(
@@ -748,25 +746,15 @@ public class Util extends XOMUtil {
                     nameParts.subList(0, nameParts.size() - 1);
                 final String propertyName =
                     nameParts.get(nameParts.size() - 1).name;
-                final Member member =
-                    (Member) schemaReaderSansAc.lookupCompound(
+                olapElement =
+                    schemaReaderSansAc.lookupCompound(
                         cube, namePartsButOne, false, Category.Member);
-                if (member != null
-                    && isValidProperty(propertyName, member.getLevel()))
+                if (olapElement != null
+                    && isValidProperty((Member) olapElement, propertyName))
                 {
                     return new UnresolvedFunCall(
                         propertyName, Syntax.Property, new Exp[] {
-                            createExpr(member)});
-                }
-                final Level level =
-                    (Level) schemaReaderSansAc.lookupCompound(
-                        cube, namePartsButOne, false, Category.Level);
-                if (level != null
-                    && isValidProperty(propertyName, level))
-                {
-                    return new UnresolvedFunCall(
-                        propertyName, Syntax.Property, new Exp[] {
-                            createExpr(level)});
+                            createExpr(olapElement)});
                 }
             }
             // if we're in the middle of loading the schema, the property has
@@ -1061,27 +1049,27 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Returns whether a property is valid for a member of a given level.
-     * It is valid if the property is defined at the level or at
+     * Returns whether a property is valid for a given member.
+     * It is valid if the property is defined at the member's level or at
      * an ancestor level, or if the property is a standard property such as
      * "FORMATTED_VALUE".
      *
+     * @param member Member
      * @param propertyName Property name
-     * @param level Level
      * @return Whether property is valid
      */
     public static boolean isValidProperty(
-        String propertyName,
-        Level level)
+        Member member,
+        String propertyName)
     {
-        return lookupProperty(level, propertyName) != null;
+        return lookupProperty(member.getLevel(), propertyName) != null;
     }
 
     /**
      * Finds a member property called <code>propertyName</code> at, or above,
      * <code>level</code>.
      */
-    public static Property lookupProperty(
+    protected static Property lookupProperty(
         Level level,
         String propertyName)
     {
@@ -1170,7 +1158,7 @@ public class Util extends XOMUtil {
      */
     public static String maskVersion(String str) {
         MondrianServer.MondrianVersion mondrianVersion =
-            MondrianServer.forId(null).getVersion();
+            MondrianServer.forConnection(null).getVersion();
         String versionString = mondrianVersion.getVersionString();
         return replace(str, versionString, "${mondrianVersion}");
     }
@@ -1472,10 +1460,10 @@ public class Util extends XOMUtil {
      * @return List of mondrian segments
      */
     public static List<Id.Segment> convert(
-        List<IdentifierSegment> olap4jSegmentList)
+        List<IdentifierNode.Segment> olap4jSegmentList)
     {
         final List<Id.Segment> list = new ArrayList<Id.Segment>();
-        for (IdentifierSegment olap4jSegment : olap4jSegmentList) {
+        for (IdentifierNode.Segment olap4jSegment : olap4jSegmentList) {
             list.add(convert(olap4jSegment));
         }
         return list;
@@ -1487,13 +1475,13 @@ public class Util extends XOMUtil {
      * @param olap4jSegment olap4j segment
      * @return mondrian segment
      */
-    public static Id.Segment convert(IdentifierSegment olap4jSegment) {
-        if (olap4jSegment instanceof NameSegment) {
-            NameSegment nameSegment =
-                (NameSegment) olap4jSegment;
+    public static Id.Segment convert(IdentifierNode.Segment olap4jSegment) {
+        if (olap4jSegment instanceof IdentifierNode.NameSegment) {
+            IdentifierNode.NameSegment nameSegment =
+                (IdentifierNode.NameSegment) olap4jSegment;
             return new Id.Segment(
                 nameSegment.getName(),
-                nameSegment.getQuoting() == Quoting.QUOTED
+                nameSegment.getQuoting() == IdentifierNode.Quoting.QUOTED
                     ? Id.Quoting.QUOTED
                     : Id.Quoting.UNQUOTED);
         } else {
@@ -1501,124 +1489,13 @@ public class Util extends XOMUtil {
             // 1. Mondrian assumes that the key has only one part
             // 2. Mondrian does not specify whether key is quoted (e.g. &[foo]
             //    vs. &foo)
-            final KeySegment keySegment =
-                (KeySegment) olap4jSegment;
+            final IdentifierNode.KeySegment keySegment =
+                (IdentifierNode.KeySegment) olap4jSegment;
             assert keySegment.getKeyParts().size() == 1 : keySegment;
             return new Id.Segment(
                 keySegment.getKeyParts().get(0).getName(),
                 Id.Quoting.KEY);
         }
-    }
-
-    /**
-     * Applies a collection of filters to an iterable.
-     *
-     * @param iterable Iterable
-     * @param conds Zero or more conditions
-     * @param <T>
-     * @return Iterable that returns only members of underlying iterable for
-     *     for which all conditions evaluate to true
-     */
-    public static <T> Iterable<T> filter(
-        final Iterable<T> iterable,
-        final Functor1<Boolean, T>... conds)
-    {
-        final Functor1<Boolean, T>[] conds2 = optimizeConditions(conds);
-        if (conds2.length == 0) {
-            return iterable;
-        }
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    final Iterator<T> iterator = iterable.iterator();
-                    T next;
-                    boolean hasNext = moveToNext();
-
-                    private boolean moveToNext() {
-                        outer:
-                        while (iterator.hasNext()) {
-                            next = iterator.next();
-                            for (Functor1<Boolean, T> cond : conds2) {
-                                if (!cond.apply(next)) {
-                                    continue outer;
-                                }
-                            }
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    public boolean hasNext() {
-                        return hasNext;
-                    }
-
-                    public T next() {
-                        T t = next;
-                        hasNext = moveToNext();
-                        return t;
-                    }
-
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-        };
-    }
-
-    private static <T> Functor1<Boolean, T>[] optimizeConditions(
-        Functor1<Boolean, T>[] conds)
-    {
-        final List<Functor1<Boolean, T>> functor1List =
-            new ArrayList<Functor1<Boolean, T>>(Arrays.asList(conds));
-        for (Iterator<Functor1<Boolean, T>> funcIter =
-            functor1List.iterator(); funcIter.hasNext();)
-        {
-            Functor1<Boolean, T> booleanTFunctor1 = funcIter.next();
-            if (booleanTFunctor1 == trueFunctor()) {
-                funcIter.remove();
-            }
-        }
-        if (functor1List.size() < conds.length) {
-            //noinspection unchecked
-            return functor1List.toArray(new Functor1[functor1List.size()]);
-        } else {
-            return conds;
-        }
-    }
-
-    /**
-     * Sorts a collection of {@link Comparable} objects and returns a list.
-     *
-     * @param collection Collection
-     * @param <T> Element type
-     * @return Sorted list
-     */
-    public static <T extends Comparable> List<T> sort(
-        Collection<T> collection)
-    {
-        Object[] a = collection.toArray(new Object[collection.size()]);
-        Arrays.sort(a);
-        return cast(Arrays.asList(a));
-    }
-
-    /**
-     * Sorts a collection of objects using a {@link java.util.Comparator} and returns a
-     * list.
-     *
-     * @param collection Collection
-     * @param comparator Comparator
-     * @param <T> Element type
-     * @return Sorted list
-     */
-    public static <T> List<T> sort(
-        Collection<T> collection,
-        Comparator<T> comparator)
-    {
-        Object[] a = collection.toArray(new Object[collection.size()]);
-        //noinspection unchecked
-        Arrays.sort(a, (Comparator<? super Object>) comparator);
-        return cast(Arrays.asList(a));
     }
 
     public static class ErrorCellValue {
@@ -2353,7 +2230,7 @@ public class Util extends XOMUtil {
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
      * @return content of Reader as String or null if Reader was empty.
-     * @throws IOException on I/O error
+     * @throws IOException
      */
     public static String readFully(final Reader rdr, final int bufferSize)
         throws IOException
@@ -2376,33 +2253,37 @@ public class Util extends XOMUtil {
         return (s.length() == 0) ? null : s;
     }
 
+
+    /**
+     * Read URL and return String containing content.
+     *
+     * @param urlStr actually a catalog URL
+     * @return String containing content of catalog.
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public static String readURL(final String urlStr)
+        throws IOException
+    {
+        return readURL(urlStr, null);
+    }
+
     /**
      * Returns the contents of a URL, substituting tokens.
      *
-     * <p>Replaces the tokens "${key}" if the map is not null and "key" occurs
-     * in the key-value map.
-     *
-     * <p>If the URL string starts with "inline:" the contents are the
-     * rest of the URL.
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
      *
      * @param urlStr  URL string
      * @param map Key/value map
      * @return Contents of URL with tokens substituted
-     * @throws IOException on I/O error
+     * @throws MalformedURLException
+     * @throws IOException
      */
     public static String readURL(final String urlStr, Map<String, String> map)
         throws IOException
     {
-        if (urlStr.startsWith("inline:")) {
-            String content = urlStr.substring("inline:".length());
-            if (map != null) {
-                content = Util.replaceProperties(content, map);
-            }
-            return content;
-        } else {
-            final URL url = new URL(urlStr);
-            return readURL(url, map);
-        }
+        final URL url = new URL(urlStr);
+        return readURL(url, map);
     }
 
     /**
@@ -2410,7 +2291,7 @@ public class Util extends XOMUtil {
      *
      * @param url URL
      * @return Contents of URL
-     * @throws IOException on I/O error
+     * @throws IOException
      */
     public static String readURL(final URL url) throws IOException {
         return readURL(url, null);
@@ -2419,13 +2300,12 @@ public class Util extends XOMUtil {
     /**
      * Returns the contents of a URL, substituting tokens.
      *
-     * <p>Replaces the tokens "${key}" if the map is not null and "key" occurs
-     * in the key-value map.
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
      *
      * @param url URL
      * @param map Key/value map
      * @return Contents of URL with tokens substituted
-     * @throws IOException on I/O error
+     * @throws IOException
      */
     public static String readURL(
         final URL url,
@@ -2741,17 +2621,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Generates a unique id.
-     *
-     * <p>From JDK 1.5 onwards, uses a {@code UUID}.
-     *
-     * @return A unique id
-     */
-    public static String generateUuidString() {
-        return compatible.generateUuidString();
-    }
-
-    /**
      * Creates a new udf instance from the given udf class.
      *
      * @param udfClass the class to create new instance for
@@ -3049,34 +2918,6 @@ public class Util extends XOMUtil {
             return Util.hash(h, t2.hashCode());
         }
     }
-
-    public static interface Functor1<RT, PT> {
-        RT apply(PT param);
-    }
-
-    public static <T> Functor1<T, T> identityFunctor() {
-        //noinspection unchecked
-        return (Functor1) IDENTITY_FUNCTOR;
-    }
-
-    private static final Functor1 IDENTITY_FUNCTOR =
-        new Functor1<Object, Object>() {
-            public Object apply(Object param) {
-                return param;
-            }
-        };
-
-    public static <PT> Functor1<Boolean, PT> trueFunctor() {
-        //noinspection unchecked
-        return (Functor1) TRUE_FUNCTOR;
-    }
-
-    private static final Functor1 TRUE_FUNCTOR =
-        new Functor1<Boolean, Object>() {
-            public Boolean apply(Object param) {
-                return true;
-            }
-        };
 }
 
 // End Util.java

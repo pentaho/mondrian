@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,9 +11,7 @@ package mondrian.olap4j;
 import org.xml.sax.SAXException;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import java.lang.ref.WeakReference;
 import java.util.concurrent.*;
 import java.util.*;
 import java.net.URL;
@@ -34,8 +32,6 @@ public class MondrianInprocProxy
 {
     private final Map<String, String> catalogNameUrls;
     private final String urlString;
-    private final HashMap<List<String>,WeakReference<Servlet>> servletCache =
-        new HashMap<List<String>, WeakReference<Servlet>>();
 
     /**
      * Creates and initializes a MondrianInprocProxy.
@@ -59,20 +55,12 @@ public class MondrianInprocProxy
 
     // Use single-threaded executor for ease of debugging.
     private static final ExecutorService singleThreadExecutor =
-        Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    return t;
-               }
-            }
-        );
+        Executors.newSingleThreadExecutor();
 
     public byte[] get(URL url, String request) throws IOException {
         try {
             return XmlaSupport.processSoapXmla(
-                request, urlString, catalogNameUrls, null, null, servletCache);
+                request, urlString, catalogNameUrls, null);
         } catch (ServletException e) {
             throw new RuntimeException(
                 "Error while reading '" + url + "'", e);

@@ -11,10 +11,7 @@
 
 package mondrian.rolap;
 
-import mondrian.calc.Calc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.util.*;
 import org.apache.commons.collections.map.Flat3Map;
@@ -40,7 +37,7 @@ public class RolapMemberBase
      * value of that expression for this member as retrieved via JDBC;
      * otherwise null.
      */
-    private Comparable<?> orderKey;
+    private Comparable orderKey;
     private Boolean isParentChildLeaf;
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
 
@@ -122,14 +119,8 @@ public class RolapMemberBase
         }
     }
 
-    protected RolapMemberBase() {
-        super();
-        this.key = null;
-    }
-
     RolapMemberBase(RolapMember parentMember, RolapLevel level, Object value) {
         this(parentMember, level, value, null, MemberType.REGULAR);
-        assert !(level instanceof RolapCubeLevel);
     }
 
     protected Logger getLogger() {
@@ -299,7 +290,7 @@ public class RolapMemberBase
         mapPropertyNameToValue.put(name, value);
     }
 
-    public Object getPropertyValue(String propertyName) {
+    public final Object getPropertyValue(String propertyName) {
         return getPropertyValue(propertyName, true);
     }
 
@@ -462,7 +453,7 @@ public class RolapMemberBase
         return ordinal;
     }
 
-    public Comparable<?> getOrderKey() {
+    public Comparable getOrderKey() {
         return orderKey;
     }
 
@@ -472,7 +463,7 @@ public class RolapMemberBase
         }
     }
 
-    void setOrderKey(Comparable<?> orderKey) {
+    void setOrderKey(Comparable orderKey) {
         this.orderKey = orderKey;
     }
 
@@ -684,8 +675,9 @@ public class RolapMemberBase
         SchemaReader schemaReader,
         Member seedMember)
     {
-        seedMember = RolapUtil.strip((RolapMember) seedMember);
-
+        if (seedMember instanceof RolapCubeMember) {
+            seedMember = ((RolapCubeMember) seedMember).getRolapMember();
+        }
         /*
          * The following are times for executing different set ordinals
          * algorithms for both the FoodMart Sales cube/Store dimension
@@ -1000,64 +992,6 @@ public class RolapMemberBase
             return new DefaultPropertyValueMapFactory();
         }
     }
-
-    /*
-     * implement RolapCalcuation here, so we don't need
-     * the RolapMemberCalculation wrapper class anymore
-     */
-    private Boolean containsAggregateFunction = null;
-    public boolean containsAggregateFunction() {
-        // searching for agg functions is expensive, so cache result
-        if (containsAggregateFunction == null) {
-            containsAggregateFunction =
-                foundAggregateFunction(getExpression());
-        }
-        return containsAggregateFunction;
-    }
-
-    /**
-     * Returns whether an expression contains a call to an aggregate
-     * function such as "Aggregate" or "Sum".
-     *
-     * @param exp Expression
-     * @return Whether expression contains a call to an aggregate function.
-     */
-    private static boolean foundAggregateFunction(Exp exp) {
-        if (exp instanceof ResolvedFunCall) {
-            ResolvedFunCall resolvedFunCall = (ResolvedFunCall) exp;
-            if (resolvedFunCall.getFunDef() instanceof AggregateFunDef) {
-                return true;
-            } else {
-                for (Exp argExp : resolvedFunCall.getArgs()) {
-                    if (foundAggregateFunction(argExp)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    public Calc getCompiledExpression(RolapEvaluatorRoot root) {
-        return root.getCompiled(getExpression(), true, null);
-    }
-
-    public int getHierarchyOrdinal() {
-        return getHierarchy().getOrdinalInCube();
-    }
-
-    public RolapEvaluator pushSelf(RolapEvaluator evaluator) {
-        final RolapMember defaultMember =
-            evaluator.root.defaultMembers[getHierarchyOrdinal()];
-
-        // This method does not need to call
-        // RolapEvaluator.removeCalcMember. That happens implicitly when
-        // push calls setContext.
-        final RolapEvaluator evaluator2 = evaluator.push(defaultMember);
-        evaluator2.setExpanding(this);
-        return evaluator2;
-    }
-    // end RolapCalculation method implementations
 }
 
 // End RolapMemberBase.java

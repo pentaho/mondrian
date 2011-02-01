@@ -13,12 +13,12 @@ import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.mdx.QueryPrintWriter;
-import mondrian.parser.MdxParserValidator;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -52,12 +52,12 @@ public class ParserTest extends FoodMartTestCase {
         String s,
         String expectedName)
     {
-        TestParser p = new TestParser();
+        Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
         QueryPart query = p.parseInternal(null, q, false, funTable, false);
         assertNull("Test parser should return null query", query);
 
-        QueryAxis[] axes = p.getAxes();
+        QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes must be 1", 1, axes.length);
         assertEquals(
@@ -92,59 +92,20 @@ public class ParserTest extends FoodMartTestCase {
             + "from [sales]\n");
     }
 
-    /**
-     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-831">
-     * MONDRIAN-831, "Failure parsing queries with member identifiers beginning
-     * with '_' and not expressed between brackets"</a>.
-     *
-     * <p>According to the spec
-     * <a href="http://msdn.microsoft.com/en-us/library/ms145572.aspx">
-     * Identifiers (MDX)</a>, the first character of a regular identifier
-     * must be a letter (per the unicode standard 2.0) or underscore. Subsequent
-     * characters must be a letter, and underscore, or a digit.
-     */
     public void testScannerPunc() {
-        assertParseQuery(
-            "with member [Measures].__Foo as 1 + 2\n"
-            + "select __Foo on 0\n"
-            + "from _Bar_Baz",
-            "with member [Measures].__Foo as '(1 + 2)'\n"
-            + "select __Foo ON COLUMNS\n"
-            + "from [_Bar_Baz]\n");
-
-        // # is not allowed
-        assertParseQueryFails(
-            "with member [Measures].#_Foo as 1 + 2\n"
-            + "select __Foo on 0\n"
-            + "from _Bar#Baz",
-            "Unexpected character '#'");
-        assertParseQueryFails(
-            "with member [Measures].Foo as 1 + 2\n"
-            + "select Foo on 0\n"
-            + "from Bar#Baz",
-            "Unexpected character '#'");
-
-        // The spec doesn't allow $ but SSAS allows it so we allow it too.
-        assertParseQuery(
-            "with member [Measures].$Foo as 1 + 2\n"
-            + "select $Foo on 0\n"
-            + "from Bar$Baz",
-            "with member [Measures].$Foo as '(1 + 2)'\n"
-            + "select $Foo ON COLUMNS\n"
-            + "from [Bar$Baz]\n");
-        // '$' is OK inside brackets too
+        // '$' is OK inside brackets but not outside
         assertParseQuery(
             "select [measures].[$foo] on columns from sales",
             "select [measures].[$foo] ON COLUMNS\n"
             + "from [sales]\n");
+        assertParseQueryFails(
+            "select [measures].$foo on columns from sales",
+            "Unexpected character '$'");
 
         // ']' unexcpected
         assertParseQueryFails(
             "select { Customers].Children } on columns from [Sales]",
             "Unexpected character ']'");
-    }
-
-    public void testUnderscore() {
     }
 
     public void testUnparse() {
@@ -154,7 +115,7 @@ public class ParserTest extends FoodMartTestCase {
             + " CrossJoin([Product].members, {[Gender].Children}) on rows\n"
             + "from [Sales]\n"
             + "where [Marital Status].[S]",
-            "with member [Measures].[Foo] as '123'\n"
+            "with member [Measures].[Foo] as '123.0'\n"
             + "select {[Measures].Members} ON COLUMNS,\n"
             + "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n"
             + "from [Sales]\n"
@@ -177,7 +138,7 @@ public class ParserTest extends FoodMartTestCase {
         checkFails(new TestParser(), wrapExpr(expr), expected);
     }
 
-    private void checkFails(TestParser p, String query, String expected) {
+    private void checkFails(Parser p, String query, String expected) {
         try {
             p.parseInternal(null, query, false, funTable, false);
 
@@ -194,7 +155,7 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     public void testMultipleAxes() throws Exception {
-        TestParser p = new TestParser();
+        Parser p = new TestParser();
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
@@ -202,7 +163,7 @@ public class ParserTest extends FoodMartTestCase {
             "Test parser should return null query",
             p.parseInternal(null, query, false, funTable, false));
 
-        QueryAxis[] axes = p.getAxes();
+        QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals(
@@ -272,7 +233,7 @@ public class ParserTest extends FoodMartTestCase {
             "with member [Measures].[Foo] as "
             + " ' case x when 1 then 2 when 3 then 4 else 5 end '"
             + "select {[foo]} on axis(0) from cube",
-            "with member [Measures].[Foo] as 'CASE x WHEN 1 THEN 2 WHEN 3 THEN 4 ELSE 5 END'\n"
+            "with member [Measures].[Foo] as 'CASE x WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n"
             + "select {[foo]} ON COLUMNS\n"
             + "from [cube]\n");
     }
@@ -325,12 +286,12 @@ public class ParserTest extends FoodMartTestCase {
 
         assertParseExpr(
             "[Measures].[Unit Sales] IS EMPTY AND 1 IS NULL",
-            "(([Measures].[Unit Sales] IS EMPTY) AND (1 IS NULL))");
+            "(([Measures].[Unit Sales] IS EMPTY) AND (1.0 IS NULL))");
 
-        // FIXME: "NULL" should associate as "IS NULL" rather than "NULL + 56"
+        // FIXME: "NULL" should associate as "IS NULL" rather than "NULL + 56.0"
         assertParseExpr(
             "- x * 5 is empty is empty is null + 56",
-            "(((((- x) * 5) IS EMPTY) IS EMPTY) IS (NULL + 56))");
+            "(((((- x) * 5.0) IS EMPTY) IS EMPTY) IS (NULL + 56.0))");
     }
 
     public void testIs() {
@@ -348,26 +309,26 @@ public class ParserTest extends FoodMartTestCase {
 
         assertParseExpr(
             "[Measures].[Unit Sales] IS NULL AND 1 <> 2",
-            "(([Measures].[Unit Sales] IS NULL) AND (1 <> 2))");
+            "(([Measures].[Unit Sales] IS NULL) AND (1.0 <> 2.0))");
 
         assertParseExpr(
             "x is null or y is null and z = 5",
-            "((x IS NULL) OR ((y IS NULL) AND (z = 5)))");
+            "((x IS NULL) OR ((y IS NULL) AND (z = 5.0)))");
 
         assertParseExpr(
-            "(x is null) + 56 > 6", "((((x IS NULL)) + 56) > 6)");
+            "(x is null) + 56 > 6", "((((x IS NULL)) + 56.0) > 6.0)");
 
         // FIXME: Should be
-        //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5))) IS NULL) + 5)"
+        //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5.0))) IS NULL) + 5.0)"
         assertParseExpr(
             "x is null and a = b or c = d + 5 is null + 5",
-            "(((x IS NULL) AND (a = b)) OR ((c = (d + 5)) IS (NULL + 5)))");
+            "(((x IS NULL) AND (a = b)) OR ((c = (d + 5.0)) IS (NULL + 5.0)))");
     }
 
     public void testNull() {
         assertParseExpr(
             "Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X'))",
-            "Filter({[Measures].[Foo]}, Iif((1 = 2), NULL, \"X\"))");
+            "Filter({[Measures].[Foo]}, Iif((1.0 = 2.0), NULL, \"X\"))");
     }
 
     public void testCast() {
@@ -376,7 +337,7 @@ public class ParserTest extends FoodMartTestCase {
             "CAST([Measures].[Unit Sales] AS Numeric)");
 
         assertParseExpr(
-            "Cast(1 + 2 AS String)", "CAST((1 + 2) AS String)");
+            "Cast(1 + 2 AS String)", "CAST((1.0 + 2.0) AS String)");
     }
 
     /**
@@ -391,19 +352,21 @@ public class ParserTest extends FoodMartTestCase {
                 + " * [Measures].[Store Cost]"
                 + " * [Measures].[Store Sales])");
 
-        final QueryPart query =
-            p.parseInternal(
-                new Parser.FactoryImpl(),
-                getConnection(), mdx, false, funTable, false);
-        assertTrue(query instanceof Query);
-        ((Query) query).resolve();
+        try {
+            final QueryPart query =
+                p.parseInternal(getConnection(), mdx, false, funTable, false);
+            assertTrue(query instanceof Query);
+            ((Query) query).resolve();
+        } catch (Throwable e) {
+            fail(e.getMessage());
+        }
     }
 
     public void testBangFunction() {
         // Parser accepts '<id> [! <id>] *' as a function name, but ignores
         // all but last name.
         assertParseExpr("foo!bar!Exp(2.0)", "Exp(2.0)");
-        assertParseExpr("1 + VBA!Exp(2.0 + 3)", "(1 + Exp((2.0 + 3)))");
+        assertParseExpr("1 + VBA!Exp(2.0 + 3)", "(1.0 + Exp((2.0 + 3.0)))");
     }
 
     public void testId() {
@@ -431,49 +394,44 @@ public class ParserTest extends FoodMartTestCase {
      */
     public void testNumbers() {
         // Number: [+-] <digits> [ . <digits> ] [e [+-] <digits> ]
-        assertParseExpr("2", "2");
+        assertParseExpr("2", "2.0");
 
         // leading '-' is treated as an operator -- that's ok
-        assertParseExpr("-3", "(- 3)");
+        assertParseExpr("-3", "(- 3.0)");
 
         // leading '+' is ignored -- that's ok
-        assertParseExpr("+45", "45");
+        assertParseExpr("+45", "45.0");
 
         // space bad
         assertParseExprFails(
             "4 5",
-            "Syntax error at line 1, column 35, token '5'");
+            "Syntax error at line 1, column 35, token '5.0'");
 
         assertParseExpr("3.14", "3.14");
         assertParseExpr(".12345", "0.12345");
 
         // lots of digits left and right of point
-        assertParseExpr("31415926535.89793", "31415926535.89793");
+        assertParseExpr("31415926535.89793", "3.141592653589793E10");
         assertParseExpr(
             "31415926535897.9314159265358979",
-            "31415926535897.9314159265358979");
+            "3.141592653589793E13");
         assertParseExpr("3.141592653589793", "3.141592653589793");
         assertParseExpr(
             "-3141592653589793.14159265358979",
-            "(- 3141592653589793.14159265358979)");
+            "(- 3.141592653589793E15)");
 
         // exponents akimbo
-        assertParseExpr("1e2", "100");
+        assertParseExpr("1e2", "100.0");
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");
-        assertParseExpr("1.2e3", "1200");
+        assertParseExpr("1.2e3", "1200.0");
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
             "1.2e3.4",
             "Syntax error at line 1, column 39, token '0.4'");
         assertParseExpr(".00234e0003", "2.34");
-        assertParseExpr(
-            ".00234e-0067",
-            Util.PreJdk15
-                ? "0.00000000000000000000000000000000000000000000000000000000"
-                     + "0000000000000234"
-                : "2.34E-70");
+        assertParseExpr(".00234e-0067", "2.34E-70");
     }
 
     /**
@@ -493,7 +451,7 @@ public class ParserTest extends FoodMartTestCase {
             + "and [Measures].[Small Number] <= 0.5000001234)} on rows\n"
             + "from Sales\n"
             + "where ([Time].[1997].[Q2].[4])",
-            "with member [Measures].[Small Number] as '([Measures].[Store Sales] / 9000)'\n"
+            "with member [Measures].[Small Number] as '([Measures].[Store Sales] / 9000.0)'\n"
             + "select {[Measures].[Small Number]} ON COLUMNS,\n"
             + "  {Filter([Product].[Product Department].members, (([Measures].[Small Number] >= 0.3) AND ([Measures].[Small Number] <= 0.5000001234)))} ON ROWS\n"
             + "from [Sales]\n"
@@ -504,7 +462,7 @@ public class ParserTest extends FoodMartTestCase {
         assertParseQuery(
             "SELECT NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]},\n"
             + "3, , [Measures].[Unit Sales])}) on columns from [Sales]",
-            "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3, , [Measures].[Unit Sales])}) ON COLUMNS\n"
+            "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3.0, , [Measures].[Unit Sales])}) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
@@ -526,7 +484,8 @@ public class ParserTest extends FoodMartTestCase {
         // medium precedence operator (:) in CAST
         assertParseQuery(
             "select cast(a : b as string) on 0 from cube",
-            "select CAST((a : b) AS string) ON COLUMNS\n" + "from [cube]\n");
+            "select CAST((a : b) AS string) ON COLUMNS\n"
+            + "from [cube]\n");
 
         // high precedence operator (IS) in CAST
         assertParseQuery(
@@ -612,13 +571,13 @@ public class ParserTest extends FoodMartTestCase {
      * @param expected Expected result of unparsing
      */
     private void assertParseQuery(String mdx, final String expected) {
-        TestParser p = new TestParser();
+        Parser p = new TestParser();
         final QueryPart query =
             p.parseInternal(null, mdx, false, funTable, false);
         if (!(query instanceof DrillThrough)) {
             assertNull("Test parser should return null query", query);
         }
-        final String actual = p.toMdxString();
+        final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
     }
 
@@ -646,10 +605,7 @@ public class ParserTest extends FoodMartTestCase {
             + "\n select from [Sales]";
     }
 
-    public static class TestParser
-        extends Parser
-        implements MdxParserValidator.QueryPartFactory
-     {
+    public static class TestParser extends Parser {
         private Formula[] formulas;
         private QueryAxis[] axes;
         private String cube;
@@ -664,30 +620,13 @@ public class ParserTest extends FoodMartTestCase {
             super();
         }
 
-        public QueryPart parseInternal(
-            Connection mdxConnection,
-            String queryString,
-            boolean debug,
-            FunTable funTable,
-            boolean strictValidation)
-        {
-            return super.parseInternal(
-                this,
-                mdxConnection,
-                queryString,
-                debug,
-                funTable,
-                strictValidation);
-        }
-
-        public Query makeQuery(
-            Connection connection,
+        @Override
+        protected Query makeQuery(
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,
             Exp slicer,
-            QueryPart[] cellProps,
-            boolean strictValidation)
+            QueryPart[] cellProps)
         {
             setFormulas(formulae);
             setAxes(axes);
@@ -697,7 +636,8 @@ public class ParserTest extends FoodMartTestCase {
             return null;
         }
 
-        public DrillThrough makeDrillThrough(
+        @Override
+        protected DrillThrough makeDrillThrough(
             Query query,
             int maxRowCount,
             int firstRowOrdinal,

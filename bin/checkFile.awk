@@ -81,9 +81,6 @@ FNR == 1 {
         # mask out /* */ comments
         gsub(/\/\*.*\*\//, "/* comment */", s);
     }
-    if (s ~ /\/\/\$NON-NLS/) {
-        error(fname, FNR, "NON-NLS not allowed");
-    }
     # mask out // comments
     gsub(/\/\/.*$/, "// comment", s);
     # line starts with string or plus?

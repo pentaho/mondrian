@@ -389,7 +389,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Measures].[Foo] as ' Filter([Product].members, 1 <> 0) '"
             + "select {[Measures].[Foo]} on columns from [Sales]";
         String pattern =
-            "Member expression 'Filter([Product].Members, (1 <> 0))' must "
+            "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must "
             + "not be a set";
         assertQueryThrows(queryString, pattern);
 
@@ -561,39 +561,13 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalcMemberWithQuote() {
-        // MSAS ignores single-quotes
-        assertQueryReturns(
-            "with member [Measures].[Foo] as '1 + 2'\n"
-            + "select from [Sales] where [Measures].[Foo]",
-            "Axis #0:\n"
-            + "{[Measures].[Foo]}\n"
-            + "3");
-
-        // As above
-        assertQueryReturns(
-            "with member [Measures].[Foo] as 1 + 2\n"
-            + "select from [Sales] where [Measures].[Foo]",
-            "Axis #0:\n"
-            + "{[Measures].[Foo]}\n"
-            + "3");
-
-        // MSAS treats doubles-quotes as strings
-        assertQueryReturns(
-            "with member [Measures].[Foo] as \"1 + 2\"\n"
-            + "select from [Sales] where [Measures].[Foo]",
-            "Axis #0:\n"
-            + "{[Measures].[Foo]}\n"
-            + "1 + 2");
-
         // single-quote inside double-quoted string literal
         // MSAS does not allow this
         assertQueryThrows(
             "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' "
             + "select {[Measures].[Foo]} on columns "
             + "from [Sales]",
-            "mondrian.parser.TokenMgrError: "
-            + "Lexical error at line 2, column 0.  "
-            + "Encountered: <EOF> after : \"\\\"quoted string with \\n\"");
+            "Syntax error at line 1, column 57, token 'apostrophe'");
 
         // Escaped single quote in double-quoted string literal inside
         // single-quoted member declaration.
@@ -1620,88 +1594,6 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Row #9: 23,688\n"
             + "Row #10: 50,684\n"
             + "Row #11: 135,096\n");
-    }
-
-    /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-852">
-     * MONDRIAN-852, "Using the generate command, cast and calculated measures
-     * causes ClassCastException"</a>.
-     *
-     * <p>The problem is in the implicit conversion that occurs when using
-     * a member as a numeric value. (In this case the conversion occurs because
-     * we apply the numeric operator '/'.) We have to assume at prepare time
-     * that the current measure will be numeric, but at run time the value may
-     * be a string.
-     *
-     * <p>We were wrongly throwing a ClassCastException. Correct behavior is an
-     * evaluation exception: the cell is in error, but the query as a whole
-     * succeeds.
-     */
-    public void testBugMondrian852() {
-        // Simpler repro case.
-        assertQueryReturns(
-            "with member [Measures].[Bar] as cast(123 as string)\n"
-            + " member [Measures].[Foo] as [Measures].[Bar] / 2\n"
-            + "select [Measures].[Foo] on 0\n"
-            + "from [Sales]\n",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Foo]}\n"
-            + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Expected value of type NUMERIC; got value '123' (STRING)\n");
-
-        // Tom's original query should generate a cast error (not a
-        // ClassCastException) because solve orders are wrong.
-        assertQueryReturns(
-            "with\n"
-            + "  member [Measures].[Tom1] as\n"
-            + "    ([Measures].[Store Sales] / [Measures].[Unit Sales])\n"
-            + "  set spark1 as\n"
-            + "    ([Time].[1997].[Q1].[1] : [Time].[1997].[Q2].[4])\n"
-            + "  member [Time].[Past 4 months] as\n"
-            + "     Generate(\n"
-            + "         [spark1],\n"
-            + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
-            + "         \", \")\n"
-            + "select {[Time].[Past 4 months]} ON COLUMNS,\n"
-            + "  {[Measures].[Unit Sales], [Measures].[Tom1]} ON ROWS\n"
-            + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Past 4 months]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Tom1]}\n"
-            + "Row #0: 21628.0, 20957.0, 23706.0, 20179.0\n"
-            + "Row #1: #ERR: mondrian.olap.fun.MondrianEvaluationException: Expected value of type NUMERIC; got value '45539.69, 44058.79, 50029.87, 42878.25' (STRING)\n");
-
-        // Solve orders to achieve what Tom intended.
-        assertQueryReturns(
-            "with\n"
-            + "  member [Measures].[Tom1] as\n"
-            + "    ([Measures].[Store Sales] / [Measures].[Unit Sales]),\n"
-            + "    solve_order = 1\n"
-            + "  set spark1 as\n"
-            + "    ([Time].[1997].[Q1].[1] : [Time].[1997].[Q2].[4])\n"
-            + "  member [Time].[Past 4 months] as\n"
-            + "     Generate(\n"
-            + "         [spark1],\n"
-            + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
-            + "         \", \"),"
-            + "     solve_order = 2\n"
-            + "select {[Time].[Past 4 months]} ON COLUMNS,\n"
-            + "  {[Measures].[Unit Sales], [Measures].[Tom1]} ON ROWS\n"
-            + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Past 4 months]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Tom1]}\n"
-            + "Row #0: 21628.0, 20957.0, 23706.0, 20179.0\n"
-            + "Row #1: 2.10558951359349, 2.1023424154220547, 2.1104306926516494, 2.124894692502106\n");
     }
 }
 

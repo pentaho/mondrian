@@ -11,14 +11,12 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.*;
-import mondrian.server.RepositoryContentFinder;
-import mondrian.server.UrlRepositoryContentFinder;
+import mondrian.olap.Util;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 
 import org.apache.log4j.Logger;
-
+import org.eigenbase.xom.*;
 import org.w3c.dom.Element;
 
 import javax.servlet.ServletContext;
@@ -44,7 +42,7 @@ public abstract class XmlaServlet
     implements XmlaConstants
 {
 
-    protected static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
+    private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
     public static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
     public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG =
@@ -53,9 +51,6 @@ public abstract class XmlaServlet
     public static final String PARAM_CALLBACKS = "Callbacks";
 
     public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
-
-    protected MondrianServer server;
-    protected RepositoryContentFinder contentFinder;
 
     public enum Phase {
         VALIDATE_HTTP_HEAD,
@@ -87,6 +82,7 @@ public abstract class XmlaServlet
         return paramValue != null && Boolean.valueOf(paramValue);
     }
 
+    protected CatalogLocator catalogLocator = null;
     protected DataSourcesConfig.DataSources dataSources = null;
     protected XmlaHandler xmlaHandler = null;
     protected String charEncoding = null;
@@ -113,29 +109,11 @@ public abstract class XmlaServlet
         // make: catalogLocator
         // A derived class can alter how the calalog locator object is
         // created.
-        CatalogLocator catalogLocator = makeCatalogLocator(servletConfig);
+        this.catalogLocator = makeCatalogLocator(servletConfig);
 
-        String dataSources = makeDataSourcesUrl(servletConfig);
-        contentFinder = makeContentFinder(dataSources);
-        server =
-            MondrianServer.createWithRepository(contentFinder, catalogLocator);
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        server.shutdown();
-    }
-
-    /**
-     * Creates a callback for reading the repository. Derived classes may
-     * override.
-     *
-     * @param dataSources Data sources
-     * @return Callback for reading repository
-     */
-    protected RepositoryContentFinder makeContentFinder(String dataSources) {
-        return new UrlRepositoryContentFinder(dataSources);
+        DataSourcesConfig.DataSources dataSources =
+                makeDataSources(servletConfig);
+        addToDataSources(dataSources);
     }
 
     /**
@@ -146,9 +124,7 @@ public abstract class XmlaServlet
     protected XmlaHandler getXmlaHandler() {
         if (this.xmlaHandler == null) {
             this.xmlaHandler =
-                new XmlaHandler(
-                    (XmlaHandler.ConnectionFactory) server,
-                    "cxmla");
+                new XmlaHandler(this.dataSources, this.catalogLocator, "cxmla");
         }
         return this.xmlaHandler;
     }
@@ -472,11 +448,10 @@ public abstract class XmlaServlet
     }
 
     /**
-     * Creates the URL where the data sources file is to be found.
-     *
-     * <p>Derived classes can roll their own.
-     *
-     * <p>If there is an initParameter called "DataSourcesConfig"
+     * Make DataSourcesConfig.DataSources instance. Derived classes
+     * can roll their own
+     * <p>
+     * If there is an initParameter called "DataSourcesConfig"
      * get its value, replace any "${key}" content with "value" where
      * "key/value" are System properties, and try to create a URL
      * instance out of it. If that fails, then assume its a
@@ -486,7 +461,8 @@ public abstract class XmlaServlet
      * find the file called "datasources.xml"  under "WEB-INF/"
      * and if it exists, use it.
      */
-    protected String makeDataSourcesUrl(ServletConfig servletConfig)
+    protected DataSourcesConfig.DataSources makeDataSources(
+        ServletConfig servletConfig)
     {
         String paramValue =
                 servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
@@ -507,12 +483,7 @@ public abstract class XmlaServlet
                 if (realPath.exists()) {
                     // only if it exists
                     dataSourcesConfigUrl = realPath.toURL();
-                    return dataSourcesConfigUrl.toString();
-                } else {
-                    return null;
                 }
-            } else if (paramValue.startsWith("inline:")) {
-                return paramValue;
             } else {
                 paramValue = Util.replaceProperties(
                     paramValue,
@@ -543,12 +514,92 @@ public abstract class XmlaServlet
                             throw mue;
                         }
                     }
-                    return null;
                 }
-                return dataSourcesConfigUrl.toString();
             }
         } catch (MalformedURLException mue) {
             throw Util.newError(mue, "invalid URL path '" + paramValue + "'");
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "XmlaServlet.makeDataSources: dataSourcesConfigUrl="
+                + dataSourcesConfigUrl);
+        }
+        // don't try to parse a null
+        return (dataSourcesConfigUrl == null)
+            ? null : parseDataSourcesUrl(dataSourcesConfigUrl);
+    }
+
+    protected void addToDataSources(DataSourcesConfig.DataSources dataSources) {
+        if (this.dataSources == null) {
+            this.dataSources = dataSources;
+        } else if (dataSources != null) {
+            DataSourcesConfig.DataSource[] ds1 = this.dataSources.dataSources;
+            int len1 = ds1.length;
+            DataSourcesConfig.DataSource[] ds2 = dataSources.dataSources;
+            int len2 = ds2.length;
+
+            DataSourcesConfig.DataSource[] tmp =
+                new DataSourcesConfig.DataSource[len1 + len2];
+
+            System.arraycopy(ds1, 0, tmp, 0, len1);
+            System.arraycopy(ds2, 0, tmp, len1, len2);
+
+            this.dataSources.dataSources = tmp;
+        } else {
+            LOGGER.warn("XmlaServlet.addToDataSources: DataSources is null");
+        }
+    }
+
+    protected DataSourcesConfig.DataSources parseDataSourcesUrl(
+        URL dataSourcesConfigUrl)
+    {
+        try {
+            String dataSourcesConfigString =
+                readDataSourcesContent(dataSourcesConfigUrl);
+            return parseDataSources(dataSourcesConfigString);
+        } catch (Exception e) {
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config '"
+                + dataSourcesConfigUrl.toExternalForm() + "'");
+        }
+    }
+
+    protected String readDataSourcesContent(URL dataSourcesConfigUrl)
+        throws IOException
+    {
+        return Util.readURL(
+                dataSourcesConfigUrl,
+                Util.toMap(System.getProperties()));
+    }
+
+    protected DataSourcesConfig.DataSources parseDataSources(
+        String dataSourcesConfigString)
+    {
+        try {
+            if (dataSourcesConfigString == null) {
+                LOGGER.warn("XmlaServlet.parseDataSources: null input");
+                return null;
+            }
+            dataSourcesConfigString =
+                Util.replaceProperties(
+                    dataSourcesConfigString,
+                    Util.toMap(System.getProperties()));
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "XmlaServlet.parseDataSources: dataSources="
+                    + dataSourcesConfigString);
+            }
+            final Parser parser = XOMUtil.createDefaultParser();
+            final DOMWrapper doc = parser.parse(dataSourcesConfigString);
+            return new DataSourcesConfig.DataSources(doc);
+        } catch (XOMException e) {
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config: "
+                + dataSourcesConfigString);
         }
     }
 
@@ -625,6 +676,7 @@ public abstract class XmlaServlet
                 "Registered " + count + " callback" + (count > 1 ? "s" : ""));
         }
     }
+
 }
 
 // End XmlaServlet.java

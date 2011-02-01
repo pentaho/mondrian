@@ -60,14 +60,7 @@ doCheck() {
     */mondrian/rolap/aggmatcher/DefaultDef.java| \
     */mondrian/resource/MondrianResource*.java| \
     */mondrian/olap/Parser.java| \
-    */mondrian/olap/ParserSym.java| \
-    */mondrian/parser/ParseException.java| \
-    */mondrian/parser/Token.java| \
-    */mondrian/parser/TokenMgrError.java| \
-    */mondrian/parser/SimpleCharStream.java| \
-    */mondrian/parser/MdxParserImplConstants.java| \
-    */mondrian/parser/MdxParserImplTokenManager.java| \
-    */mondrian/parser/MdxParserImpl.java)
+    */mondrian/olap/ParserSym.java)
         # mondrian.util.Base64 is checked in as is, so don't check it
         # Other files above are generated.
         return
@@ -130,7 +123,7 @@ doCheck() {
         fi
         ;;
 
-    # Only validate .java and parser files at present.
+    # Only validate .java and .cup files at present.
     *.java|*.cup|*.h|*.cpp)
         ;;
 
@@ -166,14 +159,12 @@ doCheckDeferred() {
     if [ -s "${deferred_file}" ]; then
         maxLineLength=80
         cat "${deferred_file}" |
-        xargs -P $(expr ${CORE_COUNT} \* 2) -n 100 gawk -f "$CHECKFILE_AWK" \
+        xargs gawk -f "$CHECKFILE_AWK" \
             -v lenient="$lenient" \
             -v maxLineLength="$maxLineLength"
    fi
    rm -f "${deferred_file}"
 }
-
-export CORE_COUNT=$(cat /proc/cpuinfo | awk '$1 == "processor"' | wc -l)
 
 export deferred=true
 

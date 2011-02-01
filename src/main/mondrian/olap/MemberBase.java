@@ -88,18 +88,13 @@ public abstract class MemberBase
                : 0);
     }
 
-    protected MemberBase() {
-        this.flags = 0;
-        this.level = null;
-    }
-
     public String getQualifiedName() {
         return MondrianResource.instance().MdxMemberName.str(getUniqueName());
     }
 
     public abstract String getName();
 
-    public String getUniqueName() {
+    public final String getUniqueName() {
         return uniqueName;
     }
 
@@ -116,7 +111,7 @@ public abstract class MemberBase
             : getName();
     }
 
-    public String getParentUniqueName() {
+    public final String getParentUniqueName() {
         return parentMember == null
             ? null
             : parentMember.getUniqueName();
@@ -159,9 +154,7 @@ public abstract class MemberBase
     }
 
     public boolean isEvaluated() {
-        // should just call isCalculated(), but called in tight loops
-        // and too many subclass implementations for jit to inline properly?
-        return (flags & FLAG_CALCULATED) != 0;
+        return isCalculated();
     }
 
     public OlapElement lookupChild(

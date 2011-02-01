@@ -25,7 +25,7 @@ import java.util.*;
  * @since Nov 12, 2007
  */
 class MondrianOlap4jProperty implements Property, Named {
-    final mondrian.olap.Property property;
+    private final mondrian.olap.Property property;
 
     MondrianOlap4jProperty(mondrian.olap.Property property) {
         this.property = property;
@@ -60,18 +60,14 @@ class MondrianOlap4jProperty implements Property, Named {
         return property.name;
     }
 
-    public String getCaption() {
+    public String getCaption(Locale locale) {
         // todo: i18n
         return property.getCaption();
     }
 
-    public String getDescription() {
+    public String getDescription(Locale locale) {
         // todo: i18n
         return property.getDescription();
-    }
-
-    public boolean isVisible() {
-        return !property.isInternal();
     }
 
     public ContentType getContentType() {

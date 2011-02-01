@@ -154,7 +154,7 @@ public class RolapSchema implements Schema {
     private Map<String, Annotation> annotationMap;
 
     /**
-     * Unique schema instance id that will be used
+     * This is a unique schema instance id which will be used
      * to inform clients when the schema has changed.
      *
      * <p>Expect a different ID for each Mondrian instance node.
@@ -176,14 +176,13 @@ public class RolapSchema implements Schema {
         final DataSource dataSource,
         final String md5Bytes)
     {
-        this.id = Util.generateUuidString();
+        this.id = UUID.randomUUID().toString();
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
         this.defaultRole = createDefaultRole();
-        final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
-            new RolapConnection(internalServer, connectInfo, this, dataSource);
+            new RolapConnection(connectInfo, this, dataSource);
 
         this.mapSharedHierarchyNameToHierarchy =
             new HashMap<String, RolapHierarchy>();
@@ -209,22 +208,22 @@ public class RolapSchema implements Schema {
      * @param connectInfo Connection properties
      */
     private RolapSchema(
-        String key,
-        String md5Bytes,
-        String catalogUrl,
-        String catalogStr,
-        Util.PropertyList connectInfo,
-        DataSource dataSource)
+            final String key,
+            final String md5Bytes,
+            final String catalogUrl,
+            final String catalogStr,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource)
     {
         this(key, connectInfo, dataSource, md5Bytes);
         load(catalogUrl, catalogStr);
     }
 
     private RolapSchema(
-        String key,
-        String catalogUrl,
-        Util.PropertyList connectInfo,
-        DataSource dataSource)
+            final String key,
+            final String catalogUrl,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource)
     {
         this(key, connectInfo, dataSource, null);
         load(catalogUrl, null);
@@ -1096,7 +1095,7 @@ public class RolapSchema implements Schema {
          *
          * @return Iterator over RolapSchemas
          */
-        synchronized List<RolapSchema> getRolapSchemas() {
+        synchronized Iterator<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
             for (Iterator<SoftReference<RolapSchema>> it =
                 mapUrlToSchema.values().iterator(); it.hasNext();)
@@ -1117,7 +1116,7 @@ public class RolapSchema implements Schema {
                     }
                 }
             }
-            return list;
+            return list.iterator();
         }
 
         synchronized boolean contains(RolapSchema rolapSchema) {
@@ -1171,7 +1170,7 @@ public class RolapSchema implements Schema {
         }
     }
 
-    public static List<RolapSchema> getRolapSchemas() {
+    public static Iterator<RolapSchema> getRolapSchemas() {
         return Pool.instance().getRolapSchemas();
     }
 

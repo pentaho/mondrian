@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,6 +35,23 @@ public class BetterExpCompiler extends AbstractExpCompiler {
         List<ResultStyle> resultStyles)
     {
         super(evaluator, validator, resultStyles);
+    }
+
+    public DoubleCalc compileDouble(Exp exp) {
+        final Calc calc = compileScalar(exp, false);
+        if (calc instanceof DoubleCalc) {
+            return (DoubleCalc) calc;
+        } else if (calc instanceof IntegerCalc) {
+            final IntegerCalc integerCalc = (IntegerCalc) calc;
+            return new AbstractDoubleCalc(exp, new Calc[] {integerCalc}) {
+                public double evaluateDouble(Evaluator evaluator) {
+                    final int result = integerCalc.evaluateInteger(evaluator);
+                    return (double) result;
+                }
+            };
+        } else {
+            throw Util.newInternal("cannot cast " + exp);
+        }
     }
 
     public TupleCalc compileTuple(Exp exp) {

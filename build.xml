@@ -121,12 +121,6 @@
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
-${java.dir}/mondrian/parser/MdxParserImpl.java,
-${java.dir}/mondrian/parser/MdxParserImplTokenManager.java,
-${java.dir}/mondrian/parser/ParseException.java,
-${java.dir}/mondrian/parser/SimpleCharStream.java,
-${java.dir}/mondrian/parser/Token.java,
-${java.dir}/mondrian/parser/TokenMgrError.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
@@ -186,7 +180,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
     <fileset dir="${lib.dir}">
-      <include name="olap4j-tck.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
@@ -202,7 +195,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses-jdk14.dir}"/>
     <fileset dir="${lib.dir}">
-      <include name="olap4j-tck.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
@@ -525,16 +517,11 @@ META-INF/**"/>
   </target>
 
   <target name="parser" depends="define-tasks">
-    <!-- Old parser. -->
     <javacup
         srcdir="${java.dir}"
         input="${java.dir}/mondrian/olap/Parser.cup"
         expect="63"
         interface="true"/>
-    <!-- New parser. -->
-    <javacc
-        target="${java.dir}/mondrian/parser/MdxParser.jj"
-        javacchome="${lib.dir}"/>
   </target>
 
   <target name="def" depends="define-tasks">
@@ -623,22 +610,9 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString"
-      unless="tests.skip">
+      depends="compile,compile.tests,unzip-databases,set.connectString">
     <antcall target="test-nobuild"/>
   </target>
-
-  <target name="cobertura" unless="tests.skip">
-    <antcall target="subfloor.cobertura"/>
-  </target>
-
-  <target name="cobertura.test-instrumented" unless="tests.skip">
-    <antcall target="subfloor.cobertura.test-instrumented"/>
-  </target>
-
-	<condition property="tests.skip" value="true">
-    <isset property="mondrian.tests.skip"/>
-  </condition>
 
   <target name="test-list">
     <property name="test.args" value="-l"/>
@@ -654,8 +628,7 @@ META-INF/**"/>
       depends="set.connectString"
       description="
 Runs all JUnit tests, using the given database connection
-in {mondrian.foodmart.jdbcURL}."
-    unless="tests.skip">
+in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <echo>Connect String: ${mondrian.test.connectString}</echo>
     <delete quiet="true">
@@ -689,7 +662,7 @@ in {mondrian.foodmart.jdbcURL}."
     </java>
   </target>
 
-  <target name="junit-main" depends="compile,compile.tests,set.connectString" unless="tests.skip">
+  <target name="junit-main" depends="compile,compile.tests,set.connectString">
     <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure">
         <classpath>
@@ -744,7 +717,7 @@ in {mondrian.foodmart.jdbcURL}."
 
   </target>
 
-  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString" unless="tests.skip">
+  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString">
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
         <classpath>
             <path refid="project.test.classpath"/>
@@ -776,7 +749,7 @@ in {mondrian.foodmart.jdbcURL}."
     </fail>
   </target>
 
-  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString" unless="tests.skip">
+  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString">
     <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" errorproperty="juniterror" failureproperty="junitfailure" showoutput="yes">
         <classpath>
             <path refid="project.test.classpath"/>
@@ -897,7 +870,6 @@ ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
-${java.dir}/**/*.jj,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.png,
 ${java.dir}/**/*.html,
@@ -1214,9 +1186,7 @@ META-INF/**"
           dir="${testclasses.dir}"
           includes="
 mondrian/test/loader/**/*.class,
-mondrian/olap4j/MondrianInprocProxy*.class,
-mondrian/test/AbstractMondrianOlap4jTester.class,
-mondrian/test/MondrianOlap4jTester.class"/>
+mondrian/olap4j/MondrianInprocProxy*.class"/>
       <zipfileset
           dir="${javatest.dir}"
           includes="

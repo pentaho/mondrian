@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -68,9 +68,11 @@ public class RolapStar {
                     if (disableCaching) {
                         // REVIEW: could replace following code with call to
                         // CacheControl.flush(CellRegion)
-                        for (RolapSchema schema1
-                            : RolapSchema.getRolapSchemas())
+                        for (Iterator<RolapSchema> itSchemas =
+                            RolapSchema.getRolapSchemas();
+                             itSchemas.hasNext();)
                         {
+                            RolapSchema schema1 = itSchemas.next();
                             for (RolapStar star : schema1.getStars()) {
                                 star.clearCachedAggregations(true);
                             }
@@ -129,12 +131,6 @@ public class RolapStar {
      */
     private int columnCount;
 
-    /**
-     * Keeps track of the columns across all tables. Should have
-     * a number of elements equal to columnCount.
-     */
-    private List<Column> columnList;
-
     private final Dialect sqlQueryDialect;
 
     /**
@@ -187,8 +183,6 @@ public class RolapStar {
         this.sqlQueryDialect = schema.getDialect();
 
         this.changeListener = schema.getDataSourceChangeListener();
-
-        this.columnList = new ArrayList<Column>(100); //100 is *very* arbitrary
     }
 
     private static class StarNetworkNode {
@@ -312,11 +306,12 @@ public class RolapStar {
         } else if (relOrJoin instanceof MondrianDef.Join) {
             // determine if the join starts from the left or right side
             MondrianDef.Join join = (MondrianDef.Join)relOrJoin;
+
             if (join.left instanceof MondrianDef.Join) {
                 throw MondrianResource.instance().IllegalLeftDeepJoin.ex();
             }
-            final MondrianDef.RelationOrJoin left;
-            final MondrianDef.RelationOrJoin right;
+            MondrianDef.RelationOrJoin left;
+            MondrianDef.RelationOrJoin right;
             if (join.getLeftAlias().equals(joinKeyTable)) {
                 // first manage left then right
                 left =
@@ -904,25 +899,6 @@ public class RolapStar {
         }
     }
 
-    /**
-     * Adds a column to the star's list of all columns across all tables.
-     *
-     * @param c the column to add
-     */
-    private void addColumn(Column c) {
-        columnList.add(c.getBitPosition(), c);
-    }
-
-    /**
-     * Look up the column at the given bit position.
-     *
-     * @param bitPos bit position to look up
-     * @return column at the given position
-     */
-    public Column getColumn(int bitPos) {
-        return columnList.get(bitPos);
-    }
-
     public RolapSchema getSchema() {
         return schema;
     }
@@ -1119,7 +1095,6 @@ public class RolapStar {
             if (nameColumn != null) {
                 nameColumn.isNameColumn = true;
             }
-            table.star.addColumn(this);
         }
 
         /**
@@ -1581,14 +1556,6 @@ public class RolapStar {
                     if (columnExpr.name.equals(columnName)) {
                         l.add(column);
                     }
-                } else if (column.getExpression()
-                        instanceof MondrianDef.KeyExpression)
-                {
-                    MondrianDef.KeyExpression columnExpr =
-                        (MondrianDef.KeyExpression) column.getExpression();
-                    if (columnExpr.toString().equals(columnName)) {
-                        l.add(column);
-                    }
                 }
             }
             return l.toArray(new Column[l.size()]);
@@ -1600,14 +1567,6 @@ public class RolapStar {
                     MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
                     if (columnExpr.name.equals(columnName)) {
-                        return column;
-                    }
-                } else if (column.getExpression()
-                        instanceof MondrianDef.KeyExpression)
-                {
-                    MondrianDef.KeyExpression columnExpr =
-                        (MondrianDef.KeyExpression) column.getExpression();
-                    if (columnExpr.toString().equals(columnName)) {
                         return column;
                     }
                 } else if (column.getName().equals(columnName)) {

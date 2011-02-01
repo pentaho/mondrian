@@ -9,7 +9,6 @@
 */
 package mondrian.xmla.test;
 
-import mondrian.server.StringRepositoryContentFinder;
 import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaRequest;
@@ -134,16 +133,13 @@ public class XmlaTest extends TestCase {
 
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-        MondrianServer server =
-            MondrianServer.createWithRepository(
-                new StringRepositoryContentFinder(
-                    context.getDataSourcesString()),
-                XmlaTestContext.CATALOG_LOCATOR);
+
         XmlaHandler handler =
             new XmlaHandler(
-                (XmlaHandler.ConnectionFactory) server,
+                context.dataSources(),
+                XmlaTestContext.CATALOG_LOCATOR,
                 "xmla");
-        XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
+        XmlaRequest request = new DefaultXmlaRequest(requestElem);
         XmlaResponse response =
             new DefaultXmlaResponse(
                 resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
@@ -194,20 +190,12 @@ public class XmlaTest extends TestCase {
      */
     public static class OtherTest extends TestCase {
         public void testEncodeElementName() {
-            final XmlaUtil.ElementNameEncoder encoder =
-                XmlaUtil.ElementNameEncoder.INSTANCE;
-
-            assertEquals("Foo", encoder.encode("Foo"));
-            assertEquals("Foo_x0020_Bar", encoder.encode("Foo Bar"));
-
+            assertEquals("Foo", XmlaUtil.encodeElementName("Foo"));
+            assertEquals(
+                "Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
             if (false) // FIXME:
             assertEquals(
-                "Foo_x00xx_Bar", encoder.encode("Foo_Bar"));
-
-            // Caching: decode same string, get same string back
-            final String s1 = encoder.encode("Abc def");
-            final String s2 = encoder.encode("Abc def");
-            assertSame(s1, s2);
+                "Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
         }
 
         /**

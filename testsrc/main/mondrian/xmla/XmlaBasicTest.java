@@ -10,7 +10,13 @@
 package mondrian.xmla;
 
 import mondrian.olap.*;
-import mondrian.olap4j.MondrianOlap4jDriver;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Schema;
 import mondrian.test.*;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
@@ -49,12 +55,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public XmlaBasicTest(String name) {
         super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Class.forName(MondrianOlap4jDriver.class.getName());
     }
 
     protected DiffRepository getDiffRepos() {
@@ -627,40 +627,28 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testExecuteSlicer_ContentDataOmitDefaultSlicer()
+    public void testExecuteSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
-    public void testExecuteNoSlicer_ContentDataOmitDefaultSlicer()
+    public void testExecuteNoSlicerContentDataOmitDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
-    public void testExecuteSlicer_ContentDataIncludeDefaultSlicer()
+    public void testExecuteSlicerContentDataIncludeDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
-    public void testExecuteNoSlicer_ContentDataIncludeDefaultSlicer()
+    public void testExecuteNoSlicerContentDataIncludeDefaultSlicer()
         throws Exception
     {
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
-    }
-
-    public void testExecuteEmptySlicer_ContentDataIncludeDefaultSlicer()
-        throws Exception
-    {
-        doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
-    }
-
-    public void testExecuteEmptySlicer_ContentDataOmitDefaultSlicer()
-        throws Exception
-    {
-        doTestExecuteContent(XmlaConstants.Content.DataOmitDefaultSlicer);
     }
 
     public void testExecuteWithoutCellProperties() throws Exception
@@ -686,7 +674,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
+    public void Q()
         throws Exception
     {
         String requestType = "EXECUTE";
@@ -785,7 +773,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             + "            <Catalog>${catalog}</Catalog>\n"
             + "            <DataSourceInfo>${data.source.info}</DataSourceInfo>\n"
             + "            <Format>${format}</Format>\n"
-            + "            <Role>${format}</Role>\n"
             + "            <AxisFormat>TupleFormat</AxisFormat>\n"
             + "          </PropertyList>\n"
             + "        </Properties>\n"
@@ -884,17 +871,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTestInline(
             requestType, request, "response",
             props, TestContext.instance(), role);
-    }
-
-    public void testExecuteBugMondrian762()
-        throws Exception
-    {
-        String requestType = "EXECUTE";
-        Properties props = getDefaultRequestProperties(requestType);
-        propSaver.set(
-            MondrianProperties.instance().EnableRolapCubeMemberCache,
-            false);
-        doTest(requestType, props, TestContext.instance());
     }
 
     public void doTestRT(String requestType, TestContext testContext)

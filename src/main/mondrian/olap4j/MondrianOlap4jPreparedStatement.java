@@ -39,33 +39,24 @@ abstract class MondrianOlap4jPreparedStatement
     extends MondrianOlap4jStatement
     implements PreparedOlapStatement, OlapParameterMetaData
 {
-    private final String mdx; // for debug
+    private final String mdx;
     private Query query;
     MondrianOlap4jCellSetMetaData cellSetMetaData;
 
-    /**
-     * Creates a MondrianOlap4jPreparedStatement.
-     *
-     * @param olap4jConnection Connection
-     * @param mdx MDX query string
-     *
-     * @throws OlapException if database error occurs
-     */
-    protected MondrianOlap4jPreparedStatement(
+    public MondrianOlap4jPreparedStatement(
         MondrianOlap4jConnection olap4jConnection,
         String mdx)
-        throws OlapException
     {
         super(olap4jConnection);
         this.mdx = mdx;
-        this.query = olap4jConnection.getMondrianConnection().parseQuery(mdx);
+        this.query = olap4jConnection.connection.parseQuery(mdx);
         this.cellSetMetaData = new MondrianOlap4jCellSetMetaData(this, query);
     }
 
     // override OlapStatement
 
     public CellSet executeOlapQuery(String mdx) throws OlapException {
-        this.query = olap4jConnection.getMondrianConnection().parseQuery(mdx);
+        this.query = olap4jConnection.connection.parseQuery(mdx);
         this.cellSetMetaData = new MondrianOlap4jCellSetMetaData(this, query);
         return executeOlapQueryInternal(query);
     }

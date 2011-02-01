@@ -31,7 +31,7 @@ import mondrian.rolap.RolapMeasure;
  */
 class MondrianOlap4jMember implements Member, Named {
     final mondrian.olap.Member member;
-    final MondrianOlap4jSchema olap4jSchema;
+    private final MondrianOlap4jSchema olap4jSchema;
 
     MondrianOlap4jMember(
         MondrianOlap4jSchema olap4jSchema,
@@ -53,16 +53,9 @@ class MondrianOlap4jMember implements Member, Named {
         return member.hashCode();
     }
 
-    public String toString() {
-        return getUniqueName();
-    }
-
-    public NamedList<MondrianOlap4jMember> getChildMembers()
-        throws OlapException
-    {
+    public NamedList<MondrianOlap4jMember> getChildMembers() {
         final List<mondrian.olap.Member> children =
-            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection
-                .getMondrianConnection().getSchemaReader().getMemberChildren(
+            olap4jSchema.schemaReader.getMemberChildren(
                 member);
         return new AbstractNamedList<MondrianOlap4jMember>() {
             protected String getName(MondrianOlap4jMember member) {
@@ -80,20 +73,13 @@ class MondrianOlap4jMember implements Member, Named {
         };
     }
 
-    public int getChildMemberCount() throws OlapException {
-        return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-            .olap4jConnection.getMondrianConnection().getSchemaReader()
-            .getMemberChildren(member).size();
+    public int getChildMemberCount() {
+        return olap4jSchema.schemaReader.getMemberChildren(member).size();
     }
 
     public MondrianOlap4jMember getParentMember() {
         final mondrian.olap.Member parentMember = member.getParentMember();
-        if (parentMember == null
-            || !olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-            .olap4jConnection.getMondrianConnection2().getSchemaReader()
-            .isVisible(
-                parentMember))
-        {
+        if (parentMember == null) {
             return null;
         }
         return new MondrianOlap4jMember(olap4jSchema, parentMember);
@@ -200,17 +186,12 @@ class MondrianOlap4jMember implements Member, Named {
         return member.getUniqueName();
     }
 
-    public String getCaption() {
+    public String getCaption(Locale locale) {
         return member.getCaption();
     }
 
-    public String getDescription() {
+    public String getDescription(Locale locale) {
         return member.getDescription();
-    }
-
-    public boolean isVisible() {
-        return (Boolean) member.getPropertyValue(
-            mondrian.olap.Property.VISIBLE.getName());
     }
 }
 

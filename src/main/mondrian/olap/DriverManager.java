@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,6 +15,7 @@ package mondrian.olap;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.CatalogLocator;
+import mondrian.spi.impl.CatalogLocatorImpl;
 
 import javax.sql.DataSource;
 
@@ -43,7 +44,8 @@ public class DriverManager {
      * @param locator Use to locate real catalog url by a customized
      *   configuration value. If <code>null</code>, leave the catalog url
      *   unchanged.
-     * @return A {@link Connection}, never null
+     * @return A {@link Connection}
+     * @post return != null
      */
     public static Connection getConnection(
         String connectString,
@@ -62,7 +64,8 @@ public class DriverManager {
      * @param locator Use to locate real catalog url by a customized
      *   configuration value. If <code>null</code>, leave the catalog url
      *   unchanged.
-     * @return A {@link Connection}, never null
+     * @return A {@link Connection}
+     * @post return != null
      */
     public static Connection getConnection(
         Util.PropertyList properties,
@@ -85,7 +88,8 @@ public class DriverManager {
      *   unchanged.
      * @param dataSource - if not null an external DataSource to be used
      *        by Mondrian
-     * @return A {@link Connection}, never null
+     * @return A {@link Connection}
+     * @post return != null
      */
     public static Connection getConnection(
         Util.PropertyList properties,
@@ -96,12 +100,6 @@ public class DriverManager {
         if (!provider.equalsIgnoreCase("mondrian")) {
             throw Util.newError("Provider not recognized: " + provider);
         }
-        final String instance =
-            properties.get(RolapConnectionProperties.Instance.name());
-        MondrianServer server = MondrianServer.forId(instance);
-        if (server != null && locator == null) {
-            locator = server.getCatalogLocator();
-        }
         if (locator != null) {
             String catalog = properties.get(
                 RolapConnectionProperties.Catalog.name());
@@ -109,7 +107,7 @@ public class DriverManager {
                 RolapConnectionProperties.Catalog.name(),
                 locator.locate(catalog));
         }
-        return new RolapConnection(server, properties, dataSource);
+        return new RolapConnection(properties, dataSource);
     }
 }
 

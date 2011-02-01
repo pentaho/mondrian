@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,17 +50,6 @@ public class Pair <L, R>
     public Pair(Map.Entry<? extends L, ? extends R> entry) {
         this.left = entry.getKey();
         this.right = entry.getValue();
-    }
-
-    /**
-     * Creates a Pair.
-     *
-     * @param left Left value
-     * @param right Right value
-     * @return a new Pair
-     */
-    public static <L, R> Pair<L, R> of(L left, R right) {
-        return new Pair<L, R>(left, right);
     }
 
     public boolean equals(Object obj) {

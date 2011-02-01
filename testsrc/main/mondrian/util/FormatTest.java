@@ -503,27 +503,6 @@ public class FormatTest extends TestCase {
     }
 
     public void testTrickyDates() {
-        // All examples have been checked with Excel2003 and AS2005.
-
-        checkFormat(null, date2, "y", "250");
-        checkFormat(null, date2, "yy", "10");
-        checkFormat(null, date2, "yyy", "10250");
-
-        checkFormat(null, date2, "#", "40428"); // days since 1900
-        checkFormat(null, date2, "x#", "x40428");
-        checkFormat(null, date2, "x#y", "x40428y");
-        checkFormat(null, date2, "x/y", "x/250");
-
-        // Using a date format (such as 'y') or separator ('/' or ':') forces
-        // into date mode. '#' is no longer recognized as a numeric format
-        // string.
-        checkFormat(null, date2, "x/y/#", "x/250/#");
-        checkFormat(null, date2, "xy#", "x250#");
-        checkFormat(null, date2, "x/#", "x/#");
-        checkFormat(null, date2, "x:#", "x:#");
-        checkFormat(null, date2, "x-#", "x-40428"); // '-' is not special
-        checkFormat(null, date2, "x #", "x 40428"); // ' ' is not special
-
         // must not throw exception
         checkFormat(null, date2, "mm/##/yy", "09/##/10");
 
@@ -553,6 +532,11 @@ public class FormatTest extends TestCase {
 
         // must recognize "Long Date" etc.
         checkFormat(null, date2, "Long Date", "Tuesday, September 07, 2010");
+
+        // international currency symbol
+        checkFormat(
+            null, new BigDecimal("1.2"), "" + Format.intlCurrencySymbol + "#",
+            "$1");
     }
 
     public void testFrenchLocale() {
@@ -632,16 +616,9 @@ public class FormatTest extends TestCase {
     }
 
     public void testString() {
-        // Excel2003
         checkFormat(null, "This Is A Test", ">", "THIS IS A TEST");
-
-        // Excel2003
         checkFormat(null, "This Is A Test", "<", "this is a test");
-
-        // SSAS2005
-        checkFormat(null, "hello", "\\f\\i\\x\\e\\d", "hello");
-
-        // SSAS2005
+        checkFormat(null, "hello", "\\f\\i\\x\\e\\d", "fixed");
         checkFormat(null, "hello", ">\\f\\i\\x\\e\\d<", "HELLOfixedhello");
 
         final BigDecimal decimal = new BigDecimal("123.45");
@@ -649,68 +626,34 @@ public class FormatTest extends TestCase {
         final String string = "Foo Bar";
 
         // ">"
-        checkFormat(null, decimal, ">", "123.45");
-        checkFormat(null, integer, ">", "123");
+        checkFormat(null, decimal, ">", ">");
+        checkFormat(null, integer, ">", ">");
         checkFormat(null, string, ">", "FOO BAR"); // SSAS 2005 returns ">"
 
         // "<"
-        checkFormat(null, decimal, "<", "123.45");
-        checkFormat(null, integer, "<", "123");
+        checkFormat(null, decimal, "<", "<");
+        checkFormat(null, integer, "<", "<");
         checkFormat(null, string, "<", "foo bar"); // SSAS 2005 returns "<"
 
         // "@" (can't figure out how to use this -- SSAS 2005 always ignores)
         checkFormat(null, decimal, "@", "@"); // checked on SSAS 2005
         checkFormat(null, integer, "@", "@"); // checked on SSAS 2005
-        checkFormat(null, string, "@", string); // checked on Excel 2003
+        checkFormat(null, string, "@", "@"); // checked on SSAS 2005
 
         // combinations
         checkFormat(null, string, "<@", "foo bar@"); // SSAS 2005 returns "<@"
+        checkFormat(
+            null, string, "<>", "foo barFOO BAR"); // SSAS 2005 returns "<>"
+        checkFormat(null, string, "E", "E"); // checked on SSAS 2005
 
-        // SSAS 2005 returns "<>"; Excel returns "Foo Bar", i.e. unchanged
-        checkFormat(null, string, "<>", "foo barFOO BAR");
+        checkFormat(
+            null, decimal, "E",
+            "E"); // FIXME: SSAS 2005 returns "1.234500E+002"
 
-        checkFormat(null, string, "E", string); // checked on Excel 2003
-
-        // FIXME: SSAS 2005 returns "1.234500E+002"
-        checkFormat(null, decimal, "E", "E");
-
-        // SSAS 2005 returns "<E"
-        // Excel returns "<123.45"
-        checkFormat(null, decimal, "<E", "123.45E");
+        checkFormat(null, decimal, "<E", "<E"); // checked on SSAS 2005
 
         // spec and SSAS 2005 disagree
-        checkFormat(null, string, "\"fixed\"", string);
-
-//        checkFormat(null, string, "Currency", "Foo Bar");
-        checkFormat(null, string, "$#", string);
-        checkFormat(null, string, "$#,#.#", string);
-    }
-
-    public void testNonNumericValuesUsingNumericFormat() {
-        // All of the following have been checked in Excel 2003.
-
-        // string value printed using a numeric format
-        checkFormat(null, "foo Bar", "#,#", "foo Bar");
-        checkFormat(null, "foo Bar", "#,#;[#]", "foo Bar");
-        checkFormat(null, "foo Bar", "#,#;[#];NULL", "foo Bar");
-        checkFormat(null, "foo Bar", "#,#;[#];NULL;NIL", "foo Bar");
-
-        // date value printed using a numeric format
-        checkFormat(null, date, "#,#;[#];NULL;NIL", "25,324");
-        checkFormat(null, date2, "#,#;[#];NULL;NIL", "40,428");
-
-        // date with numeric converted to julian date (days since 1900)
-        checkFormat(null, date2, "#", "40428");
-        checkFormat(null, date2, "#.##", "40428.25");
-        checkFormat(null, date2, "#;[#];NULL", "40428");
-
-        // date value with string format gives long date string
-        checkFormat(null, date2, "<", "9/7/10 6:05:04 am");
-        checkFormat(null, date2, ">", "9/7/10 6:05:04 AM");
-
-        // numeric value and string format
-        checkFormat(null, 123.45E6, "<", "123,450,000"); // Excel gives 12345600
-        checkFormat(null, -123.45E6, ">", "-123,450,000");
+        checkFormat(null, string, "\"fixed\"", "fixed");
     }
 
     public void testFormatThousands() {
@@ -824,13 +767,6 @@ public class FormatTest extends TestCase {
              123456,
              "Currency",
              "$ 123,456.00");
-
-        // international currency symbol
-        checkFormat(
-            null,
-            new BigDecimal("1.2"),
-            "" + Format.intlCurrencySymbol + "#",
-            "$1");
     }
 }
 

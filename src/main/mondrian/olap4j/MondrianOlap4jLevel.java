@@ -3,14 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Role;
-import org.olap4j.OlapException;
 import org.olap4j.metadata.*;
 import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Named;
@@ -28,8 +26,8 @@ import mondrian.olap.Util;
  * @since May 25, 2007
  */
 class MondrianOlap4jLevel implements Level, Named {
-    final MondrianOlap4jSchema olap4jSchema;
-    final mondrian.olap.Level level;
+    private final MondrianOlap4jSchema olap4jSchema;
+    private final mondrian.olap.Level level;
 
     /**
      * Creates a MondrianOlap4jLevel.
@@ -55,18 +53,7 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public int getDepth() {
-        return level.getDepth() - getDepthOffset();
-    }
-
-    private int getDepthOffset() {
-        final Role.HierarchyAccess accessDetails =
-            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection
-                .getMondrianConnection2().getRole().getAccessDetails(
-                level.getHierarchy());
-        if (accessDetails == null) {
-            return 0;
-        }
-        return accessDetails.getTopLevelDepth();
+        return level.getDepth();
     }
 
     public Hierarchy getHierarchy() {
@@ -82,9 +69,6 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public Type getLevelType() {
-        if (level.isAll()) {
-            return Type.ALL;
-        }
         switch (level.getLevelType()) {
         case Regular:
             return Type.REGULAR;
@@ -115,29 +99,14 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public NamedList<Property> getProperties() {
-        return getProperties(true);
-    }
-
-    /**
-     * Returns a list of this level's properties, optionally including standard
-     * properties that are available on every level.
-     *
-     * <p>NOTE: Not part of the olap4j API.
-     *
-     * @param includeStandard Whether to include standard properties
-     * @return List of properties
-     */
-    NamedList<Property> getProperties(boolean includeStandard) {
         final NamedList<Property> list = new ArrayNamedListImpl<Property>() {
             protected String getName(Property property) {
                 return property.getName();
             }
         };
         // standard properties first
-        if (includeStandard) {
-            list.addAll(
-                Arrays.asList(Property.StandardMemberProperty.values()));
-        }
+        list.addAll(
+            Arrays.asList(Property.StandardMemberProperty.values()));
         // then level-specific properties
         for (mondrian.olap.Property property : level.getProperties()) {
             list.add(new MondrianOlap4jProperty(property));
@@ -145,11 +114,11 @@ class MondrianOlap4jLevel implements Level, Named {
         return list;
     }
 
-    public List<Member> getMembers() throws OlapException {
+    public List<Member> getMembers() {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jConnection.getMondrianConnection().getSchemaReader();
+            olap4jConnection.connection.getSchemaReader();
         final List<mondrian.olap.Member> levelMembers =
             schemaReader.getLevelMembers(level, true);
         return new AbstractList<Member>() {
@@ -171,22 +140,18 @@ class MondrianOlap4jLevel implements Level, Named {
         return level.getUniqueName();
     }
 
-    public String getCaption() {
+    public String getCaption(Locale locale) {
         // todo: localized captions
         return level.getCaption();
     }
 
-    public String getDescription() {
+    public String getDescription(Locale locale) {
         // todo: localize
         return level.getDescription();
     }
 
     public int getCardinality() {
         return level.getApproxRowCount();
-    }
-
-    public boolean isVisible() {
-        return true;
     }
 }
 

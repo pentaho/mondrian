@@ -401,26 +401,14 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public DoubleCalc compileDouble(Exp exp) {
-        final Calc calc = compileScalar(exp, false);
+        final DoubleCalc calc = (DoubleCalc) compileScalar(exp, false);
         if (calc instanceof ConstantCalc
             && !(calc.evaluate(null) instanceof Double))
         {
             return ConstantCalc.constantDouble(
-                ((ConstantCalc) calc).evaluateDouble(null));
+                calc.evaluateDouble(null));
         }
-        if (calc instanceof DoubleCalc) {
-            return (DoubleCalc) calc;
-        }
-        if (calc instanceof IntegerCalc) {
-            final IntegerCalc integerCalc = (IntegerCalc) calc;
-            return new AbstractDoubleCalc(exp, new Calc[] {integerCalc}) {
-                public double evaluateDouble(Evaluator evaluator) {
-                    final int result = integerCalc.evaluateInteger(evaluator);
-                    return (double) result;
-                }
-            };
-        }
-        throw Util.newInternal("cannot cast " + exp);
+        return calc;
     }
 
     public TupleCalc compileTuple(Exp exp) {

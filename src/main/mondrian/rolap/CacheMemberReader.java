@@ -48,7 +48,10 @@ class CacheMemberReader implements MemberReader, MemberCache {
         this.mapKeyToMember = new HashMap<Object, RolapMember>();
         this.members = source.getMembers();
         for (int i = 0; i < members.size(); i++) {
-            RolapMember member = RolapUtil.strip(members.get(i));
+            RolapMember member = members.get(i);
+            if (member instanceof RolapCubeMember) {
+                member = ((RolapCubeMember) member).getRolapMember();
+            }
             ((RolapMemberBase) member).setOrdinal(i);
         }
     }

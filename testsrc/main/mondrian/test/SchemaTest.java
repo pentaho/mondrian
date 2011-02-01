@@ -252,8 +252,8 @@ public class SchemaTest extends FoodMartTestCase {
         testContext.assertSimpleQuery();
         // FIXME: Should give better error.
         testContext.assertQueryThrows(
-            "select [Yearly Income3].Children on 0 from [Sales]",
-            "Internal error: while building member cache");
+            "select [Yearly Income3].Children from [Sales]",
+            "Error while parsing MDX statement");
     }
 
     public void testPrimaryKeyTableNotFound() {
@@ -1937,10 +1937,10 @@ public class SchemaTest extends FoodMartTestCase {
         final NamedList<org.olap4j.metadata.Cube> cubes =
             testContext.getOlap4jConnection().getSchema().getCubes();
         final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
-        assertEquals("Cube with name", cube.getCaption());
+        assertEquals("Cube with name", cube.getCaption(null));
         final org.olap4j.metadata.Cube cube2 =
             cubes.get("Warehouse and Sales with caption");
-        assertEquals("Warehouse and Sales with name", cube2.getCaption());
+        assertEquals("Warehouse and Sales with name", cube2.getCaption(null));
     }
 
     public void testCubeWithNoDimensions() {

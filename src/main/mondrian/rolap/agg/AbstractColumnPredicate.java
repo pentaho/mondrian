@@ -29,7 +29,7 @@ import java.util.ArrayList;
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     protected final RolapStar.Column constrainedColumn;
-    private BitKey constrainedColumnBitKey;
+    private final BitKey constrainedColumnBitKey;
 
     /**
      * Creates an AbstractColumnPredicate.
@@ -38,6 +38,17 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
      */
     protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
         this.constrainedColumn = constrainedColumn;
+
+        // Check whether constrainedColumn are null.
+        // Example: FastBatchingCellReaderTest.testAggregateDistinctCount5().
+        if (constrainedColumn != null && constrainedColumn.getTable() != null) {
+            constrainedColumnBitKey =
+                BitKey.Factory.makeBitKey(
+                    constrainedColumn.getStar().getColumnCount());
+            constrainedColumnBitKey.set(constrainedColumn.getBitPosition());
+        } else {
+            constrainedColumnBitKey = null;
+        }
     }
 
     public String toString() {
@@ -56,17 +67,6 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     }
 
     public BitKey getConstrainedColumnBitKey() {
-        // Check whether constrainedColumn are null.
-        // Example: FastBatchingCellReaderTest.testAggregateDistinctCount5().
-        if (constrainedColumnBitKey == null
-            && constrainedColumn != null
-            && constrainedColumn.getTable() != null)
-        {
-            constrainedColumnBitKey =
-                BitKey.Factory.makeBitKey(
-                    constrainedColumn.getStar().getColumnCount());
-            constrainedColumnBitKey.set(constrainedColumn.getBitPosition());
-        }
         return constrainedColumnBitKey;
     }
 

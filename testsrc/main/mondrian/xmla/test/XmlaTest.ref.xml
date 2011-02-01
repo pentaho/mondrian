@@ -158,10 +158,10 @@
         </xsd:complexType>
       </xsd:schema>
       <row>
-        <DataSourceName>FoodMart</DataSourceName>
+        <DataSourceName>Provider=Mondrian;DataSource=MondrianFoodMart;</DataSourceName>
         <DataSourceDescription>Mondrian FoodMart Test data source</DataSourceDescription>
         <URL>http://localhost:8080/mondrian/xmla</URL>
-        <DataSourceInfo>FoodMart</DataSourceInfo>
+        <DataSourceInfo>Provider=Mondrian;DataSource=MondrianFoodMart;</DataSourceInfo>
         <ProviderName>Mondrian</ProviderName>
         <ProviderType>MDP</ProviderType>
         <AuthenticationMode>Unauthenticated</AuthenticationMode>
@@ -596,6 +596,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -674,6 +675,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>HR</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -685,6 +687,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -696,6 +699,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales 2</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -707,6 +711,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Sales Ragged</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -718,6 +723,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Store</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -729,6 +735,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Warehouse</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -740,6 +747,7 @@
         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
+        
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>

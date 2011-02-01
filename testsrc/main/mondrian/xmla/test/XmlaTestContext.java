@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,6 +11,7 @@ package mondrian.xmla.test;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -30,8 +31,6 @@ import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMUtil;
 
-import org.olap4j.impl.Olap4jUtil;
-
 /**
  * Common utilities for XML/A testing, used in test suite and
  * example XML/A web pages. Refactored from XmlaTest.
@@ -45,15 +44,18 @@ public class XmlaTestContext {
         Logger.getLogger(XmlaTestContext.class);
 
     public static final String CATALOG_NAME = "FoodMart";
-    public static final String DATASOURCE_NAME = "FoodMart";
+    public static final String DATASOURCE_NAME = "MondrianFoodMart";
     public static final String DATASOURCE_DESCRIPTION =
         "Mondrian FoodMart Test data source";
     public static final String DATASOURCE_INFO =
-        "Provider=Mondrian;DataSource=FoodMart;";
+        "Provider=Mondrian;DataSource=MondrianFoodMart;";
     public static final Map<String, String> ENV =
-        Olap4jUtil.mapOf(
-            "catalog", CATALOG_NAME,
-            "datasource", DATASOURCE_NAME);
+        new HashMap<String, String>() {
+            {
+                put("catalog", CATALOG_NAME);
+                put("datasource", DATASOURCE_INFO);
+            }
+        };
     private static DataSourcesConfig.DataSources DATASOURCES;
     public static final CatalogLocator CATALOG_LOCATOR =
         new CatalogLocatorImpl();
@@ -80,31 +82,16 @@ public class XmlaTestContext {
             return DATASOURCES;
         }
 
-        StringReader dsConfigReader = new StringReader(
-            getDataSourcesString());
-        try {
-            final Parser xmlParser = XOMUtil.createDefaultParser();
-            final DOMWrapper def = xmlParser.parse(dsConfigReader);
-            DATASOURCES = new DataSourcesConfig.DataSources(def);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return DATASOURCES;
-    }
-
-    public String getDataSourcesString() {
         Util.PropertyList connectProperties =
             Util.parseConnectString(getConnectString());
         String catalogUrl = connectProperties.get(
             RolapConnectionProperties.Catalog.name());
-        return
+
+        StringReader dsConfigReader = new StringReader(
             "<?xml version=\"1.0\"?>"
             + "<DataSources>"
             + "   <DataSource>"
-            + "       <DataSourceName>"
-            + DATASOURCE_NAME
-            + "</DataSourceName>"
+            + "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>"
             + "       <DataSourceDescription>"
             + DATASOURCE_DESCRIPTION
             + "</DataSourceDescription>"
@@ -121,7 +108,15 @@ public class XmlaTestContext {
             + "</Definition></Catalog>"
             + "       </Catalogs>"
             + "   </DataSource>"
-            + "</DataSources>";
+            + "</DataSources>");
+        try {
+            final Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(dsConfigReader);
+            DATASOURCES = new DataSourcesConfig.DataSources(def);
+        } catch (Exception e) {
+        }
+
+        return DATASOURCES;
     }
 
     public static String xmlFromTemplate(

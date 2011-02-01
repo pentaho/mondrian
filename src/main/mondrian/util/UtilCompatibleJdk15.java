@@ -9,7 +9,6 @@
 */
 package mondrian.util;
 
-import java.util.UUID;
 import java.util.regex.Pattern;
 import java.math.BigDecimal;
 // Only in Java5 and above
@@ -71,10 +70,6 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
             return defaultValue;
         }
         return defaultValue;
-    }
-
-    public String generateUuidString() {
-        return UUID.randomUUID().toString();
     }
 }
 
