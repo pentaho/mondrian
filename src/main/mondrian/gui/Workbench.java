@@ -110,7 +110,7 @@ public class Workbench extends javax.swing.JFrame {
     private static final String GUIResourceName = "mondrian.gui.resources.gui";
     private static final String TextResourceName =
         "mondrian.gui.resources.text";
-    private static final String FILTER_SCHEMA_LIST = "FILTER_SCHEMA_LIST";    
+    private static final String FILTER_SCHEMA_LIST = "FILTER_SCHEMA_LIST";
 
     private static final Logger LOGGER = Logger.getLogger(Workbench.class);
 
@@ -1313,9 +1313,9 @@ public class Workbench extends javax.swing.JFrame {
         jdbcPassword = databaseMeta.getPassword();
         //jdbcSchema = databaseMeta.getPreferredSchemaName();
         Map<String, String> options = dbMeta.getExtraOptions();
-        
+
         String dbType = dbMeta.getDatabaseInterface().getPluginId();
-        jdbcSchema = options.get(dbType + "." + FILTER_SCHEMA_LIST);    
+        jdbcSchema = options.get(dbType + "." + FILTER_SCHEMA_LIST);
 
         // saving to workbench properties for documentation purposes only, since
         // persistence
