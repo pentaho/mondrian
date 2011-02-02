@@ -406,48 +406,50 @@ public class ValidationUtils {
                 } else if (cube != null && cube.fact != null) {
                     // Database validity check, if database connection is
                     // successful
-                    final MondrianGuiDef.Table factTable =
-                        (MondrianGuiDef.Table) cube.fact;
-                    if (jdbcValidator.isInitialized()) {
-                        String column = measure.column;
-                        if (jdbcValidator.isColExists(
-                            factTable.schema,
-                            factTable.name,
-                            column))
-                        {
-                            // Check for aggregator type only if column exists
-                            // in table.
+                    if (cube.fact instanceof MondrianGuiDef.Table) {
+                        final MondrianGuiDef.Table factTable =
+                            (MondrianGuiDef.Table) cube.fact;
+                        if (jdbcValidator.isInitialized()) {
+                            String column = measure.column;
+                            if (jdbcValidator.isColExists(
+                                factTable.schema,
+                                factTable.name,
+                                column))
+                            {
+                                // Check for aggregator type only if column exists
+                                // in table.
 
-                            // Check if aggregator selected is valid on the data
-                            // type of the column selected.
-                            int colType =
-                                jdbcValidator.getColumnDataType(
-                                    factTable.schema,
-                                    factTable.name,
-                                    measure.column);
-                            // Coltype of 2, 4,5, 7, 8, -5 is numeric types
-                            // whereas 1, 12 are char varchar string
-                            // and 91 is date type.
-                            // Types are enumerated in java.sql.Types.
-                            int agIndex = -1;
-                            if ("sum".equals(
-                                measure.aggregator)
-                                || "avg".equals(
-                                    measure.aggregator))
-                            {
-                                // aggregator = sum or avg, column should be
-                                // numeric
-                                agIndex = 0;
-                            }
-                            if (!(agIndex == -1
-                                  || (colType >= 2 && colType <= 8)
-                                  || colType == -5))
-                            {
-                                return messages.getFormattedString(
-                                    "schemaTreeCellRenderer.aggregatorNotValidForColumn.alert",
-                                    "Aggregator {0} is not valid for the data type of the column {1}",
-                                    measure.aggregator,
-                                    measure.column);
+                                // Check if aggregator selected is valid on the data
+                                // type of the column selected.
+                                int colType =
+                                    jdbcValidator.getColumnDataType(
+                                        factTable.schema,
+                                        factTable.name,
+                                        measure.column);
+                                // Coltype of 2, 4,5, 7, 8, -5 is numeric types
+                                // whereas 1, 12 are char varchar string
+                                // and 91 is date type.
+                                // Types are enumerated in java.sql.Types.
+                                int agIndex = -1;
+                                if ("sum".equals(
+                                    measure.aggregator)
+                                    || "avg".equals(
+                                        measure.aggregator))
+                                {
+                                    // aggregator = sum or avg, column should be
+                                    // numeric
+                                    agIndex = 0;
+                                }
+                                if (!(agIndex == -1
+                                    || (colType >= 2 && colType <= 8)
+                                    || colType == -5))
+                                {
+                                    return messages.getFormattedString(
+                                        "schemaTreeCellRenderer.aggregatorNotValidForColumn.alert",
+                                        "Aggregator {0} is not valid for the data type of the column {1}",
+                                        measure.aggregator,
+                                        measure.column);
+                                }
                             }
                         }
                     }
