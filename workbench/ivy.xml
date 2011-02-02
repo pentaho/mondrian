@@ -41,7 +41,6 @@
         <dependency org="pentaho.kettle" name="kettle-db" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="pentaho.kettle" name="kettle-engine" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
-        <dependency org="com.google.collections" name="google-collections" rev="1.0-rc5" />        
         
 
         <!--Exclusions-->
