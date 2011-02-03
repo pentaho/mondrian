@@ -16,6 +16,7 @@ import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
 
 import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * A <code>SegmentDataset</code> holds the values in a segment.
@@ -84,7 +85,24 @@ interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
     void populateFrom(
         int[] pos, SegmentLoader.RowList rowList, int column);
 
+    /**
+     * Returns the SQL type of the data contained in this dataset.
+     * @return A value of {@link SqlStatement.Type}
+     */
     SqlStatement.Type getType();
-}
 
+    /**
+     * Must return an immutable, final and serializable implementation
+     * of a SegmentBody in order to cache this dataset.
+     * @param axisValueSets An array of SortedSets of Comparables. This is
+     * supplied by the {@link SegmentLoader}.
+     * @param nullAxisFlags An array of booleans indicating which segment axis
+     * has null values. This is supplied by the {@link SegmentLoader}.
+     * @see SegmentBody#createSegmentDataset(Segment)
+     * @return A {@link SegmentBody} object.
+     */
+    SegmentBody createSegmentBody(
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags);
+}
 // End SegmentDataset.java

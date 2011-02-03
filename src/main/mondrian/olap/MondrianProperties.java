@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -427,6 +427,68 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final StringProperty TestJdbcPassword =
         new StringProperty(
             this, "mondrian.test.jdbcPassword", null);
+
+    /**
+     * Property which defines which SegmentCache implementation to use.
+     * Specify the value as a fully qualified class name, such as
+     * <code>org.example.SegmentCacheImpl</code> where SegmentCacheImpl
+     * is an implementation of {@link mondrian.rolap.agg.SegmentCache}.
+     */
+    public transient final StringProperty SegmentCache =
+        new StringProperty(
+            this, "mondrian.rolap.SegmentCache", null);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.rolap.agg.SegmentCache#get(mondrian.rolap.agg.SegmentHeader)
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.rolap.agg.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheReadTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheReadTimeout", 5000);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.rolap.agg.SegmentCache#put(mondrian.rolap.agg.SegmentHeader, mondrian.rolap.agg.SegmentBody)}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.rolap.agg.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheWriteTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheWriteTimeout", 5000);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.rolap.agg.SegmentCache#contains(mondrian.rolap.agg.SegmentHeader)}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.rolap.agg.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheLookupTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheLookupTimeout", 5000);
+
+    /**
+     * Property which tells the SegmentLoader to throw an exception
+     * if an exception is encountered while loading segments from
+     * cache. <code>true</code> to throw back the errors,
+     * <code>false</code> to log the error and continue execution.
+     * Used only for testing or configuration issues. On a production
+     * system, it is recommended to keep the default value. Defaults
+     * to <code>false</code>.
+     */
+    public transient final BooleanProperty SegmentCacheFailOnError =
+        new BooleanProperty(
+            this, "mondrian.rolap.SegmentCacheFailOnError", false);
 
     /**
      * Property that, with {@link #SparseSegmentDensityThreshold}, determines

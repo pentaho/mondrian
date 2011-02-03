@@ -12,6 +12,9 @@
 */
 package mondrian.rolap.agg;
 
+
+import java.util.SortedSet;
+
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
 
@@ -23,7 +26,7 @@ import mondrian.rolap.SqlStatement;
  * @version $Id$
  */
 class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
-    private final double[] values; // length == m[0] * ... * m[axes.length-1]
+    final double[] values; // length == m[0] * ... * m[axes.length-1]
 
     /**
      * Creates a DenseSegmentDataset.
@@ -84,8 +87,21 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
         values[k] = d;
     }
 
-    protected int size() {
+    protected int getSize() {
         return values.length;
+    }
+
+    public SegmentBody createSegmentBody(
+            SortedSet<Comparable<?>>[] axisValueSets,
+            boolean[] nullAxisFlags)
+    {
+        return
+            new DenseDoubleSegmentBody(
+                nullIndicators,
+                values,
+                getSize(),
+                axisValueSets,
+                nullAxisFlags);
     }
 }
 

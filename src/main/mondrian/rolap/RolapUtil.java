@@ -54,7 +54,12 @@ public class RolapUtil {
     /**
      * Special value represents a null key.
      */
-    public static final Comparable sqlNullValue = new Comparable() {
+    public static final Comparable<?> sqlNullValue = new RolapUtilComparable();
+
+    private final static class RolapUtilComparable
+            implements Comparable, Serializable
+    {
+        private static final long serialVersionUID = -2595758291465179116L;
         public boolean equals(Object o) {
             return o == this;
         }
@@ -64,11 +69,10 @@ public class RolapUtil {
         public String toString() {
             return "#null";
         }
-
         public int compareTo(Object o) {
             return o == this ? 0 : -1;
         }
-    };
+    }
 
     /**
      * Runtime NullMemberRepresentation property change not taken into

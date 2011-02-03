@@ -3,35 +3,43 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.olap.*;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.*;
+
+import org.apache.log4j.Logger;
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into
  * the given set of segments.</p>
  *
- * <p>It reads a segment of <code>measure</code>, where <code>columns</code> are
- * constrained to <code>values</code>.  Each entry in <code>values</code>
+ * <p>It reads a segment of <code>measure</code>, where <code>columns</code>
+ * are constrained to <code>values</code>.  Each entry in <code>values</code>
  * can be null, meaning don't constrain, or can have several values. For
  * example, <code>getSegment({Unit_sales}, {Region, State, Year}, {"West"},
  * {"CA", "OR", "WA"}, null})</code> returns sales in states CA, OR and WA
  * in the Western region, for all years.</p>
  *
- * @author Thiyagu
+ * <p>It will also look at the {@link MondrianProperties#SegmentCache} property
+ * and make usage of the SegmentCache provided as an SPI.
+ *
+ * @author Thiyagu, LBoudreau
  * @version $Id$
  * @since 24 May 2007
  */
 public class SegmentLoader {
 
+    private final static Logger LOGGER = Logger.getLogger(SegmentLoader.class);
     private static final Comparator<Object> BOOLEAN_COMPARATOR;
 
     static {
@@ -64,9 +72,36 @@ public class SegmentLoader {
     }
 
     /**
+     * Segment cache to use.
+     */
+    private SegmentCache segmentCache = null;
+
+    /**
      * Creates a SegmentLoader.
      */
     public SegmentLoader() {
+        if (MondrianProperties.instance().SegmentCache.get() != null) {
+            try {
+                Class<?> clazz =
+                    Class.forName(
+                        MondrianProperties.instance().SegmentCache.get());
+                Object scObject = clazz.newInstance();
+                if (scObject instanceof SegmentCache) {
+                    segmentCache = (SegmentCache) scObject;
+                } else {
+                    LOGGER.error(
+                        MondrianResource.instance()
+                            .SegmentCacheIsNotImplementingInterface
+                                .baseMessage);
+                }
+            } catch (Exception e) {
+                LOGGER.error(
+                    MondrianResource.instance()
+                        .SegmentCacheFailedToInstanciate.baseMessage
+                        + " : "
+                        + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -101,55 +136,240 @@ public class SegmentLoader {
         RolapAggregationManager.PinSet pinnedSegments,
         List<StarPredicate> compoundPredicateList)
     {
-        GroupingSetsList groupingSetsList =
-            new GroupingSetsList(groupingSets);
-        RolapStar.Column[] defaultColumns =
-            groupingSetsList.getDefaultColumns();
-        SqlStatement stmt = null;
-        try {
-            stmt = createExecuteSql(
-                groupingSetsList,
-                compoundPredicateList);
-            int arity = defaultColumns.length;
-            SortedSet<Comparable<?>>[] axisValueSets =
-                getDistinctValueWorkspace(arity);
+        // First check for cached segments.
+        // This method will remove all the segments it fetched from
+        // the cache from the groupingSets list.
+        boolean segmentsLeft =
+            loadSegmentsFromCache(groupingSets, pinnedSegments);
 
-            boolean[] axisContainsNull = new boolean[arity];
+        if (segmentsLeft) {
+            SqlStatement stmt = null;
+            GroupingSetsList groupingSetsList =
+                new GroupingSetsList(groupingSets);
+            RolapStar.Column[] defaultColumns =
+                groupingSetsList.getDefaultColumns();
 
-            RowList rows =
-                processData(
-                    stmt,
-                    axisContainsNull,
-                    axisValueSets,
-                    groupingSetsList);
+            try {
+                int arity = defaultColumns.length;
+                SortedSet<Comparable<?>>[] axisValueSets =
+                    getDistinctValueWorkspace(arity);
+                stmt = createExecuteSql(
+                        groupingSetsList,
+                        compoundPredicateList);
 
-            boolean sparse =
-                setAxisDataAndDecideSparseUse(
-                    axisValueSets,
-                    axisContainsNull,
-                    groupingSetsList,
-                    rows);
+                boolean[] axisContainsNull = new boolean[arity];
 
-            final Map<BitKey, GroupingSetsList.Cohort> groupingDataSetsMap =
-                createDataSetsForGroupingSets(
-                    groupingSetsList,
-                    sparse,
-                    rows.getTypes().subList(
-                        arity, rows.getTypes().size()));
+                RowList rows =
+                    processData(
+                            stmt,
+                            axisContainsNull,
+                            axisValueSets,
+                            groupingSetsList);
 
-            loadDataToDataSets(
-                groupingSetsList, rows, groupingDataSetsMap);
+                boolean sparse =
+                    setAxisDataAndDecideSparseUse(
+                            axisValueSets,
+                            axisContainsNull,
+                            groupingSetsList,
+                            rows);
 
-            setDataToSegments(
-                groupingSetsList, groupingDataSetsMap, pinnedSegments);
-        } catch (SQLException e) {
-            throw stmt.handle(e);
-        } finally {
-            if (stmt != null) {
-                stmt.close();
+                final Map<BitKey, GroupingSetsList.Cohort> groupingDataSetsMap =
+                    createDataSetsForGroupingSets(
+                            groupingSetsList,
+                            sparse,
+                            rows.getTypes().subList(
+                                    arity, rows.getTypes().size()));
+
+                loadDataToDataSets(
+                        groupingSetsList, rows, groupingDataSetsMap);
+
+                setDataToSegments(
+                        groupingSetsList, groupingDataSetsMap, pinnedSegments);
+
+                cacheSegmentData(
+                        groupingSets,
+                        axisValueSets,
+                        axisContainsNull);
+            } catch (SQLException e) {
+                throw stmt.handle(e);
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                // Any segments which are still loading have failed.
+                setFailOnStillLoadingSegments(groupingSetsList);
             }
-            // Any segments which are still loading have failed.
-            setFailOnStillLoadingSegments(groupingSetsList);
+        }
+    }
+
+    /**
+     * Tries to load the segments from the cache. If a segment
+     * can be loaded successfully, it will be removed from the
+     * list passed as the groupingSets argument.
+     * @param groupingSets List of segments to lookup.
+     * @param pinnedSegments PinSet of segments to keep a hard
+     * link to in memory.
+     * @return True if segments remain to be loaded, false if
+     * all segments were successfully fetched out of the cache.
+     */
+    private boolean loadSegmentsFromCache(
+            List<GroupingSet> groupingSets,
+            RolapAggregationManager.PinSet pinnedSegments)
+    {
+        if (segmentCache != null) {
+            for (GroupingSet groupingSet : groupingSets) {
+                final List<Segment> segmentsToRemove =
+                    new ArrayList<Segment>();
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentHeader sh =
+                        SegmentHeader.forSegment(segment);
+
+                    boolean contains = false;
+
+                    try {
+                        Future<Boolean> result =
+                            segmentCache.contains(sh);
+                        contains = result.get(
+                            MondrianProperties.instance()
+                                .SegmentCacheLookupTimeout.get(),
+                            TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException e) {
+                        LOGGER.error(
+                            MondrianResource.instance()
+                                .SegmentCacheLookupTimeout.baseMessage,
+                            e);
+                        throw MondrianResource.instance()
+                            .SegmentCacheLookupTimeout.ex(e);
+                    } catch (Throwable t) {
+                        LOGGER.error(
+                            MondrianResource.instance()
+                                .SegmentCacheFailedToLookupSegment.baseMessage,
+                            t);
+                        if (MondrianProperties.instance()
+                                .SegmentCacheFailOnError.get())
+                        {
+                            throw MondrianResource.instance()
+                                .SegmentCacheFailedToLookupSegment.ex(t);
+                        }
+                    }
+                    if (contains) {
+                        try {
+                            final SegmentBody sb =
+                                segmentCache.get(sh).get(
+                                    MondrianProperties.instance()
+                                        .SegmentCacheReadTimeout.get(),
+                                    TimeUnit.MILLISECONDS);
+                            // Load the axis keys for this segment
+                            for (int i = 0; i < segment.axes.length; i++) {
+                                Aggregation.Axis axis = segment.axes[i];
+                                axis.loadKeys(
+                                    sb.getAxisValueSets()[i],
+                                    sb.getNullAxisFlags()[i]);
+                            }
+                            final SegmentDataset dataSet =
+                                sb.createSegmentDataset(segment);
+                            segment.setData(dataSet, pinnedSegments);
+                            segmentsToRemove.add(segment);
+                        } catch (TimeoutException e) {
+                            LOGGER.error(
+                                MondrianResource.instance()
+                                    .SegmentCacheReadTimeout.baseMessage,
+                                e);
+                            throw MondrianResource.instance()
+                                .SegmentCacheReadTimeout.ex(e);
+                        } catch (Throwable t) {
+                            LOGGER.error(
+                                MondrianResource.instance()
+                                    .SegmentCacheFailedToLoadSegment
+                                    .baseMessage,
+                                t);
+                            if (MondrianProperties.instance()
+                                    .SegmentCacheFailOnError.get())
+                            {
+                                throw MondrianResource.instance()
+                                    .SegmentCacheFailedToLoadSegment.ex(t);
+                            }
+                        }
+                    }
+                }
+                groupingSet.getSegments().removeAll(segmentsToRemove);
+            }
+            // Now check if there are segments left which were not
+            // loaded from the cache.
+            for (GroupingSet gs : groupingSets) {
+                if (gs.getSegments().size() > 0) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            // We could not load the segments from a cache.
+            // Return true.
+            return true;
+        }
+    }
+
+    /**
+     * Caches segments to the external {@link SegmentCache}, if
+     * configured.
+     * @param groupingSets
+     * @param axisValueSets
+     * @param nullAxisFlags
+     */
+    void cacheSegmentData(
+            List<GroupingSet> groupingSets,
+            SortedSet<Comparable<?>>[] axisValueSets,
+            boolean[] nullAxisFlags)
+    {
+        if (segmentCache != null) {
+            for (final GroupingSet groupingSet : groupingSets) {
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentHeader sh =
+                        SegmentHeader.forSegment(segment);
+                    final SegmentBody sb =
+                        segment
+                            .getData()
+                                .createSegmentBody(
+                                    axisValueSets,
+                                    nullAxisFlags);
+                    boolean success = false;
+                    try {
+                        Future<Boolean> result =
+                            segmentCache.put(sh, sb);
+                        success =
+                            result.get(
+                                MondrianProperties.instance()
+                                    .SegmentCacheWriteTimeout.get(),
+                                TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException e) {
+                        LOGGER.error(
+                            MondrianResource.instance()
+                                .SegmentCacheReadTimeout.baseMessage,
+                            e);
+                        if (MondrianProperties.instance()
+                            .SegmentCacheFailOnError.get())
+                        {
+                            throw MondrianResource.instance()
+                                .SegmentCacheReadTimeout.ex(e);
+                        }
+                    } catch (Throwable t) {
+                        LOGGER.error("Failed to save segment to cache.", t);
+                        if (MondrianProperties.instance()
+                            .SegmentCacheFailOnError.get())
+                        {
+                            throw MondrianResource.instance()
+                                .SegmentCacheFailedToSaveSegment.ex(t);
+                        }
+                    }
+                    if (!success
+                        && MondrianProperties.instance()
+                            .SegmentCacheFailOnError.get())
+                    {
+                        throw MondrianResource.instance()
+                           .SegmentCacheFailedToSaveSegment.ex();
+                    }
+                }
+            }
         }
     }
 

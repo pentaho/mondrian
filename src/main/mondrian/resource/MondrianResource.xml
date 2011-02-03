@@ -762,6 +762,56 @@
     </text>
 </exception>
 
+<!-- Segment and Segment Cache messages -->
+<exception id="7000610" name="SegmentCacheIsNotImplementingInterface">
+    <text>
+        The mondrian.rolap.SegmentCache property points to a class name which is not an
+        implementation of mondrian.rolap.agg.SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000620" name="SegmentCacheFailedToInstanciate">
+    <text>
+        An exception was encountered while creating the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000630" name="SegmentCacheFailedToLoadSegment">
+    <text>
+        An exception was encountered while loading a segment from the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000631" name="SegmentCacheFailedToSaveSegment">
+    <text>
+        An exception was encountered while loading a segment from the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000632" name="SegmentCacheFailedToLookupSegment">
+    <text>
+        An exception was encountered while performing a segment lookup in the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000650" name="SegmentCacheReadTimeout">
+    <text>
+        Timeout reached while reading segment from SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000651" name="SegmentCacheWriteTimeout">
+    <text>
+        Timeout reached while writing segment to SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000652" name="SegmentCacheLookupTimeout">
+    <text>
+        Timeout reached while performing a segment lookup in SegmentCache.
+    </text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Optimizer -->
 <exception id="8000000" name="NativeEvaluationUnsupported"

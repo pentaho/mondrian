@@ -72,6 +72,7 @@ public class LiteralStarPredicate extends AbstractColumnPredicate {
     }
 
     public void values(Collection<Object> collection) {
+        collection.add(value);
     }
 
     public boolean evaluate(Object value) {

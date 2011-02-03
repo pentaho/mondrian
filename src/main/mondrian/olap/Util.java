@@ -21,6 +21,8 @@ import org.eigenbase.xom.XOMUtil;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,6 +143,23 @@ public class Util extends XOMUtil {
             prev = t;
         }
         return true;
+    }
+
+    /**
+     * Parses a string and returns a SHA-256 checksum of it.
+     * @param source The source string to parse.
+     * @return A checksum of the source string.
+     */
+    public static byte[] checksumSha256(String source) {
+        MessageDigest algorithm;
+        try {
+            algorithm = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        algorithm.reset();
+        algorithm.update(source.getBytes());
+        return algorithm.digest();
     }
 
     /**

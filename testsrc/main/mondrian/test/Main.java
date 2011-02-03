@@ -30,6 +30,7 @@ import mondrian.olap.fun.vba.*;
 import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
+import mondrian.rolap.agg.SegmentCacheTest;
 import mondrian.rolap.agg.SegmentLoaderTest;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
@@ -219,6 +220,7 @@ public class Main extends TestSuite {
             addTest(suite, DrillThroughTest.class);
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
+            addTest(suite, SegmentCacheTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
             addTest(suite, HangerDimensionTest.class, "suite");
