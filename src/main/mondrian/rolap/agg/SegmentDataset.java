@@ -87,7 +87,7 @@ interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
 
     /**
      * Returns the SQL type of the data contained in this dataset.
-     * @return A value of {@link SqlStatement.Type}
+     * @return A value of SqlStatement.Type
      */
     SqlStatement.Type getType();
 

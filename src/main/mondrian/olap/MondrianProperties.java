@@ -440,7 +440,7 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property which defines the timeout for
-     * {@link mondrian.rolap.agg.SegmentCache#get(mondrian.rolap.agg.SegmentHeader)
+     * {@link mondrian.rolap.agg.SegmentCache#get(mondrian.rolap.agg.SegmentHeader)}
      * in milliseconds. Defaults to 5000.
      *
      * <p>This is an internal control property. The timeout value
