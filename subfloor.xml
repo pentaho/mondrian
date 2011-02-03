@@ -1442,7 +1442,7 @@ TYPICAL TARGET SEQUENCE
   <target name="cobertura.install" depends="cobertura.download">
     <path id="cobertura.classpath">
       <fileset dir="${cobertura.build.cache.dir}">
-        <include name="*.jar" />
+        <include name="**/*.jar" />
       </fileset>
     </path>
     <taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
@@ -1461,7 +1461,7 @@ TYPICAL TARGET SEQUENCE
         <available classname="net.sourceforge.cobertura.ant.InstrumentTask">
           <classpath>
             <fileset dir="${cobertura.build.cache.dir}">
-              <include name="*.jar" />
+              <include name="**/*.jar" />
             </fileset>
           </classpath>
         </available>
@@ -1480,7 +1480,7 @@ TYPICAL TARGET SEQUENCE
                   organisation="net.sourceforge.cobertura"
                   module="cobertura"
                   revision="1.9"
-                  pattern="${cobertura.build.cache.dir}/[module].[ext]" />
+                  pattern="${cobertura.build.cache.dir}/[organisation]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" />
   </target>
 
 
