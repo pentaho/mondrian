@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2011 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.agg;
 
 import java.util.Collections;
@@ -14,7 +23,12 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.TriggerBase;
 
-final class SegmentCacheWorker {
+/**
+ * Utility class to interact with the SegmentCache.
+ * @author LBoudreau
+ * @version $Id$
+ */
+public final class SegmentCacheWorker {
 
     private final static Logger LOGGER =
         Logger.getLogger(SegmentCacheWorker.class);
@@ -263,3 +277,5 @@ final class SegmentCacheWorker {
         return Collections.emptyList();
     }
 }
+
+// End SegmentCacheWorker.java
