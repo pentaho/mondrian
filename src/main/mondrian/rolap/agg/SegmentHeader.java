@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mondrian.olap.Util;
-import mondrian.rolap.RolapStar.Column;
 
 /**
  * SegmentHeaders are the key objects used to retrieve the segments
@@ -121,7 +120,10 @@ public class SegmentHeader implements Serializable {
             axis.getPredicate().values(values);
             cc[i] =
                 new SegmentHeader.ConstrainedColumn(
-                    axis.getPredicate().getConstrainedColumn(),
+                    axis.getPredicate().getConstrainedColumn()
+                        .getTable().getTableName(),
+                    axis.getPredicate().getConstrainedColumn()
+                        .getName(),
                     values.toArray());
         }
         return
@@ -138,15 +140,30 @@ public class SegmentHeader implements Serializable {
      * Each segment can have many constrained columns. Each column can
      * be constrained by multiple values at once (similar to a SQL in()
      * predicate).
+     *
+     * <p>They are immutable and serializable.
      */
     public static class ConstrainedColumn implements Serializable {
         private static final long serialVersionUID = -2639097927260237524L;
         final String tableName;
         final String columnName;
         final Object[] values;
-        ConstrainedColumn(Column column, Object[] valueList) {
-            this.tableName = column.getTable().getTableName();
-            this.columnName = column.getName();
+        /**
+         * Constructor for ConstrainedColumn.
+         * @param tableName Name of the source table into which the
+         * constrained column is.
+         * @param columnName Name of the column to constrain.
+         * @param valueList List of values to constrain the
+         * column to. Use objects like Integer, Boolean, String
+         * or Double.
+         */
+        public ConstrainedColumn(
+                String tableName,
+                String columnName,
+                Object[] valueList)
+        {
+            this.tableName = tableName;
+            this.columnName = columnName;
             this.values = new Object[valueList.length];
             System.arraycopy(
                 valueList,
