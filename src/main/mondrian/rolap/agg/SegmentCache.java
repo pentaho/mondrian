@@ -10,6 +10,7 @@
 */
 package mondrian.rolap.agg;
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 import mondrian.olap.MondrianProperties;
@@ -51,6 +52,13 @@ public interface SegmentCache {
      * if no corresponding segment could be found in cache.
      */
     Future<Boolean> contains(SegmentHeader header);
+
+    /**
+     * Returns a list of all segments present in the cache.
+     * @return A List of segment headers describing the
+     * contents of the cache.
+     */
+    Future<List<SegmentHeader>> getSegmentHeaders();
 
     /**
      * Stores a segment data in the cache.

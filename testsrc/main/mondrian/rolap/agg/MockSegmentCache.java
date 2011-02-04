@@ -100,5 +100,17 @@ public class MockSegmentCache implements SegmentCache {
         executor.submit(task);
         return task;
     }
+
+    public Future<List<SegmentHeader>> getSegmentHeaders() {
+        FutureTask<List<SegmentHeader>> task =
+            new FutureTask<List<SegmentHeader>>(
+                new Callable<List<SegmentHeader>>() {
+                    public List<SegmentHeader> call() throws Exception {
+                        return new ArrayList<SegmentHeader>(cache.keySet());
+                    }
+                });
+        executor.submit(task);
+        return task;
+    }
 }
 // End MockSegmentCache.java
