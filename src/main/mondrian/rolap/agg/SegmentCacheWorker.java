@@ -240,10 +240,8 @@ public final class SegmentCacheWorker {
      * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
      * timeout values, set {@link MondrianProperties#SegmentCacheScanTimeout}
      *
-     * @param header Header to search.
-     * @return Either a segment body object or null if there
+     * @return Either a list of header objects or an empty list if there
      * was no cache configured or no segment could be found
-     * for the passed header.
      */
     public final static List<SegmentHeader> getSegmentHeaders() {
         if (segmentCache != null) {
