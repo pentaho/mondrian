@@ -16,17 +16,22 @@ import java.util.concurrent.Future;
 import mondrian.olap.MondrianProperties;
 
 /**
- * SPI definition of the segments cache. Implementations are
- * expected to be thread-safe. It is the responsibility of the
- * cache implementation to maintain a consistent state.
- *
- * <p>Implementations must provide a default empty constructor.
- * It will be called by each segment loader. The SegmentCache
- * objects are spawned often. We recommend using
- * a facade object which points to a singleton cache instance.
+ * SPI definition of the segments cache.
  *
  * <p>Lookups are performed using {@link SegmentHeader}s and
  * {@link SegmentBody}s. Both are immutable and fully serializable.
+ *
+ * <p>Implementations are expected to be thread-safe.
+ * It is the responsibility of the cache implementation
+ * to maintain a consistent state.
+ *
+ * <p>Implementations must provide a default empty constructor.
+ * Segment caches are instantiated as a singleton but can be
+ * hot swapped by modifying {@link MondrianProperties#SegmentCache}.
+ * Implementations will get a termination signal through
+ * {@link SegmentCache#tearDown()} but Mondrian will relinquish
+ * control of the termination thread and will not be listening
+ * to thrown exceptions.
  *
  * @see MondrianProperties#SegmentCache
  * @author LBoudreau
@@ -68,5 +73,10 @@ public interface SegmentCache {
      * @param body The segment body to cache.
      */
     Future<Boolean> put(SegmentHeader header, SegmentBody body);
+
+    /**
+     * Tear down and clean up the cache.
+     */
+    void tearDown();
 }
 // End SegmentCache.java

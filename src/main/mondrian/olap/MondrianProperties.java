@@ -478,6 +478,19 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.SegmentCacheLookupTimeout", 5000);
 
     /**
+     * Property which defines the timeout for
+     * {@link mondrian.rolap.agg.SegmentCache#getSegmentHeaders()}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.rolap.agg.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheScanTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheScanTimeout", 5000);
+
+    /**
      * Property which tells the SegmentLoader to throw an exception
      * if an exception is encountered while loading segments from
      * cache. <code>true</code> to throw back the errors,

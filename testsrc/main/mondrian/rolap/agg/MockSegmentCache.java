@@ -23,8 +23,8 @@ import mondrian.olap.Util;
  * @version $Id$
  */
 public class MockSegmentCache implements SegmentCache {
-    final static Map<SegmentHeader, SegmentBody> cache =
-        new HashMap<SegmentHeader, SegmentBody>();
+    private final static Map<SegmentHeader, SegmentBody> cache =
+        new ConcurrentHashMap<SegmentHeader, SegmentBody>();
     final static ExecutorService executor =
         Executors.newSingleThreadExecutor();
     /*
@@ -38,7 +38,9 @@ public class MockSegmentCache implements SegmentCache {
         FutureTask<Boolean>  task =
             new FutureTask<Boolean>(new Callable<Boolean>() {
                 public Boolean call() throws Exception {
-                    return cache.containsKey(header);
+                    synchronized (cache) {
+                        return cache.containsKey(header);
+                    }
                 }
             });
         executor.submit(task);
@@ -48,7 +50,9 @@ public class MockSegmentCache implements SegmentCache {
         FutureTask<SegmentBody>  task =
             new FutureTask<SegmentBody>(new Callable<SegmentBody>() {
                 public SegmentBody call() throws Exception {
-                    return cache.get(header);
+                    synchronized (cache) {
+                        return cache.get(header);
+                    }
                 }
             });
         executor.submit(task);
@@ -93,8 +97,10 @@ public class MockSegmentCache implements SegmentCache {
         FutureTask<Boolean>  task =
             new FutureTask<Boolean>(new Callable<Boolean>() {
                 public Boolean call() throws Exception {
-                    cache.put(header, body);
-                    return true;
+                    synchronized (cache) {
+                        cache.put(header, body);
+                        return true;
+                    }
                 }
             });
         executor.submit(task);
@@ -106,11 +112,19 @@ public class MockSegmentCache implements SegmentCache {
             new FutureTask<List<SegmentHeader>>(
                 new Callable<List<SegmentHeader>>() {
                     public List<SegmentHeader> call() throws Exception {
-                        return new ArrayList<SegmentHeader>(cache.keySet());
+                        synchronized (cache) {
+                            return new ArrayList<SegmentHeader>(cache.keySet());
+                        }
                     }
                 });
         executor.submit(task);
         return task;
+    }
+
+    public void tearDown() {
+        synchronized (cache) {
+            cache.clear();
+        }
     }
 }
 // End MockSegmentCache.java

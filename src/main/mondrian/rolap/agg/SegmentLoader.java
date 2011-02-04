@@ -15,7 +15,6 @@ import mondrian.olap.*;
 
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.*;
 
 import org.apache.log4j.Logger;
 
@@ -68,39 +67,6 @@ public class SegmentLoader {
         } else {
             assert Comparable.class.isAssignableFrom(Boolean.class);
             BOOLEAN_COMPARATOR = null;
-        }
-    }
-
-    /**
-     * Segment cache to use.
-     */
-    private SegmentCache segmentCache = null;
-
-    /**
-     * Creates a SegmentLoader.
-     */
-    public SegmentLoader() {
-        if (MondrianProperties.instance().SegmentCache.get() != null) {
-            try {
-                Class<?> clazz =
-                    Class.forName(
-                        MondrianProperties.instance().SegmentCache.get());
-                Object scObject = clazz.newInstance();
-                if (scObject instanceof SegmentCache) {
-                    segmentCache = (SegmentCache) scObject;
-                } else {
-                    LOGGER.error(
-                        MondrianResource.instance()
-                            .SegmentCacheIsNotImplementingInterface
-                                .baseMessage);
-                }
-            } catch (Exception e) {
-                LOGGER.error(
-                    MondrianResource.instance()
-                        .SegmentCacheFailedToInstanciate.baseMessage
-                        + " : "
-                        + e.getMessage());
-            }
         }
     }
 
@@ -216,97 +182,42 @@ public class SegmentLoader {
             List<GroupingSet> groupingSets,
             RolapAggregationManager.PinSet pinnedSegments)
     {
-        if (segmentCache != null) {
-            for (GroupingSet groupingSet : groupingSets) {
-                final List<Segment> segmentsToRemove =
-                    new ArrayList<Segment>();
-                for (Segment segment : groupingSet.getSegments()) {
-                    final SegmentHeader sh =
-                        SegmentHeader.forSegment(segment);
+        for (GroupingSet groupingSet : groupingSets) {
+            final List<Segment> segmentsToRemove =
+                new ArrayList<Segment>();
 
-                    boolean contains = false;
+            for (Segment segment : groupingSet.getSegments()) {
+                final SegmentHeader sh =
+                    SegmentHeader.forSegment(segment);
 
-                    try {
-                        Future<Boolean> result =
-                            segmentCache.contains(sh);
-                        contains = result.get(
-                            MondrianProperties.instance()
-                                .SegmentCacheLookupTimeout.get(),
-                            TimeUnit.MILLISECONDS);
-                    } catch (TimeoutException e) {
-                        LOGGER.error(
-                            MondrianResource.instance()
-                                .SegmentCacheLookupTimeout.baseMessage,
-                            e);
-                        throw MondrianResource.instance()
-                            .SegmentCacheLookupTimeout.ex(e);
-                    } catch (Throwable t) {
-                        LOGGER.error(
-                            MondrianResource.instance()
-                                .SegmentCacheFailedToLookupSegment.baseMessage,
-                            t);
-                        if (MondrianProperties.instance()
-                                .SegmentCacheFailOnError.get())
-                        {
-                            throw MondrianResource.instance()
-                                .SegmentCacheFailedToLookupSegment.ex(t);
-                        }
+                if (SegmentCacheWorker.contains(sh)) {
+                    final SegmentBody sb =
+                        SegmentCacheWorker.get(sh);
+
+                    // Load the axis keys for this segment
+                    for (int i = 0; i < segment.axes.length; i++) {
+                        Aggregation.Axis axis = segment.axes[i];
+                        axis.loadKeys(
+                            sb.getAxisValueSets()[i],
+                            sb.getNullAxisFlags()[i]);
                     }
-                    if (contains) {
-                        try {
-                            final SegmentBody sb =
-                                segmentCache.get(sh).get(
-                                    MondrianProperties.instance()
-                                        .SegmentCacheReadTimeout.get(),
-                                    TimeUnit.MILLISECONDS);
-                            // Load the axis keys for this segment
-                            for (int i = 0; i < segment.axes.length; i++) {
-                                Aggregation.Axis axis = segment.axes[i];
-                                axis.loadKeys(
-                                    sb.getAxisValueSets()[i],
-                                    sb.getNullAxisFlags()[i]);
-                            }
-                            final SegmentDataset dataSet =
-                                sb.createSegmentDataset(segment);
-                            segment.setData(dataSet, pinnedSegments);
-                            segmentsToRemove.add(segment);
-                        } catch (TimeoutException e) {
-                            LOGGER.error(
-                                MondrianResource.instance()
-                                    .SegmentCacheReadTimeout.baseMessage,
-                                e);
-                            throw MondrianResource.instance()
-                                .SegmentCacheReadTimeout.ex(e);
-                        } catch (Throwable t) {
-                            LOGGER.error(
-                                MondrianResource.instance()
-                                    .SegmentCacheFailedToLoadSegment
-                                    .baseMessage,
-                                t);
-                            if (MondrianProperties.instance()
-                                    .SegmentCacheFailOnError.get())
-                            {
-                                throw MondrianResource.instance()
-                                    .SegmentCacheFailedToLoadSegment.ex(t);
-                            }
-                        }
-                    }
-                }
-                groupingSet.getSegments().removeAll(segmentsToRemove);
-            }
-            // Now check if there are segments left which were not
-            // loaded from the cache.
-            for (GroupingSet gs : groupingSets) {
-                if (gs.getSegments().size() > 0) {
-                    return true;
+
+                    final SegmentDataset dataSet =
+                        sb.createSegmentDataset(segment);
+                    segment.setData(dataSet, pinnedSegments);
+                    segmentsToRemove.add(segment);
                 }
             }
-            return false;
-        } else {
-            // We could not load the segments from a cache.
-            // Return true.
-            return true;
+            groupingSet.getSegments().removeAll(segmentsToRemove);
         }
+        // Now check if there are segments left which were not
+        // loaded from the cache.
+        for (GroupingSet gs : groupingSets) {
+            if (gs.getSegments().size() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -321,53 +232,24 @@ public class SegmentLoader {
             SortedSet<Comparable<?>>[] axisValueSets,
             boolean[] nullAxisFlags)
     {
-        if (segmentCache != null) {
-            for (final GroupingSet groupingSet : groupingSets) {
-                for (Segment segment : groupingSet.getSegments()) {
-                    final SegmentHeader sh =
-                        SegmentHeader.forSegment(segment);
-                    final SegmentBody sb =
-                        segment
-                            .getData()
-                                .createSegmentBody(
-                                    axisValueSets,
-                                    nullAxisFlags);
-                    boolean success = false;
-                    try {
-                        Future<Boolean> result =
-                            segmentCache.put(sh, sb);
-                        success =
-                            result.get(
-                                MondrianProperties.instance()
-                                    .SegmentCacheWriteTimeout.get(),
-                                TimeUnit.MILLISECONDS);
-                    } catch (TimeoutException e) {
-                        LOGGER.error(
-                            MondrianResource.instance()
-                                .SegmentCacheReadTimeout.baseMessage,
-                            e);
-                        if (MondrianProperties.instance()
-                            .SegmentCacheFailOnError.get())
-                        {
-                            throw MondrianResource.instance()
-                                .SegmentCacheReadTimeout.ex(e);
-                        }
-                    } catch (Throwable t) {
-                        LOGGER.error("Failed to save segment to cache.", t);
-                        if (MondrianProperties.instance()
-                            .SegmentCacheFailOnError.get())
-                        {
-                            throw MondrianResource.instance()
-                                .SegmentCacheFailedToSaveSegment.ex(t);
-                        }
-                    }
-                    if (!success
-                        && MondrianProperties.instance()
-                            .SegmentCacheFailOnError.get())
-                    {
-                        throw MondrianResource.instance()
-                           .SegmentCacheFailedToSaveSegment.ex();
-                    }
+        for (final GroupingSet groupingSet : groupingSets) {
+            for (Segment segment : groupingSet.getSegments()) {
+                final SegmentHeader sh =
+                    SegmentHeader.forSegment(segment);
+                final SegmentBody sb =
+                    segment
+                        .getData()
+                            .createSegmentBody(
+                                axisValueSets,
+                                nullAxisFlags);
+                boolean success =
+                    SegmentCacheWorker.put(sh, sb);
+                if (!success
+                    && MondrianProperties.instance()
+                        .SegmentCacheFailOnError.get())
+                {
+                    throw MondrianResource.instance()
+                       .SegmentCacheFailedToSaveSegment.ex();
                 }
             }
         }
