@@ -32,6 +32,7 @@ class DenseObjectSegmentBody extends AbstractSegmentBody {
         this.data = new Object[size];
         System.arraycopy(dataToSave, 0, data, 0, size);
     }
+
     public SegmentDataset createSegmentDataset(Segment segment) {
         DenseObjectSegmentDataset ds =
             new DenseObjectSegmentDataset(segment, this.size);
@@ -39,4 +40,6 @@ class DenseObjectSegmentBody extends AbstractSegmentBody {
         return ds;
     }
 }
-//End DenseObjectSegmentBody.java
+
+// End DenseObjectSegmentBody.java
+
