@@ -1480,7 +1480,7 @@ TYPICAL TARGET SEQUENCE
                   organisation="net.sourceforge.cobertura"
                   module="cobertura"
                   revision="1.9"
-                  pattern="${cobertura.build.cache.dir}/[organisation]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" />
+                  pattern="${cobertura.build.cache.dir}/[organisation]/[module]/[type]s/[artifact].[ext]" />
   </target>
 
 
