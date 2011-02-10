@@ -151,8 +151,9 @@ public class SegmentHeader implements Serializable {
         /**
          * Constructor for ConstrainedColumn.
          * @param tableName Name of the source table into which the
-         * constrained column is.
-         * @param columnName Name of the column to constrain.
+         * constrained column is, as defined in the Mondrian schema.
+         * @param columnName Name of the column to constrain, as defined
+         * in the Mondrian schema.
          * @param valueList List of values to constrain the
          * column to. Use objects like Integer, Boolean, String
          * or Double.

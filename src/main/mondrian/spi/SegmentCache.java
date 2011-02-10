@@ -8,18 +8,33 @@
 // You must accept the terms of that agreement to use this software.
 //
 */
-package mondrian.rolap.agg;
+package mondrian.spi;
 
 import java.util.List;
 import java.util.concurrent.Future;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.agg.SegmentBody;
+import mondrian.rolap.agg.SegmentHeader;
 
 /**
  * SPI definition of the segments cache.
  *
  * <p>Lookups are performed using {@link SegmentHeader}s and
  * {@link SegmentBody}s. Both are immutable and fully serializable.
+ *
+ * <p>There are two ways to declare a SegmentCache implementation in
+ * Mondrian. The first one (and the one which will be used by default)
+ * is to set the {@link MondrianProperties#SegmentCache} property. The
+ * second one is to use the Java Services API. You will need to create
+ * a jar file, accessible through the same class loader as Mondrian,
+ * and add a file called <code>/META-INF/services/mondrian.spi.SegmentCache
+ * </code> which contains the name of the segment cache implementation
+ * to use. If more than one SegmentCache Java service is found, the first
+ * one found is used. This is a non-deterministic choice as there are
+ * no guarantees as to which will appear first. This later mean of discovery
+ * is overridden by defining the {@link MondrianProperties#SegmentCache}
+ * property.
  *
  * <p>Implementations are expected to be thread-safe.
  * It is the responsibility of the cache implementation
@@ -28,10 +43,12 @@ import mondrian.olap.MondrianProperties;
  * <p>Implementations must provide a default empty constructor.
  * Segment caches are instantiated as a singleton but can be
  * hot swapped by modifying {@link MondrianProperties#SegmentCache}.
- * Implementations will get a termination signal through
+ *
+ * <p>Implementations will get a termination signal through
  * {@link SegmentCache#tearDown()} but Mondrian will relinquish
  * control of the termination thread and will not be listening
- * to thrown exceptions.
+ * to thrown any exceptions encountered while the tearing down
+ * operation is taking place..
  *
  * @see MondrianProperties#SegmentCache
  * @author LBoudreau

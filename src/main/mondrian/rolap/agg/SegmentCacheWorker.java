@@ -18,14 +18,17 @@ import java.util.concurrent.TimeoutException;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.resource.MondrianResource;
+import mondrian.spi.SegmentCache;
+import mondrian.util.ServiceDiscovery;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.TriggerBase;
 
 /**
- * Utility class to interact with the SegmentCache.
+ * Utility class to interact with the {@link SegmentCache}.
  * @author LBoudreau
+ * @see SegmentCache
  * @version $Id$
  */
 public final class SegmentCacheWorker {
@@ -35,14 +38,28 @@ public final class SegmentCacheWorker {
     private static SegmentCache segmentCache = null;
     private final static ExecutorService executor =
         Executors.newCachedThreadPool();
+    private final static ServiceDiscovery<SegmentCache> serviceDiscovery =
+        ServiceDiscovery.forClass(SegmentCache.class);
 
     static {
+        // First try to get the segmentcache impl class from
+        // mondrian properties.
         final String cacheName =
             MondrianProperties.instance().SegmentCache.get();
         if (cacheName != null) {
+            // There was a property defined. We use this one
+            // by default.
             setCache(cacheName);
+        } else {
+            // There was no property set. Let's look for Java services.
+            final List<Class<SegmentCache>> implementors =
+                serviceDiscovery.getImplementor();
+            if (implementors.size() > 0) {
+                // The contract is to use the first implementation found.
+                setCache(implementors.get(0).getName());
+            }
         }
-        // Rig up a trigger to that property to hot-swap the cache.
+        // Rig up a trigger to the SegmentCache property to hot-swap the cache.
         MondrianProperties.instance().SegmentCache.addTrigger(
             new TriggerBase(true) {
                 public void execute(Property property, String value) {
@@ -52,22 +69,22 @@ public final class SegmentCacheWorker {
        );
     }
 
-    private static final void setCache(String cacheName) {
+    private synchronized static final void setCache(String cacheName) {
         try {
-            final SegmentCache scopedSC = segmentCache;
-            if (scopedSC != null
-                && scopedSC.getClass().equals(cacheName))
+            final SegmentCache closureSC = segmentCache;
+            if (closureSC != null
+                && closureSC.getClass().equals(cacheName))
             {
                 // No need to reload the cache.
                 // It's the same property value.
                 return;
             }
-            if (scopedSC != null) {
+            if (closureSC != null) {
                 executor.submit(
                     new Runnable() {
                         public void run() {
                             LOGGER.debug("Tearing down segment cache.");
-                            scopedSC.tearDown();
+                            closureSC.tearDown();
                         }
                     });
             }
@@ -78,6 +95,9 @@ public final class SegmentCacheWorker {
             Object scObject = clazz.newInstance();
             if (scObject instanceof SegmentCache) {
                 segmentCache = (SegmentCache) scObject;
+                LOGGER.debug(
+                    "Segment cache initialized:"
+                    + segmentCache.getClass().getName());
             } else {
                 LOGGER.error(
                     MondrianResource.instance()
@@ -111,9 +131,10 @@ public final class SegmentCacheWorker {
      * for the passed header.
      */
     public final static SegmentBody get(SegmentHeader header) {
-        if (segmentCache != null) {
+        final SegmentCache closureSC = segmentCache;
+        if (closureSC != null) {
             try {
-                return segmentCache.get(header)
+                return closureSC.get(header)
                     .get(
                         MondrianProperties.instance()
                             .SegmentCacheReadTimeout.get(),
@@ -156,9 +177,10 @@ public final class SegmentCacheWorker {
      * available in a segment cache.
      */
     public final static Boolean contains(SegmentHeader header) {
-        if (segmentCache != null) {
+        final SegmentCache closureSC = segmentCache;
+        if (closureSC != null) {
             try {
-                return segmentCache.contains(header)
+                return closureSC.contains(header)
                 .get(
                     MondrianProperties.instance()
                         .SegmentCacheLookupTimeout.get(),
@@ -190,23 +212,33 @@ public final class SegmentCacheWorker {
      * Places a segment in the cache. Returns true or false
      * if the operation succeeds.
      *
-     * <p>If no cache is configured or there is an error while
-     * querying the cache, false is returned none the less.
-     * To throw an exception, enable
+     * <p>To throw an exception, enable
      * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
      * timeout values, set {@link MondrianProperties#SegmentCacheWriteTimeout}
      * @param header A header to search for in the segment cache.
-     * @return True or false, whether there is a segment body
-     * available in a segment cache.
      */
-    public final static Boolean put(SegmentHeader header, SegmentBody body) {
-        if (segmentCache != null) {
+    public final static void put(SegmentHeader header, SegmentBody body) {
+        final SegmentCache closureSC = segmentCache;
+        if (closureSC != null) {
             try {
-                return segmentCache.put(header, body)
-                    .get(
-                        MondrianProperties.instance()
-                        .SegmentCacheWriteTimeout.get(),
-                        TimeUnit.MILLISECONDS);
+                final boolean result =
+                    closureSC.put(header, body)
+                        .get(
+                            MondrianProperties.instance()
+                                .SegmentCacheWriteTimeout.get(),
+                            TimeUnit.MILLISECONDS);
+                if (!result) {
+                    LOGGER.error(
+                        MondrianResource.instance()
+                            .SegmentCacheFailedToSaveSegment
+                            .baseMessage);
+                    if (MondrianProperties.instance()
+                        .SegmentCacheFailOnError.get())
+                    {
+                        throw MondrianResource.instance()
+                            .SegmentCacheFailedToSaveSegment.ex();
+                    }
+                }
             } catch (TimeoutException e) {
                 LOGGER.error(
                     MondrianResource.instance()
@@ -219,7 +251,11 @@ public final class SegmentCacheWorker {
                         .SegmentCacheReadTimeout.ex(e);
                 }
             } catch (Throwable t) {
-                LOGGER.error("Failed to save segment to cache.", t);
+                LOGGER.error(
+                    MondrianResource.instance()
+                        .SegmentCacheFailedToSaveSegment
+                        .baseMessage,
+                    t);
                 if (MondrianProperties.instance()
                     .SegmentCacheFailOnError.get())
                 {
@@ -228,7 +264,6 @@ public final class SegmentCacheWorker {
                 }
             }
         }
-        return false;
     }
 
     /**
@@ -244,9 +279,10 @@ public final class SegmentCacheWorker {
      * was no cache configured or no segment could be found
      */
     public final static List<SegmentHeader> getSegmentHeaders() {
-        if (segmentCache != null) {
+        final SegmentCache closureSC = segmentCache;
+        if (closureSC != null) {
             try {
-                return segmentCache.getSegmentHeaders()
+                return closureSC.getSegmentHeaders()
                     .get(
                         MondrianProperties.instance()
                         .SegmentCacheScanTimeout.get(),

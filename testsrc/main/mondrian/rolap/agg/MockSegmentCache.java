@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import mondrian.olap.Util;
+import mondrian.spi.SegmentCache;
 
 /**
  * This mock segment cache is used for automated testing. It will try to

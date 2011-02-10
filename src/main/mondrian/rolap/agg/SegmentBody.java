@@ -15,8 +15,8 @@ import java.util.SortedSet;
 
 /**
  * SegmentBody is the object which contains the cached data of a
- * Segment. They are stored inside a {@link SegmentCache} and can be
- * retrieved by a {@link SegmentHeader} key.
+ * Segment. They are stored inside a {@link mondrian.spi.SegmentCache}
+ * and can be retrieved by a {@link SegmentHeader} key.
  *
  * <p>The segment body objects are immutable and fully serializable.
  *

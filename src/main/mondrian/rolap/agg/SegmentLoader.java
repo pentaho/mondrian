@@ -221,7 +221,7 @@ public class SegmentLoader {
     }
 
     /**
-     * Caches segments to the external {@link SegmentCache}, if
+     * Caches segments to the external {@link mondrian.spi.SegmentCache}, if
      * configured.
      * @param groupingSets
      * @param axisValueSets
@@ -242,15 +242,7 @@ public class SegmentLoader {
                             .createSegmentBody(
                                 axisValueSets,
                                 nullAxisFlags);
-                boolean success =
-                    SegmentCacheWorker.put(sh, sb);
-                if (!success
-                    && MondrianProperties.instance()
-                        .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                       .SegmentCacheFailedToSaveSegment.ex();
-                }
+                SegmentCacheWorker.put(sh, sb);
             }
         }
     }
