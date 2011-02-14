@@ -118,9 +118,8 @@ public final class SegmentCacheWorker {
      * Returns a segment body corresponding to a header.
      * <p>If no cache is configured or there is an error while
      * querying the cache, null is returned none the less.
-     * To throw an exception, enable
-     * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
-     * timeout values, set {@link MondrianProperties#SegmentCacheReadTimeout}
+     * To adjust timeout values,
+     * set {@link MondrianProperties#SegmentCacheReadTimeout}
      * @param header Header to search.
      * @return Either a segment body object or null if there
      * was no cache configured or no segment could be found
@@ -161,9 +160,8 @@ public final class SegmentCacheWorker {
      *
      * <p>If no cache is configured or there is an error while
      * querying the cache, false is returned none the less.
-     * To throw an exception, enable
-     * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
-     * timeout values, set {@link MondrianProperties#SegmentCacheLookupTimeout}
+     * To adjust timeout values, set
+     * {@link MondrianProperties#SegmentCacheLookupTimeout}
      * @param header A header to search for in the segment cache.
      * @return True or false, whether there is a segment body
      * available in a segment cache.
@@ -200,9 +198,8 @@ public final class SegmentCacheWorker {
      * Places a segment in the cache. Returns true or false
      * if the operation succeeds.
      *
-     * <p>To throw an exception, enable
-     * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
-     * timeout values, set {@link MondrianProperties#SegmentCacheWriteTimeout}
+     * <p>To adjust timeout values, set
+     * {@link MondrianProperties#SegmentCacheWriteTimeout}
      * @param header A header to search for in the segment cache.
      */
     public final static void put(SegmentHeader header, SegmentBody body) {
@@ -247,9 +244,8 @@ public final class SegmentCacheWorker {
      *
      * <p>If no cache is configured or there is an error while
      * querying the cache, an empty list is returned none the less.
-     * To throw an exception, enable
-     * {@link MondrianProperties#SegmentCacheFailOnError} To adjust
-     * timeout values, set {@link MondrianProperties#SegmentCacheScanTimeout}
+     * To adjust timeout values, set
+     * {@link MondrianProperties#SegmentCacheScanTimeout}
      *
      * @return Either a list of header objects or an empty list if there
      * was no cache configured or no segment could be found
