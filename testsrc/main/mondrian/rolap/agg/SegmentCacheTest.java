@@ -26,9 +26,6 @@ public class SegmentCacheTest extends BasicQueryTest {
         propSaver.set(
             MondrianProperties.instance().SegmentCache,
             MockSegmentCache.class.getName());
-        propSaver.set(
-            MondrianProperties.instance().SegmentCacheFailOnError,
-            true);
     }
 }
 // End SegmentCacheTest.java

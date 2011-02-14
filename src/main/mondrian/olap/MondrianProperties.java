@@ -491,19 +491,6 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.SegmentCacheScanTimeout", 5000);
 
     /**
-     * Property which tells the SegmentLoader to throw an exception
-     * if an exception is encountered while loading segments from
-     * cache. <code>true</code> to throw back the errors,
-     * <code>false</code> to log the error and continue execution.
-     * Used only for testing or configuration issues. On a production
-     * system, it is recommended to keep the default value. Defaults
-     * to <code>true</code>.
-     */
-    public transient final BooleanProperty SegmentCacheFailOnError =
-        new BooleanProperty(
-            this, "mondrian.rolap.SegmentCacheFailOnError", true);
-
-    /**
      * Property that, with {@link #SparseSegmentDensityThreshold}, determines
      * whether to choose a sparse or dense representation when storing
      * collections of cell values in memory.

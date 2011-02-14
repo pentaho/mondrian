@@ -109,12 +109,8 @@ public final class SegmentCacheWorker {
                 MondrianResource.instance()
                     .SegmentCacheFailedToInstanciate.baseMessage,
                     e);
-            if (MondrianProperties.instance()
-                .SegmentCacheFailOnError.get())
-            {
-                throw MondrianResource.instance()
-                    .SegmentCacheFailedToInstanciate.ex(e);
-            }
+            throw MondrianResource.instance()
+                .SegmentCacheFailedToInstanciate.ex(e);
         }
     }
 
@@ -152,12 +148,8 @@ public final class SegmentCacheWorker {
                         .SegmentCacheFailedToLoadSegment
                         .baseMessage,
                     t);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheFailedToLoadSegment.ex(t);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheFailedToLoadSegment.ex(t);
             }
         }
         return null;
@@ -197,12 +189,8 @@ public final class SegmentCacheWorker {
                     MondrianResource.instance()
                         .SegmentCacheFailedToLookupSegment.baseMessage,
                     t);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheFailedToLookupSegment.ex(t);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheFailedToLookupSegment.ex(t);
             }
         }
         return false;
@@ -232,36 +220,24 @@ public final class SegmentCacheWorker {
                         MondrianResource.instance()
                             .SegmentCacheFailedToSaveSegment
                             .baseMessage);
-                    if (MondrianProperties.instance()
-                        .SegmentCacheFailOnError.get())
-                    {
-                        throw MondrianResource.instance()
-                            .SegmentCacheFailedToSaveSegment.ex();
-                    }
+                    throw MondrianResource.instance()
+                        .SegmentCacheFailedToSaveSegment.ex();
                 }
             } catch (TimeoutException e) {
                 LOGGER.error(
                     MondrianResource.instance()
                         .SegmentCacheReadTimeout.baseMessage,
                     e);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheReadTimeout.ex(e);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheReadTimeout.ex(e);
             } catch (Throwable t) {
                 LOGGER.error(
                     MondrianResource.instance()
                         .SegmentCacheFailedToSaveSegment
                         .baseMessage,
                     t);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheFailedToSaveSegment.ex(t);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheFailedToSaveSegment.ex(t);
             }
         }
     }
@@ -292,20 +268,12 @@ public final class SegmentCacheWorker {
                     MondrianResource.instance()
                         .SegmentCacheScanTimeout.baseMessage,
                     e);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheScanTimeout.ex(e);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheScanTimeout.ex(e);
             } catch (Throwable t) {
                 LOGGER.error("Failed to get a list of segment headers.", t);
-                if (MondrianProperties.instance()
-                    .SegmentCacheFailOnError.get())
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheFailedToScanSegments.ex(t);
-                }
+                throw MondrianResource.instance()
+                    .SegmentCacheFailedToScanSegments.ex(t);
             }
         }
         return Collections.emptyList();
