@@ -178,6 +178,9 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
           <SQL dialect="oracle">
 "fname" || ' ' || "lname"
           </SQL>
+          <SQL dialect="hive">
+`customer`.`fullname`
+          </SQL>
           <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>

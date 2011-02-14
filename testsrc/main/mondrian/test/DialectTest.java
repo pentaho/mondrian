@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -18,6 +18,7 @@ import java.util.*;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.spi.impl.HiveDialect;
 import mondrian.spi.impl.MySqlDialect;
 import mondrian.spi.impl.InfobrightDialect;
 
@@ -67,7 +68,6 @@ public class DialectTest extends TestCase {
     }
 
     protected DataSource getDataSource() {
-        TestContext.instance().clearConnection();
         return TestContext.instance().getConnection().getDataSource();
     }
 
@@ -114,6 +114,10 @@ public class DialectTest extends TestCase {
             assertFalse(dialect instanceof InfobrightDialect);
             assertFalse(MySqlDialect.isInfobright(databaseMetaData));
             assertEquals("MySQL", databaseMetaData.getDatabaseProductName());
+            break;
+        case HIVE:
+            // Dialect has identified that it is Hive.
+            assertTrue(dialect instanceof HiveDialect);
             break;
         case INFOBRIGHT:
             // Dialect has identified that it is MySQL.
@@ -305,6 +309,8 @@ public class DialectTest extends TestCase {
                 "Every derived table must have its own alias",
                 // derby
                 "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
+                // hive
+                "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
                 // postgres
                 "ERROR: subquery in FROM must have an alias",
                 // teradata
@@ -332,6 +338,8 @@ public class DialectTest extends TestCase {
             final String[] errs = {
                 // infobright
                 INFOBRIGHT_UNSUPPORTED,
+                // hive
+                "(?s).*Invalid Table Alias or Column Reference.*",
                 // neoview
                 NEOVIEW_SYNTAX_ERROR,
             };
@@ -444,6 +452,8 @@ public class DialectTest extends TestCase {
             String[] errs = {
                 // derby
                 "Syntax error: Encountered \"SETS\" at line 6, column 19.",
+                // hive
+                "(?s).*line 6:18 mismatched input 'SETS' expecting EOF.*",
                 // hsqldb
                 "(?s)Unexpected token: GROUPING in statement .*",
                 // mysql
@@ -478,6 +488,8 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \",\" at line 3, column 20.",
                 // access
                 "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
+                // hive
+                "(?s).*line 3:19 mismatched input ','.*",
                 // hsqldb
                 "(?s)Unexpected token: , in statement .*",
                 // infobright
@@ -635,6 +647,9 @@ public class DialectTest extends TestCase {
                 // Current version cannot force null order, introduced in
                 // Postgres 8.3
                 return;
+            case HIVE:
+                // Hive cannot force nulls to appear last
+                return;
             case NEOVIEW:
                 // Neoview cannot force nulls to appear last
                 return;
@@ -722,10 +737,21 @@ public class DialectTest extends TestCase {
      * @return Query or DDL statement translated into this dialect
      */
     private String dialectize(String s) {
+        if (dialect == null) {
+            dialect = getDialect();
+        }
         final Dialect.DatabaseProduct databaseProduct =
-            getDialect().getDatabaseProduct();
+            dialect.getDatabaseProduct();
         switch (databaseProduct) {
         case ACCESS:
+            break;
+        case HIVE:
+            if (s.contains("UNION ALL")) {
+                s = "SELECT * FROM (" + s + ") x";
+            }
+            s = s.replace('[', '`');
+            s = s.replace(']', '`');
+            s = s.replaceAll(" as ", "");
             break;
         case MYSQL:
         case INFOBRIGHT:
@@ -841,6 +867,8 @@ public class DialectTest extends TestCase {
                 + "invalid expression. If a SELECT list has a GROUP BY, the "
                 + "list may only contain valid grouping expressions and valid "
                 + "aggregate expressions.  ",
+                // hive
+                "(?s).*line 1:18 Expression Not In Group By Key `the_month`.*",
                 // hsqldb
                 "(?s)Not in aggregate function or group by clause: .*",
                 // mysql (if sql_mode contains ONLY_FULL_GROUP_BY)
