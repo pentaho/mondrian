@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011 Julian Hyde and others
+// Copyright (C) 2011-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -69,11 +69,21 @@ public final class SegmentCacheWorker {
        );
     }
 
-    private synchronized static final void setCache(String cacheName) {
+    /**
+     * Sets the current cache implementation, closing the current cache (if
+     * any).
+     *
+     * <p>If {@code cacheName} is null, just closes the current cache.
+     *
+     * @param cacheName Name of class that implements the {@link SegmentCache}
+     *     API
+     */
+    public static synchronized void setCache(String cacheName) {
         try {
             final SegmentCache closureSC = segmentCache;
             if (closureSC != null
-                && closureSC.getClass().equals(cacheName))
+                && cacheName != null
+                && closureSC.getClass().getName().equals(cacheName))
             {
                 // No need to reload the cache.
                 // It's the same property value.
@@ -87,6 +97,9 @@ public final class SegmentCacheWorker {
                             closureSC.tearDown();
                         }
                     });
+            }
+            if (cacheName == null) {
+                return;
             }
             segmentCache = null;
             LOGGER.debug("Starting cache instance:" + cacheName);
@@ -125,7 +138,7 @@ public final class SegmentCacheWorker {
      * was no cache configured or no segment could be found
      * for the passed header.
      */
-    public final static SegmentBody get(SegmentHeader header) {
+    public static SegmentBody get(SegmentHeader header) {
         final SegmentCache closureSC = segmentCache;
         if (closureSC != null) {
             try {
@@ -166,15 +179,15 @@ public final class SegmentCacheWorker {
      * @return True or false, whether there is a segment body
      * available in a segment cache.
      */
-    public final static Boolean contains(SegmentHeader header) {
+    public static boolean contains(SegmentHeader header) {
         final SegmentCache closureSC = segmentCache;
         if (closureSC != null) {
             try {
                 return closureSC.contains(header)
-                .get(
-                    MondrianProperties.instance()
-                        .SegmentCacheLookupTimeout.get(),
-                    TimeUnit.MILLISECONDS);
+                    .get(
+                        MondrianProperties.instance()
+                            .SegmentCacheLookupTimeout.get(),
+                        TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
                 LOGGER.error(
                     MondrianResource.instance()
@@ -198,11 +211,13 @@ public final class SegmentCacheWorker {
      * Places a segment in the cache. Returns true or false
      * if the operation succeeds.
      *
-     * <p>To adjust timeout values, set
-     * {@link MondrianProperties#SegmentCacheWriteTimeout}
+     * <p>To adjust timeout values, set the
+     * {@link MondrianProperties#SegmentCacheWriteTimeout} property.
+     *
      * @param header A header to search for in the segment cache.
+     * @param body The segment body to cache.
      */
-    public final static void put(SegmentHeader header, SegmentBody body) {
+    public static void put(SegmentHeader header, SegmentBody body) {
         final SegmentCache closureSC = segmentCache;
         if (closureSC != null) {
             try {
@@ -250,7 +265,7 @@ public final class SegmentCacheWorker {
      * @return Either a list of header objects or an empty list if there
      * was no cache configured or no segment could be found
      */
-    public final static List<SegmentHeader> getSegmentHeaders() {
+    public static List<SegmentHeader> getSegmentHeaders() {
         final SegmentCache closureSC = segmentCache;
         if (closureSC != null) {
             try {
