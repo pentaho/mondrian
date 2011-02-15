@@ -8,9 +8,6 @@
 */
 package mondrian.spi;
 
-import mondrian.olap.MondrianDef;
-import mondrian.util.Pair;
-
 import java.util.List;
 import java.util.Map;
 
@@ -699,6 +696,14 @@ public interface Dialect {
      * columns that are not in the GROUP BY clause
      */
     boolean allowsSelectNotInGroupBy();
+
+    /**
+     * Returns whether this dialect supports "ANSI-style JOIN syntax",
+     * {@code FROM leftTable JOIN rightTable ON conditon}.
+     *
+     * @return Whether this dialect supports FROM-JOIN-ON syntax.
+     */
+    boolean allowsJoinOn();
 
     /**
      * Enumeration of common database types.

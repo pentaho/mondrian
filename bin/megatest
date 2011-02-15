@@ -1,6 +1,11 @@
 #!/bin/bash
 # $Id$
+# This software is subject to the terms of the Eclipse Public License v1.0
+# Agreement, available at the following URL:
+# http://www.eclipse.org/legal/epl-v10.html.
+# You must accept the terms of that agreement to use this software.
 # Copyright (C) 2006-2011 Julian Hyde
+# All Rights Reserved.
 #
 # Script to run the Mondrian test suite under various JDKs, with parameter
 # settings, against various RDBMSes. Customize it with your environment -
@@ -17,7 +22,7 @@ CLEAN=clean
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
 MONDRIAN_DIR=$(cd $(dirname $0)/..; pwd)
-hostname=$(uname -n)
+hostname=$(uname -n | cut -d . -f 1)
 cygwin=
 case $(uname) in
 CYGWIN*)
@@ -35,7 +40,6 @@ esac
 
 # Special cases.
 case ${hostname} in
-marmalade.hydromatic.net) hostname=marmalade ;;
 mackerel) if [ ! "$cygwin" ]; then hostname=mackerel-linux; fi ;;
 esac
 
@@ -58,6 +62,14 @@ mackerel-winxp)
   ;;
 marmalade)
   databaseList="derby hsqldb mysql oracle luciddb postgresql"
+  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  ;;
+ATRHisv1)
+  databaseList="hsqldb neoview"
+  jdkList="jdk1.6"
+  ;;
+plank)
+  databaseList="derby mysql hsqldb"
   jdkList="jdk1.4 jdk1.5 jdk1.6"
   ;;
 *)
@@ -116,15 +128,20 @@ doTest() {
 }
 
 doTest2() {
-  skipMondrian=
-  if [ "$1" = --skip-mondrian ]; then
-    skipMondrian=true
+  olap4j=
+  mondrian=true
+  if [ "$1" = --mondrian ]; then
+    mondrian=true
     shift
   fi
 
-  skipOlap4j=true
+  if [ "$1" = --nomondrian ]; then
+    mondrian=
+    shift
+  fi
+
   if [ "$1" = --olap4j ]; then
-    skipOlap4j=
+    olap4j=true
     shift
   fi
 
@@ -151,8 +168,7 @@ doTest2() {
     return
   fi
 
-  export JAVA_HOME=$(chooseJavaHome $jdk)
-  export PATH="$JAVA_HOME/bin:$PATH"
+  JAVA_HOME=$(chooseJavaHome $jdk)
 
   # Use a version of ant (and in particular junit) compatible with the JDK.
   # Some versions of ant don't work on JDK1.4.
@@ -188,6 +204,18 @@ doTest2() {
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc='${jdbcURL}';JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
+  neoview)
+    (
+      jdbcURL='jdbc:hpt4jdbc://${NEOVIEW_HOST_PORT}/:schema=PENTAHO;serverDataSource=PENTAHO_DataSource'
+      jdbcUser=${NEOVIEW_USER}
+      jdbcPassword=${NEOVIEW_PASSWORD}
+      jdbcDrivers=com.hp.t4jdbc.HPT4Driver
+      echo driver.classpath=${HOME}/dl/hpt4jdbc.jar
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=${NEOVIEW_USER};JdbcPassword=${NEOVIEW_PASSWORD};Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
   oracle)
@@ -288,8 +316,7 @@ doTest2() {
   echo
   echo "========================================"
   date
-  echo "Running test with JDK=$jdk retroweave=$retroweave database=$database skipMondrian=$skipMondrian skipOlap4j=$skipOlap4j props={$props}"
-  export CLEAN=clean
+  echo "Running test with JDK=$jdk retroweave=$retroweave database=$database props={$props}"
   if [ "$build" ]; then
     echo build=${build}
     if [ "$retroweave" ]; then
@@ -300,8 +327,7 @@ doTest2() {
           export JAVA_HOME=$(chooseJavaHome jdk1.5)
           export PATH="$JAVA_HOME/bin:$PATH"
           export ANT_HOME=$(chooseAntHome jdk1.5)
-          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all
-          $ANT_HOME/bin/ant $ANT_FLAGS retroweave
+          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         )
         export JAVA_HOME=$(chooseJavaHome jdk1.4)
         export PATH=$JAVA_HOME/bin:$PATH
@@ -310,7 +336,7 @@ doTest2() {
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
         ;;
       esac
-      if [ ! "$skipMondrian" ]; then
+      if [ "$mondrian" ]; then
         $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
       fi
     else
@@ -328,13 +354,10 @@ doTest2() {
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests ${TEST_TARGET}
         ;;
       esac
-      if [ ! "$skipMondrian" ]; then
-        $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
-      fi
     fi
   fi
 
-  if [ ! "$skipOlap4j" ]; then
+  if [ "$olap4j" ]; then
     (olap4j $jdk mondrian NONE)
     (olap4j $jdk xmla NONE)
     (olap4j $jdk mondrian DBCP)
@@ -358,7 +381,12 @@ chooseAntHome() {
     esac
     ;;
   jdk1.5|jdk1.6)
-    echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd)
+    case $(uname -n) in
+    (plank.disruptivetech.com)
+      echo /home/jhyde/open/thirdparty/ant;;
+    *)
+      echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd);;
+    esac
     ;;
   esac
 }
@@ -421,9 +449,7 @@ olap4j() {
   (*) FILE_PREFIX=file: ;;
   esac
   export ANT_HOME=$(chooseAntHome $jdk)
-  if [ "${CLEAN}" ]; then
-    $ANT_HOME/bin/ant ${CLEAN}
-  fi
+  $ANT_HOME/bin/ant clean
 
   case $driver in
   (mondrian)
@@ -800,13 +826,6 @@ doAllTests() {
   doTest jdk1.5 derby mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
   doTest jdk1.5 mysql mondrian.test.Class=mondrian.rolap.FastBatchingCellReaderTest
 
-  # Pre-3.0 solve-order behavior.
-  doTest jdk1.6 oracle mondrian.rolap.SolveOrderMode=absolute
-
-  # Disable following 2. They hang.
-  #doTest jdk1.6 oracle mondrian.test.highCardDimensions=Store
-  #doTest jdk1.6 oracle mondrian.test.highCardDimensions=Store,Customers,Gender
-
 #    mondrian.test.Class=mondrian.test.BasicQueryTest
 #    mondrian.test.Name=testQueryTimeout
 
@@ -845,7 +864,6 @@ doTests() {
 
 checkJavadoc() {
   export JAVA_HOME=$(chooseJavaHome jdk1.6)
-  export PATH="$JAVA_HOME/bin:$PATH"
   export ANT_HOME=$(chooseAntHome jdk1.6)
 
   $ANT_HOME/bin/ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
@@ -945,7 +963,7 @@ main()
     if egrep 'FAILURE|BUILD FAILED|Failures: [^0]|Errors: [^0]' megatest.log; then
       echo There were failures.
     else
-      doTests | tee megatest.log
+      echo Test succeeded.
     fi
 
     echo
@@ -960,7 +978,7 @@ main()
     bzip2 --best /home/jhyde/web/buildlogs/mondrian-${buildId}.log
 
   else
-    doTests | tee megatest.log
+    doTests 2>&1 | tee megatest.log
   fi
 }
 
@@ -974,3 +992,4 @@ CYGWIN*)
 esac
 
 # End megatest
+

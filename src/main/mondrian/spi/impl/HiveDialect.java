@@ -24,7 +24,7 @@ import mondrian.olap.Util;
  * @since Jan 10, 2011
  */
 public class HiveDialect extends JdbcDialectImpl {
-    private static final int maxColumnNameLength = 128;
+    private static final int MAX_COLUMN_NAME_LENGTH = 128;
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -84,23 +84,11 @@ public class HiveDialect extends JdbcDialectImpl {
         try {
             return databaseMetaData.getMaxColumnNameLength();
         } catch (SQLException e) {
-            return maxColumnNameLength;
+            return MAX_COLUMN_NAME_LENGTH;
         }
     }
 
-    public boolean allowsCountDistinct() {
-        return true;
-    }
-
     public boolean allowsCompoundCountDistinct() {
-        return true;
-    }
-
-    public boolean allowsMultipleCountDistinct() {
-        return true;
-    }
-
-    public boolean allowsFromQuery() {
         return true;
     }
 
@@ -113,18 +101,6 @@ public class HiveDialect extends JdbcDialectImpl {
     }
 
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
-        return false;
-    }
-
-    public boolean supportsGroupByExpressions() {
-        return true;
-    }
-
-    public boolean supportsGroupingSets() {
-        return false;
-    }
-
-    public boolean supportsMultiValueInExpr() {
         return false;
     }
 
@@ -166,6 +142,11 @@ public class HiveDialect extends JdbcDialectImpl {
 
     public boolean allowsAs() {
         return false;
+    }
+
+    @Override
+    public boolean allowsJoinOn() {
+        return true;
     }
 }
 

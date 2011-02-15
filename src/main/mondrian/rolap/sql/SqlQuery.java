@@ -83,7 +83,6 @@ public class SqlQuery {
 
     private final ClauseList select;
     private final FromClauseList from;
-    private final OnClauseList on;
     private final ClauseList where;
     private final ClauseList groupBy;
     private final ClauseList having;
@@ -124,7 +123,6 @@ public class SqlQuery {
         // both select and from allow duplications
         this.select = new ClauseList(true);
         this.from = new FromClauseList(true);
-        this.on = new OnClauseList(false);
 
         this.groupingFunction = new ClauseList(false);
         this.where = new ClauseList(false);
@@ -198,6 +196,7 @@ public class SqlQuery {
         final boolean failIfExists)
     {
         assert alias != null;
+        assert alias.length() > 0;
 
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
@@ -213,17 +212,13 @@ public class SqlQuery {
         buf.append('(');
         buf.append(query);
         buf.append(')');
-        if (alias != null) {
-            Util.assertTrue(alias.length() > 0);
-
-            if (dialect.allowsAs()) {
-                buf.append(" as ");
-            } else {
-                buf.append(' ');
-            }
-            dialect.quoteIdentifier(alias, buf);
-            fromAliases.add(alias);
+        if (dialect.allowsAs()) {
+            buf.append(" as ");
+        } else {
+            buf.append(' ');
         }
+        dialect.quoteIdentifier(alias, buf);
+        fromAliases.add(alias);
 
         from.add(buf.toString());
         return true;
@@ -284,27 +279,6 @@ public class SqlQuery {
         if (filter != null) {
             // append filter condition to where clause
             addWhere("(", filter, ")");
-        }
-        return true;
-    }
-
-    /**
-     * Returns whether dialect accepts 'ON'.
-     * Only join conditions like A.a = B.b or Upper(A.a) = Upper(B.b)
-     * will be added to ON, or will be added to WHERE.
-     */
-    private boolean acceptsOn(String exp) {
-        StringTokenizer st = new StringTokenizer(exp, "=");
-        if (st.countTokens() != 2) {
-            return false;
-        }
-        StringTokenizer st1 = new StringTokenizer(st.nextToken(), ".");
-        if (st1.countTokens() != 2) {
-            return false;
-        }
-        st1 = new StringTokenizer(st.nextToken(), ".");
-        if (st1.countTokens() != 2) {
-            return false;
         }
         return true;
     }
@@ -377,16 +351,16 @@ public class SqlQuery {
                 dialect.quoteIdentifier(buf, leftAlias, join.leftKey);
                 buf.append(" = ");
                 dialect.quoteIdentifier(buf, rightAlias, join.rightKey);
-                switch (dialect.getDatabaseProduct()) {
-                case HIVE:
-                    addOn(buf.toString());
-                    break;
-                default:
-                    addWhere(buf.toString());
+                final String condition = buf.toString();
+                if (dialect.allowsJoinOn()) {
+                    from.addOn(
+                        leftAlias, join.leftKey, rightAlias, join.rightKey,
+                        condition);
+                } else {
+                    addWhere(condition);
                 }
             }
             return added;
-
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
@@ -452,21 +426,10 @@ public class SqlQuery {
         return alias;
     }
 
-    /**
-     * Adds an expression to ON join condition in FROM clause.
-     */
-    public void addOn(final String expression) {
-        if (acceptsOn(expression)) {
-            on.add(expression);
-        } else {
-            addWhere(expression);
-        }
-    }
-
     public void addWhere(
-            final String exprLeft,
-            final String exprMid,
-            final String exprRight)
+        final String exprLeft,
+        final String exprMid,
+        final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
         StringBuilder buf = new StringBuilder(len);
@@ -550,17 +513,7 @@ public class SqlQuery {
                 buf,
                 distinct ? "select distinct " : "select ", ", ");
             buf.append(getGroupingFunction(""));
-            switch (dialect.getDatabaseProduct()) {
-            case HIVE:
-                if (on.size() == 0) {
-                    from.toBuffer(buf, " from ", " join ");
-                } else {
-                    from.toBufferWithOn(buf, " from ", " join ", on);
-                }
-                break;
-            default:
-                from.toBuffer(buf, " from ", ", ");
-            }
+            from.toBuffer(buf, fromAliases);
             where.toBuffer(buf, " where ", " and ");
             if (hasGroupingSet()) {
                 StringWriter stringWriter = new StringWriter();
@@ -663,130 +616,98 @@ public class SqlQuery {
         groupingFunction.add(columnExpr);
     }
 
-    static class OnClauseList extends ClauseList {
-        private final List<String> leftTables = new ArrayList<String>();
-        private final List<String> rightTables = new ArrayList<String>();
+    private static class JoinOnClause {
+        private final String condition;
+        private final String left;
+        private final String right;
 
-        OnClauseList(boolean allowDups) {
-            super(allowDups);
-        }
-
-        void toBuffer(
-            final List<String> addedTables,
-            final String current,
-            final StringBuilder buf)
-        {
-            int n = 0;
-            // first check when the current table is on the left side
-            for (int i = 0; i < leftTables.size(); i++) {
-                // the first table was added before join, it has to be handled
-                // specially: Table.column = expression
-                if (addedTables.size() == 1
-                    && addedTables.get(0).equals(leftTables.get(i))
-                    && leftTables.get(i).equals(rightTables.get(i)))
-                {
-                    buf.append(n++ == 0 ? " on (" : " and ");
-                    buf.append(get(i));
-                }
-                if (current.equals(leftTables.get(i))
-                    && addedTables.contains(rightTables.get(i)))
-                {
-                    buf.append(n++ == 0 ? " on (" : " and ");
-                    buf.append(get(i));
-                }
-            }
-            // then check when the current table is on the right side
-            for (int i = 0; i < rightTables.size(); i++) {
-                if (current.equals(rightTables.get(i))
-                    && addedTables.contains(leftTables.get(i)))
-                {
-                    buf.append(n++ == 0 ? " on (" : " and ");
-                    buf.append(get(i));
-                }
-            }
-            if (n > 0) {
-                buf.append(")");
-            }
-        }
-
-        private String stripFunctions(String str) {
-            StringTokenizer st = new StringTokenizer(str, "() ");
-            if (st.countTokens() == 1) {
-                return str;
-            } else {
-                String ret = st.nextToken();
-                while (st.hasMoreTokens()) {
-                    ret = st.nextToken();
-                }
-                return ret;
-            }
-        }
-
-        public boolean add(String left, String right, String exp) {
-            assert leftTables.size() == rightTables.size();
-            StringTokenizer st;
-            if (super.add(exp)) {
-                // left is the form of 'Table'.'column'
-                if (left.contains(".")) {
-                    left = stripFunctions(left);
-                    st = new StringTokenizer(left, ".");
-                    leftTables.add(st.nextToken().trim());
-                    if (right.contains(".")) {
-                        right = stripFunctions(right);
-                    } else {
-                        // Only left contains table name, Table.Column = abc
-                        // store the same name for right tables
-                        right = left;
-                    }
-                    st = new StringTokenizer(right, ".");
-                    rightTables.add(st.nextToken().trim());
-                } else if (right.contains(".")) {
-                    right = stripFunctions(right);
-                    st = new StringTokenizer(right, ".");
-                    String name = st.nextToken().trim();
-                    leftTables.add(name);
-                    rightTables.add(name);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        public boolean add(String expression) {
-            StringTokenizer st = new StringTokenizer(expression, "=");
-            return add(st.nextToken(), st.nextToken(), expression);
+        JoinOnClause(String condition, String left, String right) {
+            this.condition = condition;
+            this.left = left;
+            this.right = right;
         }
     }
 
     static class FromClauseList extends ClauseList {
+        private final List<JoinOnClause> joinOnClauses =
+            new ArrayList<JoinOnClause>();
 
         FromClauseList(boolean allowsDups) {
             super(allowsDups);
         }
 
-        void toBufferWithOn(
-            final StringBuilder buf,
-            final String first,
-            final String sep,
-            final OnClauseList on)
+        public void addOn(
+            String leftAlias,
+            String leftKey,
+            String rightAlias,
+            String rightKey,
+            String condition)
         {
-            List<String> addedTables = new ArrayList<String>();
+            if (leftAlias == null && rightAlias == null) {
+                // do nothing
+            } else if (leftAlias == null) {
+                // left is the form of 'Table'.'column'
+                leftAlias = rightAlias;
+            } else if (rightAlias == null) {
+                // Only left contains table name, Table.Column = abc
+                // store the same name for right tables
+                rightAlias = leftAlias;
+            }
+            joinOnClauses.add(
+                new JoinOnClause(condition, leftAlias, rightAlias));
+        }
+
+        public void toBuffer(StringBuilder buf, List<String> fromAliases) {
             int n = 0;
-            for (String s : this) {
-                StringTokenizer st = new StringTokenizer(s, " ");
-                // this is correct only when alias is the same with table name
-                String str = st.nextToken();
+            for (int i = 0; i < size(); i++) {
+                final String s = get(i);
+                final String alias = fromAliases.get(i);
                 if (n++ == 0) {
-                    buf.append(first);
+                    buf.append(" from ");
                     buf.append(s);
                 } else {
-                    buf.append(sep);
-                    buf.append(s);
-                    // adding "ON (a = b ,...)" to the clause
-                    on.toBuffer(addedTables, str, buf);
+                    // Add "JOIN t ON (a = b ,...)" to the FROM clause. If there
+                    // is no JOIN clause matching this alias (or no JOIN clauses
+                    // at all), append just ", t".
+                    appendJoin(fromAliases.subList(0, i), s, alias, buf);
                 }
-                addedTables.add(str);
+            }
+        }
+
+        void appendJoin(
+            final List<String> addedTables,
+            final String from,
+            final String alias,
+            final StringBuilder buf)
+        {
+            int n = 0;
+            // first check when the current table is on the left side
+            for (JoinOnClause joinOnClause : joinOnClauses) {
+                // the first table was added before join, it has to be handled
+                // specially: Table.column = expression
+                if ((addedTables.size() == 1
+                     && addedTables.get(0).equals(joinOnClause.left)
+                     && joinOnClause.left.equals(joinOnClause.right))
+                    || (alias.equals(joinOnClause.left)
+                        && addedTables.contains(joinOnClause.right))
+                    || (alias.equals(joinOnClause.right)
+                        && addedTables.contains(joinOnClause.left)))
+                {
+                    if (n++ == 0) {
+                        buf.append(" join ").append(from).append(" on ");
+                    } else {
+                        buf.append(" and ");
+                    }
+                    buf.append(joinOnClause.condition);
+                }
+            }
+            if (n == 0) {
+                // No "JOIN ... ON" clause matching this alias (or maybe no
+                // JOIN ... ON clauses at all, if this is a database that
+                // doesn't support ANSI-join syntax). Append an old-style FROM
+                // item separated by a comma.
+                buf.append(joinOnClauses.isEmpty() ? ", " : " cross join ")
+                    .append(from);
             }
         }
     }
@@ -797,7 +718,6 @@ public class SqlQuery {
         ClauseList(final boolean allowDups) {
             this.allowDups = allowDups;
         }
-
 
         /**
          * Adds an element to this ClauseList if either duplicates are allowed
