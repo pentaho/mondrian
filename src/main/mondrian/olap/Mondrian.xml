@@ -6,7 +6,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2009 Julian Hyde and others
+  == Copyright (C) 2001-2011 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -652,6 +652,20 @@ Revision is $Id$
             <Value>Date</Value>
             <Value>Time</Value>
             <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="internalType" required="false">
+            <Doc>
+                Indicates the Java type that Mondrian uses to store this
+                level's key column. It also determines the JDBC method that
+                Mondrian will call to retrieve the column; for example, if the
+                Java type is 'int', Mondrian will call 'ResultSet.getInt(int)'.
+
+                <p/>Usually this attribute is not needed, because Mondrian can
+                choose a sensible type based on the type of the database
+                column.
+
+                <p/>Allowable values are: 'int', 'long', 'Object', 'String'.
+            </Doc>
         </Attribute>
         <Attribute name="uniqueMembers" type="Boolean" default="false">
             <Doc>

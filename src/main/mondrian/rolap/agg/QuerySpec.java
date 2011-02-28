@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,8 +13,10 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.*;
+import mondrian.util.Pair;
+
+import java.util.List;
 
 /**
  * Contains the information necessary to generate a SQL statement to
@@ -43,7 +45,7 @@ public interface QuerySpec {
      */
     StarColumnPredicate getColumnPredicate(int i);
 
-    String generateSqlQuery();
+    Pair<String, List<SqlStatement.Type>> generateSqlQuery();
 }
 
 // End QuerySpec.java

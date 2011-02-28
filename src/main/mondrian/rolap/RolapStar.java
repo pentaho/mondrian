@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1055,13 +1055,14 @@ public class RolapStar {
         private final Table table;
         private final MondrianDef.Expression expression;
         private final Dialect.Datatype datatype;
+        private final SqlStatement.Type internalType;
         private final String name;
+
         /**
          * When a Column is a column, and not a Measure, the parent column
          * is the coloumn associated with next highest Level.
          */
         private final Column parentColumn;
-
         /**
          * This is used during both aggregate table recognition and aggregate
          * table generation. For multiple dimension usages, multiple shared
@@ -1075,11 +1076,11 @@ public class RolapStar {
          * humans to understand.
          */
         private final Column nameColumn;
+
         private boolean isNameColumn;
 
         /** this has a unique value per star */
         private final int bitPosition;
-
         /**
          * The estimated cardinality of the column.
          * {@link Integer#MIN_VALUE} means unknown.
@@ -1093,8 +1094,8 @@ public class RolapStar {
             Dialect.Datatype datatype)
         {
             this(
-                name, table, expression, datatype, null,
-                null, null, Integer.MIN_VALUE);
+                name, table, expression, datatype, null, null,
+                null, null, Integer.MIN_VALUE, table.star.nextColumnCount());
         }
 
         private Column(
@@ -1102,16 +1103,19 @@ public class RolapStar {
             Table table,
             MondrianDef.Expression expression,
             Dialect.Datatype datatype,
+            SqlStatement.Type internalType,
             Column nameColumn,
             Column parentColumn,
             String usagePrefix,
-            int approxCardinality)
+            int approxCardinality,
+            int bitPosition)
         {
             this.name = name;
             this.table = table;
             this.expression = expression;
             this.datatype = datatype;
-            this.bitPosition = table.star.nextColumnCount();
+            this.internalType = internalType;
+            this.bitPosition = bitPosition;
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
@@ -1119,7 +1123,9 @@ public class RolapStar {
             if (nameColumn != null) {
                 nameColumn.isNameColumn = true;
             }
-            table.star.addColumn(this);
+            if (table != null) {
+                table.star.addColumn(this);
+            }
         }
 
         /**
@@ -1129,15 +1135,17 @@ public class RolapStar {
          */
         protected Column(Dialect.Datatype datatype)
         {
-            this.table = null;
-            this.expression = null;
-            this.datatype = datatype;
-            this.name = null;
-            this.parentColumn = null;
-            this.nameColumn = null;
-            this.usagePrefix = null;
-            this.bitPosition = 0;
-            this.approxCardinality = Integer.MIN_VALUE;
+            this(
+                null,
+                null,
+                null,
+                datatype,
+                null,
+                null,
+                null,
+                null,
+                Integer.MIN_VALUE,
+                0);
         }
 
         public boolean equals(Object obj) {
@@ -1415,6 +1423,10 @@ public class RolapStar {
                     }
                 }
             }
+        }
+
+        public SqlStatement.Type getInternalType() {
+            return internalType;
         }
     }
 
@@ -1744,6 +1756,7 @@ public class RolapStar {
                     Dialect.Datatype.String,
                     null,
                     null,
+                    null,
                     null);
             }
 
@@ -1761,6 +1774,7 @@ public class RolapStar {
                 name,
                 level.getKeyExp(),
                 level.getDatatype(),
+                level.getInternalType(),
                 nameColumn,
                 parentColumn,
                 usagePrefix);
@@ -1778,6 +1792,7 @@ public class RolapStar {
             String name,
             MondrianDef.Expression xmlExpr,
             Dialect.Datatype datatype,
+            SqlStatement.Type internalType,
             Column nameColumn,
             Column parentColumn,
             String usagePrefix)
@@ -1808,7 +1823,7 @@ public class RolapStar {
             // does the column already exist??
             Column c = lookupColumnByExpression(xmlExpr);
 
-            RolapStar.Column column = null;
+            RolapStar.Column column;
             // Verify Column is not null and not the same as the
             // nameColumn created previously (bug 1438285)
             if (c != null && !c.equals(nameColumn)) {
@@ -1826,10 +1841,12 @@ public class RolapStar {
                     table,
                     xmlExpr,
                     datatype,
+                    internalType,
                     nameColumn,
                     parentColumn,
                     usagePrefix,
-                    level.getApproxRowCount());
+                    level.getApproxRowCount(),
+                    star.nextColumnCount());
                 addColumn(column);
             }
             return column;

@@ -2430,6 +2430,88 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #0: \n");
     }
 
+    /**
+     * Test case for the Level@internalType attribute.
+     *
+     * <p>See bug <a href="http://jira.pentaho.com/browse/MONDRIAN-896">
+     * MONDRIAN-896, "Oracle integer columns overflow if value &gt;>2^31"</a>.
+     */
+    public void testLevelInternalType() {
+        // One of the keys is larger than Integer.MAX_VALUE (2 billion), so
+        // will only work if we use long values.
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Big numbers\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n"
+            + "      <InlineTable alias=\"t\">\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name=\"id\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"big_num\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"name\" type=\"String\"/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"id\">0</Value>\n"
+            + "            <Value column=\"big_num\">1234</Value>\n"
+            + "            <Value column=\"name\">Ben</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"id\">519</Value>\n"
+            + "            <Value column=\"big_num\">1234567890123</Value>\n"
+            + "            <Value column=\"name\">Bill</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name=\"Level1\" column=\"big_num\" internalType=\"long\"/>\n"
+            + "      <Level name=\"Level2\" column=\"id\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "select {[Big numbers].members} on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Big numbers].[1234]}\n"
+            + "{[Big numbers].[1234].[0]}\n"
+            + "{[Big numbers].[1234567890123]}\n"
+            + "{[Big numbers].[1234567890123].[519]}\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: 739\n"
+            + "Row #0: 739\n");
+    }
+
+    /**
+     * Negative test for Level@internalType attribute.
+     */
+    public void testLevelInternalTypeErr() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Big numbers\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n"
+            + "      <InlineTable alias=\"t\">\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name=\"id\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"big_num\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"name\" type=\"String\"/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"id\">0</Value>\n"
+            + "            <Value column=\"big_num\">1234</Value>\n"
+            + "            <Value column=\"name\">Ben</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name=\"Level1\" column=\"big_num\" type=\"Integer\" internalType=\"char\"/>\n"
+            + "      <Level name=\"Level2\" column=\"id\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
+        testContext.assertQueryThrows(
+            "select {[Big numbers].members} on 0 from [Sales]",
+            "Invalid value 'char' for attribute 'internalType' of element 'Level'. Valid values are: [int, double, Object, String, long]");
+    }
+
     public void _testAttributeHierarchy() {
         // from email from peter tran dated 2008/9/8
         // TODO: schema syntax to create attribute hierarchy

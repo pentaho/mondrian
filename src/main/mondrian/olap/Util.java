@@ -2269,6 +2269,22 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Like <code>{@link java.util.Arrays}.copyOf(long[], int)</code>, but
+     * exists prior to JDK 1.6.
+     *
+     * @param original the array to be copied
+     * @param newLength the length of the copy to be returned
+     * @return a copy of the original array, truncated or padded with zeros
+     *     to obtain the specified length
+     */
+    public static long[] copyOf(long[] original, int newLength) {
+        long[] copy = new long[newLength];
+        System.arraycopy(
+            original, 0, copy, 0, Math.min(original.length, newLength));
+        return copy;
+    }
+
+    /**
      * Like <code>{@link java.util.Arrays}.copyOf(Object[], int)</code>, but
      * exists prior to JDK 1.6.
      *

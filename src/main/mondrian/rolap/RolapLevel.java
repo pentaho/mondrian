@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,6 +17,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
+import org.olap4j.impl.ArrayMap;
+
 import java.lang.reflect.Constructor;
 import java.util.*;
 
@@ -79,6 +81,7 @@ public class RolapLevel extends LevelBase {
     private final HideMemberCondition hideMemberCondition;
     protected final MondrianDef.Closure xmlClosure;
     private final Map<String, Annotation> annotationMap;
+    private final SqlStatement.Type internalType; // may be null
 
     /**
      * Creates a level.
@@ -104,6 +107,7 @@ public class RolapLevel extends LevelBase {
         RolapProperty[] properties,
         int flags,
         Dialect.Datatype datatype,
+        SqlStatement.Type internalType,
         HideMemberCondition hideMemberCondition,
         LevelType levelType,
         String approxRowCount,
@@ -206,6 +210,7 @@ public class RolapLevel extends LevelBase {
                     .TimeLevelInNonTimeHierarchy.ex(getUniqueName());
             }
         }
+        this.internalType = internalType;
         this.hideMemberCondition = hideMemberCondition;
     }
 
@@ -321,10 +326,13 @@ public class RolapLevel extends LevelBase {
             xmlLevel.getNameExp(),
             xmlLevel.getCaptionExp(),
             xmlLevel.getOrdinalExp(),
-            xmlLevel.getParentExp(), xmlLevel.nullParentValue,
-            xmlLevel.closure, createProperties(xmlLevel),
+            xmlLevel.getParentExp(),
+            xmlLevel.nullParentValue,
+            xmlLevel.closure,
+            createProperties(xmlLevel),
             (xmlLevel.uniqueMembers ? FLAG_UNIQUE : 0),
             xmlLevel.getDatatype(),
+            toInternalType(xmlLevel.internalType),
             HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
             LevelType.valueOf(xmlLevel.levelType),
             xmlLevel.approxRowCount,
@@ -438,6 +446,30 @@ public class RolapLevel extends LevelBase {
 
     public int getApproxRowCount() {
         return approxRowCount;
+    }
+
+    private static final Map<String, SqlStatement.Type> VALUES =
+        ArrayMap.of(
+            "int", SqlStatement.Type.INT,
+            "double", SqlStatement.Type.DOUBLE,
+            "Object", SqlStatement.Type.OBJECT,
+            "String", SqlStatement.Type.STRING,
+            "long", SqlStatement.Type.LONG);
+
+    private static SqlStatement.Type toInternalType(String internalTypeName) {
+        SqlStatement.Type type = VALUES.get(internalTypeName);
+        if (type == null && internalTypeName != null) {
+            throw Util.newError(
+                "Invalid value '" + internalTypeName
+                + "' for attribute 'internalType' of element 'Level'. "
+                + "Valid values are: "
+                + VALUES.keySet());
+        }
+        return type;
+    }
+
+    public SqlStatement.Type getInternalType() {
+        return internalType;
     }
 
     /**

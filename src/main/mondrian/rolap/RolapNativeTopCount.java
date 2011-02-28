@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -76,6 +76,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     String alias = sqlQuery.nextColumnAlias();
                     alias = dialect.quoteIdentifier(alias);
                     sqlQuery.addSelect(orderBySql, alias);
+                    sqlQuery.addType(null);
                     sqlQuery.addOrderBy(alias, ascending, true, nullable);
                 } else {
                     sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
