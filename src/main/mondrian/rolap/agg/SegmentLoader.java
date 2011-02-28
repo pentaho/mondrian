@@ -9,11 +9,15 @@
 */
 package mondrian.rolap.agg;
 
+import org.apache.log4j.Logger;
+
+import mondrian.util.Pair;
 import mondrian.rolap.*;
 import mondrian.olap.*;
 
 import java.sql.*;
 import java.util.*;
+
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into
@@ -194,9 +198,11 @@ public class SegmentLoader {
             for (int j = 0, k = 0; j < arity; j++) {
                 final SqlStatement.Type type = types.get(j);
                 switch (type) {
-                // TODO: different treatment for INT, DOUBLE
+                // TODO: different treatment for INT, LONG, DOUBLE
                 case OBJECT:
+                case STRING:
                 case INT:
+                case LONG:
                 case DOUBLE:
                     Object o = rows.getObject(j);
                     if (useGroupingSet
@@ -375,12 +381,19 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList)
     {
         RolapStar star = groupingSetsList.getStar();
-        String sql =
+        Pair<String, List<SqlStatement.Type>> pair =
             AggregationManager.instance().generateSql(
                 groupingSetsList, compoundPredicateList);
         return RolapUtil.executeQuery(
-            star.getDataSource(), sql, "Segment.load",
-            "Error while loading segment");
+            star.getDataSource(),
+            pair.left,
+            pair.right,
+            0,
+            0,
+            "Segment.load",
+            "Error while loading segment",
+            -1,
+            -1);
     }
 
     RowList processData(
@@ -426,6 +439,7 @@ public class SegmentLoader {
                 final SqlStatement.Type type = types.get(columnIndex);
                 switch (type) {
                 case OBJECT:
+                case STRING:
                     Object o = rawRows.getObject(columnIndex + 1);
                     if (o == null) {
                         o = RolapUtil.sqlNullValue;
@@ -457,6 +471,23 @@ public class SegmentLoader {
                     } else {
                         axisValueSets[axisIndex].add(intValue);
                         processedRows.setInt(columnIndex, intValue);
+                    }
+                    break;
+                case LONG:
+                    final long longValue = rawRows.getLong(columnIndex + 1);
+                    if (longValue == 0 && rawRows.wasNull()) {
+                        if (!groupingSetsList.useGroupingSets()
+                            || !isAggregateNull(
+                            rawRows, groupingColumnStartIndex,
+                            groupingSetsList,
+                            axisIndex))
+                        {
+                            axisContainsNull[axisIndex] = true;
+                        }
+                        processedRows.setNull(columnIndex, true);
+                    } else {
+                        axisValueSets[axisIndex].add(longValue);
+                        processedRows.setLong(columnIndex, longValue);
                     }
                     break;
                 case DOUBLE:
@@ -493,6 +524,7 @@ public class SegmentLoader {
                     types.get(columnIndex);
                 switch (type) {
                 case OBJECT:
+                case STRING:
                     Object o = rawRows.getObject(columnIndex + 1);
                     if (o == null) {
                         o = Util.nullValue; // convert to placeholder
@@ -515,6 +547,13 @@ public class SegmentLoader {
                     final int intValue = rawRows.getInt(columnIndex + 1);
                     processedRows.setInt(columnIndex, intValue);
                     if (intValue == 0 && rawRows.wasNull()) {
+                        processedRows.setNull(columnIndex, true);
+                    }
+                    break;
+                case LONG:
+                    final long longValue = rawRows.getLong(columnIndex + 1);
+                    processedRows.setLong(columnIndex, longValue);
+                    if (longValue == 0 && rawRows.wasNull()) {
                         processedRows.setNull(columnIndex, true);
                     }
                     break;
@@ -724,6 +763,10 @@ public class SegmentLoader {
             columns[column].setInt(currentRow, value);
         }
 
+        void setLong(int column, long value) {
+            columns[column].setLong(currentRow, value);
+        }
+
         public int size() {
             return rowCount;
         }
@@ -829,9 +872,12 @@ public class SegmentLoader {
             {
                 switch (type) {
                 case OBJECT:
+                case STRING:
                     return new ObjectColumn(ordinal, type, capacity);
                 case INT:
                     return new IntColumn(ordinal, type, capacity);
+                case LONG:
+                    return new LongColumn(ordinal, type, capacity);
                 case DOUBLE:
                     return new DoubleColumn(ordinal, type, capacity);
                 default:
@@ -850,6 +896,10 @@ public class SegmentLoader {
             }
 
             public void setInt(int row, int value) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void setLong(int row, long value) {
                 throw new UnsupportedOperationException();
             }
 
@@ -972,6 +1022,50 @@ public class SegmentLoader {
 
             public Integer getObject(int row) {
                 return isNull(row) ? null : ints[row];
+            }
+        }
+
+        static class LongColumn extends NativeColumn {
+            private long[] longs;
+
+            LongColumn(int ordinal, SqlStatement.Type type, int size) {
+                super(ordinal, type);
+                longs = new long[size];
+            }
+
+            public void resize(int newSize) {
+                longs = Util.copyOf(longs, newSize);
+            }
+
+            public void populateFrom(int row, ResultSet resultSet)
+                throws SQLException
+            {
+                long i = longs[row] = resultSet.getLong(ordinal + 1);
+                if (i == 0) {
+                    getNullIndicators().set(row, resultSet.wasNull());
+                }
+            }
+
+            public void setLong(int row, long value) {
+                longs[row] = value;
+            }
+
+            public long getLong(int row) {
+                return longs[row];
+            }
+
+            public boolean isNull(int row) {
+                return longs[row] == 0
+                   && nullIndicators != null
+                   && nullIndicators.get(row);
+            }
+
+            protected int getCapacity() {
+                return longs.length;
+            }
+
+            public Long getObject(int row) {
+                return isNull(row) ? null : longs[row];
             }
         }
 

@@ -16,10 +16,10 @@ package mondrian.rolap.sql;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.util.Pair;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -90,6 +90,8 @@ public class SqlQuery {
     private final List<ClauseList> groupingSet;
     private final ClauseList groupingFunction;
 
+    private final List<SqlStatement.Type> types =
+        new ArrayList<SqlStatement.Type>();
 
     /** Controls whether table optimization hints are used */
     private boolean allowHints;
@@ -612,6 +614,22 @@ public class SqlQuery {
 
     public void addGroupingFunction(String columnExpr) {
         groupingFunction.add(columnExpr);
+
+        // A grouping function will end up in the select clause implicitly. It
+        // needs a corresponding type.
+        types.add(null);
+    }
+
+    public void addType(SqlStatement.Type type) {
+        types.add(type);
+    }
+
+    public Pair<String, List<SqlStatement.Type>> toSqlAndTypes() {
+        assert types.size() == select.size() + groupingFunction.size()
+            : types.size() + " types, "
+              + (select.size() + groupingFunction.size())
+              + " select items in query " + this;
+        return Pair.of(toString(), types);
     }
 
     static class ClauseList extends ArrayList<String> {

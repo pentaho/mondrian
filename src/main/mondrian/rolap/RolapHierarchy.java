@@ -129,6 +129,7 @@ public class RolapHierarchy extends HierarchyBase {
                     RolapProperty.emptyArray,
                     RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
                     null,
+                    null,
                     RolapLevel.HideMemberCondition.Never,
                     LevelType.Regular,
                     "",
@@ -155,6 +156,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapProperty.emptyArray,
                 RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
+                null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Null,
@@ -221,6 +223,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapProperty.emptyArray,
                 RolapLevel.FLAG_ALL | RolapLevel.FLAG_UNIQUE,
+                null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Regular, ALL_LEVEL_CARDINALITY,
@@ -432,6 +435,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapProperty.emptyArray,
                 0,
+                null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Regular,
@@ -1057,6 +1061,7 @@ public class RolapHierarchy extends HierarchyBase {
                 RolapProperty.emptyArray,
                 flags | RolapLevel.FLAG_UNIQUE,
                 src.getDatatype(),
+                null,
                 src.getHideMemberCondition(),
                 src.getLevelType(),
                 "",
@@ -1086,6 +1091,7 @@ public class RolapHierarchy extends HierarchyBase {
             RolapProperty.emptyArray,
             flags,
             src.getDatatype(),
+            src.getInternalType(),
             src.getHideMemberCondition(),
             src.getLevelType(),
             "",
@@ -1386,4 +1392,3 @@ public class RolapHierarchy extends HierarchyBase {
 }
 
 // End RolapHierarchy.java
-

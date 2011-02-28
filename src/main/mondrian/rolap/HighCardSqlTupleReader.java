@@ -14,6 +14,7 @@ import mondrian.olap.Query;
 import mondrian.olap.Util;
 import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.util.Pair;
 import mondrian.util.TraversalList;
 
 import javax.sql.DataSource;
@@ -67,9 +68,12 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                         partialTargets.add(target);
                     }
                 }
-                String sql = makeLevelMembersSql(dataSource);
+                final Pair<String, List<SqlStatement.Type>> pair =
+                    makeLevelMembersSql(dataSource);
+                String sql = pair.left;
+                List<SqlStatement.Type> types = pair.right;
                 stmt = RolapUtil.executeQuery(
-                    dataSource, sql, maxRows, 0,
+                    dataSource, sql, types, maxRows, 0,
                     "HighCardSqlTupleReader.readTuples " + partialTargets,
                     message, -1, -1);
             }

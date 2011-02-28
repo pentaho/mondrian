@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,9 +12,10 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.util.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -126,10 +127,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             : constr;
     }
 
-    public String generateSqlQuery() {
+    public Pair<String, List<SqlStatement.Type>> generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
         nonDistinctGenerateSql(sqlQuery);
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
@@ -141,6 +142,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         if (!countOnly) {
             String expr = measure.generateExprString(sqlQuery);
             sqlQuery.addSelect(expr, getMeasureAlias(i));
+            sqlQuery.addType(null);
         }
     }
 

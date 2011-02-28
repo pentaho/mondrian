@@ -17,6 +17,7 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.spi.Dialect;
+import mondrian.util.Pair;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -368,10 +369,13 @@ public class SqlTupleReader implements TupleReader {
                         partialTargets.add(target);
                     }
                 }
-                String sql = makeLevelMembersSql(dataSource);
+                final Pair<String, List<SqlStatement.Type>> pair =
+                    makeLevelMembersSql(dataSource);
+                String sql = pair.left;
+                List<SqlStatement.Type> types = pair.right;
                 assert sql != null && !sql.equals("");
                 stmt = RolapUtil.executeQuery(
-                    dataSource, sql, maxRows, 0,
+                    dataSource, sql, types, maxRows, 0,
                     "SqlTupleReader.readTuples " + partialTargets,
                     message,
                     -1, -1);
@@ -649,7 +653,9 @@ public class SqlTupleReader implements TupleReader {
         partialResult.add(row);
     }
 
-    String makeLevelMembersSql(DataSource dataSource) {
+    Pair<String, List<SqlStatement.Type>> makeLevelMembersSql(
+        DataSource dataSource)
+    {
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
         // as the underlying base cubes in the virtual cube may all reference
@@ -690,6 +696,7 @@ public class SqlTupleReader implements TupleReader {
             Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             String prependString = "";
             final StringBuilder selectString = new StringBuilder();
+            List<SqlStatement.Type> types = null;
             for (RolapCube baseCube : fullyJoiningBaseCubes) {
                 // Use the measure from the corresponding base cube in the
                 // context to find the correct join path to the base fact
@@ -704,16 +711,20 @@ public class SqlTupleReader implements TupleReader {
                     (++k == fullyJoiningBaseCubes.size() - 1)
                         ? WhichSelect.LAST : WhichSelect.NOT_LAST;
                 selectString.append(prependString);
-                selectString.append(generateSelectForLevels(
-                    dataSource, baseCube, whichSelect));
+                final Pair<String, List<SqlStatement.Type>> pair =
+                    generateSelectForLevels(
+                        dataSource, baseCube, whichSelect);
+                selectString.append(pair.left);
+                types = pair.right;
                 prependString = UNION;
             }
 
             // Restore the original measure member
             constraint.getEvaluator().setContext(originalMeasure);
-            return selectString.toString();
+            return Pair.of(selectString.toString(), types);
         } else {
-            return generateSelectForLevels(dataSource, cube, WhichSelect.ONLY);
+            return generateSelectForLevels(
+                dataSource, cube, WhichSelect.ONLY);
         }
     }
 
@@ -746,15 +757,16 @@ public class SqlTupleReader implements TupleReader {
         return baseCubes;
     }
 
-    String sqlForEmptyTuple(
+    Pair<String, List<SqlStatement.Type>> sqlForEmptyTuple(
         DataSource dataSource,
         final Collection<RolapCube> baseCubes)
     {
         final SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, null);
         sqlQuery.addSelect("0");
+        sqlQuery.addType(null);
         sqlQuery.addFrom(baseCubes.iterator().next().getFact(), null, true);
         sqlQuery.addWhere("1 = 0");
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     /**
@@ -764,9 +776,9 @@ public class SqlTupleReader implements TupleReader {
      * @param baseCube this is the cube object for regular cubes, and the
      *   underlying base cube for virtual cubes
      * @param whichSelect Position of this select statement in a union
-     * @return SQL statement string
+     * @return SQL statement string and types
      */
-    String generateSelectForLevels(
+    Pair<String, List<SqlStatement.Type>> generateSelectForLevels(
         DataSource dataSource,
         RolapCube baseCube,
         WhichSelect whichSelect)
@@ -798,7 +810,7 @@ public class SqlTupleReader implements TupleReader {
 
         constraint.addConstraint(sqlQuery, baseCube, aggStar);
 
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     boolean targetIsOnBaseCube(TargetBase target, RolapCube baseCube) {
@@ -896,7 +908,6 @@ public class SqlTupleReader implements TupleReader {
      *   underlying base cube for virtual cubes
      * @param whichSelect describes whether this select belongs to a larger
      * @param aggStar aggregate star if available
-     * select containing unions or this is a non-union select
      */
     protected void addLevelMemberSql(
         SqlQuery sqlQuery,
@@ -949,6 +960,7 @@ public class SqlTupleReader implements TupleReader {
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
                 sqlQuery.addSelectGroupBy(q);
+                sqlQuery.addType(starColumn.getInternalType());
                 sqlQuery.addOrderBy(q, true, false, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
@@ -965,8 +977,9 @@ public class SqlTupleReader implements TupleReader {
                 }
                 String parentSql = parentExp.getExpression(sqlQuery);
                 sqlQuery.addSelectGroupBy(parentSql);
-                if (whichSelect.equals(WhichSelect.LAST)
-                    || whichSelect.equals(WhichSelect.ONLY))
+                sqlQuery.addType(null);
+                if (whichSelect == WhichSelect.LAST
+                    || whichSelect == WhichSelect.ONLY)
                 {
                     sqlQuery.addOrderBy(parentSql, true, false, true);
                 }
@@ -991,12 +1004,14 @@ public class SqlTupleReader implements TupleReader {
             if (needsGroupBy) {
                 sqlQuery.addGroupBy(keySql, alias);
             }
+            sqlQuery.addType(currLevel.getInternalType());
 
             if (captionSql != null) {
                 alias = sqlQuery.addSelect(captionSql);
                 if (needsGroupBy) {
                     sqlQuery.addGroupBy(captionSql, alias);
                 }
+                sqlQuery.addType(null);
             }
 
             if (!ordinalSql.equals(keySql)) {
@@ -1004,6 +1019,7 @@ public class SqlTupleReader implements TupleReader {
                 if (needsGroupBy) {
                     sqlQuery.addGroupBy(ordinalSql, alias);
                 }
+                sqlQuery.addType(null);
             }
 
             constraint.addLevelConstraint(
@@ -1060,6 +1076,7 @@ public class SqlTupleReader implements TupleReader {
             for (RolapProperty property : properties) {
                 String propSql = property.getExp().getExpression(sqlQuery);
                 alias = sqlQuery.addSelect(propSql);
+                sqlQuery.addType(null);
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties
                     // from the group by that are functionally dependent
