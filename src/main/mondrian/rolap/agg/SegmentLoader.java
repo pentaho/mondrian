@@ -12,6 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.rolap.*;
 import mondrian.olap.*;
 
+import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
 
@@ -39,36 +40,6 @@ import org.apache.log4j.Logger;
 public class SegmentLoader {
 
     private final static Logger LOGGER = Logger.getLogger(SegmentLoader.class);
-    private static final Comparator<Object> BOOLEAN_COMPARATOR;
-
-    static {
-        if (Util.PreJdk15) {
-            // Work around the fact that Boolean is not Comparable until JDK
-            // 1.5.
-            assert !(Comparable.class.isAssignableFrom(Boolean.class));
-            BOOLEAN_COMPARATOR =
-                new Comparator<Object>() {
-                    public int compare(Object o1, Object o2) {
-                        if (o1 instanceof Boolean) {
-                            boolean b1 = (Boolean) o1;
-                            if (o2 instanceof Boolean) {
-                                boolean b2 = (Boolean) o2;
-                                return b1 == b2
-                                    ? 0
-                                    : (b1 ? 1 : -1);
-                            } else {
-                                return -1;
-                            }
-                        } else {
-                            return ((Comparable) o1).compareTo(o2);
-                        }
-                    }
-                };
-        } else {
-            assert Comparable.class.isAssignableFrom(Boolean.class);
-            BOOLEAN_COMPARATOR = null;
-        }
-    }
 
     /**
      * Loads data for all the segments of the GroupingSets. If the grouping sets
@@ -743,7 +714,7 @@ public class SegmentLoader {
         for (int i = 0; i < axisValueSets.length; i++) {
             axisValueSets[i] =
                 Util.PreJdk15
-                    ? new TreeSet<Comparable<?>>(BOOLEAN_COMPARATOR)
+                    ? new TreeSet<Comparable<?>>(BooleanComparator.INSTANCE)
                     : new TreeSet<Comparable<?>>();
         }
         return axisValueSets;
@@ -1204,6 +1175,39 @@ public class SegmentLoader {
         }
 
         public interface Handler {
+        }
+    }
+
+    private static class BooleanComparator
+        implements Comparator<Object>, Serializable
+    {
+        public static final BooleanComparator INSTANCE =
+            new BooleanComparator();
+
+        private BooleanComparator() {
+            if (Util.PreJdk15) {
+                // This class exists to work around the fact that Boolean is not
+                // Comparable until JDK 1.5.
+                assert !(Comparable.class.isAssignableFrom(Boolean.class));
+            } else {
+                assert Comparable.class.isAssignableFrom(Boolean.class);
+            }
+        }
+
+        public int compare(Object o1, Object o2) {
+            if (o1 instanceof Boolean) {
+                boolean b1 = (Boolean) o1;
+                if (o2 instanceof Boolean) {
+                    boolean b2 = (Boolean) o2;
+                    return b1 == b2
+                        ? 0
+                        : (b1 ? 1 : -1);
+                } else {
+                    return -1;
+                }
+            } else {
+                return ((Comparable) o1).compareTo(o2);
+            }
         }
     }
 }
