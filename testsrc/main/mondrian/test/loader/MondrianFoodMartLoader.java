@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde
+// Copyright (C) 2004-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -648,7 +648,10 @@ public class MondrianFoodMartLoader {
                     massagedLine.setLength(0);
                     getMassagedValues(massagedLine, orderedColumns, values);
                     fileOutput.write(
-                        massagedLine.toString().replace('\'', '"').trim());
+                        massagedLine.toString()
+                            .replaceAll("\"", "\\\"")
+                            .replace('\'', '"')
+                            .trim());
                     fileOutput.write(nl);
                 } else {
                     massagedLine.setLength(0);
@@ -724,7 +727,8 @@ public class MondrianFoodMartLoader {
             + "' INTO TABLE "
             + (schema != null ? schema + "." : "")
             + table
-            + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'";
+            + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'"
+            + " ESCAPED BY '\\\\'";
         Statement statement = null;
         try {
             statement = connection.createStatement();

@@ -1,4 +1,12 @@
 #!/bin/bash
+# $Id$
+# This software is subject to the terms of the Eclipse Public License v1.0
+# Agreement, available at the following URL:
+# http://www.eclipse.org/legal/epl-v10.html.
+# Copyright (C) 2005-2009 Julian Hyde
+# All Rights Reserved.
+# You must accept the terms of that agreement to use this software.
+#
 # Converts documentation from Mondrian's source format to Pentaho's web site.
 #
 # The file structure looks like this:
@@ -19,6 +27,10 @@
 #       olap/
 #          Connection.html (javadoc for mondrian.olap.Connection)
 #    (etc.)
+
+pause() {
+  xmessage Continue...
+}
 
 beep() {
   echo x | tr x \\007
@@ -58,8 +70,8 @@ cd $ROOT
 
 site=changeme@mondrian.pentaho.com
 javadoc=true
-deploy=true
 scp=true
+deploy=true
 headJavadoc=false
 
 # Remove output from previous run.
@@ -77,28 +89,36 @@ fi
 
 # Create, copy and deploy javadoc for the head revision.
 if $headJavadoc; then
-  rm -f headJavadoc.tar.gz
-  rm -rf headapi
-  mv api headapi
-  tar -cvz -f headJavadoc.tar.gz headapi
-  scp -oConnectTimeout=300 headJavadoc.tar.gz ${site}:httpdocs
-  ssh -oConnectTimeout=300 ${site} <<EOF
-    cd httpdocs
-    tar xvfz headJavadoc.tar.gz
+  if $javadoc; then
+    rm -f headJavadoc.tar.gz
+    rm -rf headapi
+    mv api headapi
+    tar -cvz -f headJavadoc.tar.gz headapi
+  fi
+  if $scp; then
+    pause
+    rsync -aPr -e 'ssh -oConnectTimeout=300' headJavadoc.tar.gz ${site}:httpdocs
+  fi
+  if $deploy; then
+    pause
+    ssh -oConnectTimeout=300 ${site} <<EOF
+      cd httpdocs
+      tar xvfz headJavadoc.tar.gz
 
-    # Fix up file permissions
-    find headapi -type d | xargs chmod go+rx
-    find headapi -type f | xargs chmod go+r
+      # Fix up file permissions
+      find headapi -type d | xargs chmod go+rx
+      find headapi -type f | xargs chmod go+r
 
-    # Replace references to documents from javadoc.
-    find headapi -name \*.html |
-    xargs perl -p -i -e '
+      # Replace references to documents from javadoc.
+      find headapi -name \*.html |
+      xargs perl -p -i -e '
 s!architecture.html!../documentation/architecture.php!;
 s!mdx.html!../documentation/mdx.php!;
 s!xml_schema.html!../documentation/xml_schema.php!;
 s!schema.html!../documentation/schema.php!;
-                        '
+                    '
 EOF
+  fi
   exit
 fi
 
@@ -140,10 +160,12 @@ tar -cvz -f mondrianPentaho.tar.gz content images api
 
 # Copy file to server, and deploy.
 if $scp; then
-  scp -oConnectTimeout=300 mondrianPentaho.tar.gz ${site}:httpdocs
+  pause
+  rsync -aPr -e 'ssh -oConnectTimeout=300' mondrianPentaho.tar.gz ${site}:httpdocs
 fi
 
 if $deploy; then
+  pause
   ssh -oConnectTimeout=300 ${site} <<EOF
     cd httpdocs
     tar xvfz mondrianPentaho.tar.gz

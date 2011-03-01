@@ -848,9 +848,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 } else if (value instanceof Number) {
                     Number number = (Number) value;
                     BigDecimal bd = bigDecimalFor(number);
-                    mondrian.util.Bug.olap4jUpgrade(
-                        "Switch to LiteralNode.create(ParseRegion, BigDecimal)"
-                        + "when we next upgrade olap4j.");
                     return LiteralNode.createNumeric(null, bd, false);
                 } else if (value instanceof String) {
                     return LiteralNode.createString(null, (String) value);

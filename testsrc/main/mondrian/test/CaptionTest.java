@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -83,6 +83,41 @@ public class CaptionTest extends TestCase {
 
 
     /**
+     * Tests the &lt;CaptionExpression&gt; element. The caption for
+     * [Time].[1997] should be "1997-12-31".
+     *
+     * <p>Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-236">Bug MONDRIAN-683,
+     * "Caption expression for dimension levels missing implementation"</a>.
+     */
+    public void testLevelCaptionExpression() {
+        TestContext tc = TestContext.instance();
+        switch (tc.getDialect().getDatabaseProduct()) {
+        case ACCESS:
+        case ORACLE:
+        case MYSQL:
+            break;
+        default:
+            // Due to provider-specific SQL in CaptionExpression, only Access,
+            // Oracle and MySQL are supported in this test.
+            return;
+        }
+        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
+        String mdxQuery =
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "{[Time].[Year].Members} ON ROWS FROM [Sales]";
+        mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
+        mondrian.olap.Result monResult = monConnection.execute(monQuery);
+        Axis[] axes = monResult.getAxes();
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
+
+        String caption = mall.getCaption();
+        Assert.assertEquals("1997-12-31", caption);
+    }
+
+
+    /**
      * created from foodmart.xml via perl script,
      * some captions added.
      */
@@ -125,7 +160,19 @@ public class CaptionTest extends TestCase {
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
             + "      <Table name=\"time_by_day\"/>\n"
             + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "          levelType=\"TimeYears\"/>\n"
+            + "          levelType=\"TimeYears\">\n"
+            + "        <CaptionExpression>\n"
+            + "          <SQL dialect=\"access\">\n"
+            + "cstr(the_year) + '-12-31'\n"
+            + "          </SQL>\n"
+            + "          <SQL dialect=\"mysql\">\n"
+            + "concat(cast(`the_year` as char(4)), '-12-31')\n"
+            + "          </SQL>\n"
+            + "          <SQL dialect=\"generic\">\n"
+            + "\"the_year\" || '-12-31'\n"
+            + "          </SQL>\n"
+            + "        </CaptionExpression>\n"
+            + "      </Level>\n"
             + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
             + "          levelType=\"TimeQuarters\"/>\n"
             + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
