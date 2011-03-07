@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,6 +17,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.mdx.MdxVisitor;
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.UnmodifiableArrayMap;
 
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -62,7 +63,7 @@ public class Literal extends ExpBase {
     public static final Literal doubleNegativeOne = negativeOne;
 
     private static final Map<BigDecimal, Literal> MAP =
-        Olap4jUtil.mapOf(
+        UnmodifiableArrayMap.of(
             BigDecimal.ZERO, zero,
             BigDecimal.ONE, one,
             BigDecimal.ONE.negate(), negativeOne);

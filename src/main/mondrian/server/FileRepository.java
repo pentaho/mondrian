@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.DriverManager;
 import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.*;
+import mondrian.tui.XmlaSupport;
 import mondrian.xmla.*;
 import org.apache.log4j.Logger;
 import org.olap4j.*;
@@ -170,7 +171,7 @@ public class FileRepository implements Repository {
         }
         final String content = repositoryContentFinder.getContent();
         DataSourcesConfig.DataSources xmlDataSources =
-            XmlaUtil.parseDataSources(content, LOGGER);
+            XmlaSupport.parseDataSources(content, LOGGER);
         serverInfo = new ServerInfo();
 
         for (DataSourcesConfig.DataSource xmlDataSource

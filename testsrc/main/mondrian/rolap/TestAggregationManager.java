@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -50,7 +50,7 @@ public class TestAggregationManager extends BatchTestCase {
         FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(131558, ((Number) value).intValue());
@@ -67,7 +67,7 @@ public class TestAggregationManager extends BatchTestCase {
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(2755, ((Number) value).intValue());
@@ -112,7 +112,7 @@ public class TestAggregationManager extends BatchTestCase {
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
 
         value = aggMan.getCellFromCache(request1); // after load, cell is found
         assertTrue(value instanceof Number);

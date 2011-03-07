@@ -388,6 +388,23 @@ public class SetFunDef extends FunDefBase {
                         public List<Member> current() {
                             return currentCursor.current();
                         }
+
+                        @Override
+                        public void setContext(Evaluator evaluator) {
+                            currentCursor.setContext(evaluator);
+                        }
+
+                        @Override
+                        public void currentToArray(
+                            Member[] members, int offset)
+                        {
+                            currentCursor.currentToArray(members, offset);
+                        }
+
+                        @Override
+                        public Member member(int column) {
+                            return currentCursor.member(column);
+                        }
                     };
                 }
             };

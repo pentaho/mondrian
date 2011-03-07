@@ -308,106 +308,115 @@ public class RolapResult extends ResultBase {
             /////////////////////////////////////////////////////////////////
             // Execute Slicer
             //
-            this.slicerAxis =
-                evalExecute(
-                    nonAllMembers,
-                    nonAllMembers.size() - 1,
-                    savedEvaluator,
-                    query.slicerAxis,
-                    query.slicerCalc);
+            RolapEvaluator slicerEvaluator;
+            do {
+                this.slicerAxis =
+                    evalExecute(
+                        nonAllMembers,
+                        nonAllMembers.size() - 1,
+                        savedEvaluator,
+                        query.slicerAxis,
+                        query.slicerCalc);
 
-            // Use the context created by the slicer for the other
-            // axes.  For example, "select filter([Customers], [Store
-            // Sales] > 100) on columns from Sales where
-            // ([Time].[1998])" should show customers whose 1998 (not
-            // total) purchases exceeded 100.
+                // Use the context created by the slicer for the other
+                // axes.  For example, "select filter([Customers], [Store
+                // Sales] > 100) on columns from Sales where
+                // ([Time].[1998])" should show customers whose 1998 (not
+                // total) purchases exceeded 100.
 
-            // Getting the Position list's size and the Position
-            // at index == 0 will, in fact, cause an Iterable-base
-            // Axis Position List to become a List-base Axis
-            // Position List (and increase memory usage), but for
-            // the slicer axis, the number of Positions is (generally) very
-            // small, so who cares.
-            final List<Position> positionList = slicerAxis.getPositions();
-            RolapEvaluator evaluator = this.evaluator;
-            if (positionList.size() > 1) {
-                int arity = positionList.get(0).size();
-                TupleList tupleList =
-                    new DelegatingTupleList(
-                        arity,
-                        Util.<List<Member>>cast(positionList));
-                tupleList =
-                    AggregateFunDef.AggregateCalc.optimizeTupleList(
-                        evaluator,
-                        tupleList);
+                // Getting the Position list's size and the Position
+                // at index == 0 will, in fact, cause an Iterable-base
+                // Axis Position List to become a List-base Axis
+                // Position List (and increase memory usage), but for
+                // the slicer axis, the number of Positions is (generally) very
+                // small, so who cares.
+                final List<Position> positionList = slicerAxis.getPositions();
+                slicerEvaluator = this.evaluator;
+                if (positionList.size() > 1) {
+                    int arity = positionList.get(0).size();
+                    TupleList tupleList =
+                        new DelegatingTupleList(
+                            arity,
+                            Util.<List<Member>>cast(positionList));
+                    tupleList =
+                        AggregateFunDef.AggregateCalc.optimizeTupleList(
+                            slicerEvaluator,
+                            tupleList);
 
-                final Calc valueCalc =
-                    new ValueCalc(
-                        new DummyExp(new ScalarType()));
-                final TupleList tupleList1 = tupleList;
-                final Calc calc =
-                    new GenericCalc(
-                        new DummyExp(query.slicerCalc.getType()))
-                    {
-                        public Object evaluate(Evaluator evaluator) {
-                            return AggregateFunDef.AggregateCalc.aggregate(
-                                valueCalc, evaluator, tupleList1);
-                        }
-                    };
-                final List<RolapHierarchy> hierarchyList =
-                    new AbstractList<RolapHierarchy>() {
-                        final Position pos0 = positionList.get(0);
+                    final Calc valueCalc =
+                        new ValueCalc(
+                            new DummyExp(new ScalarType()));
+                    final TupleList tupleList1 = tupleList;
+                    final Calc calc =
+                        new GenericCalc(
+                            new DummyExp(query.slicerCalc.getType()))
+                        {
+                            public Object evaluate(Evaluator evaluator) {
+                                return AggregateFunDef.AggregateCalc.aggregate(
+                                    valueCalc, evaluator, tupleList1);
+                            }
+                        };
+                    final List<RolapHierarchy> hierarchyList =
+                        new AbstractList<RolapHierarchy>() {
+                            final Position pos0 = positionList.get(0);
 
-                        public RolapHierarchy get(int index) {
-                            return
-                                ((RolapMember) pos0.get(index)).getHierarchy();
-                        }
+                            public RolapHierarchy get(int index) {
+                                return ((RolapMember) pos0.get(index))
+                                    .getHierarchy();
+                            }
 
-                        public int size() {
-                            return 0;
-                        }
-                    };
-                evaluator = evaluator.push(
-                    new RolapTupleCalculation(hierarchyList, calc));
-            }
+                            public int size() {
+                                return pos0.size();
+                            }
+                        };
+                    slicerEvaluator = slicerEvaluator.push(
+                        new RolapTupleCalculation(hierarchyList, calc));
+                }
+            } while (batchingReader.loadAggregations(query));
 
             /////////////////////////////////////////////////////////////////
             // Execute Axes
             //
-            boolean redo = true;
-            while (redo) {
-                RolapEvaluator e = evaluator.push();
-                redo = false;
+            do {
+                boolean redo;
+                do {
+                    redo = false;
+                    for (int i = 0; i < axes.length; i++) {
+                        RolapEvaluator e = slicerEvaluator.push();
+                        QueryAxis axis = query.axes[i];
+                        final Calc calc = query.axisCalcs[i];
+                        Axis axisResult =
+                            evalExecute(
+                                nonAllMembers, nonAllMembers.size() - 1,
+                                e, axis, calc);
 
-                for (int i = 0; i < axes.length; i++) {
-                    QueryAxis axis = query.axes[i];
-                    final Calc calc = query.axisCalcs[i];
-                    Axis axisResult = evalExecute(
-                        nonAllMembers, nonAllMembers.size() - 1, e, axis, calc);
-
-                    if (!nonAllMembers.isEmpty()) {
-                        List<Position> pl = axisResult.getPositions();
-                        if (!pl.isEmpty()) {
-                            // Only need to process the first Position
-                            Position p = pl.get(0);
-                            for (Member m : p) {
-                                if (m.isCalculated()) {
-                                    CalculatedMeasureVisitor visitor =
-                                        new CalculatedMeasureVisitor();
-                                    m.getExpression().accept(visitor);
-                                    Dimension dimension = visitor.dimension;
-                                    redo = removeDimension(
-                                        dimension, nonAllMembers);
+                        if (!nonAllMembers.isEmpty()) {
+                            List<Position> pl = axisResult.getPositions();
+                            if (!pl.isEmpty()) {
+                                // Only need to process the first Position
+                                Position p = pl.get(0);
+                                for (Member m : p) {
+                                    if (m.isCalculated()) {
+                                        CalculatedMeasureVisitor visitor =
+                                            new CalculatedMeasureVisitor();
+                                        m.getExpression().accept(visitor);
+                                        Dimension dimension = visitor.dimension;
+                                        if (removeDimension(
+                                            dimension, nonAllMembers))
+                                        {
+                                            redo = true;
+                                        }
+                                    }
                                 }
                             }
                         }
+                        this.axes[i] = axisResult;
                     }
-                    this.axes[i] = axisResult;
-                }
-            }
+                } while (redo);
+            } while (batchingReader.loadAggregations(query));
 
             // Get value for each Cell
-            executeBody(evaluator, this.query, new int[axes.length]);
+            executeBody(slicerEvaluator, this.query, new int[axes.length]);
 
             // If you are very close to running out of memory due to
             // the number of CellInfo's in cellInfos, then calling this
@@ -455,19 +464,16 @@ public class RolapResult extends ResultBase {
 
     protected boolean removeDimension(
         Dimension dimension,
-        List<List<Member>> nonAllMembers)
+        List<List<Member>> memberLists)
     {
-        boolean changed = false;
-        for (ListIterator<List<Member>> it = nonAllMembers.listIterator();
-                it.hasNext();)
-        {
-            List<Member> ms = it.next();
-            Dimension d = ms.get(0).getHierarchy().getDimension();
-            if (d.equals(dimension)) {
-                it.remove();
+        for (int i = 0; i < memberLists.size(); i++) {
+            List<Member> memberList = memberLists.get(i);
+            if (memberList.get(0).getDimension().equals(dimension)) {
+                memberLists.remove(i);
+                return true;
             }
         }
-        return changed;
+        return false;
     }
 
     private static class CalculatedMeasureVisitor
@@ -584,12 +590,12 @@ public class RolapResult extends ResultBase {
         Calc calc)
     {
         if (cnt < 0) {
-            evaluator.setCellReader(aggregatingReader);
             return executeAxis(evaluator.push(), axis, calc, true, null);
             // No need to clear expression cache here as no new aggregates are
             // loaded(aggregatingReader reads from cache).
         } else {
             Axis axisResult = null;
+            final int arity = calc == null ? 0 : calc.getType().getArity();
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
                 Axis a =
@@ -598,7 +604,7 @@ public class RolapResult extends ResultBase {
                 if (axis != null) {
                     ordered = axis.isOrdered();
                 }
-                axisResult = mergeAxes(axisResult, a, evaluator, ordered);
+                axisResult = mergeAxes(axisResult, a, ordered, arity);
             }
             return axisResult;
         }
@@ -1103,7 +1109,6 @@ public class RolapResult extends ResultBase {
     private void processMemberExpr(Object o) {
         if (o instanceof Member && o instanceof RolapCubeMember) {
             exprMembers.add((Member) o);
-            return;
         } else if (o instanceof VisualTotalMember) {
             VisualTotalMember member = (VisualTotalMember) o;
             Exp exp = member.getExpression();
@@ -1122,8 +1127,6 @@ public class RolapResult extends ResultBase {
             MemberExpr memberExp = (MemberExpr) o;
             Member member = memberExp.getMember();
             processMemberExpr(member);
-        } else {
-            return;
         }
     }
 
@@ -1912,55 +1915,22 @@ public class RolapResult extends ResultBase {
     static Axis mergeAxes(
         Axis axis1,
         Axis axis2,
-        RolapEvaluator evaluator,
-        boolean ordered)
+        boolean ordered,
+        final int arity)
     {
         if (axis1 == null) {
             return axis2;
         }
         List<Position> posList1 = axis1.getPositions();
         List<Position> posList2 = axis2.getPositions();
-        int arrayLen = -1;
-        if (posList1 instanceof RolapAxis.PositionListBase) {
-            if (posList1.isEmpty()) {
-                return axis2;
-            }
-            arrayLen = posList1.get(0).size();
-        }
-
-        // REVIEW: Is all this 'instanceof' stuff really necessary? Can't we
-        // just ask each axis whether it is empty?
-
-        if (axis1 instanceof RolapAxis.SingleEmptyPosition) {
+        if (posList1.isEmpty()) {
             return axis2;
         }
-        if (axis1 instanceof RolapAxis.NoPosition) {
-            return axis2;
-        }
-        if (posList2 instanceof RolapAxis.PositionListBase) {
-            if (posList2.isEmpty()) {
-                return axis1;
-            }
-            arrayLen = posList2.get(0).size();
-        }
-        if (axis2 instanceof RolapAxis.SingleEmptyPosition) {
+        if (posList2.isEmpty()) {
             return axis1;
-        }
-        if (axis2 instanceof RolapAxis.NoPosition) {
-            return axis1;
-        }
-        if (arrayLen == -1) {
-            // Avoid materialization of axis
-            arrayLen = 0;
-            for (Position p1 : posList1) {
-                arrayLen += p1.size();
-                break;
-            }
-            // reset to start of List
-            posList1 = axis1.getPositions();
         }
         Set<List<Member>> set = new HashSet<List<Member>>();
-        TupleList list = TupleCollections.createList(arrayLen);
+        TupleList list = TupleCollections.createList(arity);
         for (Position p1 : posList1) {
             if (set.add(p1)) {
                 list.add(p1);
@@ -1974,21 +1944,9 @@ public class RolapResult extends ResultBase {
         }
 
         // if there are unique members on both axes and no order function,
-        //  sort the list to ensure default order
+        // sort the list to ensure default order
         if (halfWay > 0 && halfWay < list.size() && !ordered) {
-            List<Member> membs = list.get(0);
-            int membsSize = membs.size();
-            ValueCalc valCalc =
-                new ValueCalc(
-                    new DummyExp(new ScalarType()));
-            list = FunUtil.sortTuples(
-                evaluator,
-                list,
-                list,
-                valCalc,
-                false,
-                false,
-                membsSize);
+            list = FunUtil.hierarchizeTupleList(list, false);
         }
 
         return new RolapAxis.MemberArrayList(list);

@@ -10,14 +10,14 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
-import org.olap4j.impl.ArrayMap;
+import org.olap4j.impl.UnmodifiableArrayMap;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -449,7 +449,7 @@ public class RolapLevel extends LevelBase {
     }
 
     private static final Map<String, SqlStatement.Type> VALUES =
-        ArrayMap.of(
+        UnmodifiableArrayMap.of(
             "int", SqlStatement.Type.INT,
             "double", SqlStatement.Type.DOUBLE,
             "Object", SqlStatement.Type.OBJECT,

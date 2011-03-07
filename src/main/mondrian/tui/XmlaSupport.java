@@ -3,11 +3,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
 import mondrian.server.StringRepositoryContentFinder;
@@ -43,8 +42,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
 
 /**
- * This files provide support for making XMLA requests and looking at
- * the responses.
+ * Support for making XMLA requests and looking at the responses.
  *
  * @author Richard M. Emberson
  * @version $Id$
@@ -260,6 +258,37 @@ public class XmlaSupport {
         final DOMWrapper def = xmlParser.parse(dsConfigReader);
 
         return new DataSourcesConfig.DataSources(def);
+    }
+
+    public static DataSourcesConfig.DataSources parseDataSources(
+        String dataSourcesConfigString,
+        Logger logger)
+    {
+        try {
+            if (dataSourcesConfigString == null) {
+                logger.warn("XmlaSupport.parseDataSources: null input");
+                return null;
+            }
+            dataSourcesConfigString =
+                Util.replaceProperties(
+                    dataSourcesConfigString,
+                    Util.toMap(System.getProperties()));
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "XmlaSupport.parseDataSources: dataSources="
+                    + dataSourcesConfigString);
+            }
+            final Parser parser =
+                XOMUtil.createDefaultParser();
+            final DOMWrapper doc = parser.parse(dataSourcesConfigString);
+            return new DataSourcesConfig.DataSources(doc);
+        } catch (XOMException e) {
+            throw Util.newError(
+                e,
+                "Failed to parse data sources config: "
+                + dataSourcesConfigString);
+        }
     }
 
     /**

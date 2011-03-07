@@ -225,6 +225,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 public TupleCursor tupleCursor() {
                     return new AbstractTupleCursor(getArity()) {
                         final TupleCursor i1 = it1.tupleCursor();
+                        final int arity1 = i1.getArity();
                         TupleCursor i2 =
                             TupleCollections.emptyList(1).tupleCursor();
                         final Member[] members = new Member[arity];
@@ -244,8 +245,32 @@ public class CrossJoinFunDef extends FunDefBase {
 
                         public List<Member> current() {
                             i1.currentToArray(members, 0);
-                            i2.currentToArray(members, i1.getArity());
+                            i2.currentToArray(members, arity1);
                             return Util.flatList(members);
+                        }
+
+                        @Override
+                        public Member member(int column) {
+                            if (column < arity1) {
+                                return i1.member(column);
+                            } else {
+                                return i2.member(column - arity1);
+                            }
+                        }
+
+                        @Override
+                        public void setContext(Evaluator evaluator) {
+                            i1.setContext(evaluator);
+                            i2.setContext(evaluator);
+                        }
+
+                        @Override
+                        public void currentToArray(
+                            Member[] members,
+                            int offset)
+                        {
+                            i1.currentToArray(members, offset);
+                            i2.currentToArray(members, offset + arity1);
                         }
                     };
                 }

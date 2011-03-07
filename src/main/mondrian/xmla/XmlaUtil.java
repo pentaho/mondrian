@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,8 +16,6 @@ import mondrian.xmla.impl.DefaultXmlaResponse;
 
 import static org.olap4j.metadata.XmlaConstants.*;
 
-import org.apache.log4j.Logger;
-import org.eigenbase.xom.*;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.w3c.dom.*;
@@ -309,12 +307,6 @@ way too noisy
 
         final XmlaHandler.ConnectionFactory connectionFactory =
             new XmlaHandler.ConnectionFactory() {
-            public OlapConnection getConnection(
-                    String catalog, String schema, String roleName)
-                    throws SQLException
-                {
-                    return connection;
-                }
                 public OlapConnection getConnection(
                     String catalog, String schema, String roleName,
                     Properties props)
@@ -475,37 +467,6 @@ way too noisy
             request.getProperties().get(
                 PropertyDefinition.EmitInvisibleMembers.name());
         return Boolean.parseBoolean(value);
-    }
-
-    public static DataSourcesConfig.DataSources parseDataSources(
-        String dataSourcesConfigString,
-        Logger logger)
-    {
-        try {
-            if (dataSourcesConfigString == null) {
-                logger.warn("XmlaServlet.parseDataSources: null input");
-                return null;
-            }
-            dataSourcesConfigString =
-                Util.replaceProperties(
-                    dataSourcesConfigString,
-                    Util.toMap(System.getProperties()));
-
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "XmlaServlet.parseDataSources: dataSources="
-                    + dataSourcesConfigString);
-            }
-            final org.eigenbase.xom.Parser parser =
-                XOMUtil.createDefaultParser();
-            final DOMWrapper doc = parser.parse(dataSourcesConfigString);
-            return new DataSourcesConfig.DataSources(doc);
-        } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Failed to parse data sources config: "
-                + dataSourcesConfigString);
-        }
     }
 
     /**

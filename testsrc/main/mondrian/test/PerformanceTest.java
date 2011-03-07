@@ -28,7 +28,7 @@ public class PerformanceTest extends FoodMartTestCase {
      * Certain tests are enabled only if logging is enabled at debug level or
      * higher.
      */
-    private static final Logger LOGGER =
+    public static final Logger LOGGER =
         Logger.getLogger(PerformanceTest.class);
 
     public PerformanceTest(String name) {

@@ -11,9 +11,8 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.*;
 import mondrian.calc.ResultStyle;
-import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
@@ -93,6 +92,7 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 TupleList list = listCalc.evaluateList(evaluator);
+                assert list.getArity() == arity;
                 if (list.isEmpty()) {
                     return list;
                 }
@@ -106,15 +106,14 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 return partiallySortList(
-                    evaluator, list, hasHighCardDimension(list), n, arity);
+                    evaluator, list, hasHighCardDimension(list), n);
             }
 
             private TupleList partiallySortList(
                 Evaluator evaluator,
                 TupleList list,
                 boolean highCard,
-                int n,
-                int arity)
+                int n)
             {
                 if (highCard) {
                     // sort list in chunks, collect the results
@@ -126,23 +125,31 @@ class TopBottomCountFunDef extends FunDefBase {
                         final TupleList chunk = list.subList(i, next);
                         TupleList chunkResult =
                             partiallySortList(
-                                evaluator, chunk, false, n, arity);
+                                evaluator, chunk, false, n);
                         allChunkResults.addAll(chunkResult);
                     }
                     // one last sort, to merge and cull
                     return partiallySortList(
-                        evaluator, allChunkResults, false, n, arity);
+                        evaluator, allChunkResults, false, n);
                 }
 
                 // normal case: no need for chunks
-                return new DelegatingTupleList(
-                    list.getArity(),
-                    partiallySortTuples(
-                        evaluator.push(),
-                        list,
-                        orderCalc, n, top, arity));
+                switch (list.getArity()) {
+                case 1:
+                    return new UnaryTupleList(
+                        partiallySortMembers(
+                            evaluator.push(),
+                            list.slice(0),
+                            orderCalc, n, top));
+                default:
+                    return new DelegatingTupleList(
+                        list.getArity(),
+                        partiallySortTuples(
+                            evaluator.push(),
+                            list,
+                            orderCalc, n, top));
+                }
             }
-
 
             public boolean dependsOn(Hierarchy hierarchy) {
                 return anyDependsButFirst(getCalcs(), hierarchy);

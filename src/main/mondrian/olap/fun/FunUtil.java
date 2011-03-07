@@ -621,6 +621,9 @@ public class FunUtil extends Util {
             comparator =
                 new HierarchicalTupleComparator(evaluator, exp, arity, desc)
                 .wrap();
+
+// new HierarchizeTupleComparator(arity, false).wrap();
+
         }
 
         Arrays.sort(tuples, comparator);
@@ -636,7 +639,7 @@ public class FunUtil extends Util {
      *
      * @param list a list of members
      * @param exp a Calc applied to each member to find its sort-key
-     * @param evaluator
+     * @param evaluator Evaluator
      * @param limit maximum count of members to return.
      * @param desc true to sort descending (and find TopCount), false to sort
      *   ascending (and find BottomCount).
@@ -731,11 +734,10 @@ public class FunUtil extends Util {
         TupleList list,
         Calc exp,
         int limit,
-        boolean desc,
-        int arity)
+        boolean desc)
     {
         Comparator<List<Member>> comp =
-            new BreakTupleComparator(evaluator, exp, arity).wrap();
+            new BreakTupleComparator(evaluator, exp, list.getArity()).wrap();
         if (desc) {
             comp = Collections.reverseOrder(comp);
         }
@@ -2147,12 +2149,13 @@ public class FunUtil extends Util {
     * @param comp a Comparator; null means use natural comparison
     * @param limit
     */
-    static void partialSort(Object[] items, Comparator comp, int limit)
+    static <T> void partialSort(T[] items, Comparator<T> comp, int limit)
     {
         if (comp == null) {
-            comp = ComparatorUtils.naturalComparator();
+            //noinspection unchecked
+            comp = (Comparator<T>) ComparatorUtils.naturalComparator();
         }
-        new Quicksorter(items, comp).partialSort(limit);
+        new Quicksorter<T>(items, comp).partialSort(limit);
     }
 
     /**

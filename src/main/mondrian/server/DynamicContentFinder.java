@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,6 +11,7 @@ package mondrian.server;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.tui.XmlaSupport;
 import mondrian.util.*;
 import mondrian.xmla.*;
 
@@ -99,7 +100,7 @@ public class DynamicContentFinder
                 return;
             }
             DataSourcesConfig.DataSources newDataSources =
-                XmlaUtil.parseDataSources(
+                XmlaSupport.parseDataSources(
                     dataSourcesConfigString, LOGGER);
             if (newDataSources == null) {
                 return;

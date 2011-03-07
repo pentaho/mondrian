@@ -10,8 +10,7 @@
 package mondrian.calc;
 
 import mondrian.calc.impl.*;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import java.util.*;
 
@@ -26,7 +25,7 @@ import java.util.*;
  */
 public final class TupleCollections {
     private static final TupleList[] EMPTY_LISTS = {
-        null,
+        new DelegatingTupleList(0, Collections.<List<Member>>emptyList()),
         new UnaryTupleList(Collections.<Member>emptyList()),
         new DelegatingTupleList(2, Collections.<List<Member>>emptyList()),
         new DelegatingTupleList(3, Collections.<List<Member>>emptyList()),
@@ -40,8 +39,9 @@ public final class TupleCollections {
     /**
      * Creates a list of given arity.
      *
-     * <p>If arity == 1, creates a {@link UnaryTupleList}; otherwise creates
-     * a {@link ArrayTupleList}.
+     * <p>If arity == 1, creates a {@link UnaryTupleList};
+     * if arity == 0, creates a {@link DelegatingTupleList};
+     * otherwise creates a {@link ArrayTupleList}.
      *
      * @see TupleList#cloneList(int)
      * @see #createList(int, int)
@@ -50,16 +50,22 @@ public final class TupleCollections {
      * @return Tuple list
      */
     public static TupleList createList(int arity) {
-        return arity == 1
-            ? new UnaryTupleList()
-            : new ArrayTupleList(arity);
+        switch (arity) {
+        case 0:
+            return new DelegatingTupleList(0, new ArrayList<List<Member>>());
+        case 1:
+            return new UnaryTupleList();
+        default:
+            return new ArrayTupleList(arity);
+        }
     }
 
     /**
      * Creates a list of given arity and initial capacity.
      *
-     * <p>If arity == 1, creates a {@link UnaryTupleList}; otherwise creates
-     * a {@link ArrayTupleList}.
+     * <p>If arity == 1, creates a {@link UnaryTupleList};
+     * if arity == 0, creates a {@link DelegatingTupleList};
+     * otherwise creates a {@link ArrayTupleList}.
      *
      * @see TupleList#cloneList(int)
      *
@@ -68,9 +74,15 @@ public final class TupleCollections {
      * @return Tuple list
      */
     public static TupleList createList(int arity, int initialCapacity) {
-        return arity == 1
-            ? new UnaryTupleList(new ArrayList<Member>(initialCapacity))
-            : new ArrayTupleList(arity, initialCapacity);
+        switch (arity) {
+        case 0:
+            return new DelegatingTupleList(
+                0, new ArrayList<List<Member>>(initialCapacity));
+        case 1:
+            return new UnaryTupleList(new ArrayList<Member>(initialCapacity));
+        default:
+            return new ArrayTupleList(arity, initialCapacity);
+        }
     }
 
     /**
@@ -185,6 +197,21 @@ public final class TupleCollections {
                 default:
                     throw new RuntimeException("unpexected state " + state);
                 }
+            }
+
+            @Override
+            public void setContext(Evaluator evaluator) {
+                cursor.setContext(evaluator);
+            }
+
+            @Override
+            public void currentToArray(Member[] members, int offset) {
+                cursor.currentToArray(members, offset);
+            }
+
+            @Override
+            public Member member(int column) {
+                return cursor.member(column);
             }
         };
     }

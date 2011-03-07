@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -75,7 +75,9 @@ public class XmlaHandler {
             properties.get(PropertyDefinition.Catalog.name());
         String roleName = request.getRoleName();
 
-        return getConnection(dataSourceInfo, catalog, roleName);
+        // REVIEW: Should we pass request properties to getConnection?
+        return getConnection(
+            dataSourceInfo, catalog, roleName, new Properties());
     }
 
     private enum SetType {
@@ -528,6 +530,9 @@ public class XmlaHandler {
 
     /**
      * Creates an <code>XmlaHandler</code>.
+     *
+     * <p>The connection factory may be null, as long as you override
+     * {@link #getConnection(String, String, String, Properties)}.
      *
      * @param connectionFactory Connection factory
      * @param prefix XML Namespace. Typical value is "xmla", but a value of
@@ -2841,73 +2846,6 @@ public class XmlaHandler {
         }
     }
 
-    /**
-     * Get the DataSourcesConfig.Catalog with the given catalog name from the
-     * DataSource's catalogs if there is a match and otherwise return null.
-     *
-     * @param ds DataSource
-     * @param catalogName Catalog name
-     * @return DataSourcesConfig.Catalog or null
-     */
-    public DataSourcesConfig.Catalog getCatalog(
-        DataSourcesConfig.DataSource ds,
-        String catalogName)
-    {
-        DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-        if (catalogName == null) {
-            // if there is no catalog name - its optional and there is
-            // only one, then return it.
-            if (catalogs.length == 1) {
-                return catalogs[0];
-            }
-        } else {
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (catalogName.equals(dsCatalog.name)) {
-                    return dsCatalog;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the DataSourcesConfig.Catalog associated with the
-     * catalog name that is part of the request properties or
-     * null if there is no catalog with that name.
-     *
-     * @param ds DataSource
-     * @param required Whether to throw an error if catalog name is not
-     * specified
-     *
-     * @param catalogName
-     * @return DataSourcesConfig Catalog or null
-     * @throws XmlaException If error occurs
-     */
-    public DataSourcesConfig.Catalog getCatalog(
-        DataSourcesConfig.DataSource ds, boolean required, String catalogName)
-        throws XmlaException
-    {
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
-        if (dsCatalog == null) {
-            if (catalogName == null) {
-                if (required) {
-                    throw new XmlaException(
-                        CLIENT_FAULT_FC,
-                        HSB_CONNECTION_DATA_SOURCE_CODE,
-                        HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                        Util.newError("catalog not specified"));
-                }
-                return null;
-            }
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_CONNECTION_DATA_SOURCE_CODE,
-                HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError("no catalog named '" + catalogName + "'"));
-        }
-        return dsCatalog;
-    }
-
     private static class IntList extends AbstractList<Integer> {
         private final int[] ints;
 
@@ -3138,48 +3076,33 @@ public class XmlaHandler {
         }
     }
 
+    /**
+     * Creates an olap4j connection for responding to XMLA requests.
+     *
+     * <p>A typical implementation will probably just use a
+     * {@link javax.sql.DataSource} or a connect string, but it is important
+     * that the connection is assigned to the correct catalog, schema and role
+     * consistent with the client's XMLA context.
+     */
     public interface ConnectionFactory {
-        OlapConnection getConnection(
-            String catalog,
-            String schema,
-            String roleName)
-            throws SQLException;
         /**
-         * Extended version of
-         * {@link ConnectionFactory#getConnection(String, String, String)}
-         * which takes a properties list as a supplemental argument.
-         * The properties must be passed to the underlying driver.
+         * Creates a connection.
+         *
+         * <p>The implementation passes the properties to the underlying driver.
+         *
          * @param catalog The name of the catalog to use.
          * @param schema The name of the schema to use.
          * @param roleName The name of the role to use, or NULL.
-         * @param props Properties to be passed to the underlying
-         * native driver.
+         * @param props Properties to be passed to the underlying native driver.
          * @return An OlapConnection object.
-         * @throws SQLException If the you know what hits the fan.
+         * @throws SQLException on error
          */
         OlapConnection getConnection(
-                String catalog,
-                String schema,
-                String roleName,
-                Properties props)
-                throws SQLException;
-    }
-
-    public static void main(String[] args) {
-        for (RowsetDefinition def : RowsetDefinition.values()) {
-            System.out.print("    " + def.name() + "(");
-            int k = 0;
-            for (RowsetDefinition.Column column : def.columnDefinitions) {
-                if (k++ == 0) {
-                    System.out.println();
-                } else {
-                    System.out.println(",");
-                }
-                System.out.print(
-                    "        new MetadataColumn(\"" + column.name + "\")");
-            }
-            System.out.println("),");
-        }
+            String catalog,
+            String schema,
+            String roleName,
+            Properties props)
+            throws SQLException;
     }
 }
 
