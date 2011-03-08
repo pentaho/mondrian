@@ -621,9 +621,6 @@ public class FunUtil extends Util {
             comparator =
                 new HierarchicalTupleComparator(evaluator, exp, arity, desc)
                 .wrap();
-
-// new HierarchizeTupleComparator(arity, false).wrap();
-
         }
 
         Arrays.sort(tuples, comparator);

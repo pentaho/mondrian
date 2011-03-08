@@ -94,35 +94,36 @@ public class NativizeSetFunDef extends FunDefBase {
             return funArg.accept(compiler);
         }
 
-        final Calc[] calcs = new Calc[] {compiler.compileList(funArg, true)};
+        final Calc[] calcs = {compiler.compileList(funArg, true)};
 
         final int arity = calcs[0].getType().getArity();
-        if (arity < 1) {
-            throw new IllegalArgumentException(
-                "unexpected value for .getArity() - " + arity);
-        } else if (arity == 1 || substitutionMap.isEmpty()) {
+        assert arity >= 0;
+        if (arity == 1 || substitutionMap.isEmpty()) {
             IterCalc calc = (IterCalc) funArg.accept(compiler);
             final boolean highCardinality =
                 arity == 1
                 && isHighCardinality(funArg, compiler.getEvaluator());
-            if (calc instanceof ListCalc) {
+            if (calc == null) {
+                // This can happen under JDK1.4: caller wants iterator
+                // implementation, but compiler can only provide list.
+                // Fall through and use native.
+            } else if (calc instanceof ListCalc) {
                 return new NonNativeListCalc((ListCalc) calc, highCardinality);
             } else {
                 return new NonNativeIterCalc(calc, highCardinality);
             }
-        } else {
-            if (isFirstCompileCall) {
-                isFirstCompileCall = false;
-                originalExp = funArg.clone();
-                Query query = compiler.getEvaluator().getQuery();
-                call.accept(
-                    new AddFormulasVisitor(query, substitutionMap, dimensions));
-                call.accept(new TransformToFormulasVisitor(query));
-                query.resolve();
-            }
-            return new NativeListCalc(
-                call, calcs, compiler, substitutionMap, originalExp);
         }
+        if (isFirstCompileCall) {
+            isFirstCompileCall = false;
+            originalExp = funArg.clone();
+            Query query = compiler.getEvaluator().getQuery();
+            call.accept(
+                new AddFormulasVisitor(query, substitutionMap, dimensions));
+            call.accept(new TransformToFormulasVisitor(query));
+            query.resolve();
+        }
+        return new NativeListCalc(
+            call, calcs, compiler, substitutionMap, originalExp);
     }
 
     private boolean isHighCardinality(Exp funArg, Evaluator evaluator) {
@@ -169,6 +170,7 @@ public class NativizeSetFunDef extends FunDefBase {
         final boolean nativeEnabled;
 
         protected NonNativeCalc(Calc parent, final boolean nativeEnabled) {
+            assert parent != null;
             this.parent = parent;
             this.nativeEnabled = nativeEnabled;
         }

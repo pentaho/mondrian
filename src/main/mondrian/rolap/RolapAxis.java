@@ -440,6 +440,11 @@ public abstract class RolapAxis implements Axis {
             return hashCode;
         }
 
+        @Override
+        public String toString() {
+            return getList().toString();
+        }
+
         public ListIterator<Member> listIterator() {
             return new ListItr(0);
         }

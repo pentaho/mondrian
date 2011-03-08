@@ -30,7 +30,7 @@ import java.util.*;
  * Supports crossjoin, member.children, level.members and member.descendants -
  * all in non empty mode, i.e. there is a join to the fact table.<p/>
  *
- * TODO: the order of the result is different from the order of the
+ * <p>TODO: the order of the result is different from the order of the
  * enumeration. Should sort.
  *
  * @author av
@@ -45,17 +45,17 @@ public abstract class RolapNativeSet extends RolapNative {
         new SoftSmartCache<Object, TupleList>();
 
     /**
-     * Returns whether certain member types(e.g. calculated members) should
+     * Returns whether certain member types (e.g. calculated members) should
      * disable native SQL evaluation for expressions containing them.
      *
-     * <p>
-     * If true, expressions containing calculated members will be evaluated by
-     * the interpreter, instead of using SQL.
+     * <p>If true, expressions containing calculated members will be evaluated
+     * by the interpreter, instead of using SQL.
      *
-     * If false, calc members will be ignored and the computation will be done
-     * in SQL, returning more members than requested.  This is ok, if
+     * <p>If false, calc members will be ignored and the computation will be
+     * done in SQL, returning more members than requested.  This is ok, if
      * the superflous members are filtered out in java code afterwards.
-     * </p>
+     *
+     * @return whether certain member types should disable native SQL evaluation
      */
     protected abstract boolean restrictMemberTypes();
 
@@ -190,12 +190,21 @@ public abstract class RolapNativeSet extends RolapNative {
                 addLevel(tr, arg);
             }
 
-            // lookup the result in cache; we can't return the cached
+            // Look up the result in cache; we can't return the cached
             // result if the tuple reader contains a target with calculated
             // members because the cached result does not include those
             // members; so we still need to cross join the cached result
-            // with those enumerated members
-            Object key = tr.getCacheKey();
+            // with those enumerated members.
+            //
+            // The key needs to include the arguments (projection) as well as
+            // the constraint, because it's possible (see bug MONDRIAN-902)
+            // that independent axes have identical constraints but different
+            // args (i.e. projections). REVIEW: In this case, should we use the
+            // same cached result and project different columns?
+            List<Object> key = new ArrayList<Object>();
+            key.add(tr.getCacheKey());
+            key.addAll(Arrays.asList(args));
+
             TupleList result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
             if (result != null && !hasEnumTargets) {

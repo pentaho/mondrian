@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,7 +17,7 @@ import mondrian.spi.Dialect;
 import java.util.List;
 
 /**
- * <code>VirtualCubeTest</code> shows virtual cube tests.
+ * Unit tests for virtual cubes.
  *
  * @author remberson
  * @since Feb 14, 2003
@@ -1333,6 +1333,33 @@ public class VirtualCubeTest extends BatchTestCase {
 
         assertQuerySql(query, mysqlPattern, true);
         assertQueryReturns(query, result);
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-902">
+     * MONDRIAN-902, "mondrian populating the same members on both axes"</a>.
+     */
+    public void testBugMondrian902() {
+        Result result = executeQuery(
+            "SELECT\n"
+            + "NON EMPTY CrossJoin(\n"
+            + "  [Education Level].[Education Level].Members,\n"
+            + "  CrossJoin(\n"
+            + "    [Product].[Product Family].Members,\n"
+            + "    [Store].[Store State].Members)) ON COLUMNS,\n"
+            + "NON EMPTY CrossJoin(\n"
+            + "  [Promotions].[Promotion Name].Members,\n"
+            + "  [Marital Status].[Marital Status].Members) ON ROWS\n"
+            + "FROM [Warehouse and Sales]");
+        assertEquals(
+            "[[Education Level].[Bachelors Degree], [Product].[Drink], [Store].[USA].[CA]]",
+            result.getAxes()[0].getPositions().get(0).toString());
+        assertEquals(45, result.getAxes()[0].getPositions().size());
+        // With bug MONDRIAN-902, this gave the same result as for axis #0:
+        assertEquals(
+            "[[Promotions].[Bag Stuffers], [Marital Status].[M]]",
+            result.getAxes()[1].getPositions().get(0).toString());
+        assertEquals(96, result.getAxes()[1].getPositions().size());
     }
 }
 
