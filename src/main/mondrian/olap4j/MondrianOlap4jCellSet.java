@@ -3,12 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.rolap.RolapAxis;
 import org.olap4j.*;
 import org.olap4j.Cell;
 import org.olap4j.Position;
@@ -92,7 +93,9 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         for (int i = 0; i < axes.length; i++) {
             Axis axis = axes[i];
             QueryAxis queryAxis = queryAxes[i];
-            axisList.add(new MondrianOlap4jCellSetAxis(this, queryAxis, axis));
+            axisList.add(
+                new MondrianOlap4jCellSetAxis(
+                    this, queryAxis, (RolapAxis) axis));
         }
 
         // initialize filter axis
@@ -105,7 +108,8 @@ abstract class MondrianOlap4jCellSet implements CellSet {
                     false, null, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined);
         }
-        filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis, axis);
+        filterAxis =
+            new MondrianOlap4jCellSetAxis(this, queryAxis, (RolapAxis) axis);
     }
 
     public CellSetMetaData getMetaData() {

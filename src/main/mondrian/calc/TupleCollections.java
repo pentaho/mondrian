@@ -342,17 +342,230 @@ public final class TupleCollections {
             return new DelegatingTupleList(
                 memberArrayList.get(0).length,
                 new AbstractList<List<Member>>() {
-                    @Override
                     public List<Member> get(int index) {
                         return Arrays.asList(memberArrayList.get(index));
                     }
 
-                    @Override
                     public int size() {
                         return memberArrayList.size();
                     }
                 }
             );
+        }
+    }
+
+    /**
+     * Converts a {@link TupleIterable} into a {@link TupleList}.
+     *
+     * <p>If the iterable is already a list, returns the iterable. If it is not
+     * a list, the behavior depends on the {@code eager} parameter. With
+     * eager = true, creates a list and populates it with the contents of the
+     * iterable. With eager = false, wraps in an adapter that implements the
+     * list interface and materializes to a list when the first list operation
+     * (e.g. {@link #get} or {@link #size}) is called.
+     *
+     * @param tupleIterable Iterable
+     * @param eager Whether to convert into a list now, as opposed to on first
+     *   use of a random-access method such as size or get.
+     * @return List
+     */
+    public static TupleList materialize(
+        TupleIterable tupleIterable,
+        boolean eager)
+    {
+        if (tupleIterable instanceof TupleList) {
+            return (TupleList) tupleIterable;
+        }
+        if (eager) {
+            TupleList tupleList = createList(tupleIterable.getArity());
+            TupleCursor tupleCursor = tupleIterable.tupleCursor();
+            while (tupleCursor.forward()) {
+                tupleList.addCurrent(tupleCursor);
+            }
+            return tupleList;
+        } else {
+            return new MaterializingTupleList(tupleIterable);
+        }
+    }
+
+    /**
+     * Implementation of {@link TupleList} that is based on a
+     * {@link TupleIterable} and materializes into a read-only list the first
+     * time that an method is called that requires a list.
+     */
+    private static class MaterializingTupleList
+        implements TupleList
+    {
+        private final TupleIterable tupleIterable;
+        TupleList tupleList;
+
+        public MaterializingTupleList(
+            TupleIterable tupleIterable)
+        {
+            this.tupleIterable = tupleIterable;
+        }
+
+        private TupleList materialize() {
+            if (tupleList == null) {
+                tupleList = TupleCollections.materialize(tupleIterable, true);
+            }
+            return tupleList;
+        }
+
+        // TupleIterable methods
+
+        public TupleIterator tupleIterator() {
+            if (tupleList == null) {
+                return tupleIterable.tupleIterator();
+            } else {
+                return tupleList.tupleIterator();
+            }
+        }
+
+        public TupleCursor tupleCursor() {
+            if (tupleList == null) {
+                return tupleIterable.tupleCursor();
+            } else {
+                return tupleList.tupleCursor();
+            }
+        }
+
+        public int getArity() {
+            return tupleIterable.getArity();
+        }
+
+        public Iterator<List<Member>> iterator() {
+            if (tupleList == null) {
+                return tupleIterable.iterator();
+            } else {
+                return tupleList.iterator();
+            }
+        }
+
+        public List<Member> slice(int column) {
+            // Note that TupleIterable has 'Iterable<Member> slice(int)'
+            // and TupleList has 'List<Member> slice(int)'.
+            // So, if this list is not materialized, we could return a slice of
+            // the un-materialized iterable. But it's not worth the complexity.
+            return materialize().slice(column);
+        }
+
+        public Member get(int slice, int index) {
+            return materialize().get(slice, index);
+        }
+
+        public TupleList cloneList(int capacity) {
+            return materialize().cloneList(capacity);
+        }
+
+        public void addTuple(Member... members) {
+            throw new UnsupportedOperationException();
+        }
+
+        public TupleList project(int[] destIndices) {
+            return materialize().project(destIndices);
+        }
+
+        public void addCurrent(TupleCursor tupleIter) {
+            materialize().addCurrent(tupleIter);
+        }
+
+        public TupleList subList(int fromIndex, int toIndex) {
+            return materialize().subList(fromIndex, toIndex);
+        }
+
+        public TupleList withPositionCallback(
+            PositionCallback positionCallback)
+        {
+            return materialize().withPositionCallback(positionCallback);
+        }
+
+        public TupleList fix() {
+            return materialize().fix();
+        }
+
+        public int size() {
+            return materialize().size();
+        }
+
+        public boolean isEmpty() {
+            return materialize().isEmpty();
+        }
+
+        public boolean contains(Object o) {
+            return materialize().contains(o);
+        }
+
+        public Object[] toArray() {
+            return materialize().toArray();
+        }
+
+        public <T> T[] toArray(T[] a) {
+            return materialize().toArray(a);
+        }
+
+        public boolean add(List<Member> members) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            return materialize().containsAll(c);
+        }
+
+        public boolean addAll(Collection<? extends List<Member>> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(int index, Collection<? extends List<Member>> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<Member> get(int index) {
+            return materialize().get(index);
+        }
+
+        public List<Member> set(int index, List<Member> element) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void add(int index, List<Member> element) {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<Member> remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int indexOf(Object o) {
+            return materialize().indexOf(o);
+        }
+
+        public int lastIndexOf(Object o) {
+            return materialize().lastIndexOf(o);
+        }
+
+        public ListIterator<List<Member>> listIterator() {
+            return materialize().listIterator();
+        }
+
+        public ListIterator<List<Member>> listIterator(int index) {
+            return materialize().listIterator(index);
         }
     }
 }

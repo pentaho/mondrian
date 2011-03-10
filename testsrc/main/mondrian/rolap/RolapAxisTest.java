@@ -52,61 +52,7 @@ public class RolapAxisTest extends FoodMartTestCase {
 
         StringBuilder buf = new StringBuilder(100);
 
-        RolapAxis axis = new RolapAxis.MemberArrayList(list);
-        List<Position> positions = axis.getPositions();
-        boolean firstTimeInner = true;
-        for (Position position : positions) {
-            if (! firstTimeInner) {
-                buf.append(',');
-            }
-            buf.append(toString(position));
-            firstTimeInner = false;
-        }
-        String s = buf.toString();
-        String e = "{a,b,c},{d,e,f},{g,h,i}";
-//System.out.println("s=" +s);
-        Assert.assertEquals(s, e);
-
-        positions = axis.getPositions();
-        int size = positions.size();
-//System.out.println("size=" +size);
-        Assert.assertEquals(size, 3);
-
-        buf.setLength(0);
-        for (int i = 0; i < size; i++) {
-            Position position = positions.get(i);
-            if (i > 0) {
-                buf.append(',');
-            }
-            buf.append(toString(position));
-        }
-        s = buf.toString();
-        e = "{a,b,c},{d,e,f},{g,h,i}";
-//System.out.println("s=" +s);
-        Assert.assertEquals(s, e);
-    }
-
-    public void testMemberArrayIterable() {
-        TupleList list = TupleCollections.createList(3);
-        list.add(
-            Arrays.<Member>asList(
-                new TestMember("a"),
-                new TestMember("b"),
-                new TestMember("c")));
-        list.add(
-            Arrays.<Member>asList(
-                new TestMember("d"),
-                new TestMember("e"),
-                new TestMember("f")));
-        list.add(
-            Arrays.<Member>asList(
-                new TestMember("g"),
-                new TestMember("h"),
-                new TestMember("i")));
-
-        StringBuilder buf = new StringBuilder(100);
-
-        RolapAxis axis = new RolapAxis.MemberArrayIterable(list);
+        RolapAxis axis = new RolapAxis(list);
         List<Position> positions = axis.getPositions();
         boolean firstTimeInner = true;
         for (Position position : positions) {

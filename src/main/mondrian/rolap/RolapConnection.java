@@ -4,11 +4,9 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 2 October, 2002
 */
 package mondrian.rolap;
 
@@ -22,6 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.sql.DataSource;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.util.*;
@@ -784,42 +784,38 @@ public class RolapConnection extends ConnectionBase {
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
-            List<Position> positions =
-                underlying.getAxes()[axis].getPositions();
+            TupleList tupleList =
+                ((RolapAxis) underlying.getAxes()[axis]).getTupleList();
 
-            final List<Position> positionsList;
-            try {
-                if (positions.get(0).get(0).getDimension()
-                    .isHighCardinality())
-                {
-                    positionsList =
-                        new FilteredIterableList<Position>(
-                            positions,
-                            new FilteredIterableList.Filter<Position>()
-                        {
-                            public boolean accept(final Position p) {
-                                return p.get(0) != null;
+            final TupleList filteredTupleList;
+            if (!tupleList.isEmpty()
+                && tupleList.get(0).get(0).getDimension().isHighCardinality())
+            {
+                filteredTupleList =
+                    new DelegatingTupleList(
+                        tupleList.getArity(),
+                        new FilteredIterableList<List<Member>>(
+                            tupleList,
+                            new FilteredIterableList.Filter<List<Member>>() {
+                                public boolean accept(final List<Member> p) {
+                                    return p.get(0) != null;
+                                }
                             }
-                        }
-                    );
-                } else {
-                    positionsList = new ArrayList<Position>();
-                    int i = -1;
-                    for (Position position : positions) {
-                        ++i;
-                        if (! isEmpty(i, axis)) {
-                            map.put(positionsList.size(), i);
-                            positionsList.add(position);
-                        }
+                        ));
+            } else {
+                filteredTupleList =
+                    TupleCollections.createList(tupleList.getArity());
+                int i = -1;
+                TupleCursor tupleCursor = tupleList.tupleCursor();
+                while (tupleCursor.forward()) {
+                    ++i;
+                    if (! isEmpty(i, axis)) {
+                        map.put(filteredTupleList.size(), i);
+                        filteredTupleList.addCurrent(tupleCursor);
                     }
                 }
-                this.axes[axis] = new RolapAxis.PositionList(positionsList);
-            } catch (IndexOutOfBoundsException ioobe) {
-                // No elements.
-                this.axes[axis] =
-                    new RolapAxis.PositionList(
-                            new ArrayList<Position>());
             }
+            this.axes[axis] = new RolapAxis(filteredTupleList);
         }
 
         protected Logger getLogger() {

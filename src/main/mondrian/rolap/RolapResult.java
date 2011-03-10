@@ -7,8 +7,6 @@
 // Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 10 August, 2001
 */
 package mondrian.rolap;
 
@@ -54,12 +52,12 @@ public class RolapResult extends ResultBase {
 
     private final Map<Integer, Boolean> positionsHighCardinality =
         new HashMap<Integer, Boolean>();
-    private final Map<Integer, Iterator<Position>> positionsIterators =
-        new HashMap<Integer, Iterator<Position>>();
+    private final Map<Integer, TupleCursor> positionsIterators =
+        new HashMap<Integer, TupleCursor>();
     private final Map<Integer, Integer> positionsIndexes =
         new HashMap<Integer, Integer>();
-    private final Map<Integer, List<Position>> positionsCurrent =
-        new HashMap<Integer, List<Position>>();
+    private final Map<Integer, List<List<Member>>> positionsCurrent =
+        new HashMap<Integer, List<List<Member>>>();
 
     /**
      * Creates a RolapResult.
@@ -310,34 +308,27 @@ public class RolapResult extends ResultBase {
             //
             RolapEvaluator slicerEvaluator;
             do {
-                this.slicerAxis =
+                TupleIterable tupleIterable =
                     evalExecute(
                         nonAllMembers,
                         nonAllMembers.size() - 1,
                         savedEvaluator,
                         query.slicerAxis,
                         query.slicerCalc);
+                // Materialize the iterable as a list. Although it may take
+                // memory, we need the first member below, and besides, slicer
+                // axes are generally small.
+                TupleList tupleList =
+                    TupleCollections.materialize(tupleIterable, true);
+                this.slicerAxis = new RolapAxis(tupleList);
 
                 // Use the context created by the slicer for the other
                 // axes.  For example, "select filter([Customers], [Store
                 // Sales] > 100) on columns from Sales where
                 // ([Time].[1998])" should show customers whose 1998 (not
                 // total) purchases exceeded 100.
-
-                // Getting the Position list's size and the Position
-                // at index == 0 will, in fact, cause an Iterable-base
-                // Axis Position List to become a List-base Axis
-                // Position List (and increase memory usage), but for
-                // the slicer axis, the number of Positions is (generally) very
-                // small, so who cares.
-                final List<Position> positionList = slicerAxis.getPositions();
                 slicerEvaluator = this.evaluator;
-                if (positionList.size() > 1) {
-                    int arity = positionList.get(0).size();
-                    TupleList tupleList =
-                        new DelegatingTupleList(
-                            arity,
-                            Util.<List<Member>>cast(positionList));
+                if (tupleList.size() > 1) {
                     tupleList =
                         AggregateFunDef.AggregateCalc.optimizeTupleList(
                             slicerEvaluator,
@@ -358,7 +349,7 @@ public class RolapResult extends ResultBase {
                         };
                     final List<RolapHierarchy> hierarchyList =
                         new AbstractList<RolapHierarchy>() {
-                            final Position pos0 = positionList.get(0);
+                            final List<Member> pos0 = tupleList1.get(0);
 
                             public RolapHierarchy get(int index) {
                                 return ((RolapMember) pos0.get(index))
@@ -385,17 +376,22 @@ public class RolapResult extends ResultBase {
                         RolapEvaluator e = slicerEvaluator.push();
                         QueryAxis axis = query.axes[i];
                         final Calc calc = query.axisCalcs[i];
-                        Axis axisResult =
+                        TupleIterable tupleIterable =
                             evalExecute(
-                                nonAllMembers, nonAllMembers.size() - 1,
-                                e, axis, calc);
+                                nonAllMembers,
+                                nonAllMembers.size() - 1,
+                                e,
+                                axis,
+                                calc);
 
                         if (!nonAllMembers.isEmpty()) {
-                            List<Position> pl = axisResult.getPositions();
-                            if (!pl.isEmpty()) {
-                                // Only need to process the first Position
-                                Position p = pl.get(0);
-                                for (Member m : p) {
+                            final TupleIterator tupleIterator =
+                                tupleIterable.tupleIterator();
+                            if (tupleIterator.hasNext()) {
+                                List<Member> tuple0 = tupleIterator.next();
+                                // Only need to process the first tuple on the
+                                // axis.
+                                for (Member m : tuple0) {
                                     if (m.isCalculated()) {
                                         CalculatedMeasureVisitor visitor =
                                             new CalculatedMeasureVisitor();
@@ -410,7 +406,10 @@ public class RolapResult extends ResultBase {
                                 }
                             }
                         }
-                        this.axes[i] = axisResult;
+                        this.axes[i] =
+                            new RolapAxis(
+                                TupleCollections.materialize(
+                                    tupleIterable, false));
                     }
                 } while (redo);
             } while (batchingReader.loadAggregations(query));
@@ -582,29 +581,30 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    Axis evalExecute(
+    TupleIterable evalExecute(
         List<List<Member>> nonAllMembers,
         int cnt,
         RolapEvaluator evaluator,
-        QueryAxis axis,
+        QueryAxis queryAxis,
         Calc calc)
     {
+        final int arity = calc == null ? 0 : calc.getType().getArity();
         if (cnt < 0) {
-            return executeAxis(evaluator.push(), axis, calc, true, null);
+            return executeAxis(evaluator.push(), queryAxis, calc, true, null);
             // No need to clear expression cache here as no new aggregates are
             // loaded(aggregatingReader reads from cache).
         } else {
-            Axis axisResult = null;
-            final int arity = calc == null ? 0 : calc.getType().getArity();
+            TupleList axisResult = TupleCollections.emptyList(arity);
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
-                Axis a =
-                    evalExecute(nonAllMembers, cnt - 1, evaluator, axis, calc);
+                TupleIterable axis =
+                    evalExecute(
+                        nonAllMembers, cnt - 1, evaluator, queryAxis, calc);
                 boolean ordered = false;
-                if (axis != null) {
-                    ordered = axis.isOrdered();
+                if (queryAxis != null) {
+                    ordered = queryAxis.isOrdered();
                 }
-                axisResult = mergeAxes(axisResult, a, ordered, arity);
+                axisResult = mergeAxes(axisResult, axis, ordered);
             }
             return axisResult;
         }
@@ -706,38 +706,33 @@ public class RolapResult extends ResultBase {
         return new RolapCell(this, pos.clone(), ci);
     }
 
-    private Axis executeAxis(
+    private TupleIterable executeAxis(
         Evaluator evaluator,
-        QueryAxis axis,
+        QueryAxis queryAxis,
         Calc axisCalc,
         boolean construct,
         AxisMember axisMembers)
     {
-        Axis axisResult = null;
-        if (axis == null) {
+        TupleIterable iterable;
+        if (queryAxis == null) {
             // Create an axis containing one position with no members (not
             // the same as an empty axis).
-            if (construct) {
-                axisResult = new RolapAxis.SingleEmptyPosition();
-            }
+            iterable =
+                new DelegatingTupleList(
+                    0,
+                    Collections.singletonList(Collections.<Member>emptyList()));
         } else {
-            evaluator.setNonEmpty(axis.isNonEmpty());
+            evaluator.setNonEmpty(queryAxis.isNonEmpty());
             evaluator.setEvalAxes(true);
-            TupleIterable iterable =
-                ((IterCalc) axisCalc).evaluateIterable(evaluator);
+            iterable = ((IterCalc) axisCalc).evaluateIterable(evaluator);
             if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
-                axis.setOrdered(true);
+                queryAxis.setOrdered(true);
             }
+        }
             evaluator.setNonEmpty(false);
             if (iterable instanceof TupleList) {
                 TupleList list = (TupleList) iterable;
                 if (construct) {
-                    if (list.isEmpty()) {
-                        // should be???
-                        axisResult = new RolapAxis.NoPosition();
-                    } else {
-                        axisResult = new RolapAxis.MemberArrayList(list);
-                    }
                 } else if (axisMembers != null) {
                     axisMembers.mergeTupleList(list);
                 }
@@ -745,19 +740,12 @@ public class RolapResult extends ResultBase {
                 // Iterable
                 TupleCursor cursor = iterable.tupleCursor();
                 if (construct) {
-                    if (cursor.forward()) {
-                        axisResult =
-                            new RolapAxis.MemberArrayIterable(iterable);
-                    } else {
-                        axisResult = new RolapAxis.NoPosition();
-                    }
                 } else if (axisMembers != null) {
                     axisMembers.mergeTupleIter(cursor);
                 }
             }
             evaluator.setEvalAxes(false);
-        }
-        return axisResult;
+        return iterable;
     }
 
     private void executeBody(
@@ -868,11 +856,11 @@ public class RolapResult extends ResultBase {
         final int[] pos)
     {
         if (axisOrdinal < 0) {
-            Axis axis = slicerAxis;
-            List<Position> positions = axis.getPositions();
-            for (Position position : positions) {
+            RolapAxis axis = (RolapAxis) slicerAxis;
+            TupleList tupleList = axis.getTupleList();
+            for (List<Member> members : tupleList) {
                 getQuery().checkCancelOrTimeout();
-                revaluator.setContext(position);
+                revaluator.setContext(members);
                 Object o;
                 try {
                     o = revaluator.evaluateCurrent();
@@ -949,57 +937,57 @@ public class RolapResult extends ResultBase {
                 ci.value = o;
             }
         } else {
-            Axis axis = axes[axisOrdinal];
-            List<Position> positions = axis.getPositions();
-            Util.discard(positions.size()); // force materialize
-            if (isAxisHighCardinality(axisOrdinal, positions)) {
+            RolapAxis axis = (RolapAxis) axes[axisOrdinal];
+            TupleList tupleList = axis.getTupleList();
+            Util.discard(tupleList.size()); // force materialize
+            if (isAxisHighCardinality(axisOrdinal, tupleList)) {
                 final int limit =
                     MondrianProperties.instance().HighCardChunkSize.get();
                 if (positionsIterators.get(axisOrdinal) == null) {
-                    final Iterator<Position> it = positions.iterator();
-                    positionsIterators.put(axisOrdinal, it);
+                    final TupleCursor tupleCursor = tupleList.tupleCursor();
+                    positionsIterators.put(axisOrdinal, tupleCursor);
                     positionsIndexes.put(axisOrdinal, 0);
-                    final List<Position> subPositions =
-                        new ArrayList<Position>();
-                    for (int i = 0; i < limit && it.hasNext(); i++) {
-                        subPositions.add(it.next());
+                    final List<List<Member>> subPositions =
+                        new ArrayList<List<Member>>();
+                    for (int i = 0; i < limit && tupleCursor.forward(); i++) {
+                        subPositions.add(tupleCursor.current());
                     }
                     positionsCurrent.put(axisOrdinal, subPositions);
                 }
-                final Iterator<Position> it =
+                final TupleCursor tupleCursor =
                     positionsIterators.get(axisOrdinal);
                 final int positionIndex = positionsIndexes.get(axisOrdinal);
-                List<Position> subPositions = positionsCurrent.get(axisOrdinal);
+                List<List<Member>> subTuples =
+                    positionsCurrent.get(axisOrdinal);
 
-                if (subPositions == null) {
+                if (subTuples == null) {
                     return;
                 }
 
                 int pi;
-                if (pos[axisOrdinal] > positionIndex + subPositions.size() - 1
-                        && subPositions.size() == limit)
+                if (pos[axisOrdinal] > positionIndex + subTuples.size() - 1
+                        && subTuples.size() == limit)
                 {
-                    pi = positionIndex + subPositions.size();
+                    pi = positionIndex + subTuples.size();
                     positionsIndexes.put(
-                        axisOrdinal, positionIndex + subPositions.size());
-                    subPositions.subList(0, subPositions.size()).clear();
-                    for (int i = 0; i < limit && it.hasNext(); i++) {
-                        subPositions.add(it.next());
+                        axisOrdinal, positionIndex + subTuples.size());
+                    subTuples.subList(0, subTuples.size()).clear();
+                    for (int i = 0; i < limit && tupleCursor.forward(); i++) {
+                        subTuples.add(tupleCursor.current());
                     }
-                    positionsCurrent.put(axisOrdinal, subPositions);
+                    positionsCurrent.put(axisOrdinal, subTuples);
                 } else {
                     pi = positionIndex;
                 }
-                for (final Position position : subPositions) {
+                for (final List<Member> tuple : subTuples) {
                     point.setAxis(axisOrdinal, pi);
-                    revaluator.setContext(position);
+                    revaluator.setContext(tuple);
                     getQuery().checkCancelOrTimeout();
                     executeStripe(axisOrdinal - 1, revaluator, pos);
                     pi++;
                 }
             } else {
-                int positionIndex = 0;
-                for (Position position : positions) {
+                for (List<Member> tuple : tupleList) {
                     List<Member> measures =
                         new ArrayList<Member>(query.getMeasuresMembers());
                     for (Member measure : measures) {
@@ -1010,18 +998,19 @@ public class RolapResult extends ResultBase {
                                 == RolapAggregator.DistinctCount)
                             {
                                 processDistinctMeasureExpr(
-                                    position, baseCubeMeasure);
+                                    tuple, baseCubeMeasure);
                             }
                         }
                     }
                 }
 
-                for (final Position position : positions) {
-                    point.setAxis(axisOrdinal, positionIndex);
-                    revaluator.setContext(position);
+                int tupleIndex = 0;
+                for (final List<Member> tuple : tupleList) {
+                    point.setAxis(axisOrdinal, tupleIndex);
+                    revaluator.setContext(tuple);
                     getQuery().checkCancelOrTimeout();
                     executeStripe(axisOrdinal - 1, revaluator, pos);
-                    positionIndex++;
+                    tupleIndex++;
                 }
             }
         }
@@ -1029,17 +1018,17 @@ public class RolapResult extends ResultBase {
 
     private boolean isAxisHighCardinality(
         int axisOrdinal,
-        List<Position> positions)
+        TupleList tupleList)
     {
         Boolean highCardinality =
             positionsHighCardinality.get(axisOrdinal);
         if (highCardinality == null) {
             highCardinality = false;
             //noinspection LoopStatementThatDoesntLoop
-            for (Position position : positions) {
-                if (!position.isEmpty()) {
+            for (List<Member> tuple : tupleList) {
+                if (!tuple.isEmpty()) {
                     highCardinality =
-                        position.get(0).getDimension().isHighCardinality();
+                        tuple.get(0).getDimension().isHighCardinality();
                 }
                 break;
             }
@@ -1047,8 +1036,6 @@ public class RolapResult extends ResultBase {
         }
         return highCardinality;
     }
-
-    List<Member> exprMembers = null;
 
     /*
      * Distinct counts are aggregated separately from other measures.
@@ -1090,43 +1077,43 @@ public class RolapResult extends ResultBase {
      * - Aggregate({[Store].[All Stores].[USA].[CA]})
      * Because all children of [Store].[All Stores].[USA].[CA] are included.
      */
-    private Position processDistinctMeasureExpr(
-        Position position,
+    private List<Member> processDistinctMeasureExpr(
+        List<Member> tuple,
         RolapBaseCubeMeasure measure)
     {
-        for (Member member : position) {
+        for (Member member : tuple) {
             if (!(member instanceof VisualTotalMember)) {
                 continue;
             }
             evaluator.setContext(measure);
-            exprMembers = new ArrayList<Member>();
-            processMemberExpr(member);
+            List<Member> exprMembers = new ArrayList<Member>();
+            processMemberExpr(member, exprMembers);
             ((VisualTotalMember) member).setExpression(evaluator, exprMembers);
         }
-        return position;
+        return tuple;
     }
 
-    private void processMemberExpr(Object o) {
+    private static void processMemberExpr(Object o, List<Member> exprMembers) {
         if (o instanceof Member && o instanceof RolapCubeMember) {
             exprMembers.add((Member) o);
         } else if (o instanceof VisualTotalMember) {
             VisualTotalMember member = (VisualTotalMember) o;
             Exp exp = member.getExpression();
-            processMemberExpr(exp);
+            processMemberExpr(exp, exprMembers);
         } else if (o instanceof Exp && !(o instanceof MemberExpr)) {
             Exp exp = (Exp)o;
             ResolvedFunCall funCall = (ResolvedFunCall)exp;
             Exp[] exps = funCall.getArgs();
-            processMemberExpr(exps);
+            processMemberExpr(exps, exprMembers);
         } else if (o instanceof Exp[]) {
             Exp[] exps = (Exp[]) o;
             for (Exp exp : exps) {
-                processMemberExpr(exp);
+                processMemberExpr(exp, exprMembers);
             }
         } else if (o instanceof MemberExpr) {
             MemberExpr memberExp = (MemberExpr) o;
             Member member = memberExp.getMember();
-            processMemberExpr(member);
+            processMemberExpr(member, exprMembers);
         }
     }
 
@@ -1912,34 +1899,25 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    static Axis mergeAxes(
-        Axis axis1,
-        Axis axis2,
-        boolean ordered,
-        final int arity)
+    static TupleList mergeAxes(
+        TupleList axis1,
+        TupleIterable axis2,
+        boolean ordered)
     {
-        if (axis1 == null) {
-            return axis2;
-        }
-        List<Position> posList1 = axis1.getPositions();
-        List<Position> posList2 = axis2.getPositions();
-        if (posList1.isEmpty()) {
-            return axis2;
-        }
-        if (posList2.isEmpty()) {
-            return axis1;
+        if (axis1.isEmpty() && axis2 instanceof TupleList) {
+            return (TupleList) axis2;
         }
         Set<List<Member>> set = new HashSet<List<Member>>();
-        TupleList list = TupleCollections.createList(arity);
-        for (Position p1 : posList1) {
-            if (set.add(p1)) {
-                list.add(p1);
+        TupleList list = TupleCollections.createList(axis2.getArity());
+        for (List<Member> tuple : axis1) {
+            if (set.add(tuple)) {
+                list.add(tuple);
             }
         }
         int halfWay = list.size();
-        for (Position p2 : posList2) {
-            if (set.add(p2)) {
-                list.add(p2);
+        for (List<Member> tuple : axis2) {
+            if (set.add(tuple)) {
+                list.add(tuple);
             }
         }
 
@@ -1949,7 +1927,7 @@ public class RolapResult extends ResultBase {
             list = FunUtil.hierarchizeTupleList(list, false);
         }
 
-        return new RolapAxis.MemberArrayList(list);
+        return list;
     }
 }
 
