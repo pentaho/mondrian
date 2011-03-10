@@ -358,11 +358,12 @@ public final class TupleCollections {
      * Converts a {@link TupleIterable} into a {@link TupleList}.
      *
      * <p>If the iterable is already a list, returns the iterable. If it is not
-     * a list, the behavior depends on the {@code eager} parameter. With
-     * eager = true, creates a list and populates it with the contents of the
+     * a list, the behavior depends on the {@code eager} parameter. With eager =
+     * true, creates a list and populates it with the contents of the
      * iterable. With eager = false, wraps in an adapter that implements the
-     * list interface and materializes to a list when the first list operation
-     * (e.g. {@link #get} or {@link #size}) is called.
+     * list interface and materializes to a list the first time that an
+     * operation that is in TupleList but not TupleIterable -- for example,
+     * {@link TupleList#get} or {@link TupleList#size} -- is called.
      *
      * @param tupleIterable Iterable
      * @param eager Whether to convert into a list now, as opposed to on first
