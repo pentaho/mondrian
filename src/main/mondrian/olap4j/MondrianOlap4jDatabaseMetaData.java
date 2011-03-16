@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1073,7 +1073,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             "MDSCHEMA_DIMENSIONS",
             "SCHEMA_NAME", wildcard(schemaPattern),
             "CUBE_NAME", wildcard(cubeNamePattern),
-            "DIMSENSION_NAME", wildcard(dimensionNamePattern));
+            "DIMENSION_NAME", wildcard(dimensionNamePattern));
     }
 
     public ResultSet getOlapFunctions(
