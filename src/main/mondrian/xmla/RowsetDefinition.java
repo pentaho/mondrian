@@ -6348,7 +6348,7 @@ TODO: see above
                     return new Iterator<Catalog>() {
                         final Iterator<Catalog> catalogIter =
                             Util.filter(
-                                connection.getMetaData().getOlapCatalogs(),
+                                connection.getOlapCatalogs(),
                                 conds).iterator();
 
                         public boolean hasNext() {

@@ -1449,7 +1449,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
              + "</Dimension>");
 
         org.olap4j.metadata.Member member = testContext.getOlap4jConnection()
-            .getSchema().getCubes().get("Sales").getDimensions()
+            .getOlapSchema().getCubes().get("Sales").getDimensions()
             .get("SameName").getHierarchies().get("SameName").getLevels()
             .get("SameName").getMembers().get(0);
         assertEquals(

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,6 +24,8 @@ import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Schema;
+import org.olap4j.metadata.Database.AuthenticationMode;
+import org.olap4j.metadata.Database.ProviderType;
 import org.olap4j.type.*;
 import org.olap4j.type.DimensionType;
 
@@ -60,11 +62,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private RolapConnection mondrianConnection;
 
     /**
-     * Current schema.
-     */
-    MondrianOlap4jSchema olap4jSchema;
-
-    /**
      * Map from mondrian schema objects to olap4j schemas.
      *
      * <p>REVIEW: This assumes that a RolapSchema occurs at most once in a
@@ -88,6 +85,14 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     private boolean autoCommit;
     private boolean readOnly;
     boolean preferList;
+
+    final MondrianServer mondrianServer;
+    private MondrianOlap4jSchema olap4jSchema;
+    private MondrianOlap4jCatalog olap4jCatalog;
+    private MondrianOlap4jDatabase olap4jDatabase;
+
+    private final NamedList<MondrianOlap4jDatabase> olap4jDatabases;
+    private final NamedList<MondrianOlap4jCatalog> olap4jCatalogs;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -130,12 +135,76 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
+
         this.mondrianConnection =
             (RolapConnection) mondrian.olap.DriverManager
                 .getConnection(list, null);
+
         this.olap4jDatabaseMetaData =
             factory.newDatabaseMetaData(this, mondrianConnection);
+
+
+        this.mondrianServer =
+            MondrianServer.forConnection(mondrianConnection);
+        final CatalogFinder catalogFinder =
+            (CatalogFinder) mondrianServer;
+
+        this.olap4jCatalogs =
+            new NamedListImpl<MondrianOlap4jCatalog>();
+        this.olap4jDatabases =
+            new NamedListImpl<MondrianOlap4jDatabase>();
+
+        for (Map<String, Object> dB
+                : mondrianServer.getDatabases(mondrianConnection))
+        {
+            StringTokenizer st =
+                new StringTokenizer(
+                    String.valueOf(dB.get("ProviderType")),
+                    ",");
+            List<ProviderType> pTypes =
+                new ArrayList<ProviderType>();
+            while (st.hasMoreTokens()) {
+                pTypes.add(ProviderType.valueOf(st.nextToken()));
+            }
+            st = new StringTokenizer(
+                String.valueOf(dB.get("AuthenticationMode")),
+            ",");
+            List<AuthenticationMode> aModes =
+                new ArrayList<AuthenticationMode>();
+            while (st.hasMoreTokens()) {
+                aModes.add(AuthenticationMode.valueOf(st.nextToken()));
+            }
+            this.olap4jDatabases.add(
+                new MondrianOlap4jDatabase(
+                    this,
+                    this.olap4jCatalogs,
+                    String.valueOf(dB.get("DataSourceName")),
+                    String.valueOf(dB.get("DataSourceDescription")),
+                    String.valueOf(dB.get("ProviderName")),
+                    String.valueOf(dB.get("URL")),
+                    String.valueOf(dB.get("DataSourceInfo")),
+                    pTypes,
+                    aModes));
+        }
+
+        for (String catalogName
+                : catalogFinder.getCatalogNames(mondrianConnection))
+            {
+                final Map<String, RolapSchema> schemaMap =
+                    catalogFinder.getRolapSchemas(
+                        mondrianConnection,
+                        catalogName);
+                olap4jCatalogs.add(
+                    new MondrianOlap4jCatalog(
+                        olap4jDatabaseMetaData,
+                        catalogName,
+                        this.olap4jDatabase,
+                        schemaMap));
+            }
+
         this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
+        this.olap4jCatalog = this.olap4jSchema.olap4jCatalog;
+        this.olap4jDatabase = this.olap4jCatalog.olap4jDatabase;
     }
 
     static boolean acceptsURL(String url) {
@@ -202,11 +271,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return olap4jDatabaseMetaData;
     }
 
-    @Deprecated
-    public NamedList<Catalog> getCatalogs() {
-        return olap4jDatabaseMetaData.getCatalogObjects();
-    }
-
     public void setReadOnly(boolean readOnly) throws SQLException {
         this.readOnly = readOnly;
     }
@@ -215,28 +279,54 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return readOnly;
     }
 
+    public void setSchema(String schemaName) throws OlapException {
+        // no op.
+    }
+
+    public String getSchema() throws OlapException {
+        return olap4jSchema.getName();
+    }
+
+    public Schema getOlapSchema() throws OlapException {
+        return olap4jSchema;
+    }
+
+    public NamedList<Schema> getOlapSchemas() throws OlapException {
+        return getOlapCatalog().getSchemas();
+    }
+
     public void setCatalog(String catalogName) throws OlapException {
-        // ignore
+        // no op
     }
 
     public String getCatalog() throws OlapException {
-        return olap4jSchema.olap4jCatalog.name;
+        return olap4jSchema.olap4jCatalog.getName();
+    }
+
+    public Catalog getOlapCatalog() throws OlapException {
+        return olap4jSchema.olap4jCatalog;
+    }
+
+    public NamedList<Catalog> getOlapCatalogs() throws OlapException {
+        return getOlapDatabase().getCatalogs();
     }
 
     public void setDatabase(String databaseName) throws OlapException {
-        // ignore.
+        // no op.
     }
 
     public String getDatabase() throws OlapException {
-        try {
-            ResultSet rs = getMetaData().getDatabases();
-            rs.first();
-            return rs.getString("DATA_SOURCE_NAME");
-        } catch (SQLException e) {
-            throw helper.createException(
-                "Error while querying for the current database name.",
-                e);
-        }
+        return getOlapDatabase().getName();
+    }
+
+    public Database getOlapDatabase() throws OlapException {
+        // It is assumed that Mondrian supports only a single
+        // database.
+        return this.olap4jDatabases.get(0);
+    }
+
+    public NamedList<Database> getOlapDatabases() throws OlapException {
+        return Olap4jUtil.cast(this.olap4jDatabases);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
@@ -390,11 +480,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 return new MondrianOlap4jMdxValidator(connection);
             }
         };
-    }
-
-    @Deprecated
-    public Schema getSchema() throws OlapException {
-        return olap4jSchema;
     }
 
     MondrianOlap4jCube toOlap4j(mondrian.olap.Cube cube) {

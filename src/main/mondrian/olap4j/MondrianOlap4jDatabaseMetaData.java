@@ -9,14 +9,11 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
-import mondrian.rolap.RolapSchema;
 import mondrian.xmla.XmlaUtil;
 
 import org.olap4j.*;
-import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
 
 import java.sql.ResultSet;
@@ -36,8 +33,6 @@ import java.util.*;
  */
 abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     final MondrianOlap4jConnection olap4jConnection;
-    final MondrianServer mondrianServer;
-    private final NamedList<MondrianOlap4jCatalog> olap4jCatalogList;
 
     private static final Comparator<Catalog> CATALOG_COMP =
         new Comparator<Catalog>() {
@@ -64,28 +59,6 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         RolapConnection mondrianConnection)
     {
         this.olap4jConnection = olap4jConnection;
-        this.mondrianServer =
-            MondrianServer.forConnection(mondrianConnection);
-        final CatalogFinder catalogFinder =
-            (CatalogFinder) mondrianServer;
-        final NamedList<MondrianOlap4jCatalog> olap4jCatalogList =
-            new NamedListImpl<MondrianOlap4jCatalog>();
-
-        for (String catalogName
-            : catalogFinder.getCatalogNames(mondrianConnection))
-        {
-            final Map<String, RolapSchema> schemaMap =
-                catalogFinder.getRolapSchemas(
-                    mondrianConnection,
-                    catalogName);
-            olap4jCatalogList.add(
-                new MondrianOlap4jCatalog(
-                    this,
-                    catalogName,
-                    schemaMap));
-        }
-        this.olap4jCatalogList =
-            MondrianOlap4jConnection.unmodifiableNamedList(olap4jCatalogList);
     }
 
     // helpers
@@ -148,27 +121,6 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             : new XmlaUtil.Wildcard(pattern);
     }
 
-    /**
-     * Returns the catalogs in this database.
-     *
-     * <p>In natural order; not necessarily sorted.
-     *
-     * <p>Intentionally package-protected; not part of the JDBC or olap4j API.
-     *
-     * @return List of catalogs in this database
-     * @deprecated deprecated in favor of
-     * OlapDatabaseMetaData.getOlapCatalogs()
-     */
-    // package-protected
-    @Deprecated
-    NamedList<Catalog> getCatalogObjects() {
-        return Olap4jUtil.cast(olap4jCatalogList);
-    }
-
-    public NamedList<Catalog> getOlapCatalogs() throws OlapException {
-        return Olap4jUtil.cast(olap4jCatalogList);
-    }
-
     // implement DatabaseMetaData
 
     public boolean allProceduresAreCallable() throws SQLException {
@@ -210,11 +162,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public String getDatabaseProductName() throws SQLException {
-        return mondrianServer.getVersion().getProductName();
+        return olap4jConnection.mondrianServer.getVersion().getProductName();
     }
 
     public String getDatabaseProductVersion() throws SQLException {
-        return mondrianServer.getVersion().getVersionString();
+        return olap4jConnection.mondrianServer.getVersion().getVersionString();
     }
 
     public String getDriverName() throws SQLException {
@@ -692,8 +644,16 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         List<String> headerList =
             Arrays.asList("TABLE_SCHEM", "TABLE_CAT");
         List<List<Object>> rowList = new ArrayList<List<Object>>();
-        for (Catalog catalog : Util.sort(getOlapCatalogs(), CATALOG_COMP)) {
-            for (Schema schema : Util.sort(catalog.getSchemas(), SCHEMA_COMP)) {
+        for (Catalog catalog
+                : Util.sort(
+                    olap4jConnection.getOlapCatalogs(),
+                    CATALOG_COMP))
+        {
+            for (Schema schema
+                    : Util.sort(
+                        catalog.getSchemas(),
+                        SCHEMA_COMP))
+            {
                 rowList.add(
                     Arrays.<Object>asList(
                         schema.getName(),
@@ -714,7 +674,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         List<String> headerList =
             Arrays.asList("TABLE_CAT");
         List<List<Object>> rowList = new ArrayList<List<Object>>();
-        for (Catalog catalog : Util.sort(getOlapCatalogs(), CATALOG_COMP)) {
+        for (Catalog catalog
+                : Util.sort(
+                    olap4jConnection.getOlapCatalogs(),
+                    CATALOG_COMP))
+        {
             rowList.add(
                 Collections.<Object>singletonList(catalog.getName()));
         }
@@ -926,11 +890,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
     }
 
     public int getDatabaseMajorVersion() throws SQLException {
-        return mondrianServer.getVersion().getMajorVersion();
+        return olap4jConnection.mondrianServer.getVersion().getMajorVersion();
     }
 
     public int getDatabaseMinorVersion() throws SQLException {
-        return mondrianServer.getVersion().getMinorVersion();
+        return olap4jConnection.mondrianServer.getVersion().getMinorVersion();
     }
 
     public int getJDBCMajorVersion() throws SQLException {
@@ -996,11 +960,6 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
             "ACTION_NAME", wildcard(actionNamePattern));
     }
 
-    @Deprecated
-    public ResultSet getDatasources() throws OlapException {
-        return getDatabases();
-    }
-
     public ResultSet getDatabases() throws OlapException {
         return getMetadata("DISCOVER_DATASOURCES");
     }
@@ -1040,7 +999,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
 
     public String getMdxKeywords() throws OlapException {
         StringBuilder buf = new StringBuilder();
-        for (String keyword : mondrianServer.getKeywords()) {
+        for (String keyword : olap4jConnection.mondrianServer.getKeywords()) {
             if (buf.length() > 0) {
                 buf.append(',');
             }

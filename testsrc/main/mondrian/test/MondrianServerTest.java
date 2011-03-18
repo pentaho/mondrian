@@ -69,7 +69,7 @@ public class MondrianServerTest extends TestCase {
         OlapConnection connection =
             server.getConnection("FoodMart", "FoodMart", null);
         final NamedList<Catalog> catalogs =
-            connection.getMetaData().getOlapCatalogs();
+            connection.getOlapCatalogs();
         assertEquals(1, catalogs.size());
         assertEquals("FoodMart", catalogs.get(0).getName());
         server.shutdown();
