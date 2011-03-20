@@ -187,6 +187,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${testclasses.dir}"/>
     <fileset dir="${lib.dir}">
       <include name="olap4j-tck.jar"/>
+      <include name="olap4j-xmla.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
@@ -203,6 +204,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${testclasses-jdk14.dir}"/>
     <fileset dir="${lib.dir}">
       <include name="olap4j-tck.jar"/>
+      <include name="olap4j-xmla.jar"/>
       <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
@@ -514,6 +516,8 @@ META-INF/**"/>
   </target>
 
   <target name="compile.tests" depends="info,compile.java">
+  	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
+  	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
