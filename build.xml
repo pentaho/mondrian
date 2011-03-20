@@ -352,6 +352,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <mkdir dir="${testclasses.dir}"/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${devlib.dir}"/>
+    <mkdir dir="${testlib.dir}"/>
   </target>
 
   <target name="resolve" unless="skip.download">
