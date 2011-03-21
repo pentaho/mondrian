@@ -80,6 +80,56 @@ public class AccessControlTest extends FoodMartTestCase {
             "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
+    public void testRestrictMeasures() {
+        final TestContext testContext = TestContext.create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"all\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Measures]\" access=\"all\">\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"all\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Measures]\" access=\"custom\">\n"
+            + "        <MemberGrant member=\"[Measures].[Unit Sales]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>");
+
+        final TestContext role1 = testContext.withRole("Role1");
+        final TestContext role2 = testContext.withRole("Role2");
+
+        role1.assertQueryReturns(
+            "SELECT {[Measures].Members} ON COLUMNS FROM [SALES]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Store Cost]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[Sales Count]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Promotion Sales]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 225,627.23\n"
+            + "Row #0: 565,238.13\n"
+            + "Row #0: 86,837\n"
+            + "Row #0: 5,581\n"
+            + "Row #0: 151,211.21\n");
+        role2.assertQueryReturns(
+            "SELECT {[Measures].Members} ON COLUMNS FROM [SALES]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n");
+    }
+
     public void testRoleMemberAccessNonExistentMemberFails() {
         final TestContext testContext = TestContext.create(
             null, null, null, null, null,
