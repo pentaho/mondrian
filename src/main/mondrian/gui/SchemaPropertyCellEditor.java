@@ -132,9 +132,17 @@ public class SchemaPropertyCellEditor
                     listEditor.setSelectedIndex(-1);
                     all = !all;
                 }
-                if (listEditor.isDisplayable()) {
-                    listEditor.setPopupVisible(true);
-                }
+                // Must invoke later on the GUI thread since trying
+                // now will fail. The component is already marked
+                // as 'dirty'.
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                        public void run() {
+                            if (listEditor.isDisplayable()) {
+                                listEditor.setPopupVisible(true);
+                            }
+                        }
+                    });
             }
         };
 
