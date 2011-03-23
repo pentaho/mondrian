@@ -228,6 +228,9 @@
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
     </modules>
   </component>
+  <component name="ProjectResources">
+    <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -316,6 +319,15 @@
         <root url="file://$PROJECT_DIR$/../../farrago/src" />
       </SOURCES>
     </library>
+    <library name="jdbcDrivers">
+      <CLASSES>
+        <root url="jar:///usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar!/" />
+        <root url="jar:///usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/derby.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
     <library name="junit">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/junit.jar!/" />
@@ -327,18 +339,27 @@
         <root url="jar://$PROJECT_DIR$/../lib/junit-source.jar!/" />
       </SOURCES>
     </library>
-    <library name="jdbcDrivers">
+    <library name="olap4j">
       <CLASSES>
-        <root url="jar:///usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar!/" />
-        <root url="jar:///usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/derby.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="http://www.olap4j.org/api" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-source.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="olap4j-tck">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-tck.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="xmlunit">
+    <library name="olap4j-xmla">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/xmlunit.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-xmla.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -356,20 +377,9 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="olap4j">
+    <library name="xmlunit">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/olap4j.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="http://www.olap4j.org/api" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../lib/olap4j-source.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="olap4j-tck">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/olap4j-tck.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/xmlunit.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

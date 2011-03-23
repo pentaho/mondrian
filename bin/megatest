@@ -16,8 +16,10 @@
 # This is for mondrian developers & QA. It is not intended to run in a
 # release environment.
 
+#ANT_FLAGS=-Dskip.download=true
 ANT_FLAGS=
 CLEAN=clean
+#CLEAN=
 
 # The script's path is $OPEN_DIR/mondrian/bin/megatest; deduce OPEN_DIR.
 OPEN_DIR=$(cd $(dirname $0)/../..; pwd)
@@ -62,6 +64,10 @@ mackerel-winxp)
   ;;
 marmalade)
   databaseList="derby hsqldb mysql oracle luciddb postgresql"
+  jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
+  ;;
+marmite)
+  databaseList="derby hsqldb mysql"
   jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
   ;;
 ATRHisv1)
