@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -143,15 +143,23 @@ public class MySqlDialect extends JdbcDialectImpl {
     {
         String sqlmode = null;
         Statement s = null;
+        ResultSet rs = null;
         try {
             s = connection.createStatement();
             if (s.execute("SELECT @@" + scope + ".sql_mode")) {
-                ResultSet rs = s.getResultSet();
+                rs = s.getResultSet();
                 if (rs.next()) {
                     sqlmode = rs.getString(1);
                 }
             }
         } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
             if (s != null) {
                 try {
                     s.close();
