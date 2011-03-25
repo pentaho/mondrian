@@ -276,6 +276,10 @@ class MondrianOlap4jCube implements Cube, Named {
             }
         }
     }
+
+    public boolean isDrillThroughEnabled() {
+        return true;
+    }
 }
 
 // End MondrianOlap4jCube.java
