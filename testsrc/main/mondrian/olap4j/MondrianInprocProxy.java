@@ -2,22 +2,19 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import org.xml.sax.SAXException;
+import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.*;
 import java.util.*;
-import java.net.URL;
-import java.io.IOException;
 
 import mondrian.tui.XmlaSupport;
 
@@ -69,27 +66,27 @@ public class MondrianInprocProxy
             }
         );
 
-    public byte[] get(URL url, String request) throws IOException {
+    public byte[] get(
+            XmlaOlap4jServerInfos infos,
+            String request)
+    {
         try {
             return XmlaSupport.processSoapXmla(
                 request, urlString, catalogNameUrls, null, null, servletCache);
-        } catch (ServletException e) {
+        } catch (Exception e) {
             throw new RuntimeException(
-                "Error while reading '" + url + "'", e);
-        } catch (SAXException e) {
-            throw new RuntimeException(
-                "Error while reading '" + url + "'", e);
+                "Error while reading '" + infos.getUrl() + "'", e);
         }
     }
 
     public Future<byte[]> submit(
-        final URL url,
+        final XmlaOlap4jServerInfos infos,
         final String request)
     {
         return singleThreadExecutor.submit(
             new Callable<byte[]>() {
                 public byte[] call() throws Exception {
-                    return get(url, request);
+                    return get(infos, request);
                 }
             }
        );
