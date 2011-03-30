@@ -100,4 +100,4 @@ class MondrianOlap4jDatabase implements Database, Named {
         return this.dataSourceInfo;
     }
 }
-// End MondrianOlap4jDatabase
+// End MondrianOlap4jDatabase.java
