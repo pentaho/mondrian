@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -558,6 +558,7 @@ public enum RowsetDefinition {
             MdschemaCubesRowset.IsWriteEnabled,
             MdschemaCubesRowset.IsLinkable,
             MdschemaCubesRowset.IsSqlEnabled,
+            MdschemaCubesRowset.CubeCaption,
             MdschemaCubesRowset.Description,
             MdschemaCubesRowset.Dimensions,
             MdschemaCubesRowset.Sets,
@@ -3510,6 +3511,14 @@ TODO: see above
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Describes whether or not SQL can be used on the cube");
+        private static final Column CubeCaption =
+            new Column(
+                "CUBE_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "The caption of the cube.");
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
@@ -3581,6 +3590,7 @@ TODO: see above
                         row.set(IsWriteEnabled.name, false);
                         row.set(IsLinkable.name, false);
                         row.set(IsSqlEnabled.name, false);
+                        row.set(CubeCaption.name, cube.getCaption());
                         row.set(Description.name, desc);
                         Format formatter =
                             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");

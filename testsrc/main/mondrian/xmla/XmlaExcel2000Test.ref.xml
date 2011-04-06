@@ -1010,6 +1010,7 @@
                                 <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
                                 <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
                                 <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
@@ -1097,6 +1098,7 @@
                                 <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
                                 <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
                                 <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
@@ -1114,6 +1116,7 @@
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+                        <CUBE_CAPTION>Sales</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Sales Cube</DESCRIPTION>
                     </row>
                 </root>
