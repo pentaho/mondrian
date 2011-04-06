@@ -376,10 +376,10 @@ public class FastBatchingCellReader implements CellReader {
             if (string == null) {
                 final StringBuilder buf = new StringBuilder();
                 buf.append("Batch {\n")
-                    .append("  columns={").append(Arrays.asList(columns))
+                    .append("  columns={").append(Arrays.toString(columns))
                     .append("}\n")
                     .append("  measures={").append(measuresList).append("}\n")
-                    .append("  valueSets={").append(Arrays.asList(valueSets))
+                    .append("  valueSets={").append(Arrays.toString(valueSets))
                     .append("}\n")
                     .append("  batchKey=").append(batchKey).append("}\n")
                     .append("}");

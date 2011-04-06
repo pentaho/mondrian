@@ -9,8 +9,7 @@
 */
 package mondrian.rolap.agg;
 
-import java.util.BitSet;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Implementation of a segment body which stores the data inside
@@ -23,12 +22,13 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
     final double[] data;
     private final int size;
     private final BitSet nullIndicators;
+
     DenseDoubleSegmentBody(
-            BitSet nullIndicators,
-            double[] dataToSave,
-            int size,
-            SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        BitSet nullIndicators,
+        double[] dataToSave,
+        int size,
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags)
     {
         super(axisValueSets, nullAxisFlags);
         this.size = size;
@@ -37,6 +37,7 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
         this.nullIndicators = new BitSet(nullIndicators.length());
         this.nullIndicators.or(nullIndicators);
     }
+
     public SegmentDataset createSegmentDataset(Segment segment) {
         DenseDoubleSegmentDataset ds =
             new DenseDoubleSegmentDataset(segment, this.size);
@@ -45,5 +46,18 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
         ds.nullIndicators.or(nullIndicators);
         return ds;
     }
+
+    @Override
+    public String toString() {
+        return "DenseDoubleSegmentBody(size=" + size
+           + ", data=" + Arrays.toString(data)
+           + ", nullIndicators=" + nullIndicators
+           + ", axisValueSets=" + Arrays.toString(getAxisValueSets())
+           + ", nullAxisFlags=" + Arrays.toString(getNullAxisFlags())
+           + ", aVS[0]=" + getAxisValueSets()[0].getClass()
+           + ", aVS[0][0]=" + getAxisValueSets()[0].iterator().next().getClass()
+           + ")";
+    }
 }
+
 // End DenseDoubleSegmentBody.java

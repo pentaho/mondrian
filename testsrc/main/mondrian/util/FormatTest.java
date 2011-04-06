@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -562,21 +562,21 @@ public class FormatTest extends TestCase {
         assertEquals("/", fr.dateSeparator);
         assertEquals(
             "[, dimanche, lundi, mardi, mercredi, jeudi, vendredi, samedi]",
-            Arrays.asList(fr.daysOfWeekLong).toString());
+            Arrays.toString(fr.daysOfWeekLong));
         assertEquals(
             "[, dim., lun., mar., mer., jeu., ven., sam.]",
-            Arrays.asList(fr.daysOfWeekShort).toString());
+            Arrays.toString(fr.daysOfWeekShort));
         assertEquals(
             "[janvier, f" + I18nTest.EA + "vrier, mars, avril, mai, juin,"
             + " juillet, ao" + I18nTest.UC
             + "t, septembre, octobre, novembre, d"
             + I18nTest.EA + "cembre, ]",
-            Arrays.asList(fr.monthsLong).toString());
+            Arrays.toString(fr.monthsLong));
         assertEquals(
             "[janv., f" + I18nTest.EA + "vr., mars, avr., mai, juin,"
             + " juil., ao" + I18nTest.UC + "t, sept., oct., nov., d"
             + I18nTest.EA + "c., ]",
-            Arrays.asList(fr.monthsShort).toString());
+            Arrays.toString(fr.monthsShort));
         assertEquals(',', fr.decimalPlaceholder);
         assertEquals(I18nTest.Nbsp, fr.thousandSeparator);
         assertEquals(":", fr.timeSeparator);

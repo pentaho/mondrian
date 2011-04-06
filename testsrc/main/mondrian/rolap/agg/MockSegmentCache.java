@@ -106,6 +106,10 @@ public class MockSegmentCache implements SegmentCache {
             ObjectInputStream ois = new ObjectInputStream(in);
             SegmentBody o = (SegmentBody) ois.readObject();
             Util.discard(o);
+        } catch (NotSerializableException e) {
+            throw new RuntimeException(
+                "while serializing " + body,
+                e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

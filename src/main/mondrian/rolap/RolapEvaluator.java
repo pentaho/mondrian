@@ -452,7 +452,7 @@ public class RolapEvaluator implements Evaluator {
                     getLogger().debug(
                         "RolapEvaluator.setContext: "
                         + "member == null, memberList: "
-                        + Arrays.asList(members));
+                        + Arrays.toString(members));
                 }
                 assert false;
                 continue;
