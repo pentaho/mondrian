@@ -46,9 +46,11 @@ public class Olap4jTest extends FoodMartTestCase {
     public void testSameMemberByVariousMeans() throws SQLException {
         Random random = new Random();
         for (int i = 0; i < 20; i++) {
-            Member member = foo(random.nextInt(7));
-            assertEquals("Unit Sales", member.getName());
-            assertEquals(Member.Type.MEASURE, member.getMemberType());
+            int n = random.nextInt(7);
+            Member member = foo(n);
+            String s = "source #" + n;
+            assertEquals(s, "Unit Sales", member.getName());
+            assertEquals(s, Member.Type.MEASURE, member.getMemberType());
         }
     }
 
@@ -61,7 +63,7 @@ public class Olap4jTest extends FoodMartTestCase {
         switch (i) {
         case 0:
             cellSet = connection.createStatement().executeOlapQuery(
-                "select [Measures].[Store Sales] on 0\n"
+                "select [Measures].[Unit Sales] on 0\n"
                 + "from [Sales]");
             return cellSet.getAxes().get(0).getPositions().get(0)
                 .getMembers().get(0);
