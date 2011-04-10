@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -19,10 +19,23 @@ import mondrian.olap.*;
  * @author jhyde
  */
 public class JavaccParserValidatorImpl implements MdxParserValidator {
+    private final QueryPartFactory factory;
+
     /**
      * Creates a JavaccParserValidatorImpl.
      */
     public JavaccParserValidatorImpl() {
+        this(new Parser.FactoryImpl());
+    }
+
+    /**
+     * Creates a JavaccParserValidatorImpl with an explicit factory for parse
+     * tree nodes.
+     *
+     * @param factory Factory for parse tree nodes
+     */
+    public JavaccParserValidatorImpl(QueryPartFactory factory) {
+        this.factory = factory;
     }
 
     public QueryPart parseInternal(
@@ -34,7 +47,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
     {
         final MdxParserImpl mdxParser =
             new MdxParserImpl(
-                new Parser.FactoryImpl(),
+                factory,
                 connection,
                 queryString,
                 debug,
@@ -55,7 +68,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
     {
         final MdxParserImpl mdxParser =
             new MdxParserImpl(
-                new Parser.FactoryImpl(),
+                factory,
                 connection,
                 queryString,
                 debug,
@@ -99,4 +112,3 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
 }
 
 // End JavaccParserValidatorImpl.java
-

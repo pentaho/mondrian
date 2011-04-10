@@ -3,12 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap;
 
+import mondrian.parser.JavaccParserValidatorImpl;
 import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
@@ -328,9 +329,11 @@ public class ParserTest extends FoodMartTestCase {
             "(([Measures].[Unit Sales] IS EMPTY) AND (1 IS NULL))");
 
         // FIXME: "NULL" should associate as "IS NULL" rather than "NULL + 56"
+        // FIXME: Gives error at token '+' with new parser.
         assertParseExpr(
             "- x * 5 is empty is empty is null + 56",
-            "(((((- x) * 5) IS EMPTY) IS EMPTY) IS (NULL + 56))");
+            "(((((- x) * 5) IS EMPTY) IS EMPTY) IS (NULL + 56))",
+            true);
     }
 
     public void testIs() {
@@ -359,9 +362,11 @@ public class ParserTest extends FoodMartTestCase {
 
         // FIXME: Should be
         //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5))) IS NULL) + 5)"
+        // FIXME: Gives error at token '+' with new parser.
         assertParseExpr(
             "x is null and a = b or c = d + 5 is null + 5",
-            "(((x IS NULL) AND (a = b)) OR ((c = (d + 5)) IS (NULL + 5)))");
+            "(((x IS NULL) AND (a = b)) OR ((c = (d + 5)) IS (NULL + 5)))",
+            true);
     }
 
     public void testNull() {
@@ -458,11 +463,13 @@ public class ParserTest extends FoodMartTestCase {
             "(- 3141592653589793.14159265358979)");
 
         // exponents akimbo
-        assertParseExpr("1e2", "100");
+        assertParseExpr("1e2", "100", true);
+        assertParseExpr("1e2", "1E+2", false);
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");
-        assertParseExpr("1.2e3", "1200");
+        assertParseExpr("1.2e3", "1200", true);
+        assertParseExpr("1.2e3", "1.2E+3", false);
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
             "1.2e3.4",
@@ -605,6 +612,52 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-924">
+     * MONDRIAN-924, "Parsing fails with multiple spaces between words"</a>.
+     */
+    public void testMultipleSpaces() {
+        assertParseQuery(
+            "select [Store].[With   multiple  spaces] on 0\n"
+            + "from [Sales]",
+            "select [Store].[With   multiple  spaces] ON COLUMNS\n"
+            + "from [Sales]\n");
+
+        // Only enable the following if you have manually renamed 'Store 23' to
+        // 'Store   23' (note: 3 spaces) in your database.
+        if (false) {
+        assertQueryReturns(
+            "select [Store].[USA].[WA].[Yakima].[Store   23] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
+            + "Row #0: 11,491\n");
+        assertQueryReturns(
+            "With \n"
+            + "Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Store]' \n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Store].CurrentMember.OrderKey,BASC,"
+            + "Ancestor([Store].CurrentMember,[Store].[Store City]).OrderKey,BASC)' \n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' \n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember)})' \n"
+            + "Set [*BASE_MEMBERS_Store] as '{[Store].[USA].[WA].[Yakima].[Store   23]}' \n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
+            + "Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0 \n"
+            + "Select \n"
+            + "[*BASE_MEMBERS_Measures] on columns, \n"
+            + "[*SORTED_ROW_AXIS] on rows \n"
+            + "From [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
+            + "Row #0: 0\n");
+        }
+    }
+
+    /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.
      *
@@ -612,9 +665,24 @@ public class ParserTest extends FoodMartTestCase {
      * @param expected Expected result of unparsing
      */
     private void assertParseQuery(String mdx, final String expected) {
+        assertParseQuery(mdx, expected, true);
+        assertParseQuery(mdx, expected, false);
+    }
+
+    private void assertParseQuery(
+        String mdx, final String expected, boolean old)
+    {
         TestParser p = new TestParser();
-        final QueryPart query =
-            p.parseInternal(null, mdx, false, funTable, false);
+        final QueryPart query;
+        if (old) {
+            query = p.parseInternal(null, mdx, false, funTable, false);
+        } else {
+            MdxParserValidator parser =
+                new JavaccParserValidatorImpl(p);
+            query =
+                parser.parseInternal(
+                    null, mdx, false, funTable, false);
+        }
         if (!(query instanceof DrillThrough)) {
             assertNull("Test parser should return null query", query);
         }
@@ -630,10 +698,25 @@ public class ParserTest extends FoodMartTestCase {
      * @param expected Expected result of unparsing
      */
     private void assertParseExpr(String expr, final String expected) {
+        assertParseExpr(expr, expected, true);
+        assertParseExpr(expr, expected, false);
+    }
+
+    private void assertParseExpr(
+        String expr, final String expected, boolean old)
+    {
         TestParser p = new TestParser();
         final String mdx = wrapExpr(expr);
-        final QueryPart query =
-            p.parseInternal(null, mdx, false, funTable, false);
+        final QueryPart query;
+        if (old) {
+            query = p.parseInternal(null, mdx, false, funTable, false);
+        } else {
+            MdxParserValidator parser =
+                new JavaccParserValidatorImpl(p);
+            query =
+                parser.parseInternal(
+                    null, mdx, false, funTable, false);
+        }
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
