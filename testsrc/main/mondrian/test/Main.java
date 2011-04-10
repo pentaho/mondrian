@@ -242,6 +242,7 @@ public class Main extends TestSuite {
             addTest(suite, HierarchyBugTest.class);
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
+            addTest(suite, Olap4jTest.class);
             addTest(suite, SortTest.class);
             if (isRunOnce()) {
                 addTest(suite, TestAggregationManager.class);
