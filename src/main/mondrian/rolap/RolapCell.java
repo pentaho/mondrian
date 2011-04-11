@@ -225,8 +225,7 @@ public class RolapCell implements Cell {
         // if "cm" is a calc member defined by
         // "with member cm as m" then
         // "cm" is equivalent to "m"
-        RolapCalculatedMember measure = (RolapCalculatedMember) member;
-        final Exp expr = measure.getFormula().getExpression();
+        final Exp expr = member.getExpression();
         if (expr instanceof MemberExpr) {
             members.set(
                 i,
@@ -247,7 +246,6 @@ public class RolapCell implements Cell {
                             final MemberExpr memberExpr =
                                 (MemberExpr) arg0.getArg(0);
                             members.set(i, memberExpr.getMember());
-                            return;
                         }
                     }
                 }
