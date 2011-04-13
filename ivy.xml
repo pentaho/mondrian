@@ -57,19 +57,19 @@
         <dependency org="javax.servlet" name="jsp-api" rev="2.0"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4"/>
         <dependency org="log4j" name="log4j" rev="1.2.9"/>
-        <dependency org="org.olap4j" name="olap4j" rev="1.0.0-SNAPSHOT" changing="true">
+        <dependency org="org.olap4j" name="olap4j" rev="1.0.0.445" changing="true">
             <artifact name="olap4j"/>
         </dependency>
-        <dependency org="org.olap4j" name="olap4j" rev="1.0.0-SNAPSHOT"
+        <dependency org="org.olap4j" name="olap4j" rev="1.0.0.445"
                 conf="sources->default">
             <artifact name="olap4j" type="source" ext="jar"
                     m:classifier="sources"/>
         </dependency>
-        <dependency org="org.olap4j" name="olap4j-tck" rev="1.0.0-SNAPSHOT"
+        <dependency org="org.olap4j" name="olap4j-tck" rev="1.0.0.445"
                 conf="test->default" changing="true">
             <artifact name="olap4j-tck"/>
         </dependency>
-        <dependency org="org.olap4j" name="olap4j-xmla" rev="1.0.0-SNAPSHOT"
+        <dependency org="org.olap4j" name="olap4j-xmla" rev="1.0.0.445"
                 conf="test->default" changing="true">
             <artifact name="olap4j-xmla"/>
         </dependency>
