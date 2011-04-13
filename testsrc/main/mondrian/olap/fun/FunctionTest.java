@@ -519,6 +519,20 @@ public class FunctionTest extends FoodMartTestCase {
             + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
             + " [Measures].[Foo])",
             desiredResult);
+
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Foo] AS 'Iif([Measures].[Bar] IS EMPTY, 1, [Measures].[Bar])'\n"
+            + "MEMBER [Measures].[Bar] AS 'CAST(\"42\" AS INTEGER)'\n"
+            + "SELECT {[Measures].[Unit Sales], [Measures].[Foo]} on columns\n"
+            + "FROM Sales\n"
+            + "WHERE ([Time].[1998].[Q4].[12])",
+            "Axis #0:\n"
+            + "{[Time].[1998].[Q4].[12]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: \n"
+            + "Row #0: 42\n");
     }
 
     public void testIsEmptyWithAggregate() {
