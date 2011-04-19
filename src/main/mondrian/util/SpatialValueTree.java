@@ -83,7 +83,10 @@ import java.util.Set;
  *
  * <p>
  * By convention, implementations are required to compare all generic types
- * using {@link Object#hashCode()} and {@link Object#equals(Object)}.
+ * using {@link Object#hashCode()} and {@link Object#equals(Object)}. Users of
+ * this class should also use generic types which implement
+ * {@link Object#hashCode()} and {@link Object#equals(Object)} to avoid
+ * performance and consistency issues.
  *
  * @version $Id$
  * @param <K>
@@ -93,8 +96,9 @@ import java.util.Set;
  * @param <V>
  *            Type of the values to store.
  */
-public interface SpatialValueTree<K, E extends Object, V> {
-
+public interface SpatialValueTree
+        <K extends Object, E extends Object, V extends Object>
+{
     /**
      * Used as a token to represent all the values of an axis.
      * Overrides {@link Object#equals(Object)} and
@@ -146,7 +150,7 @@ public interface SpatialValueTree<K, E extends Object, V> {
      * @param regionKey The region key inside of which to search for
      * value nodes.
      * @return An unordered set of all the unique values intersecting
-     * with the region and covering it entirely, or an empty list
+     * with the region and covering it entirely, or an empty set
      * otherwise.
      */
     Set<V> match(SpatialRegion<K, E> regionKey);
@@ -168,7 +172,9 @@ public interface SpatialValueTree<K, E extends Object, V> {
      * @param <K> Type of the dimension key.
      * @param <E> Type of the values along the dimension's axis.
      */
-    public interface SpatialRegion<K, E extends Object> {
+    public interface SpatialRegion
+            <K extends Object, E extends Object>
+    {
         /**
          * Provides a list of the dimensions included in this
          * region.
