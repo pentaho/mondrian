@@ -11,25 +11,13 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.*;
-import mondrian.server.RepositoryContentFinder;
-import mondrian.server.UrlRepositoryContentFinder;
-import mondrian.spi.CatalogLocator;
-import mondrian.spi.impl.ServletContextCatalogLocator;
-
 import org.apache.log4j.Logger;
 
 import org.w3c.dom.Element;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -52,10 +40,12 @@ public abstract class XmlaServlet
     public static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
     public static final String PARAM_CALLBACKS = "Callbacks";
 
-    public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
+    protected XmlaHandler xmlaHandler = null;
+    protected String charEncoding = null;
+    private final List<XmlaRequestCallback> callbackList =
+        new ArrayList<XmlaRequestCallback>();
 
-    protected MondrianServer server;
-    protected RepositoryContentFinder contentFinder;
+    private XmlaHandler.ConnectionFactory connectionFactory;
 
     public enum Phase {
         VALIDATE_HTTP_HEAD,
@@ -87,11 +77,6 @@ public abstract class XmlaServlet
         return paramValue != null && Boolean.valueOf(paramValue);
     }
 
-    protected XmlaHandler xmlaHandler = null;
-    protected String charEncoding = null;
-    private final List<XmlaRequestCallback> callbackList =
-        new ArrayList<XmlaRequestCallback>();
-
     public XmlaServlet() {
     }
 
@@ -109,33 +94,12 @@ public abstract class XmlaServlet
         // init: callbacks
         initCallbacks(servletConfig);
 
-        // make: catalogLocator
-        // A derived class can alter how the calalog locator object is
-        // created.
-        CatalogLocator catalogLocator = makeCatalogLocator(servletConfig);
-
-        String dataSources = makeDataSourcesUrl(servletConfig);
-        contentFinder = makeContentFinder(dataSources);
-        server =
-            MondrianServer.createWithRepository(contentFinder, catalogLocator);
+        this.connectionFactory = createConnectionFactory(servletConfig);
     }
 
-    @Override
-    public void destroy() {
-        super.destroy();
-        server.shutdown();
-    }
-
-    /**
-     * Creates a callback for reading the repository. Derived classes may
-     * override.
-     *
-     * @param dataSources Data sources
-     * @return Callback for reading repository
-     */
-    protected RepositoryContentFinder makeContentFinder(String dataSources) {
-        return new UrlRepositoryContentFinder(dataSources);
-    }
+    protected abstract XmlaHandler.ConnectionFactory createConnectionFactory(
+        ServletConfig servletConfig)
+        throws ServletException;
 
     /**
      * Gets (creating if needed) the XmlaHandler.
@@ -146,7 +110,7 @@ public abstract class XmlaServlet
         if (this.xmlaHandler == null) {
             this.xmlaHandler =
                 new XmlaHandler(
-                    (XmlaHandler.ConnectionFactory) server,
+                    connectionFactory,
                     "cxmla");
         }
         return this.xmlaHandler;
@@ -409,7 +373,6 @@ public abstract class XmlaServlet
                 handleFault(response, responseSoapParts, phase, xex);
                 phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts, mimeType);
-                return;
             }
         } catch (Throwable t) {
             LOGGER.error("Unknown Error when handling XML/A message", t);
@@ -459,97 +422,6 @@ public abstract class XmlaServlet
             byte[][] responseSoapParts,
             Phase phase,
             Throwable t);
-
-
-
-    /**
-     * Make catalog locator.  Derived classes can roll their own
-     */
-    protected CatalogLocator makeCatalogLocator(ServletConfig servletConfig) {
-        ServletContext servletContext = servletConfig.getServletContext();
-        return new ServletContextCatalogLocator(servletContext);
-    }
-
-    /**
-     * Creates the URL where the data sources file is to be found.
-     *
-     * <p>Derived classes can roll their own.
-     *
-     * <p>If there is an initParameter called "DataSourcesConfig"
-     * get its value, replace any "${key}" content with "value" where
-     * "key/value" are System properties, and try to create a URL
-     * instance out of it. If that fails, then assume its a
-     * real filepath and if the file exists then create a URL from it
-     * (but only if the file exists).
-     * If there is no initParameter with that name, then attempt to
-     * find the file called "datasources.xml"  under "WEB-INF/"
-     * and if it exists, use it.
-     */
-    protected String makeDataSourcesUrl(ServletConfig servletConfig)
-    {
-        String paramValue =
-                servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
-        // if false, then do not throw exception if the file/url
-        // can not be found
-        boolean optional =
-            getBooleanInitParameter(
-                servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
-
-        URL dataSourcesConfigUrl = null;
-        try {
-            if (paramValue == null) {
-                // fallback to default
-                String defaultDS = "WEB-INF/" + DEFAULT_DATASOURCE_FILE;
-                ServletContext servletContext =
-                    servletConfig.getServletContext();
-                File realPath = new File(servletContext.getRealPath(defaultDS));
-                if (realPath.exists()) {
-                    // only if it exists
-                    dataSourcesConfigUrl = realPath.toURL();
-                    return dataSourcesConfigUrl.toString();
-                } else {
-                    return null;
-                }
-            } else if (paramValue.startsWith("inline:")) {
-                return paramValue;
-            } else {
-                paramValue = Util.replaceProperties(
-                    paramValue,
-                    Util.toMap(System.getProperties()));
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "XmlaServlet.makeDataSources: paramValue="
-                        + paramValue);
-                }
-                // is the parameter a valid URL
-                MalformedURLException mue = null;
-                try {
-                    dataSourcesConfigUrl = new URL(paramValue);
-                } catch (MalformedURLException e) {
-                    // not a valid url
-                    mue = e;
-                }
-                if (dataSourcesConfigUrl == null) {
-                    // see if its a full valid file path
-                    File f = new File(paramValue);
-                    if (f.exists()) {
-                        // yes, a real file path
-                        dataSourcesConfigUrl = f.toURL();
-                    } else if (mue != null) {
-                        // neither url or file,
-                        // is it not optional
-                        if (! optional) {
-                            throw mue;
-                        }
-                    }
-                    return null;
-                }
-                return dataSourcesConfigUrl.toString();
-            }
-        } catch (MalformedURLException mue) {
-            throw Util.newError(mue, "invalid URL path '" + paramValue + "'");
-        }
-    }
 
     /**
      * Initialize character encoding

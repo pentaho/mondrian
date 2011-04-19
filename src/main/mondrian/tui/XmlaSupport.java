@@ -17,15 +17,17 @@ import mondrian.xmla.*;
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 import mondrian.olap.Role;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.xmla.Enumeration;
-import mondrian.xmla.impl.DefaultXmlaServlet;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
-import mondrian.rolap.RolapConnectionProperties;
+import mondrian.xmla.impl.MondrianXmlaServlet;
+
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.XOMException;
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -776,7 +778,7 @@ public class XmlaSupport {
         servletConfig.addInitParameter(
             XmlaServlet.PARAM_DATASOURCES_CONFIG,
             "inline:" + dataSourceText);
-        Servlet servlet = new DefaultXmlaServlet();
+        Servlet servlet = new MondrianXmlaServlet();
         servlet.init(servletConfig);
         return servlet;
     }

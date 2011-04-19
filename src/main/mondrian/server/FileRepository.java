@@ -163,6 +163,7 @@ public class FileRepository implements Repository {
 
     public void shutdown() {
         scheduledFuture.cancel(true);
+        repositoryContentFinder.shutdown();
     }
 
     private synchronized ServerInfo getServerInfo() {

@@ -14,18 +14,10 @@ import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
 import org.olap4j.*;
-import org.olap4j.Cell;
-import org.olap4j.Position;
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.*;
-import org.olap4j.metadata.Cube;
-import org.olap4j.metadata.Dimension;
-import org.olap4j.metadata.Hierarchy;
-import org.olap4j.metadata.Level;
-import org.olap4j.metadata.Member;
-import org.olap4j.metadata.Property;
 import org.olap4j.metadata.Property.StandardCellProperty;
 import org.olap4j.metadata.Property.StandardMemberProperty;
-import org.olap4j.metadata.Schema;
 import org.xml.sax.SAXException;
 
 import org.apache.log4j.Logger;
@@ -55,14 +47,14 @@ public class XmlaHandler {
     private final String prefix;
 
     public static XmlaExtra getExtra(OlapConnection connection) {
-        final XmlaExtra extra;
         try {
-            extra = connection.unwrap(XmlaExtra.class);
+            final XmlaExtra extra = connection.unwrap(XmlaExtra.class);
+            if (extra != null) {
+                return extra;
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        if (extra != null) {
-            return extra;
+            // Connection cannot provide an XmlaExtra. Fall back and give a
+            // default implementation.
         }
         return new XmlaExtraImpl();
     }
@@ -2999,7 +2991,7 @@ public class XmlaHandler {
         }
 
         public Date getSchemaLoadDate(Schema schema) {
-            return null;
+            return new Date();
         }
 
         public int getLevelCardinality(Level level) {
@@ -3070,10 +3062,34 @@ public class XmlaHandler {
         }
 
         public List<Map<String, Object>> getDataSources(
-            OlapConnection connection)
+            OlapConnection connection) throws OlapException
         {
-            return Collections.emptyList();
+            Database olapDb = connection.getOlapDatabase();
+            final String modes = createCsv(olapDb.getAuthenticationModes());
+            final String providerTypes = createCsv(olapDb.getProviderTypes());
+            return Collections.singletonList(
+                Olap4jUtil.mapOf(
+                    "DataSourceName", (Object) olapDb.getName(),
+                    "DataSourceDescription", olapDb.getDescription(),
+                    "URL", olapDb.getURL(),
+                    "DataSourceInfo", olapDb.getDataSourceInfo(),
+                    "ProviderName", olapDb.getProviderName(),
+                    "ProviderType", providerTypes,
+                    "AuthenticationMode", modes));
         }
+    }
+
+    private static String createCsv(Iterable<? extends Object> iterable) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Object o : iterable) {
+            if (!first) {
+                sb.append(',');
+            }
+            sb.append(o);
+            first = false;
+        }
+        return sb.toString();
     }
 
     /**

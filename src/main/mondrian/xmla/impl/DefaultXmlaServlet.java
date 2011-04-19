@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,7 +26,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import mondrian.xmla.*;
-import mondrian.olap.Util;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -41,9 +40,9 @@ import org.xml.sax.SAXException;
  *
  * @author Gang Chen
  */
-public class DefaultXmlaServlet extends XmlaServlet {
+public abstract class DefaultXmlaServlet extends XmlaServlet {
 
-    protected static final String nl = Util.nl;
+    protected static final String nl = System.getProperty("line.separator");
 
     private DocumentBuilderFactory domFactory = null;
 
@@ -697,7 +696,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         responseSoapParts[1] = osBuf.toByteArray();
     }
-
 }
 
 // End DefaultXmlaServlet.java
