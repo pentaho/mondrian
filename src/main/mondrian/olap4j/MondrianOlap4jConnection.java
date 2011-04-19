@@ -14,6 +14,7 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.rolap.*;
 
+import mondrian.util.*;
 import mondrian.xmla.XmlaHandler;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
@@ -41,7 +42,8 @@ import java.util.*;
  * for the Mondrian OLAP engine.
  *
  * <p>This class has sub-classes which implement JDBC 3.0 and JDBC 4.0 APIs;
- * it is instantiated using {@link Factory#newConnection}.</p>
+ * it is instantiated using
+ * {@link Factory#newConnection(MondrianOlap4jDriver, String, java.util.Properties)}.</p>
  *
  * @author jhyde
  * @version $Id$
@@ -87,12 +89,8 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     boolean preferList;
 
     final MondrianServer mondrianServer;
-    private MondrianOlap4jSchema olap4jSchema;
-    private MondrianOlap4jCatalog olap4jCatalog;
-    private MondrianOlap4jDatabase olap4jDatabase;
-
+    private final MondrianOlap4jSchema olap4jSchema;
     private final NamedList<MondrianOlap4jDatabase> olap4jDatabases;
-    private final NamedList<MondrianOlap4jCatalog> olap4jCatalogs;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -131,7 +129,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 "does not start with '" + CONNECT_STRING_PREFIX + "'");
         }
         Util.PropertyList list = Util.parseConnectString(x);
-        final Map<String, String> map = toMap(info);
+        final Map<String, String> map = Util.toMap(info);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
@@ -149,62 +147,62 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         final CatalogFinder catalogFinder =
             (CatalogFinder) mondrianServer;
 
-        this.olap4jCatalogs =
-            new NamedListImpl<MondrianOlap4jCatalog>();
+        NamedList<MondrianOlap4jCatalog> olap4jCatalogs = new
+            NamedListImpl<MondrianOlap4jCatalog>();
         this.olap4jDatabases =
             new NamedListImpl<MondrianOlap4jDatabase>();
 
-        for (Map<String, Object> dB
-                : mondrianServer.getDatabases(mondrianConnection))
-        {
-            StringTokenizer st =
-                new StringTokenizer(
-                    String.valueOf(dB.get("ProviderType")),
-                    ",");
-            List<ProviderType> pTypes =
-                new ArrayList<ProviderType>();
-            while (st.hasMoreTokens()) {
-                pTypes.add(ProviderType.valueOf(st.nextToken()));
-            }
-            st = new StringTokenizer(
-                String.valueOf(dB.get("AuthenticationMode")),
-            ",");
-            List<AuthenticationMode> aModes =
-                new ArrayList<AuthenticationMode>();
-            while (st.hasMoreTokens()) {
-                aModes.add(AuthenticationMode.valueOf(st.nextToken()));
-            }
-            this.olap4jDatabases.add(
-                new MondrianOlap4jDatabase(
-                    this,
-                    this.olap4jCatalogs,
-                    String.valueOf(dB.get("DataSourceName")),
-                    String.valueOf(dB.get("DataSourceDescription")),
-                    String.valueOf(dB.get("ProviderName")),
-                    String.valueOf(dB.get("URL")),
-                    String.valueOf(dB.get("DataSourceInfo")),
-                    pTypes,
-                    aModes));
+        List<Map<String, Object>> dbpropsMaps =
+            mondrianServer.getDatabases(mondrianConnection);
+        if (dbpropsMaps.size() != 1) {
+            throw new AssertionError();
         }
+        Map<String, Object> dbpropsMap = dbpropsMaps.get(0);
+        StringTokenizer st =
+            new StringTokenizer(
+                String.valueOf(dbpropsMap.get("ProviderType")),
+                ",");
+        List<ProviderType> pTypes =
+            new ArrayList<ProviderType>();
+        while (st.hasMoreTokens()) {
+            pTypes.add(ProviderType.valueOf(st.nextToken()));
+        }
+        st = new StringTokenizer(
+            String.valueOf(dbpropsMap.get("AuthenticationMode")), ",");
+        List<AuthenticationMode> aModes =
+            new ArrayList<AuthenticationMode>();
+        while (st.hasMoreTokens()) {
+            aModes.add(AuthenticationMode.valueOf(st.nextToken()));
+        }
+        final MondrianOlap4jDatabase database =
+            new MondrianOlap4jDatabase(
+                this,
+                olap4jCatalogs,
+                String.valueOf(dbpropsMap.get("DataSourceName")),
+                String.valueOf(dbpropsMap.get("DataSourceDescription")),
+                String.valueOf(dbpropsMap.get("ProviderName")),
+                String.valueOf(dbpropsMap.get("URL")),
+                String.valueOf(dbpropsMap.get("DataSourceInfo")),
+                pTypes,
+                aModes);
+        this.olap4jDatabases.add(database);
 
         for (String catalogName
-                : catalogFinder.getCatalogNames(mondrianConnection))
-            {
-                final Map<String, RolapSchema> schemaMap =
-                    catalogFinder.getRolapSchemas(
-                        mondrianConnection,
-                        catalogName);
-                olap4jCatalogs.add(
-                    new MondrianOlap4jCatalog(
-                        olap4jDatabaseMetaData,
-                        catalogName,
-                        this.olap4jDatabase,
-                        schemaMap));
-            }
+            : catalogFinder.getCatalogNames(mondrianConnection))
+        {
+            final Map<String, RolapSchema> schemaMap =
+                catalogFinder.getRolapSchemas(
+                    mondrianConnection,
+                    catalogName);
+            olap4jCatalogs.add(
+                new MondrianOlap4jCatalog(
+                    olap4jDatabaseMetaData,
+                    catalogName,
+                    database,
+                    schemaMap));
+        }
 
         this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
-        this.olap4jCatalog = this.olap4jSchema.olap4jCatalog;
-        this.olap4jDatabase = this.olap4jCatalog.olap4jDatabase;
     }
 
     static boolean acceptsURL(String url) {
@@ -613,19 +611,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             }
         };
     }
-    /**
-     * Converts a Properties object to a Map with String keys and values.
-     *
-     * @param properties Properties
-     * @return Map backed by the given Properties object
-     */
-    public static Map<String, String> toMap(final Properties properties) {
-        return new AbstractMap<String, String>() {
-            public Set<Entry<String, String>> entrySet() {
-                return Olap4jUtil.cast(properties.entrySet());
-            }
-        };
-    }
 
     MondrianOlap4jNamedSet toOlap4j(
         mondrian.olap.Cube cube,
@@ -740,6 +725,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     static <T> NamedList<T> unmodifiableNamedList(
         final NamedList<? extends T> list)
     {
+        mondrian.util.Bug.olap4jUpgrade("remove this method and 2 classes");
         return list instanceof RandomAccess
         ? new UnmodifiableNamedRandomAccessList<T>(list)
         : new UnmodifiableNamedList<T>(list);
