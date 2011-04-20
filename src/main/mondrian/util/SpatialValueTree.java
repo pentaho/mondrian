@@ -107,15 +107,9 @@ public interface SpatialValueTree
      */
     public static final Object AXIS_WILDCARD =
         new Object() {
-            public boolean equals(Object obj) {
-                if (this == obj) {
-                    return true;
-                }
-                return false;
-            }
             public int hashCode() {
                 return 42;
-            };
+            }
         };
 
     /**
@@ -127,7 +121,8 @@ public interface SpatialValueTree
     /**
      * Clears all the values found at the provided region
      * key.
-     * @param header The region key of the values to clear.
+     *
+     * @param regionKey The region key of the values to clear.
      */
     void clear(SpatialRegion<K, E> regionKey);
 
@@ -178,13 +173,15 @@ public interface SpatialValueTree
         /**
          * Provides a list of the dimensions included in this
          * region.
-         * @return
+         *
+         * @return List of dimensions
          */
         List<K> getDimensions();
         /**
          * Provides an array of objects describing this region's
          * bounds within the specified dimension's axis.
-         * @param dimension
+         *
+         * @param dimension Dimension
          * @return An array of the bounds touched by this region.
          */
         E[] getValues(K dimension);
