@@ -20,8 +20,9 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
-import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
+import mondrian.util.ObjectFactory;
+import mondrian.util.Pair;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -283,12 +284,14 @@ class SqlMemberSource
     }
 
     private List<RolapMember> getMembers(DataSource dataSource) {
-        String sql = makeKeysSql(dataSource);
+        Pair<String, List<SqlStatement.Type>> pair = makeKeysSql(dataSource);
+        final String sql = pair.left;
+        List<SqlStatement.Type> types = pair.right;
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, "SqlMemberSource.getMembers",
-                "while building member cache");
+                dataSource, sql, types, 0, 0, "SqlMemberSource.getMembers",
+                "while building member cache", -1, -1);
         try {
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
@@ -403,7 +406,9 @@ RME is this right
         list.add(i + 1, member);
     }
 
-    private String makeKeysSql(DataSource dataSource) {
+    private Pair<String, List<SqlStatement.Type>> makeKeysSql(
+        DataSource dataSource)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
@@ -440,7 +445,7 @@ RME is this right
                 }
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     // implement MemberReader
@@ -551,7 +556,7 @@ RME is this right
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
      */
-    String makeChildMemberSql(
+    Pair<String, List<SqlStatement.Type>> makeChildMemberSql(
         RolapMember member,
         DataSource dataSource,
         MemberChildrenConstraint constraint)
@@ -589,14 +594,16 @@ RME is this right
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
             String q = aggColumn.generateExprString(sqlQuery);
             sqlQuery.addSelectGroupBy(q);
+            sqlQuery.addType(starColumn.getInternalType());
             sqlQuery.addOrderBy(q, true, false, true);
             aggColumn.getTable().addToFrom(sqlQuery, false, true);
-            return sqlQuery.toString();
+            return sqlQuery.toSqlAndTypes();
         }
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String q = level.getKeyExp().getExpression(sqlQuery);
         sqlQuery.addSelectGroupBy(q);
+        sqlQuery.addType(level.getInternalType());
 
         // in non empty mode the level table must be joined to the fact
         // table
@@ -639,6 +646,7 @@ RME is this right
             }
             String captionSql = captionExp.getExpression(sqlQuery);
             sqlQuery.addSelectGroupBy(captionSql);
+            sqlQuery.addType(null);
         }
         if (!levelCollapsed) {
             hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
@@ -647,6 +655,7 @@ RME is this right
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(q)) {
             sqlQuery.addSelectGroupBy(orderBy);
+            sqlQuery.addType(null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -657,6 +666,7 @@ RME is this right
             }
             final String s = exp.getExpression(sqlQuery);
             String alias = sqlQuery.addSelect(s);
+            sqlQuery.addType(null);
             // Some dialects allow us to eliminate properties from the
             // group by that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
@@ -665,7 +675,7 @@ RME is this right
                 sqlQuery.addGroupBy(s, alias);
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     private static AggStar chooseAggStar(
@@ -903,12 +913,12 @@ RME is this right
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        String sql;
+        Pair<String, List<SqlStatement.Type>> pair;
         boolean parentChild;
         final RolapLevel parentLevel = parentMember.getLevel();
         RolapLevel childLevel;
         if (parentLevel.isParentChild()) {
-            sql = makeChildMemberSqlPC(parentMember);
+            pair = makeChildMemberSqlPC(parentMember);
             parentChild = true;
             childLevel = parentLevel;
         } else {
@@ -918,17 +928,20 @@ RME is this right
                 return;
             }
             if (childLevel.isParentChild()) {
-                sql = makeChildMemberSql_PCRoot(parentMember);
+                pair = makeChildMemberSql_PCRoot(parentMember);
                 parentChild = true;
             } else {
-                sql = makeChildMemberSql(parentMember, dataSource, constraint);
+                pair = makeChildMemberSql(parentMember, dataSource, constraint);
                 parentChild = false;
             }
         }
+        final String sql = pair.left;
+        final List<SqlStatement.Type> types = pair.right;
         SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, "SqlMemberSource.getMemberChildren",
-                "while building member cache");
+                dataSource, sql, types, 0, 0,
+                "SqlMemberSource.getMemberChildren",
+                "while building member cache", -1, -1);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
@@ -1091,7 +1104,9 @@ RME is this right
      * <p>Currently, parent-child hierarchies may have only one level (plus the
      * 'All' level).
      */
-    private String makeChildMemberSql_PCRoot(RolapMember member) {
+    private Pair<String, List<SqlStatement.Type>> makeChildMemberSql_PCRoot(
+        RolapMember member)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
@@ -1132,11 +1147,13 @@ RME is this right
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
         sqlQuery.addSelectGroupBy(childId);
+        sqlQuery.addType(null);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addSelectGroupBy(orderBy);
+            sqlQuery.addType(null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -1151,9 +1168,10 @@ RME is this right
                 || !property.dependsOnLevelValue())
             {
                 sqlQuery.addGroupBy(s, alias);
+                sqlQuery.addType(null);
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     /**
@@ -1169,7 +1187,9 @@ RME is this right
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
      */
-    private String makeChildMemberSqlPC(RolapMember member) {
+    private Pair<String, List<SqlStatement.Type>> makeChildMemberSqlPC(
+        RolapMember member)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
@@ -1192,11 +1212,13 @@ RME is this right
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
         sqlQuery.addSelectGroupBy(childId);
+        sqlQuery.addType(null);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addSelectGroupBy(orderBy);
+            sqlQuery.addType(null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -1205,6 +1227,7 @@ RME is this right
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
             String alias = sqlQuery.addSelect(s);
+            sqlQuery.addType(null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
@@ -1213,7 +1236,7 @@ RME is this right
                 sqlQuery.addGroupBy(s, alias);
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     // implement MemberReader
