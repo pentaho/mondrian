@@ -3277,6 +3277,13 @@ public class SchemaTest extends FoodMartTestCase {
      * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
      */
     public void testBugMondrian463() {
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            // Similar to aggregates. If we turn off filtering,
+            // we get wild stuff because of referential integrity.
+            return;
+        }
         // To build a dimension that is a 3-way snowflake, take the 2-way
         // product -> product_class join and convert to product -> store ->
         // product_class.

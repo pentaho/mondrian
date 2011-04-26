@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1871,7 +1871,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
             + "\"product\" as \"product\", \"product_class\" as \"product_class\" "
             + "where "
-            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
             + "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
             + "and ((\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))"
             + " or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco')"
@@ -1888,7 +1889,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
             + "`product` as `product`, `product_class` as `product_class` "
             + "where "
-            + "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "`sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
             + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
             + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
             + "and (`product_class`.`product_family` = 'Food') "
@@ -1904,6 +1906,27 @@ public class NonEmptyTest extends BatchTestCase {
                     "sales_fact_1997", "agg_c_14_sales_fact_1997");
             necjSqlDerby = necjSqlDerby.replaceAll(
                     "sales_fact_1997", "agg_c_14_sales_fact_1997");
+        }
+
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            necjSqlMySql = necjSqlMySql.replaceAll(
+                "`product` as `product`, `product_class` as `product_class`",
+                "`product_class` as `product_class`, `product` as `product`");
+            necjSqlMySql = necjSqlMySql.replaceAll(
+                "`product`.`product_class_id` = `product_class`.`product_class_id` and "
+                + "`sales_fact_1997`.`product_id` = `product`.`product_id` and ",
+                "`sales_fact_1997`.`product_id` = `product`.`product_id` and "
+                + "`product`.`product_class_id` = `product_class`.`product_class_id` and ");
+            necjSqlDerby = necjSqlDerby.replaceAll(
+                "\"product\" as \"product\", \"product_class\" as \"product_class\"",
+                "\"product_class\" as \"product_class\", \"product\" as \"product\"");
+            necjSqlDerby = necjSqlDerby.replaceAll(
+                "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
+                + "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and ",
+                "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
+                + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and ");
         }
 
         SqlPattern[] patterns = {
@@ -1927,6 +1950,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -2012,6 +2040,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -2101,6 +2134,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintWithMixedNullNonNullChild() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -4634,6 +4672,131 @@ public class NonEmptyTest extends BatchTestCase {
             res = ((NonEmptyResult) res).underlying;
         }
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
+    }
+
+    public void testFilterChildlessSnowflakeMembers2() {
+        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
+        {
+            // If FilterChildlessSnowflakeMembers is true, then
+            // [Product].[Drink].[Baking Goods].[Coffee] does not even exist!
+            return;
+        }
+        // children across a snowflake boundary
+        assertQueryReturns(
+            "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+    }
+
+    public void testFilterChildlessSnowflakeMembers() {
+        propSaver.set(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers,
+            false);
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                "select `product_class`.`product_family` as `c0` "
+                + "from `product_class` as `product_class` "
+                + "group by `product_class`.`product_family` "
+                + "order by ISNULL(`product_class`.`product_family`),"
+                + " `product_class`.`product_family` ASC",
+                null)
+        };
+        Connection conn = null;
+        try {
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext testContext = getTestContext(conn);
+
+            assertQuerySql(
+                testContext,
+                "select [Product].[Product Family].Members on 0\n"
+                + "from [Sales]",
+                patterns);
+
+            // note that returns an extra member,
+            // [Product].[Drink].[Baking Goods]
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                + "{[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Drink].[Beverages]}\n"
+                + "{[Product].[Drink].[Dairy]}\n"
+                + "Row #0: 6,838\n"
+                + "Row #0: \n"
+                + "Row #0: 13,573\n"
+                + "Row #0: 4,186\n");
+
+            // [Product].[Drink].[Baking Goods] has one child, but no fact data
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Baking Goods].[Dry Goods]}\n"
+                + "Row #0: \n");
+
+            // NON EMPTY filters out that child
+            testContext.assertQueryReturns(
+                "select non empty [Product].[Drink].[Baking Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            // [Product].[Drink].[Baking Goods].[Dry Goods] has one child, but
+            // no fact data
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+                + "Row #0: \n");
+
+            // NON EMPTY filters out that child
+            testContext.assertQueryReturns(
+                "select non empty [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            // [Coffee] has no children
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            testContext.assertQueryReturns(
+                "select [Measures].[Unit Sales] on 0,\n"
+                + " [Product].[Product Family].Members on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Drink]}\n"
+                + "{[Product].[Food]}\n"
+                + "{[Product].[Non-Consumable]}\n"
+                + "Row #0: 24,597\n"
+                + "Row #1: 191,940\n"
+                + "Row #2: 50,236\n");
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
     }
 }
 

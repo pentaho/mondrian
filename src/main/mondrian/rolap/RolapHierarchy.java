@@ -636,6 +636,7 @@ public class RolapHierarchy extends HierarchyBase {
                 "cannot add hierarchy " + getUniqueName()
                 + " to query: it does not have a <Table>, <View> or <Join>");
         }
+        query.registerRootRelation(relation);
         final boolean failIfExists = false;
         MondrianDef.RelationOrJoin subRelation = relation;
         if (relation instanceof MondrianDef.Join) {
@@ -760,8 +761,10 @@ public class RolapHierarchy extends HierarchyBase {
                 relationSubset(join.right, alias);
             return (rightRelation == null)
                 ? relationSubset(join.left, alias)
-                : join;
-
+                : MondrianProperties.instance()
+                    .FilterChildlessSnowflakeMembers.get()
+                ? join
+                : rightRelation;
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }

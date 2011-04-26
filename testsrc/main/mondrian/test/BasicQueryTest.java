@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -463,6 +463,129 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testSample5() {
         assertQueryReturns(sampleQueries[5].query, sampleQueries[5].result);
+    }
+
+    public void testSample5Snowflake() {
+        propSaver.set(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers,
+            false);
+        Connection conn = null;
+        try {
+            conn = getTestContext().getFoodMartConnection(false);
+            getTestContext(conn).assertQueryReturns(
+                sampleQueries[5].query,
+                "Axis #0:\n"
+                + "{[Time].[1997]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Cost]}\n"
+                + "{[Measures].[Store Sales]}\n"
+                + "{[Measures].[Store Profit Rate]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Food].[Breakfast Foods]}\n"
+                + "{[Product].[Non-Consumable].[Carousel]}\n"
+                + "{[Product].[Food].[Canned Products]}\n"
+                + "{[Product].[Food].[Baking Goods]}\n"
+                + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
+                + "{[Product].[Food].[Snack Foods]}\n"
+                + "{[Product].[Food].[Baked Goods]}\n"
+                + "{[Product].[Drink].[Beverages]}\n"
+                + "{[Product].[Food].[Frozen Foods]}\n"
+                + "{[Product].[Non-Consumable].[Periodicals]}\n"
+                + "{[Product].[Food].[Produce]}\n"
+                + "{[Product].[Food].[Seafood]}\n"
+                + "{[Product].[Food].[Deli]}\n"
+                + "{[Product].[Food].[Meat]}\n"
+                + "{[Product].[Food].[Canned Foods]}\n"
+                + "{[Product].[Non-Consumable].[Household]}\n"
+                + "{[Product].[Food].[Starchy Foods]}\n"
+                + "{[Product].[Food].[Eggs]}\n"
+                + "{[Product].[Food].[Snacks]}\n"
+                + "{[Product].[Food].[Dairy]}\n"
+                + "{[Product].[Drink].[Dairy]}\n"
+                + "{[Product].[Non-Consumable].[Checkout]}\n"
+                + "{[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Food].[Packaged Foods]}\n"
+                + "Row #0: 2,756.80\n"
+                + "Row #0: 6,941.46\n"
+                + "Row #0: 151.79%\n"
+                + "Row #1: 595.97\n"
+                + "Row #1: 1,500.11\n"
+                + "Row #1: 151.71%\n"
+                + "Row #2: 1,317.13\n"
+                + "Row #2: 3,314.52\n"
+                + "Row #2: 151.65%\n"
+                + "Row #3: 15,370.61\n"
+                + "Row #3: 38,670.41\n"
+                + "Row #3: 151.59%\n"
+                + "Row #4: 5,576.79\n"
+                + "Row #4: 14,029.08\n"
+                + "Row #4: 151.56%\n"
+                + "Row #5: 12,972.99\n"
+                + "Row #5: 32,571.86\n"
+                + "Row #5: 151.07%\n"
+                + "Row #6: 26,963.34\n"
+                + "Row #6: 67,609.82\n"
+                + "Row #6: 150.75%\n"
+                + "Row #7: 6,564.09\n"
+                + "Row #7: 16,455.43\n"
+                + "Row #7: 150.69%\n"
+                + "Row #8: 11,069.53\n"
+                + "Row #8: 27,748.53\n"
+                + "Row #8: 150.67%\n"
+                + "Row #9: 22,030.66\n"
+                + "Row #9: 55,207.50\n"
+                + "Row #9: 150.59%\n"
+                + "Row #10: 3,614.55\n"
+                + "Row #10: 9,056.76\n"
+                + "Row #10: 150.56%\n"
+                + "Row #11: 32,831.33\n"
+                + "Row #11: 82,248.42\n"
+                + "Row #11: 150.52%\n"
+                + "Row #12: 1,520.70\n"
+                + "Row #12: 3,809.14\n"
+                + "Row #12: 150.49%\n"
+                + "Row #13: 10,108.87\n"
+                + "Row #13: 25,318.93\n"
+                + "Row #13: 150.46%\n"
+                + "Row #14: 1,465.42\n"
+                + "Row #14: 3,669.89\n"
+                + "Row #14: 150.43%\n"
+                + "Row #15: 15,894.53\n"
+                + "Row #15: 39,774.34\n"
+                + "Row #15: 150.24%\n"
+                + "Row #16: 24,170.73\n"
+                + "Row #16: 60,469.89\n"
+                + "Row #16: 150.18%\n"
+                + "Row #17: 4,705.91\n"
+                + "Row #17: 11,756.07\n"
+                + "Row #17: 149.82%\n"
+                + "Row #18: 3,684.90\n"
+                + "Row #18: 9,200.76\n"
+                + "Row #18: 149.69%\n"
+                + "Row #19: 5,827.58\n"
+                + "Row #19: 14,550.05\n"
+                + "Row #19: 149.68%\n"
+                + "Row #20: 12,228.85\n"
+                + "Row #20: 30,508.85\n"
+                + "Row #20: 149.48%\n"
+                + "Row #21: 2,830.92\n"
+                + "Row #21: 7,058.60\n"
+                + "Row #21: 149.34%\n"
+                + "Row #22: 1,525.04\n"
+                + "Row #22: 3,767.71\n"
+                + "Row #22: 147.06%\n"
+                + "Row #23: \n"
+                + "Row #23: \n"
+                + "Row #23: \n"
+                + "Row #24: \n"
+                + "Row #24: \n"
+                + "Row #24: \n");
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
     }
 
     public void testSample6() {
@@ -1029,7 +1152,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Product].members} on rows\n"
             + "from Sales");
         final int rowCount = result.getAxes()[1].getPositions().size();
-        assertEquals(2256, rowCount);
+        assertEquals(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers.get()
+                ? 2256
+                : 2266,
+            rowCount);
         assertEquals(
             "152",
             result.getCell(
@@ -2758,10 +2885,13 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Bug 645744 happens when getting the children of a member crosses a table
-     * boundary. The symptom
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-8">MONDRIAN-8,
+     * "Problem getting children in hierarchy based on join."</a>.
+     * It happens when getting the children of a member crosses a table
+     * boundary.
      */
-    public void testBug645744() {
+    public void testBugMondrian8() {
         // minimal test case
         assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON columns,\n"
@@ -7022,8 +7152,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale].[Tell Tale Tomatos], "
-            + "[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking], "
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables]"
+            + ".[Tell Tale].[Tell Tale Tomatos], "
+            + "[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and "
+            + "Trucking], "
             + "[Store].[USA].[WA].[Seattle].[Store 15], "
             + "[Time].[Weekly].[1997].[24].[3]}\n"
             + "Axis #2:\n"

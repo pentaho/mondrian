@@ -459,7 +459,7 @@ public interface Dialect {
 
     /**
      * Returns whether this Dialect allows the GROUPING SETS construct in
-     * the GROUP BY clause. Currently Oracle, DB2 and Teradata.
+     * the GROUP BY clause. Currently Greenplum, IBM DB2, Oracle, and Teradata.
      *
      * @return Whether this Dialect allows GROUPING SETS clause
      */

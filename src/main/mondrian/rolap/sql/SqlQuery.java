@@ -111,6 +111,17 @@ public class SqlQuery {
     /** Scratch buffer. Clear it before use. */
     private final StringBuilder buf;
 
+    private final Set<MondrianDef.Relation> relations =
+        new HashSet<MondrianDef.Relation>();
+
+    private final Map<MondrianDef.Relation, MondrianDef.RelationOrJoin>
+        mapRelationToRoot =
+        new HashMap<MondrianDef.Relation, MondrianDef.RelationOrJoin>();
+
+    private final Map<MondrianDef.RelationOrJoin, List<RelInfo>>
+        mapRootToRelations =
+        new HashMap<MondrianDef.RelationOrJoin, List<RelInfo>>();
+
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
@@ -309,6 +320,32 @@ public class SqlQuery {
         final String alias,
         final boolean failIfExists)
     {
+        registerRootRelation(relation);
+
+        if (relation instanceof MondrianDef.Relation) {
+            MondrianDef.Relation relation1 = (MondrianDef.Relation) relation;
+            if (relations.add(relation1)
+                && !MondrianProperties.instance()
+                .FilterChildlessSnowflakeMembers.get())
+            {
+                // This relation is new to this query. Add a join to any other
+                // relation in the same dimension.
+                //
+                // (If FilterChildlessSnowflakeMembers were false,
+                // this would be unnecessary. Adding a relation automatically
+                // adds all relations between it and the fact table.)
+                MondrianDef.RelationOrJoin root =
+                    mapRelationToRoot.get(relation1);
+                for (MondrianDef.Relation relation2 : relations) {
+                    if (relation2 != relation1
+                        && mapRelationToRoot.get(relation2) == root)
+                    {
+                        addJoinBetween(root, relation1, relation2);
+                    }
+                }
+            }
+        }
+
         if (relation instanceof MondrianDef.View) {
             final MondrianDef.View view = (MondrianDef.View) relation;
             final String viewAlias =
@@ -340,32 +377,87 @@ public class SqlQuery {
 
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
-            final String leftAlias = join.getLeftAlias();
-            final String rightAlias = join.getRightAlias();
-
-            boolean addLeft = addFrom(join.left, leftAlias, failIfExists);
-            boolean addRight = addFrom(join.right, rightAlias, failIfExists);
-
-            boolean added = addLeft || addRight;
-            if (added) {
-                buf.setLength(0);
-
-                dialect.quoteIdentifier(buf, leftAlias, join.leftKey);
-                buf.append(" = ");
-                dialect.quoteIdentifier(buf, rightAlias, join.rightKey);
-                final String condition = buf.toString();
-                if (dialect.allowsJoinOn()) {
-                    from.addOn(
-                        leftAlias, join.leftKey, rightAlias, join.rightKey,
-                        condition);
-                } else {
-                    addWhere(condition);
-                }
-            }
-            return added;
+            return addJoin(
+                join.left,
+                join.getLeftAlias(),
+                join.leftKey,
+                join.right,
+                join.getRightAlias(),
+                join.rightKey,
+                failIfExists);
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
+    }
+
+    private boolean addJoin(
+        MondrianDef.RelationOrJoin left,
+        String leftAlias,
+        String leftKey,
+        MondrianDef.RelationOrJoin right,
+        String rightAlias,
+        String rightKey,
+        boolean failIfExists)
+    {
+        boolean addLeft = addFrom(left, leftAlias, failIfExists);
+        boolean addRight = addFrom(right, rightAlias, failIfExists);
+
+        boolean added = addLeft || addRight;
+        if (added) {
+            buf.setLength(0);
+
+            dialect.quoteIdentifier(buf, leftAlias, leftKey);
+            buf.append(" = ");
+            dialect.quoteIdentifier(buf, rightAlias, rightKey);
+            final String condition = buf.toString();
+            if (dialect.allowsJoinOn()) {
+                from.addOn(
+                    leftAlias, leftKey, rightAlias, rightKey,
+                    condition);
+            } else {
+                addWhere(condition);
+            }
+        }
+        return added;
+    }
+
+    private void addJoinBetween(
+        MondrianDef.RelationOrJoin root,
+        MondrianDef.Relation relation1,
+        MondrianDef.Relation relation2)
+    {
+        List<RelInfo> relations = mapRootToRelations.get(root);
+        int index1 = find(relations, relation1);
+        int index2 = find(relations, relation2);
+        assert index1 != -1;
+        assert index2 != -1;
+        int min = Math.min(index1, index2);
+        int max = Math.max(index1, index2);
+        for (int i = max - 1; i >= min; i--) {
+            RelInfo relInfo = relations.get(i);
+                addJoin(
+                    relInfo.relation,
+                    relInfo.leftAlias != null
+                        ? relInfo.leftAlias
+                        : relInfo.relation.getAlias(),
+                    relInfo.leftKey,
+                    relations.get(i + 1).relation,
+                    relInfo.rightAlias != null
+                        ? relInfo.rightAlias
+                        : relations.get(i + 1).relation.getAlias(),
+                    relInfo.rightKey,
+                    false);
+        }
+    }
+
+    private int find(List<RelInfo> relations, MondrianDef.Relation relation) {
+        for (int i = 0, n = relations.size(); i < n; i++) {
+            RelInfo relInfo = relations.get(i);
+            if (relInfo.relation.equals(relation)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -634,6 +726,53 @@ public class SqlQuery {
         return Pair.of(toString(), types);
     }
 
+    public void registerRootRelation(MondrianDef.RelationOrJoin root) {
+        // REVIEW: In this method, we are building data structures about the
+        // structure of a star schema. These should be built into the schema,
+        // not constructed afresh for each SqlQuery. In mondrian-4.0,
+        // these methods and the data structures 'mapRootToRelations',
+        // 'relations', 'mapRelationToRoot' will disappear.
+        if (mapRelationToRoot.containsKey(root)) {
+            return;
+        }
+        if (mapRootToRelations.containsKey(root)) {
+            return;
+        }
+        List<RelInfo> relations = new ArrayList<RelInfo>();
+        flatten(relations, root, null, null, null, null);
+        for (RelInfo relation : relations) {
+            mapRelationToRoot.put(relation.relation, root);
+        }
+        mapRootToRelations.put(root, relations);
+    }
+
+    private void flatten(
+        List<RelInfo> relations,
+        MondrianDef.RelationOrJoin root,
+        String leftKey,
+        String leftAlias,
+        String rightKey,
+        String rightAlias)
+    {
+        if (root instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) root;
+            flatten(
+                relations, join.left, join.leftKey, join.leftAlias,
+                join.rightKey, join.rightAlias);
+            flatten(
+                relations, join.right, leftKey, leftAlias, rightKey,
+                rightAlias);
+        } else {
+            relations.add(
+                new RelInfo(
+                    (MondrianDef.Relation) root,
+                    leftKey,
+                    leftAlias,
+                    rightKey,
+                    rightAlias));
+        }
+    }
+
     private static class JoinOnClause {
         private final String condition;
         private final String left;
@@ -844,6 +983,28 @@ public class SqlQuery {
         private static String getBestName(Dialect dialect) {
             return dialect.getDatabaseProduct().getFamily().name()
                 .toLowerCase();
+        }
+    }
+
+    private static class RelInfo {
+        final MondrianDef.Relation relation;
+        final String leftKey;
+        final String leftAlias;
+        final String rightKey;
+        final String rightAlias;
+
+        public RelInfo(
+            MondrianDef.Relation relation,
+            String leftKey,
+            String leftAlias,
+            String rightKey,
+            String rightAlias)
+        {
+            this.relation = relation;
+            this.leftKey = leftKey;
+            this.leftAlias = leftAlias;
+            this.rightKey = rightKey;
+            this.rightAlias = rightAlias;
         }
     }
 }

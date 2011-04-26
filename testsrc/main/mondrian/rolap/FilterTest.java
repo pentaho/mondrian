@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -474,6 +474,10 @@ public class FilterTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
+        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
+        {
+            return;
+        }
 
         String dimension =
             "<Dimension name=\"Warehouse2\">\n"
@@ -581,6 +585,10 @@ public class FilterTest extends BatchTestCase {
      */
     public void testNotInMultiLevelMemberConstraintSingleNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
+        {
             return;
         }
 

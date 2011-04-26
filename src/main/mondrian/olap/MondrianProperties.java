@@ -1302,6 +1302,26 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final IntegerProperty XmlaSchemaRefreshInterval =
         new IntegerProperty(
             this, "mondrian.xmla.SchemaRefreshInterval", 3000);
+
+    /**
+     * Property that defines
+     * whether to generate joins to filter out members in a snowflake
+     * dimension that do not have any children.
+     *
+     * <p>If true (the default), some queries to query members of high
+     * levels snowflake dimensions will be more expensive. If false, and if
+     * there are rows in an outer snowflake table that are not referenced by
+     * a row in an inner snowflake table, then some queries will return members
+     * that have no children.
+     *
+     * <p>Our recommendation, for best performance, is to remove rows outer
+     * snowflake tables are not referenced by any row in an inner snowflake
+     * table, during your ETL process, and to set this property to
+     * {@code false}.
+     */
+    public transient final BooleanProperty FilterChildlessSnowflakeMembers =
+        new BooleanProperty(
+            this, "mondrian.rolap.FilterChildlessSnowflakeMembers", true);
 }
 
 // End MondrianProperties.java
