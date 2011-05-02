@@ -5318,7 +5318,7 @@ public class FunctionTest extends FoodMartTestCase {
         // constructing a tuple.
         assertExprCompilesTo(
             "([Gender].[M], [Time].[Time].Children.Item(2), [Measures].[Unit Sales])",
-            "MemberValueCalc([Gender].[M], Item(Children(CurrentMemberFixed([Time])), 2), [Measures].[Unit Sales])");
+            "MemberArrayValueCalc([Gender].[M], Item(Children(CurrentMemberFixed([Time])), 2), [Measures].[Unit Sales])");
     }
 
     /**

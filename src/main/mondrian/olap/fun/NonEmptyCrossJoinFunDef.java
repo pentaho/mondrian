@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.rolap.RolapEvaluator;
 
 
 /**
@@ -45,18 +46,43 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         {
             public TupleList evaluateList(Evaluator evaluator) {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                // evaluate the arguments in non empty mode
-                evaluator = evaluator.push(true);
+
+                // Evaluate the arguments in non empty mode, but remove from
+                // the slicer any members that will be overridden by args to
+                // the NonEmptyCrossjoin function. For example, in
+                //
+                //   SELECT NonEmptyCrossJoin(
+                //       [Store].[USA].Children,
+                //       [Product].[Beer].Children)
+                //    FROM [Sales]
+                //    WHERE [Store].[Mexico]
+                //
+                // we want all beers, not just those sold in Mexico.
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(true);
+                for (Member member
+                    : ((RolapEvaluator) evaluator).getSlicerMembers())
+                {
+                    if (getType().getElementType().usesHierarchy(
+                        member.getHierarchy(), true))
+                    {
+                        evaluator.setContext(
+                            member.getHierarchy().getAllMember());
+                    }
+                }
+
                 NativeEvaluator nativeEvaluator =
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
+                    evaluator.restore(savepoint);
                     return
                         (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
                 final TupleList list1 = listCalc1.evaluateList(evaluator);
                 if (list1.isEmpty()) {
+                    evaluator.restore(savepoint);
                     return list1;
                 }
                 final TupleList list2 = listCalc2.evaluateList(evaluator);
@@ -64,6 +90,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
 
                 // remove any remaining empty crossings from the result
                 result = nonEmptyList(evaluator, result, call);
+                evaluator.restore(savepoint);
                 return result;
             }
 

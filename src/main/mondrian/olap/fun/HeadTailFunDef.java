@@ -58,9 +58,11 @@ class HeadTailFunDef extends FunDefBase {
                 call, new Calc[] {listCalc, integerCalc})
             {
                 public TupleList evaluateList(Evaluator evaluator) {
-                    evaluator = evaluator.push(false);
+                    final int savepoint = evaluator.savepoint();
+                    evaluator.setNonEmpty(false);
                     TupleList list = listCalc.evaluateList(evaluator);
                     int count = integerCalc.evaluateInteger(evaluator);
+                    evaluator.restore(savepoint);
                     return head(count, list);
                 }
             };
@@ -69,9 +71,11 @@ class HeadTailFunDef extends FunDefBase {
                 call, new Calc[] {listCalc, integerCalc})
             {
                 public TupleList evaluateList(Evaluator evaluator) {
-                    evaluator = evaluator.push(false);
+                    final int savepoint = evaluator.savepoint();
+                    evaluator.setNonEmpty(false);
                     TupleList list = listCalc.evaluateList(evaluator);
                     int count = integerCalc.evaluateInteger(evaluator);
+                    evaluator.restore(savepoint);
                     return tail(count, list);
                 }
             };

@@ -42,7 +42,13 @@ class AvgFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[]{listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double) avg(evaluator.push(false), memberList, calc);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double avg =
+                    (Double) avg(
+                        evaluator, memberList, calc);
+                evaluator.restore(savepoint);
+                return avg;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

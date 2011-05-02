@@ -186,7 +186,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
         }
         LOGGER.debug("using native topcount");
-        evaluator = overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+        final int savepoint = evaluator.savepoint();
+        overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
 
         CrossJoinArg[] predicateArgs = null;
         if (allArgs.size() == 2) {
@@ -205,6 +206,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         TupleConstraint constraint =
             new TopCountConstraint(
                 count, combinedArgs, evaluator, orderByExpr, ascending);
+        evaluator.restore(savepoint);
         SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
         sev.setMaxRows(count);
         return sev;

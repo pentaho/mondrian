@@ -121,14 +121,17 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             }
             Map<List<Member>, Object> mapMemberToValue =
                 evaluateTuples(evaluator, calc, list);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             list = sortTuples(
-                evaluator.push(false),
+                evaluator,
                 list,
                 list,
                 calc,
                 top,
                 true,
                 getType().getArity());
+            evaluator.restore(savepoint);
             if (percent) {
                 toPercent(list, mapMemberToValue);
             }

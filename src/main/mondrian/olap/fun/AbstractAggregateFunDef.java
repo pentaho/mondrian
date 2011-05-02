@@ -66,14 +66,17 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * properties file.
      *
      * @param listCalc  calculator used to evaluate the member list
-     * @param evaluator current evalutor
+     * @param evaluator current evaluation context
      * @return list of evaluated members or tuples
      */
     protected static TupleList evaluateCurrentList(
         ListCalc listCalc,
         Evaluator evaluator)
     {
-        TupleList tuples = listCalc.evaluateList(evaluator.push(false));
+        final int savepoint = evaluator.savepoint();
+        evaluator.setNonEmpty(false);
+        TupleList tuples = listCalc.evaluateList(evaluator);
+        evaluator.restore(savepoint);
 
         int currLen = tuples.size();
         crossProd(evaluator, currLen);
@@ -85,25 +88,22 @@ public class AbstractAggregateFunDef extends FunDefBase {
         IterCalc iterCalc,
         Evaluator evaluator)
     {
-        TupleIterable iterable =
-            iterCalc.evaluateIterable(evaluator.push(false));
+        final int savepoint = evaluator.savepoint();
+        evaluator.setNonEmpty(false);
+        TupleIterable iterable = iterCalc.evaluateIterable(evaluator);
 
         int currLen = 0;
         crossProd(evaluator, currLen);
 
+        evaluator.restore(savepoint);
         return iterable;
     }
 
     private static void crossProd(Evaluator evaluator, int currLen) {
         long iterationLimit =
             MondrianProperties.instance().IterationLimit.get();
+        final int productLen = currLen * evaluator.getIterationLength();
         if (iterationLimit > 0) {
-            int productLen = currLen;
-            Evaluator parent = evaluator.getParent();
-            while (parent != null) {
-                productLen *= parent.getIterationLength();
-                parent = parent.getParent();
-            }
             if (productLen > iterationLimit) {
                 throw MondrianResource.instance()
                     .IterationLimitExceeded.ex(iterationLimit);

@@ -135,20 +135,22 @@ class FilterFunDef extends FunDefBase {
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push(false);
             TupleList list = lcalc.evaluateList(evaluator);
 
             // make list mutable; guess selectivity .5
-            TupleList members =
+            TupleList result =
                 TupleCollections.createList(list.getArity(), list.size() / 2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             TupleCursor cursor = list.tupleCursor();
             while (cursor.forward()) {
-                cursor.setContext(evaluator2);
-                if (bcalc.evaluateBoolean(evaluator2)) {
-                    members.addCurrent(cursor);
+                cursor.setContext(evaluator);
+                if (bcalc.evaluateBoolean(evaluator)) {
+                    result.addCurrent(cursor);
                 }
             }
-            return members;
+            evaluator.restore(savepoint);
+            return result;
         }
     }
 
@@ -163,19 +165,20 @@ class FilterFunDef extends FunDefBase {
             Calc[] calcs = getCalcs();
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
             TupleList members = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list
             TupleList result = members.cloneList(members.size() / 2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             TupleCursor cursor = members.tupleCursor();
             while (cursor.forward()) {
-                cursor.setContext(evaluator2);
-                if (bcalc.evaluateBoolean(evaluator2)) {
+                cursor.setContext(evaluator);
+                if (bcalc.evaluateBoolean(evaluator)) {
                     result.addCurrent(cursor);
                 }
             }
+            evaluator.restore(savepoint);
             return result;
         }
     }
@@ -194,12 +197,12 @@ class FilterFunDef extends FunDefBase {
             IterCalc icalc = (IterCalc) calcs[0];
             final BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            final Evaluator evaluator2 = evaluator.push(false);
-
             // This does dynamics, just in time,
             // as needed filtering
             final TupleIterable iterable =
                 icalc.evaluateIterable(evaluator);
+            final Evaluator evaluator2 = evaluator.push();
+            evaluator2.setNonEmpty(false);
             return new AbstractTupleIterable(iterable.getArity()) {
                 public TupleCursor tupleCursor() {
                     return new AbstractTupleCursor(iterable.getArity()) {
@@ -290,21 +293,22 @@ class FilterFunDef extends FunDefBase {
             Calc[] calcs = getCalcs();
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
             TupleList members0 = lcalc.evaluateList(evaluator);
 
             // make list mutable;
             // for capacity planning, guess selectivity = .5
-            TupleList members = members0.cloneList(members0.size() / 2);
+            TupleList result = members0.cloneList(members0.size() / 2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             final TupleCursor cursor = members0.tupleCursor();
             while (cursor.forward()) {
-                cursor.setContext(evaluator2);
-                if (bcalc.evaluateBoolean(evaluator2)) {
-                    members.addCurrent(cursor);
+                cursor.setContext(evaluator);
+                if (bcalc.evaluateBoolean(evaluator)) {
+                    result.addCurrent(cursor);
                 }
             }
-            return members;
+            evaluator.restore(savepoint);
+            return result;
         }
     }
 
@@ -319,21 +323,22 @@ class FilterFunDef extends FunDefBase {
             Calc[] calcs = getCalcs();
             ListCalc lcalc = (ListCalc) calcs[0];
             BooleanCalc bcalc = (BooleanCalc) calcs[1];
-
-            final Evaluator evaluator2 = evaluator.push(false);
             TupleList members0 = lcalc.evaluateList(evaluator);
 
             // Not mutable, must create new list;
             // for capacity planning, guess selectivity = .5
-            TupleList members = members0.cloneList(members0.size() / 2);
+            TupleList result = members0.cloneList(members0.size() / 2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             final TupleCursor cursor = members0.tupleCursor();
             while (cursor.forward()) {
-                cursor.setContext(evaluator2);
-                if (bcalc.evaluateBoolean(evaluator2)) {
-                    members.addCurrent(cursor);
+                cursor.setContext(evaluator);
+                if (bcalc.evaluateBoolean(evaluator)) {
+                    result.addCurrent(cursor);
                 }
             }
-            return members;
+            evaluator.restore(savepoint);
+            return result;
         }
     }
 }

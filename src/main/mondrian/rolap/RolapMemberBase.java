@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -80,6 +80,8 @@ public class RolapMemberBase
      * an immutable empty set.
      */
     private Map<String, Object> mapPropertyNameToValue;
+
+    private Boolean containsAggregateFunction = null;
 
     /**
      * Creates a RolapMemberBase.
@@ -1001,11 +1003,6 @@ public class RolapMemberBase
         }
     }
 
-    /*
-     * implement RolapCalcuation here, so we don't need
-     * the RolapMemberCalculation wrapper class anymore
-     */
-    private Boolean containsAggregateFunction = null;
     public boolean containsAggregateFunction() {
         // searching for agg functions is expensive, so cache result
         if (containsAggregateFunction == null) {
@@ -1046,18 +1043,15 @@ public class RolapMemberBase
         return getHierarchy().getOrdinalInCube();
     }
 
-    public RolapEvaluator pushSelf(RolapEvaluator evaluator) {
+    public void setContextIn(RolapEvaluator evaluator) {
         final RolapMember defaultMember =
             evaluator.root.defaultMembers[getHierarchyOrdinal()];
 
-        // This method does not need to call
-        // RolapEvaluator.removeCalcMember. That happens implicitly when
-        // push calls setContext.
-        final RolapEvaluator evaluator2 = evaluator.push(defaultMember);
-        evaluator2.setExpanding(this);
-        return evaluator2;
+        // This method does not need to call RolapEvaluator.removeCalcMember.
+        // That happens implicitly in setContext.
+        evaluator.setContext(defaultMember);
+        evaluator.setExpanding(this);
     }
-    // end RolapCalculation method implementations
 }
 
 // End RolapMemberBase.java

@@ -70,7 +70,7 @@ class RolapNamedSetEvaluator
     private void ensureList() {
         if (list != null) {
             if (list == DUMMY_LIST) {
-                throw rrer.slicerEvaluator.newEvalException(
+                throw rrer.result.slicerEvaluator.newEvalException(
                     null,
                     "Illegal attempt to reference value of named set '"
                     + namedSet.getName() + "' while evaluating itself");
@@ -82,15 +82,13 @@ class RolapNamedSetEvaluator
                 "Named set " + namedSet.getName() + ": starting evaluation");
         }
         list = DUMMY_LIST; // recursion detection
-        final RolapEvaluatorRoot root =
-            rrer.slicerEvaluator.root;
         final Calc calc =
-            root.getCompiled(namedSet.getExp(), false, ResultStyle.ITERABLE);
+            rrer.getCompiled(namedSet.getExp(), false, ResultStyle.ITERABLE);
         TupleIterable iterable =
             (TupleIterable)
             rrer.result.evaluateExp(
                 calc,
-                rrer.slicerEvaluator.push());
+                rrer.result.slicerEvaluator);
         final TupleList rawList;
 
         // Axes can be in two forms: list or iterable. If iterable, we

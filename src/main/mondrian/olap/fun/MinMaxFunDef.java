@@ -15,8 +15,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>Min</code> and <code>Max</code> MDX functions.
  *
@@ -58,10 +56,13 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double)
-                    (max
-                     ? max(evaluator.push(false), memberList, calc)
-                     : min(evaluator.push(false), memberList, calc));
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final Double d = (Double) (max
+                    ? max(evaluator, memberList, calc)
+                    : min(evaluator, memberList, calc));
+                evaluator.restore(savepoint);
+                return d;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

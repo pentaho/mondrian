@@ -15,8 +15,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>Median</code> MDX functions.
  *
@@ -44,8 +42,14 @@ class MedianFunDef extends AbstractAggregateFunDef {
             : new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
-                return percentile(evaluator.push(false), list, calc, 0.5);
+                final double percentile =
+                    percentile(
+                        evaluator, list, calc, 0.5);
+                evaluator.restore(savepoint);
+                return percentile;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

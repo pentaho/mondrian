@@ -14,8 +14,6 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>Percentile</code> MDX function.
  *
@@ -49,8 +47,12 @@ class PercentileFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
                 double percent = percentCalc.evaluateDouble(evaluator) * 0.01;
-                return percentile(
-                    evaluator.push(false), list, calc, percent);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double percentile =
+                    percentile(evaluator, list, calc, percent);
+                evaluator.restore(savepoint);
+                return percentile;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

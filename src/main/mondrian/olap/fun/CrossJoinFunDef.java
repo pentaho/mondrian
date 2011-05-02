@@ -182,12 +182,7 @@ public class CrossJoinFunDef extends FunDefBase {
             IterCalc calc1 = (IterCalc) calcs[0];
             IterCalc calc2 = (IterCalc) calcs[1];
 
-            Evaluator oldEval = null;
-            assert (oldEval = evaluator.push()) != null;
-
             TupleIterable o1 = calc1.evaluateIterable(evaluator);
-            assert oldEval.equals(evaluator) : "calc1 changed context";
-
             if (o1 instanceof TupleList) {
                 TupleList l1 = (TupleList) o1;
                 l1 = nonEmptyOptimizeList(evaluator, l1, call);
@@ -198,8 +193,6 @@ public class CrossJoinFunDef extends FunDefBase {
             }
 
             TupleIterable o2 = calc2.evaluateIterable(evaluator);
-            assert oldEval.equals(evaluator) : "calc2 changed context";
-
             if (o2 instanceof TupleList) {
                 TupleList l2 = (TupleList) o2;
                 l2 = nonEmptyOptimizeList(evaluator, l2, call);
@@ -357,22 +350,14 @@ public class CrossJoinFunDef extends FunDefBase {
             ListCalc listCalc1 = (ListCalc) calcs[0];
             ListCalc listCalc2 = (ListCalc) calcs[1];
 
-            Evaluator oldEval = null;
-            assert (oldEval = evaluator.push()) != null;
-
             TupleList l1 = listCalc1.evaluateList(evaluator);
-            assert oldEval.equals(evaluator) : "listCalc1 changed context";
-
             TupleList l2 = listCalc2.evaluateList(evaluator);
-            assert oldEval.equals(evaluator) : "listCalc2 changed context";
 
-            //l1 = checkList(evaluator, l1);
             l1 = nonEmptyOptimizeList(evaluator, l1, call);
             if (l1.isEmpty()) {
                 return TupleCollections.emptyList(
                     l1.getArity() + l2.getArity());
             }
-            //l2 = checkList(evaluator, l2);
             l2 = nonEmptyOptimizeList(evaluator, l2, call);
             if (l2.isEmpty()) {
                 return TupleCollections.emptyList(
@@ -748,11 +733,6 @@ public class CrossJoinFunDef extends FunDefBase {
      * Members (for Hierarchies that have no All Members) and evaluator
      * default Members did the element evaluate to non-null.
      *
-     *
-     * <p>This method can be applied to members or tuples. Accordingly, the
-     * type parameter {@code T} can be either {@code Member} or
-     * {@code Member[]}.
-     *
      * @param evaluator Evaluator
      *
      * @param list      List of members or tuples
@@ -902,13 +882,14 @@ public class CrossJoinFunDef extends FunDefBase {
                 {
                     // If the slicer contains multiple members from this one's
                     // hierarchy, add them to nonAllMemberList
-                    if (isSlicerMember
-                        && mapOfSlicerMembers.get(
-                            em.getHierarchy()).size() > 1)
-                    {
-                        nonAllMemberList.add(
-                            mapOfSlicerMembers.get(
-                                em.getHierarchy()).toArray(new Member[0]));
+                    if (isSlicerMember) {
+                        Set<Member> hierarchySlicerMembers =
+                            mapOfSlicerMembers.get(em.getHierarchy());
+                        if (hierarchySlicerMembers.size() > 1) {
+                            nonAllMemberList.add(
+                                hierarchySlicerMembers.toArray(
+                                    new Member[hierarchySlicerMembers.size()]));
+                        }
                     }
                     continue;
                 }
@@ -931,9 +912,8 @@ public class CrossJoinFunDef extends FunDefBase {
                             }
                         }
                         if (!found) {
-                            System.out
-                                .println(
-                                    "CrossJoinFunDef.nonEmptyListNEW: ERROR");
+                            System.out.println(
+                                "CrossJoinFunDef.nonEmptyListNEW: ERROR");
                         }
                     } else {
                         // The Hierarchy does NOT have an All member
@@ -955,9 +935,8 @@ public class CrossJoinFunDef extends FunDefBase {
         //
         // Determine if there is any data.
         //
-        evaluator = evaluator.push();
-
         // Put all of the All Members into Evaluator
+        final int savepoint = evaluator.savepoint();
         evaluator.setContext(allMemberList);
 
         // Iterate over elements of the input list. If for any combination of
@@ -973,6 +952,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
         }
 
+        evaluator.restore(savepoint);
         return result;
     }
 
@@ -1032,10 +1012,10 @@ public class CrossJoinFunDef extends FunDefBase {
     private static class StarCrossJoinResolver extends MultiResolver {
         public StarCrossJoinResolver() {
             super(
-                    "*",
-                    "<Set1> * <Set2>",
-                    "Returns the cross product of two sets.",
-                    new String[]{"ixxx", "ixmx", "ixxm", "ixmm"});
+                "*",
+                "<Set1> * <Set2>",
+                "Returns the cross product of two sets.",
+                new String[]{"ixxx", "ixmx", "ixxm", "ixmm"});
         }
 
         public FunDef resolve(

@@ -15,8 +15,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>Stdev</code> builtin MDX function, and its alias
  * <code>Stddev</code>.
@@ -56,8 +54,13 @@ class StdevFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double) stdev(
-                    evaluator.push(false), memberList, calc, false);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double stdev =
+                    (Double) stdev(
+                        evaluator, memberList, calc, false);
+                evaluator.restore(savepoint);
+                return stdev;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

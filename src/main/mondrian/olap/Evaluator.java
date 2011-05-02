@@ -45,76 +45,202 @@ public interface Evaluator {
     Date getQueryStartTime();
 
     /**
+     * Creates a savepoint encapsulating the current state of the evalutor.
+     * You can restore the evaluator to this state by calling
+     * {@link #restore(int)} with the value returned by this method.
+     *
+     * <p>This method is typically called before evaluating an expression which
+     * is known to corrupt the evaluation context.
+     *
+     * <p>Multiple savepoints may be active at the same time for the same
+     * evaluator. And, it is allowable to restore to the save savepoint more
+     * than once (or not at all). However, when you have rolled back to a
+     * particular savepoint you may not restore to a later savepoint.
+     *
+     * @return Evaluator with each given member overriding the state of the
+     *   current Evaluator for its hierarchy
+     */
+    int savepoint();
+
+    /**
      * Creates a new Evaluator with each given member overriding the context of
-     * the current Evaluator for its dimension. Other dimensions retain the
+     * the current Evaluator for its hierarchy. Other hierarchies retain the
      * same context as this Evaluator.
      *
-     * <p>You can retrieve this Evaluator by calling the new Evaluator's
-     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     * <p>In mondrian-3.3 and later, a more efficient way to save the state of
+     * an evaluator is to call {@link #savepoint} followed by
+     * {@link #restore(int)}. We recommend using those methods.
      *
      * @param members Array of members to add to the context
      * @return Evaluator with each given member overriding the state of the
-     *   current Evaluator for its dimension
+     *   current Evaluator for its hierarchy
+     *
+     * @deprecated Use {@link #savepoint()} followed by
+     *   {@link #setContext(Member[])}; will be removed in mondrian-4
      */
     Evaluator push(Member[] members);
 
     /**
      * Creates a new Evaluator with the same context as this evaluator.
-     * Equivalent to {@link #push(Member[]) push(new Member[0])}.
      *
      * <p>This method is typically called before evaluating an expression which
-     * is known to corrupt the evaluation context.
+     * may corrupt the evaluation context.
      *
-     * <p>You can retrieve this Evaluator by calling the new Evaluator's
-     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     * <p>In mondrian-3.3 and later, a more efficient way to save the state of
+     * an evaluator is to call {@link #savepoint} followed by
+     * {@link #restore(int)}. We recommend using those methods most of the time.
+     *
+     * <p>However, it makes sense to use this method in the constructor of an
+     * iterator. It allows the iterator to modify its evaluation context without
+     * affecting the evaluation context of the calling code. This behavior
+     * cannot be achieved using {@code savepoint}.
      *
      * @return Evaluator with each given member overriding the state of the
-     *   current Evaluator for its dimension
+     *   current Evaluator for its hierarchy
      */
     Evaluator push();
 
     /**
      * Creates a new Evaluator with the same context except for one member.
-     * Equivalent to
-     * {@link #push(Member[]) push(new Member[] &#124;member&#125;)}.
      *
-     * <p>You can retrieve this Evaluator by calling the new Evaluator's
-     * {@link #pop()} method, but it is not necessary to call <code>pop</code>.
+     * <p>This method is typically called before evaluating an expression which
+     * may corrupt the evaluation context.
+     *
+     * <p>In mondrian-3.3 and later, a more efficient way to save the state of
+     * an evaluator is to call {@link #savepoint} followed by
+     * {@link #restore(int)}. We recommend using those methods.
      *
      * @param member Member to add to the context
      * @return Evaluator with each given member overriding the state of the
-     *   current Evaluator for its dimension
+     *   current Evaluator for its hierarchy
+     *
+     * @deprecated Use {@link #savepoint()} followed by
+     *   {@link #setContext(Member)}; will be removed in mondrian-4
      */
     Evaluator push(Member member);
 
     /**
-     * Creates a new evaluator with the same state except nonEmpty property.
+     * Creates a new evaluator with the same state except nonEmpty property
+     *
+     * <p>In mondrian-3.3 and later, a more efficient way to save the state of
+     * an evaluator is to call {@link #savepoint} followed by
+     * {@link #restore(int)}. We recommend using those methods.
+     *
+     * @deprecated Use {@link #savepoint()} followed by
+     *     {@link #setNonEmpty(boolean)}; will be removed in mondrian-4
      */
     Evaluator push(boolean nonEmpty);
 
     /**
      * Creates a new evaluator with the same state except nonEmpty
      * and nativeEnabled properties.
+     *
+     * <p>In mondrian-3.3 and later, a more efficient way to save the state of
+     * an evaluator is to call {@link #savepoint} followed by
+     * {@link #restore(int)}. We recommend using those methods.
+     *
+     * @deprecated Use {@link #savepoint()} followed by
+     *     {@link #setNonEmpty(boolean)} and
+     *     {@link #setNativeEnabled(boolean)}; will be removed in mondrian-4.
      */
     Evaluator push(boolean nonEmpty, boolean nativeEnabled);
 
     /**
      * Restores previous evaluator.
+     *
+     * @param savepoint Savepoint returned by {@link #savepoint()}
      */
-    Evaluator pop();
+    void restore(int savepoint);
 
     /**
-     * Makes <code>member</code> the current member of its dimension. Returns
-     * the previous context.
+     * Makes <code>member</code> the current member of its hierarchy.
      *
-     * @pre member != null
-     * @post return != null
+     * @param member  New member
+     *
+     * @return Previous member of this hierarchy
      */
     Member setContext(Member member);
 
+    /**
+     * Makes <code>member</code> the current member of its hierarchy.
+     *
+     * <p>If {@code safe}, checks whether this is the first time that
+     * a member of this hierarchy has been changed since {@link #savepoint()}
+     * was called. If so, saves the previous member. If {@code safe} is false,
+     * never saves the previous member.
+     *
+     * <p>Use {@code safe = false} only if you are sure that the context has
+     * been set before. For example,
+     *
+     * <blockquote>
+     * <code>int n = 0;<br/>
+     * for (Member member : members) {<br/>
+     * &nbsp;&nbsp;evaluator.setContext(member, n++ &gt; 0);<br/>
+     * }<br/></code></blockquote>
+     *
+     * @param member  New member
+     * @param safe    Whether to store the member of this hierarchy that was
+     *                current last time that {@link #savepoint()} was called.
+     */
+    void setContext(Member member, boolean safe);
+
+    /**
+     * Sets the context to a list of members.
+     *
+     * <p>Equivalent to
+     *
+     * <blockquote><code>for (Member member : memberList) {<br/>
+     * &nbsp;&nbsp;setContext(member);<br/>
+     * }<br/></code></blockquote>
+     *
+     * @param memberList List of members
+     */
     void setContext(List<Member> memberList);
 
+    /**
+     * Sets the context to a list of members, optionally skipping the check
+     * whether it is necessary to store the previous member of each hierarchy.
+     *
+     * <p>Equivalent to
+     *
+     * <blockquote><code>for (Member member : memberList) {<br/>
+     * &nbsp;&nbsp;setContext(member, safe);<br/>
+     * }<br/></code></blockquote>
+     *
+     * @param memberList List of members
+     * @param safe    Whether to store the member of each hierarchy that was
+     *                current last time that {@link #savepoint()} was called.
+     */
+    void setContext(List<Member> memberList, boolean safe);
+
+    /**
+     * Sets the context to an array of members.
+     *
+     * <p>Equivalent to
+     *
+     * <blockquote><code>for (Member member : memberList) {<br/>
+     * &nbsp;&nbsp;setContext(member);<br/>
+     * }<br/></code></blockquote>
+     *
+     * @param members Array of members
+     */
     void setContext(Member[] members);
+
+    /**
+     * Sets the context to an array of members, optionally skipping the check
+     * whether it is necessary to store the previous member of each hierarchy.
+     *
+     * <p>Equivalent to
+     *
+     * <blockquote><code>for (Member member : memberList) {<br/>
+     * &nbsp;&nbsp;setContext(member, safe);<br/>
+     * }<br/></code></blockquote>
+     *
+     * @param members Array of members
+     * @param safe    Whether to store the member of each hierarchy that was
+     *                current last time that {@link #savepoint()} was called.
+     */
+    void setContext(Member[] members, boolean safe);
 
     Member getContext(Hierarchy hierarchy);
 
@@ -143,15 +269,16 @@ public interface Evaluator {
     String format(Object o, String formatString);
 
     /**
-     * Returns number of ancestor evaluators. Used to check for infinite
-     * loops.
+     * Obsolete method.
      *
-     * @post return getParent() == null ? 0 : getParent().getDepth() + 1
+     * @deprecated Will be removed in mondrian-4
      */
     int getDepth();
 
     /**
      * Returns parent evaluator.
+     *
+     * @deprecated Will be removed in mondrian-4
      */
     Evaluator getParent();
 
@@ -179,9 +306,9 @@ public interface Evaluator {
      * Simple caching of the result of an <code>Exp</code>. The
      * key for the cache consists of all members of the current
      * context that <code>exp</code> depends on. Members of
-     * independent dimensions are not part of the key.
+     * independent hierarchies are not part of the key.
      *
-     * @see mondrian.calc.Calc#dependsOn
+     * @see mondrian.calc.Calc#dependsOn(Hierarchy)
      */
     Object getCachedResult(ExpCacheDescriptor key);
 
@@ -277,7 +404,7 @@ public interface Evaluator {
 
     /**
      * Returns a new Aggregator whose aggregation context adds a given list of
-     * tuples, and whose dimensional context is the same as this
+     * tuples, and whose evaluation context is the same as this
      * Aggregator.
      *
      * @param list List of tuples
@@ -287,9 +414,11 @@ public interface Evaluator {
     Evaluator pushAggregation(List<List<Member>> list);
 
     /**
-     * Checks if unrelated dimensions to the measure in the current context
-     * should be ignored
-     * @return boolean
+     * Returns whether hierarchies unrelated to the measure in the current
+     * context should be ignored.
+     *
+     * @return whether hierarchies unrelated to the measure in the current
+     *     context should be ignored
      */
     boolean shouldIgnoreUnrelatedDimensions();
 
@@ -301,26 +430,44 @@ public interface Evaluator {
     Cube getMeasureCube();
 
     /**
+     * Returns whether it is necessary to check whether to return null for
+     * an unrelated dimension. If false, we never need to check: we can assume
+     * that {@link #needToReturnNullForUnrelatedDimension(mondrian.olap.Member[])}
+     * will always return false.
+     *
+     * @return whether it is necessary to check whether to return null for
+     * an unrelated dimension
+     */
+    boolean mightReturnNullForUnrelatedDimension();
+
+    /**
      * If IgnoreMeasureForNonJoiningDimension is set to true and one or more
      * members are on unrelated dimension for the measure in current context
      * then returns true.
-     * @param members
-     * dimensions for the members need to be checked whether
-     * related or unrelated
+     *
+     * <p>You must not call this method unless
+     * {@link #mightReturnNullForUnrelatedDimension()} has returned true.
+     *
+     * @param members Dimensions for the members need to be checked whether
+     *     related or unrelated
+     *
      * @return boolean
      */
     boolean needToReturnNullForUnrelatedDimension(Member[] members);
 
-     /**
-     * @param enabled indicates if native evaluation should be used
-     */
-    void setNativeEnabled(Boolean enabled);
-
     /**
-     * indicates whether native evaluation is enabled in this context
-     * @return boolean
+     * Returns whether native evaluation is enabled in this context.
+     *
+     * @return whether native evaluation is enabled in this context
      */
     boolean nativeEnabled();
+
+    /**
+     * Sets whether native evaluation should be used.
+     *
+     * @param nativeEnabled Whether native evaluation should be used
+     */
+   void setNativeEnabled(boolean nativeEnabled);
 
     /**
      * Returns whether the current context is an empty cell.
@@ -328,6 +475,15 @@ public interface Evaluator {
      * @return Whether the current context is an empty cell
      */
     boolean currentIsEmpty();
+
+    /**
+     * Returns the member that was the current evaluation context for a
+     * particular hierarchy before the most recent change in context.
+     *
+     * @param hierarchy Hierarchy
+     * @return Previous context member for given hierarchy
+     */
+    Member getPreviousContext(Hierarchy hierarchy);
 
     /**
      * Interface for evaluating a particular named set.

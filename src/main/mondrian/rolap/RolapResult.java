@@ -40,6 +40,7 @@ public class RolapResult extends ResultBase {
     static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
     private RolapEvaluator evaluator;
+    RolapEvaluator slicerEvaluator;
     private final CellKey point;
 
     private CellInfoContainer cellInfos;
@@ -223,6 +224,9 @@ public class RolapResult extends ResultBase {
             final List<List<Member>> emptyNonAllMembers =
                 Collections.emptyList();
 
+            // Initial evaluator, to execute slicer.
+            slicerEvaluator = evaluator.push();
+
             /////////////////////////////////////////////////////////////////
             // Determine Slicer
             //
@@ -255,6 +259,9 @@ public class RolapResult extends ResultBase {
                 replaceNonAllMembers(nonAllMembers, axisMembers);
                 axisMembers.clearMembers();
             }
+
+            // Save evaluator that has slicer as its context.
+            slicerEvaluator = evaluator.push();
 
             /////////////////////////////////////////////////////////////////
             // Determine Axes
@@ -290,13 +297,15 @@ public class RolapResult extends ResultBase {
                 // reset to total member count
                 axisMembers.clearTotalCellCount();
 
+                final int savepoint = evaluator.savepoint();
                 for (int i = 0; i < axes.length; i++) {
                     final QueryAxis axis = query.axes[i];
                     final Calc calc = query.axisCalcs[i];
                     loadMembers(
                         nonAllMembers,
-                        evaluator.push(),
+                        evaluator,
                         axis, calc, axisMembers);
+                    evaluator.restore(savepoint);
                 }
             }
 
@@ -360,17 +369,19 @@ public class RolapResult extends ResultBase {
                                 return pos0.size();
                             }
                         };
-                    slicerEvaluator = slicerEvaluator.push(
-                        new RolapTupleCalculation(hierarchyList, calc));
+                    evaluator.addCalculation(
+                        new RolapTupleCalculation(hierarchyList, calc), true);
                 }
             } while (batchingReader.loadAggregations(query));
 
             /////////////////////////////////////////////////////////////////
             // Execute Axes
             //
+            final int savepoint = evaluator.savepoint();
             do {
                 boolean redo;
                 do {
+                    evaluator.restore(savepoint);
                     redo = false;
                     for (int i = 0; i < axes.length; i++) {
                         RolapEvaluator e = slicerEvaluator.push();
@@ -380,7 +391,7 @@ public class RolapResult extends ResultBase {
                             evalExecute(
                                 nonAllMembers,
                                 nonAllMembers.size() - 1,
-                                e,
+                                evaluator,
                                 axis,
                                 calc);
 
@@ -414,6 +425,8 @@ public class RolapResult extends ResultBase {
                 } while (redo);
             } while (batchingReader.loadAggregations(query));
 
+            evaluator.restore(savepoint);
+
             // Get value for each Cell
             executeBody(slicerEvaluator, this.query, new int[axes.length]);
 
@@ -435,6 +448,7 @@ public class RolapResult extends ResultBase {
             // De-reference data structures that might be holding
             // partial results but surely are taking up memory.
             evaluator = null;
+            slicerEvaluator = null;
             cellInfos = null;
             batchingReader = null;
             for (int i = 0; i < axes.length; i++) {
@@ -571,7 +585,9 @@ public class RolapResult extends ResultBase {
         AxisMember axisMembers)
     {
         if (cnt < 0) {
-            executeAxis(evaluator.push(), axis, calc, false, axisMembers);
+            final int savepoint = evaluator.savepoint();
+            executeAxis(evaluator, axis, calc, false, axisMembers);
+            evaluator.restore(savepoint);
         } else {
             for (Member m : nonAllMembers.get(cnt)) {
                 evaluator.setContext(m);
@@ -590,7 +606,11 @@ public class RolapResult extends ResultBase {
     {
         final int arity = calc == null ? 0 : calc.getType().getArity();
         if (cnt < 0) {
-            return executeAxis(evaluator.push(), queryAxis, calc, true, null);
+            final int savepoint = evaluator.savepoint();
+            final TupleIterable axis =
+                executeAxis(evaluator, queryAxis, calc, true, null);
+            evaluator.restore(savepoint);
+            return axis;
             // No need to clear expression cache here as no new aggregates are
             // loaded(aggregatingReader reads from cache).
         } else {
@@ -713,38 +733,36 @@ public class RolapResult extends ResultBase {
         boolean construct,
         AxisMember axisMembers)
     {
-        TupleIterable iterable;
         if (queryAxis == null) {
             // Create an axis containing one position with no members (not
             // the same as an empty axis).
-            iterable =
-                new DelegatingTupleList(
-                    0,
-                    Collections.singletonList(Collections.<Member>emptyList()));
+            return new DelegatingTupleList(
+                0,
+                Collections.singletonList(Collections.<Member>emptyList()));
+        }
+        final int savepoint = evaluator.savepoint();
+        evaluator.setNonEmpty(queryAxis.isNonEmpty());
+        evaluator.setEvalAxes(true);
+        final TupleIterable iterable =
+            ((IterCalc) axisCalc).evaluateIterable(evaluator);
+        if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
+            queryAxis.setOrdered(true);
+        }
+        if (iterable instanceof TupleList) {
+            TupleList list = (TupleList) iterable;
+            if (construct) {
+            } else if (axisMembers != null) {
+                axisMembers.mergeTupleList(list);
+            }
         } else {
-            evaluator.setNonEmpty(queryAxis.isNonEmpty());
-            evaluator.setEvalAxes(true);
-            iterable = ((IterCalc) axisCalc).evaluateIterable(evaluator);
-            if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
-                queryAxis.setOrdered(true);
+            // Iterable
+            TupleCursor cursor = iterable.tupleCursor();
+            if (construct) {
+            } else if (axisMembers != null) {
+                axisMembers.mergeTupleIter(cursor);
             }
         }
-            evaluator.setNonEmpty(false);
-            if (iterable instanceof TupleList) {
-                TupleList list = (TupleList) iterable;
-                if (construct) {
-                } else if (axisMembers != null) {
-                    axisMembers.mergeTupleList(list);
-                }
-            } else {
-                // Iterable
-                TupleCursor cursor = iterable.tupleCursor();
-                if (construct) {
-                } else if (axisMembers != null) {
-                    axisMembers.mergeTupleIter(cursor);
-                }
-            }
-            evaluator.setEvalAxes(false);
+        evaluator.restore(savepoint);
         return iterable;
     }
 
@@ -758,7 +776,9 @@ public class RolapResult extends ResultBase {
         int count = 0;
         while (true) {
             evaluator.setCellReader(batchingReader);
-            executeStripe(query.axes.length - 1, evaluator.push(), pos);
+            final int savepoint = evaluator.savepoint();
+            executeStripe(query.axes.length - 1, evaluator, pos);
+            evaluator.restore(savepoint);
 
             // Retrieve the aggregations collected.
             //
@@ -801,18 +821,21 @@ public class RolapResult extends ResultBase {
     /**
      * Evaluates an expression. Intended for evaluating named sets.
      *
+     * <p>Does not modify the contents of the evaluator.
+     *
      * @param calc Compiled expression
      * @param evaluator Evaluation context
      * @return Result
      */
     Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
         int attempt = 0;
+        final int savepoint = evaluator.savepoint();
         boolean dirty = batchingReader.isDirty();
         while (true) {
-            RolapEvaluator ev = evaluator.push();
+            evaluator.restore(savepoint);
 
-            ev.setCellReader(batchingReader);
-            Object preliminaryValue = calc.evaluate(ev);
+            evaluator.setCellReader(batchingReader);
+            Object preliminaryValue = calc.evaluate(evaluator);
             if (preliminaryValue instanceof TupleIterable
                 && !(preliminaryValue instanceof TupleList))
             {
@@ -828,7 +851,7 @@ public class RolapResult extends ResultBase {
             } else {
                 // Clear invalid expression result so that the next evaluation
                 // will pick up the newly loaded aggregates.
-                ev.clearExpResultCache(false);
+                evaluator.clearExpResultCache(false);
             }
 
             if (attempt++ > maxEvalDepth) {
@@ -845,9 +868,11 @@ public class RolapResult extends ResultBase {
             batchingReader.setDirty(true);
         }
 
-        RolapEvaluator ev = evaluator.push();
-        ev.setCellReader(aggregatingReader);
-        return calc.evaluate(ev);
+        evaluator.restore(savepoint);
+        evaluator.setCellReader(aggregatingReader);
+        final Object o = calc.evaluate(evaluator);
+        evaluator.restore(savepoint);
+        return o;
     }
 
     private void executeStripe(
@@ -1142,23 +1167,8 @@ public class RolapResult extends ResultBase {
     }
 
     /**
-     * Called only by RolapCell.
-     *
-     * @param pos Coordinates of cell
-     * @return Evaluator whose context is the given cell
-     */
-    RolapEvaluator getCellEvaluator(int[] pos) {
-        final RolapEvaluator cellEvaluator = evaluator.push();
-        for (int i = 0; i < pos.length; i++) {
-            Position position = axes[i].getPositions().get(pos[i]);
-            cellEvaluator.setContext(position);
-        }
-        return cellEvaluator;
-    }
-
-    /**
      * Called only by RolapCell. Use this when creating an Evaluator
-     * (using method {@link #getCellEvaluator}) is not required.
+     * is not required.
      *
      * @param pos Coordinates of cell
      * @return Members which form the context of the given cell
@@ -1184,22 +1194,28 @@ public class RolapResult extends ResultBase {
         // Set up evaluator's context, so that context-dependent format
         // strings work properly.
         Evaluator cellEvaluator = evaluator.push();
+        populateEvaluator(cellEvaluator, pos);
+        return cellEvaluator;
+    }
+
+    void populateEvaluator(Evaluator evaluator, int[] pos) {
         for (int i = -1; i < axes.length; i++) {
             Axis axis;
             int index;
             if (i < 0) {
                 axis = slicerAxis;
+                if (axis.getPositions().isEmpty()) {
+                    continue;
+                }
                 index = 0;
             } else {
                 axis = axes[i];
                 index = pos[i];
             }
             Position position = axis.getPositions().get(index);
-            cellEvaluator.setContext(position);
+            evaluator.setContext(position);
         }
-        return cellEvaluator;
     }
-
 
     /**
      * Counts and collects Members found of the axes.
@@ -1353,10 +1369,6 @@ public class RolapResult extends ResultBase {
         private final Map<String, RolapNamedSetEvaluator> namedSetEvaluators =
             new HashMap<String, RolapNamedSetEvaluator>();
 
-        /**
-         * Evaluator containing context resulting from evaluating the slicer.
-         */
-        RolapEvaluator slicerEvaluator;
         final RolapResult result;
         private static final Object CycleSentinel = new Object();
         private static final Object NullSentinel = new Object();
@@ -1364,10 +1376,6 @@ public class RolapResult extends ResultBase {
         public RolapResultEvaluatorRoot(RolapResult result) {
             super(result.query);
             this.result = result;
-        }
-
-        protected void init(Evaluator evaluator) {
-            slicerEvaluator = (RolapEvaluator) evaluator;
         }
 
         protected Evaluator.NamedSetEvaluator evaluateNamedSet(
@@ -1435,8 +1443,9 @@ public class RolapResult extends ResultBase {
             }
             // Set value to a sentinel, so we can detect cyclic evaluation.
             slot.setCachedDefaultValue(CycleSentinel);
-            value = result.evaluateExp(
-                slot.getDefaultValueCalc(), slicerEvaluator.push());
+            value =
+                result.evaluateExp(
+                    slot.getDefaultValueCalc(), result.slicerEvaluator);
             if (value == null) {
                 liftedValue = NullSentinel;
             } else {

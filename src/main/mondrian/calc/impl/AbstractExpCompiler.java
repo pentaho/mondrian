@@ -396,7 +396,9 @@ public class AbstractExpCompiler implements ExpCompiler {
             TupleCalc tupleCalc = compileTuple(exp);
             final TupleValueCalc scalarCalc =
                 new TupleValueCalc(
-                new DummyExp(tupleType.getValueType()), tupleCalc);
+                    new DummyExp(tupleType.getValueType()),
+                    tupleCalc,
+                    getEvaluator().mightReturnNullForUnrelatedDimension());
             return scalarCalc.optimize();
         } else if (type instanceof ScalarType) {
             if (specific) {
@@ -424,9 +426,10 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     private Calc memberToScalar(MemberCalc memberCalc) {
         MemberType memberType = (MemberType) memberCalc.getType();
-        return new MemberValueCalc(
+        return MemberValueCalc.create(
             new DummyExp(memberType.getValueType()),
-            new MemberCalc[] {memberCalc});
+            new MemberCalc[] {memberCalc},
+            getEvaluator().mightReturnNullForUnrelatedDimension());
     }
 
     public ParameterSlot registerParameter(Parameter parameter) {

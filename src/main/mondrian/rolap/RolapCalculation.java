@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,13 +30,11 @@ import mondrian.calc.Calc;
 interface RolapCalculation {
     /**
      * Pushes this calculated member or tuple onto the stack of evaluation
-     * contexts, sets the context to the default member of the hierarchy,
-     * and returns the evaluator containing the new context.
+     * contexts, and sets the context to the default member of the hierarchy.
      *
-     * @param evaluator Current evaluator
-     * @return New evaluator
+     * @param evaluator Evaluator
      */
-    RolapEvaluator pushSelf(RolapEvaluator evaluator);
+    void setContextIn(RolapEvaluator evaluator);
 
     /**
      * Returns the solve order of this calculation. Identifies which order
@@ -56,6 +54,8 @@ interface RolapCalculation {
     /**
      * Returns whether this calculation is a member is computed from a
      * {@code WITH MEMBER} clause in an MDX query.
+     *
+     * @return whether this calculation is computed in an MDX query
      */
     boolean isCalculatedInQuery();
 

@@ -44,12 +44,13 @@ class OrderFunDef extends FunDefBase {
         final Calc expCalc = keySpecList.get(0).getKey();
         calcList[1] = expCalc;
         if (keySpecCount == 1) {
-            if (expCalc instanceof MemberValueCalc) {
-                MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
+            if (expCalc instanceof MemberValueCalc
+                || expCalc instanceof MemberArrayValueCalc)
+            {
                 List<MemberCalc> constantList = new ArrayList<MemberCalc>();
                 List<MemberCalc> variableList = new ArrayList<MemberCalc>();
                 final MemberCalc[] calcs =
-                    (MemberCalc[]) memberValueCalc.getCalcs();
+                    (MemberCalc[]) ((AbstractCalc) expCalc).getCalcs();
                 for (MemberCalc memberCalc : calcs) {
                     if (memberCalc instanceof ConstantCalc
                         && !listCalc.dependsOn(
@@ -74,10 +75,12 @@ class OrderFunDef extends FunDefBase {
                 } else {
                     // Some members are constant. Evaluate these before
                     // evaluating the list expression.
-                    calcList[1] = new MemberValueCalc(
+                    calcList[1] = MemberValueCalc.create(
                         new DummyExp(expCalc.getType()),
                         variableList.toArray(
-                            new MemberCalc[variableList.size()]));
+                            new MemberCalc[variableList.size()]),
+                        compiler.getEvaluator()
+                            .mightReturnNullForUnrelatedDimension());
                     return new ContextCalc(
                         constantList.toArray(
                             new MemberCalc[constantList.size()]),
@@ -163,18 +166,24 @@ class OrderFunDef extends FunDefBase {
                     : null;
             Util.discard(iterCalc.getResultStyle());
             Flag sortKeyDir = keySpecList.get(0).getDirection();
+            final TupleList tupleList;
+            final int savepoint = subEvaluator.savepoint();
+            subEvaluator.setNonEmpty(false);
             if (arity == 1) {
-                return new UnaryTupleList(
-                    sortMembers(
-                        subEvaluator.push(false),
-                        iterable.slice(0),
-                        list == null ? null : list.slice(0),
-                        sortKeyCalc,
-                        sortKeyDir.descending,
-                        sortKeyDir.brk));
+                tupleList =
+                    new UnaryTupleList(
+                        sortMembers(
+                            subEvaluator,
+                            iterable.slice(0),
+                            list == null
+                                ? null
+                                : list.slice(0),
+                            sortKeyCalc,
+                            sortKeyDir.descending,
+                            sortKeyDir.brk));
             } else {
-                return sortTuples(
-                    subEvaluator.push(false),
+                tupleList = sortTuples(
+                    subEvaluator,
                     iterable,
                     list,
                     sortKeyCalc,
@@ -182,6 +191,8 @@ class OrderFunDef extends FunDefBase {
                     sortKeyDir.brk,
                     arity);
             }
+            subEvaluator.restore(savepoint);
+            return tupleList;
         }
 
         public TupleList evaluateList(Evaluator evaluator) {
@@ -196,45 +207,59 @@ class OrderFunDef extends FunDefBase {
             // go by size of keySpecList before purging
             if (originalKeySpecCount == 1) {
                 Flag sortKeyDir = keySpecList.get(0).getDirection();
+                final TupleList tupleList;
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 if (arity == 1) {
-                    return new UnaryTupleList(
-                        sortMembers(
-                            evaluator.push(false),
-                            iterable.slice(0),
-                            list == null ? null : list.slice(0),
+                    tupleList =
+                        new UnaryTupleList(
+                            sortMembers(
+                                evaluator,
+                                iterable.slice(0),
+                                list == null ? null : list.slice(0),
+                                sortKeyCalc,
+                                sortKeyDir.descending,
+                                sortKeyDir.brk));
+                } else {
+                    tupleList =
+                        sortTuples(
+                            evaluator,
+                            iterable,
+                            list,
                             sortKeyCalc,
                             sortKeyDir.descending,
-                            sortKeyDir.brk));
-                } else {
-                    return sortTuples(
-                        evaluator.push(false),
-                        iterable,
-                        list,
-                        sortKeyCalc,
-                        sortKeyDir.descending,
-                        sortKeyDir.brk,
-                        arity);
+                            sortKeyDir.brk,
+                            arity);
                 }
+                evaluator.restore(savepoint);
+                return tupleList;
             } else {
                 purgeKeySpecList(keySpecList, list);
                 if (keySpecList.isEmpty()) {
                     return list;
                 }
+                final TupleList tupleList;
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 if (arity == 1) {
-                    return new UnaryTupleList(
-                        sortMembers(
-                            evaluator.push(false),
-                            iterable.slice(0),
-                            list == null ? null : list.slice(0),
-                            keySpecList));
+                    tupleList =
+                        new UnaryTupleList(
+                            sortMembers(
+                                evaluator,
+                                iterable.slice(0),
+                                list == null ? null : list.slice(0),
+                                keySpecList));
                 } else {
-                    return sortTuples(
-                        evaluator.push(false),
-                        iterable,
-                        list,
-                        keySpecList,
-                        arity);
+                    tupleList =
+                        sortTuples(
+                            evaluator,
+                            iterable,
+                            list,
+                            keySpecList,
+                            arity);
                 }
+                evaluator.restore(savepoint);
+                return tupleList;
             }
         }
 

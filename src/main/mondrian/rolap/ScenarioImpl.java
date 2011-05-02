@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -226,10 +226,11 @@ public final class ScenarioImpl implements Scenario {
      * @return Number of atomic cells in the current cell
      */
     private static double evaluateAtomicCellCount(RolapEvaluator evaluator) {
-        final Object o =
-            evaluator.push(
-                evaluator.getCube().getAtomicCellCountMeasure())
-                .evaluateCurrent();
+        final int savepoint = evaluator.savepoint();
+        evaluator.setContext(
+            evaluator.getCube().getAtomicCellCountMeasure());
+        final Object o = evaluator.evaluateCurrent();
+        evaluator.restore(savepoint);
         return ((Number) o).doubleValue();
     }
 
@@ -481,14 +482,13 @@ public final class ScenarioImpl implements Scenario {
             // First, evaluate in the null scenario.
             final Member defaultMember =
                 scenario.member.getHierarchy().getDefaultMember();
-            final Evaluator evaluator1 = evaluator.push(defaultMember);
-            final Object o = evaluator1.evaluateCurrent();
+            final int savepoint = evaluator.savepoint();
+            evaluator.setContext(defaultMember);
+            final Object o = evaluator.evaluateCurrent();
             double d =
                 o instanceof Number
                     ? ((Number) o).doubleValue()
                     : 0d;
-
-            final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator1;
 
             // Look for writeback cells which are equal to, ancestors of, or
             // descendants of, the current cell. Modify the value accordingly.
@@ -500,13 +500,13 @@ public final class ScenarioImpl implements Scenario {
                 : scenario.writebackCells)
             {
                 CellRelation relation =
-                    writebackCell.getRelationTo(evaluator1.getMembers());
+                    writebackCell.getRelationTo(evaluator.getMembers());
                 switch (relation) {
                 case ABOVE:
                     // This cell is below the writeback cell. Value is
                     // determined by allocation policy.
                     double atomicCellCount =
-                        evaluateAtomicCellCount(rolapEvaluator);
+                        evaluateAtomicCellCount((RolapEvaluator) evaluator);
                     if (atomicCellCount == 0d) {
                         // Sometimes the value comes back zero if the cache is
                         // not ready. Switch to 1, which at least does not give
@@ -550,6 +550,8 @@ public final class ScenarioImpl implements Scenario {
                     throw Util.unexpected(relation);
                 }
             }
+
+            evaluator.restore(savepoint);
 
             // Don't create a new object if value has not changed.
             if (changeCount == 0) {

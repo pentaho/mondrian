@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -67,7 +67,8 @@ public class SqlContextConstraint
     public static boolean isValidContext(
         Evaluator context,
         boolean disallowVirtualCube,
-        Level [] levels, boolean strict)
+        Level [] levels,
+        boolean strict)
     {
         if (context == null) {
             return false;
@@ -211,7 +212,7 @@ public class SqlContextConstraint
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
-        this.evaluator = evaluator;
+        this.evaluator = evaluator.push();
         this.strict = strict;
         cacheKey = new ArrayList<Object>();
         cacheKey.add(getClass());
@@ -248,8 +249,11 @@ public class SqlContextConstraint
         if (parent.isCalculated()) {
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
-        Evaluator e = evaluator.push(parent);
-        SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
+        final int savepoint = evaluator.savepoint();
+        evaluator.setContext(parent);
+        SqlConstraintUtils.addContextConstraint(
+            sqlQuery, aggStar, evaluator, strict);
+        evaluator.restore(savepoint);
 
         // comment out addMemberConstraint here since constraint
         // is already added by addContextConstraint

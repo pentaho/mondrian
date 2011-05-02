@@ -383,7 +383,7 @@ public class FunUtil extends Util {
         boolean parentsToo)
     {
         // REVIEW: is this necessary?
-        evaluator = evaluator.push();
+        final int savepoint = evaluator.savepoint();
 
         assert exp.getType() instanceof ScalarType;
         Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
@@ -410,6 +410,7 @@ public class FunUtil extends Util {
                 }
             }
         }
+        evaluator.restore(savepoint);
         return mapMemberToValue;
     }
 
@@ -429,7 +430,7 @@ public class FunUtil extends Util {
         Calc exp,
         TupleList tuples)
     {
-        evaluator = evaluator.push();
+        final int savepoint = evaluator.savepoint();
 
         assert exp.getType() instanceof ScalarType;
         final Map<List<Member>, Object> mapMemberToValue =
@@ -443,6 +444,7 @@ public class FunUtil extends Util {
             }
             mapMemberToValue.put(tuple, result);
         }
+        evaluator.restore(savepoint);
         return mapMemberToValue;
     }
 
@@ -672,8 +674,9 @@ public class FunUtil extends Util {
     {
         if (tupleList == null) {
             tupleList = TupleCollections.createList(arity);
-            for (List<Member> tuple : tupleIter) {
-                tupleList.add(tuple);
+            TupleCursor cursor = tupleIter.tupleCursor();
+            while (cursor.forward()) {
+                tupleList.addCurrent(cursor);
             }
         }
         if (tupleList.size() <= 1) {
@@ -1301,8 +1304,11 @@ public class FunUtil extends Util {
         Calc exp2,
         boolean biased)
     {
-        SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
-        SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
+        final int savepoint = evaluator.savepoint();
+        SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
+        evaluator.restore(savepoint);
+        SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
+        evaluator.restore(savepoint);
         // todo: because evaluateSet does not add nulls to the SetWrapper, this
         // solution may lead to mismatched lists and is therefore not robust
         return _covariance(sw1, sw2, biased);
@@ -2814,7 +2820,7 @@ public class FunUtil extends Util {
 
         public int compare(List<Member> a1, List<Member> a2) {
             int c = 0;
-            evaluator = evaluator.push();
+            final int savepoint = evaluator.savepoint();
             for (int i = 0; i < arity; i++) {
                 Member m1 = a1.get(i), m2 = a2.get(i);
                 c = compareHierarchicallyButSiblingsByValue(m1, m2);
@@ -2825,7 +2831,7 @@ public class FunUtil extends Util {
                 assert m1.equals(m2);
                 evaluator.setContext(m1);
             }
-            evaluator = evaluator.pop();
+            evaluator.restore(savepoint);
             return c;
         }
 
@@ -2867,13 +2873,13 @@ public class FunUtil extends Util {
 
         private int compareByValue(Member m1, Member m2) {
             int c;
-            Member old = evaluator.setContext(m1);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setContext(m1);
             Object v1 = calc.evaluate(evaluator);
             evaluator.setContext(m2);
             Object v2 = calc.evaluate(evaluator);
-            // important to restore the evaluator state -- and this is faster
-            // than calling evaluator.push()
-            evaluator.setContext(old);
+            // important to restore the evaluator state
+            evaluator.restore(savepoint);
             c = FunUtil.compareValues(v1, v2);
             return c;
         }

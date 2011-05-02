@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -48,16 +48,14 @@ class RolapMemberCalculation implements RolapCalculation {
             && member == ((RolapMemberCalculation) obj).member;
     }
 
-    public RolapEvaluator pushSelf(RolapEvaluator evaluator) {
+    public void setContextIn(RolapEvaluator evaluator) {
         final RolapMember defaultMember =
             evaluator.root.defaultMembers[getHierarchyOrdinal()];
 
-        // This method does not need to call
-        // RolapEvaluator.removeCalcMember. That happens implicitly when
-        // push calls setContext.
-        final RolapEvaluator evaluator2 = evaluator.push(defaultMember);
-        evaluator2.setExpanding(member);
-        return evaluator2;
+        // This method does not need to call RolapEvaluator.removeCalcMember.
+        // That happens implicitly in setContext.
+        evaluator.setContext(defaultMember);
+        evaluator.setExpanding(member);
     }
 
     public int getSolveOrder() {

@@ -4496,7 +4496,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:XxxDiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
             <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
@@ -6018,7 +6018,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Extract</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set of tuples from
-                            extracted dimension elements. The opposite
+                            extracted hierarchy elements. The opposite
                             of Crossjoin.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
@@ -8877,7 +8877,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                 </root>
             </cxmla:return>
-        </cxmla:XxxDiscoverResponse>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>

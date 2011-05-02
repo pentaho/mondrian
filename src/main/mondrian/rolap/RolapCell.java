@@ -201,10 +201,6 @@ public class RolapCell implements Cell {
              : visitor.cube;
     }
 
-    private RolapEvaluator getEvaluator() {
-        return result.getCellEvaluator(pos);
-    }
-
     private Member[] getMembersForDrillThrough() {
         final Member[] currentMembers = result.getCellMembers(pos);
 
@@ -359,7 +355,14 @@ public class RolapCell implements Cell {
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
                 if (ci.formatString == null) {
-                    ci.formatString = getEvaluator().getFormatString();
+                    final Evaluator evaluator = result.getRootEvaluator();
+                    final int savepoint = evaluator.savepoint();
+                    try {
+                        result.populateEvaluator(evaluator, pos);
+                        ci.formatString = evaluator.getFormatString();
+                    } finally {
+                        evaluator.restore(savepoint);
+                    }
                 }
                 return ci.formatString;
             case Property.FORMATTED_VALUE_ORDINAL:
@@ -374,7 +377,14 @@ public class RolapCell implements Cell {
                 // fall through
             }
         }
-        return getEvaluator().getProperty(propertyName, defaultValue);
+        final Evaluator evaluator = result.getRootEvaluator();
+        final int savepoint = evaluator.savepoint();
+        try {
+            result.populateEvaluator(evaluator, pos);
+            return evaluator.getProperty(propertyName, defaultValue);
+        } finally {
+            evaluator.restore(savepoint);
+        }
     }
 
     public Member getContextMember(Hierarchy hierarchy) {

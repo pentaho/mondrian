@@ -128,14 +128,17 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                     }
                     List<Member> children =
                         schemaReader.getMemberChildren(member);
+                    final int savepoint = evaluator.savepoint();
+                    evaluator.setNonEmpty(false);
                     final List<Member> sortedChildren =
                         sortMembers(
-                            evaluator.push(false),
+                            evaluator,
                             children,
                             children,
                             orderCalc,
                             top,
                             true);
+                    evaluator.restore(savepoint);
                     int x = Math.min(n, sortedChildren.size());
                     for (int i = 0; i < x; i++) {
                         result.add(sortedChildren.get(i));

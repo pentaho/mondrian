@@ -18,8 +18,6 @@ import mondrian.olap.fun.AbstractAggregateFunDef;
 import mondrian.olap.fun.MultiResolver;
 import mondrian.olap.fun.ReflectiveMultiResolver;
 
-import java.util.List;
-
 /**
  * Definition of the <code>FirstQ</code> and <code>ThirdQ</code> MDX extension
  * functions.
@@ -63,9 +61,14 @@ public class NthQuartileFunDef extends AbstractAggregateFunDef {
             : new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
             public double evaluateDouble(Evaluator evaluator) {
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 TupleList members = evaluateCurrentList(listCalc, evaluator);
-                return quartile(
-                    evaluator.push(false), members, doubleCalc, range);
+                final double quartile =
+                    quartile(
+                        evaluator, members, doubleCalc, range);
+                evaluator.restore(savepoint);
+                return quartile;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

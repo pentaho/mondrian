@@ -19,8 +19,17 @@ import java.util.*;
  * <h2>Design notes</h2>
  *
  * <ul>
- * </ul>
  *
+ * <li>Consider changing
+ * {@link TupleCalc#evaluateTuple(mondrian.olap.Evaluator)}
+ * and {@link mondrian.olap.Evaluator.NamedSetEvaluator#currentTuple()}
+ * to List&lt;Member&gt;</li>
+ *
+ * <li>Search for potential uses of {@link TupleList#get(int, int)}</li>
+ *
+ * <li>Worth creating {@link TupleList}.addAll(TupleIterator)?</li>
+ *
+ * </ul>
  *
  * @version $Id$
  * @author jhyde

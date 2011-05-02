@@ -323,37 +323,39 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * Override current members in position by default members in
+     * Overrides current members in position by default members in
      * hierarchies which are involved in this filter/topcount.
      * Stores the RolapStoredMeasure into the context because that is needed to
      * generate a cell request to constraint the sql.
      *
-     * The current context may contain a calculated measure, this measure
+     * <p>The current context may contain a calculated measure, this measure
      * was translated into an sql condition (filter/topcount). The measure
      * is not used to constrain the result but only to access the star.
      *
+     * @param evaluator Evaluation context to modify
+     * @param cargs Cross join arguments
+     * @param storedMeasure Stored measure
+     *
      * @see RolapAggregationManager#makeRequest(RolapEvaluator)
      */
-    protected RolapEvaluator overrideContext(
+    protected void overrideContext(
         RolapEvaluator evaluator,
         CrossJoinArg[] cargs,
         RolapStoredMeasure storedMeasure)
     {
         SchemaReader schemaReader = evaluator.getSchemaReader();
-        RolapEvaluator newEvaluator = evaluator.push();
         for (CrossJoinArg carg : cargs) {
             RolapLevel level = carg.getLevel();
             if (level != null) {
                 Hierarchy hierarchy = level.getHierarchy();
                 Member defaultMember =
                     schemaReader.getHierarchyDefaultMember(hierarchy);
-                newEvaluator.setContext(defaultMember);
+                evaluator.setContext(defaultMember);
             }
         }
         if (storedMeasure != null) {
-            newEvaluator.setContext(storedMeasure);
+            evaluator.setContext(storedMeasure);
         }
-        return newEvaluator;
     }
 
 

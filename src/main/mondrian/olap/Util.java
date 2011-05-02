@@ -102,6 +102,13 @@ public class Util extends XOMUtil {
 
     private static final UtilCompatible compatible;
 
+    /**
+     * Flag to control expensive debugging. (More expensive than merely
+     * enabling assertions: as we know, a lot of people run with assertions
+     * enabled.)
+     */
+    public static final boolean DEBUG = false;
+
     static {
         String className;
         if (PreJdk15 || Retrowoven) {

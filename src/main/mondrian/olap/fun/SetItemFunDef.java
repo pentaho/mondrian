@@ -120,9 +120,12 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setNonEmpty(false);
                         final TupleList list =
-                            listCalc.evaluateList(evaluator.push(false));
+                            listCalc.evaluateList(evaluator);
                         assert list != null;
+                        evaluator.restore(savepoint);
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
                             results[i] =
@@ -148,9 +151,12 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setNonEmpty(false);
                         final TupleList list =
-                            listCalc.evaluateList(evaluator.push(false));
+                            listCalc.evaluateList(evaluator);
                         assert list != null;
+                        evaluator.restore(savepoint);
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
                         if (index >= listSize || index < 0) {
@@ -168,13 +174,14 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setNonEmpty(false);
                         final List<Member> list =
-                            listCalc
-                                .evaluateList(evaluator.push(false))
-                                .slice(0);
+                            listCalc.evaluateList(evaluator).slice(0);
                         assert list != null;
+                        evaluator.restore(savepoint);
                         final String result =
-                                stringCalcs[0].evaluateString(evaluator);
+                            stringCalcs[0].evaluateString(evaluator);
                         for (Member member : list) {
                             if (matchMember(member, result)) {
                                 return member;
@@ -186,11 +193,12 @@ class SetItemFunDef extends FunDefBase {
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setNonEmpty(false);
                         final List<Member> list =
-                            listCalc
-                                .evaluateList(evaluator.push(false))
-                                .slice(0);
+                            listCalc.evaluateList(evaluator).slice(0);
                         assert list != null;
+                        evaluator.restore(savepoint);
                         final int index = indexCalc.evaluateInteger(evaluator);
                         int listSize = list.size();
                         if (index >= listSize || index < 0) {

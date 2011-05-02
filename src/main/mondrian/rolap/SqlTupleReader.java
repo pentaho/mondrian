@@ -49,7 +49,8 @@ import java.util.*;
  *
  * <li>When reading members from a single level, then the constraint is not
  * required to join the fact table in
- * {@link TupleConstraint#addLevelConstraint} although it may do so to restrict
+ * {@link TupleConstraint#addLevelConstraint(mondrian.rolap.sql.SqlQuery, RolapCube, mondrian.rolap.aggmatcher.AggStar, RolapLevel)}
+ * although it may do so to restrict
  * the result. Also it is permitted to cache the parent/children from all
  * members in MemberCache, so
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
@@ -84,16 +85,8 @@ public class SqlTupleReader implements TupleReader {
     private static final String UNION = " union ";
 
     /**
-     * <p>
-     * helper class for SqlTupleReader
-     *  {@link mondrian.rolap.SqlTupleReader}
-     * Keeps track of target levels and constraints for adding to sql query
-     *
-     * </p>
-     *
-     * @author av
-     * @since Nov 11, 2005
-     * @version $Id$
+     * Helper class for SqlTupleReader;
+     * keeps track of target levels and constraints for adding to sql query.
      */
     private class Target extends TargetBase {
         final MemberCache cache;
@@ -537,7 +530,6 @@ public class SqlTupleReader implements TupleReader {
         }
         List<Member> members = new ArrayList<Member>();
         while (iter[0].hasNext()) {
-            RolapMember[] tuples = new RolapMember[n];
             for (int i = 0; i < n; i++) {
                 members.add(iter[i].next());
             }

@@ -376,13 +376,16 @@ public abstract class LinReg extends FunDefBase {
         DoubleCalc yCalc,
         DoubleCalc xCalc)
     {
-        TupleList members = listCalc.evaluateList(evaluator.push(false));
+        final int savepoint = evaluator.savepoint();
+        evaluator.setNonEmpty(false);
+        TupleList members = listCalc.evaluateList(evaluator);
 
-        evaluator = evaluator.push();
+        evaluator.restore(savepoint);
 
         SetWrapper[] sws =
             evaluateSet(
                 evaluator, members, new DoubleCalc[] {yCalc, xCalc});
+        evaluator.restore(savepoint);
         SetWrapper swY = sws[0];
         SetWrapper swX = sws[1];
 

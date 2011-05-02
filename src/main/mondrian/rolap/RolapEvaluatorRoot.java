@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,6 +57,11 @@ class RolapEvaluatorRoot {
     final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
 
     /**
+     * The size of the command stack at which we will next check for recursion.
+     */
+    int recursionCheckCommandCount;
+
+    /**
      * Creates a RolapEvaluatorRoot.
      *
      * @param query Query
@@ -102,6 +107,8 @@ class RolapEvaluatorRoot {
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =
             DialectManager.createDialect(schemaReader.getDataSource(), null);
+
+        this.recursionCheckCommandCount = (defaultMembers.length << 4);
     }
 
     /**
@@ -190,12 +197,6 @@ class RolapEvaluatorRoot {
         boolean create)
     {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * First evaluator calls this method on construction.
-     */
-    protected void init(Evaluator evaluator) {
     }
 
     /**

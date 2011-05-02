@@ -134,20 +134,26 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 // normal case: no need for chunks
+                final int savepoint = evaluator.savepoint();
                 switch (list.getArity()) {
                 case 1:
-                    return new UnaryTupleList(
+                    final List<Member> members =
                         partiallySortMembers(
                             evaluator.push(),
                             list.slice(0),
-                            orderCalc, n, top));
+                            orderCalc, n, top);
+                    evaluator.restore(savepoint);
+                    return new UnaryTupleList(members);
                 default:
-                    return new DelegatingTupleList(
-                        list.getArity(),
+                    final List<List<Member>> tuples =
                         partiallySortTuples(
                             evaluator.push(),
                             list,
-                            orderCalc, n, top));
+                            orderCalc, n, top);
+                    evaluator.restore(savepoint);
+                    return new DelegatingTupleList(
+                        list.getArity(),
+                        tuples);
                 }
             }
 

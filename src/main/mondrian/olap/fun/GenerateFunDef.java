@@ -106,29 +106,31 @@ class GenerateFunDef extends FunDefBase {
         }
 
         public TupleList evaluateList(Evaluator evaluator) {
-            evaluator = evaluator.push(false);
-            // 4 cases - all of the combinations of tupleIn x all
-            final Evaluator evaluator2 = evaluator.push();
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
             final TupleIterable iterable1 =
                 iterCalc1.evaluateIterable(evaluator);
+            evaluator.restore(savepoint);
             TupleList result = TupleCollections.createList(arityOut);
             if (all) {
-                for (List<Member> members : iterable1) {
-                    evaluator2.setContext(members);
-                    final TupleList result2 =
-                        listCalc2.evaluateList(evaluator2);
+                final TupleCursor cursor = iterable1.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    final TupleList result2 = listCalc2.evaluateList(evaluator);
                     result.addAll(result2);
                 }
             } else {
                 final Set<List<Member>> emitted =
                     new HashSet<List<Member>>();
-                for (List<Member> members : iterable1) {
-                    evaluator2.setContext(members);
+                final TupleCursor cursor = iterable1.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
                     final TupleList result2 =
-                        listCalc2.evaluateList(evaluator2);
+                        listCalc2.evaluateList(evaluator);
                     addDistinctTuples(result, result2, emitted);
                 }
             }
+            evaluator.restore(savepoint);
             return result;
         }
 
@@ -172,17 +174,19 @@ class GenerateFunDef extends FunDefBase {
             int k = 0;
             final TupleIterable iter11 =
                 iterCalc.evaluateIterable(evaluator);
-            final Evaluator evaluator2 = evaluator.push();
-            for (List<Member> members : iter11) {
-                evaluator2.setContext(members);
+            final int savepoint = evaluator.savepoint();
+            final TupleCursor cursor = iter11.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator);
                 if (k++ > 0) {
-                    String sep = sepCalc.evaluateString(evaluator2);
+                    String sep = sepCalc.evaluateString(evaluator);
                     buf.append(sep);
                 }
                 final String result2 =
-                    stringCalc.evaluateString(evaluator2);
+                    stringCalc.evaluateString(evaluator);
                 buf.append(result2);
             }
+            evaluator.restore(savepoint);
             return buf.toString();
         }
 

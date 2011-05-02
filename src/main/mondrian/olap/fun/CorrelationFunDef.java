@@ -15,8 +15,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>Correlation</code> MDX function.
  *
@@ -50,9 +48,14 @@ class CorrelationFunDef extends AbstractAggregateFunDef {
             call, new Calc[] {listCalc, calc1, calc2})
         {
             public double evaluateDouble(Evaluator evaluator) {
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
-                return correlation(
-                    evaluator.push(false), list, calc1, calc2);
+                final double correlation =
+                    correlation(
+                        evaluator, list, calc1, calc2);
+                evaluator.restore(savepoint);
+                return correlation;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

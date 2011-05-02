@@ -55,9 +55,10 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private RolapDependencyTestingEvaluator(
         RolapEvaluatorRoot root,
-        RolapDependencyTestingEvaluator evaluator)
+        RolapDependencyTestingEvaluator evaluator,
+        List<List<Member>> aggregationList)
     {
-        super(root, evaluator);
+        super(root, evaluator, aggregationList);
     }
 
     public Object evaluate(
@@ -149,8 +150,8 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         return result;
     }
 
-    public RolapEvaluator _push() {
-        return new RolapDependencyTestingEvaluator(root, this);
+    public RolapEvaluator _push(List<List<Member>> aggregationList) {
+        return new RolapDependencyTestingEvaluator(root, this, aggregationList);
     }
 
     private boolean equals(Object o1, Object o2) {

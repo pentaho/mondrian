@@ -2386,7 +2386,8 @@ public class NonEmptyTest extends BatchTestCase {
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
-        lmc = scf.getLevelMembersConstraint(context.push(true));
+        context.setNonEmpty(true);
+        lmc = scf.getLevelMembersConstraint(context);
         List<RolapMember> list =
             smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
@@ -2406,7 +2407,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc));
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
-        mcc = scf.getMemberChildrenConstraint(context.push(true));
+        mcc = scf.getMemberChildrenConstraint(context);
         list = smrich.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
@@ -2448,7 +2449,8 @@ public class NonEmptyTest extends BatchTestCase {
             assertEquals(10281, list.size());
         }
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
-        lmc = scf.getLevelMembersConstraint(context.push(true));
+        context.setNonEmpty(true);
+        lmc = scf.getLevelMembersConstraint(context);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
 
         // make sure that the parent/child for the context are cached
@@ -2467,7 +2469,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertTrue(list.contains(member));
 
         // lookup NON EMPTY children of [Burlingame] -> not in cache
-        mcc = scf.getMemberChildrenConstraint(context.push(true));
+        mcc = scf.getMemberChildrenConstraint(context);
         list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNull(list);
     }
@@ -2644,7 +2646,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get(burlingame, mcc));
         // but non empty children is
         Evaluator evaluator = getEvaluator(result, new int[] {0, 0});
-        mcc = scf.getMemberChildrenConstraint(evaluator.push(true));
+        evaluator.setNonEmpty(true);
+        mcc = scf.getMemberChildrenConstraint(evaluator);
         List<RolapMember> list =
             ssmrch.mapMemberToChildren.get(burlingame, mcc);
         assertNotNull(list);

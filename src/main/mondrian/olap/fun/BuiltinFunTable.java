@@ -611,7 +611,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         final Calc valueFunCall)
                     {
                         Member member =
-                            evaluator.getParent().getContext(hierarchy);
+                            evaluator.getPreviousContext(hierarchy);
                         List<Member> members = new ArrayList<Member>();
                         evaluator.getSchemaReader()
                             .getParentChildContributingChildren(
@@ -634,10 +634,13 @@ public class BuiltinFunTable extends FunTableImpl {
                                 "Don't know how to rollup aggregator '"
                                 + aggregator + "'");
                         }
-                        return rollup.aggregate(
-                            evaluator.push(),
+                        final int savepoint = evaluator.savepoint();
+                        final Object o = rollup.aggregate(
+                            evaluator,
                             new UnaryTupleList(members),
                             valueFunCall);
+                        evaluator.restore(savepoint);
+                        return o;
                     }
                 };
             }
@@ -740,9 +743,10 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new GenericCalc(call) {
                     public Object evaluate(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        Member old = evaluator.setContext(member);
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setContext(member);
                         Object value = evaluator.evaluateCurrent();
-                        evaluator.setContext(old);
+                        evaluator.restore(savepoint);
                         return value;
                     }
 

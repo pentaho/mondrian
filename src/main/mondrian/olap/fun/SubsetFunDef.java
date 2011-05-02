@@ -47,7 +47,8 @@ class SubsetFunDef extends FunDefBase {
             call, new Calc[] {listCalc, startCalc, countCalc})
         {
             public TupleList evaluateList(Evaluator evaluator) {
-                evaluator = evaluator.push(false);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
                 final TupleList list = listCalc.evaluateList(evaluator);
                 final int start = startCalc.evaluateInteger(evaluator);
                 int end;
@@ -60,6 +61,7 @@ class SubsetFunDef extends FunDefBase {
                 if (end > list.size()) {
                     end = list.size();
                 }
+                evaluator.restore(savepoint);
                 if (start >= end || start < 0) {
                     return TupleCollections.emptyList(list.getArity());
                 }

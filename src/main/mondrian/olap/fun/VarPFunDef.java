@@ -15,8 +15,6 @@ import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-
 /**
  * Definition of the <code>VarP</code> MDX builtin function
  * (and its synonym <code>VarianceP</code>).
@@ -54,8 +52,12 @@ class VarPFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double) var(
-                    evaluator.push(false), memberList, calc, true);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double d =
+                    (Double) var(evaluator, memberList, calc, true);
+                evaluator.restore(savepoint);
+                return d;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

@@ -97,7 +97,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
             if (aggregator != RolapAggregator.DistinctCount) {
-                return rollup.aggregate(evaluator.push(false), tupleList, calc);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final Object o =
+                    rollup.aggregate(
+                        evaluator, tupleList, calc);
+                evaluator.restore(savepoint);
+                return o;
             }
 
             // All that follows is logic for distinct count. It's not like the

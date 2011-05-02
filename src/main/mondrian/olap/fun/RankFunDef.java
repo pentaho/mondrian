@@ -225,8 +225,10 @@ public class RankFunDef extends FunDefBase {
             }
 
             // member is not seen before, now compute the value of the tuple.
-            final Evaluator evaluator2 = evaluator.push(members);
-            Object value = sortCalc.evaluate(evaluator2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setContext(members);
+            Object value = sortCalc.evaluate(evaluator);
+            evaluator.restore(savepoint);
 
             if (value == RolapUtil.valueNotReadyException) {
                 // The value wasn't ready, so quit now... we'll be back.
@@ -293,8 +295,10 @@ public class RankFunDef extends FunDefBase {
             }
 
             // member is not seen before, now compute the value of the tuple.
-            final Evaluator evaluator2 = evaluator.push(member);
-            Object value = sortCalc.evaluate(evaluator2);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setContext(member);
+            Object value = sortCalc.evaluate(evaluator);
+            evaluator.restore(savepoint);
 
             if (value == RolapUtil.valueNotReadyException) {
                 // The value wasn't ready, so quit now... we'll be back.
@@ -352,13 +356,14 @@ public class RankFunDef extends FunDefBase {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            // Create a new evaluator so we don't corrupt the given one.
-            final Evaluator evaluator2 = evaluator.push(false);
+            // Save the state of the evaluator.
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
 
             // Construct an array containing the value of the expression
             // for each member.
 
-            TupleList list = listCalc.evaluateList(evaluator2);
+            TupleList list = listCalc.evaluateList(evaluator);
             assert list != null;
             if (list.isEmpty()) {
                 return list.getArity() == 1
@@ -382,8 +387,8 @@ public class RankFunDef extends FunDefBase {
                 memberValueMap = new HashMap<Member, Object>();
                 tupleValueMap = null;
                 for (Member member : list.slice(0)) {
-                    evaluator2.setContext(member);
-                    final Object keyValue = keyCalc.evaluate(evaluator2);
+                    evaluator.setContext(member);
+                    final Object keyValue = keyCalc.evaluate(evaluator);
                     if (keyValue instanceof RuntimeException) {
                         if (exception == null) {
                             exception = (RuntimeException) keyValue;
@@ -408,8 +413,8 @@ public class RankFunDef extends FunDefBase {
                 tupleValueMap = new HashMap<List<Member>, Object>();
                 memberValueMap = null;
                 for (List<Member> tuple : list) {
-                    evaluator2.setContext(tuple);
-                    final Object keyValue = keyCalc.evaluate(evaluator2);
+                    evaluator.setContext(tuple);
+                    final Object keyValue = keyCalc.evaluate(evaluator);
                     if (keyValue instanceof RuntimeException) {
                         if (exception == null) {
                             exception = (RuntimeException) keyValue;
@@ -431,6 +436,8 @@ public class RankFunDef extends FunDefBase {
                 }
                 numValues = tupleValueMap.keySet().size();
             }
+
+            evaluator.restore(savepoint);
 
             // If there were exceptions, quit now... we'll be back.
             if (exception != null) {

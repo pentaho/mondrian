@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -211,7 +211,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         // the dimensions referenced by the inputs to the NECJ
         // (otherwise, that outer context would be incorrectly intersected
         // with the constraints from the inputs).
-        evaluator = evaluator.push();
+        final int savepoint = evaluator.savepoint();
 
         Member[] evalMembers = evaluator.getMembers().clone();
         for (RolapLevel level : levels) {
@@ -231,12 +231,14 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         CrossJoinArg[] cargs = combineArgs(allArgs);
 
         // Now construct the TupleConstraint that contains both the CJ
-        // dimensions and the additional filter on them.
+        // dimensions and the additional filter on them. It will make a copy
+        // of the evaluator.
         TupleConstraint constraint = buildConstraint(evaluator, fun, cargs);
 
         // Use the just the CJ CrossJoiArg for the evaluator context, which will
         // be translated to select list in sql.
         final SchemaReader schemaReader = evaluator.getSchemaReader();
+        evaluator.restore(savepoint);
         return new SetEvaluator(cjArgs, schemaReader, constraint);
     }
 
