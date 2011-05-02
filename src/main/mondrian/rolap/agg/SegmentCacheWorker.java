@@ -42,6 +42,18 @@ public final class SegmentCacheWorker {
         ServiceDiscovery.forClass(SegmentCache.class);
 
     static {
+        initCache();
+        // Rig up a trigger to the SegmentCache property to hot-swap the cache.
+        MondrianProperties.instance().SegmentCache.addTrigger(
+            new TriggerBase(true) {
+                public void execute(Property property, String value) {
+                    setCache(value);
+                }
+            }
+       );
+    }
+
+    private static void initCache() {
         // First try to get the segmentcache impl class from
         // mondrian properties.
         final String cacheName =
@@ -59,14 +71,6 @@ public final class SegmentCacheWorker {
                 setCache(implementors.get(0).getName());
             }
         }
-        // Rig up a trigger to the SegmentCache property to hot-swap the cache.
-        MondrianProperties.instance().SegmentCache.addTrigger(
-            new TriggerBase(true) {
-                public void execute(Property property, String value) {
-                    setCache(value);
-                }
-            }
-       );
     }
 
     /**
@@ -80,28 +84,30 @@ public final class SegmentCacheWorker {
      */
     public static synchronized void setCache(String cacheName) {
         try {
-            final SegmentCache closureSC = segmentCache;
-            if (closureSC != null
+            final SegmentCache cache = getSegmentCache();
+            if (cache != null
                 && cacheName != null
-                && closureSC.getClass().getName().equals(cacheName))
+                && cache.getClass().getName().equals(cacheName))
             {
                 // No need to reload the cache.
                 // It's the same property value.
                 return;
             }
-            if (closureSC != null) {
+            if (cache != null) {
                 executor.submit(
                     new Runnable() {
                         public void run() {
                             LOGGER.debug("Tearing down segment cache.");
-                            closureSC.tearDown();
+                            cache.tearDown();
                         }
                     });
             }
-            if (cacheName == null) {
+            segmentCache = null;
+            if (cacheName == null
+                    || cacheName.equals(""))
+            {
                 return;
             }
-            segmentCache = null;
             LOGGER.debug("Starting cache instance:" + cacheName);
             Class<?> clazz =
                 Class.forName(cacheName);
@@ -127,6 +133,10 @@ public final class SegmentCacheWorker {
         }
     }
 
+    private static SegmentCache getSegmentCache() {
+        return segmentCache;
+    }
+
     /**
      * Returns a segment body corresponding to a header.
      * <p>If no cache is configured or there is an error while
@@ -139,10 +149,11 @@ public final class SegmentCacheWorker {
      * for the passed header.
      */
     public static SegmentBody get(SegmentHeader header) {
-        final SegmentCache closureSC = segmentCache;
-        if (closureSC != null) {
+        initCache();
+        final SegmentCache cache = getSegmentCache();
+        if (cache != null) {
             try {
-                return closureSC.get(header)
+                return cache.get(header)
                     .get(
                         MondrianProperties.instance()
                             .SegmentCacheReadTimeout.get(),
@@ -180,10 +191,11 @@ public final class SegmentCacheWorker {
      * available in a segment cache.
      */
     public static boolean contains(SegmentHeader header) {
-        final SegmentCache closureSC = segmentCache;
-        if (closureSC != null) {
+        initCache();
+        final SegmentCache cache = getSegmentCache();
+        if (cache != null) {
             try {
-                return closureSC.contains(header)
+                return cache.contains(header)
                     .get(
                         MondrianProperties.instance()
                             .SegmentCacheLookupTimeout.get(),
@@ -218,11 +230,12 @@ public final class SegmentCacheWorker {
      * @param body The segment body to cache.
      */
     public static void put(SegmentHeader header, SegmentBody body) {
-        final SegmentCache closureSC = segmentCache;
-        if (closureSC != null) {
+        initCache();
+        final SegmentCache cache = getSegmentCache();
+        if (cache != null) {
             try {
                 final boolean result =
-                    closureSC.put(header, body)
+                    cache.put(header, body)
                         .get(
                             MondrianProperties.instance()
                                 .SegmentCacheWriteTimeout.get(),
@@ -266,10 +279,11 @@ public final class SegmentCacheWorker {
      * was no cache configured or no segment could be found
      */
     public static List<SegmentHeader> getSegmentHeaders() {
-        final SegmentCache closureSC = segmentCache;
-        if (closureSC != null) {
+        initCache();
+        final SegmentCache cache = getSegmentCache();
+        if (cache != null) {
             try {
-                return closureSC.getSegmentHeaders()
+                return cache.getSegmentHeaders()
                     .get(
                         MondrianProperties.instance()
                         .SegmentCacheScanTimeout.get(),
