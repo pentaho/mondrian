@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mondrian.olap.Util;
+import mondrian.rolap.BitKey;
 
 /**
  * SegmentHeaders are the key objects used to retrieve the segments
@@ -45,12 +46,14 @@ import mondrian.olap.Util;
  * @version $Id$
  */
 public class SegmentHeader implements Serializable {
-    private static final long serialVersionUID = -6478016915339461330L;
+    private static final long serialVersionUID = 8696439182886512850L;
     private final int arity;
     private final ConstrainedColumn[] constrainedColumns;
     private final String measureName;
     private final String cubeName;
     private final String schemaName;
+    private final String rolapStarFactTableName;
+    private final BitKey constrainedColsBitKey;
     private final int hashCode;
     private byte[] uniqueID = null;
     private String description = null;
@@ -70,12 +73,16 @@ public class SegmentHeader implements Serializable {
         String schemaName,
         String cubeName,
         String measureName,
-        ConstrainedColumn[] constrainedColumns)
+        ConstrainedColumn[] constrainedColumns,
+        String rolapStarFactTableName,
+        BitKey constrainedColsBitKey)
     {
         this.constrainedColumns = constrainedColumns;
         this.schemaName = schemaName;
         this.cubeName = cubeName;
         this.measureName = measureName;
+        this.rolapStarFactTableName = rolapStarFactTableName;
+        this.constrainedColsBitKey = constrainedColsBitKey;
         this.arity = constrainedColumns.length;
         // Hash code might be used extensively. Better compute
         // it up front.
@@ -84,8 +91,7 @@ public class SegmentHeader implements Serializable {
         hash = Util.hash(hash, cubeName);
         hash = Util.hash(hash, measureName);
         for (ConstrainedColumn col : constrainedColumns) {
-            hash = Util.hash(hash, col.tableName);
-            hash = Util.hash(hash, col.columnName);
+            hash = Util.hash(hash, col.columnExpression);
             for (Object val : col.values) {
                 hash = Util.hash(hash, val);
             }
@@ -101,7 +107,7 @@ public class SegmentHeader implements Serializable {
         if (!(obj instanceof SegmentHeader)) {
             return false;
         }
-        return ((SegmentHeader)obj).getUniqueID() == this.getUniqueID();
+        return ((SegmentHeader)obj).getUniqueID().equals(this.getUniqueID());
     }
 
     /**
@@ -116,14 +122,14 @@ public class SegmentHeader implements Serializable {
             new ConstrainedColumn[segment.axes.length];
         for (int i = 0; i < segment.axes.length; i++) {
             Aggregation.Axis axis = segment.axes[i];
+            // First get the values
             final List<Object> values = new ArrayList<Object>();
             axis.getPredicate().values(values);
+            // Now build the CC object
             cc[i] =
                 new SegmentHeader.ConstrainedColumn(
                     axis.getPredicate().getConstrainedColumn()
-                        .getTable().getTableName(),
-                    axis.getPredicate().getConstrainedColumn()
-                        .getName(),
+                        .getExpression().getGenericExpression(),
                     values.toArray());
         }
         return
@@ -131,7 +137,9 @@ public class SegmentHeader implements Serializable {
                 segment.measure.getStar().getSchema().getName(),
                 segment.measure.getCubeName(),
                 segment.measure.getName(),
-                cc);
+                cc,
+                segment.aggregation.getStar().getFactTable().getAlias(),
+                segment.aggregation.getConstrainedColumnsBitKey());
     }
 
     /**
@@ -144,27 +152,23 @@ public class SegmentHeader implements Serializable {
      * <p>They are immutable and serializable.
      */
     public static class ConstrainedColumn implements Serializable {
-        private static final long serialVersionUID = -2639097927260237524L;
-        final String tableName;
-        final String columnName;
+        private static final long serialVersionUID = -5227838916517784720L;
+        final String columnExpression;
         final Object[] values;
+        private int hashCode = Integer.MIN_VALUE;
         /**
          * Constructor for ConstrainedColumn.
-         * @param tableName Name of the source table into which the
+         * @param columnExpression Name of the source table into which the
          * constrained column is, as defined in the Mondrian schema.
-         * @param columnName Name of the column to constrain, as defined
-         * in the Mondrian schema.
          * @param valueList List of values to constrain the
          * column to. Use objects like Integer, Boolean, String
          * or Double.
          */
         public ConstrainedColumn(
-                String tableName,
-                String columnName,
+                String columnExpression,
                 Object[] valueList)
         {
-            this.tableName = tableName;
-            this.columnName = columnName;
+            this.columnExpression = columnExpression;
             this.values = new Object[valueList.length];
             System.arraycopy(
                 valueList,
@@ -174,20 +178,11 @@ public class SegmentHeader implements Serializable {
                 valueList.length);
         }
         /**
-         * Returns the table name of this constrained column.
-         * @return A table name.
+         * Returns the column expression of this constrained column.
+         * @return A column expression.
          */
-        public String getTableName() {
-            return tableName;
-        }
-        /**
-         * Returns the column name of this constrained column.
-         * It is not necessarely unique since columns of the same
-         * name can be found across multiple tables.
-         * @return A column name.
-         */
-        public String getColumnName() {
-            return columnName;
+        public String getColumnExpression() {
+            return columnExpression;
         }
         /**
          * Returns an array of predicate values for this column.
@@ -195,6 +190,39 @@ public class SegmentHeader implements Serializable {
          */
         public Object[] getValues() {
             return values;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ConstrainedColumn)) {
+                return false;
+            }
+            ConstrainedColumn that = (ConstrainedColumn) obj;
+            if (!this.columnExpression.equals(that.columnExpression)) {
+                return false;
+            }
+            if (this.values.length != that.values.length) {
+                return false;
+            }
+            for (int i = 0; i < this.values.length; i++) {
+                if (!this.values[i].equals(that.values[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            if (this.hashCode  == Integer.MIN_VALUE) {
+                int hash = super.hashCode();
+                hash = Util.hash(hash, this.columnExpression);
+                for (Object val : this.values) {
+                    hash = Util.hash(hash, val);
+                }
+                this.hashCode = hash;
+            }
+            return hashCode;
         }
     }
 
@@ -228,6 +256,58 @@ public class SegmentHeader implements Serializable {
     }
 
     /**
+     * Returns the constrained column object, if any, corresponding
+     * to a column name and a table name.
+     * @param columnExpression The column name we want.
+     * @return A Constrained column, or null.
+     */
+    public ConstrainedColumn getConstrainedColumn(
+            String columnExpression)
+    {
+        for (ConstrainedColumn c : constrainedColumns) {
+            if (c.columnExpression.equals(columnExpression)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public BitKey getConstrainedColumnsBitKey() {
+        return this.constrainedColsBitKey.copy();
+    }
+
+    /**
+     * Tells if the passed segment is a subset of this segment
+     * and could be used for a rollup in cache operation.
+     * @param segment A segment which might be a subset of the
+     * current segment.
+     * @return True or false.
+     */
+    public boolean isSubset(Segment segment) {
+        if (!segment.aggregation.getStar().getSchema().getName()
+                .equals(schemaName))
+        {
+            return false;
+        }
+        if (!segment.aggregation.getStar().getFactTable().getAlias()
+                .equals(rolapStarFactTableName))
+        {
+            return false;
+        }
+        if (!segment.measure.getName().equals(measureName)) {
+            return false;
+        }
+        if (!segment.measure.getCubeName().equals(cubeName)) {
+            return false;
+        }
+        if (segment.aggregation.getConstrainedColumnsBitKey()
+                .equals(constrainedColsBitKey)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns a unique identifier for this header. The identifier
      * can be used for storage and will be the same across segments
      * which have the same schema name, cube name, measure name,
@@ -242,8 +322,7 @@ public class SegmentHeader implements Serializable {
             hashSB.append(this.cubeName);
             hashSB.append(this.measureName);
             for (ConstrainedColumn c : constrainedColumns) {
-                hashSB.append(c.tableName);
-                hashSB.append(c.columnName);
+                hashSB.append(c.columnExpression);
                 for (Object value : c.values) {
                     hashSB.append(String.valueOf(value));
                 }
@@ -277,9 +356,7 @@ public class SegmentHeader implements Serializable {
             descriptionSB.append("Predicates:[");
             for (ConstrainedColumn c : constrainedColumns) {
                 descriptionSB.append("\n\t{");
-                descriptionSB.append(c.tableName);
-                descriptionSB.append(".");
-                descriptionSB.append(c.columnName);
+                descriptionSB.append(c.columnExpression);
                 descriptionSB.append("=(");
                 for (Object value : c.values) {
                     descriptionSB.append("'");
