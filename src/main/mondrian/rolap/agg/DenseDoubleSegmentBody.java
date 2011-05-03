@@ -49,14 +49,22 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
 
     @Override
     public String toString() {
-        return "DenseDoubleSegmentBody(size=" + size
-           + ", data=" + Arrays.toString(data)
-           + ", nullIndicators=" + nullIndicators
-           + ", axisValueSets=" + Arrays.toString(getAxisValueSets())
-           + ", nullAxisFlags=" + Arrays.toString(getNullAxisFlags())
-           + ", aVS[0]=" + getAxisValueSets()[0].getClass()
-           + ", aVS[0][0]=" + getAxisValueSets()[0].iterator().next().getClass()
-           + ")";
+        StringBuilder sb = new StringBuilder();
+        sb.append("DenseDoubleSegmentBody(size=" + size);
+        sb.append(", data=");
+        sb.append(Arrays.toString(data));
+        sb.append(", nullIndicators=" + nullIndicators);
+        sb.append(", axisValueSets=" + Arrays.toString(getAxisValueSets()));
+        sb.append(", nullAxisFlags=" + Arrays.toString(getNullAxisFlags()));
+        if (getAxisValueSets().length > 0) {
+            if (getAxisValueSets()[0].iterator().hasNext()) {
+                sb.append(", aVS[0]=" + getAxisValueSets()[0].getClass());
+                sb.append(", aVS[0][0]=");
+                sb.append(getAxisValueSets()[0].iterator().next().getClass());
+            }
+        }
+        sb.append(")");
+        return sb.toString();
     }
 }
 

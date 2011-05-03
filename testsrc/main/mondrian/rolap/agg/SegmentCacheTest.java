@@ -23,9 +23,14 @@ public class SegmentCacheTest extends BasicQueryTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(
-            MondrianProperties.instance().SegmentCache,
-            MockSegmentCache.class.getName());
+        MondrianProperties.instance()
+            .SegmentCache.set(MockSegmentCache.class.getName());
+    }
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        MondrianProperties.instance()
+            .SegmentCache.set("");
     }
 }
 // End SegmentCacheTest.java

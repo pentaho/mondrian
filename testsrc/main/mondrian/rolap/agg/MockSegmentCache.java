@@ -34,43 +34,27 @@ public class MockSegmentCache implements SegmentCache {
      * Executor for the tests. Thread-factory ensures that thread does not
      * prevent shutdown.
      */
-    private final ExecutorService executor =
-        Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    return t;
-               }
-            }
-        );
+    private static final ExecutorService executor =
+        Util.getExecutorService(
+            1,
+            "mondrian.rolap.agg.MockSegmentCache$ExecutorThread");
 
     public Future<Boolean> contains(final SegmentHeader header) {
-        FutureTask<Boolean>  task =
-            new FutureTask<Boolean>(
-                new Callable<Boolean>() {
-                    public Boolean call() throws Exception {
-                        synchronized (cache) {
-                            return cache.containsKey(header);
-                        }
-                    }
-                });
-        executor.submit(task);
-        return task;
+        return executor.submit(
+            new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    return cache.containsKey(header);
+                }
+            });
     }
 
     public Future<SegmentBody> get(final SegmentHeader header) {
-        FutureTask<SegmentBody>  task =
-            new FutureTask<SegmentBody>(
-                new Callable<SegmentBody>() {
-                    public SegmentBody call() throws Exception {
-                        synchronized (cache) {
-                            return cache.get(header);
-                        }
-                    }
-                });
-        executor.submit(task);
-        return task;
+        return executor.submit(
+            new Callable<SegmentBody>() {
+                public SegmentBody call() throws Exception {
+                    return cache.get(header);
+                }
+            });
     }
 
     public Future<Boolean> put(
@@ -113,38 +97,26 @@ public class MockSegmentCache implements SegmentCache {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        FutureTask<Boolean>  task =
-            new FutureTask<Boolean>(new Callable<Boolean>() {
+        return executor.submit(
+            new Callable<Boolean>() {
                 public Boolean call() throws Exception {
-                    synchronized (cache) {
-                        cache.put(header, body);
-                        return true;
-                    }
+                    cache.put(header, body);
+                    return true;
                 }
             });
-        executor.submit(task);
-        return task;
     }
 
     public Future<List<SegmentHeader>> getSegmentHeaders() {
-        FutureTask<List<SegmentHeader>> task =
-            new FutureTask<List<SegmentHeader>>(
-                new Callable<List<SegmentHeader>>() {
-                    public List<SegmentHeader> call() throws Exception {
-                        synchronized (cache) {
-                            return new ArrayList<SegmentHeader>(cache.keySet());
-                        }
-                    }
-                });
-        executor.submit(task);
-        return task;
+        return executor.submit(
+            new Callable<List<SegmentHeader>>() {
+                public List<SegmentHeader> call() throws Exception {
+                    return new ArrayList<SegmentHeader>(cache.keySet());
+                }
+            });
     }
 
     public void tearDown() {
-        synchronized (cache) {
-            cache.clear();
-        }
-        executor.shutdown();
+        cache.clear();
     }
 }
 

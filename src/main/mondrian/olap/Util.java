@@ -24,6 +24,9 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.math.BigDecimal;
@@ -167,6 +170,31 @@ public class Util extends XOMUtil {
         algorithm.reset();
         algorithm.update(source.getBytes());
         return algorithm.digest();
+    }
+
+    /**
+     * Creates an {@link ExecutorService} object.
+     * @param maxNbThreads Maximum number of concurrent
+     * threads.
+     * @param name The name of the threads.
+     * @return An executor service preconfigured.
+     */
+    public static ExecutorService getExecutorService(
+            final int maxNbThreads,
+            final String name)
+    {
+        return Executors.newFixedThreadPool(
+            maxNbThreads,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    final Thread thread =
+                        Executors.defaultThreadFactory().newThread(r);
+                    thread.setDaemon(true);
+                    thread.setName(name);
+                    return thread;
+                }
+            }
+        );
     }
 
     /**
