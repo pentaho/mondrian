@@ -73,7 +73,7 @@ import org.apache.log4j.Logger;
  * @since 21 March, 2002
  * @version $Id$
  */
-class Segment {
+public class Segment {
     private static int nextId = 0; // generator for "id"
 
     final int id; // for debug
@@ -141,9 +141,28 @@ class Segment {
      * @param aggregation The aggregation this <code>Segment</code> belongs to
      * @param measure Measure whose values this Segment contains
      * @param axes List of axes; each is a constraint plus a list of values
+     */
+    public Segment(
+        Aggregation aggregation,
+        RolapStar.Measure measure,
+        Aggregation.Axis[] axes)
+    {
+        this(
+            aggregation,
+            measure,
+            axes,
+            new ArrayList<Region>());
+    }
+
+    /**
+     * Creates a <code>Segment</code>; it's not loaded yet.
+     *
+     * @param aggregation The aggregation this <code>Segment</code> belongs to
+     * @param measure Measure whose values this Segment contains
+     * @param axes List of axes; each is a constraint plus a list of values
      * @param excludedRegions List of regions which are not in this segment.
      */
-    Segment(
+    public Segment(
         Aggregation aggregation,
         RolapStar.Measure measure,
         Aggregation.Axis[] axes,

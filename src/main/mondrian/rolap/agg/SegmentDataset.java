@@ -25,7 +25,7 @@ import java.util.SortedSet;
  * @since 21 March, 2002
  * @version $Id$
  */
-interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
+public interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
     /**
      * Returns the value at a given coordinate, as an {@link Object}.
      *
