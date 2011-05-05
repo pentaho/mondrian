@@ -432,6 +432,34 @@ public class BitKeyTest extends TestCase {
     }
 
     /**
+     * Tests the 'nor' operation on BitKeys
+     */
+    public void testOrNot() {
+        doTestOp(
+            new Checker() {
+                public void check(
+                    int size0, int[] positions0, int size1, int[] positions1)
+                {
+                    BitKey bitKey0 = makeAndSet(size0, positions0);
+                    BitKey bitKey1 = makeAndSet(size1, positions1);
+                    BitKey bitKey = bitKey0.orNot(bitKey1);
+                    int max = 0;
+                    for (int i = 0; i < positions0.length; i++) {
+                        max = Math.max(max, positions0[i]);
+                    }
+                    for (int i = 0; i < positions1.length; i++) {
+                        max = Math.max(max, positions1[i]);
+                    }
+                    for (int pos = 0; pos <= max; pos++) {
+                        boolean expected = contains(positions0, pos)
+                            ^ contains(positions1, pos);
+                        assertEquals(expected, bitKey.get(pos));
+                    }
+                }
+            });
+    }
+
+    /**
      * Tests the 'and' operation on BitKeys
      */
     public void testAnd() {
