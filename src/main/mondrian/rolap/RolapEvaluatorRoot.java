@@ -81,18 +81,6 @@ class RolapEvaluatorRoot {
                     ((ScenarioImpl) connection.getScenario()).getMember();
             }
 
-            // This fragment is a concurrency bottleneck, so use a cache of
-            // hierarchy usages.
-            /*
-            final HierarchyUsage hierarchyUsage = cube.getFirstUsage(hierarchy);
-            if (hierarchyUsage != null) {
-                if (defaultMember instanceof RolapMemberBase) {
-                ((RolapMemberBase) defaultMember).makeUniqueName(
-                    hierarchyUsage);
-                }
-            }
-            */
-
             list.add(defaultMember);
             if (!defaultMember.isAll()) {
                 nonAllPositions[nonAllPositionCount] =

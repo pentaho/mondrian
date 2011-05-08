@@ -9,20 +9,25 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.Util;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
-
-import java.util.List;
 
 /**
  * Column constraint defined by a member.
+ *
+ * @see Util#deprecated(Object, boolean) No longer a column predicate;
+ * TODO: rename this class.
  *
  * @author jhyde
  * @version $Id$
  * @since Mar 16, 2006
  */
-public class MemberColumnPredicate extends ValueColumnPredicate {
+public class MemberColumnPredicate
+    extends ValueColumnPredicate
+    implements MemberPredicate
+{
     private final RolapMember member;
 
     /**
@@ -31,18 +36,20 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
      * @param column Constrained column
      * @param member Member to constrain column to; must not be null
      */
-    public MemberColumnPredicate(RolapStar.Column column, RolapMember member) {
+    public MemberColumnPredicate(
+        RolapSchema.PhysColumn column,
+        RolapMember member)
+    {
         super(column, member.getKey());
         this.member = member;
+        assert column != null;
+        assert column == member.getLevel().getAttribute().keyList.get(0);
+        assert member.getLevel().getAttribute().keyList.size() == 1;
     }
 
     // for debug
     public String toString() {
         return member.getUniqueName();
-    }
-
-    public List<RolapStar.Column> getConstrainedColumnList() {
-        return super.getConstrainedColumnList();
     }
 
     /**
@@ -70,9 +77,6 @@ public class MemberColumnPredicate extends ValueColumnPredicate {
         buf.append(member.getUniqueName());
     }
 
-    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
-        return new MemberColumnPredicate(column, member);
-    }
 }
 
 // End MemberColumnPredicate.java

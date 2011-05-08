@@ -130,7 +130,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     protected void addGroupingFunction(SqlQuery sqlQuery) {
         List<RolapStar.Column> list = groupingSetsList.getRollupColumns();
         for (RolapStar.Column column : list) {
-            sqlQuery.addGroupingFunction(column.generateExprString(sqlQuery));
+            sqlQuery.addGroupingFunction(column.getExpression().toSql());
         }
     }
 
@@ -139,8 +139,8 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             groupingSetsList.getGroupingSetsColumns();
         for (RolapStar.Column[] groupingSetsColumn : groupingSetsColumns) {
             ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
-            for (RolapStar.Column aColumn : groupingSetsColumn) {
-                groupingColumnsExpr.add(aColumn.generateExprString(sqlQuery));
+            for (RolapStar.Column column : groupingSetsColumn) {
+                groupingColumnsExpr.add(column.getExpression().toSql());
             }
             sqlQuery.addGroupingSet(groupingColumnsExpr);
         }

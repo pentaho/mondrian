@@ -10,12 +10,9 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.BitKey;
+import mondrian.rolap.*;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 import java.util.Collections;
@@ -28,7 +25,7 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
-    protected final RolapStar.Column constrainedColumn;
+    protected final RolapSchema.PhysColumn constrainedColumn;
     private final BitKey constrainedColumnBitKey;
 
     /**
@@ -36,34 +33,37 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
      *
      * @param constrainedColumn Constrained column
      */
-    protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
+    protected AbstractColumnPredicate(RolapSchema.PhysColumn constrainedColumn)
+    {
         this.constrainedColumn = constrainedColumn;
+        assert constrainedColumn != null;
 
         // Check whether constrainedColumn are null.
         // Example: FastBatchingCellReaderTest.testAggregateDistinctCount5().
-        if (constrainedColumn != null && constrainedColumn.getTable() != null) {
-            constrainedColumnBitKey =
-                BitKey.Factory.makeBitKey(
-                    constrainedColumn.getStar().getColumnCount());
-            constrainedColumnBitKey.set(constrainedColumn.getBitPosition());
-        } else {
-            constrainedColumnBitKey = null;
-        }
+        constrainedColumnBitKey =
+            BitKey.Factory.makeBitKey(
+                constrainedColumn.relation.getSchema().getColumnCount());
+        constrainedColumnBitKey.set(constrainedColumn.ordinal());
     }
 
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append(constrainedColumn.getExpression().toSql());
+        buf.append(constrainedColumn.toSql());
         describe(buf);
         return buf.toString();
     }
 
-    public RolapStar.Column getConstrainedColumn() {
+    public RolapSchema.PhysColumn getColumn() {
         return constrainedColumn;
     }
 
-    public List<RolapStar.Column> getConstrainedColumnList() {
+    public List<RolapSchema.PhysColumn> getColumnList() {
         return Collections.singletonList(constrainedColumn);
+    }
+
+    public List<RolapStar.Column> getStarColumnList(RolapStar star) {
+        return Collections.singletonList(
+            star.getColumn(constrainedColumn, true));
     }
 
     public BitKey getConstrainedColumnBitKey() {
@@ -83,8 +83,8 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         if (predicate instanceof StarColumnPredicate) {
             StarColumnPredicate starColumnPredicate =
                 (StarColumnPredicate) predicate;
-            if (starColumnPredicate.getConstrainedColumn()
-                == getConstrainedColumn())
+            if (starColumnPredicate.getColumn()
+                == getColumn())
             {
                 return orColumn(starColumnPredicate);
             }
@@ -96,7 +96,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     }
 
     public StarColumnPredicate orColumn(StarColumnPredicate predicate) {
-        assert predicate.getConstrainedColumn() == getConstrainedColumn();
+        assert predicate.getColumn() == getColumn();
         if (predicate instanceof ListColumnPredicate) {
             ListColumnPredicate that = (ListColumnPredicate) predicate;
             final List<StarColumnPredicate> list =
@@ -104,7 +104,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.addAll(that.getPredicates());
             return new ListColumnPredicate(
-                getConstrainedColumn(),
+                getColumn(),
                 list);
         } else {
             final List<StarColumnPredicate> list =
@@ -112,7 +112,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.add(predicate);
             return new ListColumnPredicate(
-                getConstrainedColumn(),
+                getColumn(),
                 list);
         }
     }
@@ -124,20 +124,8 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         return new AndPredicate(list);
     }
 
-    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+    public void toSql(Dialect dialect, StringBuilder buf) {
         throw Util.needToImplement(this);
-    }
-
-    protected static List<StarColumnPredicate> cloneListWithColumn(
-        RolapStar.Column column,
-        List<StarColumnPredicate> list)
-    {
-        List<StarColumnPredicate> newList =
-            new ArrayList<StarColumnPredicate>(list.size());
-        for (StarColumnPredicate predicate : list) {
-            newList.add(predicate.cloneWithColumn(column));
-        }
-        return newList;
     }
 
     /**
@@ -155,7 +143,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
          *   to a column constraint's value
          */
         public static StarColumnPredicate equal(
-            RolapStar.Column column,
+            RolapSchema.PhysColumn column,
             Object value)
         {
             return new ValueColumnPredicate(column, value);
@@ -169,7 +157,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
          * @return Predicate which is an OR of the list of predicates
          */
         public static StarColumnPredicate or(
-            RolapStar.Column column,
+            RolapSchema.PhysColumn column,
             List<StarColumnPredicate> list)
         {
             return new ListColumnPredicate(column, list);
@@ -196,7 +184,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             ValueColumnPredicate predicate)
         {
             return equal(
-                predicate.getConstrainedColumn(),
+                predicate.getColumn(),
                 predicate.getValue());
         }
     }

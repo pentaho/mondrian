@@ -860,7 +860,7 @@ public class TestContext {
      * @return Expected result massaged for backwards compatibility
      */
     public String upgradeActual(String actual) {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (true || !MondrianProperties.instance().SsasCompatibleNaming.get()) {
             actual = Util.replace(
                 actual,
                 "[Time.Weekly]",
@@ -873,6 +873,22 @@ public class TestContext {
                 actual,
                 "<HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>",
                 "<HIERARCHY_NAME>Weekly</HIERARCHY_NAME>");
+            actual = Util.replace(
+                actual,
+                "[Time.Monthly]",
+                "[Time].[Monthly]");
+            actual = Util.replace(
+                actual,
+                "[Stores].[Store]",
+                "[Store]");
+            actual = Util.replace(
+                actual,
+                "[Customer].[Customers]",
+                "[Customers]");
+            actual = Util.replace(
+                actual,
+                "[Customer].[Marital Status]",
+                "[Marital Status]");
 
             // for a few tests in SchemaTest
             actual = Util.replace(
@@ -909,6 +925,10 @@ public class TestContext {
             actual = Util.replace(
                 actual,
                 "[Promotion.Media Type]",
+                "[Promotion Media]");
+            actual = Util.replace(
+                actual,
+                "[Promotion].[Media Type]",
                 "[Promotion Media]");
         }
         return actual;
@@ -962,7 +982,7 @@ public class TestContext {
             queryString = Util.replace(
                 queryString,
                 "[Promotion Media].[Media Type]",
-                "[Promotion].[Media Type]");
+                "[Promotion].[Media Type].[Media Type]");
         }
         return queryString;
     }
@@ -2034,8 +2054,8 @@ public class TestContext {
                 }
                 if (errorLoc != null) {
                     int errorStart = -1;
-                    while ((errorStart
-                        = schema.indexOf(errorLoc, errorStart + 1)) >= 0)
+                    while ((errorStart =
+                        schema.indexOf(errorLoc, errorStart + 1)) >= 0)
                     {
                         int errorEnd = errorStart + errorLoc.length();
                         sw.append(schema.substring(errorStart, errorEnd))

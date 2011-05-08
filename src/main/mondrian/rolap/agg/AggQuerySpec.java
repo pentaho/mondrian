@@ -159,11 +159,8 @@ class AggQuerySpec {
             String expr = column.generateExprString(sqlQuery);
 
             StarColumnPredicate predicate = getPredicate(i);
-            final String where = RolapStar.Column.createInExpr(
-                expr,
-                predicate,
-                column.getDatatype(),
-                sqlQuery);
+            final String where =
+                Predicates.toSql(predicate, sqlQuery.getDialect());
             if (!where.equals("true")) {
                 sqlQuery.addWhere(where);
             }

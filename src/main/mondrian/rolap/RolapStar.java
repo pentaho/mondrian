@@ -20,7 +20,6 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.spi.Dialect;
-import mondrian.util.Bug;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.TriggerBase;
@@ -762,7 +761,7 @@ public class RolapStar {
         for (Column column : columnList) {
             ++k;
             column.table.addToFrom(query,  false, true);
-            String columnExpr = column.generateExprString(query);
+            String columnExpr = column.getExpression().toSql();
             if (column instanceof Measure) {
                 Measure measure = (Measure) column;
                 columnExpr = measure.getAggregator().getExpression(columnExpr);
@@ -944,6 +943,7 @@ public class RolapStar {
          */
         protected Column(Dialect.Datatype datatype)
         {
+            assert datatype != null;
             this.table = null;
             this.expression = null;
             this.datatype = datatype;
@@ -1016,15 +1016,6 @@ public class RolapStar {
         }
 
         /**
-         * Generates a SQL expression, which typically this looks like
-         * this: <code><i>tableName</i>.<i>columnName</i></code>.
-         */
-        public String generateExprString(SqlQuery query) {
-            Util.deprecated("remove query param", false);
-            return getExpression().toSql();
-        }
-
-        /**
          * Get column cardinality from the schema cache if possible;
          * otherwise issue a select count(distinct) query to retrieve
          * the cardinality and stores it in the cache.
@@ -1056,22 +1047,23 @@ public class RolapStar {
         }
 
         private int getCardinality(DataSource dataSource) {
-            SqlQuery sqlQuery = new SqlQuery(table.star.getSqlQueryDialect());
-            if (sqlQuery.getDialect().allowsCountDistinct()) {
+            Dialect dialect = table.star.getSqlQueryDialect();
+            SqlQuery sqlQuery = new SqlQuery(dialect);
+            if (dialect.allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
                 sqlQuery.addSelect(
                     "count(distinct "
-                    + generateExprString(sqlQuery) + ")");
+                    + getExpression().toSql() + ")");
 
                 // no need to join fact table here
                 table.addToFrom(sqlQuery, true, false);
-            } else if (sqlQuery.getDialect().allowsFromQuery()) {
+            } else if (dialect.allowsFromQuery()) {
                 // Some databases (e.g. Access) don't like 'count(distinct)',
                 // so use, e.g., "select count(*) from (select distinct
                 // product_id from product)"
                 SqlQuery inner = sqlQuery.cloneEmpty();
                 inner.setDistinct(true);
-                inner.addSelect(generateExprString(inner));
+                inner.addSelect(getExpression().toSql());
                 boolean failIfExists = true,
                     joinToParent = false;
                 table.addToFrom(inner, failIfExists, joinToParent);
@@ -1101,54 +1093,6 @@ public class RolapStar {
             }
         }
 
-        /**
-         * Generates a predicate that a column matches one of a list of values.
-         *
-         * <p>
-         * Several possible outputs, depending upon whether the there are
-         * nulls:<ul>
-         *
-         * <li>One not-null value: <code>foo.bar = 1</code>
-         *
-         * <li>All values not null: <code>foo.bar in (1, 2, 3)</code></li
-         *
-         * <li>Null and not null values:
-         * <code>(foo.bar is null or foo.bar in (1, 2))</code></li>
-         *
-         * <li>Only null values:
-         * <code>foo.bar is null</code></li>
-         *
-         * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li>
-         *
-         * </ul>
-         */
-        public static String createInExpr(
-            final String expr,
-            StarColumnPredicate predicate,
-            Dialect.Datatype datatype,
-            SqlQuery sqlQuery)
-        {
-            // Sometimes a column predicate is created without a column. This
-            // is unfortunate, and we will fix it some day. For now, create
-            // a fake column with all of the information needed by the toSql
-            // method, and a copy of the predicate wrapping that fake column.
-            if (!Bug.BugMondrian313Fixed
-                || !Bug.BugMondrian314Fixed
-                   && predicate.getConstrainedColumn() == null)
-            {
-                Column column = new Column(datatype) {
-                    public String generateExprString(SqlQuery query) {
-                        return expr;
-                    }
-                };
-                predicate = predicate.cloneWithColumn(column);
-            }
-
-            StringBuilder buf = new StringBuilder(64);
-            predicate.toSql(sqlQuery, buf);
-            return buf.toString();
-        }
-
         public String toString() {
             StringWriter sw = new StringWriter(256);
             PrintWriter pw = new PrintWriter(sw);
@@ -1170,7 +1114,7 @@ public class RolapStar {
             pw.print(" (");
             pw.print(getBitPosition());
             pw.print("): ");
-            pw.print(generateExprString(sqlQuery));
+            pw.print(getExpression().toSql());
         }
 
         public Dialect.Datatype getDatatype() {
@@ -1298,7 +1242,7 @@ public class RolapStar {
                 aggregator.getExpression(
                     getExpression() == null
                         ? null
-                        : generateExprString(sqlQuery)));
+                        : getExpression().toSql()));
         }
 
         public String getCubeName() {

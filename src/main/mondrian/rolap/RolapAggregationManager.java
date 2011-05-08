@@ -535,7 +535,7 @@ public abstract class RolapAggregationManager {
                 for (RolapCubeMember member : tuple) {
                     tuplePredicate =
                         makeCompoundPredicateForMember(
-                            member, measureGroup, tuplePredicate);
+                            member, tuplePredicate);
                 }
                 if (tuplePredicate != null) {
                     if (compoundGroupPredicate == null) {
@@ -567,19 +567,15 @@ public abstract class RolapAggregationManager {
 
     private static StarPredicate makeCompoundPredicateForMember(
         RolapCubeMember member,
-        RolapMeasureGroup star,
         StarPredicate memberPredicate)
     {
         final RolapCubeLevel level = member.getLevel();
         final List<RolapSchema.PhysColumn> keyList = level.attribute.keyList;
         final List<Object> valueList = member.getKeyAsList();
         for (int i = 0; i < keyList.size(); i++) {
-            RolapSchema.PhysColumn key = keyList.get(i);
-            RolapStar.Column column =
-                star.getRolapStarColumn(level.getDimension(), key, true);
             final ValueColumnPredicate predicate =
                 new ValueColumnPredicate(
-                    column,
+                    keyList.get(i),
                     valueList.get(i));
             if (memberPredicate == null) {
                 memberPredicate = predicate;
@@ -712,12 +708,8 @@ public abstract class RolapAggregationManager {
                     continue;
                 }
                 final RolapCubeMember rolapMember = (RolapCubeMember) member;
-                final RolapCubeLevel level = rolapMember.getLevel();
-                RolapStar.Column column =
-                    level.getBaseStarKeyColumn(measureGroup);
-
-                level.getLevelReader().constrainRegion(
-                    new MemberColumnPredicate(column, rolapMember),
+                rolapMember.getLevel().getLevelReader().constrainRegion(
+                    Predicates.memberPredicate(rolapMember),
                     measureGroup,
                     cacheRegion);
             }
@@ -728,18 +720,12 @@ public abstract class RolapAggregationManager {
             RolapStar.Column column = level.getBaseStarKeyColumn(measureGroup);
 
             level.getLevelReader().constrainRegion(
-                new RangeColumnPredicate(
-                    column,
+                Predicates.rangePredicate(
                     rangeRegion.getLowerInclusive(),
-                    (rangeRegion.getLowerBound() == null
-                     ? null
-                     : new MemberColumnPredicate(
-                        column, rangeRegion.getLowerBound())),
+                    rangeRegion.getLowerBound(),
                     rangeRegion.getUpperInclusive(),
-                    (rangeRegion.getUpperBound() == null
-                     ? null
-                     : new MemberColumnPredicate(
-                        column, rangeRegion.getUpperBound()))), measureGroup,
+                    rangeRegion.getUpperBound()),
+                measureGroup,
                 cacheRegion);
         } else {
             throw new UnsupportedOperationException();

@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import java.util.List;
 
@@ -37,7 +38,16 @@ public interface StarPredicate {
      *
      * @return List of constrained columns
      */
-    public List<RolapStar.Column> getConstrainedColumnList();
+    public List<RolapSchema.PhysColumn> getColumnList();
+
+    /**
+     * Returns a list of constrained columns, mapped to within a particular
+     * star.
+     *
+     * @param star Star
+     * @return List of constrained columns within the given star
+     */
+    public List<RolapStar.Column> getStarColumnList(RolapStar star);
 
     /**
      * Returns a bitmap of constrained columns to speed up comparison
@@ -114,7 +124,7 @@ public interface StarPredicate {
      */
     Object WILDCARD = new Object();
 
-    void toSql(SqlQuery sqlQuery, StringBuilder buf);
+    void toSql(Dialect dialect, StringBuilder buf);
 }
 
 // End StarPredicate.java

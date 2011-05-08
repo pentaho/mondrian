@@ -556,10 +556,12 @@ public class FastBatchingCellReader implements CellReader {
                 new StarColumnPredicate[columns.length];
             for (int j = 0; j < columns.length; j++) {
                 Set<StarColumnPredicate> valueSet = valueSets[j];
+                final RolapSchema.PhysColumn physColumn =
+                    (RolapSchema.PhysColumn) columns[j].getExpression();
 
                 StarColumnPredicate predicate;
                 if (valueSet == null) {
-                    predicate = LiteralStarPredicate.FALSE;
+                    predicate = Predicates.wildcard(physColumn, true);
                 } else {
                     ValueColumnPredicate[] values =
                         valueSet.toArray(
@@ -571,7 +573,7 @@ public class FastBatchingCellReader implements CellReader {
 
                     predicate =
                         new ListColumnPredicate(
-                            columns[j],
+                            physColumn,
                             Arrays.asList((StarColumnPredicate[]) values));
                 }
 

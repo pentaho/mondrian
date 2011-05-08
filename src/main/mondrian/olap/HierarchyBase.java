@@ -71,7 +71,7 @@ public abstract class HierarchyBase
         this.description = description;
 
         String name = dimension.getName();
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (true || MondrianProperties.instance().SsasCompatibleNaming.get()) {
             if (subName == null) {
                 // e.g. "Time"
                 subName = name;

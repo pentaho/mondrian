@@ -263,7 +263,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,
-            SqlTupleReader.ColumnLayout columnLayout)
+            SqlTupleReader.LevelColumnLayout layout)
             throws SQLException
         {
             return substitute(
@@ -273,7 +273,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                     captionValue,
                     parentChild,
                     stmt,
-                    columnLayout));
+                    layout));
         }
 
         public RolapMember allMember() {

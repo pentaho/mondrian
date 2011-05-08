@@ -10,11 +10,8 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.*;
+import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -54,7 +51,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
      * @param list List of child predicates
      */
     public ListColumnPredicate(
-        RolapStar.Column column,
+        RolapSchema.PhysColumn column,
         List<StarColumnPredicate> list)
     {
         super(column);
@@ -133,7 +130,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                     childrenHashMap =
                         new HashMap<Integer, List<StarColumnPredicate>>();
                     for (StarColumnPredicate thisChild : getPredicates()) {
-                        Integer key = new Integer(thisChild.hashCode());
+                        Integer key = thisChild.hashCode();
                         List<StarColumnPredicate> predList =
                             childrenHashMap.get(key);
                         if (predList == null) {
@@ -237,7 +234,18 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 (LiteralStarPredicate) predicate;
             if (literalStarPredicate.getValue()) {
                 // X minus TRUE --> FALSE
-                return LiteralStarPredicate.FALSE;
+                return Predicates.wildcard(constrainedColumn, false);
+            } else {
+                // X minus FALSE --> X
+                return this;
+            }
+        }
+        if (predicate instanceof LiteralColumnPredicate) {
+            LiteralColumnPredicate literalColumnPredicate =
+                (LiteralColumnPredicate) predicate;
+            if (literalColumnPredicate.getValue()) {
+                // X minus TRUE --> FALSE
+                return Predicates.wildcard(constrainedColumn, false);
             } else {
                 // X minus FALSE --> X
                 return this;
@@ -257,48 +265,42 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             }
         }
         if (changeCount > 0) {
-            return new ListColumnPredicate(getConstrainedColumn(), newChildren);
+            return new ListColumnPredicate(getColumn(), newChildren);
         } else {
             return this;
         }
     }
 
     public StarColumnPredicate orColumn(StarColumnPredicate predicate) {
-        assert predicate.getConstrainedColumn() == getConstrainedColumn();
+        assert predicate.getColumn() == getColumn();
         if (predicate instanceof ListColumnPredicate) {
             ListColumnPredicate that = (ListColumnPredicate) predicate;
             final List<StarColumnPredicate> list =
                 new ArrayList<StarColumnPredicate>(children);
             list.addAll(that.children);
             return new ListColumnPredicate(
-                getConstrainedColumn(),
+                getColumn(),
                 list);
         } else {
             final List<StarColumnPredicate> list =
                 new ArrayList<StarColumnPredicate>(children);
             list.add(predicate);
             return new ListColumnPredicate(
-                getConstrainedColumn(),
+                getColumn(),
                 list);
         }
     }
 
-    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
-        return new ListColumnPredicate(
-            column,
-            cloneListWithColumn(column, children));
-    }
-
-    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+    public void toSql(Dialect dialect, StringBuilder buf) {
         List<StarColumnPredicate> predicates = getPredicates();
         if (predicates.size() == 1) {
-            predicates.get(0).toSql(sqlQuery, buf);
+            predicates.get(0).toSql(dialect, buf);
             return;
         }
 
         int notNullCount = 0;
-        final RolapStar.Column column = getConstrainedColumn();
-        final String expr = column.generateExprString(sqlQuery);
+        final RolapSchema.PhysColumn column = getColumn();
+        final String expr = column.toSql();
         final int marker = buf.length(); // to allow backtrack later
         buf.append(expr);
         ValueColumnPredicate firstNotNull = null;
@@ -316,7 +318,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 firstNotNull = predicate2;
             }
             ++notNullCount;
-            sqlQuery.getDialect().quote(buf, key, column.getDatatype());
+            dialect.quote(buf, key, column.getDatatype());
         }
         buf.append(')');
 
@@ -345,7 +347,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             buf.append('(');
             buf.append(expr);
             buf.append(" = ");
-            sqlQuery.getDialect().quote(
+            dialect.quote(
                 buf,
                 firstNotNull.getValue(),
                 column.getDatatype());

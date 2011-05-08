@@ -343,9 +343,7 @@ public class RolapUtil {
         } else {
             level2 = level;
         }
-        Member searchMember =
-            level2.getHierarchy().createMember(
-                parent, level2, searchName.name, null);
+        Member searchMember = null;
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
@@ -365,6 +363,11 @@ public class RolapUtil {
                     rc = member.getName().compareTo(searchName.name);
                 }
             } else {
+                if (searchMember == null) {
+                    searchMember =
+                        level2.getHierarchy().createMember(
+                            parent, level2, searchName.name, null);
+                }
                 rc =
                     FunUtil.compareSiblingMembers(
                         member,

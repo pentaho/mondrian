@@ -9,6 +9,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Util;
+import mondrian.rolap.agg.Predicates;
+
 import java.util.*;
 
 /**
@@ -24,16 +27,16 @@ import java.util.*;
  * (physical).
  */
 public class RolapCacheRegion {
+    private final RolapStar star;
     private final BitKey bitKey;
-    private final Map<Integer, StarColumnPredicate> columnPredicates =
-        new HashMap<Integer, StarColumnPredicate>();
-    private Map<List<RolapStar.Column>, StarPredicate> predicates =
-        new HashMap<List<RolapStar.Column>, StarPredicate>();
+    private Map<BitKey, StarPredicate> predicates =
+        new HashMap<BitKey, StarPredicate>();
 
     public RolapCacheRegion(
         RolapStar star,
         List<RolapStar.Measure> starMeasureList)
     {
+        this.star = star;
         bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
         for (RolapStar.Measure measure : starMeasureList) {
             bitKey.set(measure.getBitPosition());
@@ -45,22 +48,6 @@ public class RolapCacheRegion {
     }
 
     /**
-     * Adds a predicate which applies to a single column.
-     *
-     * @param column Constrained column
-     * @param predicate Predicate
-     */
-    public void addPredicate(
-        RolapStar.Column column,
-        StarColumnPredicate predicate)
-    {
-        int bitPosition = column.getBitPosition();
-        assert !bitKey.get(bitPosition);
-        bitKey.set(bitPosition);
-        columnPredicates.put(bitPosition, predicate);
-    }
-
-    /**
      * Returns the predicate associated with the
      * <code>columnOrdinal</code>th column.
      *
@@ -68,7 +55,23 @@ public class RolapCacheRegion {
      * @return Predicate, or null if not constrained
      */
     public StarColumnPredicate getPredicate(int columnOrdinal) {
-        return columnPredicates.get(columnOrdinal);
+        Util.deprecated(
+            "review: what if there's more than one? what if there"
+            + " are predicates that cross other columns?",
+            false);
+        int count = 0;
+        StarColumnPredicate columnPredicate = null;
+        for (Map.Entry<BitKey, StarPredicate> entry : predicates.entrySet()) {
+            if (entry.getKey().get(columnOrdinal)) {
+                ++count;
+                if (entry.getValue() instanceof StarColumnPredicate) {
+                    columnPredicate =
+                        (StarColumnPredicate) entry.getValue();
+                }
+            }
+        }
+        assert count <= 1;
+        return columnPredicate;
     }
 
     /**
@@ -83,14 +86,13 @@ public class RolapCacheRegion {
      */
     public void addPredicate(StarPredicate predicate)
     {
-        final List<RolapStar.Column> columnList =
-            predicate.getConstrainedColumnList();
+        BitKey predicateBitKey =
+            Predicates.getBitKey(predicate, star);
+            BitKey.Factory.makeBitKey(star.getColumnCount());
         predicates.put(
-            new ArrayList<RolapStar.Column>(columnList),
+            predicateBitKey,
             predicate);
-        for (RolapStar.Column column : columnList) {
-            bitKey.set(column.getBitPosition());
-        }
+        bitKey.or(predicateBitKey);
     }
 
     /**

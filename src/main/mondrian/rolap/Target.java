@@ -33,7 +33,7 @@ public class Target extends TargetBase {
     private RolapLevel[] levels;
     private int levelDepth;
 
-    SqlTupleReader.ColumnLayout layout;
+    SqlTupleReader.ColumnLayout columnLayout;
 
     public Target(
         final RolapLevel level,
@@ -73,6 +73,8 @@ public class Target extends TargetBase {
                     member = memberBuilder.allMember();
                     continue;
                 }
+                SqlTupleReader.LevelColumnLayout layout =
+                    columnLayout.levelLayoutList.get(i);
 
                 Object[] keys = new Object[layout.keyOrdinals.length];
                 for (int j = 0, n = layout.keyOrdinals.length; j < n; j++) {
@@ -117,7 +119,7 @@ public class Target extends TargetBase {
     }
 
     public void setColumnLayout(SqlTupleReader.ColumnLayout layout) {
-        this.layout = layout;
+        this.columnLayout = layout;
     }
 
     public List<RolapMember> close() {

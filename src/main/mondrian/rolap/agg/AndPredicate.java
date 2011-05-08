@@ -12,7 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.BitKey;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.Dialect;
 
 import java.util.*;
 
@@ -67,7 +67,10 @@ public class AndPredicate extends ListPredicate {
         return new OrPredicate(list);
     }
 
-    public BitKey checkInList(SqlQuery sqlQuery, BitKey inListLHSBitKey) {
+    public BitKey checkInList(
+        Dialect dialect,
+        BitKey inListLhsBitKey)
+    {
         // AND predicate by itself is not using IN list; when it is
         // one of the children to an OR predicate, then using IN list
         // is helpful. The later is checked by passing in a bitmap that
@@ -105,13 +108,13 @@ public class AndPredicate extends ListPredicate {
         // predicates with common parents. So some optimization possible in
         // generateMultiValueInExpr() is not tried here, as they require
         // implementing "longest common prefix" algorithm which is an overkill.
-        BitKey inListRHSBitKey = inListLHSBitKey.copy();
+        BitKey inListRhsBitKey = inListLhsBitKey.copy();
 
-        if (!columnBitKey.equals(inListLHSBitKey)
+        if (!columnBitKey.equals(inListLhsBitKey)
             || (children.size() > 1
-             && !sqlQuery.getDialect().supportsMultiValueInExpr()))
+             && !dialect.supportsMultiValueInExpr()))
         {
-            inListRHSBitKey.clear();
+            inListRhsBitKey.clear();
         } else {
             for (StarPredicate predicate : children) {
                 // If any predicate requires comparison to null value, cannot
@@ -121,18 +124,18 @@ public class AndPredicate extends ListPredicate {
                         ((ValueColumnPredicate) predicate);
                     if (columnPred.getValue() == RolapUtil.sqlNullValue) {
                         // This column predicate cannot be translated to IN
-                        inListRHSBitKey.clear(
-                            columnPred.getConstrainedColumn().getBitPosition());
+                        inListRhsBitKey.clear(
+                            columnPred.getColumn().ordinal());
                     }
                     // else do nothing because this column predicate can be
                     // translated to IN
                 } else {
-                    inListRHSBitKey.clear();
+                    inListRhsBitKey.clear();
                     break;
                 }
             }
         }
-        return inListRHSBitKey;
+        return inListRhsBitKey;
     }
 
     /*
@@ -144,9 +147,9 @@ public class AndPredicate extends ListPredicate {
      *
      */
     public void toInListSql(
-        SqlQuery sqlQuery,
+        Dialect dialect,
         StringBuilder buf,
-        BitKey inListRHSBitKey)
+        BitKey inListRhsBitKey)
     {
         boolean firstValue = true;
         buf.append("(");
@@ -161,23 +164,21 @@ public class AndPredicate extends ListPredicate {
             // inListPossible() checks gaurantees that predicate is of type
             // ValueColumnPredicate
             assert predicate instanceof ValueColumnPredicate;
-            if (inListRHSBitKey.get(
-                ((ValueColumnPredicate) predicate).getConstrainedColumn()
-                .getBitPosition()))
+            if (inListRhsBitKey.get(
+                ((ValueColumnPredicate) predicate).getColumn().ordinal()))
             {
                 sortedPredicates.add((ValueColumnPredicate)predicate);
             }
         }
 
+        int k = 0;
         for (ValueColumnPredicate predicate : sortedPredicates) {
-            if (firstValue) {
-                firstValue = false;
-            } else {
+            if (k++ > 0) {
                 buf.append(", ");
             }
-            sqlQuery.getDialect().quote(
+            dialect.quote(
                 buf, predicate.getValue(),
-                predicate.getConstrainedColumn().getDatatype());
+                predicate.getColumn().getDatatype());
         }
         buf.append(")");
     }

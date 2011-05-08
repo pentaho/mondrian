@@ -182,7 +182,6 @@ public class RolapSchemaLoader {
         } catch (IOException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         }
-
     }
 
     void load(
@@ -297,7 +296,8 @@ public class RolapSchemaLoader {
         final RolapSchema schema)
     {
         assert xmlPhysicalSchema != null;
-        final RolapSchema.PhysSchema physSchema = createSyntheticPhysicalSchema();
+        final RolapSchema.PhysSchema physSchema =
+            createSyntheticPhysicalSchema();
         final Set<ElementDef> skip = new HashSet<ElementDef>();
 
         // First pass through elements, creating tables, ensuring that
@@ -433,8 +433,12 @@ public class RolapSchemaLoader {
         // Third pass, validate calculated columns. Note that a calculated
         // column can reference columns in other tables. Forward references
         // are allowed, but references must not be cyclic.
-        for (RolapSchema.UnresolvedColumn unresolvedColumn : unresolvedColumnList) {
-            if (unresolvedColumn.state == RolapSchema.UnresolvedColumn.State.RESOLVED) {
+        for (RolapSchema.UnresolvedColumn unresolvedColumn
+            : unresolvedColumnList)
+        {
+            if (unresolvedColumn.state
+                == RolapSchema.UnresolvedColumn.State.RESOLVED)
+            {
                 continue;
             }
             schema.resolve(physSchema, unresolvedColumn);
@@ -450,7 +454,8 @@ public class RolapSchemaLoader {
         }
 
         // Validate keys.
-        for (RolapSchema.PhysRelation table : physSchema.tablesByName.values()) {
+        for (RolapSchema.PhysRelation table : physSchema.tablesByName.values())
+        {
             for (RolapSchema.PhysKey key : table.getKeyList()) {
                 for (RolapSchema.PhysExpr keyColumn : key.columnList) {
                     if (keyColumn instanceof RolapSchema.PhysCalcColumn) {
@@ -463,10 +468,13 @@ public class RolapSchemaLoader {
                             + physCalcColumn.relation.getAlias() + "'.",
                             null,
                             null);
-                    } else if (keyColumn instanceof RolapSchema.UnresolvedColumn) {
+                    } else if (keyColumn
+                        instanceof RolapSchema.UnresolvedColumn)
+                    {
                         // have already reported that it is unresolved: continue
                     } else {
-                        RolapSchema.PhysRealColumn column = (RolapSchema.PhysRealColumn) keyColumn;
+                        RolapSchema.PhysRealColumn column =
+                            (RolapSchema.PhysRealColumn) keyColumn;
                         if (column.relation != table) {
                             handler.warning(
                                 "Columns in primary key must belong to key "
@@ -645,7 +653,6 @@ public class RolapSchemaLoader {
                     throw new IllegalArgumentException();
                 }
             }
-
             physTable.columnsByName.put(
                 column.name,
                 physCalcColumn);
@@ -874,11 +881,14 @@ public class RolapSchemaLoader {
 //            new ArrayList<RolapCubeHierarchy.RolapCubeStoredMeasure>();
 //        for (Member measure : cube.getMeasures()) {
 //            if (measure instanceof RolapStoredMeasure) {
-//                RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
-//                assert ((RolapStoredMeasure) measure).getMeasureGroup().measureList
+//                RolapStoredMeasure storedMeasure =
+//                    (RolapStoredMeasure) measure;
+//                assert ((RolapStoredMeasure) measure).getMeasureGroup()
+//                    .measureList
 //                    .contains(storedMeasure);
 //            }
-//            if (measure instanceof RolapCubeHierarchy.RolapCubeStoredMeasure) {
+//            if (measure instanceof RolapCubeHierarchy.RolapCubeStoredMeasure)
+//            {
 //                storedMeasures.add(
 //                    (RolapCubeHierarchy.RolapCubeStoredMeasure) measure);
 //            }
@@ -906,7 +916,6 @@ public class RolapSchemaLoader {
 
 
         for (RolapMeasureGroup measureGroup : cube.getMeasureGroups()) {
-
             // Create a RolapStar.Measure for each measure in this group.
             for (RolapStoredMeasure measure : measureGroup.measureList) {
                 final RolapSchema.PhysExpr expr = measure.getExpr();
@@ -1968,7 +1977,8 @@ public class RolapSchemaLoader {
         levelTypeString = levelTypeString.toUpperCase();
         // For mondrian-3 compatibility, convert "TIMEYEARS" to "TIME_YEARS" etc
         if (levelTypeString.startsWith("TIME")
-            && !levelTypeString.startsWith("TIME_")) {
+            && !levelTypeString.startsWith("TIME_"))
+        {
             levelTypeString = "TIME_" + levelTypeString.substring(4);
         }
         return Util.lookup(
@@ -2055,7 +2065,8 @@ public class RolapSchemaLoader {
      * <blockquote><code>&lt;Dimension ... table="t"&gt;<br/>
      * &nbsp;&nbsp;&lt;Attribute .../&gt;<br/>
      * &nbsp;&nbsp;&nbsp;&nbsp;&lt;OrderBy&gt;<br/>
-     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Column name="c2" table="t2"&gt;<br/>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;Column name="c2"
+     * table="t2"&gt;<br/>
      * &nbsp;&nbsp;&nbsp;&nbsp;&lt;/OrderBy&gt;<br/>
      * &nbsp;&nbsp;&lt;/Attribute&gt;<br/>
      * &nbsp;&nbsp;...<br/>
@@ -2615,7 +2626,8 @@ public class RolapSchemaLoader {
             queryExp.formulas.length
             == xmlCalcMembers.size() + xmlNamedSets.size());
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
-            postCalcMember(xmlCalcMembers, formulaList, i, queryExp, memberList);
+            postCalcMember(
+                xmlCalcMembers, formulaList, i, queryExp, memberList);
         }
         for (int i = 0; i < xmlNamedSets.size(); i++) {
             postNamedSet(

@@ -154,7 +154,7 @@ public class Aggregation {
         // this set of measures and constraints
         Aggregation.Axis[] axes = new Aggregation.Axis[axisCount];
         for (int i = 0; i < axisCount; i++) {
-            axes[i] = new Aggregation.Axis(predicates[i]);
+            axes[i] = new Aggregation.Axis(columns[i], predicates[i]);
         }
         List<Segment> segments =
             addSegmentsToAggregation(
@@ -345,7 +345,7 @@ public class Aggregation {
         double abloat = 1.0;
         final double aBloatLimit = .5;
 
-        for (Integer j : indexes) {
+        for (int j : indexes) {
             abloat = abloat * bloats[j];
             if (abloat <= aBloatLimit) {
                 break;
@@ -354,7 +354,10 @@ public class Aggregation {
             if (MondrianProperties.instance().OptimizePredicates.get()
                 || bloats[j] == 1)
             {
-                newPredicates[j] = new LiteralStarPredicate(columns[j], true);
+                newPredicates[j] =
+                    Predicates.wildcard(
+                        (RolapSchema.PhysColumn) columns[j].getExpression(),
+                        true);
             }
         }
         return newPredicates;
@@ -526,6 +529,7 @@ public class Aggregation {
             for (StarPredicate predicate : cacheRegion.getPredicates()) {
                 ValuePruner pruner =
                     new ValuePruner(
+                        star,
                         predicate,
                         segment.axes,
                         segment.getData());
@@ -584,7 +588,6 @@ public class Aggregation {
                     cacheRegion.getPredicate(pos);
                 int keysMatched;
                 if (flushPredicate == null) {
-                    flushPredicate = LiteralStarPredicate.TRUE;
                     keysMatched = axis.getKeys().length;
                 } else {
                     keysMatched = axis.getMatchCount(flushPredicate);
@@ -759,41 +762,52 @@ public class Aggregation {
          */
         private Comparable<?>[] keys;
 
+        private final int bitPosition;
+
         private static final Integer ZERO = Integer.valueOf(0);
         private static final Integer ONE = Integer.valueOf(1);
 
         /**
          * Creates an empty Axis.
          *
+         * @param column    Star column
          * @param predicate Predicate defining which keys should appear on
          *                  axis. (If a key passes the predicate but
          *                  is not in the list, every cell with that
          *                  key is assumed to have a null value.)
          */
-        Axis(StarColumnPredicate predicate) {
-            this.predicate = predicate;
+        Axis(RolapStar.Column column, StarColumnPredicate predicate) {
+            this(column, predicate, null);
             assert predicate != null;
         }
 
         /**
          * Creates an axis populated with a set of keys.
          *
+         * @param column    Star column
          * @param predicate Predicate defining which keys should appear on
          *                  axis. (If a key passes the predicate but
          *                  is not in the list, every cell with that
          *                  key is assumed to have a null value.)
          * @param keys      Keys
          */
-        Axis(StarColumnPredicate predicate, Comparable[] keys) {
-            this(predicate);
+        Axis(
+            RolapStar.Column column,
+            StarColumnPredicate predicate,
+            Comparable[] keys)
+        {
+            this.predicate = predicate;
             this.keys = keys;
-            for (int i = 0; i < keys.length; i++) {
-                Comparable<?> key = keys[i];
-                mapKeyToOffset.put(key, i);
-                //noinspection unchecked
-                assert i == 0
-                       || keys[i - 1].compareTo(keys[i]) < 0;
+            if (keys != null) {
+                for (int i = 0; i < keys.length; i++) {
+                    Comparable<?> key = keys[i];
+                    mapKeyToOffset.put(key, i);
+                    //noinspection unchecked
+                    assert i == 0
+                           || keys[i - 1].compareTo(keys[i]) < 0;
+                }
             }
+            bitPosition = column.getBitPosition();
         }
 
         StarColumnPredicate getPredicate() {
@@ -966,12 +980,13 @@ public class Aggregation {
          *                       cell is currently empty
          */
         ValuePruner(
+            RolapStar star,
             StarPredicate flushPredicate,
             Axis[] segmentAxes,
             SegmentDataset data)
         {
             this.flushPredicate = flushPredicate;
-            this.arity = flushPredicate.getConstrainedColumnList().size();
+            this.arity = flushPredicate.getColumnList().size();
             this.axes = new Axis[arity];
             this.keepBitSets = new BitSet[arity];
             this.axisInverseOrdinals = new int[segmentAxes.length];
@@ -988,10 +1003,11 @@ public class Aggregation {
             // constraint will have to evaluate to true for all possible values
             // of that column.
             for (int i = 0; i < arity; i++) {
-                RolapStar.Column column =
-                    flushPredicate.getConstrainedColumnList().get(i);
+                RolapSchema.PhysColumn column =
+                    flushPredicate.getColumnList().get(i);
+                RolapStar.Column starColumn = star.getColumn(column, true);
                 int axisOrdinal =
-                    findAxis(segmentAxes, column.getBitPosition());
+                    findAxis(segmentAxes, starColumn.getBitPosition());
                 if (axisOrdinal < 0) {
                     this.axes[i] = null;
                     values[i] = StarPredicate.WILDCARD;
@@ -1008,9 +1024,7 @@ public class Aggregation {
         private int findAxis(Axis[] axes, int bitPosition) {
             for (int i = 0; i < axes.length; i++) {
                 Axis axis = axes[i];
-                if (axis.getPredicate().getConstrainedColumn().getBitPosition()
-                    == bitPosition)
-                {
+                if (axis.bitPosition == bitPosition) {
                     return i;
                 }
             }

@@ -1014,7 +1014,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,
-            SqlTupleReader.ColumnLayout columnLayout)
+            SqlTupleReader.LevelColumnLayout layout)
             throws SQLException
         {
             final RolapCubeMember parentCubeMember =
@@ -1034,7 +1034,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     captionValue,
                     parentChild,
                     stmt,
-                    columnLayout);
+                    layout);
             return
                 memberReader.lookupCubeMember(
                     parentCubeMember,

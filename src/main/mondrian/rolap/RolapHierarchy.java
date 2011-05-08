@@ -730,7 +730,7 @@ public class RolapHierarchy extends HierarchyBase {
             super(
                 null,
                 level,
-                null,
+                Collections.<Object>emptyList(),
                 RolapUtil.mdxNullLiteral(),
                 MemberType.NULL);
             assert level != null;

@@ -9,12 +9,8 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.BitKey;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.*;
+import mondrian.spi.Dialect;
 
 import java.util.Collection;
 
@@ -39,11 +35,10 @@ public class ValueColumnPredicate
      *   generate deterministic SQL.)
      */
     public ValueColumnPredicate(
-        RolapStar.Column constrainedColumn,
+        RolapSchema.PhysColumn constrainedColumn,
         Object value)
     {
         super(constrainedColumn);
-//        assert constrainedColumn != null;
         assert value != null;
         assert ! (value instanceof StarColumnPredicate);
         this.value = value;
@@ -143,26 +138,22 @@ public class ValueColumnPredicate
     public StarColumnPredicate minus(StarPredicate predicate) {
         assert predicate != null;
         if (((StarColumnPredicate) predicate).evaluate(value)) {
-            return LiteralStarPredicate.FALSE;
+            return Predicates.wildcard(constrainedColumn, false);
         } else {
             return this;
         }
     }
 
-    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
-        return new ValueColumnPredicate(column, value);
-    }
-
-    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
-        final RolapStar.Column column = getConstrainedColumn();
-        String expr = column.generateExprString(sqlQuery);
+    public void toSql(Dialect dialect, StringBuilder buf) {
+        final RolapSchema.PhysColumn column = getColumn();
+        String expr = column.toSql();
         buf.append(expr);
         Object key = getValue();
         if (key == RolapUtil.sqlNullValue) {
             buf.append(" is null");
         } else {
             buf.append(" = ");
-            sqlQuery.getDialect().quote(buf, key, column.getDatatype());
+            dialect.quote(buf, key, column.getDatatype());
         }
     }
 
@@ -183,9 +174,8 @@ public class ValueColumnPredicate
         return inListRHSBitKey;
     }
 
-    public void toInListSql(SqlQuery sqlQuery, StringBuilder buf) {
-        sqlQuery.getDialect().quote(
-            buf, value, getConstrainedColumn().getDatatype());
+    public void toInListSql(Dialect dialect, StringBuilder buf) {
+        dialect.quote(buf, value, getColumn().getDatatype());
     }
 }
 

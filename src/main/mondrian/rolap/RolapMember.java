@@ -144,6 +144,9 @@ public interface RolapMember extends Member {
          * @return Whether key value is valid
          */
         public static boolean isValid(Object key, RolapLevel level) {
+            if (level.isAll()) {
+                return key.equals(Collections.<Object>emptyList());
+            }
             final int keyCount = level.attribute.keyList.size();
             if (key instanceof String
                 || key instanceof Number)

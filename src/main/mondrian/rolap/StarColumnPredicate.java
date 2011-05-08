@@ -40,7 +40,7 @@ public interface StarColumnPredicate extends StarPredicate {
      *
      * @return Column constrained by this predicate.
      */
-    RolapStar.Column getConstrainedColumn();
+    RolapSchema.PhysColumn getColumn();
 
     /**
      * Applies this predicate to a predicate from the axis of
@@ -77,19 +77,6 @@ public interface StarColumnPredicate extends StarPredicate {
      * @return Union predicate on this column
      */
     StarColumnPredicate orColumn(StarColumnPredicate predicate);
-
-    /**
-     * This method is required because unfortunately some ColumnPredicate
-     * objects are created without a column.
-     *
-     * <p>We call this method to provide a fake column, then call
-     * {@link #toSql(mondrian.rolap.sql.SqlQuery, StringBuilder)}.
-     *
-     * <p>todo: remove this method when
-     * {@link mondrian.util.Bug#BugMondrian313Fixed bug MONDRIAN-313} and
-     * {@link mondrian.util.Bug#BugMondrian314Fixed bug MONDRIAN-314} are fixed.
-     */
-    StarColumnPredicate cloneWithColumn(RolapStar.Column column);
 
     /**
      * Returned by

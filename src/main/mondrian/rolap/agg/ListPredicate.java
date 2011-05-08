@@ -9,15 +9,17 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.BitKey;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Base class for {@link AndPredicate} and {@link OrPredicate}.
@@ -36,15 +38,15 @@ public abstract class ListPredicate implements StarPredicate {
      * child.  Each entry in the map is a list of predicates matching that
      * hash code.
      */
-    private HashMap<Integer, List<StarPredicate>> childrenHashMap;
+    private Map<Integer, List<StarPredicate>> childrenHashMap;
 
     /**
      * Pre-computed hash code for this list column predicate
      */
     private int hashValue;
 
-    protected final List<RolapStar.Column> columns =
-        new ArrayList<RolapStar.Column>();
+    protected final List<RolapSchema.PhysColumn> columns =
+        new ArrayList<RolapSchema.PhysColumn>();
 
     protected BitKey columnBitKey;
 
@@ -61,8 +63,8 @@ public abstract class ListPredicate implements StarPredicate {
                     columnBitKey.or(predicate.getConstrainedColumnBitKey());
             }
             children.add(predicate);
-            for (RolapStar.Column column
-                : predicate.getConstrainedColumnList())
+            for (RolapSchema.PhysColumn column
+                : predicate.getColumnList())
             {
                 if (!columns.contains(column)) {
                     columns.add(column);
@@ -71,7 +73,11 @@ public abstract class ListPredicate implements StarPredicate {
         }
     }
 
-    public List<RolapStar.Column> getConstrainedColumnList() {
+    public List<RolapStar.Column> getStarColumnList(RolapStar star) {
+        return Predicates.starify(star, columns);
+    }
+
+    public List<RolapSchema.PhysColumn> getColumnList() {
         return columns;
     }
 
@@ -107,7 +113,7 @@ public abstract class ListPredicate implements StarPredicate {
 
         if (isEqual) {
             ListPredicate thatPred = (ListPredicate) that;
-            if (getOp() != thatPred.getOp()
+            if (!getOp().equals(thatPred.getOp())
                 || getChildren().size() != thatPred.getChildren().size())
             {
                 isEqual = false;
@@ -120,7 +126,7 @@ public abstract class ListPredicate implements StarPredicate {
                     childrenHashMap =
                         new HashMap<Integer, List<StarPredicate>>();
                     for (StarPredicate thisChild : getChildren()) {
-                        Integer key = new Integer(thisChild.hashCode());
+                        Integer key = thisChild.hashCode();
                         List<StarPredicate> predList = childrenHashMap.get(key);
                         if (predList == null) {
                             predList = new ArrayList<StarPredicate>();
@@ -162,9 +168,9 @@ public abstract class ListPredicate implements StarPredicate {
         throw Util.needToImplement(this);
     }
 
-    public void toSql(SqlQuery sqlQuery, StringBuilder buf) {
+    public void toSql(Dialect dialect, StringBuilder buf) {
         if (children.size() == 1) {
-            children.get(0).toSql(sqlQuery, buf);
+            children.get(0).toSql(dialect, buf);
         } else {
             int k = 0;
             buf.append("(");
@@ -172,7 +178,7 @@ public abstract class ListPredicate implements StarPredicate {
                 if (k++ > 0) {
                     buf.append(" ").append(getOp()).append(" ");
                 }
-                child.toSql(sqlQuery, buf);
+                child.toSql(dialect, buf);
             }
             buf.append(")");
         }

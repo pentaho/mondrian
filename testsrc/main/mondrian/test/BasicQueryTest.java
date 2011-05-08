@@ -54,24 +54,24 @@ public class BasicQueryTest extends FoodMartTestCase {
         super(name);
     }
 
-    private static final QueryAndResult[] sampleQueries = {
-        // 0
-        new QueryAndResult(
-            "select {[Measures].[Unit Sales]} on columns\n" + " from Sales",
+    private static final String query0 =
+        "select {[Measures].[Unit Sales]} on columns\n"
+        + " from Sales";
 
+    private static final String result0 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
-            + "Row #0: 266,773\n"),
+            + "Row #0: 266,773\n";
 
-        // 1
-        new QueryAndResult(
+    private static final String query1 =
             "select\n"
             + "    {[Measures].[Unit Sales]} on columns,\n"
             + "    order(except([Promotion Media].[Media Type].members,{[Promotion Media].[Media Type].[No Media]}),[Measures].[Unit Sales],DESC) on rows\n"
-            + "from Sales ",
+            + "from Sales ";
 
+    private static final String result1 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -102,15 +102,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #9: 3,798\n"
             + "Row #10: 3,607\n"
             + "Row #11: 2,726\n"
-            + "Row #12: 2,454\n"),
+            + "Row #12: 2,454\n";
 
-        // 2
-        new QueryAndResult(
+    private static final String query2 =
             "select\n"
             + "    { [Measures].[Units Shipped], [Measures].[Units Ordered] } on columns,\n"
             + "    NON EMPTY [Store].[Store Name].members on rows\n"
-            + "from Warehouse",
+            + "from Warehouse";
 
+    private static final String result2 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -155,10 +155,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #11: 1860.0\n"
             + "Row #11: 2074.0\n"
             + "Row #12: 10589.0\n"
-            + "Row #12: 11426.0\n"),
+            + "Row #12: 11426.0\n";
 
-        // 3
-        new QueryAndResult(
+    private static final String query3 =
             "with member [Measures].[Store Sales Last Period] as "
             + "    '([Measures].[Store Sales], Time.[Time].PrevMember)',\n"
             + "    format='#,###.00'\n"
@@ -166,8 +165,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    {[Measures].[Store Sales Last Period]} on columns,\n"
             + "    {TopCount([Product].[Product Department].members,5, [Measures].[Store Sales Last Period])} on rows\n"
             + "from Sales\n"
-            + "where ([Time].[1998])",
+            + "where ([Time].[1998])";
 
+    private static final String result3 =
             "Axis #0:\n"
             + "{[Time].[1998]}\n"
             + "Axis #1:\n"
@@ -182,17 +182,17 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 67,609.82\n"
             + "Row #2: 60,469.89\n"
             + "Row #3: 55,207.50\n"
-            + "Row #4: 39,774.34\n"),
+            + "Row #4: 39,774.34\n";
 
-        // 4
-        new QueryAndResult(
+    private static final String query4 =
             "with member [Measures].[Total Store Sales] as 'Sum(YTD(),[Measures].[Store Sales])', format_string='#.00'\n"
             + "select\n"
             + "    {[Measures].[Total Store Sales]} on columns,\n"
             + "    {TopCount([Product].[Product Department].members,5, [Measures].[Total Store Sales])} on rows\n"
             + "from Sales\n"
-            + "where ([Time].[1997].[Q2].[4])",
+            + "where ([Time].[1997].[Q2].[4])";
 
+    private static final String result4 =
             "Axis #0:\n"
             + "{[Time].[1997].[Q2].[4]}\n"
             + "Axis #1:\n"
@@ -207,17 +207,17 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 21897.10\n"
             + "Row #2: 19980.90\n"
             + "Row #3: 17882.63\n"
-            + "Row #4: 12963.23\n"),
+            + "Row #4: 12963.23\n";
 
-        // 5
-        new QueryAndResult(
+    private static final String query5 =
             "with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%'\n"
             + "select\n"
             + "    {[Measures].[Store Cost],[Measures].[Store Sales],[Measures].[Store Profit Rate]} on columns,\n"
             + "    Order([Product].[Product Department].members, [Measures].[Store Profit Rate], BDESC) on rows\n"
             + "from Sales\n"
-            + "where ([Time].[1997])",
+            + "where ([Time].[1997])";
 
+    private static final String result5 =
             "Axis #0:\n"
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
@@ -328,10 +328,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                   + "Row #23: \n"
                   + "Row #24: \n"
                   + "Row #24: \n"
-                  + "Row #24: \n")),
+                  + "Row #24: \n");
 
-        // 6
-        new QueryAndResult(
+    private static final String query6 =
             "with\n"
             + "   member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]',\n"
             + "       format_string = '#.00%'\n"
@@ -339,8 +338,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "   { [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
             + "   order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
             + "from Sales\n"
-            + "where ([Measures].[Unit Sales])",
+            + "where ([Measures].[Unit Sales])";
 
+    private static final String result6 =
             "Axis #0:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #1:\n"
@@ -389,16 +389,16 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #18: 21.89%\n"
             + "Row #19: 21.47%\n"
             + "Row #20: 17.47%\n"
-            + "Row #21: 13.79%\n"),
+            + "Row #21: 13.79%\n";
 
-        // 7
-        new QueryAndResult(
+    private static final String query7 =
             "with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'\n"
             + "select\n"
             + "    {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns,\n"
             + "    {Descendants([Time].[1997],[Time].[Month])} on rows\n"
-            + "from Sales",
+            + "from Sales";
 
+    private static final String result7 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -440,50 +440,61 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #10: 53,363.71\n"
             + "Row #10: 508,272.49\n"
             + "Row #11: 56,965.64\n"
-            + "Row #11: 565,238.13\n"),
+            + "Row #11: 565,238.13\n";
 
-        // 8
-        new QueryAndResult(
+    private static final String query8 =
             "select {[Measures].[Promotion Sales]} on columns\n"
-            + " from Sales",
+            + " from Sales";
 
+    private static final String result8 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Promotion Sales]}\n"
-            + "Row #0: 151,211.21\n"),
+            + "Row #0: 151,211.21\n";
+
+    private static final QueryAndResult[] sampleQueries = {
+        new QueryAndResult(query0, result0),
+        new QueryAndResult(query1, result1),
+        new QueryAndResult(query2, result2),
+        new QueryAndResult(query3, result3),
+        new QueryAndResult(query4, result4),
+        new QueryAndResult(query5, result5),
+        new QueryAndResult(query6, result6),
+        new QueryAndResult(query7, result7),
+        new QueryAndResult(query8, result8),
     };
 
     public void testSample0() {
-        assertQueryReturns(sampleQueries[0].query, sampleQueries[0].result);
+        assertQueryReturns(query0, result0);
     }
 
     public void testSample1() {
-        assertQueryReturns(sampleQueries[1].query, sampleQueries[1].result);
+        assertQueryReturns(query1, result1);
     }
 
     public void testSample2() {
-        assertQueryReturns(sampleQueries[2].query, sampleQueries[2].result);
+        assertQueryReturns(query2, result2);
     }
 
     public void testSample3() {
-        assertQueryReturns(sampleQueries[3].query, sampleQueries[3].result);
+        assertQueryReturns(query3, result3);
     }
 
     public void testSample4() {
-        assertQueryReturns(sampleQueries[4].query, sampleQueries[4].result);
+        assertQueryReturns(query4, result4);
     }
 
     public void testSample5() {
-        assertQueryReturns(sampleQueries[5].query, sampleQueries[5].result);
+        assertQueryReturns(query5, result5);
     }
 
     public void testSample6() {
-        assertQueryReturns(sampleQueries[6].query, sampleQueries[6].result);
+        assertQueryReturns(query6, result6);
     }
 
     public void testSample7() {
-        assertQueryReturns(sampleQueries[7].query, sampleQueries[7].result);
+        assertQueryReturns(query7, result7);
     }
 
     public void testSample8() {
@@ -494,7 +505,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             // defined wrong.
             return;
         }
-        assertQueryReturns(sampleQueries[8].query, sampleQueries[8].result);
+        assertQueryReturns(query8, result8);
     }
 
     public void testGoodComments() {
@@ -1297,6 +1308,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSolveOrderNonMeasure2() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Store].[StoreCalc] as '0', SOLVE_ORDER=0\n"
@@ -1325,6 +1339,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * comes before Customers in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1348,6 +1365,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Promotions in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous2() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1409,6 +1429,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMultipleCalculatedMembersWhichAreNotMeasures() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Store].[x] AS '1'\n"
@@ -1432,6 +1455,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * previous one would work ok.
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures2() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[x] AS '1'\n"
@@ -1451,6 +1477,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * name as [Product].[x]. (See MONDRIAN-77.)
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures3() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[x] AS '1'\n"
@@ -1642,9 +1671,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         System.out.println(TestContext.toString(axis.getPositions()));
     }
 
-    private static final List<QueryAndResult> taglibQueries = Arrays.asList(
-        // 0
-        new QueryAndResult(
+    private static final String queryT0 =
             "select\n"
             + "  {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n"
             + "  CrossJoin(\n"
@@ -1654,8 +1681,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "      [Promotion Media].[All Media].[Street Handout] },\n"
             + "    [Product].[All Products].[Drink].children) on rows\n"
             + "from Sales\n"
-            + "where ([Time].[1997])",
+            + "where ([Time].[1997])";
 
+    private static final String resultT0 =
             "Axis #0:\n"
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
@@ -1710,10 +1738,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #10: 520.55\n"
             + "Row #11: 84\n"
             + "Row #11: 50.26\n"
-            + "Row #11: 128.32\n"),
+            + "Row #11: 128.32\n";
 
-        // 1
-        new QueryAndResult(
+    private static final String queryT1 =
             "select\n"
             + "  [Product].[All Products].[Drink].children on rows,\n"
             + "  CrossJoin(\n"
@@ -1724,8 +1751,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "      [Promotion Media].[All Media].[Street Handout] }\n"
             + "   ) on columns\n"
             + "from Sales\n"
-            + "where ([Time].[1997])",
+            + "where ([Time].[1997])";
 
+    private static final String resultT1 =
             "Axis #0:\n"
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
@@ -1764,15 +1792,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #2: 89.03\n"
             + "Row #2: 119.55\n"
             + "Row #2: 140.27\n"
-            + "Row #2: 128.32\n"),
+            + "Row #2: 128.32\n";
 
-        // 2
-        new QueryAndResult(
+    private static final String queryT2 =
             "select\n"
             + "  {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,\n"
             + "  Order([Product].[Product Department].members, [Measures].[Store Sales], DESC) on rows\n"
-            + "from Sales",
+            + "from Sales";
 
+    private static final String resultT2 =
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1847,15 +1875,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #21: 6,838\n"
             + "Row #21: 14,029.08\n"
             + "Row #22: 4,186\n"
-            + "Row #22: 7,058.60\n"),
+            + "Row #22: 7,058.60\n";
 
-        // 3
-        new QueryAndResult(
+    private static final String queryT3 =
             "select\n"
             + "  [Product].[All Products].[Drink].children on columns\n"
             + "from Sales\n"
-            + "where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])",
+            + "where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])";
 
+    private static final String resultT3 =
             "Axis #0:\n"
             + "{[Measures].[Unit Sales], [Promotion Media].[Street Handout], [Time].[1997]}\n"
             + "Axis #1:\n"
@@ -1864,10 +1892,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Drink].[Dairy]}\n"
             + "Row #0: 158\n"
             + "Row #0: 270\n"
-            + "Row #0: 84\n"),
+            + "Row #0: 84\n";
 
-        // 4
-        new QueryAndResult(
+    private static final String queryT4 =
             "select\n"
             + "  NON EMPTY CrossJoin([Product].[All Products].[Drink].children, [Customers].[All Customers].[USA].[WA].Children) on rows,\n"
             + "  CrossJoin(\n"
@@ -1878,8 +1905,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "      [Promotion Media].[All Media].[Street Handout] }\n"
             + "   ) on columns\n"
             + "from Sales\n"
-            + "where ([Time].[1997])",
+            + "where ([Time].[1997])";
 
+    private static final String resultT4 =
             "Axis #0:\n"
             + "{[Time].[1997]}\n"
             + "Axis #1:\n"
@@ -2404,54 +2432,56 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #56: 23.69\n"
             + "Row #56: \n"
             + "Row #56: \n"
-            + "Row #56: 7.07\n"),
+            + "Row #56: 7.07\n";
 
-        // 5
-        new QueryAndResult(
+    private static final String queryT5 =
             "select from Sales\n"
-            + "where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV])",
+            + "where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV])";
 
+    private static final String resultT5 =
             "Axis #0:\n"
             + "{[Measures].[Store Sales], [Time].[1997], [Promotion Media].[TV]}\n"
-            + "7,786.21"));
+            + "7,786.21";
+
+    private static final List<QueryAndResult> taglibQueries = Arrays.asList(
+        new QueryAndResult(queryT0, resultT0),
+        new QueryAndResult(queryT1, resultT1),
+        new QueryAndResult(queryT2, resultT2),
+        new QueryAndResult(queryT3, resultT3),
+        new QueryAndResult(queryT4, resultT4),
+        new QueryAndResult(queryT5, resultT5));
 
     public void testTaglib0() {
         if (!FunctionTest.FILTER_SNOWFLAKE) {
             return;
         }
-        assertQueryReturns(
-            taglibQueries.get(0).query, taglibQueries.get(0).result);
+        assertQueryReturns(queryT0, resultT0);
     }
 
     public void testTaglib1() {
         if (!FunctionTest.FILTER_SNOWFLAKE) {
             return;
         }
-        assertQueryReturns(
-            taglibQueries.get(1).query, taglibQueries.get(1).result);
+        assertQueryReturns(queryT1, resultT1);
     }
 
     public void testTaglib2() {
         if (!FunctionTest.FILTER_SNOWFLAKE) {
             return;
         }
-        assertQueryReturns(
-            taglibQueries.get(2).query, taglibQueries.get(2).result);
+        assertQueryReturns(queryT2, resultT2);
     }
 
     public void testTaglib3() {
-        assertQueryReturns(
-            taglibQueries.get(3).query, taglibQueries.get(3).result);
+        assertQueryReturns(queryT3, resultT3);
     }
 
     public void testTaglib4() {
-        assertQueryReturns(
-            taglibQueries.get(4).query, taglibQueries.get(4).result);
+        assertQueryReturns(queryT4, resultT4);
     }
 
     public void testTaglib5() {
-        assertQueryReturns(
-            taglibQueries.get(5).query, taglibQueries.get(5).result);
+        assertQueryReturns(queryT5, resultT5);
     }
 
     public void testCellValue() {
@@ -4863,6 +4893,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * [Product].[All Products] is referenced from the expression.
      */
     public void testDependsOn() {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         assertQueryReturns(
             "with member [Customers].[my] as \n"
             + "  'Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))' \n"
@@ -4890,6 +4923,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * @throws Exception on error
      */
     public void testFilterWithCrossJoin() throws Exception {
+        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
+            return;
+        }
         String queryWithFilter =
             "WITH SET [#DataSet#] AS 'Filter(Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]}), "
             + "[Measures].[Unit Sales] > 5)' "

@@ -9,9 +9,9 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapStar;
 
 import java.util.*;
 
@@ -32,14 +32,12 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
      *
      * @param plus Positive predicate
      * @param minus Negative predicate
-     * @pre plus != null
-     * @pre minus != null
      */
     public MinusStarPredicate(
         StarColumnPredicate plus,
         StarColumnPredicate minus)
     {
-        super(plus.getConstrainedColumn());
+        super(plus.getColumn());
         assert minus != null;
         this.plus = plus;
         this.minus = minus;
@@ -61,8 +59,8 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
             + minus.hashCode();
     }
 
-    public RolapStar.Column getConstrainedColumn() {
-        return plus.getConstrainedColumn();
+    public RolapSchema.PhysColumn getColumn() {
+        return plus.getColumn();
     }
 
     public void values(Collection<Object> collection) {
@@ -107,7 +105,7 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         }
         if (minus instanceof ListColumnPredicate) {
             ListColumnPredicate minusList = (ListColumnPredicate) minus;
-            RolapStar.Column column = plus.getConstrainedColumn();
+            RolapSchema.PhysColumn column = plus.getColumn();
             if (predicate instanceof ListColumnPredicate) {
                 // Case 1: 'minus' and 'constraint' are both lists.
                 ListColumnPredicate list =
@@ -147,11 +145,6 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
             (StarColumnPredicate) predicate);
     }
 
-    public StarColumnPredicate cloneWithColumn(RolapStar.Column column) {
-        return new MinusStarPredicate(
-            plus.cloneWithColumn(column),
-            minus.cloneWithColumn(column));
-    }
 }
 
 // End MinusStarPredicate.java

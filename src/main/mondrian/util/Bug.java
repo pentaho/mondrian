@@ -10,6 +10,7 @@
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
 /**
@@ -80,7 +81,7 @@ public class Bug {
      * "Predicate references RolapStar.Column when used in AggStar"</a>
      * is fixed.
      */
-    public static final boolean BugMondrian313Fixed = false;
+    public static final boolean BugMondrian313Fixed = true;
 
     /**
      * Whether
@@ -88,7 +89,7 @@ public class Bug {
      * "Predicate sometimes has null RolapStar.Column"</a>
      * is fixed.
      */
-    public static final boolean BugMondrian314Fixed = false;
+    public static final boolean BugMondrian314Fixed = true;
 
     /**
      * Whether
@@ -186,6 +187,16 @@ public class Bug {
      * piece of code should be working with one or the other, not both.
      */
     public static final boolean BugSegregateRolapCubeMemberFixed = false;
+
+    /**
+     * Whether the bug that calc members cannot be referenced by a partially
+     * qualified name is fixed. For example, if you define a calc member
+     * [Store].[Foo], which is short for dimension [Stores] hierarchiy [Store]
+     * member [Foo], the resolved cannot currently find it. There is no logged
+     * bug, just this placeholder. It must be fixed before integrate to main.
+     */
+    public static final boolean BugPartiallyQualifiedCalcMemberFixed =
+        Util.deprecated(false, false);
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

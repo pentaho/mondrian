@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.Property;
+import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import org.olap4j.metadata.Level;
 
@@ -113,11 +114,13 @@ public class RolapAttribute {
     }
 
     public Property.Datatype getType() {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+        throw new UnsupportedOperationException();
     }
 
     public Dialect.Datatype getDatatype() {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+        Util.deprecated("obsolete method - use keyExpList types", false);
+//        assert keyList.size() == 1;
+        return keyList.get(0).datatype;
     }
 }
 

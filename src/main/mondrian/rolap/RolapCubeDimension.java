@@ -28,7 +28,6 @@ public class RolapCubeDimension extends RolapDimension {
 
     RolapDimension rolapDimension;
     int cubeOrdinal;
-    MondrianDef.Dimension xmlDimension;
 
     /**
      * Creates a RolapCubeDimension.
@@ -147,6 +146,11 @@ public class RolapCubeDimension extends RolapDimension {
 
     public DimensionType getDimensionType() {
         return rolapDimension.getDimensionType();
+    }
+
+    @Override
+    public RolapSchema.PhysPath getKeyPath(RolapSchema.PhysColumn column) {
+        return rolapDimension.getKeyPath(column);
     }
 
     /**

@@ -96,7 +96,7 @@ public class SqlConstraintUtils {
                 RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
-                expr = column.generateExprString(sqlQuery);
+                expr = column.getExpression().toSql();
             }
 
             final String value = String.valueOf(values[i]);
@@ -219,7 +219,8 @@ public class SqlConstraintUtils {
                 AggStar.Table table = aggColumn.getTable();
                 table.addToFrom(sqlQuery, false, true);
             } else {
-                level.getRolapLevel().getAttribute().keyList.addToFrom(sqlQuery, star);
+                level.getRolapLevel().getAttribute().keyList.addToFrom(
+                    sqlQuery, star);
 //                RolapStar.Table table = starColumn.getTable();
 //                assert table != null;
 //                table.addToFrom(sqlQuery, false, true);
@@ -353,23 +354,24 @@ public class SqlConstraintUtils {
         }
     }
 
-    private static StarColumnPredicate getColumnPredicates(
-        RolapStar.Column column,
+    private static StarPredicate getColumnPredicates(
+        RolapSchema.PhysSchema physSchema,
         Collection<RolapMember> members)
     {
-        switch (members.size()) {
-        case 0:
-            return new LiteralStarPredicate(column, false);
-        case 1:
-            return new MemberColumnPredicate(column, members.iterator().next());
-        default:
-            List<StarColumnPredicate> predicateList =
-                new ArrayList<StarColumnPredicate>();
-            for (RolapMember member : members) {
-                predicateList.add(new MemberColumnPredicate(column, member));
-            }
-            return new ListColumnPredicate(column, predicateList);
+        int i = members.size();
+        if (i == 0) {
+            return LiteralStarPredicate.FALSE;
         }
+        RolapMember member1 = members.iterator().next();
+        if (i == 1) {
+            return Predicates.memberPredicate(member1);
+        }
+        List<RolapSchema.PhysColumn> keyList =
+            member1.getLevel().getAttribute().keyList;
+        return Predicates.list(
+            physSchema,
+            member1.getLevel(),
+            new ArrayList<RolapMember>(members));
     }
 
     private static LinkedHashSet<RolapMember> getUniqueParentMembers(
@@ -623,7 +625,8 @@ public class SqlConstraintUtils {
                     assert childrenLevel == memberLevel;
                     generateSingleValueInExpr(
                         condition2,
-                        sqlQuery, measureGroup,
+                        sqlQuery,
+                        measureGroup,
                         aggStar,
                         children,
                         childrenLevel,
@@ -767,7 +770,7 @@ public class SqlConstraintUtils {
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 columnString = aggColumn.generateExprString(query);
             } else {
-                columnString = column.generateExprString(query);
+                columnString = column.getExpression().toSql();
             }
         } else {
             assert aggStar == null;
@@ -875,7 +878,7 @@ public class SqlConstraintUtils {
                 } else {
                     RolapStar.Table targetTable = column.getTable();
                     targetTable.addToFrom(sqlQuery, false, true);
-                    columnString = column.generateExprString(sqlQuery);
+                    columnString = column.getExpression().toSql();
                 }
             } else {
                 assert aggStar == null;
@@ -929,7 +932,7 @@ public class SqlConstraintUtils {
                     sqlQuery.getDialect(), level.attribute.getDatatype());
 
                 // If parent at a level is NULL, record this parent and all
-                // its children(if there's any)
+                // its children (if there are any)
                 if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(value)) {
                     // Add to the nullParent map
                     List<RolapMember> childrenList =
@@ -1032,7 +1035,7 @@ public class SqlConstraintUtils {
                 if (nameColumn == null) {
                     nameColumn = column;
                 }
-                columnString = nameColumn.generateExprString(sqlQuery);
+                columnString = nameColumn.getExpression().toSql();
             } else {
                 RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
                 columnString = nameExp.toSql();
@@ -1146,7 +1149,7 @@ public class SqlConstraintUtils {
                     } else {
                         RolapStar.Table targetTable = column.getTable();
                         targetTable.addToFrom(sqlQuery, false, true);
-                        q = column.generateExprString(sqlQuery);
+                        q = column.getExpression().toSql();
                     }
                 } else {
                     assert aggStar == null;
@@ -1160,7 +1163,11 @@ public class SqlConstraintUtils {
                     q = key.toSql();
                 }
 
-                StarColumnPredicate cc = getColumnPredicates(column, members2);
+                StarPredicate cc =
+                    getColumnPredicates(
+                        level.getAttribute().keyList.get(0).relation
+                            .getSchema(),
+                        members2);
 
                 if (!dialect.supportsUnlimitedValueList()
                     && cc instanceof ListColumnPredicate
@@ -1172,9 +1179,7 @@ public class SqlConstraintUtils {
                     // both have problems.
                 } else {
                     Util.deprecated("obsolete", false);
-                    String where =
-                        RolapStar.Column.createInExpr(
-                            q, cc, level.attribute.getDatatype(), sqlQuery);
+                    String where = Predicates.toSql(cc, dialect);
                     if (!where.equals("true")) {
                         if (!firstLevel) {
                             buf.append(exclude ? " or " : " and ");

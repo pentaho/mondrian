@@ -123,7 +123,9 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     public StarColumnPredicate getColumnPredicate(final int i) {
         final StarColumnPredicate constr = request.getValueList().get(i);
         return (constr == null)
-            ? LiteralStarPredicate.TRUE
+            ? Predicates.wildcard(
+                (RolapSchema.PhysColumn)
+                    request.getConstrainedColumns()[i].getExpression(), true)
             : constr;
     }
 
@@ -140,7 +142,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         measure.getTable().addToFrom(sqlQuery, false, true);
 
         if (!countOnly) {
-            String expr = measure.generateExprString(sqlQuery);
+            String expr = measure.getExpression().toSql();
             sqlQuery.addSelect(expr, getMeasureAlias(i));
         }
     }

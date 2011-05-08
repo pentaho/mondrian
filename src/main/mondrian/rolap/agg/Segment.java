@@ -519,7 +519,8 @@ class Segment {
                 assert newAxisKeys.length > 0;
             }
             final Aggregation.Axis newAxis =
-                new Aggregation.Axis(newPredicate, newAxisKeys);
+                new Aggregation.Axis(
+                    aggregation.getColumns()[j], newPredicate, newAxisKeys);
             newAxes[j] = newAxis;
             valueCount *= newAxisKeys.length;
         }

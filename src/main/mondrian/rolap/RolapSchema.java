@@ -1043,6 +1043,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             new PhysSchemaGraph(
                 this, Collections.<RolapSchema.PhysLink>emptyList());
 
+        private int columnCount;
+
         /**
          * Creates a physical schema.
          *
@@ -1134,6 +1136,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          */
         public PhysSchemaGraph getGraph() {
             return schemaGraph;
+        }
+
+        public int getColumnCount() {
+            return columnCount;
         }
     }
 
@@ -1473,7 +1479,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          *
          * <p>Throws if table was not found or view had an error.
          *
-         * @return Whether table was found  @param schema Schema (for logging errors)
+         * @return Whether table was found
+         * @param schema Schema (for logging errors)
          * @param xmlNode XML element
          * @param rowCountAndSize Output array, to hold the number of rows in
          */
@@ -1996,6 +2003,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public final String name;
         Dialect.Datatype datatype;
         protected final int columnSize;
+        private final int ordinal;
 
         public PhysColumn(
             PhysRelation relation, String name, int columnSize)
@@ -2005,6 +2013,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             this.name = name;
             this.relation = relation;
             this.columnSize = columnSize;
+            this.ordinal = relation.getSchema().columnCount++;
         }
 
         public String toString() {
@@ -2042,6 +2051,15 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          */
         public int getColumnSize() {
             return columnSize;
+        }
+
+        /**
+         * Ordinal of column; non-negative, and unique within its schema.
+         *
+         * @return Ordinal of column.
+         */
+        public final int ordinal() {
+            return ordinal;
         }
     }
 
@@ -2476,13 +2494,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             this.index = index;
         }
 
-        /**
-         * Sets the calculated column that is the context for this unresolved
-         * reference to a column.
-         */
-        void setPhysCalcColumn(PhysCalcColumn physCalcColumn ) {
-
-        }
         public String getContext() {
             return ", in definition of calculated column '"
                 + physCalcColumn.relation.getAlias() + "'.'"
@@ -2493,6 +2504,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             PhysColumn column)
         {
             list.set(index, column);
+            physCalcColumn.compute();
         }
     }
 }

@@ -13,11 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.MemberColumnPredicate;
-import mondrian.rolap.agg.MemberTuplePredicate;
-import mondrian.rolap.agg.RangeColumnPredicate;
-import mondrian.rolap.agg.ValueColumnPredicate;
+import mondrian.rolap.agg.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -240,11 +236,11 @@ public class RolapCubeLevel extends RolapLevel {
          * Adds constraints to a cache region for a member of this level.
          *
          * @param predicate Predicate
-         * @param measureGroup
+         * @param measureGroup Measure group
          * @param cacheRegion Cache region to be constrained
          */
         void constrainRegion(
-            StarColumnPredicate predicate,
+            StarPredicate predicate,
             RolapMeasureGroup measureGroup,
             RolapCacheRegion cacheRegion);
     }
@@ -299,7 +295,7 @@ public class RolapCubeLevel extends RolapLevel {
                 } else {
                     predicate =
                         new ValueColumnPredicate(
-                            starColumn, key.get(keyOrdinal));
+                            column, key.get(keyOrdinal));
                 }
 
                 // use the member as constraint; this will give us some
@@ -324,7 +320,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
 
         public void constrainRegion(
-            StarColumnPredicate predicate,
+            StarPredicate predicate,
             RolapMeasureGroup measureGroup,
             RolapCacheRegion cacheRegion)
         {
@@ -336,7 +332,7 @@ public class RolapCubeLevel extends RolapLevel {
                 return;
             }
 
-            if (predicate instanceof MemberColumnPredicate) {
+            if (predicate instanceof MemberPredicate) {
                 MemberColumnPredicate memberColumnPredicate =
                     (MemberColumnPredicate) predicate;
                 RolapMember member = memberColumnPredicate.getMember();
@@ -350,12 +346,7 @@ public class RolapCubeLevel extends RolapLevel {
                 for (RolapSchema.PhysColumn physColumn
                     : cubeLevel.attribute.keyList)
                 {
-                    RolapStar.Column column =
-                        measureGroup.getRolapStarColumn(
-                            cubeLevel.cubeDimension,
-                            physColumn,
-                            true);
-                    cacheRegion.addPredicate(column, predicate);
+                    cacheRegion.addPredicate(predicate);
                 }
                 return;
             } else if (predicate instanceof RangeColumnPredicate) {
@@ -386,8 +377,8 @@ public class RolapCubeLevel extends RolapLevel {
                     throw new UnsupportedOperationException();
                 }
                 MemberTuplePredicate predicate2 =
-                    new MemberTuplePredicate(
-                        measureGroup,
+                    Predicates.range(
+                        measureGroup.getStar().getSchema().physicalSchema,
                         lowerMember,
                         !rangeColumnPredicate.getLowerInclusive(),
                         upperMember,
@@ -461,7 +452,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
 
         public void constrainRegion(
-            StarColumnPredicate predicate,
+            StarPredicate predicate,
             RolapMeasureGroup measureGroup,
             RolapCacheRegion cacheRegion)
         {
@@ -483,7 +474,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
 
         public void constrainRegion(
-            StarColumnPredicate predicate,
+            StarPredicate predicate,
             RolapMeasureGroup measureGroup,
             RolapCacheRegion cacheRegion)
         {
@@ -504,7 +495,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
 
         public void constrainRegion(
-            StarColumnPredicate predicate,
+            StarPredicate predicate,
             RolapMeasureGroup measureGroup,
             RolapCacheRegion cacheRegion)
         {

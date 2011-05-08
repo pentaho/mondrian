@@ -101,6 +101,7 @@ public class RolapMemberBase
             || this instanceof RolapCalculatedMember
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
         assert RolapMember.Key.isValid(key, level)
+            || memberType == MemberType.FORMULA
             : "invalid key " + key + " for level " + level;
         if (key instanceof byte[]) {
             // Some drivers (e.g. Derby) return byte arrays for binary columns
@@ -459,11 +460,8 @@ public class RolapMemberBase
 
     public List<Object> getKeyAsList() {
         Object key = getKey();
-        if (key == null) {
-            return Collections.emptyList();
-        } else if (key instanceof Object[]) {
-            Object[] objects = (Object[]) key;
-            return Arrays.asList(objects);
+        if (key instanceof List) {
+            return (List<Object>) key;
         } else {
             return Collections.singletonList(key);
         }
@@ -473,8 +471,8 @@ public class RolapMemberBase
         Object key = getKey();
         if (key == null) {
             return EMPTY_OBJECT_ARRAY;
-        } else if (key instanceof Object[]) {
-            return (Object[]) key;
+        } else if (key instanceof List) {
+            return ((List) key).toArray();
         } else {
             return new Object[] {key};
         }
@@ -863,18 +861,22 @@ public class RolapMemberBase
      * like it to be "20319".
      */
     protected static String keyToString(Object key) {
-        String name;
-        if (key == null || RolapUtil.sqlNullValue.equals(key)) {
-            name = RolapUtil.mdxNullLiteral();
+        if (key == null || key == RolapUtil.sqlNullValue) {
+            return RolapUtil.mdxNullLiteral();
+        } else if (key instanceof List) {
+            List list = (List) key;
+            return keyToString(list.get(list.size() - 1));
         } else if (key instanceof Id.Segment) {
-            name = ((Id.Segment) key).name;
+            return ((Id.Segment) key).name;
+        } else if (key instanceof Number) {
+            String name = key.toString();
+            if (name.endsWith(".0")) {
+                name = name.substring(0, name.length() - 2);
+            }
+            return name;
         } else {
-            name = key.toString();
+            return key.toString();
         }
-        if ((key instanceof Number) && name.endsWith(".0")) {
-            name = name.substring(0, name.length() - 2);
-        }
-        return name;
     }
 
     /**

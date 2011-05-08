@@ -303,7 +303,9 @@ public class TestAggregationManager extends BatchTestCase {
             star.lookupColumn(table, column);
         request.addConstrainedColumn(
             storeTypeColumn,
-            new ValueColumnPredicate(storeTypeColumn, value));
+            new ValueColumnPredicate(
+                (RolapSchema.PhysColumn) storeTypeColumn.getExpression(),
+                value));
         return request;
     }
 
@@ -1503,32 +1505,32 @@ public class TestAggregationManager extends BatchTestCase {
             TestContext.createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Promotion Plus\" foreignKey=\"promotion_id\">\n"
-                    + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
-                    + "      <Table name=\"promotion\"/>\n"
-                    + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/>\n"
-                    + "      <Level name=\"Promotion Id\" column=\"promotion_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
-                    + "    </Hierarchy>\n"
-                    + "  </Dimension>");
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+                + "      <Table name=\"promotion\"/>\n"
+                + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Promotion Id\" column=\"promotion_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>");
 
         // Note that query does not join in the "promotion" table.
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
                 "select `time_by_day`.`the_year` as `c0`,"
-                    + " `sales_fact_1997`.`promotion_id` as `c1`,"
-                    + " sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-                    + "from `time_by_day` as `time_by_day`,"
-                    + " `sales_fact_1997` as `sales_fact_1997` "
-                    + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-                    + " and `time_by_day`.`the_year` = 1997"
-                    + " and `sales_fact_1997`.`promotion_id` in (5, 49, 112, 123, 130, 150, 168, 196, 344, 393, 403, 601, 640, 683, 760, 831, 900, 914, 992, 1005, 1076, 1266, 1288, 1315, 1339, 1354, 1388, 1401, 1454, 1461, 1469, 1483, 1505, 1609, 1626, 1705, 1726, 1784, 1788, 1864) "
-                    + "group by `time_by_day`.`the_year`, `sales_fact_1997`.`promotion_id`",
+                + " `sales_fact_1997`.`promotion_id` as `c1`,"
+                + " sum(`sales_fact_1997`.`unit_sales`) as `m0` "
+                + "from `time_by_day` as `time_by_day`,"
+                + " `sales_fact_1997` as `sales_fact_1997` "
+                + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
+                + " and `time_by_day`.`the_year` = 1997"
+                + " and `sales_fact_1997`.`promotion_id` in (5, 49, 112, 123, 130, 150, 168, 196, 344, 393, 403, 601, 640, 683, 760, 831, 900, 914, 992, 1005, 1076, 1266, 1288, 1315, 1339, 1354, 1388, 1401, 1454, 1461, 1469, 1483, 1505, 1609, 1626, 1705, 1726, 1784, 1788, 1864) "
+                + "group by `time_by_day`.`the_year`, `sales_fact_1997`.`promotion_id`",
                 100)
         };
         assertQuerySql(
             testContext,
             "select {[Promotion Plus].[Bag Stuffers].Children} on 0\n"
-                + "from [Sales]",
+            + "from [Sales]",
             patterns);
     }
 }

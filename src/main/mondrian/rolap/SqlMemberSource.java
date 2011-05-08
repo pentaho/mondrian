@@ -277,6 +277,8 @@ class SqlMemberSource
                     if (level.isAll()) {
                         continue;
                     }
+                    final SqlTupleReader.LevelColumnLayout levelLayout =
+                        columnLayout.levelLayoutList.get(level.getDepth());
                     // TODO: pre-allocate these, one per level; remember to
                     // clone list (using Flat2List or Flat3List if appropriate)
                     final Object[] keyValues =
@@ -287,8 +289,8 @@ class SqlMemberSource
                     // kind of list, but the lists should be comparable.
                     final List<Object> keyList = Arrays.asList(keyValues);
 
-                    for (int i = 0; i < columnLayout.keyOrdinals.length; i++) {
-                        int keyOrdinal = columnLayout.keyOrdinals[i];
+                    for (int i = 0; i < levelLayout.keyOrdinals.length; i++) {
+                        int keyOrdinal = levelLayout.keyOrdinals[i];
                         Object value = accessors.get(keyOrdinal).get();
                         if (value == null) {
                             value = RolapUtil.sqlNullValue;
@@ -313,19 +315,17 @@ class SqlMemberSource
 
                     // REVIEW jvs 20-Feb-2007:  What about caption? TODO:
 
-                    if (columnLayout.ordinalOrdinal >= 0) {
+                    if (levelLayout.ordinalOrdinal >= 0) {
                         if (assignOrderKeys) {
                             Object orderKey =
-                                accessors.get(columnLayout.ordinalOrdinal)
-                                    .get();
+                                accessors.get(levelLayout.ordinalOrdinal).get();
                             setOrderKey((RolapMemberBase) member, orderKey);
                         }
                     }
 
                     int i = 0;
                     for (Property property : level.attribute.getProperties()) {
-                        int propertyOrdinal =
-                            columnLayout.propertyOrdinals[i++];
+                        int propertyOrdinal = levelLayout.propertyOrdinals[i++];
                         // REVIEW emcdermid 9-Jul-2009:
                         // Should we also look up the value in the
                         // pool here, rather than setting it directly?
@@ -528,6 +528,7 @@ class SqlMemberSource
             (aggStar != null)
             && isLevelCollapsed(
                 aggStar, (RolapCubeLevel) level, starSet.getMeasureGroup());
+        layoutBuilder.createLayoutFor(level);
 
         // If constraint is 'anchored' to a fact table, add join conditions to
         // the fact table (via the table containing the dimension's key, if
@@ -555,7 +556,7 @@ class SqlMemberSource
                 final String alias = sqlQuery.addSelectGroupBy(sql);
                 ordinal = layoutBuilder.register(sql, alias);
             }
-            layoutBuilder.keyOrdinalList.add(ordinal);
+            layoutBuilder.currentLevelLayout.keyOrdinalList.add(ordinal);
         }
 
         // Add lower tables to the FROM clause. This filters out children
@@ -609,7 +610,7 @@ class SqlMemberSource
                 final String alias = sqlQuery.addSelectGroupBy(captionSql);
                 ordinal = layoutBuilder.register(captionSql, alias);
             }
-            layoutBuilder.captionOrdinal = ordinal;
+            layoutBuilder.currentLevelLayout.captionOrdinal = ordinal;
         }
 
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
@@ -622,7 +623,7 @@ class SqlMemberSource
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
             sqlQuery.addOrderBy(orderBy, true, false, true);
-            layoutBuilder.ordinalList.add(ordinal);
+            layoutBuilder.currentLevelLayout.ordinalList.add(ordinal);
         }
 
         for (RolapProperty property : level.attribute.getProperties()) {
@@ -644,7 +645,7 @@ class SqlMemberSource
                 }
                 ordinal = layoutBuilder.register(s, alias);
             }
-            layoutBuilder.propertyOrdinalList.add(ordinal);
+            layoutBuilder.currentLevelLayout.propertyOrdinalList.add(ordinal);
         }
         return sqlQuery.toString();
     }
@@ -901,7 +902,10 @@ class SqlMemberSource
                 parentMember instanceof RolapCubeMember
                     ? ((RolapCubeMember) parentMember).getRolapMember()
                     : parentMember;
-            final SqlTupleReader.ColumnLayout layout = layoutBuilder.toLayout();
+            final SqlTupleReader.ColumnLayout fullLayout =
+                layoutBuilder.toLayout();
+            final SqlTupleReader.LevelColumnLayout layout =
+                fullLayout.levelLayoutList.get(childLevel.getDepth());
             while (resultSet.next()) {
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
@@ -913,7 +917,7 @@ class SqlMemberSource
                 Object[] keys = new Object[layout.keyOrdinals.length];
                 List<Object> keyList = Arrays.asList(keys);
                 for (int i = 0; i < layout.keyOrdinals.length; i++) {
-                    Object value = accessors.get(0).get();
+                    Object value = accessors.get(layout.keyOrdinals[i]).get();
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
@@ -927,7 +931,7 @@ class SqlMemberSource
                 }
                 Object key = keys.length == 1 ? keys[0] : keyList;
                 RolapMember member = cache.getMember(key, checkCacheStatus);
-                checkCacheStatus = false; /* Only check the first time */
+                checkCacheStatus = false; // only check the first time
                 if (member == null) {
                     Object keyClone = RolapMember.Key.create(keys);
                     member =
@@ -935,7 +939,9 @@ class SqlMemberSource
                             parentMember2, childLevel, keyClone, captionValue,
                             parentChild, stmt, layout);
                 }
-                if (Util.deprecated(false, false) /*  value == RolapUtil.sqlNullValue */) {
+                if (Util.deprecated(false, false)
+                    /* value == RolapUtil.sqlNullValue */)
+                {
                     children.toArray();
                     addAsOldestSibling(children, member);
                 } else {
@@ -956,12 +962,12 @@ class SqlMemberSource
         Object captionValue,
         boolean parentChild,
         SqlStatement stmt,
-        SqlTupleReader.ColumnLayout columnLayout)
+        SqlTupleReader.LevelColumnLayout layout)
         throws SQLException
     {
         RolapMemberBase member =
             new RolapMemberBase(parentMember, childLevel, key);
-        if (columnLayout.hasOrdinal) {
+        if (layout.hasOrdinal) {
             member.setOrdinal(lastOrdinal++);
         }
         if (captionValue != null) {
@@ -985,10 +991,10 @@ class SqlMemberSource
         final List<RolapProperty>
             properties = childLevel.attribute.getProperties();
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
-        if (columnLayout.hasOrdinal) {
+        if (layout.hasOrdinal) {
             if (assignOrderKeys) {
                 Object orderKey =
-                    accessors.get(columnLayout.ordinalOrdinal).get();
+                    accessors.get(layout.ordinalOrdinal).get();
                 setOrderKey(member, orderKey);
             }
         }
@@ -997,7 +1003,7 @@ class SqlMemberSource
             member.setProperty(
                 property.getName(),
                 getPooledValue(
-                    accessors.get(columnLayout.propertyOrdinals[j++]).get()));
+                    accessors.get(layout.propertyOrdinals[j++]).get()));
         }
         cache.putMember(key, member);
         return member;
@@ -1114,16 +1120,16 @@ class SqlMemberSource
                 final String alias = sqlQuery.addSelectGroupBy(orderBy);
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
-            layoutBuilder.ordinalList.add(ordinal);
+            layoutBuilder.currentLevelLayout.ordinalList.add(ordinal);
             sqlQuery.addOrderBy(orderBy, true, false, true);
         }
 
         for (RolapProperty property : level.attribute.getProperties()) {
-            // TODO: properties have key, ordinal, etc., not just name. To do this
-            // property, we should store just the property's key in the member,
-            // then use the property key to look up the property as a member.
-            // But for now assume that properties have non-composite keys and
-            // their name is the same.
+            // TODO: properties have key, ordinal, etc., not just name. To do
+            // this property, we should store just the property's key in the
+            // member, then use the property key to look up the property as a
+            // member.  But for now assume that properties have non-composite
+            // keys and their name is the same.
             assert property.attribute.keyList.size() == 1 : "FIXME";
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
             exp.addToFrom(sqlQuery, null, null);

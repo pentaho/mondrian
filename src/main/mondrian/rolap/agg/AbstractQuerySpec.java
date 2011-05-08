@@ -70,7 +70,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         String exprInner =
             measure.getExpression() == null
                 ? "*"
-                : measure.generateExprString(sqlQuery);
+                : measure.getExpression().toSql();
         String exprOuter = measure.getAggregator().getExpression(exprInner);
         sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
     }
@@ -94,14 +94,11 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             table.addToFrom(sqlQuery, false, true);
 
-            String expr = column.generateExprString(sqlQuery);
+            String expr = column.getExpression().toSql();
 
             StarColumnPredicate predicate = getColumnPredicate(i);
-            final String where = RolapStar.Column.createInExpr(
-                expr,
-                predicate,
-                column.getDatatype(),
-                sqlQuery);
+            final Dialect dialect = sqlQuery.getDialect();
+            final String where = Predicates.toSql(predicate, dialect);
             if (!where.equals("true")) {
                 sqlQuery.addWhere(where);
             }
@@ -112,7 +109,6 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            final Dialect dialect = sqlQuery.getDialect();
             final String alias;
             final Dialect.DatabaseProduct databaseProduct =
                 dialect.getDatabaseProduct();
@@ -250,13 +246,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 continue;
             }
             table.addToFrom(innerSqlQuery, false, true);
-            String expr = column.generateExprString(innerSqlQuery);
+            String expr = column.getExpression().toSql();
             StarColumnPredicate predicate = getColumnPredicate(i);
-            final String where = RolapStar.Column.createInExpr(
-                expr,
-                predicate,
-                column.getDatatype(),
-                innerSqlQuery);
+            final String where = Predicates.toSql(predicate, dialect);
             if (!where.equals("true")) {
                 innerSqlQuery.addWhere(where);
             }
@@ -283,7 +275,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             measure.getTable().addToFrom(innerSqlQuery, false, true);
 
             String alias = getMeasureAlias(i);
-            String expr = measure.generateExprString(outerSqlQuery);
+            String expr = measure.getExpression().toSql();
             innerSqlQuery.addSelect(expr, alias);
             if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
                 innerSqlQuery.addGroupBy(expr, alias);
@@ -305,13 +297,13 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         List<StarPredicate> predicateList = getPredicateList();
         for (StarPredicate predicate : predicateList) {
             for (RolapStar.Column column
-                : predicate.getConstrainedColumnList())
+                : predicate.getStarColumnList(star))
             {
                 final RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
             }
             StringBuilder buf = new StringBuilder();
-            predicate.toSql(sqlQuery, buf);
+            predicate.toSql(sqlQuery.getDialect(), buf);
             final String where = buf.toString();
             if (!where.equals("true")) {
                 sqlQuery.addWhere(where);

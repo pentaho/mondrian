@@ -366,7 +366,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final int hashCode() {
-        return Util.hashArray(0, this.currentMembers);
+        return Arrays.hashCode(this.currentMembers);
     }
 
     /**

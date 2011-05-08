@@ -118,7 +118,7 @@
     </PhysicalSchema>
 
     <Dimensions>
-        <Dimension name='Store' table='store' key='Store Id'>
+        <Dimension name='Stores' table='store' key='Store Id'>
             <Attributes>
                 <Attribute name='Store Country'>
                     <Key>
@@ -219,7 +219,7 @@
             </Attributes>
 
             <Hierarchies>
-                <Hierarchy name='Monthly'>
+                <Hierarchy name='Time'>
                     <Level attribute='Year'/>
                     <Level attribute='Quarter'/>
                     <Level attribute='Month'/>
@@ -322,6 +322,37 @@
 
     <Cube name='Sales' defaultMeasure='Unit Sales'>
         <Dimensions>
+
+            <!-- The following dimensions are for compatibility with old
+                 FoodMart. Will put them in a new schema at some point. -->
+            <Dimension name='Gender' table='customer' key='Name'>
+                <Attributes>
+                    <Attribute name='Gender' keyColumn='gender'/>
+                    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>
+                </Attributes>
+
+                <Hierarchies>
+                    <Hierarchy name='Gender' allMemberName='All Gender'>
+                        <Level attribute='Gender'/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+
+            <Dimension name='Promotion Media' table='promotion' key='Promotion Id'>
+                <Attributes>
+                    <Attribute name='Promotion Id' keyColumn='promotion_id'/>
+                    <Attribute name='Media Type' keyColumn='media_type'/>
+                </Attributes>
+
+                <Hierarchies>
+                    <Hierarchy name='Promotion Media' allMemberName='All Media'>
+                    <Level attribute='Media Type'/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+
+            <!-- End compatibility. -->
+
             <Dimension name='Promotion' table='promotion' key='Promotion Id'>
                 <Attributes>
                     <Attribute name='Promotion Id' keyColumn='promotion_id'/>
@@ -338,7 +369,7 @@
                 </Hierarchies>
             </Dimension>
 
-            <Dimension name='Customers' table='customer' key='Name'>
+            <Dimension name='Customer' table='customer' key='Name'>
                 <Attributes>
                     <Attribute name='Country' keyColumn='country'/>
                     <Attribute name='State Province' keyColumn='state_province'/>
@@ -359,7 +390,7 @@
                 </Attributes>
 
                 <Hierarchies>
-                    <Hierarchy name='Customers'>
+                    <Hierarchy name='Customers' allMemberName='All Customers'>
                         <Level attribute='Country'/>
                         <Level attribute='State Province'/>
                         <Level attribute='City'/>
@@ -380,7 +411,7 @@
                 </Hierarchies>
             </Dimension>
 
-            <Dimension source="Store"/>
+            <Dimension source="Stores"/>
             <Dimension source="Time"/>
             <Dimension source="Product"/>
             <Dimension source="Warehouse"/>
@@ -418,11 +449,11 @@
                     </AggName>
                 </Aggregates>
                 <DimensionLinks>
-                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
-                    <RegularDimensionLink dimension='Customers' foreignKeyColumn='customer_id'/>
+                    <RegularDimensionLink dimension='Customer' foreignKeyColumn='customer_id'/>
                 </DimensionLinks>
             </MeasureGroup>
 
@@ -437,7 +468,7 @@
                     <Measure name='Warehouse Profit' column='warehouse_profit' aggregator='sum' datatype='Numeric'/>
                 </Measures>
                 <DimensionLinks>
-                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Warehouse' foreignKeyColumn=''>
@@ -555,7 +586,7 @@
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='pay_date' attribute='date'/>
                     <RegularDimensionLink dimension='Department' foreignKeyColumn='department_id'/>
                     <RegularDimensionLink dimension='Employee' foreignKeyColumn='employee_id'/>
-                    <ReferenceDimensionLink dimension='Store' viaDimension='Employee' viaAttribute='Store Id'/>
+                    <ReferenceDimensionLink dimension='Stores' viaDimension='Employee' viaAttribute='Store Id'/>
                 </DimensionLinks>
             </MeasureGroup>
         </MeasureGroups>
@@ -568,6 +599,42 @@
                               formatString='Currency'
                               formula='[Measures].[Org Salary]/[Measures].[Number of Employees]'/>
         </CalculatedMembers>
+    </Cube>
+
+    <!-- Cubes for compatability with old FoodMart. Will put them
+         in a new schema at some point. -->
+
+    <Cube name='Warehouse' defaultMeasure='Unit Sales'>
+        <Dimensions>
+            <Dimension source="Stores"/>
+            <Dimension source="Time"/>
+            <Dimension source="Product"/>
+            <Dimension source="Warehouse"/>
+        </Dimensions>
+
+        <MeasureGroups>
+            <MeasureGroup name='Warehouse' table='inventory_fact_1997'>
+                <Measures>
+                    <Measure name='Store Invoice' column='store_invoice' aggregator='sum'/>
+                    <Measure name='Supply Time' column='supply_time' aggregator='sum'/>
+                    <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>
+                    <Measure name='Warehouse Sales' column='warehouse_sales' aggregator='sum'/>
+                    <Measure name='Units Shipped' column='units_shipped' aggregator='sum' formatString='#.0'/>
+                    <Measure name='Units Ordered' column='units_ordered' aggregator='sum' formatString='#.0'/>
+                    <Measure name='Warehouse Profit' column='warehouse_profit' aggregator='sum' datatype='Numeric'/>
+                </Measures>
+                <DimensionLinks>
+                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
+                    <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
+                    <RegularDimensionLink dimension='Warehouse' foreignKeyColumn=''>
+                        <ForeignKey>
+                            <Column name='warehouse_id'/>
+                        </ForeignKey>
+                    </RegularDimensionLink>
+                </DimensionLinks>
+            </MeasureGroup>
+        </MeasureGroups>
     </Cube>
 
     <Roles>

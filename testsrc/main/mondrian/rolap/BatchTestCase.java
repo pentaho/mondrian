@@ -519,7 +519,10 @@ public class BatchTestCase extends FoodMartTestCase {
                     star.lookupColumn(table, column);
                 request.addConstrainedColumn(
                     storeTypeColumn,
-                    new ValueColumnPredicate(storeTypeColumn, value));
+                    new ValueColumnPredicate(
+                        (RolapSchema.PhysColumn)
+                            storeTypeColumn.getExpression(),
+                        value));
             }
         }
         return request;
@@ -1000,7 +1003,10 @@ public class BatchTestCase extends FoodMartTestCase {
                     new ArrayList<StarPredicate>();
                 for (int i = 0; i < values.length; i++) {
                     andPredList.add(
-                        new ValueColumnPredicate(starColumn[i], values[i]));
+                        new ValueColumnPredicate(
+                            (RolapSchema.PhysColumn)
+                                starColumn[i].getExpression(),
+                            values[i]));
                 }
                 final StarPredicate predicate =
                     andPredList.size() == 1
