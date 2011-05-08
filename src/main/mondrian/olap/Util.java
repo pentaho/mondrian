@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1490,6 +1490,33 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Creates a memory-, CPU- and cache-efficient immutable list from an
+     * existing list. The list is always copied.
+     *
+     * @param t Array of members of list
+     * @param <T> Element type
+     * @return List containing the given members
+     */
+    public static <T> List<T> flatList(List<T> t) {
+        switch (t.size()) {
+        case 0:
+            return Collections.emptyList();
+        case 1:
+            return Collections.singletonList(t.get(0));
+        case 2:
+            return new Flat2List<T>(t.get(0), t.get(1));
+        case 3:
+            return new Flat3List<T>(t.get(0), t.get(1), t.get(2));
+        default:
+            // REVIEW: AbstractList contains a modCount field; we could
+            //   write our own implementation and reduce creation overhead a
+            //   bit.
+            //noinspection unchecked
+            return (List<T>) Arrays.asList(t.toArray());
+        }
+    }
+
+    /**
      * Parses a locale string.
      *
      * <p>The inverse operation of {@link java.util.Locale#toString()}.
@@ -2934,6 +2961,89 @@ public class Util extends XOMUtil {
         return true;
     }
 
+    public static abstract class AbstractFlatList<T>
+        implements List<T>, RandomAccess
+    {
+        protected final List<T> asArrayList() {
+            //noinspection unchecked
+            return Arrays.asList((T[]) toArray());
+        }
+
+        public Iterator<T> iterator() {
+            return asArrayList().iterator();
+        }
+
+        public ListIterator<T> listIterator() {
+            return asArrayList().listIterator();
+        }
+
+        public boolean isEmpty() {
+            return false;
+        }
+
+        public boolean add(Object t) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(Collection<? extends T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(int index, Collection<? extends T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        public T set(int index, Object element) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void add(int index, Object element) {
+            throw new UnsupportedOperationException();
+        }
+
+        public T remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ListIterator<T> listIterator(int index) {
+            return asArrayList().listIterator(index);
+        }
+
+        public List<T> subList(int fromIndex, int toIndex) {
+            return asArrayList().subList(fromIndex, toIndex);
+        }
+
+        public boolean contains(Object o) {
+            return indexOf(o) >= 0;
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            Iterator<?> e = c.iterator();
+            while (e.hasNext()) {
+                if (!contains(e.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     /**
      * List that stores its two elements in the two members of the class.
      * Unlike {@link java.util.ArrayList} or
@@ -2950,7 +3060,7 @@ public class Util extends XOMUtil {
      * @param <T>
      */
     protected static class Flat2List<T>
-        extends UnsupportedList<T>
+        extends AbstractFlatList<T>
         implements Comparable<T>
     {
         private final T t0;
@@ -2961,6 +3071,10 @@ public class Util extends XOMUtil {
             this.t1 = t1;
             assert t0 != null;
             assert t1 != null;
+        }
+
+        public String toString() {
+            return "[" + t0 + ", " + t1 + "]";
         }
 
         public T get(int index) {
@@ -2978,10 +3092,6 @@ public class Util extends XOMUtil {
             return 2;
         }
 
-        public String toString() {
-            return "{" + t0 + ", " + t1 + "}";
-        }
-
         public Iterator<T> iterator() {
             return Arrays.asList(t0, t1).iterator();
         }
@@ -2992,12 +3102,45 @@ public class Util extends XOMUtil {
                 return Util.equals(this.t0, that.t0)
                     && Util.equals(this.t1, that.t1);
             }
-            return false;
+            return Arrays.asList(t0, t1).equals(o);
         }
 
         public int hashCode() {
-            int h = t0.hashCode();
-            return Util.hash(h, t1.hashCode());
+            int h = 1;
+            h = h * 31 + t0.hashCode();
+            h = h * 31 + t1.hashCode();
+            return h;
+        }
+
+        public int indexOf(Object o) {
+            if (t0.equals(o)) {
+                return 0;
+            }
+            if (t1.equals(o)) {
+                return 1;
+            }
+            return -1;
+        }
+
+        public int lastIndexOf(Object o) {
+            if (t1.equals(o)) {
+                return 1;
+            }
+            if (t0.equals(o)) {
+                return 0;
+            }
+            return -1;
+        }
+
+        @SuppressWarnings({"unchecked"})
+        public <T2> T2[] toArray(T2[] a) {
+            a[0] = (T2) t0;
+            a[1] = (T2) t1;
+            return a;
+        }
+
+        public Object[] toArray() {
+            return new Object[] {t0, t1};
         }
 
         public int compareTo(T o) {
@@ -3027,7 +3170,7 @@ public class Util extends XOMUtil {
      * @param <T>
      */
     protected static class Flat3List<T>
-        extends UnsupportedList<T>
+        extends AbstractFlatList<T>
         implements Comparable<T>
     {
         private final T t0;
@@ -3041,6 +3184,10 @@ public class Util extends XOMUtil {
             assert t0 != null;
             assert t1 != null;
             assert t2 != null;
+        }
+
+        public String toString() {
+            return "[" + t0 + ", " + t1 + ", " + t2 + "]";
         }
 
         public T get(int index) {
@@ -3060,10 +3207,6 @@ public class Util extends XOMUtil {
             return 3;
         }
 
-        public String toString() {
-            return "{" + t0 + ", " + t1 + ", " + t2 + "}";
-        }
-
         public Iterator<T> iterator() {
             return Arrays.asList(t0, t1, t2).iterator();
         }
@@ -3075,13 +3218,53 @@ public class Util extends XOMUtil {
                     && Util.equals(this.t1, that.t1)
                     && Util.equals(this.t2, that.t2);
             }
-            return false;
+            return o.equals(this);
         }
 
         public int hashCode() {
-            int h = t0.hashCode();
-            h = Util.hash(h, t1.hashCode());
-            return Util.hash(h, t2.hashCode());
+            int h = 1;
+            h = h * 31 + t0.hashCode();
+            h = h * 31 + t1.hashCode();
+            h = h * 31 + t2.hashCode();
+            return h;
+        }
+
+        public int indexOf(Object o) {
+            if (t0.equals(o)) {
+                return 0;
+            }
+            if (t1.equals(o)) {
+                return 1;
+            }
+            if (t2.equals(o)) {
+                return 2;
+            }
+            return -1;
+        }
+
+        public int lastIndexOf(Object o) {
+            if (t2.equals(o)) {
+                return 2;
+            }
+            if (t1.equals(o)) {
+                return 1;
+            }
+            if (t0.equals(o)) {
+                return 0;
+            }
+            return -1;
+        }
+
+        @SuppressWarnings({"unchecked"})
+        public <T2> T2[] toArray(T2[] a) {
+            a[0] = (T2) t0;
+            a[1] = (T2) t1;
+            a[2] = (T2) t2;
+            return a;
+        }
+
+        public Object[] toArray() {
+            return new Object[] {t0, t1, t2};
         }
 
         public int compareTo(T o) {

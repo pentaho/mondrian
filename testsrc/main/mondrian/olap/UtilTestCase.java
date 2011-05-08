@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -721,6 +721,128 @@ public class UtilTestCase extends TestCase {
         };
         for (String localeName : localeNames) {
             assertEquals(localeName, Util.parseLocale(localeName).toString());
+        }
+    }
+
+    public void testCartesianProductList() {
+        final CartesianProductList<String> list =
+            new CartesianProductList<String>(
+                Arrays.asList(
+                    Arrays.asList("a", "b"),
+                    Arrays.asList("1", "2", "3")));
+        assertEquals(6, list.size());
+        assertFalse(list.isEmpty());
+
+        assertEquals(
+            "[[a, 1], [a, 2], [a, 3], [b, 1], [b, 2], [b, 3]]",
+            list.toString());
+
+        // One element empty
+        final CartesianProductList<String> list2 =
+            new CartesianProductList<String>(
+                Arrays.asList(
+                    Arrays.<String>asList(),
+                    Arrays.asList("1", "2", "3")));
+        assertTrue(list2.isEmpty());
+        assertEquals("[]", list2.toString());
+
+        // Other component empty
+        final CartesianProductList<String> list3 =
+            new CartesianProductList<String>(
+                Arrays.asList(
+                    Arrays.asList("a", "b"),
+                    Arrays.<String>asList()));
+        assertTrue(list3.isEmpty());
+        assertEquals("[]", list3.toString());
+
+        // Zeroary
+        final CartesianProductList<String> list4 =
+            new CartesianProductList<String>(
+                Collections.<List<String>>emptyList());
+        assertFalse(list4.isEmpty());
+        assertEquals("[[]]", list4.toString());
+
+        // 1-ary
+        final CartesianProductList<String> list5 =
+            new CartesianProductList<String>(
+                Collections.singletonList(
+                    Arrays.asList("a", "b")));
+        assertEquals("[[a], [b]]", list5.toString());
+
+        // 3-ary
+        final CartesianProductList<String> list6 =
+            new CartesianProductList<String>(
+                Arrays.asList(
+                    Arrays.asList("a", "b", "c", "d"),
+                    Arrays.asList("1", "2"),
+                    Arrays.asList("x", "y", "z")));
+        assertEquals(24, list6.size()); // 4 * 2 * 3
+        assertFalse(list6.isEmpty());
+        assertEquals("[a, 1, x]", list6.get(0).toString());
+        assertEquals("[a, 1, y]", list6.get(1).toString());
+        assertEquals("[d, 2, z]", list6.get(23).toString());
+
+        final Object[] strings = new Object[6];
+        list6.getIntoArray(1, strings);
+        assertEquals(
+            "[a, 1, y, null, null, null]",
+            Arrays.asList(strings).toString());
+
+        CartesianProductList list7 =
+            new CartesianProductList<Object>(
+                Arrays.<List<Object>>asList(
+                    Arrays.<Object>asList(
+                        "1",
+                        Arrays.asList("2a", null, "2c"),
+                        "3"),
+                    Arrays.<Object>asList(
+                        "a",
+                        Arrays.asList("bb", "bbb"),
+                        "c",
+                        "d")));
+        list7.getIntoArray(1, strings);
+        assertEquals(
+            "[1, bb, bbb, null, null, null]",
+            Arrays.asList(strings).toString());
+        list7.getIntoArray(5, strings);
+        assertEquals(
+            "[2a, null, 2c, bb, bbb, null]",
+            Arrays.asList(strings).toString());
+    }
+
+    public void testFlatList() {
+        final List<String> flatAB = Util.flatList("a", "b");
+        final List<String> arrayAB = Arrays.asList("a", "b");
+        assertEquals(flatAB, flatAB);
+        assertEquals(flatAB, arrayAB);
+        assertEquals(arrayAB, flatAB);
+        assertEquals(arrayAB.hashCode(), flatAB.hashCode());
+
+        final List<String> flatABC = Util.flatList("a", "b", "c");
+        final List<String> arrayABC = Arrays.asList("a", "b", "c");
+        assertEquals(flatABC, flatABC);
+        assertEquals(flatABC, arrayABC);
+        assertEquals(arrayABC, flatABC);
+        assertEquals(arrayABC.hashCode(), flatABC.hashCode());
+
+        assertEquals("[a, b, c]", flatABC.toString());
+        assertEquals("[a, b]", flatAB.toString());
+
+        final List<String> arrayEmpty = Arrays.asList();
+        final List<String> arrayA = Collections.singletonList("a");
+
+        // mixed 2 & 3
+        final List<List<String>> notAB =
+            Arrays.asList(arrayEmpty, arrayA, arrayABC, flatABC);
+        for (List<String> strings : notAB) {
+            assertFalse(strings.equals(flatAB));
+            assertFalse(flatAB.equals(strings));
+        }
+        final List<List<String>> notABC =
+            Arrays.asList(arrayEmpty, arrayA, arrayAB, flatAB);
+        for (List<String> strings : notABC) {
+            assertFalse(strings.equals(flatABC));
+            assertFalse(flatABC.equals(strings));
         }
     }
 
