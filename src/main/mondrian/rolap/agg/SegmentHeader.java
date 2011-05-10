@@ -301,7 +301,8 @@ public class SegmentHeader implements Serializable {
             return false;
         }
         if (segment.aggregation.getConstrainedColumnsBitKey()
-                .equals(constrainedColsBitKey)) {
+                .equals(constrainedColsBitKey))
+        {
             return true;
         }
         return false;

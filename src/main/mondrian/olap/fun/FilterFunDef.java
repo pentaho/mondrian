@@ -28,6 +28,10 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 class FilterFunDef extends FunDefBase {
+
+    private static final String TIMING_NAME =
+        FilterFunDef.class.getSimpleName();
+
     static final FilterFunDef instance = new FilterFunDef();
 
     private FilterFunDef() {
@@ -101,18 +105,23 @@ class FilterFunDef extends FunDefBase {
         }
 
         public TupleIterable evaluateIterable(Evaluator evaluator) {
-            ResolvedFunCall call = (ResolvedFunCall) exp;
-            // Use a native evaluator, if more efficient.
-            // TODO: Figure this out at compile time.
-            SchemaReader schemaReader = evaluator.getSchemaReader();
-            NativeEvaluator nativeEvaluator =
+            QueryTiming.markStart(TIMING_NAME);
+            try {
+                ResolvedFunCall call = (ResolvedFunCall) exp;
+                // Use a native evaluator, if more efficient.
+                // TODO: Figure this out at compile time.
+                SchemaReader schemaReader = evaluator.getSchemaReader();
+                NativeEvaluator nativeEvaluator =
                     schemaReader.getNativeSetEvaluator(
-                            call.getFunDef(), call.getArgs(), evaluator, this);
-            if (nativeEvaluator != null) {
-                return (TupleIterable)
-                    nativeEvaluator.execute(ResultStyle.ITERABLE);
-            } else {
-                return makeIterable(evaluator);
+                        call.getFunDef(), call.getArgs(), evaluator, this);
+                if (nativeEvaluator != null) {
+                    return (TupleIterable)
+                        nativeEvaluator.execute(ResultStyle.ITERABLE);
+                } else {
+                    return makeIterable(evaluator);
+                }
+            } finally {
+                QueryTiming.markEnd(TIMING_NAME);
             }
         }
 
@@ -131,26 +140,32 @@ class FilterFunDef extends FunDefBase {
         }
 
         protected TupleIterable makeIterable(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            ListCalc lcalc = (ListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
+            QueryTiming.markStart(TIMING_NAME);
+            try {
+                Calc[] calcs = getCalcs();
+                ListCalc lcalc = (ListCalc) calcs[0];
+                BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
-            TupleList list = lcalc.evaluateList(evaluator);
+                TupleList list = lcalc.evaluateList(evaluator);
 
-            // make list mutable; guess selectivity .5
-            TupleList result =
-                TupleCollections.createList(list.getArity(), list.size() / 2);
-            final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            TupleCursor cursor = list.tupleCursor();
-            while (cursor.forward()) {
-                cursor.setContext(evaluator);
-                if (bcalc.evaluateBoolean(evaluator)) {
-                    result.addCurrent(cursor);
+                // make list mutable; guess selectivity .5
+                TupleList result =
+                    TupleCollections.createList(
+                        list.getArity(), list.size() / 2);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                TupleCursor cursor = list.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    if (bcalc.evaluateBoolean(evaluator)) {
+                        result.addCurrent(cursor);
+                    }
                 }
+                evaluator.restore(savepoint);
+                return result;
+            } finally {
+                QueryTiming.markEnd(TIMING_NAME);
             }
-            evaluator.restore(savepoint);
-            return result;
         }
     }
 
@@ -320,25 +335,30 @@ class FilterFunDef extends FunDefBase {
         }
 
         protected TupleList makeList(Evaluator evaluator) {
-            Calc[] calcs = getCalcs();
-            ListCalc lcalc = (ListCalc) calcs[0];
-            BooleanCalc bcalc = (BooleanCalc) calcs[1];
-            TupleList members0 = lcalc.evaluateList(evaluator);
+            QueryTiming.markStart(TIMING_NAME);
+            try {
+                Calc[] calcs = getCalcs();
+                ListCalc lcalc = (ListCalc) calcs[0];
+                BooleanCalc bcalc = (BooleanCalc) calcs[1];
+                TupleList members0 = lcalc.evaluateList(evaluator);
 
-            // Not mutable, must create new list;
-            // for capacity planning, guess selectivity = .5
-            TupleList result = members0.cloneList(members0.size() / 2);
-            final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            final TupleCursor cursor = members0.tupleCursor();
-            while (cursor.forward()) {
-                cursor.setContext(evaluator);
-                if (bcalc.evaluateBoolean(evaluator)) {
-                    result.addCurrent(cursor);
+                // Not mutable, must create new list;
+                // for capacity planning, guess selectivity = .5
+                TupleList result = members0.cloneList(members0.size() / 2);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final TupleCursor cursor = members0.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    if (bcalc.evaluateBoolean(evaluator)) {
+                        result.addCurrent(cursor);
+                    }
                 }
+                evaluator.restore(savepoint);
+                return result;
+            } finally {
+                QueryTiming.markEnd(TIMING_NAME);
             }
-            evaluator.restore(savepoint);
-            return result;
         }
     }
 }

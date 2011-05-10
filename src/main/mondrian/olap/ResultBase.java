@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.olap;
 
 import java.util.List;
@@ -138,6 +137,10 @@ public abstract class ResultBase implements Result {
     }
 
     public void close() {
+    }
+
+    public QueryTiming getQueryTiming() {
+        return query.getQueryTiming();
     }
 }
 
