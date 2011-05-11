@@ -209,10 +209,11 @@ class SqlMemberSource
             }
             if (mustCount[0]) {
                 final String str = columnList.toString();
-                sqlQuery.addSelect(str);
+                sqlQuery.addSelect(str, null);
                 sqlQuery.addOrderBy(str, true, false, true);
             } else {
-                sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
+                sqlQuery.addSelect(
+                    "count(DISTINCT " + columnList + ")", null);
             }
             return sqlQuery.toString();
 
@@ -220,14 +221,14 @@ class SqlMemberSource
             sqlQuery.setDistinct(true);
             for (RolapSchema.PhysColumn column : attribute.keyList) {
                 column.addToFrom(sqlQuery, null, null);
-                sqlQuery.addSelect(column.toSql());
+                sqlQuery.addSelect(column.toSql(), column.getInternalType());
             }
             SqlQuery outerQuery =
                 SqlQuery.newQuery(
                     dataSource,
                     "while generating query to count members in attribute "
                     + attribute);
-            outerQuery.addSelect("count(*)");
+            outerQuery.addSelect("count(*)", null);
             // Note: the "init" is for Postgres, which requires
             // FROM-queries to have an alias
             boolean failIfExists = true;
@@ -389,7 +390,9 @@ class SqlMemberSource
                     continue;
                 }
                 column.addToFrom(sqlQuery, null, null);
-                final String alias = sqlQuery.addSelectGroupBy(expString);
+                final String alias =
+                    sqlQuery.addSelectGroupBy(
+                        expString, column.getInternalType());
                 layoutBuilder.register(expString, alias);
             }
             for (RolapSchema.PhysColumn column : level.attribute.orderByList) {
@@ -399,7 +402,8 @@ class SqlMemberSource
                 }
                 column.addToFrom(sqlQuery, null, null);
                 sqlQuery.addOrderBy(expString, true, false, true);
-                final String alias = sqlQuery.addSelect(expString);
+                final String alias =
+                    sqlQuery.addSelect(expString, column.getInternalType());
                 layoutBuilder.register(expString, alias);
             }
 
@@ -414,7 +418,7 @@ class SqlMemberSource
                         continue;
                     }
                     column.addToFrom(sqlQuery, null, null);
-                    String alias = sqlQuery.addSelect(expString);
+                    String alias = sqlQuery.addSelect(expString, null);
                     // Some dialects allow us to eliminate properties from the
                     // group by that are functionally dependent on the level
                     // value.
@@ -556,8 +560,8 @@ class SqlMemberSource
             int ordinal = layoutBuilder.lookup(sql);
             if (ordinal < 0) {
                 column.addToFrom(sqlQuery, null, null);
-                final String alias = sqlQuery.addSelectGroupBy(sql);
-                sqlQuery.addType(column.getInternalType());
+                final String alias =
+                    sqlQuery.addSelectGroupBy(sql, column.getInternalType());
                 ordinal = layoutBuilder.register(sql, alias);
             }
             layoutBuilder.currentLevelLayout.keyOrdinalList.add(ordinal);
@@ -604,14 +608,16 @@ class SqlMemberSource
         }
 
         if (level.attribute.captionExp != null) {
-            RolapSchema.PhysExpr captionExp = level.attribute.captionExp;
+            RolapSchema.PhysColumn captionExp = level.attribute.captionExp;
             if (false) {
                 captionExp.addToFrom(sqlQuery, null, null);
             }
             String captionSql = captionExp.toSql();
             int ordinal = layoutBuilder.lookup(captionSql);
             if (ordinal < 0) {
-                final String alias = sqlQuery.addSelectGroupBy(captionSql);
+                final String alias =
+                    sqlQuery.addSelectGroupBy(
+                        captionSql, captionExp.getInternalType());
                 ordinal = layoutBuilder.register(captionSql, alias);
             }
             layoutBuilder.currentLevelLayout.captionOrdinal = ordinal;
@@ -623,8 +629,7 @@ class SqlMemberSource
             String orderBy = key.toSql();
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
-                final String alias = sqlQuery.addSelectGroupBy(orderBy);
-                sqlQuery.addType(null);
+                final String alias = sqlQuery.addSelectGroupBy(orderBy, null);
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
             sqlQuery.addOrderBy(orderBy, true, false, true);
@@ -644,11 +649,10 @@ class SqlMemberSource
                 if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
                     || !property.dependsOnLevelValue())
                 {
-                    alias = sqlQuery.addSelectGroupBy(s);
+                    alias = sqlQuery.addSelectGroupBy(s, null);
                 } else {
-                    alias = sqlQuery.addSelect(s);
+                    alias = sqlQuery.addSelect(s, null);
                 }
-                sqlQuery.addType(null);
                 ordinal = layoutBuilder.register(s, alias);
             }
             layoutBuilder.currentLevelLayout.propertyOrdinalList.add(ordinal);
@@ -1122,16 +1126,14 @@ class SqlMemberSource
         for (RolapSchema.PhysColumn key : level.attribute.keyList) {
             key.addToFrom(sqlQuery, null, null);
             String childId = key.toSql();
-            final String alias = sqlQuery.addSelectGroupBy(childId);
-            sqlQuery.addType(null);
+            final String alias = sqlQuery.addSelectGroupBy(childId, null);
         }
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
             key.addToFrom(sqlQuery, null, null);
             String orderBy = key.toSql();
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
-                final String alias = sqlQuery.addSelectGroupBy(orderBy);
-                sqlQuery.addType(null);
+                final String alias = sqlQuery.addSelectGroupBy(orderBy, null);
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
             layoutBuilder.currentLevelLayout.ordinalList.add(ordinal);
@@ -1148,14 +1150,13 @@ class SqlMemberSource
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
             exp.addToFrom(sqlQuery, null, null);
             final String s = exp.toSql();
-            String alias = sqlQuery.addSelect(s);
+            String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
                 || !property.dependsOnLevelValue())
             {
                 sqlQuery.addGroupBy(s, alias);
-                sqlQuery.addType(null);
             }
         }
         return sqlQuery.toSql();
@@ -1205,7 +1206,8 @@ class SqlMemberSource
         for (RolapSchema.PhysColumn key : level.attribute.keyList) {
             key.addToFrom(sqlQuery, null, null);
             String childId = key.toSql();
-            final String alias = sqlQuery.addSelectGroupBy(childId);
+            final String alias =
+                sqlQuery.addSelectGroupBy(childId, key.getInternalType());
             layoutBuilder.register(childId, alias);
         }
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
@@ -1214,8 +1216,8 @@ class SqlMemberSource
             sqlQuery.addOrderBy(orderBy, true, false, true);
             final int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
-                final String alias = sqlQuery.addSelectGroupBy(orderBy);
-                sqlQuery.addType(null);
+                final String alias =
+                    sqlQuery.addSelectGroupBy(orderBy, key.getInternalType());
                 layoutBuilder.register(orderBy, alias);
             }
         }
@@ -1225,8 +1227,7 @@ class SqlMemberSource
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
             exp.addToFrom(sqlQuery, null, null);
             final String s = exp.toSql();
-            String alias = sqlQuery.addSelect(s);
-            sqlQuery.addType(null);
+            String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()

@@ -10,7 +10,6 @@
 //
 // jhyde, Mar 21, 2002
 */
-
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianDef;
@@ -358,16 +357,16 @@ public class SqlQuery {
      * Adds an expression to the select clause, automatically creating a
      * column alias.
      */
-    public String addSelect(final String expression) {
+    public String addSelect(final String expression, SqlStatement.Type type) {
         // Some DB2 versions (AS/400) throw an error if a column alias is
         //  *not* used in a subsequent order by (Group by).
         // Derby fails on 'SELECT... HAVING' if column has alias.
         switch (dialect.getDatabaseProduct()) {
         case DB2_AS400:
         case DERBY:
-            return addSelect(expression, null);
+            return addSelect(expression, type, null);
         default:
-            return addSelect(expression, nextColumnAlias());
+            return addSelect(expression, type, nextColumnAlias());
         }
     }
 
@@ -378,8 +377,11 @@ public class SqlQuery {
      * @param expression Expression
      * @return Alias of expression
      */
-    public String addSelectGroupBy(final String expression) {
-        final String alias = addSelect(expression);
+    public String addSelectGroupBy(
+        final String expression,
+        SqlStatement.Type type)
+    {
+        final String alias = addSelect(expression, type, null);
         addGroupBy(expression, alias);
         return alias;
     }
@@ -394,14 +396,19 @@ public class SqlQuery {
     }
 
     /**
-     * Adds an expression to the select clause, with a specified column
-     * alias.
+     * Adds an expression to the select clause, with a specified type and
+     * column alias.
      *
      * @param expression Expression
+     * @param type Java type to be used to hold cursor column
      * @param alias Column alias (or null for no alias)
      * @return Column alias
      */
-    public String addSelect(final String expression, final String alias) {
+    public String addSelect(
+        final String expression,
+        final SqlStatement.Type type,
+        String alias)
+    {
         buf.setLength(0);
 
         buf.append(expression);
@@ -411,6 +418,7 @@ public class SqlQuery {
         }
 
         select.add(buf.toString());
+        addType(type);
         return alias;
     }
 
@@ -610,7 +618,7 @@ public class SqlQuery {
         types.add(null);
     }
 
-    public void addType(SqlStatement.Type type) {
+    private void addType(SqlStatement.Type type) {
         types.add(type);
     }
 

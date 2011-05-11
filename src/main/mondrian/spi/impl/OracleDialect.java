@@ -60,7 +60,7 @@ public class OracleDialect extends JdbcDialectImpl {
 
     @Override
     public boolean allowsJoinOn() {
-        return true;
+        return false;
     }
 }
 

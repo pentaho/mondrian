@@ -128,8 +128,7 @@ public class SegmentHeader implements Serializable {
             // Now build the CC object
             cc[i] =
                 new SegmentHeader.ConstrainedColumn(
-                    axis.getPredicate().getConstrainedColumn()
-                        .getExpression().getGenericExpression(),
+                    axis.getPredicate().getColumn().toSql(),
                     values.toArray());
         }
         return
@@ -301,7 +300,8 @@ public class SegmentHeader implements Serializable {
             return false;
         }
         if (segment.aggregation.getConstrainedColumnsBitKey()
-                .equals(constrainedColsBitKey)) {
+                .equals(constrainedColsBitKey))
+        {
             return true;
         }
         return false;

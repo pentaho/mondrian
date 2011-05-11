@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 20 January, 1999
 */
-
 package mondrian.olap;
 
 import mondrian.calc.Calc;
@@ -121,6 +120,8 @@ public class Query extends QueryPart {
      * Query timeout, in milliseconds
      */
     private long queryTimeout;
+
+    private QueryTiming queryTiming;
 
     /**
      * If true, cancel this query
@@ -234,6 +235,7 @@ public class Query extends QueryPart {
         this.nativeCrossJoinVirtualCube = true;
         this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
+        QueryTiming.init();
         resolve();
     }
 
@@ -422,6 +424,11 @@ public class Query extends QueryPart {
     public void setQueryStartTime() {
         startTime = System.currentTimeMillis();
         isExecuting = true;
+        if (queryTiming != null) {
+            // query re-use, reinit QueryTimings!?
+            QueryTiming.init();
+            queryTiming = null;
+        }
     }
 
     /**
@@ -432,6 +439,10 @@ public class Query extends QueryPart {
         return startTime;
     }
 
+    public QueryTiming getQueryTiming() {
+        return queryTiming;
+    }
+
     /**
      * Called when query execution has completed.  Once query execution has
      * ended, it is not possible to cancel or timeout the query until it
@@ -439,6 +450,7 @@ public class Query extends QueryPart {
      */
     public void setQueryEndExecution() {
         isExecuting = false;
+        queryTiming = QueryTiming.done();
     }
 
     /**

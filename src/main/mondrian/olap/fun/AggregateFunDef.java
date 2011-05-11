@@ -27,6 +27,10 @@ import org.eigenbase.util.property.IntegerProperty;
  * @version $Id$
  */
 public class AggregateFunDef extends AbstractAggregateFunDef {
+
+    private static final String TIMING_NAME =
+        AggregateFunDef.class.getSimpleName();
+
     static final ReflectiveMultiResolver resolver =
         new ReflectiveMultiResolver(
             "Aggregate", "Aggregate(<Set>[, <Numeric Expression>])",
@@ -63,8 +67,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            TupleList list = evaluateCurrentList(listCalc, evaluator);
-            return aggregate(calc, evaluator, list);
+            QueryTiming.markStart(TIMING_NAME);
+            try {
+                TupleList list = evaluateCurrentList(listCalc, evaluator);
+                return aggregate(calc, evaluator, list);
+            } finally {
+                QueryTiming.markEnd(TIMING_NAME);
+            }
         }
 
         /**

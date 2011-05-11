@@ -37,6 +37,8 @@ import java.util.*;
  * @since 1.0
  */
 public class FunUtil extends Util {
+    private static final String SORT_TIMING_NAME = "Sort";
+    private static final String SORT_EVAL_TIMING_NAME = "EvalForSort";
 
     static final String[] emptyStringArray = new String[0];
     private static final boolean debug = false;
@@ -481,27 +483,43 @@ public class FunUtil extends Util {
             return memberList;
         }
 
-        // REVIEW mberkowitz 1/09: test whether precomputing values saves time.
-        Map<Member, Object> mapMemberToValue;
-        final boolean parentsToo = !brk;
-        if (memberList == null) {
-            memberList = new ArrayList<Member>();
-            mapMemberToValue = evaluateMembers(
-                evaluator, exp, memberIter, memberList, parentsToo);
-        } else {
-            mapMemberToValue = evaluateMembers(
-                evaluator, exp, memberIter, null, parentsToo);
-        }
+        QueryTiming.markStart(SORT_EVAL_TIMING_NAME);
+        boolean timingEval = true;
+        boolean timingSort = false;
+        try {
+            // REVIEW mberkowitz 1/09: test whether precomputing
+            // values saves time.
+            Map<Member, Object> mapMemberToValue;
+            final boolean parentsToo = !brk;
+            if (memberList == null) {
+                memberList = new ArrayList<Member>();
+                mapMemberToValue = evaluateMembers(
+                    evaluator, exp, memberIter, memberList, parentsToo);
+            } else {
+                mapMemberToValue = evaluateMembers(
+                    evaluator, exp, memberIter, null, parentsToo);
+            }
 
-        MemberComparator comp;
-        if (brk) {
-            comp = new BreakMemberComparator(evaluator, exp, desc);
-        } else {
-            comp = new HierarchicalMemberComparator(evaluator, exp, desc);
+            MemberComparator comp;
+            if (brk) {
+                comp = new BreakMemberComparator(evaluator, exp, desc);
+            } else {
+                comp = new HierarchicalMemberComparator(evaluator, exp, desc);
+            }
+            comp.preloadValues(mapMemberToValue);
+            QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            timingEval = false;
+            QueryTiming.markStart(SORT_TIMING_NAME);
+            timingSort = true;
+            Collections.sort(memberList, comp.wrap());
+            return memberList;
+        } finally {
+            if (timingEval) {
+                QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            } else if (timingSort) {
+                QueryTiming.markEnd(SORT_TIMING_NAME);
+            }
         }
-        comp.preloadValues(mapMemberToValue);
-        Collections.sort(memberList, comp.wrap());
-        return memberList;
     }
 
     /**
@@ -652,11 +670,27 @@ public class FunUtil extends Util {
         int limit,
         boolean desc)
     {
-        MemberComparator comp = new BreakMemberComparator(evaluator, exp, desc);
-        Map<Member, Object> valueMap =
-            evaluateMembers(evaluator, exp, list, null, false);
-        comp.preloadValues(valueMap);
-        return stablePartialSort(list, comp.wrap(), limit);
+        QueryTiming.markStart(SORT_EVAL_TIMING_NAME);
+        boolean timingEval = true;
+        boolean timingSort = false;
+        try {
+            MemberComparator comp =
+                new BreakMemberComparator(evaluator, exp, desc);
+            Map<Member, Object> valueMap =
+                evaluateMembers(evaluator, exp, list, null, false);
+            QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            timingEval = false;
+            QueryTiming.markStart(SORT_TIMING_NAME);
+            timingSort = true;
+            comp.preloadValues(valueMap);
+            return stablePartialSort(list, comp.wrap(), limit);
+        } finally {
+            if (timingEval) {
+                QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            } else if (timingSort) {
+                QueryTiming.markEnd(SORT_TIMING_NAME);
+            }
+        }
     }
 
     /**

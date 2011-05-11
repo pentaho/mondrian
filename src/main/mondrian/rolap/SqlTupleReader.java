@@ -773,8 +773,7 @@ public class SqlTupleReader implements TupleReader {
         final List<RolapMeasureGroup> measureGroupList)
     {
         final SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, null);
-        sqlQuery.addSelect("0");
-        sqlQuery.addType(null);
+        sqlQuery.addSelect("0", null);
         sqlQuery.addFrom(
             measureGroupList.get(0).getStar().getFactTable().getRelation(),
             null, true);
@@ -960,8 +959,8 @@ Util.deprecated("obsolete basecube parameter", false);
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
-                final String alias = sqlQuery.addSelectGroupBy(q);
-                sqlQuery.addType(starColumn.getInternalType());
+                String alias =
+                    sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
                 layoutBuilder.register(q, alias);
                 sqlQuery.addOrderBy(q, true, false, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
@@ -974,7 +973,7 @@ Util.deprecated("obsolete basecube parameter", false);
                     attribute.parentAttribute.keyList;
                 for (RolapSchema.PhysColumn parentExp : parentExps) {
                     String parentSql = parentExp.toSql();
-                    final String alias = sqlQuery.addSelectGroupBy(parentSql);
+                    final String alias = sqlQuery.addSelectGroupBy(parentSql, null);
                     levelLayoutBuilder.parentOrdinalList.add(
                         layoutBuilder.register(parentSql, alias));
                     if (selectOrdinal == selectCount - 1) {
@@ -1002,8 +1001,7 @@ Util.deprecated("obsolete basecube parameter", false);
                 final String sql = column.toSql();
                 int ordinal = layoutBuilder.lookup(sql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(sql);
-                    sqlQuery.addType(column.getInternalType());
+                    String alias = sqlQuery.addSelect(sql, column.getInternalType());
                     ordinal = layoutBuilder.register(sql, alias);
                     if (needsGroupBy) {
                         sqlQuery.addGroupBy(sql, alias);
@@ -1016,8 +1014,7 @@ Util.deprecated("obsolete basecube parameter", false);
                 final String sql = column.toSql();
                 int ordinal = layoutBuilder.lookup(sql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(sql);
-                    sqlQuery.addType(column.getInternalType());
+                    String alias = sqlQuery.addSelect(sql, column.getInternalType());
                     ordinal = layoutBuilder.register(sql, alias);
                     if (needsGroupBy) {
                         sqlQuery.addGroupBy(sql, alias);
@@ -1029,8 +1026,9 @@ Util.deprecated("obsolete basecube parameter", false);
             if (captionSql != null) {
                 int ordinal = layoutBuilder.lookup(captionSql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(captionSql);
-                    sqlQuery.addType(attribute.captionExp.getInternalType());
+                    String alias =
+                        sqlQuery.addSelect(
+                            captionSql, attribute.captionExp.getInternalType());
                     ordinal = layoutBuilder.register(captionSql, alias);
                     if (needsGroupBy) {
                         sqlQuery.addGroupBy(captionSql, alias);
@@ -1106,8 +1104,8 @@ Util.deprecated("obsolete basecube parameter", false);
                 String propSql = column.toSql();
                 int ordinal = layoutBuilder.lookup(propSql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(propSql);
-                    sqlQuery.addType(column.getInternalType());
+                    String alias =
+                        sqlQuery.addSelect(propSql, column.getInternalType());
                     ordinal = layoutBuilder.register(propSql, alias);
                     if (needsGroupBy) {
                         // Certain dialects allow us to eliminate properties

@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.QueryTiming;
 import mondrian.olap.Util;
 import mondrian.util.DelegatingInvocationHandler;
 
@@ -50,6 +51,7 @@ import java.util.List;
  * @since 2.3
  */
 public class SqlStatement {
+    private static final String TIMING_NAME = "SqlStatement-";
 
     private final DataSource dataSource;
     private Connection jdbcConnection;
@@ -262,6 +264,8 @@ public class SqlStatement {
         long totalMs = time - startTime;
         String status =
             ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
+
+        QueryTiming.markFull(TIMING_NAME + this.component, totalMs);
 
         RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
 

@@ -10,7 +10,6 @@
 //
 // jhyde, 12 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -792,7 +791,7 @@ public class RolapStar {
                 columnExpr = measure.getAggregator().getExpression(columnExpr);
             }
             final String columnName = columnNameList.get(k);
-            String alias = query.addSelect(columnExpr, columnName);
+            String alias = query.addSelect(columnExpr, null, columnName);
             if (!(column instanceof Measure)) {
                 query.addGroupBy(columnExpr, alias);
             }
@@ -1073,8 +1072,8 @@ public class RolapStar {
             if (dialect.allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
                 sqlQuery.addSelect(
-                    "count(distinct "
-                    + getExpression().toSql() + ")");
+                    "count(distinct " + getExpression().toSql() + ")",
+                    null);
 
                 // no need to join fact table here
                 table.addToFrom(sqlQuery, true, false);
@@ -1084,11 +1083,11 @@ public class RolapStar {
                 // product_id from product)"
                 SqlQuery inner = sqlQuery.cloneEmpty();
                 inner.setDistinct(true);
-                inner.addSelect(getExpression().toSql());
+                inner.addSelect(getExpression().toSql(), null);
                 boolean failIfExists = true,
                     joinToParent = false;
                 table.addToFrom(inner, failIfExists, joinToParent);
-                sqlQuery.addSelect("count(*)");
+                sqlQuery.addSelect("count(*)", null);
                 sqlQuery.addFrom(inner, "init", failIfExists);
             } else {
                 throw Util.newInternal(
@@ -1156,7 +1155,7 @@ public class RolapStar {
                 table.star.factTable.relation, table.star.factTable.alias,
                 false);
             query.addFrom(table.relation, table.alias, false);
-            query.addSelect(expression.toSql());
+            query.addSelect(expression.toSql(), null);
             final String sql = query.toString();
             Connection jdbcConnection = null;
             try {

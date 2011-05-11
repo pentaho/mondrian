@@ -145,8 +145,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
         if (!countOnly) {
             String expr = measure.getExpression().toSql();
-            sqlQuery.addSelect(expr, getMeasureAlias(i));
-            sqlQuery.addType(null);
+            sqlQuery.addSelect(expr, null, getMeasureAlias(i));
         }
     }
 
